@@ -1,4 +1,5 @@
-import { DmsSite, adminConfig } from "@availabs/dms"
+import { DmsSite, adminConfig } from "./dms/src"
+import themes from "./themes"
 
 function App() {
   return ( 
@@ -9,6 +10,7 @@ function App() {
             type: 'pattern-admin'
           })
         }   
+        themes={themes}
       />
   )
 }
