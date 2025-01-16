@@ -47,9 +47,9 @@ const theme = {
   },
   heading: {
     "base": "p-2 w-full font-sans font-medium text-md bg-transparent",
-    "1": `text-blue-500 font-bold text-xl tracking-wider py-1 pl-1`,
-    "2": `text-lg tracking-wider`,
-    "3": `text-md tracking-wide`,
+    "1": `font-[500]  text-[#2D3E4C] text-[36px] leading-[36px] tracking-[-.02em] font-[500] underline-offset-8 underline decoration-4 decoration-[#EAAD43] uppercase font-['Oswald'] pb-[12px]`,
+    "2": `font-[500]  text-[#2D3E4C] text-[24px] leading-[24px] scroll-mt-36 font-['Oswald'] pb-[12x]`,
+    "3": `font-[500]  text-[#2D3E4C] text-[16px] leading-[16px] scroll-mt-36 font-['Oswald'] pb-[12x]`,
     "default": ''                                                                        
   },
   levelClasses: {
@@ -59,18 +59,37 @@ const theme = {
     '4': 'pl-6 pt-2 pb-1 text-sm text-slate-400 hover:underline cursor-pointer border-r-2 mr-4',
   },
   layout: {
-    wrapper: 'max-w-[1400px] mx-auto',
-    topnavContainer2:`fixed top-0 z-20 max-w-[1400px] w-full py-2`,
-    sidenavContainer1: 'pr-2',
-    sidenavContainer2: 'sticky top-[119px] h-[calc(100vh_-_125px)] bg-white rounded-lg shadow w-64 pt-2 overflow-y-auto overflow-x-hidden'
+    wrapper: 'max-w-[1440px] mx-auto',
+    wrapper2: 'flex-1 flex items-start flex-col items-stretch max-w-full',
+    wrapper3: 'flex flex-1 px-4 xl:px-[64px]',
+    childWrapper: 'h-full flex-1',
+    topnavContainer2:`fixed top-0 z-20 max-w-[1440px] w-full pt-2 px-4 xl:px-[64px]`,
+    sidenavContainer1: 'pr-2  hidden lg:block min-w-[302px] max-w-[302px]',
+    sidenavContainer2: 'hidden lg:block sticky top-[119px] h-[calc(100vh_-_125px)] bg-white rounded-lg shadow w-full overflow-y-auto overflow-x-hidden'
   },
   page: {
     container: `bg-[linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('/themes/mny/topolines.png')]  bg-[size:500px]`,//`bg-gradient-to-b from-[#F4F4F4] to-[#F4F4F4] bg-[url('/themes/mny/topolines.png')] `,
-    wrapper1: 'w-full h-full flex-1 flex flex-col pt-[93px] py-2', // first div inside Layout
-    wrapper2: 'w-full h-full flex-1 flex flex-row  py-6', // inside page header, wraps sidebar
-    wrapper3: 'flex flex-1 w-full  flex-col border shadow bg-white rounded-lg relative text-md font-light leading-7 p-4 min-h-[calc(100vh_-_102px)]' , // content wrapepr
+    wrapper1: 'w-full h-full flex-1 flex flex-col pt-[93px] pt-2', // first div inside Layout
+    wrapper2: 'w-full h-full flex-1 flex flex-row  pt-6', // inside page header, wraps sidebar
+    wrapper3: 'flex flex-1 w-full border-2 flex-col border shadow-md bg-white rounded-lg relative text-md font-light leading-7 p-4 h-full min-h-[calc(100vh_-_102px)]' , // content wrapepr
     iconWrapper : 'z-5 absolute right-[10px] top-[5px]',
     icon: 'text-slate-400 hover:text-blue-500'
+  },
+
+  sectionArray: {
+    container: 'w-full grid grid-cols-6 md:grid-cols-12 md:gap-[12px] px-[56px]',
+    layouts: {
+        centered: 'max-w-[1020px] mx-auto',
+        fullwidth: ''
+    },
+    sizes: {
+        "1/4": { className: 'col-span-6 md:col-span-3', iconSize: 25 },
+        "1/3": { className: 'col-span-6 md:col-span-4', iconSize: 33 },
+        "1/2": { className: 'col-span-6 md:col-span-6', iconSize: 50 },
+        "2/3": { className: 'col-span-6 md:col-span-8', iconSize: 66},
+        "1": { className: 'col-span-6 md:col-span-9', iconSize: 75 },
+        "2":   { className: 'col-span-6 md:col-span-12', iconSize: 100 },
+    }
   },
   pageControls: {
     controlItem: 'pl-6 py-0.5 text-md cursor-pointer hover:text-blue-500 text-slate-400 flex items-center',
@@ -82,12 +101,26 @@ const theme = {
     2: '',
     3: ''
   },
-  navLabel: 'px-6 pb-1 pt-6 uppercase text-xs text-blue-400',
   bg: 'bg-slate-100',
+  lexical: {
+    editorShell: "font-['Proxima_Nova'] font-[400] text-[16px] text-[#37576B] leading-[22.4px]",
+    heading: {
+      h1: "font-[500]  text-[#2D3E4C] text-[36px] leading-[36px] tracking-[-.02em] font-[500] underline-offset-8 underline decoration-4 decoration-[#EAAD43] uppercase font-['Oswald'] pb-[12px]", //'PlaygroundEditorTheme__h1',
+      h2: "font-[500]  text-[#2D3E4C] text-[24px] leading-[24px] scroll-mt-36 font-['Oswald'] pb-[12x]", //'PlaygroundEditorTheme__h2',
+      h3: "font-[500]  text-[#2D3E4C] text-[16px] leading-[16px] scroll-mt-36 font-['Oswald'] pb-[12x]", //'PlaygroundEditorTheme__h3',
+      h4: "font-medium text-[#2D3E4C] scroll-mt-36 font-display", //'PlaygroundEditorTheme__h4',
+      h5: "scroll-mt-36 font-display", //'PlaygroundEditorTheme__h5',
+      h6: "scroll-mt-36 font-display", //'PlaygroundEditorTheme__h6',
+    },
+    paragraph: "m-0 relative", //'PlaygroundEditorTheme__paragraph',
+    quote:
+    "m-0 mb-2 font-['Oswald'] text-[30px] leading-[36px] text-[#2D3E4C] border-l-4 border-[#37576B] pl-4 pb-[12px]", //'PlaygroundEditorTheme__quote',
+
+  },
   sidenav: {
     fixed: ``,
     logoWrapper: `bg-neutral-100 text-slate-800`,
-    sidenavWrapper: `hidden md:block bg-white w-full h-full z-20 pr-4`,
+    sidenavWrapper: `hidden md:block bg-white shadow-md w-full h-full z-20 pr-4`,
     menuItemWrapper: 'flex flex-col',
     menuIconSide: `group w-6 mr-2 text-blue-500`,
     menuIconSideActive: `group w-6 mr-2 text-blue-500`,
