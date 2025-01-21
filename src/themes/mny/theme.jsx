@@ -65,7 +65,7 @@ const theme = {
     childWrapper: 'h-full flex-1',
     topnavContainer2:`fixed top-0 z-20 max-w-[1440px] w-full pt-2 px-4 xl:px-[64px]`,
     sidenavContainer1: 'pr-2  hidden lg:block min-w-[302px] max-w-[302px]',
-    sidenavContainer2: 'hidden lg:block sticky top-[119px] h-[calc(100vh_-_125px)] bg-white rounded-lg shadow w-full overflow-y-auto overflow-x-hidden'
+    sidenavContainer2: 'hidden lg:block sticky top-[119px] h-[calc(100vh_-_125px)] bg-white rounded-lg shadow-md w-full overflow-y-auto overflow-x-hidden'
   },
   page: {
     container: `bg-[linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('/themes/mny/topolines.png')]  bg-[size:500px]`,//`bg-gradient-to-b from-[#F4F4F4] to-[#F4F4F4] bg-[url('/themes/mny/topolines.png')] `,
@@ -120,29 +120,37 @@ const theme = {
   sidenav: {
     fixed: ``,
     logoWrapper: `bg-neutral-100 text-slate-800`,
-    sidenavWrapper: `hidden md:block bg-white shadow-md w-full h-full z-20 pr-4`,
+    sidenavWrapper: `hidden md:block bg-white w-full h-full z-20 pr-4`,
     menuItemWrapper: 'flex flex-col',
     menuIconSide: `group w-6 mr-2 text-blue-500`,
     menuIconSideActive: `group w-6 mr-2 text-blue-500`,
     
     itemsWrapper: `border-slate-200`,
     navItemContent: `transition-transform duration-300 ease-in-out flex-1`,
+    navItemContents: [
+      `text-[16px] font-['Oswald'] font-[500] leading-[16px]  text-[#2D3E4C] pl-4 py-3`, 
+      `text-[16px] font-['Proxima_Nova'] font-[600] leading-[19.2px] text-[#37576B] pl-4 py-3`,
+      `text-[14px] font-['Proxima_Nova'] font-[400] leading-[19.6px] text-[#37576B] pl-4 py-2`,
+      `text-[14px] font-['Proxima_Nova'] font-[400] leading-[19.6px] text-[#37576B] pl-4 py-2`,
+      `text-[14px] font-['Proxima_Nova'] font-[400] leading-[19.6px] text-[#37576B] pl-4 py-2`
+    ],
     navitemSide: `
         group  flex flex-col
-        pl-3 py-2 text-[14px] font-[Oswald] font-medium  text-slate-700 ml-2  border-white 
+        border-white 
         focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300
-        transition-all cursor-pointer
+        transition-all cursor-pointer 
      `,
     navitemSideActive: `
         group  flex flex-col
-        group flex pl-3 py-2 text-[14px] font-[Oswald] font-medium text-slate-700 ml-2   border-white 
         focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300
-        transition-all cursor-pointer
+        transition-all cursor-pointer border-l-2 border-slate-600 
 
       `,
-    indicatorIcon: 'fa fa-angle-right pt-2.5',
-    indicatorIconOpen: 'fal fa-angle-down pt-2.5',
+    indicatorIcon: "ArrowRight",
+    indicatorIconOpen: "ArrowDown",
     subMenuWrapper: `pl-2 w-full`,
+    subMenuOuterWrappers: ['pl-4'],
+    subMenuWrappers: ['w-full bg-[#F3F8F9] rounded-[12px] py-[12px]','w-full bg-[#E0EBF0]'],
     subMenuParentWrapper: `flex flex-col w-full`,
     subMenuWrapperTop: '',
   },
