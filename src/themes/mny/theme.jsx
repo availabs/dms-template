@@ -257,20 +257,14 @@ export const themeOptions = {
         "type": "select",
         "options": [
           "none",
-          "micro",
-          "mini",
-          "compact",
           "full"
         ]
       },
-      "color": {
-        "label": "Color",
+      "depth": {
+        "label": "Depth",
         "type": "select",
         "options": [
-          "transparent",
-          "white",
-          "bright",
-          "dark"
+          1,2
         ]
       },
       "logo": {
