@@ -79,7 +79,7 @@ const theme = {
   sectionArray: {
     container: 'w-full grid grid-cols-6 md:grid-cols-12 ',
     layouts: {
-        centered: 'max-w-[1020px] mx-auto md:gap-[12px] px-[56px]',
+        centered: 'max-w-[1020px] mx-auto md:gap-[12px] px-0 lg:px-[56px]',
         fullwidth: ''
     },
     sizes: {
@@ -190,6 +190,33 @@ const theme = {
       subMenuWrapperInactiveFlyoutBelow: ` absolute ml-40 normal-case bg-white shadow-lg z-10 p-2`,
       subMenuWrapperInactiveFlyoutDirection: 'grid grid-cols-4'
       
+  },
+  table: {
+      tableContainer: 'flex flex-col w-full h-full overflow-x-auto scrollbar-sm border rounded-t-[12px]',
+      tableContainerNoPagination: 'rounded-b-[12px]',
+      tableContainer1: 'flex flex-col no-wrap min-h-[200px] max-h-[calc(78vh_-_10px)] overflow-y-auto scrollbar-sm',
+      headerContainer: 'sticky top-0 grid ',
+      thead: 'flex justify-between',
+      theadfrozen: '',
+      thContainer: 'w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c] border-x',
+      thContainerBg: 'bg-[#F3F8F9] text-gray-900',
+      thContainerBgSelected: 'bg-gray-50 text-gray-900',
+      cell: 'relative flex items-center min-h-[36px]  border border-slate-50',
+      cellInner: `
+          w-full min-h-full flex flex-wrap items-center truncate py-1 px-2
+          font-['Proxima_Nova'] font-[400] text-[14px] text-[#37576B] leading-[20px]
+      `,
+      cellBg: 'bg-white',
+      cellBgSelected: 'bg-blue-50',
+      cellFrozenCol: '',
+      paginationContainer: 'w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between',
+      paginationInfoContainer: '',
+      paginationPagesInfo: 'font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]',
+      paginationRowsInfo: 'text-xs font-[Proxima Nova] leading-[14px]',
+      paginationControlsContainer: 'flex flex-row items-center border rounded-[8px] overflow-hidden',
+      pageRangeItem: 'cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]' ,
+      pageRangeItemInactive: 'bg-white text-[#2D3E4C]',
+      pageRangeItemActive: 'bg-[#2D3E4C] text-white'
   }
 }
 

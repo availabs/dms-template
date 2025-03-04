@@ -13,8 +13,10 @@ function App() {
       <DmsSite
         dmsConfig = {
           adminConfig({
-            app: 'dms-docs',
-            type: 'pattern-admin'
+            // app: 'dms-docs',
+            // type: 'pattern-admin'
+            app: 'mitigat-ny-prod',
+            type: 'planetary' 
           })
         }
         authWrapper={withAuth}
