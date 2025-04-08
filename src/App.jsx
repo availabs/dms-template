@@ -15,12 +15,13 @@ function App() {
           adminConfig({
             // app: 'dms-docs',
             // type: 'pattern-admin'
-            app: 'rockefeller',
-            type: 'test' 
+            app: 'nprdsv5',
+            type: 'dev2' 
           })
         }
         authWrapper={withAuth}
         themes={themes}
+        pgEnvs={['npmrds2']}
         routes={[...Auth]}
       />
   )
