@@ -15,8 +15,8 @@ function App() {
           adminConfig({
             // app: 'dms-docs',
             // type: 'pattern-admin'
-            app: 'mitigat-ny-prod',
-            type: 'planetary' 
+            app: 'rockefeller',
+            type: 'test' 
           })
         }
         authWrapper={withAuth}
