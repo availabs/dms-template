@@ -6,16 +6,19 @@
   "scripts": {
     "dev": "vite",
     "deploy": "netlify deploy --site ccf0fbba-fd28-4293-af14-05243c2ac614 --prod",
+    "deploy-b3nson": "netlify deploy --site e38244d6-14d7-47bc-a17a-8bdcf68b5ad1 --prod",
+    "deploy-wcdb": "netlify deploy --site 0d9002a2-ed81-466e-88b9-837bf150f6e0 --prod",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "vite"
   },
   "dependencies": {
-    "@availabs/ams": "^2.0.11",
-    "@availabs/dms": "^0.0.61",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "@availabs/ams": "^2.1.2",
+    "@availabs/dms": "^0.1.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.5.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

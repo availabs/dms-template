@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 //import Logo from '../MNYLogo'
 
 
@@ -46,14 +46,14 @@ const theme = {
     "3": `text-md tracking-wide`,
     "default": ''                                                                        
   },
-  levelClasses: {
-    '1': ' pt-2 pb-1 uppercase text-sm text-blue-400 hover:underline cursor-pointer border-r-2 mr-4',
-    '2': 'pl-2 pt-2 pb-1 uppercase text-sm text-slate-400 hover:underline cursor-pointer border-r-2 mr-4',
-    '3': 'pl-4 pt-2 pb-1 text-sm text-slate-400 hover:underline cursor-pointer border-r-2 mr-4',
-    '4': 'pl-6 pt-2 pb-1 text-sm text-slate-400 hover:underline cursor-pointer border-r-2 mr-4',
-  },
   layout: {
     wrapper: 'relative isolate flex min-h-svh w-full max-lg:flex-col bg-white lg:bg-zinc-100 dark:bg-zinc-900 dark:lg:bg-zinc-950 overflow-hidden',
+    wrapper2: 'flex-1 flex items-start flex-col items-stretch max-w-full',
+    wrapper3: 'flex flex-1',
+
+    // wrapper2: 'w-full h-full flex-1 flex flex-row lg:px-3', // inside page header, wraps sidebar
+    // wrapper3: 'grow p-6 lg:rounded-lg lg:bg-white lg:p-10 lg:shadow-sm lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 relative ' ,
+    
     childWrapper: 'flex-1 h-full',
     topnavContainer1:`h-[50px] -mb-1`,
     topnavContainer2:`fixed w-full z-20 `,
@@ -61,9 +61,7 @@ const theme = {
     sidenavContainer2: 'fixed inset-y-0 left-0 w-64 max-lg:hidden'
   },
   page: {
-    wrapper1: 'flex flex-1 flex-col lg:min-w-0 lg:py-2 h-full', // first div inside Layout
-    wrapper2: 'w-full h-full flex-1 flex flex-row lg:px-3', // inside page header, wraps sidebar
-    wrapper3: 'grow p-6 lg:rounded-lg lg:bg-white lg:p-10 lg:shadow-sm lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 relative ' , // content wrapepr
+   // content wrapepr
     iconWrapper : 'z-5 absolute right-[10px] top-[5px]',
     icon: 'text-slate-400 hover:text-blue-500'
   },

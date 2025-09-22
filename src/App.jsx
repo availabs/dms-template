@@ -1,28 +1,36 @@
-import { DmsSite, adminConfig, registerComponents } from "./dms/src"
+import { DmsSite, adminConfig,  } from "./dms/src"
 import { withAuth, useAuth } from "@availabs/ams"
-import Auth from './pages/Auth'
+import { cloneDeep } from 'lodash-es'
 import themes from "./themes"
 
-Auth.forEach(f => {
-  f.Component = f.element 
-  delete f.element
-})
+
+const API_HOST = 'https://graph.availabs.org'
+//const WrappedAuth = LayoutWrapper(Auth)
+//console.log('what is auth', Auth, WrappedAuth)
 
 function App() {
-  return ( 
+  return (
       <DmsSite
         dmsConfig = {
-          adminConfig({
-            // app: 'dms-docs',
-            // type: 'pattern-admin'
-            app: 'nprdsv5',
-            type: 'dev2' 
+          adminConfig[0]({
+            app: 'avail',
+            type: 'site',
+            API_HOST,
+            AUTH_HOST:API_HOST,
+            baseUrl: '/list',
+            authPath: '/auth',
+            // app: 'mitigat-ny-prod',
+            // type: 'planetary'
+            // app: 'nprdsv5',
+            // type: 'dev2'
           })
         }
-        authWrapper={withAuth}
+        adminPath={'/list'}
+        API_HOST={API_HOST}
+        AUTH_HOST={API_HOST}
         themes={themes}
         pgEnvs={['npmrds2']}
-        routes={[...Auth]}
+
       />
   )
 }
