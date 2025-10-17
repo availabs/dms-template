@@ -179,7 +179,7 @@ const theme = {
     3: "",
   },
   sidenav: {
-    fixed: ``,
+    fixed: `md:ml-68`,
     logoWrapper: `bg-neutral-100 text-slate-800`,
     sidenavWrapper: `hidden md:block bg-white w-full h-full z-20 pr-5`,
     menuItemWrapper: ["flex flex-col pl-3", "flex flex-col", "flex flex-col"],
