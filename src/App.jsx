@@ -1,24 +1,30 @@
 import { DmsSite, adminConfig,  } from "./dms/src"
-import { withAuth, useAuth } from "@availabs/ams"
-import { cloneDeep } from 'lodash-es'
 import themes from "./themes"
 
 
 const API_HOST = 'https://graph.availabs.org'
 //const WrappedAuth = LayoutWrapper(Auth)
 //console.log('what is auth', Auth, WrappedAuth)
+const sites = [
+  { app: 'avail', type: 'site' },
+  { app: 'mitigat-ny-prod', type: 'prod' },
+  { app: 'mitigat-ny-prod', type: 'planetary' },
+  { app: 'wcdb', type: 'prod'}
+]
+
 
 function App() {
   return (
       <DmsSite
         dmsConfig = {
           adminConfig[0]({
-            app: 'avail',
-            type: 'site',
+            ...sites[1],
             API_HOST,
             AUTH_HOST:API_HOST,
             baseUrl: '/list',
             authPath: '/auth',
+            // app: 'wcdb',
+            // type: 'prod',
             // app: 'mitigat-ny-prod',
             // type: 'planetary'
             // app: 'nprdsv5',
