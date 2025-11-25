@@ -117,6 +117,8 @@ const theme = {
   },
 
   topnav: {
+    layoutContainer1: `print:hidden`,
+    layoutContainer2: `fixed top-0 z-20 max-w-[1440px] left-50% -translate-50% w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none`,
     fixed: "mt-8",
     topnavWrapper: `px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto`,
     topnavContent: `flex items-center w-full h-full  max-w-[1400px] mx-auto `,
@@ -171,8 +173,9 @@ const theme = {
     subMenuParentDesc: `text-[16px] font-['Proxima_Nova'] font-[400] text-[#37576B]`,
     subMenuParentLink: `w-fit h-fit cursor-pointer uppercase border boder-[#E0EBF0] bg-white hover:bg-[#E0EBF0] text-[#37576B] font-[700] leading-[14.62px] rounded-full text-[12px] text-center py-[16px] px-[24px]`,
     subMenuItemsWrapperParent: "grid grid-cols-2 gap-1 flex-1",
-    subMenuItemsWrapper: "grid grid-cols-4 flex-1",
+    subMenuItemsWrapper: "grid grid-cols-4 flex-1"
   },
+
   // ----------------------- End Layout ------------------------
   pages: {
     sectionGroup: {
