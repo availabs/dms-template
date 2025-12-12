@@ -18,17 +18,11 @@ function App() {
       <DmsSite
         dmsConfig = {
           adminConfig[0]({
-            ...sites[1],
+            ...sites[0],
             API_HOST,
             AUTH_HOST:API_HOST,
             baseUrl: '/list',
             authPath: '/auth',
-            // app: 'wcdb',
-            // type: 'prod',
-            // app: 'mitigat-ny-prod',
-            // type: 'planetary'
-            // app: 'nprdsv5',
-            // type: 'dev2'
           })
         }
         adminPath={'/list'}
