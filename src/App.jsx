@@ -9,29 +9,30 @@ const sites = [
   { app: 'avail', type: 'site' },
   { app: 'mitigat-ny-prod', type: 'prod' },
   { app: 'mitigat-ny-prod', type: 'planetary' },
-  { app: 'wcdb', type: 'prod'}
+  { app: 'wcdb', type: 'prod'},
+  { app: 'asm', type: 'nhomb'}
 ]
 
 
 function App() {
   return (
-      <DmsSite
-        dmsConfig = {
-          adminConfig[0]({
-            ...sites[0],
-            API_HOST,
-            AUTH_HOST:API_HOST,
-            baseUrl: '/list',
-            authPath: '/auth',
-          })
-        }
-        adminPath={'/list'}
-        API_HOST={API_HOST}
-        AUTH_HOST={API_HOST}
-        themes={themes}
-        pgEnvs={['npmrds2']}
+    <DmsSite
+      dmsConfig = {
+        adminConfig[0]({
+          ...sites[4],
+          API_HOST,
+          AUTH_HOST:API_HOST,
+          baseUrl: '/list',
+          authPath: '/auth',
+        })
+      }
+      adminPath={'/list'}
+      API_HOST={API_HOST}
+      AUTH_HOST={API_HOST}
+      themes={themes}
+      pgEnvs={['npmrds2']}
 
-      />
+    />
   )
 }
 

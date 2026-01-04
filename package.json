@@ -16,6 +16,8 @@
   "dependencies": {
     "@availabs/ams": "^2.1.2",
     "@availabs/dms": "^0.1.5",
+    "@carbon/icons-react": "^11.71.0",
+    "dbf": "^0.2.0",
     "fflate": "^0.8.2",
     "fuse.js": "^7.1.0",
     "maplibre-gl": "^5.13.0",
