@@ -99,13 +99,6 @@ const theme = {
         "topnavMobileContainer": "bg-slate-50",
         "topNavWrapper": "flex flex-row md:flex-col p-2",
         "indicatorIconWrapper": "text-[#37576B] size-4",
-        "subMenuWrappers": [
-          "w-full bg-[#F3F8F9] rounded-[12px] py-[12px]",
-          "w-full bg-[#E0EBF0]"
-        ],
-        "subMenuOuterWrappers": [
-          "pl-4"
-        ],
         "subMenuWrapperChild": "flex flex-col",
         "subMenuWrapperTop": "",
         "name": "small"
@@ -154,21 +147,21 @@ const theme = {
       "navitemName_level_1": "",
       "navitemName_level_2": "uppercase font-[Oswald] text-[14px] flex items-center p-1",
 
-      indicatorIconWrapper: "size-3",
-      indicatorIcon: "ArrowDown",
-      indicatorIconOpen: "ArrowDown",
+      "indicatorIconWrapper": "size-3",
+      "indicatorIcon": "ArrowDown",
+      "indicatorIconOpen": "ArrowDown",
 
 
       // SubMenu Styles
-      subMenuWrapper:"absolute left-0 right-0 normal-case z-10 px-4 -mx-[15px] pt-[34px] cursor-default",
-      subMenuWrapper2: `bg-white flex items-stretch rounded-lg p-4 shadow`,
-      subMenuParentContent: "basis-1/3  text-wrap pr-[64px]",
-      subMenuParentName: `text-[36px] font-['Oswald'] font-500 text-[#2D3E4C] uppercase pb-2`,
-      subMenuParentDesc: `text-[16px] font-['Proxima_Nova'] font-[400] text-[#37576B]`,
-      subMenuParentLink: `w-fit h-fit cursor-pointer uppercase border boder-[#E0EBF0] bg-white hover:bg-[#E0EBF0] text-[#37576B] font-[700] leading-[14.62px] rounded-full text-[12px] text-center py-[16px] px-[24px]`,
-      subMenuItemsWrapperParent: "grid grid-cols-2 gap-1 flex-1",
-      subMenuItemsWrapper: "grid grid-cols-4 flex-1"
-    },
+      "subMenuWrapper":"absolute left-0 right-0 normal-case z-10 px-4 -mx-[15px] pt-[34px] cursor-default",
+      "subMenuWrapper2": `bg-white flex items-stretch rounded-lg p-4 shadow`,
+      "subMenuParentContent": "basis-1/3  text-wrap pr-[64px]",
+      "subMenuParentName": `text-[36px] font-['Oswald'] font-500 text-[#2D3E4C] uppercase pb-2`,
+      "subMenuParentDesc": `text-[16px] font-['Proxima_Nova'] font-[400] text-[#37576B]`,
+      "subMenuParentLink": `w-fit h-fit cursor-pointer uppercase border boder-[#E0EBF0] bg-white hover:bg-[#E0EBF0] text-[#37576B] font-[700] leading-[14.62px] rounded-full text-[12px] text-center py-[16px] px-[24px]`,
+      "subMenuItemsWrapperParent": "grid grid-cols-2 gap-1 flex-1",
+      "subMenuItemsWrapper": "grid grid-cols-4 flex-1"
+    }
     ]
   },
   layoutGroup: {

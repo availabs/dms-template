@@ -1,4 +1,69 @@
-import * as CarbonIcons from '@carbon/icons-react';
+import {
+View,
+Edit,
+SettingsAdjust,
+IbmEventProcessing,
+Network_3,
+DocumentMultiple_01,
+RecentlyViewed,
+InsertPage,
+OverflowMenuHorizontal,
+Menu,
+Column,
+Row,
+Download,
+OpenPanelFilledTop,
+BorderNone,
+Development,
+ChevronRight,
+ChevronDown,
+BuildingInsights_2,
+EarthFilled,
+Information,
+SortAscending,
+SortDescending,
+ChevronSort,
+ArrowLeft,
+User,
+Logout,
+Login,
+Events,
+ChevronUp,
+ChevronLeft,
+Currency,
+Image,
+Tag,
+Maximize,
+CloseLarge,
+Search,
+Launch,
+ChartColumn,
+Snowflake,
+Flood,
+SailboatCoastal,
+Tsunami,
+Drought,
+Hurricane,
+Earthquake,
+TemperatureHot,
+TemperatureFrigid,
+MixedRainHail,
+WindySnow,
+IceAccretion,
+Thunderstorm,
+Tornado,
+Fire,
+WindyStrong,
+OutlookSevere,
+ThunderstormSevere,
+CheckmarkOutline,
+InProgress,
+Warning,
+Incomplete,
+CheckmarkFilled,
+CircleSolid,
+CircleFilled
+} from '@carbon/icons-react';
 import {FEMA} from './fema_icon'
 
 const Default = ({...props}) => (
@@ -6,6 +71,73 @@ const Default = ({...props}) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
   </svg>
 );
+
+const CarbonIcons = {
+  View,
+  Edit,
+  SettingsAdjust,
+  IbmEventProcessing,
+  Network_3,
+  DocumentMultiple_01,
+  RecentlyViewed,
+  InsertPage,
+  OverflowMenuHorizontal,
+  Menu,
+  Column,
+  Row,
+  Download,
+  OpenPanelFilledTop,
+  BorderNone,
+  Development,
+  ChevronRight,
+  ChevronDown,
+  BuildingInsights_2,
+  EarthFilled,
+  Information,
+  SortAscending,
+  SortDescending,
+  ChevronSort,
+  ArrowLeft,
+  User,
+  Logout,
+  Login,
+  Events,
+  ChevronUp,
+  ChevronLeft,
+  Currency,
+  Image,
+  Tag,
+  Maximize,
+  CloseLarge,
+  Search,
+  Launch,
+  ChartColumn,
+  Snowflake,
+  Flood,
+  SailboatCoastal,
+  Tsunami,
+  Drought,
+  Hurricane,
+  Earthquake,
+  TemperatureHot,
+  TemperatureFrigid,
+  MixedRainHail,
+  WindySnow,
+  IceAccretion,
+  Thunderstorm,
+  Tornado,
+  Fire,
+  WindyStrong,
+  OutlookSevere,
+  ThunderstormSevere,
+  CheckmarkOutline,
+  InProgress,
+  Warning,
+  Incomplete,
+  CheckmarkFilled,
+  CircleSolid,
+  CircleFilled
+}
 
 const ClimateChange = props => (
 	<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -44,21 +176,21 @@ export const Landslide = (props) => (
 	</svg>
 )
 
-export const Download = (props) => (
-	<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-		<g clipPath="url(#clip0_2386_14938)">
-			<path d="M33 37.5C33 37.8978 33.158 38.2794 33.4393 38.5607C33.7206 38.842 34.1022 39 34.5 39C34.8978 39 35.2794 38.842 35.5607 38.5607C35.842 38.2794 36 37.8978 36 37.5C36 37.1022 35.842 36.7206 35.5607 36.4393C35.2794 36.158 34.8978 36 34.5 36C34.1022 36 33.7206 36.158 33.4393 36.4393C33.158 36.7206 33 37.1022 33 37.5Z" fill="#2D3E4C"/>
-			<path d="M39 33V42H9V33H39ZM39 30H9C8.20435 30 7.44129 30.3161 6.87868 30.8787C6.31607 31.4413 6 32.2044 6 33V42C6 42.7956 6.31607 43.5587 6.87868 44.1213C7.44129 44.6839 8.20435 45 9 45H39C39.7957 45 40.5587 44.6839 41.1213 44.1213C41.6839 43.5587 42 42.7956 42 42V33C42 32.2044 41.6839 31.4413 41.1213 30.8787C40.5587 30.3161 39.7957 30 39 30Z" fill="#2D3E4C"/>
-			<path d="M30.885 15.885L25.5 21.255V3H22.5V21.255L17.115 15.885L15 18L24 27L33 18L30.885 15.885Z" fill="#2D3E4C"/>
-			<path d="M12 36H30V39H12V36Z" fill="#2D3E4C"/>
-		</g>
-		<defs>
-			<clipPath id="clip0_2386_14938">
-				<rect width="48" height="48" fill="white"/>
-			</clipPath>
-		</defs>
-	</svg>
-)
+// export const Download = (props) => (
+// 	<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+// 		<g clipPath="url(#clip0_2386_14938)">
+// 			<path d="M33 37.5C33 37.8978 33.158 38.2794 33.4393 38.5607C33.7206 38.842 34.1022 39 34.5 39C34.8978 39 35.2794 38.842 35.5607 38.5607C35.842 38.2794 36 37.8978 36 37.5C36 37.1022 35.842 36.7206 35.5607 36.4393C35.2794 36.158 34.8978 36 34.5 36C34.1022 36 33.7206 36.158 33.4393 36.4393C33.158 36.7206 33 37.1022 33 37.5Z" fill="#2D3E4C"/>
+// 			<path d="M39 33V42H9V33H39ZM39 30H9C8.20435 30 7.44129 30.3161 6.87868 30.8787C6.31607 31.4413 6 32.2044 6 33V42C6 42.7956 6.31607 43.5587 6.87868 44.1213C7.44129 44.6839 8.20435 45 9 45H39C39.7957 45 40.5587 44.6839 41.1213 44.1213C41.6839 43.5587 42 42.7956 42 42V33C42 32.2044 41.6839 31.4413 41.1213 30.8787C40.5587 30.3161 39.7957 30 39 30Z" fill="#2D3E4C"/>
+// 			<path d="M30.885 15.885L25.5 21.255V3H22.5V21.255L17.115 15.885L15 18L24 27L33 18L30.885 15.885Z" fill="#2D3E4C"/>
+// 			<path d="M12 36H30V39H12V36Z" fill="#2D3E4C"/>
+// 		</g>
+// 		<defs>
+// 			<clipPath id="clip0_2386_14938">
+// 				<rect width="48" height="48" fill="white"/>
+// 			</clipPath>
+// 		</defs>
+// 	</svg>
+// )
 
 export const Section = (props) => (
 	<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -109,8 +241,8 @@ const iconList = [
   {icon:"ChevronSort", label: "ChevronSort"},
   {icon:"ArrowLeft", label: "ArrowLeft"},
   {icon:"User", label: "User"},
-  {icon: "Logout", label: "Logout" },
-  {icon: "Login", label: "Login" },
+  {icon:"Logout", label: "Logout" },
+  {icon:"Login", label: "Login" },
   {icon:"Events", label: "Community"},
   {icon:"ChevronUp", label: "ChevronUp"},
   {icon:"ChevronLeft", label: "ChevronLeft"},
@@ -160,13 +292,13 @@ const iconList = [
   {icon:"OutlookSevere", label: "OutlookSevere"},
   {icon:"ThunderstormSevere", label: "ThunderstormSevere"},
   // ---- Status Icons
-  {icon: "CheckmarkOutline", label: "Status - CheckmarkOutline" },
-  {icon: "InProgress", label: "Status - InProgress" },
-  {icon: "Warning", label: "Status - Warning" },
-  {icon: "Incomplete", label: "Status - Incomplete" },
-  {icon: "CheckmarkFilled", label: "Status - CheckmarkFilled" },
-  {icon: "CircleSolid", label: "Status - CircleSolid" },
-  {icon: "CircleFilled", label: "Status - CircleFilled" },
+  {icon:"CheckmarkOutline", label: "Status - CheckmarkOutline" },
+  {icon:"InProgress", label: "Status - InProgress" },
+  {icon:"Warning", label: "Status - Warning" },
+  {icon:"Incomplete", label: "Status - Incomplete" },
+  {icon:"CheckmarkFilled", label: "Status - CheckmarkFilled" },
+  {icon:"CircleSolid", label: "Status - CircleSolid" },
+  {icon:"CircleFilled", label: "Status - CircleFilled" },
 
 
 ]
