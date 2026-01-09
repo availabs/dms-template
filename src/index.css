@@ -1,12 +1,9 @@
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 html, body, #root {
   height: 100%;
 }
-
 html {
     overflow: auto !important;
     padding: 0 !important;

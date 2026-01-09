@@ -360,77 +360,99 @@ const theme = {
     labelDisabled: "text-[12px] text-[#C5D7E0] font-bold leading-[14.62px]",
   },
   dataCard: {
-    columnControlWrapper:
-      "grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-0.5",
-    columnControlHeaderWrapper: `px-1 font-semibold border bg-gray-50 text-gray-500`,
+    styles: [
+      {
+        columnControlWrapper:
+            "grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-0.5",
+        columnControlHeaderWrapper: `px-1 font-semibold border bg-gray-50 text-gray-500`,
 
-    mainWrapperCompactView: "grid",
-    mainWrapperSimpleView: "flex flex-col",
-    subWrapper: "w-full text-[#2D3E4C]",
-    subWrapperCompactView: "flex flex-col flex-wrap rounded-[12px]",
-    subWrapperSimpleView: "grid",
+        mainWrapperCompactView: "grid",
+        mainWrapperSimpleView: "flex flex-col",
+        subWrapper: "w-full text-[#2D3E4C]",
+        subWrapperCompactView: "flex flex-col flex-wrap rounded-[12px]",
+        subWrapperSimpleView: "grid",
 
-    headerValueWrapper:
-      "w-full rounded-[12px] flex items-center gap-[4px] justify-center p-2",
-    headerValueWrapperCompactView: "rounded-none ",
-    headerValueWrapperBorderBColor: "border-[#C0D8E1]", // custom added border
-    headerValueWrapperSimpleView: "",
-    linkColValue:
-      "flex-1 flex justify-center w-full bg-[#C5D7E0] rounded-full px-[12px] py-[8px] font-[Proxima Nova] font-bold text-[12px] leading-[100%] tracking-[0px] uppercase",
-    justifyTextLeft: "text-start justify-items-start",
-    justifyTextRight: "text-end justify-items-end",
-    justifyTextCenter: "text-center justify-items-center",
-    textXS: "font-medium font-[Oswald] text-[12px] leading-[140%]",
-    textXSReg:
-      "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
-    textSM: "font-medium font-[Oswald] text-[14px] leading-[100%] uppercase",
-    textSMReg: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
-    textSMBold: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
-    textSMSemiBold:
-      "font-semibold font-[Proxima Nova] text-[14px] leading-[140%]",
-    textMD: "font-medium font-[Oswald] text-[16px] leading-[100%] uppercase",
-    textMDReg: "font-normal font-[Proxima Nova] text-[16px] leading-[140%]",
-    textMDBold: "font-bold font-[Proxima Nova] text-[16px] leading-[140%]",
-    textMDSemiBold:
-      "font-semibold font-[Proxima Nova] text-[16px] leading-[140%]",
-    textXL: "font-medium font-[Oswald] text-[20px] leading-[100%] uppercase",
-    textXLSemiBold:
-      "font-semibold font-[Proxima Nova] text-[20px] leading-[120%]",
-    text2XL: "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase",
-    text2XLReg:
-      "font-regular font-[Oswald] text-[24px] leading-[120%] uppercase",
-    text3XL:
-      "font-medium font-[Oswald] text-[30px] leading-[100%] uppercase tracking-[-0.05em]",
-    text3XLReg:
-      "font-normal font-[Oswald] text-[30px] leading-[120%] uppercase",
-    text4XL:
-      "font-medium font-[Oswald] text-[36px] leading-[100%] uppercase tracking-[-0.05em]",
-    text5XL:
-      "font-medium font-[Oswald] text-[48px] leading-[100%] uppercase tracking-[-0.05em]",
-    text6XL: "font-medium font-[Oswald] text-[60px] leading-[100%] uppercase",
-    text7XL:
-      "font-medium font-[Oswald] text-[72px] leading-[100%] uppercase tracking-normal",
-    text8XL:
-      "font-medium font-[Oswald] text-[96px] leading-[95%] uppercase tracking-normal ",
+        headerValueWrapper:
+            "w-full rounded-[12px] flex items-center gap-[4px] justify-center p-2",
+        headerValueWrapperCompactView: "rounded-none ",
+        headerValueWrapperBorderBelow: "border-b border-[#C0D8E1] rounded-none", // custom added border
+        headerValueWrapperSimpleView: "",
+        itemBorder: 'border shadow',
+        itemFlexCol: 'flex-col',
+        itemFlexRow: 'flex-row',
+        itemFlexColReverse: 'flex-col flex-col-reverse',
+        itemFlexRowReverse: 'flex-row flex-row-reverse',
+        iconAndColorValues: 'flex items-center gap-1.5 uppercase',
 
-    imgXS: "max-w-16 max-h-16",
-    imgSM: "max-w-24 max-h-24",
-    imgMD: "max-w-32 max-h-32",
-    imgXL: "max-w-40 max-h-40",
-    img2XL: "max-w-48 max-h-48",
-    img3XL: "max-w-56 max-h-56",
-    img4XL: "max-w-64 max-h-64",
-    img5XL: "w-full",
-    img6XL: "max-w-80 max-h-80",
-    img7XL: "max-w-96 max-h-96",
-    img8XL: "max-w-128 max-h-128",
+        formEditButtonsWrapper: 'self-end flex gap-0.5 text-sm',
+        formEditSaveButton: 'bg-blue-300 hover:bg-blue-400 text-blue-700 rounded-lg w-fit px-2 py-0.5',
+        formEditCancelButton: 'bg-red-300 hover:bg-red-400 text-red-700 rounded-lg w-fit px-2 py-0.5',
+        formAddNewItemButton: 'bg-blue-300 hover:bg-blue-400 text-blue-700 rounded-lg w-fit px-2 py-0.5 text-sm self-end',
 
-    header: "w-full flex-1 uppercase text-[#37576B]",
-    headerCompactView: "",
-    headerSimpleView: "",
-    value: "w-full text-[#2D3E4C]",
-    valueCompactView: "",
-    valueSimpleView: "",  },
+        linkColValue:
+            "flex-1 flex justify-center w-full bg-[#C5D7E0] rounded-full px-[12px] py-[8px] font-[Proxima Nova] font-bold text-[12px] leading-[100%] tracking-[0px] uppercase",
+        justifyTextLeft: "text-start justify-items-start",
+        justifyTextRight: "text-end justify-items-end",
+        justifyTextCenter: "text-center justify-items-center",
+        textXS: "font-medium font-[Oswald] text-[12px] leading-[140%]",
+        textXSReg:
+            "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
+        textSM: "font-medium font-[Oswald] text-[14px] leading-[100%] uppercase",
+        textSMReg: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
+        textSMBold: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
+        textSMSemiBold:
+            "font-semibold font-[Proxima Nova] text-[14px] leading-[140%]",
+        textMD: "font-medium font-[Oswald] text-[16px] leading-[100%] uppercase",
+        textMDReg: "font-normal font-[Proxima Nova] text-[16px] leading-[140%]",
+        textMDBold: "font-bold font-[Proxima Nova] text-[16px] leading-[140%]",
+        textMDSemiBold:
+            "font-semibold font-[Proxima Nova] text-[16px] leading-[140%]",
+        textXL: "font-medium font-[Oswald] text-[20px] leading-[100%] uppercase",
+        textXLSemiBold:
+            "font-semibold font-[Proxima Nova] text-[20px] leading-[120%]",
+        text2XL: "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase",
+        text2XLReg:
+            "font-regular font-[Oswald] text-[24px] leading-[120%] uppercase",
+        text3XL:
+            "font-medium font-[Oswald] text-[30px] leading-[100%] uppercase tracking-[-0.05em]",
+        text3XLReg:
+            "font-normal font-[Oswald] text-[30px] leading-[120%] uppercase",
+        text4XL:
+            "font-medium font-[Oswald] text-[36px] leading-[100%] uppercase tracking-[-0.05em]",
+        text5XL:
+            "font-medium font-[Oswald] text-[48px] leading-[100%] uppercase tracking-[-0.05em]",
+        text6XL: "font-medium font-[Oswald] text-[60px] leading-[100%] uppercase",
+        text7XL:
+            "font-medium font-[Oswald] text-[72px] leading-[100%] uppercase tracking-normal",
+        text8XL:
+            "font-medium font-[Oswald] text-[96px] leading-[95%] uppercase tracking-normal ",
+
+        imgXS: "max-w-16 max-h-16",
+        imgSM: "max-w-24 max-h-24",
+        imgMD: "max-w-32 max-h-32",
+        imgXL: "max-w-40 max-h-40",
+        img2XL: "max-w-48 max-h-48",
+        img3XL: "max-w-56 max-h-56",
+        img4XL: "max-w-64 max-h-64",
+        img5XL: "w-full",
+        img6XL: "max-w-80 max-h-80",
+        img7XL: "max-w-96 max-h-96",
+        img8XL: "max-w-128 max-h-128",
+        imgDefault: 'max-w-[50px] max-h-[50px]',
+
+        header: "w-full flex-1 uppercase text-[#37576B]",
+        headerCompactView: "",
+        headerSimpleView: "",
+        value: "w-full text-[#2D3E4C]",
+        valueWrapper: 'min-h-[20px]',
+        valueCompactView: "",
+        valueSimpleView: "",
+        description: "text-[#2D3E4C] font-light normal-case font-[Oswald] text-[12px]",
+
+        componentWrapper: 'w-full',
+      }
+    ]
+  },
   filters: {
     filtersWrapper: "w-full flex flex-col rounded-md",
     filterLabel:

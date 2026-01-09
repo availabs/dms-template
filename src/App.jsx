@@ -1,16 +1,17 @@
-import { DmsSite, adminConfig,  } from "./dms/src"
+import { DmsSite, adminConfig  } from "./dms/src"
 import themes from "./themes"
 
 
 const API_HOST = 'https://graph.availabs.org'
-//const WrappedAuth = LayoutWrapper(Auth)
-//console.log('what is auth', Auth, WrappedAuth)
+ // const WrappedAuth = LayoutWrapper(Auth)
+ // console.log('what is auth', Auth, WrappedAuth)
 const sites = [
   { app: 'avail', type: 'site' },
   { app: 'mitigat-ny-prod', type: 'prod' },
   { app: 'mitigat-ny-prod', type: 'planetary' },
   { app: 'wcdb', type: 'prod'},
-  { app: 'asm', type: 'nhomb'}
+  { app: 'asm', type: 'nhomb'},
+  { app: 'npmrdsv5', type: 'dev2'} // [5]
 ]
 
 
@@ -31,7 +32,6 @@ function App() {
       AUTH_HOST={API_HOST}
       themes={themes}
       pgEnvs={['npmrds2']}
-
     />
   )
 }
