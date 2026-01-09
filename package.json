@@ -9,7 +9,7 @@
     "deploy": "netlify deploy --site ccf0fbba-fd28-4293-af14-05243c2ac614 --prod",
     "deploy-b3nson": "netlify deploy --site e38244d6-14d7-47bc-a17a-8bdcf68b5ad1 --prod",
     "deploy-wcdb": "netlify deploy --site 0d9002a2-ed81-466e-88b9-837bf150f6e0 --prod",
-    "deploy-dmsdocs": "netlify deploy --site d7484307-0a49-442a-b37a-d91e31968f20 --prod"
+    "deploy-dmsdocs": "netlify deploy --site d7484307-0a49-442a-b37a-d91e31968f20 --prod",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
