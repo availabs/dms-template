@@ -20,7 +20,7 @@ function App() {
     <DmsSite
       dmsConfig = {
         adminConfig[0]({
-          ...sites[1],
+          ...sites[0],
           API_HOST,
           AUTH_HOST:API_HOST,
           baseUrl: '/list',
@@ -31,7 +31,7 @@ function App() {
       API_HOST={API_HOST}
       AUTH_HOST={API_HOST}
       themes={themes}
-      pgEnvs={['npmrds2']}
+      pgEnvs={['hazmit_dama']}
     />
   )
 }
