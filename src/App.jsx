@@ -20,7 +20,7 @@ function App() {
     <DmsSite
       dmsConfig = {
         adminConfig[0]({
-          ...sites[0],
+          ...sites[5],
           API_HOST,
           AUTH_HOST:API_HOST,
           baseUrl: '/list',
