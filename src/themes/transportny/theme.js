@@ -117,7 +117,7 @@ const theme = {
           "avatarWrapper": "flex justify-center items-center",
           "avatar": "size-10 border-2 border-[#3a4555] rounded-full place-items-center content-center bg-[#2a3545] hover:bg-[#3a4555] cursor-pointer",
           "avatarIcon": "size-5 @[120px]:size-6 fill-slate-400",
-          "infoWrapper": "hidden @[120px]:flex flex-1 px-2",
+          "infoWrapper": "hidden @[120px]:flex flex-col flex-1 px-2",
           "emailText": "text-xs font-normal text-slate-400 tracking-tight text-left truncate",
           "groupText": "text-sm font-medium text-white tracking-wide text-left",
           "editControlWrapper": "flex justify-center items-center mt-2 @[120px]:mt-0",
