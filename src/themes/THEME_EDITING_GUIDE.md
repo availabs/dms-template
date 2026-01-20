@@ -436,8 +436,213 @@ Instead of maintaining multiple style variants, use **Tailwind container queries
 4. **Font not loading**: Check font is imported in CSS and font-family syntax is correct
 5. **Flyout menus not appearing**: When using hover-based flyout submenus (with `subMenuActivate: "onHover"` and absolute positioning), ensure `layoutContainer2` has a sufficient z-index (e.g., `z-20`). Without this, the absolutely positioned flyout may render behind other page content even though it's technically visible in the DOM.
 
+## Compact Sidebar with Flyout Menus
+
+For a compact (icons-only) sidebar that shows flyout menus on hover, you need to configure several things:
+
+### 1. Enable Hover-Based Submenus
+
+In `layout.options.sideNav`, add `subMenuActivate: "onHover"`:
+
+```javascript
+"layout": {
+  "options": {
+    "sideNav": {
+      "size": "compact",
+      "subMenuActivate": "onHover",  // Enable flyout on hover
+      // ...
+    }
+  }
+}
+```
+
+Also add it in the `layout.styles[].sideNav` object and/or in the sidenav style itself:
+
+```javascript
+"sidenav": {
+  "styles": [{
+    "name": "compact",
+    "subMenuActivate": "onHover",
+    // ...
+  }]
+}
+```
+
+### 2. Configure Forced Icons
+
+In compact mode, menu items that don't have icons need forced icons. Use `forcedIcon_level_N` to specify fallback icons:
+
+```javascript
+"sidenav": {
+  "styles": [{
+    "name": "compact",
+    "forcedIcon": "",              // Default (no forced icon)
+    "forcedIcon_level_1": "CircleFilled",  // Circle dot for top-level items
+    "forcedIcon_level_2": "",      // No forced icon for level 2
+    // ...
+  }]
+}
+```
+
+### 3. Position Flyout Menus
+
+The flyout menus need absolute positioning to appear to the right of the compact sidebar:
+
+```javascript
+"subMenuWrapper_1": "min-w-[220px] bg-[#1e2a36] border border-[#3a4e5c] shadow-2xl flex flex-col overflow-hidden rounded-r-lg",
+"subMenuOuterWrapper": "absolute left-full top-0",  // Position to the right
+```
+
+### 4. Hide Text in Compact Mode
+
+Hide nav item text and show only icons:
+
+```javascript
+"navItemContent": "",  // Hide all nav content
+"navItemContent_level_1": "absolute inset-0 text-transparent",  // Make text invisible
+"indicatorIcon": "hidden",      // Hide expand arrows
+"indicatorIconWrapper": "hidden",
+```
+
+### 5. Allow Overflow
+
+The sidenav wrapper needs `overflow-visible` for flyouts to appear outside:
+
+```javascript
+"sidenavWrapper": "flex flex-col w-16 h-full z-20 bg-[#273646] items-center overflow-visible",
+```
+
+### Complete Compact Sidenav Example
+
+```javascript
+{
+  "name": "compact-with-flyout",
+  "subMenuActivate": "onHover",
+  "layoutContainer1": "lg:ml-16",
+  "layoutContainer2": "fixed inset-y-0 left-0 w-16 max-lg:hidden z-20",
+  "sidenavWrapper": "flex flex-col w-16 h-full z-20 bg-[#273646] items-center overflow-visible shadow-lg",
+
+  // Navigation items - centered icons
+  "navitemSide": "group relative flex items-center justify-center w-full py-3 hover:bg-[#2D3E4C] text-slate-400",
+  "navitemSideActive": "group relative flex items-center justify-center w-full py-3 bg-[#2D3E4C] text-white border-l-[3px] border-[#EAAD43]",
+
+  // Icons larger in compact mode
+  "menuIconSide": "size-6 text-slate-400 group-hover:text-slate-300",
+  "menuIconSideActive": "size-6 text-[#EAAD43]",
+
+  // Forced icons for items without icons
+  "forcedIcon_level_1": "CircleFilled",
+
+  // Hide text labels
+  "navItemContent": "",
+  "navItemContent_level_1": "absolute inset-0 text-transparent",
+  "indicatorIcon": "hidden",
+  "indicatorIconWrapper": "hidden",
+
+  // Flyout submenu styling
+  "subMenuWrapper_1": "min-w-[220px] bg-[#1e2a36] border border-[#3a4e5c] shadow-2xl flex flex-col rounded-r-lg",
+  "subMenuTitle": "text-sm uppercase tracking-wider text-slate-400 font-semibold py-2 px-4 bg-[#273646] border-b border-[#3a4e5c]",
+  "subMenuOuterWrapper": "absolute left-full top-0",
+
+  // Level 2 items in flyout
+  "navItemContent_level_2": "flex-1 px-4 py-2.5 text-[14px] text-slate-300 hover:text-white hover:bg-[#3a4e5c] cursor-pointer border-l-2 border-transparent hover:border-[#EAAD43]",
+
+  // Allow overflow for flyouts
+  "itemsWrapper": "flex-1 py-4 w-full overflow-visible"
+}
+```
+
+## Responsive Logo with Container Queries
+
+Use `@container` queries to make the logo adapt to sidebar width:
+
+```javascript
+"logo": {
+  // @container enables container queries
+  // Default (compact): centered, small icon, no text
+  // @[120px]: (full): left-aligned, larger icon, show text
+  "logoWrapper": "@container h-16 flex px-2 @[120px]:px-4 py-3 items-center justify-center @[120px]:justify-start gap-0 @[120px]:gap-2 bg-[#273646]",
+  "imgWrapper": "flex-shrink-0",
+  "img": "/img/logo.svg",
+  "imgClass": "h-8 @[120px]:h-10 w-auto",  // Smaller in compact
+  "titleWrapper": "hidden @[120px]:block text-white font-semibold text-lg uppercase",  // Hidden in compact
+  "title": "Site Name"
+}
+```
+
+## MNY Admin Theme Color Palette
+
+The MNY admin theme uses a **floating white sidebar** for BOTH full and compact modes. The sidebar appears inset from the screen edge with rounded corners and shadow.
+
+### Key Design Pattern: Floating Sidebar
+```
+Both sidebars use:
+- Fixed positioning with offset from edges (creates floating effect)
+- White background with rounded-lg corners
+- shadow-md for depth
+- Logo area uses bg-neutral-100 (light gray) - the logo image contains its own styling
+```
+
+### Layout Container Pattern
+```javascript
+// Full sidebar - fixed, floating with 10px offset from edges
+"layoutContainer1": "pr-2 hidden lg:block min-w-[302px] max-w-[302px] pt-[10px] print:hidden"
+"layoutContainer2": "fixed top-[10px] left-[10px] bottom-[10px] w-[282px] bg-white rounded-lg shadow-md overflow-y-auto"
+
+// Compact sidebar - same fixed floating pattern, narrower
+"layoutContainer1": "pr-2 hidden lg:block min-w-[64px] max-w-[84px] print:hidden"
+"layoutContainer2": "fixed top-[10px] left-[10px] bottom-[10px] w-[64px] bg-white rounded-lg shadow-md overflow-visible z-20"
+```
+
+Note: The `overflow-visible` on compact sidebar is required for flyout menus to appear outside the container.
+
+### Full Sidebar (White Background)
+```
+Background layers:
+- white     - Primary sidebar background
+- #F3F8F9  - Submenu level 1, card backgrounds
+- #E0EBF0  - Submenu level 2, hover states
+- #C5D7E0  - Borders, input backgrounds
+
+Text colors:
+- #2D3E4C  - Primary headings (Oswald font, uppercase)
+- #37576B  - Body text, icons (Proxima Nova)
+
+Active states:
+- border-l-2 border-[#2D3E4C]  - Active nav item indicator
+```
+
+### Compact Sidebar (ALSO White Background)
+```
+Background:
+- white     - Same white background as full sidebar
+- #F3F8F9  - Hover state on icons
+
+Icons:
+- #37576B  - Normal icon color (dark on white)
+- #2D3E4C  - Active/hover icon color
+
+Flyout Menus (appear on hover):
+- white background with #E0EBF0 borders
+- Uses same text colors (#2D3E4C, #37576B)
+```
+
+### Logo Area (Both modes)
+```
+- bg-neutral-100 - Light gray background for logo wrapper
+- Logo image (mnyLogo.svg) contains its own styling with dark header
+- Use @container queries for responsive sizing between full/compact
+```
+
+### Typography
+```
+- font-['Oswald']       - Headings, nav section titles (uppercase)
+- font-['Proxima_Nova'] - Body text, menu items
+```
+
 ## Reference
 
 - See `src/dms/src/ui/THEMING_GUIDE.md` for component theming details
 - See `src/dms/src/ui/UI_PROGRESS.md` for component completion status
 - Check existing themes in `src/themes/` for examples
+- Reference images should be placed in `public/themes/<themename>/references/`

@@ -319,10 +319,7 @@ const theme = {
         "wrapper": "relative isolate flex min-h-svh w-full max-lg:flex-col\noverflow-hidden\n    ",
         "wrapper2": "flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen",
         "wrapper3": "flex flex-1",
-        "childWrapper": "flex-1 h-full",
-        "sideNav": {
-          "subMenuActivate": "onHover"
-        }
+        "childWrapper": "flex-1 h-full"
       }
     ]
   },
