@@ -327,8 +327,8 @@ const theme = {
       {
         "name": "mny-compact",
         "subMenuActivate": "onHover",
-        "layoutContainer1": "pr-2 hidden lg:block min-w-[64px] max-w-[84px] print:hidden",
-        "layoutContainer2": "hidden lg:block fixed top-[10px] left-[10px] h-[calc(100vh_-_20px)] w-[64px] overflow-visible z-20",
+        "layoutContainer1": "px-2 hidden lg:block min-w-[76px] print:hidden",
+        "layoutContainer2": "hidden lg:block fixed top-[10px] left-[10px] h-[calc(100vh_-_20px)] w-[64px] z-30",
         "sidenavWrapper": "flex flex-col bg-white rounded-lg shadow-md w-full h-full z-20 overflow-visible",
         "logoWrapper": "bg-neutral-100 text-slate-800",
         "menuItemWrapper": "flex flex-col",
@@ -347,12 +347,12 @@ const theme = {
         "navItemContent": "",
         "navItemContent_level_1": "absolute inset-0 text-transparent",
         "navItemContent_level_2": "pl-4 block text-[14px] font-['Proxima_Nova'] font-[600] leading-[19.2px] text-[#37576B]",
-        "navItemContent_level_3": "block text-[14px] font-['Proxima_Nova'] font-[400] leading-[19.6px] text-[#37576B]",
+        "navItemContent_level_3": "pl-4 block text-[14px] font-['Proxima_Nova'] font-[400] leading-[19.6px] text-[#37576B]",
         "navitemSide": "relative w-full group flex items-center justify-center py-3 focus:outline-none transition-all cursor-pointer hover:bg-[#F3F8F9]",
         "navitemSideActive": "relative w-full group flex items-center justify-center py-3 focus:outline-none transition-all cursor-pointer border-l-2 border-slate-600 bg-[#F3F8F9]",
         "navitemSide_level_2": "relative w-full group flex flex-row items-center px-4 py-2 focus:outline-none transition-all cursor-pointer hover:bg-[#E0EBF0]",
         "navitemSideActive_level_2": "relative w-full group flex flex-row items-center px-4 py-2 focus:outline-none transition-all cursor-pointer bg-[#E0EBF0]",
-        "navitemSide_level_3": "w-full group flex flex-row items-center px-4 py-1.5 focus:outline-none transition-all cursor-pointer hover:bg-[#F3F8F9]",
+        "navitemSide_level_3": "relative w-full group flex flex-row items-center px-4 py-2 focus:outline-none transition-all cursor-pointer hover:bg-[#E0EBF0]",
         "navitemSideActive_level_3": "w-full group flex flex-row items-center px-4 py-1.5 focus:outline-none transition-all cursor-pointer bg-[#F3F8F9]",
         "indicatorIcon": "ArrowRight",
         "indicatorIconOpen": "ArrowDown",
@@ -360,9 +360,9 @@ const theme = {
         // "indicatorIconWrapper_level_1": "hidden",
         // "indicatorIconWrapper_level_2": "text-[#37576B] size-4 ml-auto",
         // "indicatorIconWrapper_level_3": "text-[#37576B] size-4 ml-auto",
-        "subMenuWrapper_1": "min-w-[220px]  bg-white border border-[#E0EBF0] shadow-xl flex flex-col overflow-hidden rounded-r-lg",
-        "subMenuWrapper_2": "min-w-[200px] bg-[#F3F8F9] border border-[#E0EBF0] shadow-lg rounded-r-lg",
-        "subMenuWrapper_3": "min-w-[180px] bg-[#E0EBF0] border border-[#C5D7E0] shadow-md rounded-r-lg",
+        "subMenuWrapper_1": "min-w-[220px]  bg-white border border-[#E0EBF0] shadow-xl flex flex-col rounded-r-lg",
+        "subMenuWrapper_2": "min-w-[200px] bg-white border border-[#E0EBF0] shadow-lg rounded-r-lg",
+        "subMenuWrapper_3": "min-w-[180px] bg-[#F3F8F9] border border-[#C5D7E0] shadow-md rounded-r-lg",
         "subMenuTitle": "text-[14px] uppercase tracking-wider text-[#2D3E4C] font-['Oswald'] font-[500] py-3 px-4 w-full bg-[#F3F8F9] border-b border-[#E0EBF0]",
         "subMenuParentWrapper": "flex flex-col w-full",
         "subMenuOuterWrapper": "absolute left-full top-0",
@@ -476,14 +476,32 @@ const theme = {
     ]
   },
   "logo": {
-    "logoWrapper": "",
-    "logoAltImg": "",
-    "imgWrapper": "h-12 pl-3 pr-2 flex items-center",
-    "img": "https://mitigateny.org/themes/mny/mnyLogo.svg",
-    "imgClass": "min-h-12",
-    "titleWrapper": "",
-    "title": "",
-    "linkPath": "/"
+    "options": {
+      "activeStyle": "0"
+    },
+    "styles": [
+      {
+      "logoWrapper": "@container h-16 flex px-1  items-center @[120px]:justify-start gap-0 @[120px]:gap-2",
+      "logoAltImg": "hidden",
+      "imgWrapper": "flex-shrink-0 @[120px]:border-r ",
+      "img": "/themes/mny/nys_logo_blue.svg",
+      "imgClass": "h-10 @[120px]:h-16 w-auto",
+      "titleWrapper": "pl-2 hidden @[120px]:block font-['Oswald'] text-[#37576b] font-semibold text-xl tracking-wide",
+      "title": "MitigateNY",
+      "linkPath": "/"
+      },
+      {
+        "logoWrapper": "flex",
+      "logoAltImg": "",
+      "imgWrapper": "size-12 pl-3 pr-2 flex items-center",
+      "img": "/themes/mny/nys_logo_blue.svg",
+      "imgClass": "min-h-12",
+      "titleWrapper": "",
+      "title": "MitigateNY",
+      "linkPath": "/"
+    },
+
+    ]
   },
   "tabs": {
     "tablist": "flex gap-4",
