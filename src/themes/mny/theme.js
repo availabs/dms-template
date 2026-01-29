@@ -108,6 +108,7 @@ const theme = {
   "topnav": {
     "options": {
       "activeStyle": "0",
+      "maxDepth": "1"
     },
     "styles": [{
       "layoutContainer1": `print:hidden`,

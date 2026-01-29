@@ -76,7 +76,6 @@ export { adminConfig }
 ### Theming
 
 Themes are JS objects defining navigation layout, styling classes, and component configurations. See `src/themes/catalyst/theme.jsx` for structure including:
-- `navOptions` - Side/top nav configuration
 - `layout` - Wrapper class definitions
 - `sidenav`/`topnav` - Navigation styling
 - `button`, `tabs`, etc. - Component styling

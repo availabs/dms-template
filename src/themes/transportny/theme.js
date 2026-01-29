@@ -1,3 +1,7 @@
+import LogoNav from './LogoNav'
+import QuickLinks from './QuickLinks'
+
+
 const theme = {
   "pages": {
     "sectionGroup": {
@@ -113,7 +117,7 @@ const theme = {
       "styles": [
         {
           "name": "transportny-responsive",
-          "userMenuContainer": "@container flex flex-col @[120px]:flex-row w-full items-center justify-center @[120px]:justify-start rounded-lg bg-transparent @[120px]:bg-[#1a2029] @[120px]:mx-2 @[120px]:mb-2 p-1 @[120px]:p-2",
+          "userMenuContainer": "@container flex flex-1 flex-row w-full items-center justify-center @[120px]:justify-start rounded-lg bg-transparent @[120px]:bg-[#1a2029] @[120px]:mx-2 @[120px]:mb-2 p-1 @[120px]:p-2",
           "avatarWrapper": "flex justify-center items-center",
           "avatar": "size-10 border-2 border-[#3a4555] rounded-full place-items-center content-center bg-[#2a3545] hover:bg-[#3a4555] cursor-pointer",
           "avatarIcon": "size-5 @[120px]:size-6 fill-slate-400",
@@ -125,11 +129,11 @@ const theme = {
           "icon": "text-slate-400 hover:text-white size-5",
           "viewIcon": "ViewPage",
           "editIcon": "EditPage",
-          "loginWrapper": "flex items-center justify-center p-2 @[120px]:py-2 @[120px]:px-3 bg-[#3b82f6] hover:bg-[#2563eb] rounded-full @[120px]:rounded-md cursor-pointer",
-          "loginLink": "flex items-center justify-center @[120px]:gap-2 text-white text-sm font-medium",
-          "loginIconWrapper": "size-5 place-items-center content-center",
-          "loginIcon": "size-4 fill-white",
-          "loginText": "hidden @[120px]:inline",
+          "loginWrapper": "flex items-center transition-all cursor-pointer border-l-[3px] border-transparent text-slate-300 hover:text-white hover:bg-[#1e2530] justify-center py-3 @[120px]:justify-start @[120px]:px-4 @[120px]:py-2.5 @[120px]:gap-3",
+          "loginLink": "",
+          "loginIconWrapper": "",
+          "loginIcon": "size-6 @[120px]:size-5 flex-shrink-0 text-slate-400",
+          "loginText": "hidden @[120px]:inline font-['Proxima_Nova'] font-[400] text-[15px]",
           "authContainer": "@container w-full",
           "authWrapper": "flex flex-col-reverse @[120px]:flex-row p-1 @[120px]:p-2 items-center gap-2",
           "userMenuWrapper": "flex flex-col @[120px]:flex-row items-center @[120px]:flex-1 w-full"
@@ -212,74 +216,7 @@ const theme = {
     "base": "p-2 w-full font-sans font-medium text-md bg-transparent",
     "default": ""
   },
-  "sectionArray": {
-    "container": "w-full grid grid-cols-6 ",
-    "gridSize": 6,
-    "layouts": {
-      "centered": "max-w-[1020px] mx-auto",
-      "fullwidth": ""
-    },
-    "sectionEditWrapper": "relative group",
-    "sectionEditHover": "absolute inset-0 group-hover:border border-blue-300 border-dashed pointer-events-none z-10",
-    "sectionViewWrapper": "relative group",
-    "sectionPadding": "p-4",
-    "gridviewGrid": "z-0 bg-slate-50 h-full",
-    "gridviewItem": "border-x bg-white border-slate-100/75 border-dashed h-full p-[6px]",
-    "defaultOffset": 16,
-    "sizes": {
-      "1": {
-        "className": "col-span-6 md:col-span-6",
-        "iconSize": 100
-      },
-      "1/3": {
-        "className": "col-span-6 md:col-span-2",
-        "iconSize": 33
-      },
-      "1/2": {
-        "className": "col-span-6 md:col-span-3",
-        "iconSize": 50
-      },
-      "2/3": {
-        "className": "col-span-6 md:col-span-4",
-        "iconSize": 66
-      }
-    },
-    "rowspans": {
-      "1": {
-        "className": ""
-      },
-      "2": {
-        "className": "md:row-span-2"
-      },
-      "3": {
-        "className": "md:row-span-3"
-      },
-      "4": {
-        "className": "md:row-span-4"
-      },
-      "5": {
-        "className": "md:row-span-5"
-      },
-      "6": {
-        "className": "md:row-span-6"
-      },
-      "7": {
-        "className": "md:row-span-7"
-      },
-      "8": {
-        "className": "md:row-span-8"
-      }
-    },
-    "border": {
-      "none": "",
-      "full": "border border-[#E0EBF0] rounded-lg",
-      "openLeft": "border border-[#E0EBF0] border-l-transparent rounded-r-lg",
-      "openRight": "border border-[#E0EBF0] border-r-transparent rounded-l-lg",
-      "openTop": "border border-[#E0EBF0] border-t-transparent rounded-b-lg",
-      "openBottom": "border border-[#E0EBF0] border-b-transparent rounded-t-lg",
-      "borderX": "border border-[#E0EBF0] border-y-transparent"
-    }
-  },
+
   "layout": {
     "options": {
       "activeStyle": 0,
@@ -288,8 +225,8 @@ const theme = {
         "nav": "main",
         "activeStyle": null,
         "subMenuActivate": "onHover",
-        "topMenu": [],
-        "bottomMenu": []
+        "topMenu": [{ "type": "LogoNav" }],
+        "bottomMenu": [{ "type": "QuickLinks" }, { "type": "UserMenu", "options": { "activeStyle": 0, "navigableMenuActiveStyle": 0 } }]
       },
       "topNav": {
         "size": "none",
@@ -298,20 +235,6 @@ const theme = {
         "leftMenu": [],
         "rightMenu": []
       },
-      "widgets": [
-        {
-          "label": "Logo",
-          "value": "Logo"
-        },
-        {
-          "label": "User Menu",
-          "value": "UserMenu"
-        },
-        {
-          "label": "Search Button",
-          "value": "SearchButton"
-        }
-      ]
     },
     "styles": [
       {
@@ -365,7 +288,7 @@ const theme = {
         "layoutContainer2": "fixed inset-y-0 left-0 w-64 max-lg:hidden",
         "logoWrapper": "w-64 bg-[#12181F]",
         "sidenavWrapper": "flex flex-col w-64 h-full z-20 bg-[#12181F]",
-        "menuItemWrapper": "flex flex-col",
+        "menuItemWrapper": "flex flex-1 flex-col",
         "menuItemWrapper_level_1": "",
         "menuItemWrapper_level_2": "pl-4",
         "menuItemWrapper_level_3": "pl-6",
@@ -836,6 +759,43 @@ const theme = {
     "columnControlWrapper": "px-1 font-semibold border bg-gray-50 text-gray-500",
     "scaleWrapper": "flex rounded-md p-1 divide-x border w-fit",
     "scaleItem": "font-semibold text-gray-500 hover:text-gray-700 px-2 py-1"
+  },
+  "navigableMenu": {
+    "styles": [
+      {
+        "name": "dark",
+        "button": "px-1 py-0.5",
+        "buttonHidden": "hidden group-hover:flex",
+        "icon": "Menu",
+        "iconWrapper": "size-4",
+        "menuWrapper": "bg-[#1a2029] border border-[#3a4555] w-60 p-1 min-h-[75px] rounded-md shadow-2xl",
+        "menuHeaderWrapper": "flex px-2 py-1 justify-between",
+        "menuHeaderContent": "flex gap-2 items-center w-full",
+        "menuTitle": "font-semibold text-white",
+        "backButton": "w-fit",
+        "backIcon": "ArrowLeft",
+        "backIconWrapper": "size-4 text-slate-400",
+        "closeButton": "w-fit",
+        "menuCloseIcon": "XMark",
+        "menuCloseIconWrapper": "hover:cursor-pointer size-4 text-slate-400 hover:text-white",
+        "menuItemsWrapper": "max-h-[80vh] overflow-y-auto scrollbar-sm",
+        "menuItem": "group flex w-full gap-1 items-center justify-between px-2 py-1.5 rounded-md text-sm text-slate-300",
+        "menuItemHover": "hover:bg-[#2a3545] hover:text-white",
+        "menuItemIconLabelWrapper": "flex flex-1 items-center gap-2",
+        "menuItemIconWrapper": "min-w-5 size-5 text-slate-400 group-hover:text-slate-300",
+        "menuItemLabel": "text-slate-300",
+        "menuItemLabelLink": "cursor-pointer hover:text-white",
+        "subMenuIcon": "ArrowRight",
+        "subMenuIconWrapper": "place-self-center text-slate-500",
+        "valueSubmenuIconWrapper": "flex gap-0.5",
+        "valueWrapper": "p-0.5 rounded-md bg-[#2a3545] text-slate-300 text-sm",
+        "separator": "w-full border-b border-[#3a4555]"
+      }
+    ]
+  },
+  "widgets": {
+    "LogoNav": { "label": "Logo Nav", component: LogoNav },
+    "QuickLinks": { "label": "Quick Links", component: QuickLinks }
   }
 }
 

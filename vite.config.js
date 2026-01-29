@@ -9,6 +9,7 @@ export default defineConfig({
     }
   },
   build: {
+    outDir: 'dist',
     rollupOptions: {
       output: {
         // You can define a manualChunks function for custom splitting

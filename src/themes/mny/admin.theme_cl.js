@@ -232,20 +232,6 @@ const theme = {
           }
         ]
       },
-      "widgets": [
-        {
-          "label": "Logo",
-          "value": "Logo"
-        },
-        {
-          "label": "User Menu",
-          "value": "UserMenu"
-        },
-        {
-          "label": "Search Button",
-          "value": "SearchButton"
-        }
-      ]
     },
     "styles": [
       {

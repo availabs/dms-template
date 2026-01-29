@@ -32,20 +32,6 @@ const theme = {
             "bottomMenu": [],
             "activeStyle": null
         },
-        "widgets": [
-            {
-                "label": "Logo",
-                "value": "Logo"
-            },
-            {
-                "label": "User Menu",
-                "value": "UserMenu"
-            },
-            {
-                "label": "Search Button",
-                "value": "SearchButton"
-            }
-        ],
         "activeStyle": 0
     }
   },

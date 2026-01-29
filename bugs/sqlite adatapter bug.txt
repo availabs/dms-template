@@ -1,0 +1,84 @@
+
+
+http://localhost:3001/graph?paths=%5B%5B%22dms%22%2C%22data%22%2C%22avail-sqlite4%2Bsite%22%2C%22byIndex%22%2C0%2C%5B%22id%22%2C%22app%22%2C%22type%22%2C%22data%22%2C%22updated_at%22%2C%22created_at%22%5D%5D%5D&method=get
+
+
+sqlite 
+{
+    "jsonGraph": {
+        "dms": {
+            "data": {
+                "avail-sqlite4+site": {
+                    "byIndex": {
+                        "0": {
+                            "$type": "ref",
+                            "value": [
+                                "dms",
+                                "data",
+                                "byId",
+                                2
+                            ]
+                        }
+                    }
+                },
+                "byId": {
+                    "2": {
+                        "app": "avail-sqlite4",
+                        "created_at": "2026-01-26 22:05:19",
+                        "data": {
+                            "$type": "atom",
+                            "value": "{\"site_name\":\"avail-sqlite\",\"patterns\":[]}"
+                        },
+                        "id": 2,
+                        "type": "site",
+                        "updated_at": "2026-01-26 22:05:19"
+                    }
+                }
+            }
+        }
+    }
+}
+
+postgres
+{
+    "jsonGraph": {
+        "dms": {
+            "data": {
+                "avail-sqlite4+site": {
+                    "byIndex": {
+                        "0": {
+                            "$type": "ref",
+                            "value": [
+                                "dms",
+                                "data",
+                                "byId",
+                                "1697102"
+                            ]
+                        }
+                    }
+                },
+                "byId": {
+                    "1697102": {
+                        "app": "avail-sqlite4",
+                        "created_at": "2026-01-27 21:24:08.466722+00",
+                        "data": {
+                            "$type": "atom",
+                            "value": {
+                                "patterns": [
+                                    {
+                                        "id": "1697101",
+                                        "ref": "avail-sqlite4+pattern"
+                                    }
+                                ],
+                                "site_name": "postgres-test"
+                            }
+                        },
+                        "id": "1697102",
+                        "type": "site",
+                        "updated_at": "2026-01-27 21:24:08.466722+00"
+                    }
+                }
+            }
+        }
+    }
+}

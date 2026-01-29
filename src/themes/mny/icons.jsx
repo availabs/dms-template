@@ -1,4 +1,5 @@
 import {
+ToolKit,
 View,
 Edit,
 SettingsAdjust,
@@ -62,7 +63,10 @@ Warning,
 Incomplete,
 CheckmarkFilled,
 CircleSolid,
-CircleFilled
+  CircleFilled,
+  TableBuilt,
+  Home,
+ Map
 } from '@carbon/icons-react';
 import {FEMA} from './fema_icon'
 
@@ -73,6 +77,8 @@ const Default = ({...props}) => (
 );
 
 const CarbonIcons = {
+  ToolKit,
+  Map,
   View,
   Edit,
   SettingsAdjust,
@@ -136,7 +142,9 @@ const CarbonIcons = {
   Incomplete,
   CheckmarkFilled,
   CircleSolid,
-  CircleFilled
+  CircleFilled,
+  TableBuilt,
+  Home
 }
 
 const ClimateChange = props => (
@@ -215,8 +223,12 @@ export const Volcano = props => (
 )
 
 const iconList = [
+  { icon: "Home", label: "Home" },
+  { icon: "ToolKit", label: "Toolkit" },
+  {icon: "Map", label: "Map"},
   {icon:"View", label: "View"},
-  {icon:"Edit", label: "Edit"},
+  { icon: "Edit", label: "Edit" },
+  { icon: "TableBuilt", label: "Forms"},
   {icon:"SettingsAdjust", label: "Settings"},
   {icon:"IbmEventProcessing", label: "Mitigation"},
   {icon:"Network_3", label: "Local"},

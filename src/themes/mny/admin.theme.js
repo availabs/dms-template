@@ -187,20 +187,6 @@ const theme = {
           }
         ]
       },
-      "widgets": [
-        {
-          "label": "Logo",
-          "value": "Logo"
-        },
-        {
-          "label": "User Menu",
-          "value": "UserMenu"
-        },
-        {
-          "label": "Search Button",
-          "value": "SearchButton"
-        }
-      ]
     },
     "styles": [
       {
@@ -208,7 +194,7 @@ const theme = {
         "wrapper": "",
         "wrapper2": "flex-1 flex items-start flex-col items-stretch max-w-full",
         "wrapper3": "flex flex-1 md:px-2 ",
-        "childWrapper": "h-full flex-1"
+        "childWrapper": "h-full flex-1 pb-[10px] pt-[2px]"
       }
     ]
   },
@@ -219,26 +205,25 @@ const theme = {
     "styles": [
       {
         "name": "default",
-        "wrapper1": "w-full h-full flex-1 flex flex-row pt-2 max-w-[990px] mx-auto",
-        "wrapper2": "flex flex-1 w-full  flex-col  shadow-md bg-white rounded-lg relative text-md font-light leading-7 p-4 h-full min-h-[200px]",
+        "wrapper1": "w-full h-full flex-1 flex flex-row pt-2  mx-auto",
+        "wrapper2": "flex flex-1 w-full  flex-col  shadow-md bg-white rounded-lg relative text-md font-light px-4  h-full",
         "wrapepr3": "",
         "iconWrapper": "",
-        "icon": "text-slate-400 hover:text-blue-500",
-        "sideNavContainer1": "hidden xl:block",
-        "sideNavContainer2": "min-w-[302px] max-w-[302px] sticky top-20 hidden xl:block h-[100vh_-_102px] pr-2"
+        "icon": "",
+      },
+      {
+        "name": "flush",
+        "wrapper1": "w-full h-full flex-1 flex flex-row pt-2  mx-auto",
+        "wrapper2": "flex flex-1 w-full  flex-col  shadow-md bg-white rounded-lg relative text-md font-light h-full",
+        "wrapepr3": "",
       },
       {
         "name": "content",
-        "wrapper1": "w-full h-full flex-1 flex flex-row lg:py-[10px] md:px-0 max-w-[990px] mx-auto",
+        "wrapper1": "w-full h-full flex-1 flex flex-row lg:py-[10px] md:px-0  mx-auto",
         "wrapper2": "flex flex-1 w-full  flex-col  shadow-md bg-white rounded-lg relative text-md font-light leading-7 p-4 h-full min-h-[calc(100vh_-_102px)]",
         "wrapepr3": ""
       },
-      {
-        "name": "darkSection",
-        "wrapper1": "w-full h-full flex-1 flex flex-row -my-8 py-10 bg-[linear-gradient(0deg,rgba(33,52,64,.96),rgba(55,87,107,.96)),url('/themes/mny/topolines.png')]  bg-[size:500px] pb-[4px]",
-        "wrapper2": "max-w-[1440px]  xl:px-[64px] md:px-4 mx-auto",
-        "wrapper3": "flex flex-1 w-full  flex-col  relative text-md font-light leading-7 p-4 h-full min-h-[200px]"
-      },
+
       {
         "name": "lightCentered",
         "wrapper1": "w-full h-full flex-1 flex flex-row pb-[4px] ",
@@ -250,12 +235,6 @@ const theme = {
         "wrapper1": "w-full h-full flex-1 flex flex-row -mt-3",
         "wrapper2": "max-w-[1440px] w-full xl:px-[48px] mx-auto",
         "wrapper3": "flex flex-1 w-full flex-col relative h-full min-h-[200px]"
-      },
-      {
-        "name": "header",
-        "wrapper1": "w-full h-full flex-1 flex flex-row",
-        "wrapper2": "flex flex-1 w-full  flex-col  relative min-h-[200px]",
-        "wrapper3": ""
       },
       {
         "name": "full_width",
@@ -288,7 +267,7 @@ const theme = {
       {
         "name": "default",
         "layoutContainer1": "pr-2 pt-[10px] hidden lg:block min-w-[302px] max-w-[302px] print:hidden ",
-        "layoutContainer2": "hidden scrollbar-sm lg:block sticky top-[10px] h-[calc(100vh_-_20px)] bg-white rounded-lg shadow-md w-full overflow-y-auto overflow-x-hidden p-4",
+        "layoutContainer2": "hidden scrollbar-sm lg:block sticky top-[10px] h-[calc(100vh_-_20px)] bg-white rounded-lg shadow-md w-full overflow-x-hidden",
         "logoWrapper": "bg-neutral-100 text-slate-800",
         "sidenavWrapper": "hidden md:flex bg-white w-full h-full z-20  flex-col pr-5",
         "menuItemWrapper": " flex-1 flex flex-col flex flex-col,flex flex-col",
@@ -298,17 +277,19 @@ const theme = {
         "menuItemWrapper_level_4": "",
         "navitemSide": "md:flex-1 group flex flex-col border-white focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300        transition-all cursor-pointer",
         "navitemSideActive": "        md:flex-1 group  flex flex-col        focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300        transition-all cursor-pointer border-l-2 border-slate-600       ",
-        "menuIconSide": "hidden size-8 text-[#37576B]",
-        "menuIconSideActive": "hidden size-8 text-[#37576B]",
+        "forcedIcon_level_1": "CircleFilled",
+        "menuIconSide": "mx-3 size-7 text-[#37576B]",
+        "menuIconSideActive": "mx-3 size-7 text-[#37576B]",
+        "menuIconSide_level_2": "hidden",
         "itemsWrapper": "border-slate-200 py-6 flex-1",
         "navItemContent": "transition-transform duration-300 ease-in-out flex-1 w-full",
-        "navItemContent_level_1": "pl-1 text-[16px] font-['Oswald'] font-[500] leading-[16px]  text-[#2D3E4C] py-3 uppercase",
+        "navItemContent_level_1": " text-[16px] font-['Oswald'] font-[500] leading-[16px]  text-[#2D3E4C] py-3 uppercase",
         "navItemContent_level_2": "text-[16px] font-['Proxima_Nova'] font-[600] leading-[19.2px] text-[#37576B] pl-4 py-3",
         "navItemContent_level_3": "text-[14px] font-['Proxima_Nova'] font-[400] leading-[19.6px] text-[#37576B] pl-4 py-2",
         "navItemContent_level_4": "text-[14px] font-['Proxima_Nova'] font-[400] leading-[19.6px] text-[#37576B] pl-4 py-2",
         "indicatorIcon": "ArrowRight",
         "indicatorIconOpen": "ArrowDown",
-        "subMenuWrapper_1": "w-full bg-[#F3F8F9] rounded-[12px] py-[12px]",
+        "subMenuWrapper_1": "ml-3 w-full bg-[#F3F8F9] rounded-[12px] py-[12px]",
         "subMenuWrapper_2": "w-full bg-[#E0EBF0]",
         "subMenuWrapper_3": "",
         "subMenuOuterWrapper": "",
@@ -456,7 +437,7 @@ const theme = {
         "topmenuRightNavContainer": "hidden md:flex h-full items-center justify-end  min-w-[110px]",
         "topnavMobileContainer": "bg-white pointer-events-auto h-[calc(100vh_-_80px)] overflow-y-auto",
         "menuItemWrapper": "",
-        "navitemTop": "\n          md:w-fit group  whitespace-nowrap\n          text-[16px] font-['Proxima_Nova'] font-[500] text-[#37576B]\n          px-2\n          focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300\n          transition cursor-pointer\n      ",
+        "navitemTop": "  md:w-fit group  whitespace-nowrap\n          text-[16px] font-['Proxima_Nova'] font-[500] text-[#37576B]\n          px-2\n          focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300\n          transition cursor-pointer\n      ",
         "navitemTopActive": "w-fit group  whitespace-nowrap\n        text-[16px] font-['Proxima_Nova'] font-[500] text-[#37576B]\n        px-2 text-blue\n        focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300\n        transition cursor-pointer\n      ",
         "navItemContent_level_1": "",
         "navItemContent_level_2": "uppercase font-[Oswald] text-[14px] flex items-center p-1",
@@ -481,12 +462,12 @@ const theme = {
     },
     "styles": [
       {
-      "logoWrapper": "@container h-16 flex px-1  items-center @[120px]:justify-start gap-0 @[120px]:gap-2",
+      "logoWrapper": "@container  flex p-1  items-center  gap-0 ",
       "logoAltImg": "hidden",
-      "imgWrapper": "flex-shrink-0 @[120px]:border-r ",
+      "imgWrapper": "flex-shrink-0  @[120px]:ml-3 @[120px]:my-3 ",
       "img": "/themes/mny/nys_logo_blue.svg",
       "imgClass": "h-10 @[120px]:h-16 w-auto",
-      "titleWrapper": "pl-2 hidden @[120px]:block font-['Oswald'] text-[#37576b] font-semibold text-xl tracking-wide",
+      "titleWrapper": "pl-2 hidden @[120px]:flex @[120px]:border-l border-[#37576b] h-10 flex items-center font-['Oswald'] text-[#37576b] font-semibold text-xl tracking-wide",
       "title": "MitigateNY",
       "linkPath": "/"
       },
@@ -576,34 +557,125 @@ const theme = {
     "listboxOption": "group flex gap-2 bg-white data-[focus]:bg-blue-100 z-30",
     "listboxButton": "relative block w-full rounded-lg bg-white/5 py-1.5 pr-8 pl-3 text-left text-sm/6 text-white focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
   },
-  "table": {
-    "tableContainer": "relative flex flex-col w-full h-full overflow-x-auto scrollbar-sm border rounded-t-[12px]",
-    "tableContainerNoPagination": "rounded-b-[12px]",
-    "tableContainer1": "flex flex-col no-wrap min-h-[200px] max-h-[calc(78vh_-_10px)] overflow-y-auto scrollbar-sm",
-    "headerContainer": "sticky top-0 grid ",
-    "thead": "flex justify-between",
-    "theadfrozen": "",
-    "thContainer": "w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c] border-x",
-    "thContainerBgSelected": "bg-gray-50 text-gray-900",
-    "thContainerBg": "bg-[#F3F8F9] text-gray-900",
-    "cell": "relative flex items-center min-h-[36px]  border border-slate-50",
-    "cellInner": "\n          w-full min-h-full flex flex-wrap items-center truncate py-1 px-2\n          font-['Proxima_Nova'] font-[400] text-[14px] text-[#37576B] leading-[20px]\n      ",
-    "cellBg": "bg-white",
-    "cellBgSelected": "bg-blue-50",
-    "cellFrozenCol": "",
-    "paginationInfoContainer": "",
-    "paginationPagesInfo": "font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
-    "paginationRowsInfo": "text-xs font-[Proxima Nova] leading-[14px]",
-    "paginationContainer": "w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between",
-    "paginationControlsContainer": "flex flex-row items-center border rounded-[8px] overflow-hidden",
-    "pageRangeItem": "cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]",
-    "pageRangeItemInactive": "bg-white text-[#2D3E4C]",
-    "pageRangeItemActive": "bg-[#2D3E4C] text-white",
-    "openOutContainer": "w-[420px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
-    "openOutContainerWrapper": "absolute inset-0 right-0 h-full w-full z-[100]",
-    "openOutHeader": "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
-    "openOutValue": "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
-    "openOutTitle": "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]"
+  table: {
+    options: {
+      activeStyle: 0
+    },
+    styles: [
+      {
+        name: "mny",
+        tableContainer:
+            "relative flex flex-col w-full h-full min-h-[200px] max-h-[calc(100vh_-_90px)] overflow-y-auto overflow-x-auto scrollbar-sm border rounded-t-[12px]",
+        tableContainerNoPagination: "rounded-b-[12px]",
+        // tableContainer1: "flex flex-col no-wrap min-h-[200px] max-h-[calc(78vh_-_10px)] overflow-y-auto scrollbar-sm",
+        headerContainer: "sticky top-0 grid ",
+        headerLeftGutter: 'flex justify-between sticky left-0 z-[1]',
+        headerWrapper: "flex justify-between",
+        colResizer: "z-5 -ml-2 w-[1px] hover:w-[2px] bg-gray-200 hover:bg-gray-400",
+        headerWrapperFrozen: "",
+        headerCellContainer:
+            "w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c]",
+        headerCellContainerBg: "bg-[#F3F8F9] text-gray-900",
+        headerCellContainerBgSelected: "bg-gray-50 text-gray-900",
+        cell: "relative flex items-center min-h-[36px]  border border-slate-50",
+        cellInner: `
+          w-full min-h-full flex flex-wrap items-center truncate py-1 px-2
+          font-['Proxima_Nova'] font-[400] text-[14px] text-[#37576B] leading-[20px]
+      `,
+        cellBgOdd: 'bg-gray-50 hover:bg-gray-100',
+        cellBgEven: 'bg-white hover:bg-gray-100',
+        cellBg: 'bg-white hover:bg-gray-100',
+        totalCell: 'hover:bg-gray-150',
+        wrapText: 'whitespace-pre-wrap',
+        cellEditableTextBox: 'absolute border focus:outline-none min-w-[180px] min-h-[50px] z-[10] whitespace-pre-wrap',
+        cellBgSelected: "bg-blue-50 hover:bg-blue-100",
+        cellFrozenCol: "",
+        cellInvalid: 'bg-red-50 hover:bg-red-100',
+        paginationContainer:
+            "w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between",
+        paginationInfoContainer: "",
+        paginationPagesInfo:
+            "font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
+        paginationRowsInfo: "text-xs font-[Proxima Nova] leading-[14px]",
+        paginationControlsContainer:
+            "flex flex-row items-center border rounded-[8px] overflow-hidden",
+        pageRangeItem:
+            "cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]",
+        pageRangeItemInactive: "bg-white text-[#2D3E4C]",
+        pageRangeItemActive: "bg-[#2D3E4C] text-white",
+        openOutContainer:
+            "w-[420px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
+        openOutContainerWrapper: "absolute inset-0 right-0 h-full w-full z-[100]",
+        openOutHeader:
+            "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
+        openOutValue:
+            "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
+        openOutTitle:
+            "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]",
+        totalRow: 'bg-gray-100 sticky bottom-0 z-[3]',
+        stripedRow: 'even:bg-gray-50',
+        gutterCellWrapper: `flex text-xs items-center justify-center cursor-pointer sticky left-0 z-[1]`,
+        gutterCellWrapperNotSelected: 'bg-gray-50 text-gray-500',
+        gutterCellWrapperSelected: 'bg-blue-100 text-gray-900',
+        openOutCloseIconContainer: 'w-full flex justify-end',
+        openOutCloseIconWrapper: 'w-fit h-fit p-[8px] text-[#37576B] border border-[#E0EBF0] rounded-full cursor-pointer',
+        openOutCloseIcon: 'XMark',
+        openOutContainerWrapperBgColor: '#00000066',
+        openOutIconWrapper: 'px-2 cursor-pointer bg-transparent text-gray-500 hover:text-gray-600',
+
+
+        headerCellWrapper: 'relative w-full',
+        headerCellBtn: 'group inline-flex items-center w-full justify-between gap-x-1.5 rounded-md cursor-pointer',
+        headerCellLabel: 'truncate select-none',
+        headerCellBtnActive: 'bg-gray-300',
+        headerCellFnIconClass: 'text-gray-400',
+        headerCellCountIcon: 'TallyMark',
+        headerCellListIcon: 'LeftToRightListBullet',
+        headerCellSumIcon: 'Sum',
+        headerCellAvgIcon: 'Avg',
+        headerCellGroupIcon: 'Group',
+        headerCellSortAscIcon: 'SortAsc',
+        headerCellSortDescIcon: 'SortDesc',
+        headerCellMenuIcon: 'ArrowDown',
+        headerCellMenuIconClass: 'text-gray-400 group-hover:text-gray-600 transition ease-in-out duration-200 print:hidden',
+        headerCellIconWrapper: 'flex items-center',
+        headerCellMenu: 'py-0.5 flex flex-col gap-0.5 items-center px-1 text-xs text-gray-600 font-regular max-h-[500px] min-w-[180px] ' +
+            'z-[10] overflow-auto scrollbar-sm bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5',
+        headerCellControlWrapper: 'w-full group px-2 py-1 flex justify-between items-center rounded-md hover:bg-gray-100',
+        headerCellControlLabel: 'w-fit font-regular text-gray-500 cursor-default',
+        headerCellControl: 'p-0.5 w-full rounded-md bg-white group-hover:bg-gray-100 cursor-pointer'
+      },
+      {
+        name: "basic",
+        "tableContainer": "relative flex flex-col w-full h-full overflow-x-auto scrollbar-sm border rounded-t-[12px]",
+        "tableContainerNoPagination": "rounded-b-[12px]",
+        "tableContainer1": "flex flex-col no-wrap min-h-[200px] max-h-[calc(78vh_-_10px)] overflow-y-auto scrollbar-sm",
+        "headerContainer": "sticky top-0 grid ",
+        "thead": "flex justify-between",
+        "theadfrozen": "",
+        "thContainer": "w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c] border-x",
+        "thContainerBgSelected": "bg-gray-50 text-gray-900",
+        "thContainerBg": "bg-[#F3F8F9] text-gray-900",
+        "cell": "relative flex items-center min-h-[36px]  border border-slate-50",
+        "cellInner": "\n          w-full min-h-full flex flex-wrap items-center truncate py-1 px-2\n          font-['Proxima_Nova'] font-[400] text-[14px] text-[#37576B] leading-[20px]\n      ",
+        "cellBg": "bg-white",
+        "cellBgSelected": "bg-blue-50",
+        "cellFrozenCol": "",
+        "paginationInfoContainer": "",
+        "paginationPagesInfo": "font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
+        "paginationRowsInfo": "text-xs font-[Proxima Nova] leading-[14px]",
+        "paginationContainer": "w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between",
+        "paginationControlsContainer": "flex flex-row items-center border rounded-[8px] overflow-hidden",
+        "pageRangeItem": "cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]",
+        "pageRangeItemInactive": "bg-white text-[#2D3E4C]",
+        "pageRangeItemActive": "bg-[#2D3E4C] text-white",
+        "openOutContainer": "w-[420px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
+        "openOutContainerWrapper": "absolute inset-0 right-0 h-full w-full z-[100]",
+        "openOutHeader": "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
+        "openOutValue": "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
+        "openOutTitle": "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]"
+      }
+    ]
   },
   "lexical": {
     "contentEditable": "border-none relative [tab-size:1] outline-0",
@@ -613,7 +685,7 @@ const theme = {
     "editorShell": "font-['Proxima_Nova'] font-[400] text-[16px] text-[#37576B] leading-[22.4px]",
     "card": "p-[12px] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)]",
     "heading": {
-      "h1": "font-[500]  text-[#2D3E4C] text-[36px] leading-[140%] tracking-[-.02em] font-[500] underline-offset-8 underline decoration-4 decoration-[#EAAD43] uppercase font-['Oswald'] pb-[12px]",
+      "h1": "font-[500]  text-[#2D3E4C] text-[36px] leading-[140%] tracking-[-.02em] font-[500] uppercase font-['Oswald'] pb-[12px]",
       "h2": "font-[500]  text-[#2D3E4C] text-[24px] leading-[24px] scroll-mt-36 font-['Oswald'] pb-[12x]",
       "h3": "font-[500]  text-[#2D3E4C] text-[16px] leading-[16px] scroll-mt-36 font-['Oswald'] pb-[12x]",
       "h4": "font-medium text-[#2D3E4C] scroll-mt-36 font-display",
@@ -1154,60 +1226,158 @@ const theme = {
       }
     }
   },
-  "dataCard": {
-    "columnControlWrapper": "grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-0.5",
-    "columnControlHeaderWrapper": "px-1 font-semibold border bg-gray-50 text-gray-500",
-    "mainWrapperCompactView": "grid",
-    "mainWrapperSimpleView": "flex flex-col",
-    "subWrapper": "w-full text-[#2D3E4C]",
-    "subWrapperCompactView": "flex flex-col flex-wrap rounded-[12px]",
-    "subWrapperSimpleView": "grid",
-    "headerValueWrapper": "w-full rounded-[12px] flex items-center gap-[4px] justify-center p-2",
-    "headerValueWrapperCompactView": "rounded-none ",
-    "headerValueWrapperSimpleView": "",
-    "justifyTextLeft": "text-start justify-items-start",
-    "justifyTextRight": "text-end justify-items-end",
-    "justifyTextCenter": "text-center justify-items-center",
-    "textXS": "font-medium font-[Oswald] text-[12px] leading-[140%]",
-    "textXSReg": "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
-    "textSM": "font-medium font-[Oswald] text-[14px] leading-[100%] uppercase",
-    "textSMReg": "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
-    "textSMBold": "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
-    "textSMSemiBold": "font-semibold font-[Proxima Nova] text-[14px] leading-[140%]",
-    "textMD": "font-medium font-[Oswald] text-[16px] leading-[100%] uppercase",
-    "textMDReg": "font-normal font-[Proxima Nova] text-[16px] leading-[140%]",
-    "textMDBold": "font-bold font-[Proxima Nova] text-[16px] leading-[140%]",
-    "textMDSemiBold": "font-semibold font-[Proxima Nova] text-[16px] leading-[140%]",
-    "textXL": "font-medium font-[Oswald] text-[20px] leading-[100%] uppercase",
-    "textXLSemiBold": "font-semibold font-[Proxima Nova] text-[20px] leading-[120%]",
-    "text2XL": "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase",
-    "text2XLReg": "font-regular font-[Oswald] text-[24px] leading-[120%] uppercase",
-    "text3XL": "font-medium font-[Oswald] text-[30px] leading-[100%] uppercase tracking-[-0.05em]",
-    "text3XLReg": "font-normal font-[Oswald] text-[30px] leading-[120%] uppercase",
-    "text4XL": "font-medium font-[Oswald] text-[36px] leading-[100%] uppercase tracking-[-0.05em]",
-    "text5XL": "font-medium font-[Oswald] text-[48px] leading-[100%] uppercase tracking-[-0.05em]",
-    "text6XL": "font-medium font-[Oswald] text-[60px] leading-[100%] uppercase",
-    "text7XL": "font-medium font-[Oswald] text-[72px] leading-[100%] uppercase tracking-normal",
-    "text8XL": "font-medium font-[Oswald] text-[96px] leading-[95%] uppercase tracking-normal ",
-    "imgXS": "max-w-16 max-h-16",
-    "imgSM": "max-w-24 max-h-24",
-    "imgMD": "max-w-32 max-h-32",
-    "imgXL": "max-w-40 max-h-40",
-    "img2XL": "max-w-48 max-h-48",
-    "img3XL": "max-w-56 max-h-56",
-    "img4XL": "max-w-64 max-h-64",
-    "img5XL": "w-full",
-    "img6XL": "max-w-80 max-h-80",
-    "img7XL": "max-w-96 max-h-96",
-    "img8XL": "max-w-128 max-h-128",
-    "header": "w-full flex-1 uppercase text-[#37576B]",
-    "value": "w-full text-[#2D3E4C]",
-    "headerValueWrapperBorderBColor": "border-[#C0D8E1]",
-    "linkColValue": "flex-1 flex justify-center w-full bg-[#C5D7E0] rounded-full px-[12px] py-[8px] font-[Proxima Nova] font-bold text-[12px] leading-[100%] tracking-[0px] uppercase",
-    "headerCompactView": "",
-    "headerSimpleView": "",
-    "valueCompactView": "",
-    "valueSimpleView": ""
+  dataCard: {
+    options: {
+      "activeStyle": "0"
+    },
+    styles: [
+      {
+        columnControlWrapper:
+            "grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-0.5",
+        columnControlHeaderWrapper: `px-1 font-semibold border bg-gray-50 text-gray-500`,
+
+        mainWrapperCompactView: "grid",
+        mainWrapperSimpleView: "flex flex-col",
+        subWrapper: "w-full text-[#2D3E4C]",
+        subWrapperCompactView: "flex flex-col flex-wrap rounded-[12px]",
+        subWrapperSimpleView: "grid",
+
+        headerValueWrapper:
+            "w-full rounded-[12px] flex items-center gap-[4px] justify-center p-2",
+        headerValueWrapperCompactView: "rounded-none ",
+        headerValueWrapperBorderBelow: "border-b border-[#C0D8E1] rounded-none", // custom added border
+        headerValueWrapperSimpleView: "",
+        itemBorder: 'border shadow',
+        itemFlexCol: 'flex-col',
+        itemFlexRow: 'flex-row',
+        itemFlexColReverse: 'flex-col flex-col-reverse',
+        itemFlexRowReverse: 'flex-row flex-row-reverse',
+        iconAndColorValues: 'flex items-center gap-1.5 uppercase',
+
+        formEditButtonsWrapper: 'self-end flex gap-0.5 text-sm',
+        formEditSaveButton: 'bg-blue-300 hover:bg-blue-400 text-blue-700 rounded-lg w-fit px-2 py-0.5',
+        formEditCancelButton: 'bg-red-300 hover:bg-red-400 text-red-700 rounded-lg w-fit px-2 py-0.5',
+        formAddNewItemButton: 'bg-blue-300 hover:bg-blue-400 text-blue-700 rounded-lg w-fit px-2 py-0.5 text-sm self-end',
+
+        linkColValue:
+            "flex-1 flex justify-center w-full bg-[#C5D7E0] rounded-full px-[12px] py-[8px] font-[Proxima Nova] font-bold text-[12px] leading-[100%] tracking-[0px] uppercase",
+        justifyTextLeft: "text-start justify-items-start",
+        justifyTextRight: "text-end justify-items-end",
+        justifyTextCenter: "text-center justify-items-center",
+        textXS: "font-medium font-[Oswald] text-[12px] leading-[140%]",
+        textXSReg:
+            "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
+        textSM: "font-medium font-[Oswald] text-[14px] leading-[100%] uppercase",
+        textSMReg: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
+        textSMBold: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
+        textSMSemiBold:
+            "font-semibold font-[Proxima Nova] text-[14px] leading-[140%]",
+        textMD: "font-medium font-[Oswald] text-[16px] leading-[100%] uppercase",
+        textMDReg: "font-normal font-[Proxima Nova] text-[16px] leading-[140%]",
+        textMDBold: "font-bold font-[Proxima Nova] text-[16px] leading-[140%]",
+        textMDSemiBold:
+            "font-semibold font-[Proxima Nova] text-[16px] leading-[140%]",
+        textXL: "font-medium font-[Oswald] text-[20px] leading-[100%] uppercase",
+        textXLSemiBold:
+            "font-semibold font-[Proxima Nova] text-[20px] leading-[120%]",
+        text2XL: "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase",
+        text2XLReg:
+            "font-regular font-[Oswald] text-[24px] leading-[120%] uppercase",
+        text3XL:
+            "font-medium font-[Oswald] text-[30px] leading-[100%] uppercase tracking-[-0.05em]",
+        text3XLReg:
+            "font-normal font-[Oswald] text-[30px] leading-[120%] uppercase",
+        text4XL:
+            "font-medium font-[Oswald] text-[36px] leading-[100%] uppercase tracking-[-0.05em]",
+        text5XL:
+            "font-medium font-[Oswald] text-[48px] leading-[100%] uppercase tracking-[-0.05em]",
+        text6XL: "font-medium font-[Oswald] text-[60px] leading-[100%] uppercase",
+        text7XL:
+            "font-medium font-[Oswald] text-[72px] leading-[100%] uppercase tracking-normal",
+        text8XL:
+            "font-medium font-[Oswald] text-[96px] leading-[95%] uppercase tracking-normal ",
+
+        imgXS: "max-w-16 max-h-16",
+        imgSM: "max-w-24 max-h-24",
+        imgMD: "max-w-32 max-h-32",
+        imgXL: "max-w-40 max-h-40",
+        img2XL: "max-w-48 max-h-48",
+        img3XL: "max-w-56 max-h-56",
+        img4XL: "max-w-64 max-h-64",
+        img5XL: "w-full",
+        img6XL: "max-w-80 max-h-80",
+        img7XL: "max-w-96 max-h-96",
+        img8XL: "max-w-128 max-h-128",
+        imgDefault: 'max-w-[50px] max-h-[50px]',
+
+        header: "w-full flex-1 uppercase text-[#37576B]",
+        headerCompactView: "",
+        headerSimpleView: "",
+        value: "w-full text-[#2D3E4C]",
+        valueWrapper: 'min-h-[20px]',
+        valueCompactView: "",
+        valueSimpleView: "",
+        description: "text-[#2D3E4C] font-light normal-case font-[Oswald] text-[12px]",
+
+        componentWrapper: 'w-full',
+      },
+      {
+        name: 'baseTheme',
+        "columnControlWrapper": "grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-0.5",
+        "columnControlHeaderWrapper": "px-1 font-semibold border bg-gray-50 text-gray-500",
+        "mainWrapperCompactView": "grid",
+        "mainWrapperSimpleView": "flex flex-col",
+        "subWrapper": "w-full text-[#2D3E4C]",
+        "subWrapperCompactView": "flex flex-col flex-wrap rounded-[12px]",
+        "subWrapperSimpleView": "grid",
+        "headerValueWrapper": "w-full rounded-[12px] flex items-center gap-[4px] justify-center p-2",
+        "headerValueWrapperCompactView": "rounded-none ",
+        "headerValueWrapperSimpleView": "",
+        "justifyTextLeft": "text-start justify-items-start",
+        "justifyTextRight": "text-end justify-items-end",
+        "justifyTextCenter": "text-center justify-items-center",
+        "textXS": "font-medium font-[Oswald] text-[12px] leading-[140%]",
+        "textXSReg": "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
+        "textSM": "font-medium font-[Oswald] text-[14px] leading-[100%] uppercase",
+        "textSMReg": "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
+        "textSMBold": "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
+        "textSMSemiBold": "font-semibold font-[Proxima Nova] text-[14px] leading-[140%]",
+        "textMD": "font-medium font-[Oswald] text-[16px] leading-[100%] uppercase",
+        "textMDReg": "font-normal font-[Proxima Nova] text-[16px] leading-[140%]",
+        "textMDBold": "font-bold font-[Proxima Nova] text-[16px] leading-[140%]",
+        "textMDSemiBold": "font-semibold font-[Proxima Nova] text-[16px] leading-[140%]",
+        "textXL": "font-medium font-[Oswald] text-[20px] leading-[100%] uppercase",
+        "textXLSemiBold": "font-semibold font-[Proxima Nova] text-[20px] leading-[120%]",
+        "text2XL": "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase",
+        "text2XLReg": "font-regular font-[Oswald] text-[24px] leading-[120%] uppercase",
+        "text3XL": "font-medium font-[Oswald] text-[30px] leading-[100%] uppercase tracking-[-0.05em]",
+        "text3XLReg": "font-normal font-[Oswald] text-[30px] leading-[120%] uppercase",
+        "text4XL": "font-medium font-[Oswald] text-[36px] leading-[100%] uppercase tracking-[-0.05em]",
+        "text5XL": "font-medium font-[Oswald] text-[48px] leading-[100%] uppercase tracking-[-0.05em]",
+        "text6XL": "font-medium font-[Oswald] text-[60px] leading-[100%] uppercase",
+        "text7XL": "font-medium font-[Oswald] text-[72px] leading-[100%] uppercase tracking-normal",
+        "text8XL": "font-medium font-[Oswald] text-[96px] leading-[95%] uppercase tracking-normal ",
+        "imgXS": "max-w-16 max-h-16",
+        "imgSM": "max-w-24 max-h-24",
+        "imgMD": "max-w-32 max-h-32",
+        "imgXL": "max-w-40 max-h-40",
+        "img2XL": "max-w-48 max-h-48",
+        "img3XL": "max-w-56 max-h-56",
+        "img4XL": "max-w-64 max-h-64",
+        "img5XL": "w-full",
+        "img6XL": "max-w-80 max-h-80",
+        "img7XL": "max-w-96 max-h-96",
+        "img8XL": "max-w-128 max-h-128",
+        "header": "w-full flex-1 uppercase text-[#37576B]",
+        "value": "w-full text-[#2D3E4C]",
+        "headerValueWrapperBorderBColor": "border-[#C0D8E1]",
+        "linkColValue": "flex-1 flex justify-center w-full bg-[#C5D7E0] rounded-full px-[12px] py-[8px] font-[Proxima Nova] font-bold text-[12px] leading-[100%] tracking-[0px] uppercase",
+        "headerCompactView": "",
+        "headerSimpleView": "",
+        "valueCompactView": "",
+        "valueSimpleView": ""
+      }
+    ]
   },
   "attribution": {
     "wrapper": "w-full flex flex-col gap-[4px] text-[#2D3E4C] text-xs",
