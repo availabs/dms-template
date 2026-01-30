@@ -4,8 +4,6 @@ import './index.css'
 
 import App from './App.jsx'
 
-//const AuthEnabledApp = authProvider(App, { AUTH_HOST, PROJECT_NAME, CLIENT_HOST });
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
