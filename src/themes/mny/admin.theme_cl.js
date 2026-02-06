@@ -225,7 +225,7 @@ const theme = {
         ],
         "rightMenu": [
           {
-            "type": "Search"
+            "type": "SearchButton"
           },
           {
             "type": "UserMenu"
