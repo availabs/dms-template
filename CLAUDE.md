@@ -80,6 +80,10 @@ Themes are JS objects defining navigation layout, styling classes, and component
 - `sidenav`/`topnav` - Navigation styling
 - `button`, `tabs`, etc. - Component styling
 
+## Task Management
+
+The DMS library (in `src/dms/`) has a planning system for tracking work. **Before implementing any task, read `src/dms/planning/planning-rules.md`** — it defines the workflow for task files, progress tracking, and completion. The task file in `planning/tasks/current/` is the source of truth for implementation status and must be updated as work progresses, not just at the end.
+
 ## Tech Stack
 
 - React 19 with Vite 7
