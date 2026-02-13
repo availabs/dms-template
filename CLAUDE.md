@@ -80,6 +80,44 @@ Themes are JS objects defining navigation layout, styling classes, and component
 - `sidenav`/`topnav` - Navigation styling
 - `button`, `tabs`, etc. - Component styling
 
+## Working with DMS Data
+
+**Always use the DMS CLI** (`src/dms/packages/dms/cli/`) to read, inspect, and modify DMS data. Do not craft raw Falcor requests or write one-off scripts — the CLI handles type resolution, config, and output formatting.
+
+```bash
+# Setup (once)
+cd src/dms/packages/dms/cli && npm install && npm link
+
+# Configure per-site via .dmsrc or env vars
+export DMS_HOST=http://localhost:4444
+export DMS_APP=my-app
+export DMS_TYPE=my-site
+
+# Common operations
+dms site tree                          # Visual hierarchy of site content
+dms page list                          # List all pages
+dms page show <id-or-slug>            # Inspect a page
+dms dataset list                       # List datasets
+dms dataset dump <id-or-name>         # Export dataset data as JSON
+dms raw list <app> <type>             # Low-level: list rows by app+type
+dms raw get <id>                      # Low-level: fetch any row by ID
+dms page update <id> --set key=value  # Partial update (read-modify-write)
+```
+
+See `src/dms/packages/dms/cli/docs/` for full docs: `README.md` (command reference), `TYPES.md` (content types), `EXAMPLES.md` (cookbook).
+
+### Scratchpad
+
+The `scratchpad/` directory (gitignored) holds per-site working folders for data exports, backups, and experimentation. Each subfolder is named after a site/environment (e.g., `mitigat-ny-prod-prod/`, `avail-site/`). Use these folders when dumping data from the CLI or staging changes:
+
+```bash
+# Export a site's patterns to scratchpad
+dms pattern dump <id> > scratchpad/my-site/pattern-backup.json
+
+# Bulk export all pages
+dms page list --format json > scratchpad/my-site/pages.json
+```
+
 ## Task Management
 
 The DMS library (in `src/dms/`) has a planning system for tracking work. **Before implementing any task, read `src/dms/planning/planning-rules.md`** — it defines the workflow for task files, progress tracking, and completion. The task file in `planning/tasks/current/` is the source of truth for implementation status and must be updated as work progresses, not just at the end.

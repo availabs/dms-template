@@ -24,12 +24,12 @@ function App() {
     <DmsSite
       dmsConfig = {
         adminConfig[0]({
-          ...sites[1],
+          ...sites[6],
           baseUrl: '/list',
           authPath: '/auth',
         })
       }
-      pgEnvs={['hazmit_dama']}
+      //pgEnvs={['hazmit_dama']}
       adminPath={'/list'}
       API_HOST={API_HOST[0]}
       AUTH_HOST={API_HOST[0]}
