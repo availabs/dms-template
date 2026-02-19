@@ -1,3 +1,5 @@
+import { NavLeftStyleWidget, NavRightStyleWidget } from './widgets'
+
 const theme = {
   "layout": {
     "styles": [
@@ -14,6 +16,9 @@ const theme = {
             "nav": "main",
             "size": "compact",
             "leftMenu": [
+              {
+                  "type": "NavLeftStyleWidget"
+                },
                 {
                     "type": "Logo"
                 }
@@ -21,6 +26,9 @@ const theme = {
             "rightMenu": [
                 {
                     "type": "UserMenu"
+                },
+                {
+                    "type": "NavRightStyleWidget"
                 }
             ],
             "activeStyle": null
@@ -67,8 +75,8 @@ const theme = {
               "topnavWrapper": "w-full h-14 flex items-center",
               "topnavContent": "flex items-center w-full h-full ",
               "leftMenuContainer": "flex items-center bg-[#0e1011] h-14",
-              "centerMenuContainer": "hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-4 bg-[#0e1011]",
-              "rightMenuContainer": "hidden md:flex h-full items-center gap-2 min-w-[119px] bg-[#0e1011] rounded-br-[18px]",
+              "centerMenuContainer": "hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2 bg-[#0e1011]",
+              "rightMenuContainer": "hidden md:flex h-full items-center pr-4 bg-[#0e1011]  rounded-br-[28px]",
               "mobileNavContainer": "px-4 py-2 bg-zinc-100 dark:bg-zinc-900",
               "mobileButton": "lg:hidden inline-flex items-center justify-center p-2 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 transition-colors",
               "menuOpenIcon": "Menu",
@@ -76,14 +84,16 @@ const theme = {
               "navitemWrapper": "relative",
               "navitemWrapper_level_2": "relative",
               "navitemWrapper_level_3": "",
-              "navitem": "\n        px-3 py-2 rounded-lg\n        text-sm font-medium text-zinc-600 dark:text-zinc-400\n        hover:bg-zinc-200 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-white\n        transition-colors cursor-pointer\n        flex items-center gap-1.5\n    ",
-              "navitemActive": "\n        px-3 py-2 rounded-lg\n        text-sm font-medium text-zinc-900 dark:text-white\n        bg-zinc-200 dark:bg-zinc-800\n        cursor-pointer\n        flex items-center gap-1.5\n    ",
+              "navitem": `group px-1 py-2 text-[14px] font-medium   text-white transition-all duration-300 ease-in-out
+                 transition-colors cursor-pointer
+                 flex items-center gap-1.5  hover:text-underline`,
+              "navitemActive" : `px-1 py-2 text-[14px] font-medium  text-white transition-all duration-300 ease-in-out
+                 transition-colors cursor-pointer
+                 flex items-center gap-1.5`,
               "navIcon": "size-4 text-zinc-500 dark:text-zinc-400",
               "navIconActive": "size-4 text-zinc-900 dark:text-white",
-              "navitemContent": "flex items-center gap-1.5",
+              "navitemContent": "bg-left-bottom bg-gradient-to-r from-white to-slate-300 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out",
               "navitemName": "",
-              "navitemName_level_2": "w-full text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white py-2 px-3 rounded-md transition-colors flex items-center justify-between gap-2",
-              "navitemName_level_3": "w-full text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white py-2 px-3 rounded-md transition-colors",
               "navitemDescription": "hidden",
               "navitemDescription_level_2": "text-xs text-zinc-500 dark:text-zinc-400 mt-0.5",
               "navitemDescription_level_3": "text-xs text-zinc-500 dark:text-zinc-400 mt-0.5",
@@ -103,6 +113,57 @@ const theme = {
               "subMenuParentLink": "text-xs text-zinc-900 dark:text-white hover:underline mt-1 inline-block"
           }
       ]
+  },
+  "logo":{
+    logoWrapper: 'items-center',
+    logoAltImg: '',
+    imgWrapper: 'pt-1 pl-4',
+    img: '/themes/wcdb/logo_white.svg',
+    imgClass: 'h-12',
+    titleWrapper: '',
+    title: '',
+    linkPath: '/'
+  },
+  "pages": {
+    "userMenu": {
+      "options": {
+        "activeStyle": 0
+      },
+      "styles": [
+        {
+          name: 'default',
+          // UserMenu component
+          userMenuContainer: 'flex flex-1 w-full items-center justify-center rounded-xl min-w-[60px] @container',
+          avatarWrapper: 'flex p-2 justify-center items-center',
+          avatar: 'size-8 border border-[#E0EBF0] rounded-full place-items-center content-center hover:bg-slate-400',
+          avatarIcon: 'size-6 fill-[#37576b]',
+          infoWrapper: 'flex-1 py-2 @max-[150px]:hidden',
+          emailText: 'text-xs font-thin tracking-tighter text-left',
+          groupText: 'text-xs font-medium -mt-1 tracking-widest text-left',
+
+          // EditControl component
+          editControlWrapper: 'flex justify-center items-center py-2 pr-2',
+          iconWrapper: 'size-9 flex items-center justify-center',
+          icon: 'text-slate-400 hover:text-blue-500 size-7',
+          viewIcon: 'ViewPage',
+          editIcon: 'EditPage',
+
+          // Login/Auth section
+          loginWrapper: 'flex items-center justify-center py-2',
+          loginLink: 'flex items-center',
+          loginIconWrapper: 'size-8 place-items-center content-center border border-[#E0EBF0] rounded-full hover:bg-slate-400',
+          loginIcon: 'size-6 stroke-slate-500 text-slate-500',
+          loginText: 'hidden',
+          authContainer: '@container w-full  min-w-[80px]',
+          authWrapper: 'flex items-center justify-center ',
+          userMenuWrapper: 'flex items-center flex-1 w-full',
+        }
+      ]
+    }
+  },
+  "widgets": {
+    "NavRightStyleWidget": { "label": "Nav Right Style", component: NavRightStyleWidget },
+    "NavLeftStyleWidget": { "label": "Nav Left Style", component: NavLeftStyleWidget }
   }
 }
 export default theme

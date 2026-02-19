@@ -13,7 +13,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite"
+    "start": "vite",
+    "server": "npm start --prefix src/dms/packages/dms-server",
+    "server:dev": "npm run dev --prefix src/dms/packages/dms-server"
   },
   "dependencies": {
     "@availabs/dms": "^0.1.8",
