@@ -1,7 +1,6 @@
 import { DmsSite, adminConfig  } from "./dms/packages/dms/src"
 import themes from "./themes"
 
-
 const API_HOST = [
   'https://graph.availabs.org',
   'http://localhost:3001',
@@ -23,7 +22,7 @@ const sites = [
 function App() {
   return (
     <DmsSite
-      dmsConfig = {
+      dmsConfig={
         adminConfig[0]({
           ...sites[1],
           baseUrl: '/list',
@@ -32,9 +31,10 @@ function App() {
       }
       pgEnvs={['hazmit_dama']}
       adminPath={'/list'}
-      API_HOST={API_HOST[0]}
-      AUTH_HOST={API_HOST[0]}
-      themes={themes}
+      API_HOST={ API_HOST[0] }
+      AUTH_HOST={ API_HOST[0] }
+      themes={ themes }
+      pgEnvs={ ["npmrds2"] }
     />
   )
 }

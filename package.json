@@ -20,8 +20,12 @@
   "dependencies": {
     "@availabs/dms": "^0.1.8",
     "@carbon/icons-react": "^11.71.0",
+    "@hello-pangea/dnd": "^18.0.1",
+    "@heroicons/react": "^2.2.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-color": "^2.19.3",
+    "react-dom": "^19.1.0",
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

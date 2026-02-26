@@ -2,3 +2,9 @@
 [submodule "src/dms"]
 	path = src/dms
 	url = git@github.com:availabs/dms.git
+[submodule "src/modules/avl-map-2"]
+	path = src/modules/avl-map-2
+	url = git@github.com:availabs/avl-map-2.git
+[submodule "src/modules/avl-components"]
+	path = src/modules/avl-components
+	url = git@github.com:availabs/avl-components.git
