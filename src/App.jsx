@@ -4,7 +4,8 @@ import themes from "./themes"
 
 const API_HOST = [
   'https://graph.availabs.org',
-  'http://localhost:3001'
+  'http://localhost:3001',
+  'http://localhost:4444'
 ]
 
  // const WrappedAuth = LayoutWrapper(Auth)
@@ -24,12 +25,12 @@ function App() {
     <DmsSite
       dmsConfig = {
         adminConfig[0]({
-          ...sites[6],
+          ...sites[1],
           baseUrl: '/list',
           authPath: '/auth',
         })
       }
-      //pgEnvs={['hazmit_dama']}
+      pgEnvs={['hazmit_dama']}
       adminPath={'/list'}
       API_HOST={API_HOST[0]}
       AUTH_HOST={API_HOST[0]}
