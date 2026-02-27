@@ -6,131 +6,193 @@ React application built on the [AVAIL DMS](src/dms/) library. Provides dynamic p
 
 ```bash
 npm install
-npm run dev          # SPA dev server on http://localhost:5173
+cp .env.example .env     # then edit .env to configure your site
+npm run dev               # SPA dev server on http://localhost:5173
 ```
 
-## SPA Mode (default)
+## Configuration
 
-The standard client-side single-page application. All rendering happens in the browser — JS loads, Falcor fetches site data, React Router builds routes, and the page renders.
-
-### Development
+All configuration lives in a single **`.env`** file at the project root. Edit it to switch sites, API hosts, database backends, or enable SSR — no source code changes needed.
 
 ```bash
-npm run dev          # Vite dev server with HMR
+cp .env.example .env
 ```
 
-### Production Build & Deploy
+### Site identity
+
+These control which DMS site loads. Both the client and server read them.
+
+```env
+VITE_DMS_APP=avail               # Application name
+VITE_DMS_TYPE=site                # Site type
+VITE_DMS_BASE_URL=/list           # Admin base URL
+VITE_DMS_AUTH_PATH=/auth          # Auth route path
+VITE_DMS_PG_ENVS=npmrds2         # Comma-separated PG environments
+```
+
+To switch sites, change `VITE_DMS_APP` and `VITE_DMS_TYPE` and restart the dev server. Some common configurations:
+
+| Site | `VITE_DMS_APP` | `VITE_DMS_TYPE` |
+|------|----------------|-----------------|
+| AVAIL docs | `avail` | `site` |
+| MitigateNY | `mitigat-ny-prod` | `prod` |
+| WCDB | `wcdb` | `prod` |
+| ASM NHOMB | `asm` | `nhomb` |
+| NPMRDS v5 | `npmrdsv5` | `dev2` |
+
+### API host
+
+```env
+VITE_API_HOST=https://graph.availabs.org    # Remote Falcor API
+# VITE_API_HOST=http://localhost:4444       # Local dms-server
+```
+
+When developing with a local dms-server, point `VITE_API_HOST` at it. The SPA dev server (Vite) and the API server run on different ports.
+
+### Server settings
+
+These are server-only — never included in client bundles.
+
+```env
+PORT=3001                         # dms-server port
+DMS_DB_ENV=dms-sqlite             # Database config (from dms-server/src/db/configs/)
+DMS_AUTH_DB_ENV=dms-sqlite        # Auth database config
+DMS_LOG_REQUESTS=0                # Falcor request logging (1/0)
+JWT_SECRET=                       # JWT signing secret (set for production)
+# DMS_SPLIT_MODE=legacy           # Split table mode: 'legacy' or 'per-app'
+```
+
+### How `.env` loading works
+
+- **Vite** reads `.env` from the project root automatically. Variables prefixed with `VITE_` are available in client code as `import.meta.env.VITE_*`. Non-prefixed variables are ignored (never leak to the browser).
+- **dms-server** loads the root `.env` first, then its own `src/dms/packages/dms-server/.env` second. The server `.env` is optional and overrides root values — use it for database configs that differ between machines.
+
+## Running the Project
+
+### SPA only (client development)
+
+The simplest setup — just the Vite dev server. Data comes from a remote API.
 
 ```bash
-npm run build        # Build to dist/
-npm run preview      # Preview the production build locally
-npm run deploy       # Deploy to Netlify (primary site)
+# 1. Configure
+cp .env.example .env
+# Edit .env: set VITE_DMS_APP, VITE_DMS_TYPE, VITE_API_HOST
+
+# 2. Run
+npm run dev
 ```
 
-No server required — the built `dist/` folder is static HTML + JS + CSS served from any CDN or static host (Netlify, S3, etc.). The Falcor API runs separately.
+Open http://localhost:5173. Vite provides hot module replacement — edits to React components update instantly.
 
-## SSR Mode
+### SPA + local API server
 
-Server-side rendering runs inside [dms-server](src/dms/packages/dms-server/) alongside the Falcor API. Pages render to full HTML on the server so users see content immediately instead of waiting for JS to load and API calls to complete. After the HTML arrives, React hydrates and the app becomes a normal SPA for subsequent navigation.
-
-SSR is **additive** — it does not replace SPA mode. The same `index.html`, `main.jsx`, and `App.jsx` serve both modes. SSR is opt-in via the `DMS_SSR` environment variable.
-
-### Development
-
-Start dms-server with SSR enabled:
+Run dms-server locally for full-stack development (content editing, dataset uploads, auth).
 
 ```bash
-cd src/dms/packages/dms-server
-DMS_SSR=1 DMS_APP=avail DMS_TYPE=site npm run dev
+# Terminal 1 — API server
+npm run server:dev                # dms-server on http://localhost:3001
+
+# Terminal 2 — Client
+npm run dev                       # Vite on http://localhost:5173
 ```
 
-Vite runs in middleware mode inside the Express server — you get HMR for both client and server code.
+Make sure `.env` points the client at the local server:
 
-### Production Build
+```env
+VITE_API_HOST=http://localhost:3001
+```
 
-Two builds are required — one for the client bundle and one for the server entry:
+The server reads `DMS_DB_ENV` to pick its database. Available configs are JSON files in `src/dms/packages/dms-server/src/db/configs/`:
+- `dms-sqlite` — local SQLite file (default, zero setup)
+- Any custom config you create (PostgreSQL, remote databases, etc.)
+
+### SSR (server-side rendering)
+
+SSR renders pages to HTML on the server so users see content immediately. It runs inside dms-server alongside the Falcor API.
+
+SSR is **additive** — the same `index.html`, `main.jsx`, and `App.jsx` serve both SPA and SSR. When `DMS_SSR` is not set, dms-server is a plain API server. When set, it also serves the rendered site.
+
+#### SSR development
+
+Add `DMS_SSR=1` to your `.env`:
+
+```env
+DMS_SSR=1
+VITE_DMS_APP=avail
+VITE_DMS_TYPE=site
+VITE_API_HOST=http://localhost:3001
+```
+
+Then start the server:
 
 ```bash
-npm run build:ssr    # Runs build:client + build:server
+npm run server:dev
 ```
 
-This produces:
-- `dist/client/` — static assets (JS, CSS, images) + `index.html`
-- `dist/server/` — server bundle (`entry-ssr.js`)
+That's it. Vite runs in middleware mode inside Express — you get HMR for both client and server code. Open http://localhost:3001 and view source to see server-rendered HTML.
 
-Then start dms-server in production mode:
+There is no separate Vite dev server in SSR mode. The Express server handles everything: API requests go to `/graph`, all other requests get SSR-rendered HTML.
+
+#### SSR production
+
+Build both client and server bundles, then start the server:
 
 ```bash
-cd src/dms/packages/dms-server
-NODE_ENV=production DMS_SSR=1 DMS_APP=avail DMS_TYPE=site npm start
+# Build
+npm run build:ssr          # creates dist/client/ and dist/server/
+
+# Run
+NODE_ENV=production npm run server
 ```
 
-### Environment Variables
+In production mode, dms-server serves the pre-built static assets from `dist/client/` and uses the compiled server bundle from `dist/server/`. Vite is not involved at runtime.
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DMS_SSR` | yes | — | Set to `1` to enable SSR |
-| `DMS_APP` | yes | — | Application name (e.g., `avail`, `wcdb`) |
-| `DMS_TYPE` | yes | — | Site type (e.g., `site`, `prod`) |
-| `DMS_BASE_URL` | no | `/list` | Base URL for admin routes |
-| `DMS_AUTH_PATH` | no | `/auth` | Auth route path |
-| `DMS_PG_ENVS` | no | — | Comma-separated PostgreSQL environments |
-| `PORT` | no | `3001` | Server port |
+### Production SPA build (static deploy)
 
-### How It Works
+For deploying to Netlify, S3, or any static host — no server needed.
 
-1. Request hits dms-server Express (after `/graph` Falcor route)
-2. SSR middleware converts Express request to a Web `Request`
-3. `handler.render(request)` builds routes via `dmsSiteFactory()` (cached after first request), runs React Router loaders via `createStaticHandler`, and renders HTML via `renderToString` + `StaticRouterProvider`
-4. Middleware injects the HTML into the `index.html` template (replacing `<!--app-html-->`) and embeds site data as a `<script>` tag (replacing `<!--app-head-->`)
-5. Browser receives full HTML, displays content immediately
-6. Client JS loads, detects `window.__dmsSSRData`, calls `hydrateRoot` instead of `createRoot` — the page becomes interactive
-
-### Architecture
-
-```
-render/ssr2/                          Platform-agnostic SSR core
-  handler.jsx                         Web Request -> { html, status, headers }
-  index.js                            Exports createSSRHandler
-  express/                            Express adapter
-    middleware.js                      Express req/res <-> Web Request
-    setup.mjs                         mountSSR() — Vite dev/prod setup
-    index.js                          Adapter exports
-
-src/entry-ssr.jsx                     Site-specific: wires themes + adminConfig into handler
+```bash
+npm run build              # Build to dist/
+npm run preview            # Preview locally before deploying
+npm run deploy             # Deploy to Netlify (primary site)
 ```
 
-The core handler uses the Web `Request` API and is platform-agnostic. The `express/` subfolder adapts it for Express. Future adapters (Bun, Deno, etc.) would go in sibling folders.
+The `VITE_*` values from `.env` are baked into the bundle at build time. The built `dist/` folder is pure static HTML + JS + CSS.
 
 ## Build Scripts
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Vite dev server (SPA) |
-| `npm run build` | Production SPA build |
+| `npm run dev` | Vite dev server (SPA mode) |
+| `npm run build` | Production SPA build to `dist/` |
 | `npm run build:client` | Client bundle to `dist/client/` |
 | `npm run build:server` | Server bundle to `dist/server/` |
 | `npm run build:ssr` | Both client + server builds |
-| `npm run preview` | Preview SPA production build |
+| `npm run preview` | Preview SPA production build locally |
 | `npm run server` | Start dms-server |
-| `npm run server:dev` | Start dms-server with nodemon |
+| `npm run server:dev` | Start dms-server with auto-restart (nodemon) |
 
 ## Project Structure
 
 ```
+.env.example               Configuration template
+.env                       Local config (gitignored)
+index.html                 HTML shell (serves both SPA and SSR)
 src/
-  App.jsx              Main entry — configures DmsSite with API hosts, themes, admin config
-  main.jsx             Client entry — SPA (createRoot) or SSR hydration (hydrateRoot)
-  entry-ssr.jsx        Server entry — wires site config into SSR handler
-  themes/              Theme definitions (catalyst, mny, transportny, wcdb, avail)
-  dms/                 Git submodule — @availabs/dms library
+  App.jsx                  Root component — reads config from import.meta.env
+  main.jsx                 Client entry — SPA (createRoot) or SSR (hydrateRoot)
+  entry-ssr.jsx            Server entry — wires themes + adminConfig into SSR handler
+  themes/                  Theme definitions (catalyst, mny, transportny, wcdb, avail)
+  dms/                     Git submodule — @availabs/dms library
     packages/
       dms/src/
         render/
-          spa/         SPA rendering (dmsSiteFactory, DmsSite component)
-          ssr2/        SSR rendering (handler, Express adapter)
-        patterns/      Pattern types (admin, auth, page, forms, datasets)
-        api/           Data loading/editing (dmsDataLoader, dmsDataEditor)
-        ui/            Shared UI components
-      dms-server/      Express server with Falcor API + optional SSR
+          spa/             SPA rendering (dmsSiteFactory, DmsSite component)
+          ssr2/            SSR rendering (handler, Express adapter)
+        patterns/          Pattern types (admin, auth, page, forms, datasets)
+        api/               Data loading/editing (dmsDataLoader, dmsDataEditor)
+        ui/                Shared UI components
+      dms-server/          Express server — Falcor API + optional SSR
+        .env               Optional server-specific overrides
+        src/db/configs/    Database configuration files
 ```

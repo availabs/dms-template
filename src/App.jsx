@@ -1,42 +1,31 @@
 import { DmsSite, adminConfig  } from "./dms/packages/dms/src"
 import themes from "./themes"
 
-const API_HOST = [
-  'https://graph.availabs.org',
-  'http://localhost:3001',
-  'http://localhost:4444'
-]
-
- // const WrappedAuth = LayoutWrapper(Auth)
- // console.log('what is auth', Auth, WrappedAuth)
-const sites = [
-  { app: 'avail', type: 'site' }, //[0]
-  { app: 'mitigat-ny-prod', type: 'prod' }, // [1]
-  { app: 'mitigat-ny-prod', type: 'planetary' }, // [2]
-  { app: 'wcdb', type: 'prod'}, // [3]
-  { app: 'asm', type: 'nhomb'}, // [4]
-  { app: 'npmrdsv5', type: 'dev2' }, // [5]
-  { app: 'avail-sqlite4', type: 'site' }, // [6]
-]
+const API_HOST = import.meta.env.VITE_API_HOST || 'https://graph.availabs.org'
+const DMS_APP = import.meta.env.VITE_DMS_APP || 'wcdb'
+const DMS_TYPE = import.meta.env.VITE_DMS_TYPE || 'prod'
+const BASE_URL = import.meta.env.VITE_DMS_BASE_URL || '/list'
+const AUTH_PATH = import.meta.env.VITE_DMS_AUTH_PATH || '/auth'
+const PG_ENVS = (import.meta.env.VITE_DMS_PG_ENVS || '').split(',').filter(Boolean)
 
 function App({ defaultData, hydrationData } = {}) {
   return (
     <DmsSite
       dmsConfig={
         adminConfig[0]({
-          ...sites[4],
-          baseUrl: '/list',
-          authPath: '/auth',
+          app: DMS_APP,
+          type: DMS_TYPE,
+          baseUrl: BASE_URL,
+          authPath: AUTH_PATH,
         })
       }
       defaultData={defaultData}
       hydrationData={hydrationData}
-      pgEnvs={['hazmit_dama']}
-      adminPath={'/list'}
-      API_HOST={ API_HOST[0] }
-      AUTH_HOST={ API_HOST[0] }
-      themes={ themes }
-      pgEnvs={ ["npmrds2"] }
+      pgEnvs={PG_ENVS}
+      adminPath={BASE_URL}
+      API_HOST={API_HOST}
+      AUTH_HOST={API_HOST}
+      themes={themes}
     />
   )
 }
