@@ -25,6 +25,11 @@ export default defineConfig({
       },
     }
   },
+  ssr: {
+    // Packages that should be bundled into the SSR build
+    // (rather than treated as external node_modules)
+    noExternal: ['@availabs/avl-falcor', 'react-router', 'lodash-es'],
+  },
   plugins: [
     react({
         babel: {

@@ -19,16 +19,18 @@ const sites = [
   { app: 'avail-sqlite4', type: 'site' }, // [6]
 ]
 
-function App() {
+function App({ defaultData, hydrationData } = {}) {
   return (
     <DmsSite
       dmsConfig={
         adminConfig[0]({
-          ...sites[1],
+          ...sites[4],
           baseUrl: '/list',
           authPath: '/auth',
         })
       }
+      defaultData={defaultData}
+      hydrationData={hydrationData}
       pgEnvs={['hazmit_dama']}
       adminPath={'/list'}
       API_HOST={ API_HOST[0] }
