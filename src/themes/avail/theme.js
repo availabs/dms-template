@@ -315,22 +315,22 @@ const availTheme = {
     "menuItems": "absolute z-40 -mr-1 mt-1 w-64 p-1 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-50 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
   },
   "input": {
-    "input": "relative w-full block appearance-none rounded-lg px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing[3])-1px)] sm:py-[calc(theme(spacing[1.5])-1px)] text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white border border-zinc-950/10 data-[hover]:border-zinc-950/20 dark:border-white/10 dark:data-[hover]:border-white/20 bg-transparent dark:bg-white/5 focus:outline-none data-[invalid]:border-red-500 data-[invalid]:data-[hover]:border-red-500 data-[invalid]:dark:border-red-500 data-[invalid]:data-[hover]:dark:border-red-500 data-[disabled]:border-zinc-950/20 dark:data-[hover]:data-[disabled]:border-white/15 data-[disabled]:dark:border-white/15 data-[disabled]:dark:bg-white/[2.5%] dark:[color-scheme:dark]",
-    "inputContainer": "group flex relative w-full before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.lg)-1px)] before:bg-white before:shadow dark:before:hidden after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:ring-inset after:ring-transparent sm:after:focus-within:ring-2 sm:after:focus-within:ring-blue-500 has-[[data-disabled]]:opacity-50 before:has-[[data-disabled]]:bg-zinc-950/5 before:has-[[data-disabled]]:shadow-none before:has-[[data-invalid]]:shadow-red-500/10",
-    "textarea": "relative block h-full w-full appearance-none rounded-lg px-[calc(--spacing(3.5)-1px)] py-[calc(--spacing(2.5)-1px)] sm:px-[calc(--spacing(3)-1px)] sm:py-[calc(--spacing(1.5)-1px)] text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white border border-zinc-950/10 data-hover:border-zinc-950/20 dark:border-white/10 dark:data-hover:border-white/20 bg-transparent dark:bg-white/5 focus:outline-hidden data-invalid:border-red-500 data-invalid:data-hover:border-red-500 dark:data-invalid:border-red-600 dark:data-invalid:data-hover:border-red-600 disabled:border-zinc-950/20 dark:disabled:border-white/15 dark:disabled:bg-white/2.5 dark:data-hover:disabled:border-white/15 resize-y",
+    "input": "relative w-full block appearance-none rounded-md px-3 py-2 sm:py-1.5 text-sm text-[#191919] placeholder:text-[#191919]/30 bg-transparent border-b border-[#191919]/15 hover:border-[#191919]/30 focus:border-[#191919]/50 focus:outline-none transition-colors data-[invalid]:border-red-500 data-[disabled]:opacity-50",
+    "inputContainer": "group flex relative w-full",
+    "textarea": "relative block h-full w-full appearance-none rounded-md px-3 py-2 sm:py-1.5 text-sm text-[#191919] placeholder:text-[#191919]/30 bg-transparent border-b border-[#191919]/15 hover:border-[#191919]/30 focus:border-[#191919]/50 focus:outline-none transition-colors data-[invalid]:border-red-500 data-[disabled]:opacity-50 resize-y",
     "confirmButtonContainer": "absolute right-0 hidden group-hover:flex items-center",
-    "editButton": "py-1.5 px-2 text-slate-400 hover:text-blue-500 cursor-pointer bg-white/10",
-    "cancelButton": "text-slate-400 hover:text-red-500 cursor-pointer  py-1.5 pr-1 ",
-    "confirmButton": "text-green-500 hover:text-white hover:bg-green-500 cursor-pointer rounded-full"
+    "editButton": "py-1.5 px-2 text-[#191919]/40 hover:text-[#191919] cursor-pointer",
+    "cancelButton": "text-[#191919]/40 hover:text-red-600 cursor-pointer py-1.5 pr-1",
+    "confirmButton": "text-green-600 hover:text-white hover:bg-green-600 cursor-pointer rounded-full"
   },
   "icon": {
     "iconWrapper": "",
     "icon": "size-6"
   },
   "field": {
-    "field": "pb-2",
-    "label": "select-none text-base/6 text-zinc-950 data-[disabled]:opacity-50 sm:text-sm/6 dark:text-white",
-    "description": "text-base/6 text-zinc-500 data-[disabled]:opacity-50 sm:text-sm/6 dark:text-zinc-400"
+    "field": "pb-3",
+    "label": "select-none text-xs font-medium tracking-wide text-[#191919]/50 uppercase data-[disabled]:opacity-50",
+    "description": "text-xs text-[#191919]/40 data-[disabled]:opacity-50"
   },
   "dialog": {
     "backdrop": "fixed inset-0 flex w-screen justify-center overflow-y-auto bg-zinc-950/25 px-2 py-2 transition duration-100 focus:outline-0 data-[closed]:opacity-0 data-[enter]:ease-out data-[leave]:ease-in sm:px-6 sm:py-8 lg:px-8 lg:py-16 dark:bg-zinc-950/50",
@@ -354,12 +354,12 @@ const availTheme = {
     "container": "absolute shadow-lg z-30 transform overflow-visible z-50 rounded-md"
   },
   "label": {
-    "labelWrapper": "px-[12px] pt-[9px] pb-[7px] rounded-md",
-    "label": "inline-flex items-center rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline"
+    "labelWrapper": "px-3 pt-2 pb-1.5",
+    "label": "inline-flex items-center text-xs font-medium tracking-wide text-[#191919]/50 uppercase"
   },
   "select": {
-    "selectContainer": "group relative block w-full before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.lg)-1px)] before:bg-white before:shadow dark:before:hidden after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:ring-inset after:ring-transparent after:has-[[data-focus]]:ring-2 after:has-[[data-focus]]:ring-blue-500 has-[[data-disabled]]:opacity-50 before:has-[[data-disabled]]:bg-zinc-950/5 before:has-[[data-disabled]]:shadow-none",
-    "select": "relative block w-full appearance-none rounded-lg py-[calc(theme(spacing[2.5])-1px)] sm:py-[calc(theme(spacing[1.5])-1px)] px-[calc(theme(spacing[3.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] [&_optgroup]:font-semibold text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white dark:*:text-white border border-zinc-950/10 data-[hover]:border-zinc-950/20 dark:border-white/10 dark:data-[hover]:border-white/20 bg-transparent dark:bg-white/5 dark:*:bg-zinc-800 focus:outline-none data-[invalid]:border-red-500 data-[invalid]:data-[hover]:border-red-500 data-[invalid]:dark:border-red-600 data-[invalid]:data-[hover]:dark:border-red-600 data-[disabled]:border-zinc-950/20 data-[disabled]:opacity-100 dark:data-[hover]:data-[disabled]:border-white/15 data-[disabled]:dark:border-white/15 data-[disabled]:dark:bg-white/[2.5%]"
+    "selectContainer": "group relative block w-full",
+    "select": "relative block w-full appearance-none rounded-md py-2 sm:py-1.5 px-3 [&_optgroup]:font-semibold text-sm text-[#191919] placeholder:text-[#191919]/30 bg-transparent border-b border-[#191919]/15 hover:border-[#191919]/30 focus:border-[#191919]/50 focus:outline-none transition-colors data-[invalid]:border-red-500 data-[disabled]:opacity-50"
   },
   "listbox": {
     "listboxContainer": "group relative block w-full before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.lg)-1px)] before:bg-white before:shadow dark:before:hidden after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:ring-inset after:ring-transparent after:has-[[data-focus]]:ring-2 after:has-[[data-focus]]:ring-blue-500 has-[[data-disabled]]:opacity-50 before:has-[[data-disabled]]:bg-zinc-950/5 before:has-[[data-disabled]]:shadow-none",
@@ -368,45 +368,107 @@ const availTheme = {
     "listboxButton": "relative block w-full rounded-lg bg-white/5 py-1.5 pr-8 pl-3 text-left text-sm/6 text-white focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
   },
   "table": {
-    "tableContainer": "flex flex-col overflow-x-auto",
-    "tableContainerNoPagination": "",
-    "tableContainer1": "flex flex-col no-wrap min-h-[40px] max-h-[calc(78vh_-_10px)] overflow-y-auto",
-    "headerContainer": "sticky top-0 grid",
-    "thead": "flex justify-between",
-    "theadfrozen": "",
-    "thContainer": "w-full font-semibold px-3 py-1 content-center text-sm font-semibold text-gray-600 border",
-    "thContainerBgSelected": "bg-blue-100 text-gray-900",
-    "thContainerBg": "bg-gray-50 text-gray-500",
-    "cell": "relative flex items-center min-h-[35px]  border border-slate-50",
-    "cellInner": "\n        w-full min-h-full flex flex-wrap items-center truncate py-0.5 px-1\n        font-[400] text-[14px]  leading-[18px] text-slate-600\n    ",
-    "cellBg": "bg-white",
-    "cellBgSelected": "bg-blue-50",
-    "cellFrozenCol": "",
-    "paginationInfoContainer": "",
-    "paginationPagesInfo": "font-[500] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
-    "paginationRowsInfo": "text-xs",
-    "paginationContainer": "w-full p-2 flex items-center justify-between",
-    "paginationControlsContainer": "flex flex-row items-center overflow-hidden gap-0.5",
-    "pageRangeItem": "cursor-pointer px-3  text-[#2D3E4C] py-1  text-[12px] hover:bg-slate-50 font-[500] rounded  uppercase leading-[18px]",
-    "pageRangeItemInactive": "",
-    "pageRangeItemActive": "bg-slate-100 ",
-    "openOutContainer": "w-[330px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
-    "openOutContainerWrapper": "fixed inset-0 right-0 h-full w-full z-[100]",
-    "openOutHeader": "font-semibold text-gray-600"
+    "options": {
+      "activeStyle": 0
+    },
+    "styles": [
+      {
+        "name": "default",
+        "tableContainer": "flex flex-col overflow-x-auto min-h-[40px] max-h-[calc(78vh_-_10px)] overflow-y-auto",
+        "tableContainerNoPagination": "",
+
+        "headerContainer": "sticky top-0 grid",
+        "headerLeftGutter": "flex justify-between sticky left-0 z-[1]",
+        "headerWrapper": "flex justify-between",
+        "headerCellContainer": "w-full px-4 py-2.5 content-center text-xs font-medium tracking-wide uppercase text-[#191919]/50 border-b border-[#191919]/10",
+        "headerCellContainerBgSelected": "bg-[#191919]/5 text-[#191919]",
+        "headerCellContainerBg": "bg-[#fdfbf5] text-[#191919]/50",
+        "colResizer": "z-5 -ml-2 w-[1px] hover:w-[2px] bg-[#191919]/10 hover:bg-[#191919]/30",
+
+        "wrapText": "whitespace-pre-wrap",
+        "cell": "relative flex items-center min-h-[40px] border-b border-[#191919]/5",
+        "cellInner": "w-full min-h-full flex flex-wrap items-center truncate py-2 px-4 font-normal text-sm leading-5 text-[#191919]/80",
+        "cellBgOdd": "bg-transparent hover:bg-[#191919]/[0.03]",
+        "cellBgEven": "bg-transparent hover:bg-[#191919]/[0.03]",
+        "cellBg": "bg-transparent hover:bg-[#191919]/[0.03]",
+        "cellBgSelected": "bg-[#191919]/[0.03] hover:bg-[#191919]/[0.05]",
+        "totalCell": "hover:bg-[#191919]/[0.03]",
+        "cellEditableTextBox": "absolute border border-[#191919]/15 focus:outline-none min-w-[180px] min-h-[50px] z-[10] whitespace-pre-wrap bg-[#fdfbf5]",
+        "cellFrozenCol": "",
+        "cellInvalid": "bg-red-50 hover:bg-red-100",
+        "gutterCellWrapper": "flex text-xs items-center justify-center cursor-pointer sticky left-0 z-[1]",
+        "gutterCellWrapperNotSelected": "bg-[#fdfbf5] text-[#191919]/50",
+        "gutterCellWrapperSelected": "bg-[#191919]/5 text-[#191919]",
+
+        "paginationInfoContainer": "",
+        "paginationPagesInfo": "font-medium text-xs uppercase text-[#191919]/50 tracking-wide leading-5",
+        "paginationRowsInfo": "text-xs text-[#191919]/40",
+        "paginationContainer": "w-full p-3 flex items-center justify-between",
+        "paginationControlsContainer": "flex flex-row items-center overflow-hidden gap-0.5",
+        "pageRangeItem": "cursor-pointer px-3 py-1 text-xs text-[#191919]/60 hover:bg-[#191919]/5 font-medium rounded tracking-wide uppercase leading-5",
+        "pageRangeItemInactive": "",
+        "pageRangeItemActive": "bg-[#191919]/5 text-[#191919]",
+
+        "totalRow": "bg-[#191919]/5 sticky bottom-0 z-[3]",
+        "stripedRow": "even:bg-[#191919]/[0.02]",
+
+        "openOutContainer": "w-[330px] overflow-auto scrollbar-sm flex flex-col gap-3 p-4 bg-[#fdfbf5] h-full float-right",
+        "openOutContainerWrapper": "fixed inset-0 right-0 h-full w-full z-[100]",
+        "openOutHeader": "font-medium text-[#191919]/60",
+        "openOutCloseIconContainer": "w-full flex justify-end",
+        "openOutCloseIconWrapper": "w-fit h-fit p-2 text-[#191919]/60 border border-[#191919]/10 rounded-full cursor-pointer",
+        "openOutCloseIcon": "XMark",
+        "openOutContainerWrapperBgColor": "#00000066",
+        "openOutIconWrapper": "px-2 cursor-pointer bg-transparent text-[#191919]/40 hover:text-[#191919]/60",
+
+        "headerCellWrapper": "relative w-full",
+        "headerCellBtn": "group inline-flex items-center w-full justify-between gap-x-1.5 rounded-md cursor-pointer",
+        "headerCellLabel": "truncate select-none",
+        "headerCellBtnActive": "bg-[#191919]/10",
+        "headerCellFnIconClass": "text-[#191919]/30",
+        "headerCellCountIcon": "TallyMark",
+        "headerCellListIcon": "LeftToRightListBullet",
+        "headerCellSumIcon": "Sum",
+        "headerCellAvgIcon": "Avg",
+        "headerCellGroupIcon": "Group",
+        "headerCellSortAscIcon": "SortAsc",
+        "headerCellSortDescIcon": "SortDesc",
+        "headerCellMenuIcon": "ArrowDown",
+        "headerCellMenuIconClass": "text-[#191919]/30 group-hover:text-[#191919]/60 transition ease-in-out duration-200 print:hidden",
+        "headerCellIconWrapper": "flex items-center",
+        "headerCellMenu": "py-0.5 flex flex-col gap-0.5 items-center px-1 text-xs text-[#191919]/60 font-regular max-h-[500px] min-w-[180px] z-[10] overflow-auto scrollbar-sm bg-[#fdfbf5] divide-y divide-[#191919]/5 rounded-md shadow-lg ring-1 ring-[#191919]/10",
+        "headerCellControlWrapper": "w-full group px-2 py-1 flex justify-between items-center rounded-md hover:bg-[#191919]/5",
+        "headerCellControlLabel": "w-fit font-regular text-[#191919]/50 cursor-default",
+        "headerCellControl": "p-0.5 w-full rounded-md bg-transparent group-hover:bg-[#191919]/[0.03] cursor-pointer"
+      }
+    ]
   },
   "lexical": {},
   "dataCard": {
     "columnControlWrapper": "grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-0.5",
-    "columnControlHeaderWrapper": "px-1 font-semibold border bg-gray-50 text-gray-500",
+    "columnControlHeaderWrapper": "px-1 font-semibold border border-[#191919]/10 bg-[#fdfbf5] text-[#191919]/60",
     "mainWrapperCompactView": "grid",
     "mainWrapperSimpleView": "flex flex-col",
     "subWrapper": "w-full",
-    "subWrapperCompactView": "flex flex-col rounded-[12px]",
+    "subWrapperCompactView": "flex flex-col rounded-lg",
     "subWrapperSimpleView": "grid",
-    "headerValueWrapper": "w-full rounded-[12px] flex items-center justify-center p-2",
+    "headerValueWrapper": "w-full rounded-lg flex items-center justify-center p-2",
     "headerValueWrapperCompactView": "py-0",
     "headerValueWrapperSimpleView": "",
-    "justifyTextLeft": "text-start justify-items-start  rounded-md",
+    "headerValueWrapperBorderBelow": "border-b border-[#191919]/10 rounded-none",
+    "componentWrapper": "w-full",
+    "valueWrapper": "min-h-[20px]",
+    "itemBorder": "border border-[#191919]/10",
+    "itemFlexCol": "flex-col",
+    "itemFlexRow": "flex-row",
+    "itemFlexColReverse": "flex-col flex-col-reverse",
+    "itemFlexRowReverse": "flex-row flex-row-reverse",
+    "iconAndColorValues": "flex items-center gap-1.5 uppercase",
+    "formEditButtonsWrapper": "self-end flex gap-1 text-sm py-1",
+    "formEditSaveButton": "bg-[#191919] hover:bg-[#191919]/80 text-[#fdfbf5] rounded px-3 py-1 text-xs font-medium tracking-wide transition-colors",
+    "formEditCancelButton": "bg-transparent hover:bg-[#191919]/5 text-[#191919]/60 border border-[#191919]/15 rounded px-3 py-1 text-xs font-medium tracking-wide transition-colors",
+    "formAddNewItemButton": "bg-[#191919] hover:bg-[#191919]/80 text-[#fdfbf5] rounded px-3 py-1 text-xs font-medium tracking-wide self-end transition-colors",
+    "justifyTextLeft": "text-start justify-items-start rounded-md",
     "justifyTextRight": "text-end justify-items-end rounded-md",
     "justifyTextCenter": "text-center justify-items-center rounded-md",
     "textXS": "text-xs font-medium",
@@ -415,7 +477,7 @@ const availTheme = {
     "textSMReg": "text-sm font-normal",
     "textSMBold": "text-sm font-normal",
     "textSMSemiBold": "text-sm font-semibold",
-    "textMD": "ftext-md ont-medium",
+    "textMD": "text-md font-medium",
     "textMDReg": "text-md font-normal",
     "textMDBold": "text-md font-bold",
     "textMDSemiBold": "text-md font-semibold",
@@ -441,8 +503,9 @@ const availTheme = {
     "img6XL": "max-w-80 max-h-80",
     "img7XL": "max-w-96 max-h-96",
     "img8XL": "max-w-128 max-h-128",
-    "header": "w-full capitalize",
-    "value": "w-full"
+    "header": "w-full capitalize text-[#191919]/50",
+    "value": "w-full text-[#191919]",
+    "description": "w-full text-xs font-light text-[#191919]/40"
   },
   "attribution": {
     "wrapper": "w-full p-1 flex gap-1 text-xs text-gray-900",
