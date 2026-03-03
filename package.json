@@ -15,7 +15,10 @@
     "preview": "vite preview",
     "start": "vite",
     "server": "npm start --prefix src/dms/packages/dms-server",
-    "server:dev": "npm run dev --prefix src/dms/packages/dms-server"
+    "server:dev": "npm run dev --prefix src/dms/packages/dms-server",
+    "build:client": "vite build --outDir dist/client",
+    "build:server": "vite build --ssr src/entry-ssr.jsx --outDir dist/server",
+    "build:ssr": "npm run build:client && npm run build:server"
   },
   "dependencies": {
     "@availabs/dms": "^0.1.8",
