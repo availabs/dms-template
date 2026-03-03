@@ -23,7 +23,7 @@ function App() {
     <DmsSite
       dmsConfig={
         adminConfig[0]({
-          ...sites[6],
+          ...sites[5],
           baseUrl: '/list',
           authPath: '/auth',
         })
