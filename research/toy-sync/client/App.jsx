@@ -5,6 +5,7 @@ import { useMutation } from './use-mutation.js';
 import NoteList from './components/NoteList.jsx';
 import NoteEditor from './components/NoteEditor.jsx';
 import SyncStatus from './components/SyncStatus.jsx';
+import LexicalThemeProvider from './components/LexicalThemeProvider.jsx';
 
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -53,14 +54,16 @@ export default function App() {
         <h1 className="text-lg font-semibold text-white">Toy Sync</h1>
         <SyncStatus />
       </header>
-      <div className="flex flex-1 overflow-hidden">
-        <NoteList
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onCreate={handleCreate}
-        />
-        <NoteEditor noteId={selectedId} onDelete={handleDelete} />
-      </div>
+      <LexicalThemeProvider>
+        <div className="flex flex-1 overflow-hidden">
+          <NoteList
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            onCreate={handleCreate}
+          />
+          <NoteEditor noteId={selectedId} onDelete={handleDelete} />
+        </div>
+      </LexicalThemeProvider>
     </div>
   );
 }

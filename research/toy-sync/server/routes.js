@@ -22,7 +22,7 @@ router.post('/api/items', async (req, res) => {
   const dataStr = typeof data === 'string' ? data : JSON.stringify(data || {});
 
   await db.run(
-    'INSERT INTO items (id, data) VALUES ($1, $2)',
+    'INSERT INTO items (id, data) VALUES ($1, $2) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = NOW()',
     [id, dataStr]
   );
 
