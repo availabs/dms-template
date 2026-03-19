@@ -1,1 +1,32 @@
 @import "tailwindcss";
+@source "../../../src/dms/packages/dms/src/ui/components/lexical/";
+
+/* Collaborative editing cursors */
+.collaboration-cursor-caret {
+  position: relative;
+  border-left: 2px solid;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  word-break: normal;
+}
+
+.collaboration-cursor-label {
+  position: absolute;
+  top: -1.4em;
+  left: -1px;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1;
+  padding: 1px 6px 2px;
+  border-radius: 3px 3px 3px 0;
+  color: white;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.collaboration-cursor-selection {
+  pointer-events: none;
+}

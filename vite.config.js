@@ -2,6 +2,8 @@ import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import wasm from 'vite-plugin-wasm'
+import topLevelAwait from 'vite-plugin-top-level-await'
 
 // Progress reporter — shows module count during long transforms
 function buildProgress() {
@@ -41,10 +43,18 @@ export default defineConfig(({ isSsrBuild }) => ({
   // Vite's dep scanner misses these because the alias target is a local file.
   // Pre-bundle them so the browser gets ESM wrappers.
   optimizeDeps: {
+    // Limit dep scanner to main entry — prevents it from crawling research/
+    // (which has its own Vite config with different aliases like @dms/ui/...)
+    entries: ['index.html'],
     include: [
       'xhr2',                // Node-only, resolved to browser entry (CJS)
       'falcor/lib/ModelRoot', // CJS deep import from falcorGraph.js
       'lodash.throttle',     // CJS package import from falcorGraph.js
+    ],
+    // wa-sqlite bundles .wasm files that Vite's pre-bundler can't handle
+    exclude: [
+      '@journeyapps/wa-sqlite', // bundles .wasm files
+      'linkedom',               // Node-only SSR dep, not needed in browser
     ],
   },
   build: {
@@ -71,7 +81,14 @@ export default defineConfig(({ isSsrBuild }) => ({
       'colorbrewer',  // "type":"module" but main is UMD — Vite uses "module" field (ESM)
     ],
   },
+  // wa-sqlite Web Worker needs WASM + top-level-await support
+  worker: {
+    format: 'es',
+    plugins: () => [wasm(), topLevelAwait()],
+  },
   plugins: [
+    wasm(),
+    topLevelAwait(),
     // SSR: skip React Compiler (memoization is pointless for one-shot renders)
     // and TailwindCSS (no CSS output needed on the server).
     react(isSsrBuild ? {} : {

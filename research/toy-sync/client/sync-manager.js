@@ -1,4 +1,5 @@
 import { exec } from './db-client.js';
+import { applyLocal, applyRemote, initFromData } from './yjs-store.js';
 
 // Event bus for invalidation
 const listeners = new Set();
@@ -60,7 +61,12 @@ async function applyItems(items) {
        ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`,
       [item.id, item.app, item.type, item.data, item.created_at, item.updated_at]
     );
+    try {
+      const parsed = JSON.parse(item.data);
+      initFromData(item.id, parsed);
+    } catch {}
   }
+
 }
 
 export async function bootstrap() {
@@ -110,6 +116,7 @@ export function connectWS() {
     // Catch up on anything missed while disconnected
     catchUp();
     updateStatus('connected');
+    notifyWSListeners();
   };
 
   ws.onmessage = async (e) => {
@@ -123,10 +130,16 @@ export function connectWS() {
         }
 
         if (msg.action === 'I' || msg.action === 'U') {
+          const remoteData = JSON.parse(msg.item.data);
+          const merged = applyRemote(msg.item.id, remoteData);
+          const mergedStr = JSON.stringify(merged);
+
           await exec(
-            `INSERT INTO items (id, app, type, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
+            `INSERT INTO items (id, app, type, data, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`,
-            [msg.item.id, msg.item.app, msg.item.type, msg.item.data, msg.item.created_at, msg.item.updated_at]
+            [msg.item.id, msg.item.app, msg.item.type, mergedStr,
+             msg.item.created_at, msg.item.updated_at]
           );
         } else if (msg.action === 'D') {
           await exec('DELETE FROM items WHERE id = ?', [msg.item.id]);
@@ -199,7 +212,11 @@ export async function localCreate(id, data) {
 }
 
 export async function localUpdate(id, data) {
-  const dataStr = typeof data === 'string' ? data : JSON.stringify(data);
+  // raw overwrite
+  //const dataStr = typeof data === 'string' ? data : JSON.stringify(data);
+  // Merge via Yjs instead of raw overwrite
+  const merged = applyLocal(id, data);
+  const dataStr = JSON.stringify(merged);
 
   // Optimistic local write
   await exec(
@@ -255,8 +272,6 @@ async function pushCreate(id, dataStr) {
     );
     await setLastRevision(revision);
     await removePending(id, 'create');
-    pendingItemIds.delete(id);
-    updateStatus('connected');
   } catch (err) {
     console.warn('[sync] push create failed (will retry):', err.message);
     retryFlush();
@@ -270,12 +285,24 @@ async function pushUpdate(id, dataStr) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: dataStr }),
     });
+    if (res.status === 404) {
+      // Item doesn't exist on server yet — create it instead
+      console.warn('[sync] push update got 404, creating item instead');
+      const createRes = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, data: dataStr }),
+      });
+      if (!createRes.ok) throw new Error(`create-from-update failed: ${createRes.status}`);
+      const { revision } = await createRes.json();
+      await setLastRevision(revision);
+      await removePending(id, 'update');
+      return;
+    }
     if (!res.ok) throw new Error(`update failed: ${res.status}`);
     const { revision } = await res.json();
     await setLastRevision(revision);
     await removePending(id, 'update');
-    pendingItemIds.delete(id);
-    updateStatus('connected');
   } catch (err) {
     console.warn('[sync] push update failed (will retry):', err.message);
     retryFlush();
@@ -291,8 +318,6 @@ async function pushDelete(id) {
       await setLastRevision(revision);
     }
     await removePending(id, 'delete');
-    pendingItemIds.delete(id);
-    updateStatus('connected');
   } catch (err) {
     console.warn('[sync] push delete failed (will retry):', err.message);
     retryFlush();
@@ -308,6 +333,23 @@ async function removePending(itemId, action) {
   if (result.rows.length > 0) {
     await exec('DELETE FROM pending_mutations WHERE id = ?', [result.rows[0].id]);
   }
+
+  // Only clear echo suppression when ALL pending mutations for this item are done.
+  // Without this, a completed pushCreate would clear pendingItemIds while a pushUpdate
+  // is still in flight, causing the CREATE echo to overwrite local edits.
+  const remaining = await exec(
+    'SELECT COUNT(*) as count FROM pending_mutations WHERE item_id = ?',
+    [itemId]
+  );
+  if (remaining.rows[0].count === 0) {
+    pendingItemIds.delete(itemId);
+  }
+
+  // Only show "connected" when there are no pending mutations at all
+  const total = await exec('SELECT COUNT(*) as count FROM pending_mutations');
+  if (total.rows[0].count === 0) {
+    updateStatus('connected');
+  }
 }
 
 let flushTimer = null;
@@ -316,7 +358,7 @@ function retryFlush() {
   flushTimer = setTimeout(async () => {
     flushTimer = null;
     await flushPending();
-  }, 3000);
+  }, 500);
 }
 
 async function flushPending() {
@@ -353,6 +395,24 @@ function updateStatus(status) {
 
 export function getStatus() {
   return currentStatus;
+}
+
+// --- WebSocket access (for collab provider) ---
+
+export function getWS() {
+  return ws;
+}
+
+// Subscribe to WebSocket lifecycle (for collab provider reconnection)
+const wsListeners = new Set();
+export function onWSChange(fn) {
+  wsListeners.add(fn);
+  if (ws && ws.readyState === 1) fn(ws);
+  return () => wsListeners.delete(fn);
+}
+
+function notifyWSListeners() {
+  for (const fn of wsListeners) fn(ws);
 }
 
 // --- Pending count ---

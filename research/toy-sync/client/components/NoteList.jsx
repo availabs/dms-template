@@ -1,9 +1,27 @@
 import React from 'react';
 import { useQuery } from '../use-query.js';
 
+// Extract plain text from a Lexical JSON string (or return plain string as-is)
+function extractPreviewText(desc) {
+  if (!desc) return '';
+  try {
+    const parsed = JSON.parse(desc);
+    if (parsed?.root?.children) {
+      return parsed.root.children.map(extractNodeText).filter(Boolean).join(' ');
+    }
+  } catch {}
+  return desc;
+}
+
+function extractNodeText(node) {
+  if (node.text) return node.text;
+  if (node.children) return node.children.map(extractNodeText).filter(Boolean).join('');
+  return '';
+}
+
 export default function NoteList({ selectedId, onSelect, onCreate }) {
   const { data: notes, loading } = useQuery(
-    "SELECT id, data, updated_at FROM items ORDER BY updated_at DESC"
+    "SELECT id, data, updated_at FROM items ORDER BY created_at DESC"
   );
 
   if (loading) return <div className="w-70 min-w-70 border-r border-neutral-800 bg-[#131313] p-5 text-neutral-600">Loading...</div>;
@@ -24,8 +42,9 @@ export default function NoteList({ selectedId, onSelect, onCreate }) {
         let parsed = {};
         try { parsed = JSON.parse(note.data); } catch {}
         const title = parsed.title || 'Untitled';
-        const desc = parsed.description || '';
-        const preview = desc.length > 60 ? desc.slice(0, 60) + '...' : desc;
+        const rawDesc = parsed.description || '';
+        const plainText = extractPreviewText(rawDesc);
+        const preview = plainText.length > 60 ? plainText.slice(0, 60) + '...' : plainText;
 
         return (
           <div

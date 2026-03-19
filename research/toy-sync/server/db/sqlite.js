@@ -36,6 +36,11 @@ export default function createSQLiteAdapter() {
       data TEXT,
       created_at TEXT DEFAULT (datetime('now'))
     );
+    CREATE TABLE IF NOT EXISTS yjs_states (
+      item_id TEXT PRIMARY KEY,
+      state BLOB NOT NULL,
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
   `;
 
   // Run schema statements one at a time

@@ -1,51 +1,62 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '../use-query.js';
 import { useMutation } from '../use-mutation.js';
+import CollabEditor from './CollabEditor.jsx';
 
 export default function NoteEditor({ noteId, onDelete }) {
   const { updateNote, deleteNote } = useMutation();
   const { data: notes } = useQuery(
-    'SELECT data FROM items WHERE id = ?',
+    'SELECT id, data FROM items WHERE id = ?',
     [noteId],
     [noteId]
   );
 
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
   const debounceRef = useRef(null);
   const localEditRef = useRef(false);
+  const titleRef = useRef('');
+  const noteIdRef = useRef(noteId);
+  noteIdRef.current = noteId;
 
-  // Load data from query result
+  // Track which noteId we have loaded data for
+  const [loadedNoteId, setLoadedNoteId] = useState(null);
+
+  // Load title from query result (description is managed by CollabEditor/Yjs)
   useEffect(() => {
-    if (notes.length > 0 && !localEditRef.current) {
+    if (notes.length > 0 && notes[0].id === noteId && !localEditRef.current) {
       try {
         const parsed = JSON.parse(notes[0].data);
-        setTitle(parsed.title || '');
-        setDescription(parsed.description || '');
+        const t = parsed.title || '';
+        setTitle(t);
+        titleRef.current = t;
+        setLoadedNoteId(noteId);
       } catch {}
     }
     localEditRef.current = false;
-  }, [notes]);
+  }, [notes, noteId]);
 
   // Reset when noteId changes
   useEffect(() => {
     localEditRef.current = false;
+    setLoadedNoteId(null);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
   }, [noteId]);
 
-  function handleChange(field, value) {
+  // Save title (field-level LWW, same as before)
+  const saveTitle = useCallback((value) => {
     localEditRef.current = true;
-    const newTitle = field === 'title' ? value : title;
-    const newDesc = field === 'description' ? value : description;
+    setTitle(value);
+    titleRef.current = value;
 
-    if (field === 'title') setTitle(value);
-    if (field === 'description') setDescription(value);
-
-    // Debounced save
+    const id = noteIdRef.current;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      updateNote(noteId, { title: newTitle, description: newDesc });
+      updateNote(id, { title: titleRef.current });
     }, 300);
-  }
+  }, [updateNote]);
 
   function handleDelete() {
     if (confirm('Delete this note?')) {
@@ -63,20 +74,21 @@ export default function NoteEditor({ noteId, onDelete }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col p-5">
+    <div className="flex-1 flex flex-col p-5 overflow-hidden">
       <input
         className="bg-transparent border-none text-2xl font-semibold text-white outline-none pb-3 border-b border-neutral-800 mb-4 placeholder:text-neutral-700"
         type="text"
         placeholder="Note title..."
         value={title}
-        onChange={(e) => handleChange('title', e.target.value)}
+        onChange={(e) => saveTitle(e.target.value)}
       />
-      <textarea
-        className="flex-1 bg-transparent border-none text-base text-neutral-400 leading-relaxed outline-none resize-none font-[inherit] placeholder:text-neutral-700"
-        placeholder="Write something..."
-        value={description}
-        onChange={(e) => handleChange('description', e.target.value)}
-      />
+      <div className="flex-1 overflow-y-auto">
+        {loadedNoteId === noteId ? (
+          <CollabEditor noteId={noteId} />
+        ) : (
+          <div className="text-neutral-600 text-sm p-2">Loading...</div>
+        )}
+      </div>
       <div className="pt-4 border-t border-neutral-800 mt-4">
         <button
           className="bg-transparent text-red-500 border border-red-500 px-3.5 py-1.5 rounded text-sm cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
