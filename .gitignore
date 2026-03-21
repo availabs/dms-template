@@ -34,3 +34,17 @@ scratchpad
 
 # code references f
 references
+
+# Heap snapshots
+*.heapsnapshot
+
+# Extracted images (large, served by nginx)
+public/img
+img
+
+# SQLite database files
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db-shm
+*.db-wal

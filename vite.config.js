@@ -1,9 +1,9 @@
 import path from 'path'
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import wasm from 'vite-plugin-wasm'
-import topLevelAwait from 'vite-plugin-top-level-await'
 
 // Progress reporter — shows module count during long transforms
 function buildProgress() {
@@ -27,7 +27,7 @@ export default defineConfig(({ isSsrBuild }) => ({
     alias: [
       { find: '~', replacement: path.resolve(__dirname, 'src') },
       { find: "lodash", replacement: 'lodash-es' },
-      // avl-falcor's "main" points to CJS dist/index.js — breaks Vite 7's SSR
+      // avl-falcor's "main" points to CJS dist/index.js — breaks Vite's SSR
       // module runner (exports is not defined). Point at ESM source instead.
       // Client: xhr2 (Node-only dep in the source) is handled by optimizeDeps.
       // MUST be regex (exact match) — string find matches as prefix, which would
@@ -37,6 +37,9 @@ export default defineConfig(({ isSsrBuild }) => ({
       // export (set via `falcor.Model = require(...)` after module.exports).
       // ESM shim re-exports via default import.
       { find: /^falcor$/, replacement: path.resolve(__dirname, 'src/dms/packages/dms/src/render/ssr2/falcor-shim.js') },
+      // Force all yjs imports to a single copy — Rolldown can resolve multiple
+      // instances (pre-bundled vs direct), triggering Yjs's duplicate-import check.
+      { find: /^yjs$/, replacement: path.resolve(__dirname, 'node_modules/yjs/dist/yjs.mjs') },
     ]
   },
   // The avl-falcor alias points at ESM source which imports CJS deps directly.
@@ -60,7 +63,7 @@ export default defineConfig(({ isSsrBuild }) => ({
   build: {
     outDir: 'dist',
     // Client: split vendor/maplibre chunks. SSR: single bundle is fine.
-    rollupOptions: isSsrBuild ? {} : {
+    rolldownOptions: isSsrBuild ? {} : {
       output: {
         manualChunks: (id) => {
           if (id.includes('maplibre-gl')) {
@@ -84,20 +87,14 @@ export default defineConfig(({ isSsrBuild }) => ({
   // wa-sqlite Web Worker needs WASM + top-level-await support
   worker: {
     format: 'es',
-    plugins: () => [wasm(), topLevelAwait()],
+    plugins: () => [wasm()],
   },
   plugins: [
     wasm(),
-    topLevelAwait(),
     // SSR: skip React Compiler (memoization is pointless for one-shot renders)
     // and TailwindCSS (no CSS output needed on the server).
-    react(isSsrBuild ? {} : {
-      babel: {
-        plugins: [
-          'babel-plugin-react-compiler',
-        ],
-      },
-    }),
+    react(),
+    !isSsrBuild && babel({ presets: [reactCompilerPreset()] }),
     !isSsrBuild && tailwindcss(),
     buildProgress(),
   ].filter(Boolean),
