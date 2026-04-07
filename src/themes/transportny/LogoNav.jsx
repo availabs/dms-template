@@ -1,12 +1,12 @@
 import React from 'react'
 import { Link } from 'react-router'
-import { ThemeContext, getComponentTheme } from '../../dms/packages/dms/src/ui/useTheme'
-import Icon from '../../dms/packages/dms/src/ui/components/Icon'
+import { ThemeContext, getComponentTheme } from '~/dms/packages/dms/src/ui/useTheme'
+import Icon from '~/dms/packages/dms/src/ui/components/Icon'
 
 const defaultSites = [
-  { name: 'NPMRDS',       subdomain: 'npmrds2',       icon: 'Pages' },
+  { name: 'NPMRDS',       subdomain: 'npmrds',       icon: 'Pages' },
   { name: 'Freight Atlas', subdomain: 'freightatlas', icon: 'Pages' },
-  { name: 'TSMO', subdomain: 'tsmo2', icon: 'Pages' },
+  { name: 'TSMO', subdomain: 'tsmo', icon: 'Pages' },
    { name: 'Sandbox',         subdomain: 'sandbox',         icon: 'Pages' },
 ]
 

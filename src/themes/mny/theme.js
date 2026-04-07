@@ -7,7 +7,7 @@ const theme = {
     "options": {
       "activeStyle": 0,
       "sideNav": {
-        "size": "compact",
+        "size": "none",
         "nav": "main",
         "activeStyle": null,
         "navDepth": "2",
@@ -19,7 +19,7 @@ const theme = {
         "size": "compact",
         "nav": "main",
         "leftMenu": [{ type: "Logo" }],
-        "rightMenu": [{ type: "SearchButton" }, { type: "UserMenu" }]
+        "rightMenu": [{ type: "Search" }, { type: "UserMenu" }]
       }
     },
     "styles": [{
@@ -224,6 +224,9 @@ const theme = {
         {
           container: "w-full grid grid-cols-6 md:grid-cols-12 ",
           gridSize: 12,
+          sectionEditHover: 'absolute inset-0 border border-transparent group-hover:border-[#37576b] border border-2 pointer-events-none z-10 rounded-md',
+          addSectionIcon: 'size-6 p-1.5 text-white bg-[#37576b] rounded-full group-hover/icon:hidden',
+          addSectionText: 'px-1.5 py-1 text-white text-sm font-semibold bg-[#37576b] rounded-full',
           layouts: {
             centered: "max-w-[1020px] mx-auto  px-0 lg:px-[56px]",
             fullwidth: "",
@@ -466,6 +469,45 @@ const theme = {
       }
     ]
   },
+  tabs: {
+    options: {
+      activeStyle: 0
+    },
+    styles: [
+      {
+        tabGroup: 'flex flex-col-reverse',
+        tablist: 'flex gap-4',
+        tab: `
+    py-1 px-3 font-semibold text-slate-600 focus:outline-none border-b-2 border-white text-xs hover:text-slate-900
+    data-[selected]:border-blue-500 data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white
+  `,
+        tabpanels: '',
+        tabpanel: 'rounded-xl bg-white/5'
+      },
+      {
+        tabGroup: 'flex flex-row flex-row-reverse divide-x divide-x-reverse divide-[#37576b8c]', // #37576bab #37576b8c #37576bc9
+        tablist: 'flex flex-col',
+        tab: `
+    px-2 py-2 font-semibold text-[#37576B] text-xs hover:text-[#2D3E4C] focus:outline-none border-b-2 border-white
+    data-[selected]:bg-[#2D3E4C] data-[selected]:text-white data-[hover]:bg-white/5 data-[selected]:text-white data-[focus]:outline-1 data-[focus]:outline-white cursor-pointer
+  `,
+        tabpanels: 'w-full h-screen max-h-screen overflow-y-auto scrollbar-sm',
+        tabpanel: 'rounded-xl bg-white/5 divide-y divide-[#37576b8c]',
+        tabTitle: 'p-2 text-[#2D3E4C]'
+      },
+      {
+        tabGroup: 'flex flex-row divide-x divide-[#37576b8c]',
+        tablist: 'flex flex-col gap-1 pt-12',
+        tab: `
+    px-2 py-3 font-semibold text-[#37576B] text-xs hover:text-[#2D3E4C] focus:outline-none border-b-2 border-white
+    data-[selected]:bg-[#2D3E4C] data-[selected]:text-white data-[hover]:bg-white/5 data-[selected]:text-white data-[focus]:outline-1 data-[focus]:outline-white cursor-pointer
+  `,
+        tabpanels: 'w-full max-h-screen overflow-y-auto scrollbar-sm',
+        tabpanel: 'rounded-xl bg-white/5 divide-y divide-[#37576b8c]',
+        tabTitle: 'p-2 text-[#2D3E4C]'
+      },
+    ]
+  },
   filters: {
     filtersWrapper: "w-full flex flex-col rounded-md",
     filterLabel:
@@ -551,12 +593,12 @@ const theme = {
         paragraph: "m-0 relative",
         layoutContainer: "grid",
         layoutItem: "border-b border-slate-300 min-w-0 max-w-full",
-        heading_h1: "pl-[4px] pt-[8px] font-[500] text-[34px] text-[#2D3E4C] leading-[40px] uppercase font-['Oswald'] pb-[12px]",
-        heading_h2: "pl-[4px] pt-[8px] font-[500] text-[24px] text-[#2D3E4C] leading-[24px] scroll-mt-36 font-['Oswald']",
-        heading_h3: "pl-[4px] pt-[8px] font-[500] text-[16px] text-[#2D3E4C] font-['Oswald']",
-        heading_h4: "pl-[4px] pt-[8px] font-medium scroll-mt-36 text-[#2D3E4C] font-display",
-        heading_h5: "pl-[4px] scroll-mt-36 font-display",
-        heading_h6: "pl-[4px] scroll-mt-36 font-display",
+        heading_h1: "pt-[8px] font-[500] text-[34px] text-[#2D3E4C] leading-[40px] uppercase font-['Oswald'] pb-[12px]",
+        heading_h2: "pt-[8px] font-[500] text-[24px] text-[#2D3E4C] leading-[24px] scroll-mt-36 font-['Oswald']",
+        heading_h3: "pt-[8px] font-[500] text-[16px] text-[#2D3E4C] font-['Oswald']",
+        heading_h4: "pt-[8px] font-medium scroll-mt-36 text-[#2D3E4C] font-display",
+        heading_h5: "scroll-mt-36 font-display",
+        heading_h6: "scroll-mt-36 font-display",
       },
       {
         // Style 3: Annotation Image Card

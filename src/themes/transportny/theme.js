@@ -1,8 +1,13 @@
 import LogoNav from './LogoNav'
 import QuickLinks from './QuickLinks'
-
+import Header from './components/Header'
+import AddPageButton from './components/AddPageButton'
 
 const theme = {
+  pageComponents: {
+    "AddPageButton": AddPageButton,
+    Header
+  },
   "pages": {
     "sectionGroup": {
       "sideNavContainer1": "w-[302px] hidden xl:block",
@@ -18,8 +23,8 @@ const theme = {
           "name": "default",
           "wrapper": "relative",
           "gridOverlay": "absolute inset-0 pointer-events-none",
-          "container": "w-full grid grid-cols-6 ",
-          "gridSize": 6,
+          "container": "w-full grid md:grid-cols-12 ",
+          "gridSize": 12,
           "layouts": {
             "centered": "max-w-[1020px] mx-auto",
             "fullwidth": ""
@@ -36,20 +41,68 @@ const theme = {
           "addSectionIconWrapper": "flex items-center",
           "addSectionIcon": "size-6",
           "sizes": {
-            "1": {
+            "1c": {
+              "className": "col-span-6 md:col-span-1",
+              "iconSize": 100
+            },
+            "2c": {
+              "className": "col-span-6 md:col-span-2",
+              "iconSize": 33
+            },
+            "3c": {
+              "className": "col-span-6 md:col-span-3",
+              "iconSize": 50
+            },
+            "4c": {
+              "className": "col-span-12 md:col-span-4",
+              "iconSize": 100
+            },
+            "5c": {
+              "className": "col-span-12 md:col-span-4",
+              "iconSize": 33
+            },
+            "6c": {
               "className": "col-span-12 md:col-span-6",
+              "iconSize": 50
+            },
+            "7c": {
+              "className": "col-span-12 md:col-span-7",
+              "iconSize": 100
+            },
+            "8c": {
+              "className": "col-span-12 md:col-span-8",
+              "iconSize": 33
+            },
+            "9c": {
+              "className": "col-span-12 md:col-span-9",
+              "iconSize": 50
+            },
+            "10c": {
+              "className": "col-span-12 md:col-span-10",
+              "iconSize": 100
+            },
+            "11c": {
+              "className": "col-span-12 md:col-span-11",
+              "iconSize": 33
+            },
+            "12c": {
+              "className": "col-span-12 md:col-span-12",
+              "iconSize": 50
+            },
+            "1": {
+              "className": "col-span-12 md:col-span-12",
               "iconSize": 100
             },
             "1/3": {
-              "className": "col-span-12 md:col-span-2",
+              "className": "col-span-12 md:col-span-4",
               "iconSize": 33
             },
             "1/2": {
-              "className": "col-span-12 md:col-span-3",
+              "className": "col-span-12 md:col-span-6",
               "iconSize": 50
             },
             "2/3": {
-              "className": "col-span-12 md:col-span-4",
+              "className": "col-span-12 md:col-span-8",
               "iconSize": 66
             }
           },
@@ -242,7 +295,7 @@ const theme = {
         "wrapper": "relative isolate flex min-h-svh w-full max-lg:flex-col overflow-clip",
         "wrapper2": "flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen",
         "wrapper3": "flex flex-1",
-        "childWrapper": "flex-1 h-full"
+        "childWrapper": "flex-1 h-full min-h-screen"
       }
     ]
   },
@@ -253,15 +306,22 @@ const theme = {
     "styles": [
       {
         "name": "content",
-        "wrapper1": "w-full h-full flex-1 flex flex-row ",
+        "wrapper1": "w-full h-auto flex-1 flex flex-row ",
         "wrapper2": "flex flex-1 w-full  flex-col bg-white relative text-md font-light leading-7 h-full min-h-[200px]",
         "wrapper3": "",
         "wrapepr3": ""
       },
       {
         "name": "header",
-        "wrapper1": "w-full h-full flex-1 flex flex-row",
+        "wrapper1": "w-full h-auto flex-1 flex flex-row",
         "wrapper2": "flex flex-1 w-full  flex-col  relative min-h-[200px]",
+        "wrapper3": "",
+        "wrapepr3": ""
+      },
+      {
+        "name": "action_section",
+        "wrapper1": "bg-[#1a46b3] w-full h-auto flex-1 flex flex-row ",
+        "wrapper2": "flex flex-1 w-full  flex-col  relative min-h-[60px]",
         "wrapper3": "",
         "wrapepr3": ""
       }
@@ -540,7 +600,7 @@ const theme = {
         "cellInner": "w-full min-h-full flex flex-wrap items-center truncate py-0.5 px-1 font-[400] text-[14px]  leading-[18px] text-slate-600",
         "cellBgOdd": "bg-gray-50 hover:bg-gray-100",
         "cellBgEven": "bg-white hover:bg-gray-100",
-        "cellBg": "bg-white hover:bg-gray-100",
+        "cellBg": "bg-white hover:bg-gray-100 p-2",
         "cellBgSelected": "bg-blue-50 hover:bg-blue-100",
         "totalCell": "hover:bg-gray-150",
         "cellEditableTextBox": "absolute border focus:outline-none min-w-[180px] min-h-[50px] z-[10] whitespace-pre-wrap",
@@ -567,7 +627,7 @@ const theme = {
         "openOutCloseIcon": "XMark",
         "openOutContainerWrapperBgColor": "#00000066",
         "openOutIconWrapper": "px-2 cursor-pointer bg-transparent text-gray-500 hover:text-gray-600",
-        "headerCellWrapper": "relative w-full",
+        "headerCellWrapper": "relative w-full px-3 py-2",
         "headerCellBtn": "group inline-flex items-center w-full justify-between gap-x-1.5 rounded-md cursor-pointer",
         "headerCellLabel": "truncate select-none",
         "headerCellBtnActive": "bg-gray-300",
@@ -588,31 +648,6 @@ const theme = {
         "headerCellControl": "p-0.5 w-full rounded-md bg-white group-hover:bg-gray-100 cursor-pointer"
       }
     ],
-    "tableContainer": "flex flex-col overflow-x-auto",
-    "tableContainerNoPagination": "",
-    "tableContainer1": "flex flex-col no-wrap min-h-[40px] max-h-[calc(78vh_-_10px)] overflow-y-auto",
-    "headerContainer": "sticky top-0 grid",
-    "thead": "flex justify-between",
-    "theadfrozen": "",
-    "thContainer": "w-full font-semibold px-3 py-1 content-center text-sm font-semibold text-gray-600",
-    "thContainerBgSelected": "bg-blue-100 text-gray-900",
-    "thContainerBg": "bg-gray-50 text-gray-500",
-    "cell": "relative flex items-center min-h-[35px]  border border-slate-50",
-    "cellInner": "\n        w-full min-h-full flex flex-wrap items-center truncate py-0.5 px-1\n        font-[400] text-[14px]  leading-[18px] text-slate-600\n    ",
-    "cellBg": "bg-white",
-    "cellBgSelected": "bg-blue-50",
-    "cellFrozenCol": "",
-    "paginationInfoContainer": "",
-    "paginationPagesInfo": "font-[500] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
-    "paginationRowsInfo": "text-xs",
-    "paginationContainer": "w-full p-2 flex items-center justify-between",
-    "paginationControlsContainer": "flex flex-row items-center overflow-hidden gap-0.5",
-    "pageRangeItem": "cursor-pointer px-3  text-[#2D3E4C] py-1  text-[12px] hover:bg-slate-50 font-[500] rounded  uppercase leading-[18px]",
-    "pageRangeItemInactive": "",
-    "pageRangeItemActive": "bg-slate-100 ",
-    "openOutContainer": "w-[330px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
-    "openOutContainerWrapper": "fixed inset-0 right-0 h-full w-full z-[100]",
-    "openOutHeader": "font-semibold text-gray-600"
   },
   "lexical": {},
   "dataCard": {

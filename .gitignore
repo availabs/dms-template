@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
+img
 dist-ssr
 *.local
 
@@ -37,14 +38,3 @@ references
 
 # Heap snapshots
 *.heapsnapshot
-
-# Extracted images (large, served by nginx)
-public/img
-img
-
-# SQLite database files
-*.sqlite
-*.sqlite-shm
-*.sqlite-wal
-*.db-shm
-*.db-wal

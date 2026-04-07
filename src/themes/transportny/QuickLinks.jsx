@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router'
-import { ThemeContext } from '../../dms/packages/dms/src/ui/useTheme'
-import Icon from '../../dms/packages/dms/src/ui/components/Icon'
+import Icon from '~/dms/packages/dms/src/ui/components/Icon'
 
 const defaultLinks = [
   { name: 'Data Sources', path: '/datasources', icon: 'Database' },
@@ -9,13 +8,12 @@ const defaultLinks = [
 ]
 
 export default function QuickLinks(props) {
-  const { theme: fullTheme = {} } = React.useContext(ThemeContext) || {}
-  const links = fullTheme?.quickLinks?.links || defaultLinks
+
   const { pathname } = useLocation()
 
   return (
     <div className="@container w-full">
-      {links.map((link, i) => {
+      {defaultLinks.map((link, i) => {
         const active = pathname.startsWith(link.path)
         return (
           <Link
