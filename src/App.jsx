@@ -26,6 +26,7 @@ function App({ defaultData, hydrationData } = {}) {
       API_HOST={API_HOST}
       AUTH_HOST={API_HOST}
       themes={themes}
+      testProps={ { testing: "props" } }
     />
   )
 }
