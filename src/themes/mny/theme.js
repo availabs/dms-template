@@ -1,4 +1,5 @@
 import { Icons } from "./icons";
+import mny_auth from "./auth.js";
 
 
 const theme = {
@@ -28,7 +29,19 @@ const theme = {
       wrapper2: "flex-1 flex items-start flex-col items-stretch max-w-full",
       wrapper3: "flex flex-1 md:px-4 xl:px-[64px]",
       childWrapper: "h-full flex-1",
-    }],
+    },
+      {
+        name: 'auth',
+        outerWrapper: "w-screen h-screen bg-[linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('/themes/mny/topolines.png')]  bg-[size:500px]",
+        wrapper: "w-screen h-screen",
+        wrapper2: "w-screen h-screen flex items-start flex-col items-stretch max-w-full",
+        wrapper3: "mt-[15vh] md:mt-0 w-screen h-screen overflow-y-auto",
+        childWrapper: 'w-screen h-screen',
+        topnavContainer1: 'print:hidden',
+        topnavContainer2: `fixed top-0 z-20 max-w-[1440px] left-50% -translate-50% w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none`,
+        sidenavContainer1: 'pr-2  hidden lg:block min-w-[222px] max-w-[222px]',
+        sidenavContainer2: 'hidden lg:block fixed min-w-[222px] max-w-[222px] top-[0px] h-[calc(100vh_-_1px)] w-full overflow-y-auto overflow-x-hidden'
+      }],
   },
   "sidenav": {
     "options": {
@@ -159,10 +172,95 @@ const theme = {
       "subMenuParentContent": "basis-1/3  text-wrap pr-[64px]",
       "subMenuParentName": `text-[36px] font-['Oswald'] font-500 text-[#2D3E4C] uppercase pb-2`,
       "subMenuParentDesc": `text-[16px] font-['Proxima_Nova'] font-[400] text-[#37576B]`,
-      "subMenuParentLink": `w-fit h-fit cursor-pointer uppercase border boder-[#E0EBF0] bg-white hover:bg-[#E0EBF0] text-[#37576B] font-[700] leading-[14.62px] rounded-full text-[12px] text-center py-[16px] px-[24px]`,
+      "subMenuParentLink": `w-fit h-fit cursor-pointer uppercase border border-[#E0EBF0] bg-white hover:bg-[#E0EBF0] text-[#37576B] font-[700] leading-[14.62px] rounded-full text-[12px] text-center py-[16px] px-[24px]`,
       "subMenuItemsWrapperParent": "grid grid-cols-2 gap-1 flex-1",
       "subMenuItemsWrapper": "grid grid-cols-4 flex-1"
-    }
+    },
+      {
+        name: 'auth',
+        fixed: 'mt-8',
+        layoutContainer1: 'absolute w-full md:w-1/2 z-1 px-2 px-32 py-[2vh]',
+        topnavWrapper: `w-full bg-transparent h-[15vh] md:h-40 flex items-center rounded-lg pointer-events-auto`,
+        topnavContent: `max-w-lg mx-auto my-auto flex flex-1`,
+        topnavMenu: `hidden  md:flex items-center flex-1  h-full overflow-x-auto overflow-y-hidden scrollbar-sm`,
+        menuItemWrapper: 'hidden text-[#37576B]',
+        menuIconTop: `text-blue-400 mr-3 text-lg group-hover:text-blue-500`,
+        menuIconTopActive: `text-blue-500 mr-3 text-lg group-hover:text-blue-500`,
+        menuOpenIcon: `fa-light fa-bars fa-fw`,
+        menuCloseIcon: `fa-light fa-xmark fa-fw"`,
+        navitemTop: `
+          w-fit group font-display whitespace-nowrap
+          flex tracking-widest items-center font-[Oswald] font-medium text-slate-700 text-[11px] px-2 h-12
+          focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300
+          transition cursor-pointer
+      `,
+        navitemTopActive:
+            ` w-fit group font-display whitespace-nowrap
+          flex tracking-widest items-center font-[Oswald] font-medium text-slate-700 text-[11px] px-2 h-12 text-blue
+          focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300
+          transition cursor-pointer
+        `,
+        topmenuRightNavContainer: "hidden md:flex h-full items-center",
+        topnavMobileContainer: "bg-slate-50",
+
+        mobileButton: `hidden`,
+        indicatorIcon: 'fal fa-angle-down pl-2 pt-1',
+        indicatorIconOpen: 'fal fa-angle-down pl-2 pt-1',
+        subMenuWrapper: `hidden`,
+        subMenuParentWrapper: 'hidden',
+        subMenuWrapperChild: `divide-x overflow-x-auto max-w-[1400px] mx-auto`,
+        subMenuWrapperTop: 'hidden',
+        subMenuWrapperInactiveFlyout: `absolute left-0 right-0  mt-8 normal-case shadow-lg z-10 p-2`,
+        subMenuWrapperInactiveFlyoutBelow: ` absolute ml-40 normal-case shadow-lg z-10 p-2`,
+        subMenuWrapperInactiveFlyoutDirection: 'grid grid-cols-4',
+        "layoutContainer2": `w-full`,
+
+        // menu containers
+        "leftMenuContainer": "flex items-center",
+        "centerMenuContainer": `hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-4`,
+        "rightMenuContainer": "hidden",
+        "mobileNavContainer": "px-4 py-2 bg-zinc-100 dark:bg-zinc-900",
+
+        // Menu Item Styles
+        "navitemWrapper": 'relative',
+        "navitemWrapper_level_2": 'relative',
+        "navitemWrapper_level_3": '',
+        "navitem": `
+        px-3 py-2 rounded-lg
+        text-sm font-medium text-zinc-600 dark:text-zinc-400
+        hover:bg-zinc-200 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-white
+        transition-colors cursor-pointer
+        flex items-center gap-1.5
+    `,
+        "navitemActive": `
+        px-3 py-2 rounded-lg
+        text-sm font-medium text-zinc-900 dark:text-white
+        bg-zinc-200 dark:bg-zinc-800
+        cursor-pointer
+        flex items-center gap-1.5
+    `,
+        "navIcon": "size-4 text-zinc-500 dark:text-zinc-400",
+        "navIconActive": "size-4 text-zinc-900 dark:text-white",
+        "navitemContent": "flex items-center gap-1.5",
+        "navitemName": "",
+        "navitemName_level_2": "w-full text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white py-2 px-3 rounded-md transition-colors flex items-center justify-between gap-2",
+        "navitemName_level_3": "w-full text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white py-2 px-3 rounded-md transition-colors",
+        "navitemDescription": "hidden",
+        "navitemDescription_level_2": `text-xs text-zinc-500 dark:text-zinc-400 mt-0.5`,
+        "navitemDescription_level_3": `text-xs text-zinc-500 dark:text-zinc-400 mt-0.5`,
+
+        "indicatorIconWrapper": "size-4 text-zinc-400",
+        "subMenuWrapper2": " dark:bg-zinc-900 rounded-xl shadow-lg ring-1 ring-zinc-950/5 dark:ring-white/10 py-1 min-w-[200px]",
+        // Level 2 submenu (flyout to the right of level 2 item)
+        "subMenuWrapper_level_2": `absolute left-full top-0 ml-2 z-50`,
+        "subMenuWrapper2_level_2": " dark:bg-zinc-900 rounded-xl shadow-lg ring-1 ring-zinc-950/5 dark:ring-white/10 py-1 min-w-[200px]",
+        "subMenuItemsWrapper": "flex flex-col",
+        "subMenuItemsWrapperParent": "flex flex-col",
+        subMenuParentContent: 'px-3 py-2 border-b border-zinc-100 dark:border-zinc-800 mb-1',
+        subMenuParentName: 'text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide',
+        subMenuParentDesc: 'text-xs text-zinc-400 dark:text-zinc-500 mt-0.5',
+        subMenuParentLink: 'text-xs text-zinc-900 dark:text-white hover:underline mt-1 inline-block',
+      }
     ]
   },
   layoutGroup: {
@@ -210,6 +308,12 @@ const theme = {
         wrapper2: "flex flex-1 w-full  flex-col  relative min-h-[200px]", // content wrapepr
         wrapper3: ""
       },
+      {
+        name: "auth",
+        wrapper1: 'w-full h-full flex-1 flex flex-row ', // first div inside Layout
+        wrapper2: 'w-full h-full flex-1 flex flex-row min-h-screen', // inside page header, wraps sidebar
+        wrapper3: 'flex w-full flex-row gap-4 relative text-md',
+      },
     ]
   },
   // ----------------------- End Layout ------------------------
@@ -241,8 +345,39 @@ const theme = {
           },
         }
       ]
-    }
+    },
+    sectionGroupsPane: {
+      options: {
+        activeStyle: 0
+      },
+      styles: [
+        {
+          sectionTargetWrapper: 'py-2 px-3 text-xs font-semibold uppercase tracking-wide text-[#37576B] bg-white cursor-default flex justify-between items-center',
+          sectionTargetDivider: 'border-t border-[#C5D7E0]',
+          addGroupBtn: 'text-[#6D96AE] hover:bg-[#F3F8F9] rounded px-2 py-1 transition-colors font-medium normal-case',
+          sectionGroupWrapper: 'group rounded-sm mx-2 px-2 py-1 hover:bg-[#E0EBF0] flex justify-between items-center transition-all',
+          activePageSectionBorder: `border border-dashed border-orange-200 hover:border-orange-300`,
+          sectionGroupBorder: `border border-[#C5D7E0] hover:border-[#6D96AE]`,
+          pageSectionBG: `bg-[#F3F8F9] hover:bg-[#E0EBF0]`,
+          expandedGroupBG: `bg-white`,
+          unexpandedGroupBG: `bg-white`,
+          pageSectionCursor: `cursor-pointer`,
+          sectionGroupCursor: `cursor-grab`,
+          titleWrapper: 'flex items-center gap-3',
+
+          sectionGroupIcon: 'size-4 text-[#37576B] group-hover:text-[#2D3E4C]',
+          sectionGroupTitle: 'text-sm font-medium text-[#2D3E4C]',
+
+          pageSectionIcon: 'hidden',
+          pageSectionTitle: 'text-sm font-medium text-[#2D3E4C]',
+
+          controlsWrapper: 'flex gap-1 items-center',
+          expandGroupIcon: 'size-6 place-content-center cursor-pointer text-[#37576B] hover:text-[#2D3E4C]',
+        }
+      ]
+    },
   },
+  auth: mny_auth,
   pageOptions: {
     settingsPane: [
       {
