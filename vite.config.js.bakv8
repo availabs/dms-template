@@ -1,8 +1,28 @@
 import path from 'path'
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import wasm from 'vite-plugin-wasm'
+
+// PrismJS fix — prismjs component files (prism-clike.js, etc.) reference the
+// bare `Prism` global. Rolldown's CJS-to-ESM conversion wraps prismjs core
+// in a function scope, so `Prism` is not a global when the components run.
+// This plugin rewrites `import "prismjs"` to also set globalThis.Prism.
+function prismjsGlobalFix() {
+  return {
+    name: 'prismjs-global-fix',
+    transform(code, id) {
+      // Only patch @lexical/code — it imports prismjs + component files that
+      // reference the bare `Prism` global which Rolldown doesn't rewrite.
+      if (!id.includes('@lexical/code')) return null
+      // Replace side-effect import with one that also sets the global
+      return code
+        .replace(/import\s*["']prismjs["']/g,
+          'import __Prism__ from "prismjs"; if(typeof globalThis!=="undefined")globalThis.Prism=__Prism__; if(typeof window!=="undefined")window.Prism=__Prism__; void 0')
+    }
+  }
+}
 
 // Progress reporter — shows module count during long transforms
 function buildProgress() {
@@ -21,7 +41,7 @@ function buildProgress() {
   }
 }
 
-export default defineConfig(({ isSsrBuild, mode }) => ({
+export default defineConfig(({ isSsrBuild }) => ({
   resolve: {
     alias: [
       { find: '~', replacement: path.resolve(__dirname, 'src') },
@@ -36,7 +56,8 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
       // export (set via `falcor.Model = require(...)` after module.exports).
       // ESM shim re-exports via default import.
       { find: /^falcor$/, replacement: path.resolve(__dirname, 'src/dms/packages/dms/src/render/ssr2/falcor-shim.js') },
-      // Force all yjs imports to a single copy — prevents duplicate-import check.
+      // Force all yjs imports to a single copy — Rolldown can resolve multiple
+      // instances (pre-bundled vs direct), triggering Yjs's duplicate-import check.
       { find: /^yjs$/, replacement: path.resolve(__dirname, 'node_modules/yjs/dist/yjs.mjs') },
     ]
   },
@@ -61,7 +82,7 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
   build: {
     outDir: 'dist',
     // Client: split vendor/maplibre chunks. SSR: single bundle is fine.
-    rollupOptions: isSsrBuild ? {} : {
+    rolldownOptions: isSsrBuild ? {} : {
       output: {
         manualChunks: (id) => {
           if (id.includes('maplibre-gl')) {
@@ -88,15 +109,12 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
     plugins: () => [wasm()],
   },
   plugins: [
+    prismjsGlobalFix(),
     wasm(),
-    // SSR: skip React Compiler (memoization is pointless for one-shot renders).
-    // Dev: skip React Compiler so referential-identity bugs surface during
-    // development instead of being silently masked by auto-memoization.
-    react(isSsrBuild || mode !== 'production' ? {} : {
-      babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },
-    }),
+    // SSR: skip React Compiler (memoization is pointless for one-shot renders)
+    // and TailwindCSS (no CSS output needed on the server).
+    react(),
+    !isSsrBuild && babel({ presets: [reactCompilerPreset()] }),
     !isSsrBuild && tailwindcss(),
     buildProgress(),
   ].filter(Boolean),

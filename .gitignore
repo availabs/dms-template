@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
+img
 dist-ssr
 *.local
 
@@ -34,3 +35,6 @@ scratchpad
 
 # code references f
 references
+
+# Heap snapshots
+*.heapsnapshot

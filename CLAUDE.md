@@ -124,7 +124,7 @@ The DMS library (in `src/dms/`) has a planning system for tracking work. **Befor
 
 ## Tech Stack
 
-- React 19 with Vite 7
+- React 19 with Vite 8 (Rolldown bundler)
 - React Router 7 (via `react-router`)
 - TailwindCSS 4 (via `@tailwindcss/vite`)
 - Babel with React Compiler plugin
