@@ -27,6 +27,7 @@
     "@carbon/icons-react": "^11.71.0",
     "@hello-pangea/dnd": "^18.0.1",
     "@heroicons/react": "^2.2.0",
+    "gdal-async": "^3.12.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
