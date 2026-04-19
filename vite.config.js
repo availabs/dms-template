@@ -50,7 +50,6 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
     include: [
       'xhr2',                // Node-only, resolved to browser entry (CJS)
       'falcor/lib/ModelRoot', // CJS deep import from falcorGraph.js
-      'lodash.throttle',     // CJS package import from falcorGraph.js
     ],
     // wa-sqlite bundles .wasm files that Vite's pre-bundler can't handle
     exclude: [
