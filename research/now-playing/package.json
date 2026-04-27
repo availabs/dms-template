@@ -1,0 +1,15 @@
+{
+  "name": "now-playing-research",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "description": "Standalone webhook receiver for ACRCloud Custom Stream Monitoring (research stage — not wired into dms-server yet)",
+  "scripts": {
+    "start": "node webhook.js",
+    "dev": "node --watch webhook.js",
+    "tail": "node tail.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
