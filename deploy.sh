@@ -28,17 +28,27 @@
 
 set -euo pipefail
 
-# --- Re-exec under `sg docker` if the current shell isn't in the active group.
-# Lets the script work right after `sudo usermod -aG docker $USER` without
-# requiring a re-login.
+# --- Docker permission: route docker calls through `sg docker -c` only when
+# needed. Git/SSH stays in the user's original shell so SSH_AUTH_SOCK + agent
+# keys keep working — re-execing the whole script under sg breaks `git pull`
+# over SSH because the agent socket isn't reachable from the sg subshell.
+USE_SG=0
 if ! docker version >/dev/null 2>&1; then
   if id -nG | tr ' ' '\n' | grep -qx docker; then
-    exec sg docker -c "$(realpath "$0") $*"
+    USE_SG=1
+  else
+    echo "error: docker not accessible and current user is not in the 'docker' group" >&2
+    echo "  sudo usermod -aG docker \$USER   # then re-login or: newgrp docker" >&2
+    exit 1
   fi
-  echo "error: docker not accessible and current user is not in the 'docker' group" >&2
-  echo "  sudo usermod -aG docker \$USER   # then re-login or: newgrp docker" >&2
-  exit 1
 fi
+docker() {
+  if (( USE_SG )); then
+    command sg docker -c "command docker $(printf '%q ' "$@")"
+  else
+    command docker "$@"
+  fi
+}
 
 # --- Config -----------------------------------------------------------------
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
