@@ -44,7 +44,15 @@ if ! docker version >/dev/null 2>&1; then
 fi
 docker() {
   if (( USE_SG )); then
-    command sg docker -c "command docker $(printf '%q ' "$@")"
+    # Build a single-quote-escaped command string for `sg docker -c`.
+    # Avoids `printf '%q '` because some older bashes (3.x) escape -flag args
+    # in ways that break the receiver's parser.
+    local _cmd="command docker"
+    local _a
+    for _a in "$@"; do
+      _cmd+=" '${_a//\'/\'\\\'\'}'"
+    done
+    command sg docker -c "$_cmd"
   else
     command docker "$@"
   fi
@@ -87,14 +95,16 @@ git -C "$REPO_DIR" submodule update --init --remote --recursive
 # --- 2. Build ---------------------------------------------------------------
 sha="$(git -C "$REPO_DIR" rev-parse --short HEAD)"
 TAG="$(date -u +%Y%m%d-%H%M%S)-${sha}"
-build_args=()
-[[ "${FORCE_REBUILD:-0}" == "1" ]] && build_args+=(--no-cache)
 
-log "building ${IMAGE_NAME}:${TAG} (also :latest)${FORCE_REBUILD:+ (--no-cache)}"
-docker build "${build_args[@]}" \
-  -t "${IMAGE_NAME}:${TAG}" \
-  -t "${IMAGE_NAME}:latest" \
-  "$REPO_DIR"
+# Avoid empty-array expansion under `set -u` (bash <4.4 errors). Use two
+# concrete invocations instead.
+if [[ "${FORCE_REBUILD:-0}" == "1" ]]; then
+  log "building ${IMAGE_NAME}:${TAG} (also :latest) (--no-cache)"
+  docker build --no-cache -t "${IMAGE_NAME}:${TAG}" -t "${IMAGE_NAME}:latest" "$REPO_DIR"
+else
+  log "building ${IMAGE_NAME}:${TAG} (also :latest)"
+  docker build -t "${IMAGE_NAME}:${TAG}" -t "${IMAGE_NAME}:latest" "$REPO_DIR"
+fi
 
 # --- 3. Roll ----------------------------------------------------------------
 existing_id="$(docker ps -q --filter "name=^${CONTAINER_NAME}$" || true)"
