@@ -6,7 +6,7 @@
   "scripts": {
     "analyze": "npx vite-bundle-analyzer",
     "dev": "vite",
-    "deploy": "netlify deploy --site ccf0fbba-fd28-4293-af14-05243c2ac614 --prod --dir=dist",
+    "deploy-weather-ent": "netlify deploy --site ccf0fbba-fd28-4293-af14-05243c2ac614 --prod --dir=dist",
     "deploy-b3nson": "netlify deploy --site e38244d6-14d7-47bc-a17a-8bdcf68b5ad1 --prod --dir=dist",
     "deploy-ctp": "netlify deploy --site dcc24f65-8921-46fb-8827-0059571b9289 --prod --dir=dist",
     "deploy-wcdb": "netlify deploy --site 0d9002a2-ed81-466e-88b9-837bf150f6e0 --prod --dir=dist",

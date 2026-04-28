@@ -8,5 +8,5 @@
 module.exports = function registerExtra({ registerDatatype }) {
   registerDatatype('map21', require('../data-types/map21'));
   registerDatatype('now_playing', require('../data-types/now_playing'));
-  // registerDatatype('enhance-nfip-claims', require('../data-types/enhance-nfip-claims'));
+  registerDatatype('enhance_nfip_claims_v2', require('../data-types/mny/enhance_nfip_claims_v2'));
 };

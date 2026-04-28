@@ -538,7 +538,7 @@ const theme = {
         formEditButtonsWrapper: 'self-end flex gap-0.5 text-sm',
         formEditSaveButton: 'bg-blue-300 hover:bg-blue-400 text-blue-700 rounded-lg w-fit px-2 py-0.5',
         formEditCancelButton: 'bg-red-300 hover:bg-red-400 text-red-700 rounded-lg w-fit px-2 py-0.5',
-        formAddNewItemButton: 'bg-blue-300 hover:bg-blue-400 text-blue-700 rounded-lg w-fit px-2 py-0.5 text-sm self-end',
+        formAddNewItemButton: 'font-[Proxima Nova] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-bold uppercase rounded-lg w-fit px-2 py-1 mr-0.5 mb-0.5 self-end cursor-pointer',
 
         linkColValue:
             "flex-1 flex justify-center w-full bg-[#C5D7E0] rounded-full px-[12px] py-[8px] font-[Proxima Nova] font-bold text-[12px] leading-[100%] tracking-[0px] uppercase",
