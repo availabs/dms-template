@@ -122,6 +122,10 @@ dms page list --format json > scratchpad/my-site/pages.json
 
 The DMS library (in `src/dms/`) has a planning system for tracking work. **Before implementing any task, read `src/dms/planning/planning-rules.md`** — it defines the workflow for task files, progress tracking, and completion. The task file in `planning/tasks/current/` is the source of truth for implementation status and must be updated as work progresses, not just at the end.
 
+## Naming Conventions
+
+**Use underscores, not hyphens, for new identifiers.** Applies to directory names under `data-types/`, dataType plugin registration names, DMS source/view types, type strings (`{parent}:{instance}|{rowKind}`), database table/column names, and any string identifier you control. Examples: `now_playing` (not `now-playing`), `now_playing_stream`, `enhance_nfip_claims`. Existing hyphenated names (`enhance-nfip-claims`, `_example-hello-world`) are not retroactively renamed, but new code follows the underscore convention.
+
 ## Tech Stack
 
 - React 19 with Vite 8 (Rolldown bundler)

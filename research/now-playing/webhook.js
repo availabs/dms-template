@@ -21,6 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
+const { normalize } = require('./normalize');
 
 const PORT       = +(process.env.PORT || 4747);
 const WEBHOOK_KEY = process.env.WEBHOOK_KEY || null;   // null = no shared-secret check
@@ -32,82 +33,6 @@ let lastEvent = null;          // latest event of any kind (for /last)
 
 const app = express();
 app.use(express.json({ limit: '5mb' }));
-
-/**
- * Normalize ACRCloud's payload into a flat shape.
- *
- * The webhook's exact shape is the same as the synchronous Identification API
- * response (https://docs.acrcloud.com/reference/identification-api), which is:
- *
- *   {
- *     status: { code: 0, msg: "Success", version: "1.0" },
- *     metadata: {
- *       timestamp_utc: "2026-04-27 14:00:00",
- *       played_duration: 18,
- *       music: [
- *         {
- *           title: "...", artists: [{ name: "..." }],
- *           album: { name: "...", cover: "https://..." },
- *           release_date: "2024-08-09",
- *           acrid: "abc...",
- *           score: 94,
- *           duration_ms: 215000,
- *           external_ids: { isrc: "...", upc: "..." },
- *           external_metadata: { spotify: { ... }, deezer: { ... }, youtube: { vid: "..." } },
- *           genres: [{ name: "Indie" }],
- *           label: "...",
- *         }
- *       ]
- *     }
- *   }
- *
- * Some plans also wrap multiple results under `results: [...]` for the
- * monitoring product. Handle both shapes.
- */
-function normalize(body) {
-  // Some monitoring webhooks wrap a single ID result; others batch.
-  const events = [];
-  const candidates = Array.isArray(body?.results)
-    ? body.results
-    : [body];
-
-  for (const c of candidates) {
-    const md = c?.metadata;
-    const m  = md?.music?.[0];
-    if (!m) {
-      events.push({
-        kind: 'no-match',
-        timestamp_utc: md?.timestamp_utc || c?.timestamp_utc || new Date().toISOString(),
-        played_duration: md?.played_duration ?? null,
-        status_code: c?.status?.code ?? null,
-        status_msg: c?.status?.msg ?? null,
-        raw: c,
-      });
-      continue;
-    }
-    events.push({
-      kind: 'matched',
-      timestamp_utc: md.timestamp_utc || new Date().toISOString(),
-      played_duration: md.played_duration ?? null,
-      title: m.title || null,
-      artist: (m.artists || []).map((a) => a.name).filter(Boolean).join(', ') || null,
-      album: m.album?.name || null,
-      album_cover: m.album?.cover || null,
-      acrid: m.acrid || null,
-      score: m.score ?? null,
-      isrc: m.external_ids?.isrc || null,
-      upc:  m.external_ids?.upc  || null,
-      spotify_track_id: m.external_metadata?.spotify?.track?.id || null,
-      youtube_vid:      m.external_metadata?.youtube?.vid       || null,
-      deezer_track_id:  m.external_metadata?.deezer?.track?.id  || null,
-      genres: (m.genres || []).map((g) => g.name).filter(Boolean),
-      label:  m.label || null,
-      release_date: m.release_date || null,
-      raw: c,
-    });
-  }
-  return events;
-}
 
 function appendJsonl(filePath, obj) {
   fs.appendFileSync(filePath, JSON.stringify(obj) + '\n');

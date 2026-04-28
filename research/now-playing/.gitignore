@@ -1,4 +1,7 @@
 node_modules/
 results.jsonl
 raw.jsonl
+poll-results.jsonl
+poll-raw.jsonl
+poll-state.json
 .env

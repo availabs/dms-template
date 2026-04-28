@@ -1,0 +1,62 @@
+# Build artifacts and local state — never bake into the server image.
+# Note: top-level package.json/package-lock.json are also intentionally NOT used
+# by the server image — the Dockerfile writes a minimal /app/package.json itself.
+node_modules
+**/node_modules
+/package.json
+/package-lock.json
+dist
+dist-ssr
+.vite
+*.log
+logs
+
+# Local secrets / runtime state
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Editor / VCS
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+
+# Frontend-only — the server image doesn't need any of this.
+public
+catalyst-ui-kit
+references
+research
+roadmap.md
+README.md
+netlify.toml
+vite.config.js
+vite.config.js.bakv8
+eslint.config.js
+index.html
+
+# DMS submodule: only dms-server is needed in the image.
+src/dms/packages/dms
+src/dms/packages/dms/**
+src/dms/research
+src/dms/documentation
+src/dms/planning
+src/dms/CLAUDE.md
+src/dms/README.md
+src/dms/.git
+src/dms/.gitignore
+
+# dms-server slimming — exclude tests, docs, scratch dirs from the image.
+src/dms/packages/dms-server/tests
+src/dms/packages/dms-server/docs
+src/dms/packages/dms-server/var
+src/dms/packages/dms-server/.dockerignore
+src/dms/packages/dms-server/Dockerfile
+
+# Plugin scratch space (kept tiny but exclude obvious junk).
+**/*.test.js
+**/*.spec.js

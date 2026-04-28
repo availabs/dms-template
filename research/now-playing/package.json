@@ -5,9 +5,10 @@
   "type": "commonjs",
   "description": "Standalone webhook receiver for ACRCloud Custom Stream Monitoring (research stage — not wired into dms-server yet)",
   "scripts": {
-    "start": "node webhook.js",
+    "start": "WEBHOOK_KEY=26510ecf71c419156c3f12dcafb23682 PORT=4747  node webhook.js",
     "dev": "node --watch webhook.js",
-    "tail": "node tail.js"
+    "tail": "node tail.js",
+    "poll": "node poll.js"
   },
   "dependencies": {
     "express": "^4.21.0"
