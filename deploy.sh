@@ -96,15 +96,18 @@ git -C "$REPO_DIR" submodule update --init --remote --recursive
 sha="$(git -C "$REPO_DIR" rev-parse --short HEAD)"
 TAG="$(date -u +%Y%m%d-%H%M%S)-${sha}"
 
-# Avoid empty-array expansion under `set -u` (bash <4.4 errors). Use two
-# concrete invocations instead.
+# Build with a single -t and apply :latest via `docker tag` afterwards.
+# Older Docker CLIs (and some buildx versions) misparse repeated -t flags;
+# splitting the steps is universally supported.
 if [[ "${FORCE_REBUILD:-0}" == "1" ]]; then
-  log "building ${IMAGE_NAME}:${TAG} (also :latest) (--no-cache)"
-  docker build --no-cache -t "${IMAGE_NAME}:${TAG}" -t "${IMAGE_NAME}:latest" "$REPO_DIR"
+  log "building ${IMAGE_NAME}:${TAG} (--no-cache)"
+  docker build --no-cache -t "${IMAGE_NAME}:${TAG}" "$REPO_DIR"
 else
-  log "building ${IMAGE_NAME}:${TAG} (also :latest)"
-  docker build -t "${IMAGE_NAME}:${TAG}" -t "${IMAGE_NAME}:latest" "$REPO_DIR"
+  log "building ${IMAGE_NAME}:${TAG}"
+  docker build -t "${IMAGE_NAME}:${TAG}" "$REPO_DIR"
 fi
+log "tagging ${IMAGE_NAME}:${TAG} as ${IMAGE_NAME}:latest"
+docker tag "${IMAGE_NAME}:${TAG}" "${IMAGE_NAME}:latest"
 
 # --- 3. Roll ----------------------------------------------------------------
 existing_id="$(docker ps -q --filter "name=^${CONTAINER_NAME}$" || true)"
