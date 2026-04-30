@@ -108,6 +108,30 @@ function colDef(name) {
   return `${name} TEXT`;
 }
 
+/**
+ * Index name has to be deterministic per-table so re-creating it is a no-op.
+ * Postgres caps identifiers at 63 chars; the per-stream tables are
+ * `gis_datasets.s{source_id}_v{view_id}` so the bare table name is short.
+ */
+function buildIndexName(unqualifiedTable) {
+  return `${unqualifiedTable}_acrid_ts_uniq`;
+}
+
+/**
+ * Partial unique index on (acrid, timestamp_utc) WHERE kind='matched'.
+ * Lets the backfill worker re-run an overlapping window safely with
+ * INSERT … ON CONFLICT DO NOTHING. No-match rows have null acrid so we
+ * exclude them — re-pulling no-match rows is rare and the duplicates are
+ * harmless if they happen.
+ */
+function buildIdempotencyIndexSQL(fullyQualifiedName) {
+  const unqualified = fullyQualifiedName.split('.').pop();
+  const idxName = buildIndexName(unqualified);
+  return `CREATE UNIQUE INDEX IF NOT EXISTS ${idxName}
+          ON ${fullyQualifiedName} (acrid, timestamp_utc)
+          WHERE kind = 'matched' AND acrid IS NOT NULL`;
+}
+
 function buildCreateTableSQL(fullyQualifiedName) {
   const cols = QUERY_COLUMNS.map(colDef).join(',\n    ');
   return `CREATE TABLE IF NOT EXISTS ${fullyQualifiedName} (\n    ${cols}\n  )`;
@@ -119,6 +143,21 @@ function buildInsertSQL(fullyQualifiedName) {
   const placeholders = INSERT_COLUMNS.map((_, i) => `$${i + 1}`).join(', ');
   return `INSERT INTO ${fullyQualifiedName} (${INSERT_COLUMNS.join(', ')})
           VALUES (${placeholders})
+          RETURNING id, received_at`;
+}
+
+/**
+ * Same INSERT as the webhook path, but adds ON CONFLICT DO NOTHING against
+ * the partial unique index built by `buildIdempotencyIndexSQL`. RETURNING
+ * is empty on conflict, which the backfill worker uses to count actual
+ * inserts (vs. skipped duplicates).
+ */
+function buildBackfillInsertSQL(fullyQualifiedName) {
+  const placeholders = INSERT_COLUMNS.map((_, i) => `$${i + 1}`).join(', ');
+  return `INSERT INTO ${fullyQualifiedName} (${INSERT_COLUMNS.join(', ')})
+          VALUES (${placeholders})
+          ON CONFLICT (acrid, timestamp_utc) WHERE kind = 'matched' AND acrid IS NOT NULL
+          DO NOTHING
           RETURNING id, received_at`;
 }
 
@@ -142,6 +181,8 @@ module.exports = {
   INSERT_COLUMNS,
   JSONB_COLUMNS,
   buildCreateTableSQL,
+  buildIdempotencyIndexSQL,
   buildInsertSQL,
+  buildBackfillInsertSQL,
   eventToInsertParams,
 };

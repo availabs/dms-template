@@ -18,7 +18,12 @@
 
 const crypto = require('crypto');
 const { normalize } = require('./normalize');
-const { buildCreateTableSQL, buildInsertSQL, eventToInsertParams } = require('./schema');
+const {
+  buildCreateTableSQL,
+  buildIdempotencyIndexSQL,
+  buildInsertSQL,
+  eventToInsertParams,
+} = require('./schema');
 
 const SOURCE_TYPE = 'now_playing_stream';
 const VIEW_SCHEMA_TAG = 'now_playing_detection_v1';
@@ -134,6 +139,7 @@ module.exports = function routes(router, helpers) {
 
       await helpers.ensureSchema(db, view.table_schema);
       await db.query(buildCreateTableSQL(view.data_table));
+      await db.query(buildIdempotencyIndexSQL(view.data_table));
 
       res.json({
         source_id: source.source_id,
@@ -218,6 +224,66 @@ module.exports = function routes(router, helpers) {
       });
     } catch (err) {
       console.error('[now_playing] rotate secret failed:', err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Admin: kick off historical backfill from ACR Console API ───────────
+  // POST /dama-admin/:pgEnv/now_playing/streams/:sourceId/backfill
+  // Body: { acr_bearer_token (required, single-use),
+  //         date_from?: "YYYY-MM-DD", date_to?: "YYYY-MM-DD" }
+  // The token is passed straight to the worker via task.descriptor and is
+  // never persisted. Re-runs over an overlapping window are safe — the
+  // partial unique index on (acrid, timestamp_utc) makes the backfill
+  // INSERT use ON CONFLICT DO NOTHING.
+  router.post('/streams/:sourceId/backfill', async (req, res) => {
+    const user = requireAuth(req, res);
+    if (!user) return;
+    try {
+      const { pgEnv } = req.params;
+      const db = helpers.getDb(pgEnv);
+      if (db.type !== 'postgres') return res.status(501).json({ error: PG_ONLY_MSG });
+      const sourceId = Number(req.params.sourceId);
+
+      const source = await loadSource(db, sourceId);
+      if (!source || source.type !== SOURCE_TYPE) return res.status(404).json({ error: 'stream not found' });
+
+      const { acr_bearer_token, date_from, date_to } = req.body || {};
+      if (!acr_bearer_token || typeof acr_bearer_token !== 'string') {
+        return res.status(400).json({ error: '`acr_bearer_token` (string) is required' });
+      }
+
+      const stats = parseStatistics(source.statistics);
+      const acr_project_id = stats.acr_project_id;
+      const acr_stream_id = stats.acr_stream_id;
+      if (!acr_project_id || !acr_stream_id) {
+        return res.status(400).json({
+          error: 'stream is missing acr_project_id / acr_stream_id — set them when provisioning the stream'
+        });
+      }
+
+      // Defensive: make sure the idempotency index is in place. The create
+      // route builds it, but old streams provisioned before the index
+      // landed won't have it.
+      const view = await loadLatestView(db, sourceId);
+      if (!view?.data_table) return res.status(409).json({ error: 'stream has no view configured' });
+      await db.query(buildIdempotencyIndexSQL(view.data_table));
+
+      const taskId = await helpers.queueTask({
+        workerPath: 'now_playing/backfill',
+        sourceId,
+        source_id: sourceId,
+        acr_project_id,
+        acr_stream_id,
+        acr_bearer_token,    // NOT persisted; lives only on the in-memory task descriptor
+        date_from: date_from || null,
+        date_to: date_to || null,
+        user_id: user.id,
+      }, pgEnv);
+
+      res.json({ etl_context_id: taskId, source_id: sourceId });
+    } catch (err) {
+      console.error('[now_playing] backfill enqueue failed:', err);
       res.status(500).json({ error: err.message });
     }
   });
