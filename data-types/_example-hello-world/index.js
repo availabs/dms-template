@@ -2,14 +2,14 @@
  * Example datatype plugin — `_example-hello-world`.
  *
  * Reference for developers writing a new datatype under `data-types/`. NOT
- * registered in `server/register-datatypes.js` — the leading underscore in
- * the directory name signals "example/skeleton, do not load."
+ * registered in `data-types/register-datatypes.js` — the leading underscore
+ * in the directory name signals "example/skeleton, do not load."
  *
  * To use this as a starting point:
  *   1. Copy the directory to `data-types/<your-name>/`
  *   2. Replace `hello-world` everywhere below with your datatype name
- *   3. Add `registerDatatype('<your-name>', require('../data-types/<your-name>'));`
- *      to `server/register-datatypes.js`
+ *   3. Add `registerDatatype('<your-name>', require('./<your-name>'));`
+ *      to `data-types/register-datatypes.js`
  *
  * The file is laid out the way a real plugin would be — the smaller plugins
  * (one worker, one route) can keep everything in `index.js`. Larger plugins

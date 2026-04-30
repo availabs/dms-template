@@ -5,8 +5,8 @@ Ingest ACRCloud Custom Stream Monitoring webhook callbacks into DMS as a per-str
 ## Provision a stream
 
 ```bash
-# 1. Make sure the dataType is registered (server/register-datatypes.js
-#    must include `registerDatatype('now_playing', require('../data-types/now_playing'))`)
+# 1. Make sure the dataType is registered (data-types/register-datatypes.js
+#    must include `registerDatatype('now_playing', require('./now_playing'))`)
 #    and DMS_EXTRA_DATATYPES points at that file in your .env.
 
 # 2. Create the stream — produces a source + view + auto-creates the table.

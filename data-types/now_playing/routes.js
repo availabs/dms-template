@@ -18,7 +18,13 @@
 
 const crypto = require('crypto');
 const { normalize } = require('./normalize');
-const { buildCreateTableSQL, buildInsertSQL, eventToInsertParams } = require('./schema');
+const {
+  buildCreateTableSQL,
+  buildIdempotencyIndexSQL,
+  buildInsertSQL,
+  eventToInsertParams,
+  COLUMN_METADATA,
+} = require('./schema');
 
 const SOURCE_TYPE = 'now_playing_stream';
 const VIEW_SCHEMA_TAG = 'now_playing_detection_v1';
@@ -46,16 +52,34 @@ function requireAuth(req, res) {
   return user;
 }
 
+/**
+ * Resolve the public base URL for webhook callbacks. Priority:
+ *   1. DMS_PUBLIC_URL env var (authoritative — set this in deploys).
+ *   2. X-Forwarded-Host / X-Forwarded-Proto from a trusted reverse proxy.
+ *   3. http://localhost:${PORT} (dev fallback; warns and flags the response).
+ *
+ * Returns { url, source } so callers can surface a UI warning when the
+ * URL came from the localhost fallback (ACR cannot reach localhost).
+ */
 function resolveBaseUrl(req) {
   const explicit = process.env.DMS_PUBLIC_URL;
-  if (explicit) return explicit.replace(/\/$/, '');
+  if (explicit) return { url: explicit.replace(/\/$/, ''), source: 'env' };
+
+  const fwdHost = req.get('x-forwarded-host');
+  const fwdProto = req.get('x-forwarded-proto') || 'https';
+  if (fwdHost) return { url: `${fwdProto}://${fwdHost}`, source: 'forwarded' };
+
   const port = process.env.PORT || 3001;
   console.warn(`[now_playing] DMS_PUBLIC_URL not set — webhook URL will use http://localhost:${port}`);
-  return `http://localhost:${port}`;
+  return { url: `http://localhost:${port}`, source: 'localhost' };
 }
 
 function buildWebhookUrl(req, sourceId, secret) {
-  return `${resolveBaseUrl(req)}/dama-admin/${req.params.pgEnv}/now_playing/streams/${sourceId}/webhook?key=${secret}`;
+  const { url, source } = resolveBaseUrl(req);
+  return {
+    webhook_url: `${url}/dama-admin/${req.params.pgEnv}/now_playing/streams/${sourceId}/webhook?key=${secret}`,
+    base_url_source: source,
+  };
 }
 
 async function loadSource(db, sourceId) {
@@ -134,12 +158,28 @@ module.exports = function routes(router, helpers) {
 
       await helpers.ensureSchema(db, view.table_schema);
       await db.query(buildCreateTableSQL(view.data_table));
+      await db.query(buildIdempotencyIndexSQL(view.data_table));
 
+      // Populate the source's metadata.columns so DataWrapper, the built-in
+      // Table page, and other column-aware DAMA UI know the schema. JSONB
+      // merge so any future fields the route also sets (e.g. statistics
+      // patches done elsewhere) are preserved. Only writes if columns
+      // aren't already set — re-running provisioning won't clobber a
+      // hand-edited metadata blob.
+      await db.query(
+        `UPDATE data_manager.sources
+         SET metadata = COALESCE(metadata, '{}'::jsonb) || $1::jsonb
+         WHERE source_id = $2 AND (metadata IS NULL OR NOT (metadata ? 'columns'))`,
+        [JSON.stringify({ columns: COLUMN_METADATA, schema: VIEW_SCHEMA_TAG }), source.source_id]
+      );
+
+      const { webhook_url, base_url_source } = buildWebhookUrl(req, source.source_id, webhookSecret);
       res.json({
         source_id: source.source_id,
         view_id: view.view_id,
         data_table: view.data_table,
-        webhook_url: buildWebhookUrl(req, source.source_id, webhookSecret),
+        webhook_url,
+        base_url_source,
       });
     } catch (err) {
       console.error('[now_playing] create stream failed:', err);
@@ -178,6 +218,9 @@ module.exports = function routes(router, helpers) {
         lastMatch = matchRows[0] || null;
       }
 
+      const built = stats.webhook_secret
+        ? buildWebhookUrl(req, source.source_id, stats.webhook_secret)
+        : { webhook_url: null, base_url_source: null };
       res.json({
         source_id: source.source_id,
         name: source.name,
@@ -186,7 +229,9 @@ module.exports = function routes(router, helpers) {
         acr_stream_id: stats.acr_stream_id || null,
         view_id: view?.view_id || null,
         data_table: view?.data_table || null,
-        webhook_url: stats.webhook_secret ? buildWebhookUrl(req, source.source_id, stats.webhook_secret) : null,
+        webhook_url: built.webhook_url,
+        base_url_source: built.base_url_source,
+        statistics: stats,
         last_event_at: lastEventAt,
         last_match: lastMatch,
       });
@@ -212,12 +257,74 @@ module.exports = function routes(router, helpers) {
       const fresh = newSecret();
       await updateStatistics(db, sourceId, (stats) => ({ ...stats, webhook_secret: fresh }));
 
+      const { webhook_url, base_url_source } = buildWebhookUrl(req, sourceId, fresh);
       res.json({
         source_id: sourceId,
-        webhook_url: buildWebhookUrl(req, sourceId, fresh),
+        webhook_url,
+        base_url_source,
       });
     } catch (err) {
       console.error('[now_playing] rotate secret failed:', err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Admin: kick off historical backfill from ACR Console API ───────────
+  // POST /dama-admin/:pgEnv/now_playing/streams/:sourceId/backfill
+  // Body: { acr_bearer_token (required, single-use),
+  //         date_from?: "YYYY-MM-DD", date_to?: "YYYY-MM-DD" }
+  // The token is passed straight to the worker via task.descriptor and is
+  // never persisted. Re-runs over an overlapping window are safe — the
+  // partial unique index on (acrid, timestamp_utc) makes the backfill
+  // INSERT use ON CONFLICT DO NOTHING.
+  router.post('/streams/:sourceId/backfill', async (req, res) => {
+    const user = requireAuth(req, res);
+    if (!user) return;
+    try {
+      const { pgEnv } = req.params;
+      const db = helpers.getDb(pgEnv);
+      if (db.type !== 'postgres') return res.status(501).json({ error: PG_ONLY_MSG });
+      const sourceId = Number(req.params.sourceId);
+
+      const source = await loadSource(db, sourceId);
+      if (!source || source.type !== SOURCE_TYPE) return res.status(404).json({ error: 'stream not found' });
+
+      const { acr_bearer_token, date_from, date_to } = req.body || {};
+      if (!acr_bearer_token || typeof acr_bearer_token !== 'string') {
+        return res.status(400).json({ error: '`acr_bearer_token` (string) is required' });
+      }
+
+      const stats = parseStatistics(source.statistics);
+      const acr_project_id = stats.acr_project_id;
+      const acr_stream_id = stats.acr_stream_id;
+      if (!acr_project_id || !acr_stream_id) {
+        return res.status(400).json({
+          error: 'stream is missing acr_project_id / acr_stream_id — set them when provisioning the stream'
+        });
+      }
+
+      // Defensive: make sure the idempotency index is in place. The create
+      // route builds it, but old streams provisioned before the index
+      // landed won't have it.
+      const view = await loadLatestView(db, sourceId);
+      if (!view?.data_table) return res.status(409).json({ error: 'stream has no view configured' });
+      await db.query(buildIdempotencyIndexSQL(view.data_table));
+
+      const taskId = await helpers.queueTask({
+        workerPath: 'now_playing/backfill',
+        sourceId,
+        source_id: sourceId,
+        acr_project_id,
+        acr_stream_id,
+        acr_bearer_token,    // NOT persisted; lives only on the in-memory task descriptor
+        date_from: date_from || null,
+        date_to: date_to || null,
+        user_id: user.id,
+      }, pgEnv);
+
+      res.json({ etl_context_id: taskId, source_id: sourceId });
+    } catch (err) {
+      console.error('[now_playing] backfill enqueue failed:', err);
       res.status(500).json({ error: err.message });
     }
   });
