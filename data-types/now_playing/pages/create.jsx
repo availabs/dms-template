@@ -18,12 +18,16 @@
  *
  * The bearer token is single-use — typed into the form, sent to the
  * backfill route, dropped from React state on success/failure.
+ *
+ * Auth: the dms-server JWT middleware (`auth/jwt.js`) reads the token
+ * verbatim from the `Authorization` request header. The auth context
+ * exposes it at `user.token`. We attach it via a `useApi(context)` hook
+ * so each subcomponent grabs the token from `DatasetsContext` directly
+ * instead of getting it threaded through props.
  */
 
 import React from 'react';
 import { useNavigate } from 'react-router';
-
-const SRC_TYPE = 'now_playing_stream';
 
 async function checkApiResponse(res) {
   if (!res.ok) {
@@ -32,20 +36,42 @@ async function checkApiResponse(res) {
   }
 }
 
-async function postJson(url, body) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body || {}),
-  });
-  await checkApiResponse(res);
-  return res.json();
-}
+/**
+ * Read auth + DAMA wiring from the datasets context and return helpers
+ * pre-bound to the current user's token. Components call this at the
+ * top of their body — no need to pass `user` / `rtPfx` as props.
+ *
+ * Returns `{ rtPfx: '' }` when no external datasource is configured;
+ * the top-level `Create` component renders an error in that case before
+ * any subcomponent gets a chance to call the helpers.
+ */
+function useApi(context) {
+  const ctx = React.useContext(context) || {};
+  const { user, datasources, API_HOST, baseUrl } = ctx;
+  const pgEnv = (datasources || []).find((d) => d.type === 'external')?.env || '';
+  const rtPfx = pgEnv ? `${API_HOST || ''}/dama-admin/${pgEnv}` : '';
 
-async function getJson(url) {
-  const res = await fetch(url, { method: 'GET' });
-  await checkApiResponse(res);
-  return res.json();
+  return React.useMemo(() => {
+    const authHeaders = () => (user?.token ? { Authorization: user.token } : {});
+
+    async function postJson(url, body) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(body || {}),
+      });
+      await checkApiResponse(res);
+      return res.json();
+    }
+
+    async function getJson(url) {
+      const res = await fetch(url, { method: 'GET', headers: { ...authHeaders() } });
+      await checkApiResponse(res);
+      return res.json();
+    }
+
+    return { user, pgEnv, rtPfx, baseUrl, postJson, getJson };
+  }, [user, pgEnv, rtPfx, baseUrl]);
 }
 
 function Field({ label, hint, children }) {
@@ -88,7 +114,9 @@ function CopyField({ value }) {
   );
 }
 
-function PreProvisionForm({ rtPfx, source, user, onProvisioned }) {
+function PreProvisionForm({ context, source, onProvisioned }) {
+  const { rtPfx, postJson } = useApi(context);
+
   const [name, setName] = React.useState(source?.name || '');
   const [stationName, setStationName] = React.useState('');
   const [acrProjectId, setAcrProjectId] = React.useState('');
@@ -125,7 +153,7 @@ function PreProvisionForm({ rtPfx, source, user, onProvisioned }) {
             acr_bearer_token: bearerToken,
             date_from: dateFrom || null,    // null = all-time
             date_to: dateTo || null,
-          }
+          },
         );
         backfillEtl = bf.etl_context_id;
       }
@@ -249,7 +277,9 @@ function PreProvisionForm({ rtPfx, source, user, onProvisioned }) {
   );
 }
 
-function PostProvisionPanel({ rtPfx, sourceId, initialBackfillEtl }) {
+function PostProvisionPanel({ context, sourceId, initialBackfillEtl }) {
+  const { rtPfx, postJson, getJson } = useApi(context);
+
   const [info, setInfo] = React.useState(null);
   const [error, setError] = React.useState(null);
   const [rotating, setRotating] = React.useState(false);
@@ -262,7 +292,7 @@ function PostProvisionPanel({ rtPfx, sourceId, initialBackfillEtl }) {
     } catch (err) {
       setError(err.message);
     }
-  }, [rtPfx, sourceId]);
+  }, [getJson, rtPfx, sourceId]);
 
   React.useEffect(() => {
     refresh();
@@ -347,7 +377,7 @@ function PostProvisionPanel({ rtPfx, sourceId, initialBackfillEtl }) {
       </div>
 
       <BackfillPanel
-        rtPfx={rtPfx}
+        context={context}
         sourceId={sourceId}
         info={info}
         initialEtlContextId={backfillEtl}
@@ -357,7 +387,9 @@ function PostProvisionPanel({ rtPfx, sourceId, initialBackfillEtl }) {
   );
 }
 
-function BackfillPanel({ rtPfx, sourceId, info, initialEtlContextId, onStarted }) {
+function BackfillPanel({ context, sourceId, info, initialEtlContextId, onStarted }) {
+  const { rtPfx, postJson } = useApi(context);
+
   const [open, setOpen] = React.useState(Boolean(initialEtlContextId));
   const [token, setToken] = React.useState('');
   const [dateFrom, setDateFrom] = React.useState('');
@@ -380,7 +412,7 @@ function BackfillPanel({ rtPfx, sourceId, info, initialEtlContextId, onStarted }
           acr_bearer_token: token,
           date_from: dateFrom || null,
           date_to: dateTo || null,
-        }
+        },
       );
       setToken('');   // single-use
       onStarted?.(res.etl_context_id);
@@ -467,11 +499,7 @@ function BackfillPanel({ rtPfx, sourceId, info, initialEtlContextId, onStarted }
 
 function Create({ source, baseUrl, context }) {
   const navigate = useNavigate();
-  const ctx = React.useContext(context);
-  const { user, datasources, API_HOST } = ctx || {};
-  const pgEnv = (datasources || []).find((d) => d.type === 'external')?.env || '';
-  const rtPfx = `${API_HOST || ''}/dama-admin/${pgEnv}`;
-  const ctxBaseUrl = ctx?.baseUrl || baseUrl || '';
+  const { pgEnv, baseUrl: ctxBaseUrl } = useApi(context);
 
   const [provisioned, setProvisioned] = React.useState(null);
   const sourceId = provisioned?.source_id || source?.source_id || null;
@@ -499,13 +527,12 @@ function Create({ source, baseUrl, context }) {
   if (!sourceId) {
     return (
       <PreProvisionForm
-        rtPfx={rtPfx}
+        context={context}
         source={source}
-        user={user}
         onProvisioned={(p) => {
           setProvisioned(p);
           // Also navigate so a refresh lands back on the same stream.
-          navigate(`${ctxBaseUrl}/source/${p.source_id}`);
+          navigate(`${ctxBaseUrl || baseUrl || ''}/source/${p.source_id}`);
         }}
       />
     );
@@ -513,7 +540,7 @@ function Create({ source, baseUrl, context }) {
 
   return (
     <PostProvisionPanel
-      rtPfx={rtPfx}
+      context={context}
       sourceId={sourceId}
       initialBackfillEtl={provisioned?.backfill_etl_context_id || null}
     />

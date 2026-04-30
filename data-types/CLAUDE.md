@@ -90,6 +90,56 @@ Routes that queue a task should return `{ etl_context_id, source_id }`.
 `etl_context_id` IS the new task_id — the legacy client polls events via
 `/events/query?etl_context_id=…` and that path still works.
 
+### Source `metadata.columns` contract
+
+**Whenever a plugin creates a per-view physical table, it must also write
+a column descriptor list to `data_manager.sources.metadata.columns`.**
+Without it DataWrapper, the built-in Table page, the column-aware filter
+UI, and any UDA-driven page section render an empty grid against the
+source. This is the most-forgotten step in a new plugin.
+
+Shape (the cross-DAMA contract — see also
+`dms-server/src/dama/CLAUDE.md#metadata.columns contract`):
+
+```js
+metadata.columns = [
+  { name: 'received_at', display_name: 'Received At', type: 'TIMESTAMPTZ', desc: null },
+  { name: 'title',       display_name: 'Title',       type: 'TEXT',        desc: null },
+  { name: 'raw',         display_name: 'Raw',         type: 'JSONB',       desc: null },
+  // …
+];
+```
+
+| Field | Required | Notes |
+|---|---|---|
+| `name` | yes | Must match the physical column name exactly. |
+| `display_name` | yes | Header text in the Table page. |
+| `type` | yes | Bare Postgres type — `TEXT`, `TIMESTAMPTZ`, `INTEGER`, `JSONB`, etc. No constraints. |
+| `desc` | optional | Tooltip / metadata-page description. |
+
+Write it via JSONB merge so other top-level metadata keys aren't clobbered:
+
+```js
+await db.query(
+  `UPDATE data_manager.sources
+   SET metadata = COALESCE(metadata, '{}'::jsonb) || $1::jsonb
+   WHERE source_id = $2 AND (metadata IS NULL OR NOT (metadata ? 'columns'))`,
+  [JSON.stringify({ columns, schema: 'my_schema_tag_v1' }), source_id]
+);
+```
+
+The `AND … NOT (metadata ? 'columns')` guard makes re-provisioning safe
+without overwriting a hand-edited column list. Drop the guard if you
+want re-runs to be authoritative.
+
+**Curated default vs. all columns.** Plugins with many physical columns
+(e.g. `now_playing` has ~50) typically write a curated subset (10-20)
+to `metadata.columns` and keep a `JSONB raw` column for the full
+payload. The physical table still has every column; `metadata.columns`
+only controls what's visible by default. See
+`data-types/now_playing/schema.js` for `COLUMN_METADATA` (curated) vs.
+`ALL_COLUMN_METADATA` (full) as a worked example.
+
 ## Client side
 
 DMS sites consume datatype client code through `damaDataTypes` (see
@@ -103,6 +153,36 @@ to plugged-in components. The contract:
 - The datasets pattern's `CreatePage` looks up
   `damaDataTypes[type]?.sourceCreate?.component` and renders it as
   `<ExternalComp context={DatasetsContext} source={data} />`.
+
+### `defaultPages` shorthand
+
+A plugin's `pages/index.jsx` can opt into built-in source-view pages
+(Table, Map, Metadata) without deep-importing them from the
+`patterns/datasets` tree:
+
+```jsx
+// data-types/<name>/pages/index.jsx
+const pages = {
+  defaultPages: ['table'],         // ← short names from the registry
+  sourceCreate: { name: 'Create', component: Create },
+};
+export default pages;
+```
+
+The datasets pattern's `siteConfig.jsx` expands each entry of
+`damaDataTypes` against the registry at
+`src/dms/packages/dms/src/patterns/datasets/pages/dataTypes/defaultPages.js`,
+filling in any `defaultPages: [...]` listed names with the matching
+built-in page configs. Plugin's own page entries always win on
+conflict, so a plugin can ship its own custom Table while still
+inheriting Map+Metadata.
+
+Currently registered short names: `'table'`, `'map'`, `'metadata'`.
+To add another, edit `defaultPages.js` (and document it here so plugin
+authors know about it).
+
+The Table page reads `source.metadata.columns` — see the metadata
+contract above. Without it, "table" inflates to an empty grid.
 
 ### Page-component contract
 
@@ -161,15 +241,41 @@ DAMA source `type`, not the plugin name (those usually match but can
 differ — `enhance_nfip_claims_v2` plugin produces sources of type
 `fima_nfip_claims_v2_enhanced`).
 
+### Auth headers
+
+Routes that call `requireAuth()` (`POST /streams`, `/backfill`, etc.)
+need the JWT in the `Authorization` header. The auth context exposes
+the token at `user.token`; read `user` from `DatasetsContext` at the
+call site, never thread it through props. Idiomatic helper:
+
+```jsx
+function useApi(context) {
+  const ctx = React.useContext(context) || {};
+  const { user, datasources, API_HOST } = ctx;
+  const pgEnv = (datasources || []).find(d => d.type === 'external')?.env || '';
+  const rtPfx = pgEnv ? `${API_HOST || ''}/dama-admin/${pgEnv}` : '';
+  // returns postJson/getJson with the Authorization header pre-bound
+}
+```
+
+The dms-server JWT middleware (`dms-server/src/auth/jwt.js`) reads the
+header verbatim — no `Bearer ` prefix is stripped. Pass `user.token`
+directly.
+
 ## Adding a new plugin
 
 1. `mkdir data-types/<name>` and copy from `_example-hello-world/` or an
    existing plugin.
 2. Implement server side: `index.js` exporting `{ workers, routes }`.
-3. (Optional) Implement client side: `pages/index.jsx` + `pages/create.jsx`.
-4. Add one line to `register-datatypes.js`:
+3. **Write `metadata.columns`** at provision/publish time (see contract
+   above). This is the most-forgotten step.
+4. (Optional) Implement client side: `pages/index.jsx` + `pages/create.jsx`.
+   Add `defaultPages: ['table']` to inherit the built-in Table page if the
+   dataset is column-shaped.
+5. Add one line to `register-datatypes.js`:
    `registerDatatype('<name>', require('./<name>'));`
-5. (If client side) Add an import + entry to `src/data-types.js` keyed by
-   the DAMA source type the plugin produces.
-6. Rebuild the server (`./deploy.sh` or `docker build`) so the bootstrap
-   picks up the new plugin.
+6. (If client side) Add an import + entry to `src/data-types.js` keyed by
+   the DAMA source type the plugin produces, under the right app key.
+7. Rebuild the server (`./deploy.sh` or `docker build`) so the bootstrap
+   picks up the new plugin. Frontend changes need a fresh `npm run build`
+   or a dev server restart.

@@ -23,6 +23,7 @@ const {
   buildIdempotencyIndexSQL,
   buildInsertSQL,
   eventToInsertParams,
+  COLUMN_METADATA,
 } = require('./schema');
 
 const SOURCE_TYPE = 'now_playing_stream';
@@ -158,6 +159,19 @@ module.exports = function routes(router, helpers) {
       await helpers.ensureSchema(db, view.table_schema);
       await db.query(buildCreateTableSQL(view.data_table));
       await db.query(buildIdempotencyIndexSQL(view.data_table));
+
+      // Populate the source's metadata.columns so DataWrapper, the built-in
+      // Table page, and other column-aware DAMA UI know the schema. JSONB
+      // merge so any future fields the route also sets (e.g. statistics
+      // patches done elsewhere) are preserved. Only writes if columns
+      // aren't already set — re-running provisioning won't clobber a
+      // hand-edited metadata blob.
+      await db.query(
+        `UPDATE data_manager.sources
+         SET metadata = COALESCE(metadata, '{}'::jsonb) || $1::jsonb
+         WHERE source_id = $2 AND (metadata IS NULL OR NOT (metadata ? 'columns'))`,
+        [JSON.stringify({ columns: COLUMN_METADATA, schema: VIEW_SCHEMA_TAG }), source.source_id]
+      );
 
       const { webhook_url, base_url_source } = buildWebhookUrl(req, source.source_id, webhookSecret);
       res.json({
