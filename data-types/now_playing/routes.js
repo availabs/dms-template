@@ -51,16 +51,34 @@ function requireAuth(req, res) {
   return user;
 }
 
+/**
+ * Resolve the public base URL for webhook callbacks. Priority:
+ *   1. DMS_PUBLIC_URL env var (authoritative — set this in deploys).
+ *   2. X-Forwarded-Host / X-Forwarded-Proto from a trusted reverse proxy.
+ *   3. http://localhost:${PORT} (dev fallback; warns and flags the response).
+ *
+ * Returns { url, source } so callers can surface a UI warning when the
+ * URL came from the localhost fallback (ACR cannot reach localhost).
+ */
 function resolveBaseUrl(req) {
   const explicit = process.env.DMS_PUBLIC_URL;
-  if (explicit) return explicit.replace(/\/$/, '');
+  if (explicit) return { url: explicit.replace(/\/$/, ''), source: 'env' };
+
+  const fwdHost = req.get('x-forwarded-host');
+  const fwdProto = req.get('x-forwarded-proto') || 'https';
+  if (fwdHost) return { url: `${fwdProto}://${fwdHost}`, source: 'forwarded' };
+
   const port = process.env.PORT || 3001;
   console.warn(`[now_playing] DMS_PUBLIC_URL not set — webhook URL will use http://localhost:${port}`);
-  return `http://localhost:${port}`;
+  return { url: `http://localhost:${port}`, source: 'localhost' };
 }
 
 function buildWebhookUrl(req, sourceId, secret) {
-  return `${resolveBaseUrl(req)}/dama-admin/${req.params.pgEnv}/now_playing/streams/${sourceId}/webhook?key=${secret}`;
+  const { url, source } = resolveBaseUrl(req);
+  return {
+    webhook_url: `${url}/dama-admin/${req.params.pgEnv}/now_playing/streams/${sourceId}/webhook?key=${secret}`,
+    base_url_source: source,
+  };
 }
 
 async function loadSource(db, sourceId) {
@@ -141,11 +159,13 @@ module.exports = function routes(router, helpers) {
       await db.query(buildCreateTableSQL(view.data_table));
       await db.query(buildIdempotencyIndexSQL(view.data_table));
 
+      const { webhook_url, base_url_source } = buildWebhookUrl(req, source.source_id, webhookSecret);
       res.json({
         source_id: source.source_id,
         view_id: view.view_id,
         data_table: view.data_table,
-        webhook_url: buildWebhookUrl(req, source.source_id, webhookSecret),
+        webhook_url,
+        base_url_source,
       });
     } catch (err) {
       console.error('[now_playing] create stream failed:', err);
@@ -184,6 +204,9 @@ module.exports = function routes(router, helpers) {
         lastMatch = matchRows[0] || null;
       }
 
+      const built = stats.webhook_secret
+        ? buildWebhookUrl(req, source.source_id, stats.webhook_secret)
+        : { webhook_url: null, base_url_source: null };
       res.json({
         source_id: source.source_id,
         name: source.name,
@@ -192,7 +215,9 @@ module.exports = function routes(router, helpers) {
         acr_stream_id: stats.acr_stream_id || null,
         view_id: view?.view_id || null,
         data_table: view?.data_table || null,
-        webhook_url: stats.webhook_secret ? buildWebhookUrl(req, source.source_id, stats.webhook_secret) : null,
+        webhook_url: built.webhook_url,
+        base_url_source: built.base_url_source,
+        statistics: stats,
         last_event_at: lastEventAt,
         last_match: lastMatch,
       });
@@ -218,9 +243,11 @@ module.exports = function routes(router, helpers) {
       const fresh = newSecret();
       await updateStatistics(db, sourceId, (stats) => ({ ...stats, webhook_secret: fresh }));
 
+      const { webhook_url, base_url_source } = buildWebhookUrl(req, sourceId, fresh);
       res.json({
         source_id: sourceId,
-        webhook_url: buildWebhookUrl(req, sourceId, fresh),
+        webhook_url,
+        base_url_source,
       });
     } catch (err) {
       console.error('[now_playing] rotate secret failed:', err);

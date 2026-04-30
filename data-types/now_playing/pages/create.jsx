@@ -304,6 +304,19 @@ function PostProvisionPanel({ rtPfx, sourceId, initialBackfillEtl }) {
       <div className="border rounded-md p-4 mb-4 bg-blue-50">
         <div className="font-medium mb-2">Webhook URL</div>
         <CopyField value={info.webhook_url} />
+        {info.base_url_source === 'localhost' ? (
+          <div className="mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded p-2">
+            <strong>This URL points at <code>localhost</code> and ACR cannot reach it.</strong>
+            {' '}Set <code>DMS_PUBLIC_URL</code> in the server's environment to the public hostname
+            (e.g. <code>https://dmsserver.example.org</code>) and restart the server.
+          </div>
+        ) : null}
+        {info.base_url_source === 'forwarded' ? (
+          <div className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+            URL derived from <code>X-Forwarded-Host</code>. Set <code>DMS_PUBLIC_URL</code> in the
+            server's environment to make this deterministic.
+          </div>
+        ) : null}
         <ol className="text-sm text-gray-700 list-decimal pl-5 mt-3 space-y-1">
           <li>Open the ACRCloud Console → your project → this stream.</li>
           <li>Paste the URL above into the <span className="font-mono">Result Callback URL</span> field.</li>
@@ -462,6 +475,26 @@ function Create({ source, baseUrl, context }) {
 
   const [provisioned, setProvisioned] = React.useState(null);
   const sourceId = provisioned?.source_id || source?.source_id || null;
+
+  if (!pgEnv) {
+    return (
+      <div className="w-full max-w-xl mx-auto p-4 border border-red-300 bg-red-50 rounded-md text-sm">
+        <div className="font-semibold text-red-700 mb-2">No external datasource configured</div>
+        <p>
+          The <code>now_playing</code> create page needs an external (DAMA) datasource so it knows
+          which <code>pgEnv</code> to call. Without it, the API URL would be
+          <code className="ml-1">/dama-admin//now_playing/streams</code> — note the double slash.
+        </p>
+        <p className="mt-2">
+          Fix: open the dataset pattern's settings in the DMS admin and add a datasource with
+          <code className="ml-1">type: "external"</code> pointing at a configured pgEnv (e.g.
+          <code>npmrds2</code>, <code>hazmit_dama</code>). The pattern reads its
+          <code>dmsEnvId</code> to build this list — if you've already added one and it's still
+          empty here, the dmsEnv config under that ID may not have a Postgres host set.
+        </p>
+      </div>
+    );
+  }
 
   if (!sourceId) {
     return (
