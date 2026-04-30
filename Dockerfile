@@ -14,7 +14,7 @@
 #   DMS_DB_ENV            DMS database config name
 #   DMS_AUTH_DB_ENV       Auth database config name
 #   DMS_STORAGE_TYPE      'local' (default) or 's3'
-#   DMS_EXTRA_DATATYPES   Set by this image to /app/server/register-datatypes.js
+#   DMS_EXTRA_DATATYPES   Set by this image to /app/data-types/register-datatypes.js
 
 FROM node:22-bookworm-slim
 
@@ -53,17 +53,17 @@ RUN printf '%s\n' \
 
 RUN npm install --omit=dev
 
-# 3) Template-owned plugin code. data-types/ MUST be a sibling of server/ so
-#    register-datatypes.js's `require('../data-types/...')` resolves.
+# 3) Template-owned plugin code. The bootstrap (`register-datatypes.js`) lives
+#    inside `data-types/` and uses sibling-relative requires
+#    (`require('./map21')`, etc.).
 COPY data-types ./data-types
-COPY server ./server
 
 # Persistent storage: host ID, upload temp files, local file storage.
 VOLUME /app/src/dms/packages/dms-server/var
 
 ENV NODE_ENV=production \
     PORT=5555 \
-    DMS_EXTRA_DATATYPES=/app/server/register-datatypes.js
+    DMS_EXTRA_DATATYPES=/app/data-types/register-datatypes.js
 
 EXPOSE 5555
 

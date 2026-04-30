@@ -1,6 +1,6 @@
 import { DmsSite, adminConfig } from "./dms/packages/dms/src";
 import themes from "./themes";
-import damaDataTypes from "./data-types.js";
+import getDataTypes from "./data-types.js";
 
 const DEFAULT_API_HOST = "https://dmsserver.availabs.org";
 
@@ -42,7 +42,7 @@ function App({ defaultData, hydrationData } = {}) {
       AUTH_HOST={API_HOST}
       DAMA_HOST={DAMA_HOST}
       themes={themes}
-      damaDataTypes={damaDataTypes}
+      damaDataTypes={getDataTypes(DMS_APP)}
     />
   );
 }
