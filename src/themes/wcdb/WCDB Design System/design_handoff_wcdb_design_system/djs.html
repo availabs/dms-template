@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head><meta charset="utf-8"><title>WCDB — DJs</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles/tokens.css"><link rel="stylesheet" href="styles/components.css"></head>
+<body><div id="app"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+<script type="text/babel" src="scripts/wcdb-patterns.jsx"></script>
+<script type="text/babel" src="scripts/mockup-shell.jsx"></script>
+<script type="text/babel">
+const DJS=[
+['Halftone','halftone','Late Modernism','2021',0.55],
+['Marisol Ng','marisol','The Quiet Hours','2019',0.85],
+['Ezra Park','ezra','Graveyard Shift','2024',0.18],
+['Aimee Cole','aimee','Coffeehouse','2018',0.05],
+['Daniel Yi','danyi','Lunch Counter','2022',0.40],
+['Jules Mazur','jules','Crate Digging','2020',0.70],
+['Tasha Williams','tasha','Five Boroughs','2017',0.92],
+['Jamie Reed','jreed','Stage Door','2023',0.32],
+['Anouk Devi','anouk','Drum Circuit','2023',0.62],
+];
+function App(){return(
+<MockupShell active="DJs">
+<section data-screen-label="DJ Directory" style={{padding:'24px 0 40px'}}>
+<div className="uppercase-meta">DIRECTORY · {DJS.length} ACTIVE DJS</div>
+<h1 className="serif" style={{fontStyle:'italic',fontSize:'clamp(56px,7vw,96px)',lineHeight:0.95,letterSpacing:'-0.04em',margin:'20px 0 16px',fontWeight:400}}>The voices on the air.</h1>
+<p style={{color:'var(--ink-2)',fontSize:18,maxWidth:600,lineHeight:1.5}}>UAlbany students, alumni, and a handful of community members who have kept this signal going since 1978.</p>
+</section>
+<section style={{margin:'32px 0',display:'flex',gap:12,alignItems:'center'}}>
+<input className="wc-input wc-input--bordered" placeholder="Search DJs by name, show, or genre…" style={{maxWidth:420}}/>
+<div className="wc-seg">{['All','Music','Talk','Sports'].map((t,i)=>(<button key={t} className={'wc-seg__item '+(i===0?'wc-seg__item--active':'')}>{t}</button>))}</div>
+</section>
+<section style={{margin:'24px 0 80px'}}>
+<div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
+{DJS.map(d=><DJCard key={d[1]} name={d[0]} handle={d[1]} tagline={d[2]} since={d[3]} hue={d[4]}/>)}
+</div>
+</section>
+<WCDBTweaks/>
+</MockupShell>
+)}
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+</script></body></html>

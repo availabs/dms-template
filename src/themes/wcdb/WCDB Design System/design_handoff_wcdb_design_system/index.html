@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+<meta charset="utf-8">
+<title>WCDB Design System — Overview</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/components.css">
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+
+<script type="text/babel">
+const CURRENT = 'index.html';
+
+function HeroBlock() {
+  return (
+    <section style={{ padding: '40px 0 80px' }}>
+      <div className="uppercase-meta">90.9 FM · Albany · Est. 1978</div>
+      <h1 className="serif" style={{
+        fontStyle: 'italic',
+        fontSize: 'var(--tx-9xl)',
+        lineHeight: 0.92,
+        margin: '32px 0 24px',
+        letterSpacing: '-0.04em',
+        textWrap: 'balance',
+      }}>
+        A radio station,<br/>
+        <span style={{ color: 'var(--ink-3)' }}>and a design system,</span><br/>
+        from Albany.
+      </h1>
+      <p style={{
+        fontSize: 'var(--tx-2xl)',
+        color: 'var(--ink-2)',
+        maxWidth: 720,
+        lineHeight: 1.4,
+        marginTop: 40,
+      }}>
+        A minimal, near-monochrome system built on Hanssen's grammar and the existing
+        <span className="mono" style={{ color: 'var(--ink-1)', fontSize: '0.9em' }}> @availabs/dms </span>
+        component library. Lo-fi-but-modern. Built to be explored.
+      </p>
+      <div style={{ display: 'flex', gap: 12, marginTop: 56 }}>
+        <a className="wc-btn wc-btn--primary" href="foundations.html">Foundations →</a>
+        <a className="wc-btn wc-btn--secondary" href="components.html">Components</a>
+        <a className="wc-btn wc-btn--ghost" href="home.html">See it in use</a>
+      </div>
+    </section>
+  );
+}
+
+function StatBar() {
+  const items = [
+    { label: 'Tokens',       value: '94', suffix: 'design tokens' },
+    { label: 'Components',   value: '28', suffix: 'themed for dms' },
+    { label: 'Patterns',     value: '12', suffix: 'composed patterns' },
+    { label: 'Mockups',      value: '08', suffix: 'wcdb screens' },
+  ];
+  return (
+    <section style={{
+      display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+      borderTop: '1px solid var(--line-1)',
+      borderBottom: '1px solid var(--line-1)',
+    }}>
+      {items.map((it, i) => (
+        <div key={it.label} style={{
+          padding: '32px 0',
+          borderRight: i < items.length - 1 ? '1px solid var(--line-1)' : 'none',
+          paddingLeft: i === 0 ? 0 : 32,
+          paddingRight: 32,
+        }}>
+          <div className="uppercase-meta" style={{ marginBottom: 14 }}>{it.label}</div>
+          <div className="serif" style={{ fontStyle: 'italic', fontSize: 'var(--tx-6xl)', lineHeight: 1, letterSpacing: '-0.03em' }}>
+            {it.value}
+          </div>
+          <div style={{ marginTop: 12, color: 'var(--ink-3)', fontSize: 13 }}>{it.suffix}</div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function PrincipleCards() {
+  const principles = [
+    {
+      n: '01',
+      title: 'Quiet, then loud.',
+      body: 'The system is whisper-quiet by default — pure ink on near-black, hairline rules, generous space. Loudness is reserved for the music: a now-playing card, an episode hero, a DJ portrait.',
+    },
+    {
+      n: '02',
+      title: 'Type carries the personality.',
+      body: 'A serif italic display face does the emotional work; a clean grotesk handles UI; a mono provides utility — frequencies, timestamps, IDs. No emoji. No decoration.',
+    },
+    {
+      n: '03',
+      title: 'Data-rich, decoration-poor.',
+      body: 'Schedules, playlists, spin counts, frequencies, timestamps — these ARE the design. We expose them with mono-faced labels and let the data breathe.',
+    },
+    {
+      n: '04',
+      title: 'Hairline grid, hairline rules.',
+      body: 'Borders are 1px and ≤ 18% opacity. Cards mostly have one. Generous padding (24–48px) replaces shadow and stroke as the structural device.',
+    },
+  ];
+  return (
+    <section style={{ padding: '0 0 96px' }}>
+      <SectionHead num="01" kicker="The system" title="Four principles." />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'var(--line-1)' }}>
+        {principles.map(p => (
+          <div key={p.n} style={{ background: 'var(--bg-1)', padding: '40px 40px 56px' }}>
+            <div className="uppercase-meta">{p.n}</div>
+            <h3 className="serif" style={{ fontStyle: 'italic', fontSize: 'var(--tx-3xl)', margin: '20px 0 18px', letterSpacing: '-0.02em', fontWeight: 400 }}>
+              {p.title}
+            </h3>
+            <p style={{ color: 'var(--ink-2)', fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: 0 }}>
+              {p.body}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function NavGrid() {
+  const sections = [
+    { id: 'foundations.html', n: '02', label: 'Foundations',  desc: 'Color, type scale, spacing, motion.' },
+    { id: 'components.html',  n: '03', label: 'Components',   desc: '28 themed dms components — each with multiple styles.' },
+    { id: 'patterns.html',    n: '04', label: 'Patterns',     desc: 'Composed pieces: ticker, schedule cell, spin row.' },
+    { id: 'home.html',        n: '05', label: 'Mockups',      desc: 'wcdb.fm restyled — 8 screens.' },
+  ];
+  return (
+    <section style={{ padding: '0 0 96px' }}>
+      <SectionHead num="02" kicker="Where to start" title="Browse the system." />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'var(--line-1)' }}>
+        {sections.map(s => (
+          <a key={s.id} href={s.id} style={{
+            background: 'var(--bg-1)', padding: '48px 40px',
+            display: 'flex', flexDirection: 'column', gap: 14,
+            transition: 'background 200ms ease',
+          }} onMouseEnter={e => e.currentTarget.style.background='var(--bg-2)'}
+             onMouseLeave={e => e.currentTarget.style.background='var(--bg-1)'}>
+            <div className="uppercase-meta">{s.n}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <h3 className="serif" style={{ fontStyle: 'italic', fontSize: 'var(--tx-4xl)', margin: 0, fontWeight: 400, letterSpacing: '-0.02em' }}>
+                {s.label}
+              </h3>
+              <span style={{ color: 'var(--ink-3)' }}>→</span>
+            </div>
+            <p style={{ color: 'var(--ink-3)', margin: 0, fontSize: 14 }}>{s.desc}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function App() {
+  return (
+    <PageShell current={CURRENT}>
+      <HeroBlock />
+      <StatBar />
+      <PrincipleCards />
+      <NavGrid />
+      <WCDBTweaks />
+    </PageShell>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+</script>
+</body>
+</html>

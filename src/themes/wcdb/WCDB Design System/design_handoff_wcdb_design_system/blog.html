@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head><meta charset="utf-8"><title>WCDB — Blog</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles/tokens.css"><link rel="stylesheet" href="styles/components.css"></head>
+<body><div id="app"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+<script type="text/babel" src="scripts/wcdb-patterns.jsx"></script>
+<script type="text/babel" src="scripts/mockup-shell.jsx"></script>
+<script type="text/babel">
+const POSTS=[
+['DISPATCH','Mar 03','Forty-eight years on a hairline.','WCDB has been broadcasting from the basement of UAlbany'+"'"+'s Campus Center since 1978. Here'+"'"+'s what changed and what didn'+"'"+'t.','Editorial board'],
+['REVIEW','Feb 28','Slowdive at Webster Hall, twice.','Two nights, two slightly different sets, one tour. Notes from the floor and the balcony.','Mira Cohen'],
+['INTERVIEW','Feb 21','Marisol Ng on programming for 2 a.m.','Five years of The Quiet Hours, in conversation.','Daniel Yi'],
+['ANNOUNCEMENT','Feb 14','Spring 2026 schedule is live.','Three new shows, two returning hosts, and a renamed sports block.','Programming dept.'],
+['REVIEW','Feb 09','Crate digs: small-press tape labels of upstate NY.','A guide to four labels you probably don'+"'"+'t know but absolutely should.','Jules Mazur'],
+];
+function App(){return(
+<MockupShell active="Blog">
+<section data-screen-label="Blog" style={{padding:'24px 0 40px'}}>
+<div className="uppercase-meta">DISPATCHES · 184 POSTS</div>
+<h1 className="serif" style={{fontStyle:'italic',fontSize:'clamp(56px,7vw,96px)',lineHeight:0.95,letterSpacing:'-0.04em',margin:'20px 0 16px',fontWeight:400}}>The blog.</h1>
+<p style={{color:'var(--ink-2)',fontSize:18,maxWidth:600,lineHeight:1.5}}>Reviews, interviews, station business, and occasional opinions. Written by DJs and the editorial board.</p>
+</section>
+<section style={{margin:'48px 0 80px'}}>
+<a href="#" style={{display:'block',background:'var(--bg-2)',border:'1px solid var(--line-1)',borderRadius:18,padding:'56px 56px 64px',marginBottom:32,position:'relative',overflow:'hidden'}}>
+<div className="uppercase-meta">FEATURED · {POSTS[0][0]} · {POSTS[0][1]}</div>
+<h2 className="serif" style={{fontStyle:'italic',fontSize:'clamp(48px,5vw,72px)',lineHeight:0.98,letterSpacing:'-0.03em',margin:'24px 0 24px',fontWeight:400,maxWidth:880,textWrap:'balance'}}>{POSTS[0][2]}</h2>
+<p style={{color:'var(--ink-2)',fontSize:18,lineHeight:1.6,maxWidth:680,margin:0}}>{POSTS[0][3]}</p>
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginTop:32}}>
+<span className="mono" style={{fontSize:11,color:'var(--ink-3)',letterSpacing:'0.10em',textTransform:'uppercase'}}>BY {POSTS[0][4]}</span>
+<span style={{color:'var(--ink-2)'}}>Read →</span>
+</div>
+</a>
+<div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:1,background:'var(--line-1)'}}>
+{POSTS.slice(1).map((p,i)=>(
+<a key={i} href="#" style={{background:'var(--bg-1)',padding:'40px 36px 48px',display:'flex',flexDirection:'column',gap:14}}
+   onMouseEnter={e=>e.currentTarget.style.background='var(--bg-2)'}
+   onMouseLeave={e=>e.currentTarget.style.background='var(--bg-1)'}>
+<div className="uppercase-meta">{p[0]} · {p[1]}</div>
+<h3 className="serif" style={{fontStyle:'italic',fontSize:32,lineHeight:1.05,letterSpacing:'-0.02em',margin:'8px 0 4px',fontWeight:400,textWrap:'balance'}}>{p[2]}</h3>
+<p style={{color:'var(--ink-3)',fontSize:14,lineHeight:1.6,margin:0,maxWidth:480}}>{p[3]}</p>
+<span className="mono" style={{fontSize:10,color:'var(--ink-4)',letterSpacing:'0.10em',textTransform:'uppercase',marginTop:'auto',paddingTop:14}}>BY {p[4]}</span>
+</a>
+))}
+</div>
+</section>
+<WCDBTweaks/>
+</MockupShell>
+)}
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+</script></body></html>
