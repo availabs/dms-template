@@ -18,6 +18,7 @@
 
 const crypto = require('crypto');
 const { normalize } = require('./normalize');
+const { enrichEvents } = require('./cover-enrichment');
 const {
   buildCreateTableSQL,
   buildIdempotencyIndexSQL,
@@ -353,6 +354,12 @@ module.exports = function routes(router, helpers) {
 
       const events = normalize(req.body || {});
       if (events.length === 0) return res.json({ ok: true, events: 0 });
+
+      // Enrich covers from iTunes-by-ISRC before INSERT. Best-effort; the
+      // enrichment helper never throws, so a slow or down iTunes won't
+      // block the webhook from acknowledging. ACR retries on non-200, so
+      // we want to be quick and idempotent.
+      await enrichEvents(events, { concurrency: 4 });
 
       const insertSql = buildInsertSQL(view.data_table);
       let inserted = 0;

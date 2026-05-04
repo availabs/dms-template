@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+<meta charset="utf-8">
+<title>WCDB DS — Patterns</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/components.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+<script type="text/babel" src="scripts/wcdb-patterns.jsx"></script>
+<script type="text/babel">
+const CURRENT = 'patterns.html';
+
+function Pat({ n, name, body, full, children }) {
+  return (
+    <section style={{ borderTop: '1px solid var(--line-1)', paddingTop: 40, paddingBottom: 56 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: full ? '1fr' : '260px 1fr', gap: 40 }}>
+        <div>
+          <div className="uppercase-meta">{n}</div>
+          <h3 className="serif" style={{ fontStyle: 'italic', fontSize: 32, margin: '12px 0 14px', letterSpacing: '-0.02em', fontWeight: 400 }}>{name}</h3>
+          <p style={{ color: 'var(--ink-3)', fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: full ? 720 : 'unset' }}>{body}</p>
+        </div>
+        <div>{children}</div>
+      </div>
+    </section>
+  );
+}
+
+function App() {
+  return (
+    <PageShell current={CURRENT}>
+      <SectionHead num="03" kicker="Patterns" title="Composed pieces, station-specific." />
+      <p style={{ color: 'var(--ink-2)', fontSize: 16, lineHeight: 1.7, maxWidth: 720, marginTop: -16, marginBottom: 16 }}>
+        Patterns combine primitives into shapes that recur across the WCDB experience: now-playing tickers, schedule cells, spin rows, DJ portrait cards. They're the working vocabulary of the station.
+      </p>
+
+      <Pat n="01 · BROADCAST INDICATORS" name="On-air ticker" body="A persistent live indicator. Shrinks gracefully into the page header and expands into a full-width playing bar.">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <NowPlayingTicker />
+          <NowPlayingBar />
+        </div>
+      </Pat>
+
+      <Pat n="02 · WAYFINDING" name="Schedule cell" body="One slot in the weekly grid. Time, show, host, optional 'on-air' state.">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18 }}>
+          <ScheduleCell time="22:00 — 00:00" show="Late Modernism" host="DJ Halftone" tags={['Indie', 'Post-punk']} />
+          <ScheduleCell time="00:00 — 02:00" show="The Quiet Hours" host="Marisol Ng" tags={['Ambient']} live />
+          <ScheduleCell time="02:00 — 04:00" show="Graveyard Shift" host="Ezra Park" tags={['Talk']} faded />
+        </div>
+      </Pat>
+
+      <Pat n="03 · LISTING" name="Spin row" body="One played track. Time, artist (italic), track, album, optional spin count badge.">
+        <div style={{ background: 'var(--bg-2)', border: '1px solid var(--line-1)', borderRadius: 14, overflow: 'hidden' }}>
+          <SpinRow time="02:14" artist="Stereolab" track="Lo Boob Oscillator" album="Refried Ectoplasm" count={3} />
+          <SpinRow time="02:09" artist="Slowdive" track="Star Roving" album="Slowdive" />
+          <SpinRow time="02:04" artist="Cocteau Twins" track="Cherry-Coloured Funk" album="Heaven or Las Vegas" count={11} />
+          <SpinRow time="02:00" artist="Broadcast" track="Tears in the Typing Pool" album="Tender Buttons" />
+          <SpinRow time="01:55" artist="The Durutti Column" track="Sketch for Summer" album="The Return of the Durutti Column" count={2} />
+        </div>
+      </Pat>
+
+      <Pat n="04 · DIRECTORY" name="DJ portrait card" body="Used in the DJ index, recommended-for-you slots, and show-detail credits.">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          <DJCard name="Halftone" handle="halftone" tagline="Late Modernism" since="2021" hue={0.55} />
+          <DJCard name="Marisol Ng" handle="marisol" tagline="The Quiet Hours" since="2019" hue={0.85} />
+          <DJCard name="Ezra Park" handle="ezra" tagline="Graveyard Shift" since="2024" hue={0.18} />
+        </div>
+      </Pat>
+
+      <Pat n="05 · HERO" name="Show / episode hero" body="Top of any episode page. Big italic title, dense metadata, primary action.">
+        <ShowHero />
+      </Pat>
+
+      <Pat n="06 · ACTION" name="Live player chip" body="Floats over content. Persists across navigation. Click to expand.">
+        <PlayerChip />
+      </Pat>
+
+      <Pat n="07 · NAVIGATION" name="Day / time strip" body="Horizontal day picker for the schedule grid.">
+        <DayStrip />
+      </Pat>
+
+      <Pat n="08 · CONTENT" name="Editorial intro block" body="Used in blog posts, station updates, and show write-ups. Hanssen's signature large-italic + meta-bar.">
+        <EditorialIntro />
+      </Pat>
+
+      <Pat n="09 · DATA" name="Frequency stat" body="A single number with mono label. Used in dashboards and the homepage stat bar.">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: 'var(--line-1)' }}>
+          <FreqStat label="Listeners now" value="184" sub="globally tuned in" />
+          <FreqStat label="Spins today" value="412" sub="across 11 shows" />
+          <FreqStat label="Live shows" value="3" sub="airing this hour" />
+          <FreqStat label="Years on air" value="48" sub="est. 1978" />
+        </div>
+      </Pat>
+
+      <Pat n="10 · WAYFINDING" name="Eyebrow + crumb" body="Section identifier above any page hero.">
+        <Crumb />
+      </Pat>
+
+      <Pat n="11 · INPUT" name="Search command pallet" body="⌘K. Searches shows, DJs, tracks, articles in one surface.">
+        <SearchPallet />
+      </Pat>
+
+      <Pat n="12 · DENSITY" name="Compact track list" body="High-density variant for archive pages — many rows, minimal vertical space.">
+        <CompactSpinList />
+      </Pat>
+
+      <WCDBTweaks />
+    </PageShell>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+</script>
+</body>
+</html>

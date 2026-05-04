@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head><meta charset="utf-8"><title>WCDB — Events</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles/tokens.css"><link rel="stylesheet" href="styles/components.css"></head>
+<body><div id="app"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+<script type="text/babel" src="scripts/wcdb-patterns.jsx"></script>
+<script type="text/babel" src="scripts/mockup-shell.jsx"></script>
+<script type="text/babel">
+const EVENTS=[
+['MAR','12','Modernism Live #4','Hangar on the Hudson · Troy, NY','Halftone presents a four-act bill: Cindy Lee, Tomato Flower, +2 TBA.','21:00','$15 / $10 students'],
+['MAR','22','Vinyl Swap & Sale','Campus Center Atrium · UAlbany','Bring records, leave with records. WCDB DJs spinning all afternoon.','13:00','Free'],
+['APR','05','Spring Pledge Drive Kickoff','WCDB Studio B','We make our case to keep the lights on for another 48 years.','19:00','Tune in'],
+['APR','19','Sound & Picture: Slowcore on Film','Page Hall · UAlbany','Screening + panel + DJ set. Featuring Slint'+"'"+'s "Breadcrumb Trail" doc.','19:30','$8'],
+];
+function App(){return(
+<MockupShell active="Events">
+<section data-screen-label="Events" style={{padding:'24px 0 40px'}}>
+<div className="uppercase-meta">UPCOMING · {EVENTS.length} EVENTS THIS SEASON</div>
+<h1 className="serif" style={{fontStyle:'italic',fontSize:'clamp(56px,7vw,96px)',lineHeight:0.95,letterSpacing:'-0.04em',margin:'20px 0 16px',fontWeight:400}}>Off the air, in the room.</h1>
+<p style={{color:'var(--ink-2)',fontSize:18,maxWidth:600,lineHeight:1.5}}>Live shows, vinyl swaps, screenings, and pledge events the WCDB community puts on around the Capital Region.</p>
+</section>
+<section style={{margin:'40px 0 80px'}}>
+{EVENTS.map((e,i)=>(
+<a key={i} href="#" style={{
+display:'grid',gridTemplateColumns:'140px 1fr 200px',gap:32,
+padding:'40px 0',borderTop:'1px solid var(--line-1)',
+borderBottom:i===EVENTS.length-1?'1px solid var(--line-1)':'none',
+alignItems:'baseline',transition:'background 200ms ease',
+}} onMouseEnter={ev=>ev.currentTarget.style.background='var(--bg-2)'}
+   onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
+<div>
+<div className="mono" style={{fontSize:11,letterSpacing:'0.16em',textTransform:'uppercase',color:'var(--ink-3)'}}>{e[0]}</div>
+<div className="serif" style={{fontStyle:'italic',fontSize:88,letterSpacing:'-0.04em',lineHeight:1,fontWeight:400,marginTop:8}}>{e[1]}</div>
+</div>
+<div style={{paddingLeft:32,borderLeft:'1px solid var(--line-1)'}}>
+<h3 className="serif" style={{fontStyle:'italic',fontSize:36,letterSpacing:'-0.03em',margin:'0 0 12px',fontWeight:400}}>{e[2]}</h3>
+<div style={{color:'var(--ink-2)',fontSize:14,marginBottom:14}}>{e[3]}</div>
+<p style={{color:'var(--ink-3)',fontSize:14,lineHeight:1.6,margin:0,maxWidth:520}}>{e[4]}</p>
+</div>
+<div style={{textAlign:'right',display:'flex',flexDirection:'column',alignItems:'flex-end',gap:8}}>
+<span className="mono" style={{fontSize:11,letterSpacing:'0.10em',color:'var(--ink-3)',textTransform:'uppercase'}}>{e[5]} ET</span>
+<span className="mono" style={{fontSize:13,color:'var(--ink-1)'}}>{e[6]}</span>
+<span style={{color:'var(--ink-3)',marginTop:'auto',paddingTop:14}}>RSVP →</span>
+</div>
+</a>
+))}
+</section>
+<WCDBTweaks/>
+</MockupShell>
+)}
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+</script></body></html>

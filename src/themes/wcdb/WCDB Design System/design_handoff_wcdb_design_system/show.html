@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head><meta charset="utf-8"><title>WCDB — Show Detail</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles/tokens.css"><link rel="stylesheet" href="styles/components.css"></head>
+<body><div id="app"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+<script type="text/babel" src="scripts/wcdb-patterns.jsx"></script>
+<script type="text/babel" src="scripts/mockup-shell.jsx"></script>
+<script type="text/babel">
+const EPISODES=[
+['S03E22','Mar 05','Tape music & tape loops','01:58:44'],
+['S03E21','Feb 26','Manchester after Curtis','02:00:12'],
+['S03E20','Feb 19','Ladies of Bristol','01:59:51'],
+['S03E19','Feb 12','Krautrock revisited','02:01:10'],
+['S03E18','Feb 05','Slowcore canon','01:58:00'],
+];
+function App(){return(
+<MockupShell active="Shows">
+<section data-screen-label="Show Detail" style={{padding:'16px 0 32px'}}><Crumb/></section>
+<ShowHero/>
+<section style={{margin:'56px 0',display:'grid',gridTemplateColumns:'2fr 1fr',gap:48}}>
+<div>
+<div className="uppercase-meta" style={{marginBottom:18}}>About the show</div>
+<p style={{fontSize:18,lineHeight:1.7,color:'var(--ink-2)',margin:'0 0 14px'}}>Late Modernism began in 2021 as a one-hour overnight slot. It now runs two hours every Wednesday and pulls roughly 280 listeners on a typical week.</p>
+<p style={{fontSize:15,lineHeight:1.7,color:'var(--ink-3)',margin:0}}>Halftone (Mira Cohen, '23) selects deep cuts from minimal synth, no-wave, post-punk and the occasional library-music interlude. The show is recorded live in Studio B with no setlist provided in advance.</p>
+</div>
+<div style={{background:'var(--bg-2)',border:'1px solid var(--line-1)',borderRadius:14,padding:24}}>
+<div className="uppercase-meta" style={{marginBottom:18}}>Hosted by</div>
+<div style={{display:'flex',gap:14,alignItems:'center'}}>
+<div style={{width:56,height:56,borderRadius:'50%',background:'linear-gradient(135deg,oklch(0.30 0.04 200),oklch(0.55 0.08 260))',display:'flex',alignItems:'center',justifyContent:'center'}}>
+<span className="serif" style={{fontStyle:'italic',fontSize:28,color:'#fff'}}>H</span>
+</div>
+<div><div className="serif" style={{fontStyle:'italic',fontSize:22,letterSpacing:'-0.02em'}}>DJ Halftone</div><div className="mono" style={{fontSize:11,color:'var(--ink-3)',letterSpacing:'0.04em',marginTop:2}}>@halftone · since 2021</div></div>
+</div>
+<div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginTop:24,paddingTop:24,borderTop:'1px solid var(--line-1)'}}>
+<div><div className="uppercase-meta">EPISODES</div><div className="serif" style={{fontStyle:'italic',fontSize:32,letterSpacing:'-0.02em',marginTop:6}}>184</div></div>
+<div><div className="uppercase-meta">LISTENERS</div><div className="serif" style={{fontStyle:'italic',fontSize:32,letterSpacing:'-0.02em',marginTop:6}}>280</div></div>
+</div>
+</div>
+</section>
+<section style={{margin:'80px 0'}}>
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:24,paddingBottom:18,borderBottom:'1px solid var(--line-1)'}}>
+<h2 className="serif" style={{fontStyle:'italic',fontSize:36,letterSpacing:'-0.03em',margin:0,fontWeight:400}}>Episodes</h2>
+<span className="uppercase-meta">SHOWING 5 OF 184</span>
+</div>
+<div>
+{EPISODES.map((e,i)=>(
+<a key={i} href="#" style={{
+display:'grid',gridTemplateColumns:'120px 100px 1fr 100px 60px',gap:20,alignItems:'baseline',
+padding:'22px 8px',borderBottom:'1px solid var(--line-1)',transition:'background 200ms ease',
+}} onMouseEnter={e=>e.currentTarget.style.background='var(--bg-2)'}
+   onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+<span className="mono" style={{fontSize:11,color:'var(--ink-3)',letterSpacing:'0.10em'}}>{e[0]}</span>
+<span className="mono" style={{fontSize:11,color:'var(--ink-4)'}}>{e[1]}</span>
+<span className="serif" style={{fontStyle:'italic',fontSize:22,letterSpacing:'-0.02em'}}>{e[2]}</span>
+<span className="mono" style={{fontSize:11,color:'var(--ink-3)',textAlign:'right'}}>{e[3]}</span>
+<span style={{textAlign:'right',color:'var(--ink-3)'}}>→</span>
+</a>
+))}
+</div>
+</section>
+<WCDBTweaks/>
+</MockupShell>
+)}
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+</script></body></html>
