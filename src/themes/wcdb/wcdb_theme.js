@@ -1,6 +1,7 @@
 import "./tokens.css"
 import { NavLeftStyleWidget, NavRightStyleWidget } from "./widgets"
 import ThemeModeToggle from "./ThemeModeToggle"
+import portraitBanner from "./columnTypes/portraitBanner.config"
 
 const theme = {
   layout: {
@@ -306,6 +307,11 @@ const theme = {
     NavRightStyleWidget: { label: "Nav Right Style", component: NavRightStyleWidget },
     NavLeftStyleWidget: { label: "Nav Left Style", component: NavLeftStyleWidget },
     ThemeModeToggle: { label: "Theme Mode Toggle", component: ThemeModeToggle },
+  },
+  // Theme-registered column types. Auto-registered in
+  // patterns/page/siteConfig.jsx via the registerColumnType API.
+  columnTypes: {
+    portrait_banner: portraitBanner,
   },
 }
 
