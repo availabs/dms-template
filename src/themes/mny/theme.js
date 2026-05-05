@@ -536,10 +536,10 @@ const theme = {
         iconAndColorValues: 'flex items-center gap-1.5 uppercase',
 
         formEditButtonsWrapper: 'self-end flex gap-0.5 text-sm',
-        formEditSaveButton: 'bg-blue-300 hover:bg-blue-400 text-blue-700 rounded-lg w-fit px-2 py-0.5',
-        formEditCancelButton: 'bg-red-300 hover:bg-red-400 text-red-700 rounded-lg w-fit px-2 py-0.5',
         formAddNewItemButton: 'font-[Proxima Nova] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-bold uppercase rounded-lg w-fit px-2 py-1 mr-0.5 mb-0.5 self-end cursor-pointer',
-
+        formEditSaveButton: 'font-[Proxima Nova] bg-[#F1CA87] hover:bg-[#EAAD43] text-[#2D3E4C] font-bold uppercase rounded-lg w-fit px-2 py-1 mr-0.5 mb-0.5 self-end cursor-pointer',
+        formEditCancelButton: 'font-[Proxima Nova] bg-[#DD524C] hover:bg-[#AA2E26] text-[#2D3E4C] font-bold uppercase rounded-lg w-fit px-2 py-1 mr-0.5 mb-0.5 self-end cursor-pointer',
+        formEditSavingAnimation: 'ring-2 ring-blue-400 animate-pulse',
         linkColValue:
             "flex-1 flex justify-center w-full bg-[#C5D7E0] rounded-full px-[12px] py-[8px] font-[Proxima Nova] font-bold text-[12px] leading-[100%] tracking-[0px] uppercase",
         justifyTextLeft: "text-start justify-items-start",
