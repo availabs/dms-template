@@ -2,6 +2,8 @@ import "./tokens.css"
 import { NavLeftStyleWidget, NavRightStyleWidget } from "./widgets"
 import ThemeModeToggle from "./ThemeModeToggle"
 import portraitBanner from "./columnTypes/portraitBanner.config"
+import { portraitBannerTheme } from "./columnTypes/portraitBanner.theme"
+import { wcdbSectionTheme } from "./wcdb_section.theme"
 
 const theme = {
   layout: {
@@ -272,6 +274,13 @@ const theme = {
     ],
   },
   pages: {
+    // WCDB-flavoured section theme — owns `heights` preset map (selectable
+    // via Layout > Height in the section menu) and `editMinHeight` (settings-
+    // handle reachability in edit mode for empty sections). See
+    // wcdb_section.theme.js for the values and the dms default at
+    // packages/dms/src/patterns/page/components/sections/section.theme.jsx
+    // for the keys this is allowed to override.
+    section: wcdbSectionTheme,
     userMenu: {
       options: { activeStyle: 0 },
       styles: [
@@ -352,6 +361,10 @@ const theme = {
   columnTypes: {
     portrait_banner: portraitBanner,
   },
+  // Theme namespace consumed by the portrait_banner column type via
+  // getComponentTheme. Lets us tune the banner height, scan-line texture,
+  // and initials glyph size site-wide without touching column metadata.
+  portraitBanner: portraitBannerTheme,
 }
 
 export default theme

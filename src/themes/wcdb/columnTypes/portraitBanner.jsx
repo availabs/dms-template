@@ -1,4 +1,6 @@
 import React from "react"
+import { ThemeContext, getComponentTheme } from "../../../dms/packages/dms/src/ui/useTheme"
+import { portraitBannerTheme } from "./portraitBanner.theme"
 
 const hashStringToUnit = (str) => {
     if (str === undefined || str === null) return 0.5
@@ -27,6 +29,9 @@ const resolveValue = (raw) => {
 }
 
 export const PortraitBannerView = ({ value, staticHue, ...rest }) => {
+    const { theme: themeFromContext = {} } = React.useContext(ThemeContext) || {}
+    const t = { ...portraitBannerTheme, ...getComponentTheme(themeFromContext, "portraitBanner") }
+
     const resolved = resolveValue(value)
     const numericHue = typeof resolved === "number" && Number.isFinite(resolved) ? resolved : null
     const hueOverride = typeof staticHue === "number" && Number.isFinite(staticHue) ? staticHue : null
@@ -38,25 +43,63 @@ export const PortraitBannerView = ({ value, staticHue, ...rest }) => {
     const c2 = `oklch(0.55 0.08 ${(hue * 360 + 60) % 360})`
 
     const initials = computeInitials(rest?.initialsLabel ?? (numericHue === null ? resolved : ""))
-    const height = rest?.bannerHeight || rest?.height || 200
+
+    // Resolve `bannerHeight` against theme presets:
+    //   - per-column override beats theme default
+    //   - the value (whether from column or theme) may be a preset key
+    //     (`fill`/`full`/`tall`/`medium`/`small`) or a literal CSS value.
+    //     Keys not in the preset map are passed through verbatim.
+    //   - `fill` is a sentinel meaning "expand to fill the parent flex
+    //     context" — the view switches to flex sizing instead of an
+    //     explicit height.
+    const heights = t.bannerHeights || {}
+    const requestedHeight = rest?.bannerHeight || t.defaultHeight || 'medium'
+    const resolvedHeight = heights[requestedHeight] ?? requestedHeight
+    const isFill = resolvedHeight === 'fill'
+    const minHeight = rest?.bannerMinHeight || t.bannerMinHeight
+
+    const sizingStyle = isFill
+        ? { flex: '1 1 auto', minHeight, height: '100%', width: '100%' }
+        : { height: resolvedHeight, minHeight, width: '100%' }
 
     return (
         <div
-            className="w-full h-full flex items-end p-[22px] relative"
+            className="flex items-end relative overflow-hidden"
             style={{
-                height: `${height}px`,
+                ...sizingStyle,
+                padding: t.contentPadding,
                 background: `linear-gradient(135deg, ${c1}, ${c2})`,
             }}
         >
+            {/* Radial highlights — adds depth to the otherwise-flat linear gradient.
+                Mirrors the wc-art::before treatment in the WCDB design system. */}
+            <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    background: t.radialOverlay,
+                    mixBlendMode: t.radialBlendMode,
+                }}
+            />
+            {/* Scan-line texture — a subtle horizontal banding that gives the
+                background a tactile feel (echoes the design's CRT-screen
+                aesthetic). */}
+            <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    background: `repeating-linear-gradient(0deg, ${t.scanlineColor} 0 1px, transparent 1px ${t.scanlineSpacing})`,
+                    mixBlendMode: 'multiply',
+                }}
+            />
             {initials ? (
                 <span
-                    className="leading-[0.9]"
+                    className="leading-[0.9] relative"
                     style={{
                         fontFamily: "var(--font-display)",
                         fontStyle: "italic",
-                        fontSize: 88,
-                        letterSpacing: "-0.04em",
-                        color: "rgba(255,255,255,0.92)",
+                        fontSize: t.initialsFontSize,
+                        letterSpacing: t.initialsLetterSpacing,
+                        color: t.initialsColor,
+                        userSelect: 'none',
                     }}
                 >
                     {initials}

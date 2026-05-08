@@ -15,7 +15,27 @@ export default {
     cardHints: {
         fullBleed: true,
         spanFullColumns: true,
-        height: 200,
+        // Height is owned by the banner component itself (resolved against
+        // theme.portraitBanner.bannerHeights via the column's `bannerHeight`
+        // prop). Don't set a cardHints.height here — it would clamp the
+        // outer cell to a fixed pixel value and the banner inside (which
+        // may be taller, e.g. `full` ≈ calc(100vh - 220px), or flex-fill)
+        // would either overflow or leave dead space above/below.
         defaultHideHeader: true,
     },
+    // Column-type controls injected into the Card section's per-column
+    // toolbar (Card.config.jsx flattens these into `inHeader` and auto-scopes
+    // them by `attribute.type === 'portrait_banner'` & `isEdit`).
+    cardControls: [
+        { type: 'select', label: 'Banner Height', key: 'bannerHeight',
+            options: [
+                { label: 'Default (theme)', value: undefined },
+                { label: 'Fill parent', value: 'fill' },
+                { label: 'Full (calc 100vh − 220px)', value: 'full' },
+                { label: 'Tall (640px)', value: 'tall' },
+                { label: 'Medium (400px)', value: 'medium' },
+                { label: 'Small (240px)', value: 'small' },
+            ],
+        },
+    ],
 }
