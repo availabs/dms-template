@@ -676,6 +676,10 @@ const theme = {
   icon: {
     icon: "text-slate-400 hover:text-blue-500 size-4",
   },
+  scrollbar: {
+    sm: "[&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:rounded-[10px] [&::-webkit-scrollbar-thumb]:rounded-[10px]"
+    // sm: "[&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:bg-[#C5D7E0] [&::-webkit-scrollbar]:rounded-[10px] [&::-webkit-scrollbar-thumb]:bg-[#37576B] [&::-webkit-scrollbar-thumb]:rounded-[10px]"
+  },
   lexical: {
     // MNY theme uses options/styles pattern with flat keys
     // The default style (0) contains MNY-branded defaults
