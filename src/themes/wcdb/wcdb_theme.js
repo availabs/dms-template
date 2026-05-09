@@ -1,6 +1,9 @@
 import "./tokens.css"
 import { NavLeftStyleWidget, NavRightStyleWidget } from "./widgets"
 import ThemeModeToggle from "./ThemeModeToggle"
+import portraitBanner from "./columnTypes/portraitBanner.config"
+import { portraitBannerTheme } from "./columnTypes/portraitBanner.theme"
+import { wcdbSectionTheme } from "./wcdb_section.theme"
 
 const theme = {
   layout: {
@@ -271,6 +274,13 @@ const theme = {
     ],
   },
   pages: {
+    // WCDB-flavoured section theme — owns `heights` preset map (selectable
+    // via Layout > Height in the section menu) and `editMinHeight` (settings-
+    // handle reachability in edit mode for empty sections). See
+    // wcdb_section.theme.js for the values and the dms default at
+    // packages/dms/src/patterns/page/components/sections/section.theme.jsx
+    // for the keys this is allowed to override.
+    section: wcdbSectionTheme,
     userMenu: {
       options: { activeStyle: 0 },
       styles: [
@@ -302,11 +312,59 @@ const theme = {
       ],
     },
   },
+  // Form controls — bordered variant from the WCDB design system
+  // (`.wc-input--bordered`, `SelectStrip`). Geist 14px, line-2 border on
+  // bg-2/bg-1, 8px radius, ink-3 on focus, ink-4 placeholder. The Select
+  // chevron in `Select.jsx` is hardcoded `stroke-zinc-*` and isn't themable
+  // here — `dark:stroke-zinc-400` reads close enough to ink-3 in both modes.
+  input: {
+    inputContainer: "relative block w-full",
+    input:
+      "w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] " +
+      "px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[length:var(--tx-md)] " +
+      "text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none " +
+      "transition-colors duration-150 focus:border-[color:var(--ink-3)] " +
+      "disabled:opacity-50 disabled:cursor-not-allowed",
+    textarea:
+      "w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] " +
+      "px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[length:var(--tx-md)] " +
+      "text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none " +
+      "transition-colors duration-150 focus:border-[color:var(--ink-3)] " +
+      "disabled:opacity-50 disabled:cursor-not-allowed resize-y min-h-[80px]",
+    // ConfirmInput overlay buttons — keep them tonal so they sit cleanly on
+    // top of the bordered input without breaking the WCDB monochrome palette.
+    confirmButtonContainer:
+      "absolute inset-y-0 right-2 hidden group-hover:flex items-center gap-1",
+    editButton:
+      "p-1 text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] cursor-pointer",
+    cancelButton:
+      "p-1 text-[color:var(--ink-3)] hover:text-[color:var(--on-air)] cursor-pointer",
+    confirmButton:
+      "p-1 text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] cursor-pointer rounded-full",
+  },
+  select: {
+    selectContainer: "group relative block w-full",
+    select:
+      "w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-1)] " +
+      "pl-[14px] pr-[36px] py-[12px] font-[family-name:var(--font-sans)] text-[length:var(--tx-md)] " +
+      "text-[color:var(--ink-1)] outline-none transition-colors duration-150 " +
+      "focus:border-[color:var(--ink-3)] disabled:opacity-50 disabled:cursor-not-allowed " +
+      "[&_optgroup]:font-semibold [&_option]:bg-[var(--bg-2)] [&_option]:text-[color:var(--ink-1)]",
+  },
   widgets: {
     NavRightStyleWidget: { label: "Nav Right Style", component: NavRightStyleWidget },
     NavLeftStyleWidget: { label: "Nav Left Style", component: NavLeftStyleWidget },
     ThemeModeToggle: { label: "Theme Mode Toggle", component: ThemeModeToggle },
   },
+  // Theme-registered column types. Auto-registered in
+  // patterns/page/siteConfig.jsx via the registerColumnType API.
+  columnTypes: {
+    portrait_banner: portraitBanner,
+  },
+  // Theme namespace consumed by the portrait_banner column type via
+  // getComponentTheme. Lets us tune the banner height, scan-line texture,
+  // and initials glyph size site-wide without touching column metadata.
+  portraitBanner: portraitBannerTheme,
 }
 
 export default theme
