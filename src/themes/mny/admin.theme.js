@@ -485,19 +485,60 @@ const theme = {
     ]
   },
   "tabs": {
-    "tablist": "flex gap-4",
-    "tab": "\n    py-1 px-3 font-semibold text-slate-600 focus:outline-none border-b-2 border-white text-xs hover:text-slate-900\n    data-[selected]:border-blue-500 data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white\n  ",
-    "tabpanels": "",
-    "tabpanel": "rounded-xl bg-white/5"
+    options: {
+      activeStyle: 0
+    },
+    styles: [
+      {
+        tabGroup: 'flex flex-col-reverse',
+        tablist: 'flex gap-4',
+        tab: `
+    py-1 px-3 font-regular text-slate-600 focus:outline-none border-b-2 border-white text-xs hover:text-slate-900
+    data-[selected]:border-blue-500 data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white
+  `,
+        tabpanels: 'w-full h-fit max-h-screen overflow-y-auto scrollbar-sm',
+        tabpanel: 'rounded-xl bg-white/5'
+      },
+    ]
   },
   "button": {
-    "default": "inline-flex items-center gap-2  bg-gray-700 py-1.5  text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white",
-    "plain": "cursor-pointer relative isolate inline-flex items-center justify-center gap-x-2 rounded-lg border text-base/6 font-semibold  sm:text-sm/6 focus:outline-none data-[focus]:outline data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500 data-[disabled]:opacity-50 [&>[data-slot=icon]]:-mx-0.5 [&>[data-slot=icon]]:my-0.5 [&>[data-slot=icon]]:size-5 [&>[data-slot=icon]]:shrink-0 [&>[data-slot=icon]]:text-[--btn-icon] [&>[data-slot=icon]]:sm:my-1 [&>[data-slot=icon]]:sm:size-4 forced-colors:[--btn-icon:ButtonText] forced-colors:data-[hover]:[--btn-icon:ButtonText] border-transparent text-zinc-950 data-[active]:bg-zinc-950/5 data-[hover]:bg-zinc-950/5 dark:text-white dark:data-[active]:bg-white/10 dark:data-[hover]:bg-white/10 [--btn-icon:theme(colors.zinc.500)] data-[active]:[--btn-icon:theme(colors.zinc.700)] data-[hover]:[--btn-icon:theme(colors.zinc.700)] dark:[--btn-icon:theme(colors.zinc.500)] dark:data-[active]:[--btn-icon:theme(colors.zinc.400)] dark:data-[hover]:[--btn-icon:theme(colors.zinc.400)] cursor-default",
-    "active": "cursor-pointer px-4 inline-flex  justify-center cursor-pointer text-sm font-semibold  bg-blue-600 text-white hover:bg-blue-500 shadow-lg border border-b-4 border-blue-800 hover:border-blue-700 active:border-b-2 active:mb-[2px] active:shadow-none",
-    "inactive": "inline-flex  px-4 justify-center cursor-not-allowed text-sm font-semibold bg-slate-300 text-white shadow border border-slate-400 border-b-4",
-    "rounded": "rounded-lg",
-    "padding": "px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]",
-    "transparent": "hover:bg-gray-100 rounded-lg"
+    options: {
+      activeStyle: 0
+    },
+    styles: [
+      {
+        "name": 'default',
+        "button": "inline-flex items-center gap-2  bg-gray-700 py-1.5  text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white",
+      },
+      {
+        "name": 'plain',
+        "button": "cursor-pointer px-2 py-1 inline-flex text-sm items-center justify-center rounded-md font-regular bg-blue-100 hover:bg-blue-200",
+      },
+      {
+        "name": 'active',
+        "button": "cursor-pointer px-2 py-1 inline-flex  justify-center items-center text-sm font-regular  bg-blue-300 text-blue-800 hover:bg-blue-200 rounded-md",
+      },
+      {
+        "name": 'inactive',
+        "button": "inline-flex  px-2 py-1 justify-center items-center cursor-not-allowed text-sm font-regular bg-slate-300 text-slate-800 rounded-md",
+      },
+      {
+        "name": 'rounded',
+        "button": "rounded-lg",
+      },
+      {
+        "name": 'padding',
+        "button": "px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]",
+      },
+      {
+        "name": 'transparent',
+        "button": "hover:bg-gray-100 rounded-lg"
+      },
+      {
+        "name": 'danger',
+        "button": "px-2 py-1 bg-red-300 hover:bg-red-200 text-red-800 text-sm rounded-md"
+      }
+    ]
   },
   "menu": {
     "menuItems": "absolute z-40 -mr-1 mt-1 w-64 p-1 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-50 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
@@ -516,8 +557,8 @@ const theme = {
     "icon": "text-slate-400 hover:text-blue-500 size-4"
   },
   "field": {
-    "field": "pb-2",
-    "label": "select-none text-base/6 text-zinc-950 data-[disabled]:opacity-50 sm:text-sm/6 dark:text-white",
+    "field": "",
+    "label": "select-none text-base/6 text-slate-600 data-[disabled]:opacity-50 sm:text-sm/6 dark:text-white",
     "description": "text-base/6 text-zinc-500 data-[disabled]:opacity-50 sm:text-sm/6 dark:text-zinc-400"
   },
   "dialog": {
