@@ -293,31 +293,30 @@ const availTheme = {
     "img": "https://i.ibb.co/ym626S3X/avail-logo.png",
     "imgClass": "",
     "titleWrapper": "text-2xl ",
-    "title": "AVAIL",
+    "title": "Two Curses",
     "linkPath": "/"
   },
-  "tabs": {
-    "tablist": "flex gap-4",
-    "tab": "\n    py-1 px-3 font-semibold text-slate-600 focus:outline-none border-b-2 border-white text-xs hover:text-slate-900\n    data-[selected]:border-blue-500 data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white\n  ",
-    "tabpanels": "",
-    "tabpanel": "rounded-xl bg-white/5"
-  },
   "button": {
-    "default": "inline-flex items-center gap-2  bg-gray-700 py-1.5  text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white",
-    "plain": "cursor-pointer relative isolate inline-flex items-center justify-center gap-x-2 rounded-lg border text-base/6 font-semibold  sm:text-sm/6 focus:outline-none data-[focus]:outline data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500 data-[disabled]:opacity-50 [&>[data-slot=icon]]:-mx-0.5 [&>[data-slot=icon]]:my-0.5 [&>[data-slot=icon]]:size-5 [&>[data-slot=icon]]:shrink-0 [&>[data-slot=icon]]:text-[--btn-icon] [&>[data-slot=icon]]:sm:my-1 [&>[data-slot=icon]]:sm:size-4 forced-colors:[--btn-icon:ButtonText] forced-colors:data-[hover]:[--btn-icon:ButtonText] border-transparent text-zinc-950 data-[active]:bg-zinc-950/5 data-[hover]:bg-zinc-950/5 dark:text-white dark:data-[active]:bg-white/10 dark:data-[hover]:bg-white/10 [--btn-icon:theme(colors.zinc.500)] data-[active]:[--btn-icon:theme(colors.zinc.700)] data-[hover]:[--btn-icon:theme(colors.zinc.700)] dark:[--btn-icon:theme(colors.zinc.500)] dark:data-[active]:[--btn-icon:theme(colors.zinc.400)] dark:data-[hover]:[--btn-icon:theme(colors.zinc.400)] cursor-default",
-    "active": "cursor-pointer px-4 inline-flex  justify-center cursor-pointer text-sm font-semibold  bg-blue-600 text-white hover:bg-blue-500 shadow-lg border border-b-4 border-blue-800 hover:border-blue-700 active:border-b-2 active:mb-[2px] active:shadow-none",
-    "inactive": "inline-flex  px-4 justify-center cursor-not-allowed text-sm font-semibold bg-slate-300 text-white shadow border border-slate-400 border-b-4",
-    "rounded": "rounded-lg",
-    "padding": "px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]",
-    "transparent": "hover:bg-gray-100 rounded-lg"
-  },
-  "menu": {
-    "menuItems": "absolute z-40 -mr-1 mt-1 w-64 p-1 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-50 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+    "options": { "activeStyle": 0 },
+    "styles": [
+      {
+        "name": "default Buttons",
+        "button": "cursor-pointer inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs uppercase tracking-widest font-medium text-zinc-900 bg-white border border-zinc-300 rounded-md hover:bg-zinc-100 transition-colors focus:outline-none focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+      },
+      {
+        "name": "plain",
+        "button": "cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-medium text-zinc-700 bg-transparent rounded-md hover:bg-zinc-100 transition-colors focus:outline-none"
+      },
+      {
+        "name": "active",
+        "button": "cursor-pointer inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs uppercase tracking-widest font-medium text-white bg-zinc-900 rounded-md shadow-sm hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+      }
+    ]
   },
   "input": {
-    "input": "relative w-full block appearance-none rounded-md px-3 py-2 sm:py-1.5 text-sm text-[#191919] placeholder:text-[#191919]/30 bg-transparent border-b border-[#191919]/15 hover:border-[#191919]/30 focus:border-[#191919]/50 focus:outline-none transition-colors data-[invalid]:border-red-500 data-[disabled]:opacity-50",
+    "input": "relative w-full block appearance-none rounded-md px-3 py-2 sm:py-1.5 text-sm text-[#191919] placeholder:text-[#191919]/30 bg-transparent border-b border-[#191919]/15 hover:border-[#191919]/30 focus:border-[#191919]/50 focus:outline-none transition-colors aria-invalid:border-red-500 disabled:opacity-50",
     "inputContainer": "group flex relative w-full",
-    "textarea": "relative block h-full w-full appearance-none rounded-md px-3 py-2 sm:py-1.5 text-sm text-[#191919] placeholder:text-[#191919]/30 bg-transparent border-b border-[#191919]/15 hover:border-[#191919]/30 focus:border-[#191919]/50 focus:outline-none transition-colors data-[invalid]:border-red-500 data-[disabled]:opacity-50 resize-y",
+    "textarea": "relative block h-full w-full appearance-none rounded-md px-3 py-2 sm:py-1.5 text-sm text-[#191919] placeholder:text-[#191919]/30 bg-transparent border-b border-[#191919]/15 hover:border-[#191919]/30 focus:border-[#191919]/50 focus:outline-none transition-colors aria-invalid:border-red-500 disabled:opacity-50 resize-y",
     "confirmButtonContainer": "absolute right-0 hidden group-hover:flex items-center",
     "editButton": "py-1.5 px-2 text-[#191919]/40 hover:text-[#191919] cursor-pointer",
     "cancelButton": "text-[#191919]/40 hover:text-red-600 cursor-pointer py-1.5 pr-1",
@@ -329,14 +328,14 @@ const availTheme = {
   },
   "field": {
     "field": "pb-3",
-    "label": "select-none text-xs font-medium tracking-wide text-[#191919]/50 uppercase data-[disabled]:opacity-50",
-    "description": "text-xs text-[#191919]/40 data-[disabled]:opacity-50"
+    "label": "select-none text-xs font-medium tracking-wide text-[#191919]/50 uppercase",
+    "description": "text-xs text-[#191919]/40"
   },
   "dialog": {
-    "backdrop": "fixed inset-0 flex w-screen justify-center overflow-y-auto bg-zinc-950/25 px-2 py-2 transition duration-100 focus:outline-0 data-[closed]:opacity-0 data-[enter]:ease-out data-[leave]:ease-in sm:px-6 sm:py-8 lg:px-8 lg:py-16 dark:bg-zinc-950/50",
-    "dialogContainer": "fixed inset-0 w-screen overflow-y-auto pt-6 sm:pt-0",
-    "dialogContainer2": "grid min-h-full grid-rows-[1fr_auto] justify-items-center sm:grid-rows-[1fr_auto_3fr] sm:p-4",
-    "dialogPanel": "\n    row-start-2 w-full min-w-0 rounded-t-3xl bg-white p-[--gutter] shadow-lg ring-1 ring-zinc-950/10 [--gutter:theme(spacing.8)] sm:mb-auto sm:rounded-2xl dark:bg-zinc-900 dark:ring-white/10 forced-colors:outline\n    transition duration-100 data-[closed]:translate-y-12 data-[closed]:opacity-0 data-[enter]:ease-out data-[leave]:ease-in sm:data-[closed]:translate-y-0 sm:data-[closed]:data-[enter]:scale-95\n  ",
+    "backdrop": "fixed inset-0 bg-zinc-950/25 pointer-events-none dark:bg-zinc-950/50",
+    "dialogContainer": "fixed z-50 inset-0 w-screen overflow-y-auto pt-6 sm:pt-0",
+    "dialogContainer2": "relative grid min-h-full grid-rows-[1fr_auto] justify-items-center sm:grid-rows-[1fr_auto_3fr] sm:p-4",
+    "dialogPanel": "\n    row-start-2 w-full min-w-0 rounded-t-3xl bg-white p-[--gutter] shadow-lg ring-1 ring-zinc-950/10 [--gutter:theme(spacing.8)] sm:mb-auto sm:rounded-2xl dark:bg-zinc-900 dark:ring-white/10 forced-colors:outline\n  ",
     "sizes": {
       "xs": "sm:max-w-xs",
       "sm": "sm:max-w-sm",
@@ -349,23 +348,9 @@ const availTheme = {
       "5xl": "sm:max-w-5xl"
     }
   },
-  "popover": {
-    "button": "flex items-center cursor-pointer pt-1 pr-1",
-    "container": "absolute shadow-lg z-30 transform overflow-visible z-50 rounded-md"
-  },
   "label": {
     "labelWrapper": "px-3 pt-2 pb-1.5",
     "label": "inline-flex items-center text-xs font-medium tracking-wide text-[#191919]/50 uppercase"
-  },
-  "select": {
-    "selectContainer": "group relative block w-full",
-    "select": "relative block w-full appearance-none rounded-md py-2 sm:py-1.5 px-3 [&_optgroup]:font-semibold text-sm text-[#191919] placeholder:text-[#191919]/30 bg-transparent border-b border-[#191919]/15 hover:border-[#191919]/30 focus:border-[#191919]/50 focus:outline-none transition-colors data-[invalid]:border-red-500 data-[disabled]:opacity-50"
-  },
-  "listbox": {
-    "listboxContainer": "group relative block w-full before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.lg)-1px)] before:bg-white before:shadow dark:before:hidden after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:ring-inset after:ring-transparent after:has-[[data-focus]]:ring-2 after:has-[[data-focus]]:ring-blue-500 has-[[data-disabled]]:opacity-50 before:has-[[data-disabled]]:bg-zinc-950/5 before:has-[[data-disabled]]:shadow-none",
-    "listboxOptions": "w-[var(--button-width)] z-20 bg-white rounded-xl border p-1 [--anchor-gap:var(--spacing-1)] focus:outline-none transition duration-100 ease-in data-[leave]:data-[closed]:opacity-0",
-    "listboxOption": "group flex gap-2 bg-white data-[focus]:bg-blue-100 z-30",
-    "listboxButton": "relative block w-full rounded-lg bg-white/5 py-1.5 pr-8 pl-3 text-left text-sm/6 text-white focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
   },
   "table": {
     "options": {

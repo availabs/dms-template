@@ -57,13 +57,23 @@ function Player({src}) {
     const togglePlay = useCallback(() => {
         const audio = audioRef.current;
         if (!audio) return;
-        if (playing) {
+        // iOS Safari: drive off the element's own state, not our React mirror
+        // (which can drift if a previous play() promise rejected silently).
+        if (!audio.paused) {
             audio.pause();
-        } else {
-            audio.play();
+            return;
         }
-        setPlaying(!playing);
-    }, [playing]);
+        // play() returns a Promise; on iOS it can reject with NotAllowedError
+        // (autoplay policy) or AbortError (interrupted). Surface failures
+        // instead of leaving the UI claiming we're playing.
+        const playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(err => {
+                console.warn('Audio play() rejected:', err);
+                setPlaying(false);
+            });
+        }
+    }, []);
 
     const handleTimeUpdate = useCallback(() => {
         setCurrentTime(audioRef.current?.currentTime || 0);
@@ -95,6 +105,10 @@ function Player({src}) {
             <audio
                 ref={audioRef}
                 src={src}
+                preload="metadata"
+                playsInline
+                onPlay={() => setPlaying(true)}
+                onPause={() => setPlaying(false)}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={handleEnded}

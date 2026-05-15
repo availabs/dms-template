@@ -342,15 +342,6 @@ const theme = {
     confirmButton:
       "p-1 text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)] cursor-pointer rounded-full",
   },
-  select: {
-    selectContainer: "group relative block w-full",
-    select:
-      "w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-1)] " +
-      "pl-[14px] pr-[36px] py-[12px] font-[family-name:var(--font-sans)] text-[length:var(--tx-md)] " +
-      "text-[color:var(--ink-1)] outline-none transition-colors duration-150 " +
-      "focus:border-[color:var(--ink-3)] disabled:opacity-50 disabled:cursor-not-allowed " +
-      "[&_optgroup]:font-semibold [&_option]:bg-[var(--bg-2)] [&_option]:text-[color:var(--ink-1)]",
-  },
   widgets: {
     NavRightStyleWidget: { label: "Nav Right Style", component: NavRightStyleWidget },
     NavLeftStyleWidget: { label: "Nav Left Style", component: NavLeftStyleWidget },
