@@ -8,6 +8,15 @@ const theme = {
     "AddPageButton": AddPageButton,
     Header
   },
+  "navOptions": {
+    "authMenu": {
+      "navItems": [
+        { "name": "Datasets", "icon": "Database", "path": "/datasources", "type": "link" },
+        { "name": "Site Status",  "icon": "Settings", "path": "/status",  "type": "link" },
+        //{ "name": "Profile",  "icon": "User", "path": "auth/manage/profile",  "type": "link" }
+      ]
+    }
+  },
   "pages": {
     "sectionGroup": {
       "sideNavContainer1": "w-[302px] hidden xl:block",
@@ -23,8 +32,8 @@ const theme = {
           "name": "default",
           "wrapper": "relative",
           "gridOverlay": "absolute inset-0 pointer-events-none",
-          "container": "w-full grid md:grid-cols-12 ",
-          "gridSize": 12,
+          "container": "w-full grid grid-cols-6 ",
+          "gridSize": 6,
           "layouts": {
             "centered": "max-w-[1020px] mx-auto",
             "fullwidth": ""
@@ -41,68 +50,20 @@ const theme = {
           "addSectionIconWrapper": "flex items-center",
           "addSectionIcon": "size-6",
           "sizes": {
-            "1c": {
-              "className": "col-span-6 md:col-span-1",
-              "iconSize": 100
-            },
-            "2c": {
-              "className": "col-span-6 md:col-span-2",
-              "iconSize": 33
-            },
-            "3c": {
-              "className": "col-span-6 md:col-span-3",
-              "iconSize": 50
-            },
-            "4c": {
-              "className": "col-span-12 md:col-span-4",
-              "iconSize": 100
-            },
-            "5c": {
-              "className": "col-span-12 md:col-span-4",
-              "iconSize": 33
-            },
-            "6c": {
-              "className": "col-span-12 md:col-span-6",
-              "iconSize": 50
-            },
-            "7c": {
-              "className": "col-span-12 md:col-span-7",
-              "iconSize": 100
-            },
-            "8c": {
-              "className": "col-span-12 md:col-span-8",
-              "iconSize": 33
-            },
-            "9c": {
-              "className": "col-span-12 md:col-span-9",
-              "iconSize": 50
-            },
-            "10c": {
-              "className": "col-span-12 md:col-span-10",
-              "iconSize": 100
-            },
-            "11c": {
-              "className": "col-span-12 md:col-span-11",
-              "iconSize": 33
-            },
-            "12c": {
-              "className": "col-span-12 md:col-span-12",
-              "iconSize": 50
-            },
             "1": {
-              "className": "col-span-12 md:col-span-12",
+              "className": "col-span-12 md:col-span-6",
               "iconSize": 100
             },
             "1/3": {
-              "className": "col-span-12 md:col-span-4",
+              "className": "col-span-12 md:col-span-2",
               "iconSize": 33
             },
             "1/2": {
-              "className": "col-span-12 md:col-span-6",
+              "className": "col-span-12 md:col-span-3",
               "iconSize": 50
             },
             "2/3": {
-              "className": "col-span-12 md:col-span-8",
+              "className": "col-span-12 md:col-span-4",
               "iconSize": 66
             }
           },
@@ -172,7 +133,7 @@ const theme = {
           "name": "transportny-responsive",
           "userMenuContainer": "@container flex flex-1 flex-row w-full items-center justify-center @[120px]:justify-start rounded-lg bg-transparent @[120px]:bg-[#1a2029] @[120px]:mx-2 @[120px]:mb-2 p-1 @[120px]:p-2",
           "avatarWrapper": "flex justify-center items-center",
-          "avatar": "size-10 border-2 border-[#3a4555] rounded-full place-items-center content-center bg-[#2a3545] hover:bg-[#3a4555] cursor-pointer",
+          "avatar": "size-10 border-2 border-[#3a4555] rounded-full flex items-center justify-center bg-[#2a3545] hover:bg-[#3a4555] cursor-pointer",
           "avatarIcon": "size-5 @[120px]:size-6 fill-slate-400",
           "infoWrapper": "hidden @[120px]:flex flex-col flex-1 px-2",
           "emailText": "text-xs font-normal text-slate-400 tracking-tight text-left truncate",
@@ -295,7 +256,7 @@ const theme = {
         "wrapper": "relative isolate flex min-h-svh w-full max-lg:flex-col overflow-clip",
         "wrapper2": "flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen",
         "wrapper3": "flex flex-1",
-        "childWrapper": "flex-1 h-full min-h-screen"
+        "childWrapper": "flex-1 h-full"
       }
     ]
   },
@@ -498,12 +459,6 @@ const theme = {
     "title": "TransportNY",
     "linkPath": "/"
   },
-  "tabs": {
-    "tablist": "flex gap-4",
-    "tab": "\n    py-1 px-3 font-semibold text-slate-600 focus:outline-none border-b-2 border-white text-xs hover:text-slate-900\n    data-[selected]:border-blue-500 data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white\n  ",
-    "tabpanels": "",
-    "tabpanel": "rounded-xl bg-white/5"
-  },
   "button": {
     "options": {
       "activeStyle": 0
@@ -511,25 +466,22 @@ const theme = {
     "styles": [
       {
         "name": "default Buttons",
-        "button": "inline-flex items-center gap-2  bg-gray-700 py-1.5  text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white\n        rounded-lg\n        px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]\n      "
+        "button": "cursor-pointer inline-flex items-center gap-2  bg-gray-700 py-1.5  text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none hover:bg-gray-600 transition-colors focus-visible:outline-1 focus-visible:outline-white\n        rounded-lg\n        px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]\n      "
       },
       {
         "name": "plain",
-        "button": "cursor-pointer relative isolate inline-flex items-center justify-center gap-x-2 rounded-lg border text-base/6 font-semibold  sm:text-sm/6 focus:outline-none data-[focus]:outline data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500 data-[disabled]:opacity-50 [&>[data-slot=icon]]:-mx-0.5 [&>[data-slot=icon]]:my-0.5 [&>[data-slot=icon]]:size-5 [&>[data-slot=icon]]:shrink-0 [&>[data-slot=icon]]:text-[--btn-icon] [&>[data-slot=icon]]:sm:my-1 [&>[data-slot=icon]]:sm:size-4 forced-colors:[--btn-icon:ButtonText] forced-colors:data-[hover]:[--btn-icon:ButtonText] border-transparent text-zinc-950 data-[active]:bg-zinc-950/5 data-[hover]:bg-zinc-950/5 dark:text-white dark:data-[active]:bg-white/10 dark:data-[hover]:bg-white/10 [--btn-icon:theme(colors.zinc.500)] data-[active]:[--btn-icon:theme(colors.zinc.700)] data-[hover]:[--btn-icon:theme(colors.zinc.700)] dark:[--btn-icon:theme(colors.zinc.500)] dark:data-[active]:[--btn-icon:theme(colors.zinc.400)] dark:data-[hover]:[--btn-icon:theme(colors.zinc.400)] cursor-default\n      rounded-lg\n      px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]\n      "
+        "button": "cursor-pointer relative isolate inline-flex items-center justify-center gap-x-2 rounded-lg border text-base/6 font-semibold  sm:text-sm/6 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:opacity-50 [&>[data-slot=icon]]:-mx-0.5 [&>[data-slot=icon]]:my-0.5 [&>[data-slot=icon]]:size-5 [&>[data-slot=icon]]:shrink-0 [&>[data-slot=icon]]:text-[--btn-icon] [&>[data-slot=icon]]:sm:my-1 [&>[data-slot=icon]]:sm:size-4 forced-colors:[--btn-icon:ButtonText] forced-colors:hover:[--btn-icon:ButtonText] border-transparent text-zinc-950 active:bg-zinc-950/5 hover:bg-zinc-950/5 dark:text-white dark:active:bg-white/10 dark:hover:bg-white/10 [--btn-icon:theme(colors.zinc.500)] active:[--btn-icon:theme(colors.zinc.700)] hover:[--btn-icon:theme(colors.zinc.700)] dark:[--btn-icon:theme(colors.zinc.500)] dark:active:[--btn-icon:theme(colors.zinc.400)] dark:hover:[--btn-icon:theme(colors.zinc.400)]\n      rounded-lg\n      px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]\n      "
       },
       {
         "name": "active",
-        "button": "cursor-pointer px-4 inline-flex  justify-center cursor-pointer text-sm font-semibold  bg-blue-600 text-white hover:bg-blue-500 shadow-lg border border-b-4 border-blue-800 hover:border-blue-700 active:border-b-2 active:mb-[2px] active:shadow-none\n      rounded-lg\n      px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]\n      "
+        "button": "cursor-pointer inline-flex items-center justify-center gap-2 text-sm/6 font-semibold bg-blue-600 text-white hover:bg-blue-500 transition-all shadow-[0_3px_0_#1e40af] hover:shadow-[0_3px_0_#1d4ed8] active:shadow-none active:translate-y-[3px] focus:outline-none focus-visible:outline-1 focus-visible:outline-white\n      rounded-lg\n      px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]\n      "
       }
     ]
   },
-  "menu": {
-    "menuItems": "absolute z-40 -mr-1 mt-1 w-64 p-1 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-50 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
-  },
   "input": {
-    "input": "relative w-full block appearance-none rounded-lg px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing[3])-1px)] sm:py-[calc(theme(spacing[1.5])-1px)] text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white border border-zinc-950/10 data-[hover]:border-zinc-950/20 dark:border-white/10 dark:data-[hover]:border-white/20 bg-transparent dark:bg-white/5 focus:outline-none data-[invalid]:border-red-500 data-[invalid]:data-[hover]:border-red-500 data-[invalid]:dark:border-red-500 data-[invalid]:data-[hover]:dark:border-red-500 data-[disabled]:border-zinc-950/20 dark:data-[hover]:data-[disabled]:border-white/15 data-[disabled]:dark:border-white/15 data-[disabled]:dark:bg-white/[2.5%] dark:[color-scheme:dark]",
-    "inputContainer": "group flex relative w-full before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.lg)-1px)] before:bg-white before:shadow dark:before:hidden after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:ring-inset after:ring-transparent sm:after:focus-within:ring-2 sm:after:focus-within:ring-blue-500 has-[[data-disabled]]:opacity-50 before:has-[[data-disabled]]:bg-zinc-950/5 before:has-[[data-disabled]]:shadow-none before:has-[[data-invalid]]:shadow-red-500/10",
-    "textarea": "relative block h-full w-full appearance-none rounded-lg px-[calc(--spacing(3.5)-1px)] py-[calc(--spacing(2.5)-1px)] sm:px-[calc(--spacing(3)-1px)] sm:py-[calc(--spacing(1.5)-1px)] text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white border border-zinc-950/10 data-hover:border-zinc-950/20 dark:border-white/10 dark:data-hover:border-white/20 bg-transparent dark:bg-white/5 focus:outline-hidden data-invalid:border-red-500 data-invalid:data-hover:border-red-500 dark:data-invalid:border-red-600 dark:data-invalid:data-hover:border-red-600 disabled:border-zinc-950/20 dark:disabled:border-white/15 dark:disabled:bg-white/2.5 dark:data-hover:disabled:border-white/15 resize-y",
+    "input": "relative w-full block appearance-none rounded-lg px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing[3])-1px)] sm:py-[calc(theme(spacing[1.5])-1px)] text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white border border-zinc-950/10 hover:border-zinc-950/20 dark:border-white/10 dark:hover:border-white/20 bg-transparent dark:bg-white/5 focus:outline-none aria-invalid:border-red-500 aria-invalid:hover:border-red-500 aria-invalid:dark:border-red-500 aria-invalid:hover:dark:border-red-500 disabled:border-zinc-950/20 dark:hover:disabled:border-white/15 disabled:dark:border-white/15 disabled:dark:bg-white/[2.5%] dark:[color-scheme:dark]",
+    "inputContainer": "group flex relative w-full before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.lg)-1px)] before:bg-white before:shadow dark:before:hidden after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:ring-inset after:ring-transparent sm:after:focus-within:ring-2 sm:after:focus-within:ring-blue-500 has-[:disabled]:opacity-50 before:has-[:disabled]:bg-zinc-950/5 before:has-[:disabled]:shadow-none before:has-[[aria-invalid=true]]:shadow-red-500/10",
+    "textarea": "relative block h-full w-full appearance-none rounded-lg px-[calc(--spacing(3.5)-1px)] py-[calc(--spacing(2.5)-1px)] sm:px-[calc(--spacing(3)-1px)] sm:py-[calc(--spacing(1.5)-1px)] text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white border border-zinc-950/10 hover:border-zinc-950/20 dark:border-white/10 dark:hover:border-white/20 bg-transparent dark:bg-white/5 focus:outline-hidden aria-invalid:border-red-500 aria-invalid:hover:border-red-500 dark:aria-invalid:border-red-600 dark:aria-invalid:hover:border-red-600 disabled:border-zinc-950/20 dark:disabled:border-white/15 dark:disabled:bg-white/2.5 dark:hover:disabled:border-white/15 resize-y",
     "confirmButtonContainer": "absolute right-0 hidden group-hover:flex items-center",
     "editButton": "py-1.5 px-2 text-slate-400 hover:text-blue-500 cursor-pointer bg-white/10",
     "cancelButton": "text-slate-400 hover:text-red-500 cursor-pointer  py-1.5 pr-1 ",
@@ -541,14 +493,14 @@ const theme = {
   },
   "field": {
     "field": "pb-2",
-    "label": "select-none text-base/6 text-zinc-950 data-[disabled]:opacity-50 sm:text-sm/6 dark:text-white",
-    "description": "text-base/6 text-zinc-500 data-[disabled]:opacity-50 sm:text-sm/6 dark:text-zinc-400"
+    "label": "select-none text-base/6 text-zinc-950 sm:text-sm/6 dark:text-white",
+    "description": "text-base/6 text-zinc-500 sm:text-sm/6 dark:text-zinc-400"
   },
   "dialog": {
-    "backdrop": "fixed inset-0 flex w-screen justify-center overflow-y-auto bg-zinc-950/25 px-2 py-2 transition duration-100 focus:outline-0 data-[closed]:opacity-0 data-[enter]:ease-out data-[leave]:ease-in sm:px-6 sm:py-8 lg:px-8 lg:py-16 dark:bg-zinc-950/50",
-    "dialogContainer": "fixed inset-0 w-screen overflow-y-auto pt-6 sm:pt-0",
-    "dialogContainer2": "grid min-h-full grid-rows-[1fr_auto] justify-items-center sm:grid-rows-[1fr_auto_3fr] sm:p-4",
-    "dialogPanel": "\n    row-start-2 w-full min-w-0 rounded-t-3xl bg-white p-[--gutter] shadow-lg ring-1 ring-zinc-950/10 [--gutter:theme(spacing.8)] sm:mb-auto sm:rounded-2xl dark:bg-zinc-900 dark:ring-white/10 forced-colors:outline\n    transition duration-100 data-[closed]:translate-y-12 data-[closed]:opacity-0 data-[enter]:ease-out data-[leave]:ease-in sm:data-[closed]:translate-y-0 sm:data-[closed]:data-[enter]:scale-95\n  ",
+    "backdrop": "fixed inset-0 bg-zinc-950/25 pointer-events-none dark:bg-zinc-950/50",
+    "dialogContainer": "fixed z-50 inset-0 w-screen overflow-y-auto pt-6 sm:pt-0",
+    "dialogContainer2": "relative grid min-h-full grid-rows-[1fr_auto] justify-items-center sm:grid-rows-[1fr_auto_3fr] sm:p-4",
+    "dialogPanel": "\n    row-start-2 w-full min-w-0 rounded-t-3xl bg-white p-[--gutter] shadow-lg ring-1 ring-zinc-950/10 [--gutter:theme(spacing.8)] sm:mb-auto sm:rounded-2xl dark:bg-zinc-900 dark:ring-white/10 forced-colors:outline\n  ",
     "sizes": {
       "xs": "sm:max-w-xs",
       "sm": "sm:max-w-sm",
@@ -561,23 +513,9 @@ const theme = {
       "5xl": "sm:max-w-5xl"
     }
   },
-  "popover": {
-    "button": "flex items-center cursor-pointer pt-1 pr-1",
-    "container": "absolute shadow-lg z-30 transform overflow-visible z-50 rounded-md"
-  },
   "label": {
     "labelWrapper": "px-[12px] pt-[9px] pb-[7px] rounded-md",
     "label": "inline-flex items-center rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline"
-  },
-  "select": {
-    "selectContainer": "group relative block w-full before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.lg)-1px)] before:bg-white before:shadow dark:before:hidden after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:ring-inset after:ring-transparent after:has-[[data-focus]]:ring-2 after:has-[[data-focus]]:ring-blue-500 has-[[data-disabled]]:opacity-50 before:has-[[data-disabled]]:bg-zinc-950/5 before:has-[[data-disabled]]:shadow-none",
-    "select": "relative block w-full appearance-none rounded-lg py-[calc(theme(spacing[2.5])-1px)] sm:py-[calc(theme(spacing[1.5])-1px)] px-[calc(theme(spacing[3.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] [&_optgroup]:font-semibold text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white dark:*:text-white border border-zinc-950/10 data-[hover]:border-zinc-950/20 dark:border-white/10 dark:data-[hover]:border-white/20 bg-transparent dark:bg-white/5 dark:*:bg-zinc-800 focus:outline-none data-[invalid]:border-red-500 data-[invalid]:data-[hover]:border-red-500 data-[invalid]:dark:border-red-600 data-[invalid]:data-[hover]:dark:border-red-600 data-[disabled]:border-zinc-950/20 data-[disabled]:opacity-100 dark:data-[hover]:data-[disabled]:border-white/15 data-[disabled]:dark:border-white/15 data-[disabled]:dark:bg-white/[2.5%]"
-  },
-  "listbox": {
-    "listboxContainer": "group relative block w-full before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.lg)-1px)] before:bg-white before:shadow dark:before:hidden after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:ring-inset after:ring-transparent after:has-[[data-focus]]:ring-2 after:has-[[data-focus]]:ring-blue-500 has-[[data-disabled]]:opacity-50 before:has-[[data-disabled]]:bg-zinc-950/5 before:has-[[data-disabled]]:shadow-none",
-    "listboxOptions": "w-[var(--button-width)] z-20 bg-white rounded-xl border p-1 [--anchor-gap:var(--spacing-1)] focus:outline-none transition duration-100 ease-in data-[leave]:data-[closed]:opacity-0",
-    "listboxOption": "group flex gap-2 bg-white data-[focus]:bg-blue-100 z-30",
-    "listboxButton": "relative block w-full rounded-lg bg-white/5 py-1.5 pr-8 pl-3 text-left text-sm/6 text-white focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
   },
   "table": {
     "options": {
@@ -591,7 +529,7 @@ const theme = {
         "headerContainer": "sticky top-0 grid",
         "headerLeftGutter": "flex justify-between sticky left-0 z-[1]",
         "headerWrapper": "flex justify-between",
-        "headerCellContainer": "w-full font-semibold px-3 py-1 content-center text-sm font-semibold text-gray-600",
+        "headerCellContainer": "w-full font-semibold pl-2 py-1 content-center text-sm font-semibold text-gray-600",
         "headerCellContainerBgSelected": "bg-blue-100 text-gray-900",
         "headerCellContainerBg": "bg-gray-50 text-gray-500",
         "colResizer": "z-5 -ml-2 w-[1px] hover:w-[2px] bg-gray-200 hover:bg-gray-400",
@@ -627,7 +565,7 @@ const theme = {
         "openOutCloseIcon": "XMark",
         "openOutContainerWrapperBgColor": "#00000066",
         "openOutIconWrapper": "px-2 cursor-pointer bg-transparent text-gray-500 hover:text-gray-600",
-        "headerCellWrapper": "relative w-full px-3 py-2",
+        "headerCellWrapper": "relative w-full px-0.5 py-2",
         "headerCellBtn": "group inline-flex items-center w-full justify-between gap-x-1.5 rounded-md cursor-pointer",
         "headerCellLabel": "truncate select-none",
         "headerCellBtnActive": "bg-gray-300",
@@ -642,8 +580,8 @@ const theme = {
         "headerCellMenuIcon": "ArrowDown",
         "headerCellMenuIconClass": "text-gray-400 group-hover:text-gray-600 transition ease-in-out duration-200 print:hidden",
         "headerCellIconWrapper": "flex items-center",
-        "headerCellMenu": "py-0.5 flex flex-col gap-0.5 items-center px-1 text-xs text-gray-600 font-regular max-h-[500px] min-w-[180px] z-[10] overflow-auto scrollbar-sm bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5",
-        "headerCellControlWrapper": "w-full group px-2 py-1 flex justify-between items-center rounded-md hover:bg-gray-100",
+        "headerCellMenu": "py-0.5 flex flex-col gap-0.5 items-center px-1 text-xs text-gray-600 font-regular max-h-[500px] min-w-[140px] z-[10] overflow-auto scrollbar-sm bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5",
+        "headerCellControlWrapper": "w-full group px-1.5 py-0.5 flex justify-between items-center rounded-md hover:bg-gray-100",
         "headerCellControlLabel": "w-fit font-regular text-gray-500 cursor-default",
         "headerCellControl": "p-0.5 w-full rounded-md bg-white group-hover:bg-gray-100 cursor-pointer"
       }
@@ -662,18 +600,19 @@ const theme = {
         "valueWrapper": "min-h-[20px]",
         "description": "w-full text-xs font-light",
         "columnControlWrapper": "grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-0.5",
-        "columnControlHeaderWrapper": "px-1 font-semibold border bg-gray-50 text-gray-500",
+        "columnControlHeaderWrapper": "px-1 font-semibold border border-[#e4e7e9] text-gray-500",
         "mainWrapperCompactView": "grid",
         "mainWrapperSimpleView": "flex flex-col",
         "subWrapper": "w-full",
-        "subWrapperCompactView": "flex flex-col rounded-[12px]",
+        "subWrapperCompactView": "flex flex-col ",
         "subWrapperSimpleView": "grid",
-        "headerValueWrapper": "w-full rounded-[12px] flex items-center justify-center p-2",
+        "headerValueWrapper": "w-full  flex items-center justify-center p-2",
         "headerValueWrapperCompactView": "py-0",
         "headerValueWrapperSimpleView": "",
         "componentWrapper": "w-full",
         "headerValueWrapperBorderBelow": "border-b rounded-none",
-        "itemBorder": "border shadow",
+        "itemBorder": "border border-[#e4e7e9]",
+        "cardBorder": "border border-[#e4e7e9]",
         "itemFlexCol": "flex-col",
         "itemFlexRow": "flex-row",
         "itemFlexColReverse": "flex-col flex-col-reverse",
