@@ -3,6 +3,8 @@ import { NavLeftStyleWidget, NavRightStyleWidget } from "./widgets"
 import ThemeModeToggle from "./ThemeModeToggle"
 import portraitBanner from "./columnTypes/portraitBanner.config"
 import { portraitBannerTheme } from "./columnTypes/portraitBanner.theme"
+import streamPlayer from "./columnTypes/streamPlayer.config"
+import { streamPlayerTheme } from "./columnTypes/streamPlayer.theme"
 import { wcdbSectionTheme } from "./wcdb_section.theme"
 
 const theme = {
@@ -351,11 +353,17 @@ const theme = {
   // patterns/page/siteConfig.jsx via the registerColumnType API.
   columnTypes: {
     portrait_banner: portraitBanner,
+    stream_player: streamPlayer,
   },
   // Theme namespace consumed by the portrait_banner column type via
   // getComponentTheme. Lets us tune the banner height, scan-line texture,
   // and initials glyph size site-wide without touching column metadata.
   portraitBanner: portraitBannerTheme,
+  // Theme namespace consumed by the stream_player column type. Owns the
+  // player's padding, art size, play-button size, and the static
+  // placeholders (elapsed/total/listeners) used until a live-clock data
+  // source replaces them.
+  streamPlayer: streamPlayerTheme,
 }
 
 export default theme
