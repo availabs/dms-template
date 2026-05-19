@@ -29,6 +29,11 @@ export const StreamPlayerView = (props) => {
                 style={{
                     width: t.playButtonSize,
                     height: t.playButtonSize,
+                    // Without flexShrink:0 the button is a flex item with the
+                    // default `flex-shrink: 1`, so a narrow cell parent (cell
+                    // width minus padding/border) silently squashes it into an
+                    // ellipse. Pinning shrink to 0 keeps it round at all times.
+                    flexShrink: 0,
                     borderRadius: "50%",
                     border: "none",
                     cursor: "pointer",

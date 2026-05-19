@@ -5,6 +5,8 @@ import portraitBanner from "./columnTypes/portraitBanner.config"
 import { portraitBannerTheme } from "./columnTypes/portraitBanner.theme"
 import streamPlayer from "./columnTypes/streamPlayer.config"
 import { streamPlayerTheme } from "./columnTypes/streamPlayer.theme"
+import nowIndicator from "./columnTypes/nowIndicator.config"
+import { nowIndicatorTheme } from "./columnTypes/nowIndicator.theme"
 import { wcdbSectionTheme } from "./wcdb_section.theme"
 
 const theme = {
@@ -248,6 +250,15 @@ const theme = {
         headerValueWrapper: "w-full rounded-[18px] flex items-center justify-center p-2",
         header: "w-full font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[length:var(--tx-xs)] text-[color:var(--ink-3)]",
         description: "w-full font-[family-name:var(--font-sans)] text-[length:var(--tx-xs)] font-light text-[color:var(--ink-3)]",
+        // Image-size overrides — the base `card.theme.jsx` ships `max-w-N max-h-N`
+        // caps that let the <img> render at its natural size up to the cap. In a
+        // WCDB now-playing layout the cell width is the source of truth (the
+        // grid track has an explicit `cellWidth: '96px'`); the image should
+        // *fill* that cell, not overflow it when natural > cell content area.
+        // `w-full h-full object-cover rounded-md` makes the image responsive
+        // to the cell, crops to keep aspect (album art is always square so no
+        // visible crop), and rounds the corners to the WCDB editorial 8px.
+        imgSM: "w-full h-full object-cover rounded-md",
       },
     ],
   },
@@ -354,6 +365,7 @@ const theme = {
   columnTypes: {
     portrait_banner: portraitBanner,
     stream_player: streamPlayer,
+    now_indicator: nowIndicator,
   },
   // Theme namespace consumed by the portrait_banner column type via
   // getComponentTheme. Lets us tune the banner height, scan-line texture,
@@ -364,6 +376,11 @@ const theme = {
   // placeholders (elapsed/total/listeners) used until a live-clock data
   // source replaces them.
   streamPlayer: streamPlayerTheme,
+  // Theme namespace consumed by the now_indicator column type. Owns the
+  // pill/meta typography sizes and the default `timestampField` name; the
+  // pulsing red dot animation uses `@keyframes wcdb-pulse-dot` from
+  // `src/themes/wcdb/tokens.css`.
+  nowIndicator: nowIndicatorTheme,
 }
 
 export default theme
