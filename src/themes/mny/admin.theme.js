@@ -499,6 +499,18 @@ const theme = {
         tabpanels: 'w-full h-fit max-h-screen overflow-y-auto scrollbar-sm',
         tabpanel: 'rounded-xl bg-white/5'
       },
+      {},
+      {
+        tabGroup: 'flex flex-row divide-x divide-[#37576b8c]',
+        tablist: 'flex flex-col gap-1 pt-12',
+        tab: `
+    px-2 py-3 font-semibold text-[#37576B] text-xs hover:text-[#2D3E4C] focus:outline-none border-b-2 border-white
+    aria-selected:bg-[#2D3E4C] aria-selected:text-white hover:bg-white/5 aria-selected:text-white focus-visible:outline-1 focus-visible:outline-white cursor-pointer
+  `,
+        tabpanels: 'w-full max-h-screen overflow-y-auto scrollbar-sm',
+        tabpanel: 'rounded-xl bg-white/5 divide-y divide-[#37576b8c]',
+        tabTitle: 'p-2 text-[#2D3E4C]'
+      },
     ]
   },
   "button": {
