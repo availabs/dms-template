@@ -499,8 +499,8 @@ const theme = {
         tabpanels: 'w-full h-fit max-h-screen overflow-y-auto scrollbar-sm',
         tabpanel: 'rounded-xl bg-white/5'
       },
-      {},
       {
+        name: 'pages-pane',
         tabGroup: 'flex flex-row divide-x divide-[#37576b8c]',
         tablist: 'flex flex-col gap-1 pt-12',
         tab: `
