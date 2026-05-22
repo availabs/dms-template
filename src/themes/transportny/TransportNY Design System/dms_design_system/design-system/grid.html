@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Grid · TransportNY DMS Design System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script type="text/babel" src="_theme.jsx"></script>
+<script type="text/babel" src="_dms.jsx"></script>
+</head>
+<body class="tny-pane dms-annotated">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+
+/* MiniLayout mockups — small annotated previews of each Layout variant */
+function LayoutPreview({ name, sideNav, topNav, footer }) {
+  return (
+    <div className="rounded-[6px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+      <div className="bg-slate-50 border-b border-zinc-950/05 px-3 py-2 flex items-center justify-between">
+        <span className="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">{name}</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">layout.styles[…]</span>
+      </div>
+      <div className="bg-[#ECEEF2] h-44 relative flex">
+        {sideNav && <div className="w-12 bg-[#12181F] flex flex-col items-center pt-2 gap-1">
+          <div className="size-2 rounded-full bg-[#FACC15]"/>
+          <div className="size-2 rounded-full bg-slate-500"/>
+          <div className="size-2 rounded-full bg-slate-500"/>
+        </div>}
+        <div className="flex-1 flex flex-col">
+          {topNav && <div className="h-7 bg-white border-b border-zinc-950/05"/>}
+          <div className="flex-1 p-3 flex flex-col gap-2">
+            <div className="bg-white rounded h-6 shadow-sm border border-zinc-950/05"/>
+            <div className="bg-white rounded h-12 shadow-sm border border-zinc-950/05"/>
+            <div className="bg-white rounded flex-1 shadow-sm border border-zinc-950/05"/>
+          </div>
+          {footer && <div className="h-5 bg-white border-t border-zinc-950/05"/>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GroupPreview({ name, surface, padded = true, shadow = true, dashed }) {
+  return (
+    <div className="rounded-[6px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+      <div className="bg-slate-50 border-b border-zinc-950/05 px-3 py-2 flex items-center justify-between">
+        <span className="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">{name}</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">layoutGroup.styles[…]</span>
+      </div>
+      <div className={`${surface} h-32 ${padded ? "p-4" : "p-2"} flex items-center gap-2`}>
+        <div className={`flex-1 h-full rounded-[6px] ${shadow ? "shadow-sm" : ""} border ${dashed ? "border-dashed border-amber-300 bg-[#F5F1E8]" : "border-zinc-950/10 bg-white"}`}/>
+        <div className={`flex-1 h-full rounded-[6px] ${shadow ? "shadow-sm" : ""} border ${dashed ? "border-dashed border-amber-300 bg-[#F5F1E8]" : "border-zinc-950/10 bg-white"}`}/>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Layout style={1} name="app"
+      sideNav={<TNYSidebar active="grid" product="DESIGN"/>}
+      footer={<Footer/>}>
+
+      <LayoutGroup style="hero" name="hero">
+        <Section span="1" name="intro" kicker="// 02 · STRUCTURE">
+          <h1 className={`${window.TNYTheme.textSettings.styles[0].h1} mb-3`}>Grid<span className="text-[#CA8A04]">.</span></h1>
+          <p className="font-proxima text-[15.5px] text-slate-600 max-w-[760px] leading-[1.65]">
+            DMS pages are nested: <span className="tny-mono">Site → Layout → LayoutGroup → Section → Component</span>.
+            Layouts own the page chrome; LayoutGroups are bands within the page (header,
+            content, footer). Sections render inside groups and host one component each.
+          </p>
+        </Section>
+      </LayoutGroup>
+
+      <LayoutGroup style="content" name="hierarchy-diagram">
+        <Section span="1" name="hierarchy" kicker="01" title="The five-layer hierarchy">
+          <div className="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 font-mono text-[13px] text-slate-700 leading-[1.85]">
+            <div><span className="text-[#1F3F8F] font-semibold">Site</span> · <span className="text-slate-500">DmsSite · supplies theme via ThemeContext</span></div>
+            <div className="pl-5">└── <span className="text-[#1F3F8F] font-semibold">Layout</span> · <span className="text-slate-500">outer wrapper · optional TopNav · optional SideNav</span></div>
+            <div className="pl-10">└── <span className="text-[#1F3F8F] font-semibold">LayoutGroup</span> · <span className="text-slate-500">a band of content (header / content / footer)</span></div>
+            <div className="pl-16">└── <span className="text-[#1F3F8F] font-semibold">Section</span> · <span className="text-slate-500">one editable block · wraps one component</span></div>
+            <div className="pl-20">└── <span className="text-[#1F3F8F] font-semibold">Component</span> · <span className="text-slate-500">Card · Spreadsheet · Graph · Map · Lexical · …</span></div>
+            <div className="pl-24">└── <span className="text-[#1F3F8F] font-semibold">Primitives</span> · <span className="text-slate-500">Button · Input · MultiSelect · Pill · Icon · …</span></div>
+          </div>
+        </Section>
+      </LayoutGroup>
+
+      <LayoutGroup style="content_tint" name="layout-variants">
+        <Section span="1" name="layouts" kicker="02" title="Layout variants">
+          <p className="font-proxima text-[13.5px] text-slate-600 mb-4 max-w-[760px]">
+            TransportNY ships three named Layout styles. The mockup pages and the live site
+            both use these — choose with the <span className="tny-mono">activeStyle</span> prop or by name.
+          </p>
+          <div className="grid grid-cols-3 gap-4">
+            <LayoutPreview name="default · marketing" topNav />
+            <LayoutPreview name="app · product (default)" sideNav />
+            <LayoutPreview name="bare · auth / embed" />
+          </div>
+        </Section>
+      </LayoutGroup>
+
+      <LayoutGroup style="content" name="layoutgroup-variants">
+        <Section span="1" name="layoutgroups" kicker="03" title="LayoutGroup variants">
+          <p className="font-proxima text-[13.5px] text-slate-600 mb-4 max-w-[760px]">
+            Each LayoutGroup is a <em>surface recipe</em>: what kind of page band is this?
+            Boxed? Hero? Auth form? Footer? TransportNY ships eight named variants. New
+            patterns can add more without touching code — just register another entry in
+            <span className="tny-mono"> layoutGroup.styles[]</span>.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <GroupPreview name="content (default)"   surface="bg-[#ECEEF2]" />
+            <GroupPreview name="content_tint"        surface="bg-[#E4E8EE]" />
+            <GroupPreview name="header"              surface="bg-white"     shadow={false} />
+            <GroupPreview name="hero"                surface="tny-hero-topo" shadow={false} />
+            <GroupPreview name="tone_bar"            surface="bg-[#1F3F8F]" padded={false} shadow={false} />
+            <GroupPreview name="auth (centered)"     surface="bg-[#ECEEF2]" />
+            <GroupPreview name="footer"              surface="bg-white"     shadow={false} />
+            <GroupPreview name="workbench (bleed)"   surface="bg-[#ECEEF2]" padded={false} />
+          </div>
+        </Section>
+      </LayoutGroup>
+
+      <LayoutGroup style="content_tint" name="nesting-example">
+        <Section span="1" name="nesting" kicker="04" title="Nesting example">
+          <p className="font-proxima text-[13.5px] text-slate-600 mb-4 max-w-[760px]">
+            A real product page composes multiple groups in sequence. Below: hero + tone-bar +
+            content + footer, with two Sections in the content band sharing a 12-column grid.
+          </p>
+          <div className="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-3 flex flex-col gap-2 font-mono text-[11.5px]">
+            <div className="rounded-[4px] tny-hero-topo px-3 py-3 border border-zinc-950/05 text-slate-700">LayoutGroup · hero · "Title + kicker + breadcrumb"</div>
+            <div className="rounded-[4px] bg-[#1F3F8F] px-3 py-2 text-white">LayoutGroup · tone_bar · "Region · Month · Road Class"</div>
+            <div className="rounded-[4px] bg-[#ECEEF2] p-3">
+              <div className="text-slate-700 mb-2">LayoutGroup · content</div>
+              <div className="grid grid-cols-12 gap-2">
+                <div className="col-span-8 rounded-[4px] bg-white shadow-sm border border-zinc-950/05 px-3 py-3 text-slate-600">Section · span 2/3 · Graph (multi-line)</div>
+                <div className="col-span-4 rounded-[4px] bg-white shadow-sm border border-zinc-950/05 px-3 py-3 text-slate-600">Section · span 1/3 · Card (KPI tile)</div>
+              </div>
+            </div>
+            <div className="rounded-[4px] bg-white px-3 py-2 border border-zinc-950/05 text-slate-700">LayoutGroup · footer · "User Guide · API · © NYSDOT"</div>
+          </div>
+        </Section>
+      </LayoutGroup>
+
+      <LayoutGroup style="content" name="naming-reference">
+        <Section span="1" name="naming" kicker="05" title="Naming reference">
+          <div className="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+            <table className="w-full text-[13px]">
+              <thead className="bg-slate-50 border-b border-zinc-950/10">
+                <tr>
+                  <th className="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Page kind</th>
+                  <th className="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Layout</th>
+                  <th className="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">LayoutGroups</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-950/05">
+                <tr><td className="px-3 py-2">Marketing / landing</td><td className="px-3 py-2"><span className="tny-mono">default</span></td><td className="px-3 py-2">hero → content → footer</td></tr>
+                <tr><td className="px-3 py-2">Product dashboard (MAP-21, NPMRDS)</td><td className="px-3 py-2"><span className="tny-mono">app</span></td><td className="px-3 py-2">header → tone_bar → content → footer</td></tr>
+                <tr><td className="px-3 py-2">Documentation</td><td className="px-3 py-2"><span className="tny-mono">app</span></td><td className="px-3 py-2">header → content (prose) → footer</td></tr>
+                <tr><td className="px-3 py-2">Sign-in / sign-up</td><td className="px-3 py-2"><span className="tny-mono">bare</span></td><td className="px-3 py-2">auth</td></tr>
+                <tr><td className="px-3 py-2">Map workbench (full bleed)</td><td className="px-3 py-2"><span className="tny-mono">app</span></td><td className="px-3 py-2">header → workbench → footer</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      </LayoutGroup>
+    </Layout>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

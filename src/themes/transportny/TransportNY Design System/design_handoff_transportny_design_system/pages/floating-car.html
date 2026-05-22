@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Floating Car — TransportNY</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="_icons.jsx"></script>
+<script type="text/babel" src="_chrome.jsx"></script>
+</head>
+<body class="tny-pane">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const Icon = window.TNYIcon;
+
+/* Route map placeholder w/ legend */
+function RouteMap() {
+  return (
+    <div className="relative tny-map-dark h-[300px]">
+      <div className="absolute top-3 left-3 px-1.5 py-0.5 bg-white/90 text-[9px] font-mono text-slate-700 rounded">mapbox</div>
+      {/* route line */}
+      <svg viewBox="0 0 800 280" className="absolute inset-0 w-full h-full">
+        <path d="M 60 110 C 200 100, 280 90, 380 80 L 480 70 L 560 100 L 620 160 L 600 220" stroke="#3B82F6" strokeWidth="3" fill="none"/>
+        <path d="M 380 80 L 430 130 L 480 180 L 470 240" stroke="url(#routegrad)" strokeWidth="6" fill="none" strokeLinecap="round"/>
+        <defs>
+          <linearGradient id="routegrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#FEF3C7"/>
+            <stop offset="40%" stopColor="#F59E0B"/>
+            <stop offset="70%" stopColor="#EF4444"/>
+            <stop offset="100%" stopColor="#10B981"/>
+          </linearGradient>
+        </defs>
+        {/* roads */}
+        <path d="M 0 110 L 800 110" stroke="rgba(120,170,200,0.4)" strokeWidth="1.5"/>
+        <path d="M 100 0 L 100 280" stroke="rgba(120,170,200,0.4)" strokeWidth="1.5"/>
+        <path d="M 300 0 L 300 280" stroke="rgba(120,170,200,0.4)" strokeWidth="1.5"/>
+        <path d="M 500 0 L 500 280" stroke="rgba(120,170,200,0.4)" strokeWidth="1.5"/>
+        <path d="M 700 0 L 700 280" stroke="rgba(120,170,200,0.4)" strokeWidth="1.5"/>
+        <circle cx="380" cy="80" r="8" fill="none" stroke="white" strokeWidth="2"/>
+        <text x="400" y="78" fill="white" fontSize="12" fontFamily="Oswald, sans-serif">Rochester</text>
+      </svg>
+      {/* Speed legend top right */}
+      <div className="absolute top-3 right-3 bg-white/95 border border-zinc-950/10 rounded shadow text-[10.5px] overflow-hidden">
+        <div className="px-2 py-1 bg-slate-100 border-b border-zinc-950/10 font-oswald uppercase text-[10px] tracking-wide">Speed (MPH)</div>
+        {[['42.12 - 42.46','#EF4444'],['42.46 - 44.41','#F59E0B'],['44.41 - 47.14','#FBBF24'],['47.14 - 49.62','#FDE68A'],['49.62 - 50.61','#10B981']].map(([t,c])=>(
+          <div key={t} className="flex items-center gap-2 px-2 py-1 font-mono" style={{background:c, color:c==='#FDE68A'||c==='#10B981'?'#0f172a':'#0f172a'}}>
+            <span>{t}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Squiggly line chart */
+function LineChart({ color='#E25A82' }) {
+  const W=480, H=180;
+  let d = 'M 0 60';
+  let prev = 60;
+  for (let i=1; i<=200; i++) {
+    const x = i/200 * W;
+    const drift = i*0.02;
+    const noise = (Math.sin(i*0.7)*8 + Math.cos(i*0.3)*4 + (Math.random()-0.5)*6);
+    let y = 70 + drift*0.3 + noise;
+    if (i>140 && i<160) y += 40; // dip
+    y = Math.max(20, Math.min(H-10, y));
+    d += ` L ${x} ${y}`;
+    prev = y;
+  }
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[180px]">
+      {[0,10,20,30,40,50].map(v=>{
+        const y = H-15 - (v/50)*(H-25);
+        return (<g key={v}>
+          <line x1={28} y1={y} x2={W} y2={y} stroke="rgba(15,23,42,0.05)"/>
+          <text x={4} y={y+3} fontSize="9" fontFamily="ui-monospace,monospace" fill="#94a3b8">{v}</text>
+        </g>);
+      })}
+      <text x={4} y={12} fontSize="9" fontFamily="ui-monospace,monospace" fill="#475569">MPH</text>
+      <path d={d} stroke={color} fill="none" strokeWidth="1.2"/>
+      {['07:10','09:30','11:50','14:10','16:30'].map((t,i)=>(
+        <text key={t} x={40 + i*100} y={H-2} fontSize="9" fontFamily="ui-monospace,monospace" fill="#64748b" textAnchor="middle">{t}</text>
+      ))}
+    </svg>
+  );
+}
+
+/* TMC grid (heatmap) */
+function TMCGrid() {
+  const rows = ['104+04369','104P11997','104-04284'];
+  const cols = 60;
+  // colors per row
+  const palettes = [
+    ['#65A30D','#84CC16','#A3E635','#BEF264','#FDE047','#EF4444'],
+    ['#84CC16','#A3E635','#65A30D'],
+    ['#16A34A','#22C55E','#65A30D'],
+  ];
+  return (
+    <svg viewBox="0 0 480 180" className="w-full h-[180px]">
+      <text x="4" y="12" fontSize="9" fontFamily="ui-monospace,monospace" fill="#475569">Speed</text>
+      {rows.map((r,ri)=>(
+        <g key={r}>
+          <text x="4" y={40 + ri*55} fontSize="9.5" fontFamily="ui-monospace,monospace" fill="#475569">{r}</text>
+          {Array.from({length:cols}).map((_,ci) => {
+            const pal = palettes[ri];
+            const c = pal[Math.floor(Math.random()*pal.length)];
+            return <rect key={ci} x={60+ci*7} y={25+ri*55} width="6" height="48" fill={c}/>;
+          })}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/* Bar Graph Summary — 4 bars */
+function BarSummary() {
+  const bars = [['2024 - Inner Loop 2','#6B7280'],['2024 - AM Peak - Inner Loop 2','#D4A24C'],['2024 - PM Peak - Inner Loop 2','#84A85A'],['2024 - Off Peak - Inner Loop 2','#D85490']];
+  const W=720, H=220;
+  const slot = (W-40)/bars.length, bw = slot*0.78;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {[0,5,10,15,20,25,30,35,40,45].map(v=>{
+        const y = H-30 - (v/45)*(H-50);
+        return (<g key={v}>
+          <line x1={32} y1={y} x2={W} y2={y} stroke="rgba(15,23,42,0.05)"/>
+          <text x={28} y={y+3} fontSize="9" fontFamily="ui-monospace,monospace" textAnchor="end" fill="#94a3b8">{v}</text>
+        </g>);
+      })}
+      <text x={4} y={14} fontSize="9" fontFamily="ui-monospace,monospace" fill="#475569">MPH</text>
+      {bars.map(([label,color],i)=>(
+        <g key={label}>
+          <rect x={40+slot*i+(slot-bw)/2} y={H-30-(45/45)*(H-50)} width={bw} height={(45/45)*(H-50)} fill={color}/>
+          <text x={40+slot*i+slot/2} y={H-12} fontSize="9" fontFamily="ui-monospace,monospace" textAnchor="middle" fill="#475569">{label}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/* Route Bar Graph — colored bands by day */
+function RouteBars() {
+  const days = ['monday','tuesday','wednesday','thursday','friday','saturday'];
+  const colors = ['#FEF3C7','#EF4444','#EF4444','#EF4444','#EF4444','#10B981'];
+  const W=900, H=240;
+  const slot = (W-40)/days.length;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {[0,5,10,15,20,25,30,35,40,45].map(v=>{
+        const y = H-30 - (v/45)*(H-50);
+        return (<g key={v}>
+          <line x1={32} y1={y} x2={W} y2={y} stroke="rgba(15,23,42,0.05)"/>
+          <text x={28} y={y+3} fontSize="9" fontFamily="ui-monospace,monospace" textAnchor="end" fill="#94a3b8">{v}</text>
+        </g>);
+      })}
+      <text x={4} y={14} fontSize="9" fontFamily="ui-monospace,monospace" fill="#475569">MPH</text>
+      {days.map((d,i)=>(
+        <g key={d}>
+          <rect x={40+slot*i} y={H-30-(45/45)*(H-50)} width={slot-2} height={(45/45)*(H-50)} fill={colors[i]}/>
+          <text x={40+slot*i+slot/2} y={H-12} fontSize="10" fontFamily="ui-monospace,monospace" textAnchor="middle" fill="#475569">{d}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/* Left rail (templates / routes / graphs accordion) */
+function LeftRail() {
+  return (
+    <aside className="w-[260px] flex-shrink-0 bg-white border-r border-zinc-950/10 overflow-y-auto py-3">
+      {/* Templates */}
+      <div className="px-4 py-3 border-b border-zinc-950/10 flex items-center justify-between">
+        <div className="font-oswald font-medium text-[14px] text-slate-800">Templates</div>
+        <Icon name="CaretDown" className="size-4 text-slate-500"/>
+      </div>
+      {/* Routes */}
+      <div className="px-4 pt-3">
+        <div className="flex items-center justify-between pb-2">
+          <div className="font-oswald font-medium text-[14px] text-slate-800">Routes</div>
+          <Icon name="CaretDown" className="size-4 text-slate-500"/>
+        </div>
+      </div>
+      <div className="space-y-1.5 px-3 pb-3">
+        {[
+          ['2024 - Inner Loop 2','#F59E0B'],
+          ['2024 - AM Peak - Inner Loop...','#FDE68A'],
+          ['2024 - PM Peak - Inner Loop...','#93C5FD'],
+          ['2024 - Avg Speed by Day...','#D8B4FE'],
+          ['2024 - Avg Seed by Month...','#86EFAC'],
+          ['2024 - AM Peak - Inner Lo...','#FDE68A'],
+        ].map(([label,color],i)=>(
+          <div key={i} className="h-8 px-2.5 rounded border border-zinc-950/10 bg-white flex items-center gap-2 text-[12.5px] text-slate-700">
+            <Icon name="Drag" className="size-3 text-slate-400"/>
+            <span className="size-2.5 rounded-full" style={{background:color}}/>
+            <span className="flex-1 truncate">{label}</span>
+            <Icon name="CaretDown" className="size-3 text-slate-500"/>
+          </div>
+        ))}
+        <button className="h-8 px-2.5 w-full rounded border border-dashed border-zinc-950/15 text-[12.5px] text-slate-500 flex items-center justify-between hover:bg-slate-50">
+          Add Route <Icon name="Plus" className="size-3.5"/>
+        </button>
+      </div>
+
+      {/* Graphs */}
+      <div className="px-4 pt-3 border-t border-zinc-950/10">
+        <div className="flex items-center justify-between pb-2">
+          <div className="font-oswald font-medium text-[14px] text-slate-800">Graphs</div>
+          <div className="flex items-center gap-2">
+            <a className="text-[12px] tny-link">Edit Colors</a>
+            <Icon name="CaretDown" className="size-4 text-slate-500"/>
+          </div>
+        </div>
+      </div>
+      <div className="space-y-1.5 px-3 pb-3">
+        {['Route Line Graph','Bar Graph Summary','Route Bar Graph','Route Bar Graph','TMC Grid Graph','Route Compare Component'].map((g,i)=>(
+          <div key={i} className="h-8 px-2.5 rounded border border-zinc-950/10 bg-white flex items-center gap-2 text-[12.5px] text-slate-700">
+            <Icon name="Drag" className="size-3 text-slate-400"/>
+            <span className="flex-1 truncate">{g}</span>
+            <Icon name="CaretDown" className="size-3 text-slate-500"/>
+          </div>
+        ))}
+        <button className="h-8 px-2.5 w-full rounded border border-dashed border-zinc-950/15 text-[12.5px] text-slate-500 flex items-center justify-between hover:bg-slate-50">
+          Add Graph <Icon name="Plus" className="size-3.5"/>
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+/* Compact Display dropdown w/ checkboxes (open state) */
+function DisplayDropdown() {
+  const items = ['2024 - Inner Loop 2','Day of Week - 2024 - Inner Loop...','2024 - AM Peak - Inner Loop 2','2024 - PM Peak - Inner Loop 2','2024 - Avg Speed by Day - Inne...','2024 - Avg Speed by Month','2023 - Inner Loop 2','2022 - Inner Loop 2'];
+  return (
+    <div className="absolute top-full mt-2 right-0 w-[280px] tny-menu z-20 py-1">
+      {items.map((it,i)=>(
+        <button key={i} className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] text-slate-700 hover:bg-slate-50 text-left`}>
+          <span className={`size-3.5 rounded-sm border ${i===0?'bg-[#1F3F8F] border-[#1F3F8F]':'border-slate-300'} flex items-center justify-center`}>
+            {i===0 && <Icon name="Check" className="size-2.5 text-white"/>}
+          </span>
+          <span className="flex-1 truncate">{it}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* Route / Display Data fly-out menu (right of card) */
+function GraphSettings() {
+  return (
+    <div className="absolute top-full mt-2 right-0 w-[260px] tny-menu z-20 p-1.5">
+      <button className="w-full h-9 px-2 flex items-center gap-3 rounded hover:bg-slate-50 text-[12.5px] text-slate-700">
+        <Icon name="ChevronLeft" className="size-3.5 text-slate-400"/>
+        <Icon name="MapLayers" className="size-4 text-slate-500"/>
+        <span className="flex-1 text-left">Route</span>
+      </button>
+      <button className="w-full h-9 px-2 flex items-center gap-3 rounded hover:bg-slate-50 text-[12.5px] text-slate-700">
+        <Icon name="ChevronLeft" className="size-3.5 text-slate-400"/>
+        <Icon name="Activity" className="size-4 text-slate-500"/>
+        <span className="flex-1 text-left">Display Data</span>
+      </button>
+      <div className="grid grid-cols-2 gap-1 px-1 pt-1.5">
+        <button className="h-7 px-2 rounded bg-white border border-zinc-950/10 text-[11.5px] text-slate-700">Reverse TMCs</button>
+        <button className="h-7 px-2 rounded bg-slate-100 border border-zinc-950/10 text-[11.5px] text-slate-500">Normalize TMCs</button>
+      </div>
+    </div>
+  );
+}
+
+/* Card "More" menu */
+function MoreMenu() {
+  const items = [
+    ['View Graph Data','Pages'],
+    ['Add Message Box','Pages'],
+    ['Save as PNG','Download'],
+    ['Select Graph Color','Filter'],
+    ['Duplicate Graph','Copy'],
+    ['Remove Graph','Trash'],
+  ];
+  return (
+    <div className="absolute top-full mt-2 right-0 w-[200px] tny-menu z-20 py-1">
+      {items.map(([t,i],k)=>(
+        <button key={t} className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] text-slate-700 hover:bg-slate-50 text-left ${k===items.length-1?'text-red-700':''}`}>
+          <Icon name={i} className="size-3.5 text-slate-500"/>
+          {t}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function GraphCard({ title, children, dropdown }) {
+  const [open, setOpen] = useState(dropdown||null);
+  return (
+    <div className="rounded border border-zinc-950/10 bg-white shadow-sm overflow-visible">
+      <div className="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 relative">
+        <Icon name="Drag" className="size-3.5 text-slate-400"/>
+        <span className="font-proxima text-[13px] text-slate-800 flex-1 px-1 py-0.5 rounded">{title}</span>
+        <div className="relative">
+          <button onClick={()=>setOpen(open==='display'?null:'display')} className="h-7 px-2.5 flex items-center gap-1.5 rounded border border-zinc-950/10 bg-white text-slate-700 text-[12px]">
+            Display <Icon name="CaretDown" className="size-3 text-slate-500"/>
+          </button>
+          {open==='display' && <DisplayDropdown/>}
+        </div>
+        <div className="relative">
+          <button onClick={()=>setOpen(open==='more'?null:'more')} className="h-7 w-7 flex items-center justify-center rounded hover:bg-slate-100 text-slate-500"><Icon name="More" className="size-3.5"/></button>
+          {open==='more' && <MoreMenu/>}
+          {open==='settings' && <GraphSettings/>}
+        </div>
+      </div>
+      <div className="p-3">{children}</div>
+    </div>
+  );
+}
+
+function App() {
+  // showRail switches between focused view and template-editor view
+  const [mode, setMode] = useState('focused'); // 'focused' | 'editor' | 'top-blue'
+  return (
+    <div className="min-h-screen">
+      <TNYSidebar product="NPMRDS" active="routes" expanded={false} nav={[
+        { id:'home', label:'Home', icon:'Pages' },
+        { id:'routes', label:'Routes', icon:'MapLayers' },
+        { id:'reports', label:'Reports', icon:'Sections' },
+        { id:'macro', label:'Macro', icon:'MapPin' },
+        { id:'pm3', label:'PM3', icon:'Activity' },
+        { id:'batch', label:'Batch Report', icon:'Database' },
+        { id:'schedules', label:'Schedules', icon:'History' },
+      ]}/>
+      <main className="ml-16 flex">
+        {mode==='editor' && <LeftRail/>}
+
+        <div className="flex-1 min-w-0">
+          {/* Hero */}
+          <div data-screen-label="01 Hero" className="tny-hero-topo px-10 pt-10 pb-8 flex items-start justify-between gap-6 border-b border-zinc-950/10">
+            <div>
+              <h1 className="font-oswald font-semibold text-[44px] leading-[1.05] text-[#0F1722]">Floating Car</h1>
+              <div className="font-oswald font-medium text-[22px] text-[#0F1722] mt-1">Average Day</div>
+              <p className="font-proxima text-[14px] text-slate-600 leading-relaxed mt-4 max-w-xl">
+                This template is based on the average day speeds for the latest year. It provides average speeds by five minute epoch, by peak period, by day of week, by month, and compares the latest year to the 3 preceding years.
+              </p>
+            </div>
+            {mode==='top-blue' && (
+              <div className="flex items-center gap-3 pt-2">
+                <button className="h-10 px-5 rounded bg-[#1F3F8F] hover:bg-[#16307A] text-white font-proxima font-semibold text-[13px]">Save as Template</button>
+                <button className="h-10 px-5 rounded bg-white border-2 border-[#1F3F8F] text-[#1F3F8F] font-proxima font-semibold text-[13px]">Save as Report</button>
+              </div>
+            )}
+            {/* mode switcher (demo) */}
+            <div className="absolute right-4 top-4 flex gap-1 bg-white/80 border border-zinc-950/10 rounded p-1 text-[11px] font-mono">
+              {['focused','editor','top-blue'].map(m => (
+                <button key={m} onClick={()=>setMode(m)} className={`px-2 py-1 rounded ${mode===m?'bg-[#1F3F8F] text-white':'text-slate-600'}`}>{m}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Top blue strip when in top-blue mode */}
+          {mode==='top-blue' && (
+            <>
+              <TNYTopBlue
+                left={<>
+                  <button className="flex items-center gap-2 font-proxima text-[13px] text-white">Templates <Icon name="CaretDown" className="size-3.5 text-white/70"/></button>
+                  <button className="flex items-center gap-2 font-proxima text-[13px] text-white">Routes <Icon name="CaretDown" className="size-3.5 text-white/70"/></button>
+                </>}
+                right={<>
+                  <button className="flex items-center gap-2 font-proxima text-[13px] text-white">Chart Colors <Icon name="CaretDown" className="size-3.5 text-white/70"/></button>
+                  <button className="flex items-center gap-2 font-proxima text-[13px] text-white">Add Chart <Icon name="Plus" className="size-3.5 text-white/70"/></button>
+                </>}
+              />
+              <TNYPillBar pills={[
+                { label:'2024 - Inner Loop 2', color:'#F59E0B' },
+                { label:'2024 - AM Peak - Inner Lo...', color:'#FDE68A' },
+                { label:'2024 - PM Peak - Inner Lo...', color:'#93C5FD' },
+                { label:'2024 - Avg Speed by Da...', color:'#D8B4FE' },
+                { label:'2024 - Avg Se...', color:'#86EFAC' },
+              ]}/>
+            </>
+          )}
+
+          {/* Page content */}
+          <div className="px-8 py-6 space-y-4">
+            <GraphCard title="Route Map, Speed">
+              <RouteMap/>
+            </GraphCard>
+
+            <div className="grid grid-cols-2 gap-4">
+              <GraphCard title="Route Line Graph, Speed" dropdown="display">
+                <LineChart/>
+              </GraphCard>
+              <GraphCard title="TMC, Grid Graph, Speed" dropdown="settings">
+                <TMCGrid/>
+              </GraphCard>
+            </div>
+
+            <GraphCard title="Bar Graph Summary, Speed">
+              <BarSummary/>
+            </GraphCard>
+
+            <GraphCard title="Route Bar Graph, Speed" dropdown="more">
+              <RouteBars/>
+            </GraphCard>
+          </div>
+
+          <TNYFooter/>
+        </div>
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

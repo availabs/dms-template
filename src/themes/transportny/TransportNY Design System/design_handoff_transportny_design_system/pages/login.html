@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sign in — TransportNY</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+
+.tny-input {
+  width:100%; height:44px; padding: 0 14px;
+  background:#fff; border:1px solid rgba(9,9,11,0.15); border-radius:6px;
+  font-family: 'Proxima Nova', system-ui, sans-serif; font-size:14px; color:#0f1722;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.tny-input:focus { outline:none; border-color:#1F3F8F; box-shadow: 0 0 0 3px rgba(31,63,143,0.15); }
+.tny-input::placeholder { color:#94a3b8; }
+
+.tny-check { appearance:none; width:16px; height:16px; border:1px solid rgba(9,9,11,0.25); border-radius:3px; background:#fff; cursor:pointer; position:relative; flex-shrink:0; }
+.tny-check:checked { background:#1F3F8F; border-color:#1F3F8F; }
+.tny-check:checked::after { content:''; position:absolute; left:4px; top:1px; width:5px; height:9px; border:solid #fff; border-width:0 2px 2px 0; transform: rotate(45deg); }
+
+.sso-btn { display:flex; align-items:center; gap:10px; width:100%; height:44px; padding:0 14px; border-radius:6px; background:#fff; border:1px solid rgba(9,9,11,0.15); font-family:'Proxima Nova'; font-weight:600; font-size:13px; color:#0f1722; transition: background .15s ease, border-color .15s ease; cursor:pointer; text-align:left; }
+.sso-btn:hover { background:#f8fafc; border-color: rgba(9,9,11,0.30); }
+
+.kbd { font-family: ui-monospace, monospace; font-size:10px; padding: 1.5px 5px; background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.25); border-bottom-width:2px; border-radius:3px; color:#fff; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="_icons.jsx"></script>
+<script type="text/babel" src="_chrome.jsx"></script>
+</head>
+<body class="tny-pane">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const Icon = window.TNYIcon;
+
+/* ─── SSO row — repeated for the 3 identity providers ────────── */
+function SsoOption({ swatch, label, meta, recommended }) {
+  return (
+    <button type="button" className="sso-btn group">
+      {swatch}
+      <span className="flex-1">{label}</span>
+      {recommended && (
+        <span className="font-mono text-[9.5px] uppercase tracking-wider text-[#CA8A04] bg-[#FACC15]/15 px-1.5 py-0.5 rounded">
+          recommended
+        </span>
+      )}
+      {meta && !recommended && (
+        <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">{meta}</span>
+      )}
+    </button>
+  );
+}
+
+/* ─── Aside card — small content cards for the 3-col rail ───── */
+function AsideCard({ kicker, title, children, action }) {
+  return (
+    <div className="rounded-md border border-zinc-950/08 bg-white p-4">
+      {kicker && <div className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1.5">{kicker}</div>}
+      <div className="font-oswald uppercase text-[12.5px] tracking-[0.06em] text-[#0f1722] font-semibold mb-1.5">{title}</div>
+      <div className="text-[12.5px] text-slate-600 leading-[1.5]">{children}</div>
+      {action && <div className="mt-3 pt-3 border-t border-zinc-950/05">{action}</div>}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div className="min-h-screen">
+      {/* Sidebar with signed-out user state */}
+      <TNYSidebar product="TransportNY" active="home" expanded={true} user={null}/>
+
+      <main className="ml-60" data-screen-label="Sign in">
+
+        {/* 12-col body: 9-col main + 3-col aside — no page header */}
+        <div className="grid grid-cols-12 gap-8 px-10 py-10 max-w-[1480px] mx-auto" data-screen-label="Body">
+
+          {/* ── Main · col-span-9 ─────────────────────────── */}
+          <section className="col-span-12 lg:col-span-9">
+            <div className="tny-card p-10" data-screen-label="Sign-in form">
+              <div className="max-w-[480px]">
+
+                {/* In-card heading — replaces the page hero */}
+                <div className="font-mono text-[10.5px] uppercase tracking-[0.25em] text-[#CA8A04] mb-2">// account access</div>
+                <h1 className="font-oswald font-semibold text-[#0f1722] text-[36px] leading-[1.05] tracking-tight uppercase">Sign in<span className="text-[#CA8A04]">.</span></h1>
+
+                <div className="h-px w-full bg-zinc-950/08 my-7"/>
+
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04] mb-2">// credentials</div>
+                <div className="font-oswald uppercase text-[16px] tracking-[0.06em] text-[#0f1722] font-semibold mb-4">Sign in with a password</div>
+
+                <form className="space-y-4" onSubmit={(e)=>e.preventDefault()}>
+                  <div>
+                    <label className="flex items-center justify-between mb-1.5" htmlFor="email">
+                      <span className="font-oswald uppercase text-[11px] tracking-[0.16em] text-slate-600">Work email</span>
+                      <span className="font-mono text-[10px] text-slate-400 normal-case">@dot.ny.gov · @mpo · academic</span>
+                    </label>
+                    <input id="email" className="tny-input" type="email" placeholder="j.maron@dot.ny.gov" autoComplete="email"/>
+                  </div>
+                  <div>
+                    <label className="flex items-center justify-between mb-1.5" htmlFor="pw">
+                      <span className="font-oswald uppercase text-[11px] tracking-[0.16em] text-slate-600">Password</span>
+                      <a href="#" className="font-proxima text-[11.5px] text-[#37576B] underline underline-offset-2 hover:text-[#1f3450]">Forgot password?</a>
+                    </label>
+                    <div className="relative">
+                      <input id="pw" className="tny-input pr-12" type="password" placeholder="••••••••••••" autoComplete="current-password"/>
+                      <button type="button" className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-[#37576B]" aria-label="Show password">
+                        <Icon name="View" className="size-4"/>
+                      </button>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input type="checkbox" className="tny-check" defaultChecked/>
+                    <span className="font-proxima text-[13px] text-slate-700">Keep me signed in on this device</span>
+                  </label>
+                  <button
+                    type="submit"
+                    className="w-full h-12 mt-2 rounded-md bg-[#1F3F8F] hover:bg-[#16307A] text-white font-proxima font-bold text-[12.5px] uppercase tracking-[0.12em] border-b-4 border-[#0F2D4D] tny-press inline-flex items-center justify-center gap-2">
+                    Sign in
+                    <Icon name="ChevronRight" className="size-3.5"/>
+                    <span className="kbd ml-1">↵</span>
+                  </button>
+                </form>
+
+                {/* divider */}
+                <div className="flex items-center gap-3 my-7">
+                  <span className="flex-1 h-px bg-zinc-950/08"></span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">or</span>
+                  <span className="flex-1 h-px bg-zinc-950/08"></span>
+                </div>
+
+                <button type="button" className="sso-btn group">
+                  <span className="size-7 rounded bg-[#0a0e13] flex items-center justify-center flex-shrink-0">
+                    <span className="font-oswald font-bold text-[10.5px] text-white tracking-tighter">NY</span>
+                  </span>
+                  <span className="flex-1">Continue with NY.gov ID</span>
+                  <Icon name="ChevronRight" className="size-3.5 text-slate-400"/>
+                </button>
+
+                <div className="mt-7 pt-5 border-t border-zinc-950/05 flex items-center justify-between gap-4">
+                  <div className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-400">No account?</div>
+                  <a href="#" className="font-proxima text-[13px] text-[#37576B] underline underline-offset-2 hover:text-[#1f3450]">Request access →</a>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          {/* ── Aside · col-span-3 ────────────────────────── */}
+          <aside className="col-span-12 lg:col-span-3 space-y-5">
+            <AsideCard
+              kicker="// public read"
+              title="Browse without signing in"
+              action={<a href="landing.html" className="font-proxima text-[12px] text-[#37576B] underline underline-offset-2 hover:text-[#1f3450]">Open TransportNY →</a>}
+            >
+              All published reports, maps, and exports are public. Use the left rail to jump straight to NPMRDS, Freight Atlas, or TSMO without an account.
+            </AsideCard>
+
+            <AsideCard
+              kicker="// what's gated"
+              title="Why an account?"
+            >
+              <ul className="space-y-1.5 list-disc pl-4 marker:text-slate-300">
+                <li>Save reports, routes and corridor selections</li>
+                <li>Run heavy batch queries &amp; schedule reruns</li>
+                <li>Access non-public TIM &amp; CAD feeds</li>
+                <li>Submit MPO MAP-21 targets</li>
+              </ul>
+            </AsideCard>
+
+            <AsideCard
+              kicker="// status"
+              title="System status"
+            >
+              <div className="space-y-2 font-mono text-[11px] tabular-nums">
+                <div className="flex items-center justify-between">
+                  <span className="uppercase tracking-wider text-slate-500">api</span>
+                  <span className="inline-flex items-center gap-1.5 text-emerald-700"><span className="size-1.5 rounded-full bg-emerald-500"/>operational</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="uppercase tracking-wider text-slate-500">NPMRDS feed</span>
+                  <span className="inline-flex items-center gap-1.5 text-emerald-700"><span className="size-1.5 rounded-full bg-emerald-500"/>current</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="uppercase tracking-wider text-slate-500">last refresh</span>
+                  <span className="text-[#0f1722]">04:12 EST</span>
+                </div>
+              </div>
+            </AsideCard>
+
+            <div className="pt-2 pl-3 space-y-1.5">
+              <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-1">Help</div>
+              <a href="#" className="block text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ Access request guide</a>
+              <a href="#" className="block text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ SSO troubleshooting</a>
+              <a href="#" className="block text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ Contact NYSDOT IT</a>
+            </div>
+          </aside>
+
+        </div>
+
+        <TNYFooter/>
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

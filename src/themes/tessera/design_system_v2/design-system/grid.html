@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tessera — Design System / Grid</title>
+  <link rel="stylesheet" href="_dms-page.css">
+  <style>
+    /* Page-specific styling for the grid/structural-spec mockups. */
+
+    /* The hierarchy diagram */
+    .hierarchy {
+      display: grid;
+      grid-template-columns: 200px 1fr 1fr;
+      gap: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .hierarchy .level {
+      display: contents;
+    }
+    .hierarchy .level-name {
+      padding: var(--space-3) var(--space-3);
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      border-right: 3px solid var(--color-oxide);
+      color: var(--color-slate);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+    }
+    .hierarchy .level-owns {
+      padding: var(--space-3) var(--space-3);
+      background: var(--color-bone);
+      border: 1px solid var(--color-grout-light);
+      color: var(--color-graphite);
+      line-height: 1.55;
+    }
+    .hierarchy .level-styles {
+      padding: var(--space-3) var(--space-3);
+      background: var(--color-bone);
+      border: 1px solid var(--color-grout-light);
+      color: var(--color-graphite);
+      line-height: 1.55;
+    }
+    .hierarchy .arrow {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--color-fog);
+      font-size: 14px;
+    }
+
+    /* Layout mockup — shows TopNav / SideNav / content area chrome */
+    .layout-mockup {
+      background: var(--color-bone);
+      border: 1px solid var(--color-grout-light);
+      padding: 0;
+      overflow: hidden;
+    }
+    .layout-mockup .lm-topnav {
+      height: 32px;
+      background: var(--color-bone);
+      border-bottom: 1px solid var(--color-grout-light);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-graphite);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .layout-mockup .lm-body {
+      display: flex;
+      min-height: 180px;
+    }
+    .layout-mockup .lm-sidenav {
+      width: 80px;
+      background: var(--color-bone);
+      border-right: 1px solid var(--color-grout-light);
+      padding: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-graphite);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .layout-mockup .lm-content {
+      flex: 1;
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .layout-mockup .lm-group {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-3);
+      min-height: 40px;
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-graphite);
+    }
+    .layout-mockup .lm-group-header {
+      background: transparent;
+      box-shadow: none;
+      border: 1px dashed var(--color-fog);
+    }
+
+    /* LayoutGroup variant mockup (single band in isolation) */
+    .group-mockup {
+      background: var(--color-bone);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-4);
+      min-height: 120px;
+    }
+
+    /* Caption row beneath each mockup */
+    .caption {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      margin-top: var(--space-3);
+    }
+    .caption .name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-slate);
+      font-weight: 500;
+    }
+    .caption .desc {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-graphite);
+      line-height: 1.5;
+    }
+
+    /* Picker matrix for "which Layout / LayoutGroup for which page" */
+    .picker-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+      font-size: 14px;
+    }
+    .picker-table th {
+      text-align: left;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-graphite);
+      border-bottom: 1px solid var(--color-slate);
+      padding: var(--space-2) var(--space-3);
+    }
+    .picker-table td {
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--color-grout-light);
+      vertical-align: top;
+      color: var(--color-slate);
+    }
+    .picker-table tr:last-child td { border-bottom: 0; }
+    .picker-table .key {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-oxide);
+    }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="../../Tessera Design System/" class="dms-topnav-brand">
+              <span class="mark">Tessera</span>
+              <span class="designator">Design System v0.1</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right">
+            <span><a href="theme.html" style="color:inherit; text-decoration:none">theme</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span>grid</span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span><a href="components.html" style="color:inherit; text-decoration:none">components</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span><a href="patterns.html" style="color:inherit; text-decoration:none">patterns</a></span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">design system</div>
+            <a class="dms-sidenav-item" href="theme.html"><span class="dms-sidenav-item-mark"></span>theme</a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="grid.html"><span class="dms-sidenav-item-mark"></span>grid</a>
+            <a class="dms-sidenav-item" href="components.html"><span class="dms-sidenav-item-mark"></span>components</a>
+            <a class="dms-sidenav-item" href="patterns.html"><span class="dms-sidenav-item-mark"></span>patterns</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">pages</div>
+            <a class="dms-sidenav-item" href="../pages/civic-overview.html"><span class="dms-sidenav-item-mark"></span>civic overview</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item" href="#hierarchy" style="font-size:13px;font-weight:400">hierarchy</a>
+            <a class="dms-sidenav-item" href="#layouts" style="font-size:13px;font-weight:400">layout variants</a>
+            <a class="dms-sidenav-item" href="#groups" style="font-size:13px;font-weight:400">layoutGroup variants</a>
+            <a class="dms-sidenav-item" href="#nesting" style="font-size:13px;font-weight:400">nesting</a>
+            <a class="dms-sidenav-item" href="#picker" style="font-size:13px;font-weight:400">which to use</a>
+          </div>
+        </aside>
+
+        <div class="dms-layout-child">
+
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span>design system</span>
+                <span class="sep">/</span>
+                <span>grid</span>
+              </div>
+              <h1 class="dms-page-title">Grid — the structural layer.</h1>
+              <p class="dms-page-lede">
+                Layout and LayoutGroup are the two primitives every DMS page is built from. They have no rich content of their own — they're the bands and surfaces every Section sits inside. The brand decides which variants exist; authors pick which one each page or band uses.
+              </p>
+            </div>
+          </section>
+
+          <!-- Hierarchy diagram -->
+          <section id="hierarchy" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · HIERARCHY</div>
+                <h2 class="dms-section-title">The five layers.</h2>
+                <p class="dms-section-lede">
+                  Every DMS surface lives somewhere inside this nest. The brand styles the layers; authors arrange Sections inside them. Nothing in DMS sits outside this hierarchy.
+                </p>
+
+                <div class="hierarchy" style="margin-top: var(--space-5);">
+                  <div class="level-name">Site</div>
+                  <div class="level-owns">routing · ThemeContext · theme resolution</div>
+                  <div class="level-styles">supplies the theme; styled only via theme overrides</div>
+
+                  <div class="arrow">↓</div>
+
+                  <div class="level-name">Layout</div>
+                  <div class="level-owns">page chrome: outer wrapper, optional TopNav, optional SideNav, content area</div>
+                  <div class="level-styles">3 wrapper class keys (outerWrapper, wrapper, wrapper2, wrapper3, childWrapper) + nav configuration</div>
+
+                  <div class="arrow">↓</div>
+
+                  <div class="level-name">LayoutGroup</div>
+                  <div class="level-owns">a band within a Layout: header / content / footer / auth</div>
+                  <div class="level-styles">3 wrapper class keys (wrapper1, wrapper2, wrapper3) per named variant</div>
+
+                  <div class="arrow">↓</div>
+
+                  <div class="level-name">Section</div>
+                  <div class="level-owns">an editable block: title, group membership, the component instance it wraps</div>
+                  <div class="level-styles">section chrome from the pages pattern theme</div>
+
+                  <div class="arrow">↓</div>
+
+                  <div class="level-name">Component</div>
+                  <div class="level-owns">the actual content: Card, Spreadsheet, Graph, Map, Lexical, Header, …</div>
+                  <div class="level-styles">each primitive's own theme keys (see <a href="components.html">components</a>)</div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
+                  <span style="color:var(--color-oxide);">⌘ the contract →</span> a brand styles the chrome and the primitives; authors compose pages by picking which LayoutGroup variants to use and which Sections to drop inside. There are no bespoke per-page layouts because there are no escape hatches from the hierarchy. <strong>The constraint is the feature.</strong>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Layout variants -->
+          <section id="layouts" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · LAYOUT VARIANTS</div>
+                <h2 class="dms-section-title">Layout — three named styles.</h2>
+                <p class="dms-section-lede">
+                  Each named Layout style is a different page-chrome configuration. The brand ships three; sites can add more. Switch styles per route to differentiate marketing, app, and bare surfaces.
+                </p>
+
+                <div class="dms-grid dms-grid-3" style="margin-top: var(--space-5); gap: var(--space-5);">
+
+                  <div>
+                    <div class="layout-mockup">
+                      <div class="lm-topnav">TopNav · main</div>
+                      <div class="lm-body">
+                        <div class="lm-content">
+                          <div class="lm-group lm-group-header">header</div>
+                          <div class="lm-group">content</div>
+                          <div class="lm-group">content</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="caption">
+                      <span class="name">layout.styles[0] · default</span>
+                      <span class="desc">Marketing, public-facing. TopNav visible, SideNav absent, generous content area on bone.</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="layout-mockup">
+                      <div class="lm-topnav">TopNav · compact</div>
+                      <div class="lm-body">
+                        <div class="lm-sidenav">SideNav<br>compact</div>
+                        <div class="lm-content">
+                          <div class="lm-group">content</div>
+                          <div class="lm-group">content</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="caption">
+                      <span class="name">layout.styles[1] · app</span>
+                      <span class="desc">Authoring, admin, dashboards. Both navs visible. Denser content gutters; the chrome the working surface lives inside.</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="layout-mockup">
+                      <div class="lm-body">
+                        <div class="lm-content" style="padding: var(--space-5); align-items: center; justify-content: center;">
+                          <div class="lm-group" style="width: 60%; text-align: center;">content fills viewport</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="caption">
+                      <span class="name">layout.styles[2] · bare</span>
+                      <span class="desc">Auth, embedded views, print. No navs, no chrome; content fills the viewport.</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
+                  <span class="key">theme key →</span> <code>layout.styles[N] = { outerWrapper, wrapper, wrapper2, wrapper3, childWrapper }</code> · 5 class keys per named style · TopNav and SideNav visibility configured via <code>layout.options.{topNav, sideNav}.size</code>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup variants -->
+          <section id="groups" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · LAYOUTGROUP VARIANTS</div>
+                <h2 class="dms-section-title">LayoutGroup — four surface recipes.</h2>
+                <p class="dms-section-lede">
+                  A LayoutGroup is a single band of content. Each named variant is a different surface recipe: boxed vs. unboxed, hairline vs. flat, padding density, background. Authors pick which recipe for each band on a page.
+                </p>
+
+                <div class="dms-grid dms-grid-2" style="margin-top: var(--space-5); gap: var(--space-5);">
+
+                  <!-- content -->
+                  <div>
+                    <div class="group-mockup">
+                      <div style="background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); min-height: 80px;">
+                        <div class="designator" style="margin-bottom: var(--space-2);">A Section lives here</div>
+                        <div style="font-family: var(--font-sans); font-size: 14px; color: var(--color-graphite);">Boxed parchment surface · hairline frame · single subtle lift</div>
+                      </div>
+                    </div>
+                    <div class="caption">
+                      <span class="name">layoutGroup.styles[0] · content</span>
+                      <span class="desc">The default. Parchment card, hairline frame, the single lifted shadow. Main page body and most content bands.</span>
+                    </div>
+                  </div>
+
+                  <!-- header -->
+                  <div>
+                    <div class="group-mockup">
+                      <div style="padding: var(--space-5); min-height: 80px;">
+                        <div class="designator" style="margin-bottom: var(--space-2);">A Section lives here</div>
+                        <div style="font-family: var(--font-display); font-size: 24px; color: var(--color-slate); line-height: 1.2;">Unboxed, sits on the bone background</div>
+                      </div>
+                    </div>
+                    <div class="caption">
+                      <span class="name">layoutGroup.styles[1] · header</span>
+                      <span class="desc">No card surface, no shadow. Content sits directly on the page background. For heroes, page titles, full-bleed bands.</span>
+                    </div>
+                  </div>
+
+                  <!-- auth -->
+                  <div>
+                    <div class="group-mockup" style="display: flex; align-items: center; justify-content: center;">
+                      <div style="background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); width: 240px; text-align: center;">
+                        <div style="font-family: var(--font-display); font-size: 18px; color: var(--color-slate); margin-bottom: var(--space-2);">Sign in</div>
+                        <div style="font-family: var(--font-sans); font-size: 13px; color: var(--color-graphite);">A Section lives here</div>
+                      </div>
+                    </div>
+                    <div class="caption">
+                      <span class="name">layoutGroup.styles[2] · auth</span>
+                      <span class="desc">Boxed and centred vertically. Sign-in, sign-up, password reset.</span>
+                    </div>
+                  </div>
+
+                  <!-- footer -->
+                  <div>
+                    <div class="group-mockup" style="background: var(--color-limestone); border-top: 1px solid var(--color-grout-light); border-bottom: 0; border-left: 0; border-right: 0;">
+                      <div style="padding: var(--space-4); display: flex; justify-content: space-between; align-items: center;">
+                        <span class="designator">Tessera · Design System</span>
+                        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog);">v0.1 · 2026-05-22</span>
+                      </div>
+                    </div>
+                    <div class="caption">
+                      <span class="name">layoutGroup.styles[3] · footer</span>
+                      <span class="desc">Full-bleed band, limestone background, no shadow. Distinct contrast at the bottom of the page.</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
+                  <span class="key">theme key →</span> <code>layoutGroup.styles[N] = { wrapper1, wrapper2, wrapper3 }</code> · 3 class keys per named style · Authors pick the variant per band from a dropdown in the section-group editor.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Nesting example -->
+          <section id="nesting" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · NESTING</div>
+                <h2 class="dms-section-title">Nesting — a real page stacks LayoutGroups.</h2>
+                <p class="dms-section-lede">
+                  A page is one Layout containing one or more LayoutGroups. Different bands use different variants — header for the title, content for the body, footer at the bottom. This is what every page in <a href="../pages/">pages/</a> does.
+                </p>
+
+                <div style="margin-top: var(--space-5); background: var(--color-bone); border: 1px solid var(--color-grout-light); padding: 0; overflow: hidden;">
+
+                  <div class="dms-frame-guide" data-guide="LAYOUT · default · TopNav visible" style="padding: var(--space-3);">
+
+                    <div class="dms-frame-guide" data-guide="LAYOUTGROUP · header" style="padding: var(--space-4) var(--space-4) var(--space-4); margin-top: var(--space-4);">
+                      <div style="font-family: var(--font-display); font-size: 28px; color: var(--color-slate); line-height: 1.2;">Page title goes here</div>
+                      <div style="font-family: var(--font-sans); font-size: 14px; color: var(--color-graphite); margin-top: var(--space-2);">Lede paragraph sits on bone, no card surface.</div>
+                    </div>
+
+                    <div class="dms-frame-guide" data-guide="LAYOUTGROUP · content" style="padding: var(--space-4); margin-top: var(--space-3);">
+                      <div style="background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);">
+                        <div class="designator" style="margin-bottom: var(--space-2);">Section · Lexical</div>
+                        <div style="font-family: var(--font-sans); font-size: 14px; color: var(--color-slate);">A rich-text section sits inside the content card.</div>
+                      </div>
+                    </div>
+
+                    <div class="dms-frame-guide" data-guide="LAYOUTGROUP · content" style="padding: var(--space-4); margin-top: var(--space-3);">
+                      <div style="background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);">
+                        <div class="designator" style="margin-bottom: var(--space-2);">Section · dataCard</div>
+                        <div style="font-family: var(--font-sans); font-size: 14px; color: var(--color-slate);">A data-driven card section.</div>
+                      </div>
+                    </div>
+
+                    <div class="dms-frame-guide" data-guide="LAYOUTGROUP · footer" style="margin-top: var(--space-3); padding: var(--space-4); background: var(--color-limestone);">
+                      <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-graphite);">FOOTER · LIMESTONE · NO SHADOW</div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
+                  <span class="key">authoring →</span> the editor surfaces each LayoutGroup's style as a dropdown. Author picks <code>header</code> for the title band, <code>content</code> for the body, <code>footer</code> for the bottom. No HTML written; the chrome composes itself from the theme.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Picker matrix -->
+          <section id="picker" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · WHICH TO USE</div>
+                <h2 class="dms-section-title">Pick the variant; the chrome composes itself.</h2>
+                <p class="dms-section-lede">
+                  Reference for authors and designers: which Layout / LayoutGroup variant to use for which page kind.
+                </p>
+
+                <table class="picker-table" style="margin-top: var(--space-5);">
+                  <thead>
+                    <tr>
+                      <th style="width: 24%;">Page kind</th>
+                      <th style="width: 22%;">Layout variant</th>
+                      <th style="width: 54%;">LayoutGroup variants typically stacked</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Marketing homepage</td>
+                      <td><span class="key">default</span></td>
+                      <td><span class="key">header</span> (hero) → <span class="key">content</span> (×3–5) → <span class="key">footer</span></td>
+                    </tr>
+                    <tr>
+                      <td>Long-form / Theory page</td>
+                      <td><span class="key">default</span></td>
+                      <td><span class="key">header</span> (title) → <span class="key">content</span> (single, narrow measure) → <span class="key">footer</span></td>
+                    </tr>
+                    <tr>
+                      <td>Dashboard / analytics</td>
+                      <td><span class="key">app</span></td>
+                      <td><span class="key">content</span> (header card) → <span class="key">content</span> (chart cards stacked or in grid)</td>
+                    </tr>
+                    <tr>
+                      <td>Dataset / table view</td>
+                      <td><span class="key">app</span></td>
+                      <td><span class="key">content</span> (filter chrome) → <span class="key">content</span> (table card)</td>
+                    </tr>
+                    <tr>
+                      <td>Page editor</td>
+                      <td><span class="key">app</span></td>
+                      <td>Editor chrome lives in the SideNav; <span class="key">content</span> hosts the live preview</td>
+                    </tr>
+                    <tr>
+                      <td>Sign-in / sign-up</td>
+                      <td><span class="key">bare</span></td>
+                      <td><span class="key">auth</span> (single, centred)</td>
+                    </tr>
+                    <tr>
+                      <td>Embedded / print</td>
+                      <td><span class="key">bare</span></td>
+                      <td><span class="key">content</span> (single, no chrome)</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+              </div>
+            </div>
+          </section>
+
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div style="display:flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
+                <div>
+                  <div class="designator">Tessera · Design System</div>
+                  <div style="margin-top: var(--space-2); font-size:13px; color: var(--color-graphite);">v0.1 · 2026-05-22</div>
+                </div>
+                <div style="font-family:var(--font-mono); font-size: 11px; color: var(--color-fog);">
+                  <a href="theme.html" style="color:inherit;">theme</a> · grid · <a href="components.html" style="color:inherit;">components</a> · <a href="patterns.html" style="color:inherit;">patterns</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

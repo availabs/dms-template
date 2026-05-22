@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MAP-21 PM3 Performance — NPMRDS — TransportNY</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { fontFamily: {
+  oswald: ['Oswald','Bebas Neue','sans-serif'],
+  proxima: ['Proxima Nova','Source Sans 3','system-ui','sans-serif'],
+  mono: ['ui-monospace','SFMono-Regular','Menlo','monospace'],
+}}}};
+</script>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+body { font-family:'Proxima Nova', system-ui, sans-serif; background:#f1f3f6; color:#0f1722; }
+.font-oswald { font-family:'Oswald','Bebas Neue',sans-serif; }
+.font-proxima { font-family:'Proxima Nova','Source Sans 3',system-ui,sans-serif; }
+.font-mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+
+.tny-active-bar { border-left: 3px solid #FACC15; }
+.tny-press { border-bottom-width:4px; transition:all .08s; }
+.tny-press:active { border-bottom-width:2px; margin-bottom:2px; }
+
+@keyframes pulse-dot { 0%,100%{ opacity:1; transform:scale(1) } 50%{ opacity:.45; transform:scale(1.25) } }
+.dot-pulse { animation: pulse-dot 2.4s ease-in-out infinite; transform-origin:center; }
+
+/* ── Map canvas — clean, faintly textured paper feel ── */
+.map-canvas {
+  background:
+    radial-gradient(ellipse 70% 50% at 25% 30%, rgba(186,213,232,0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 30% 40% at 90% 80%, rgba(186,213,232,0.30) 0%, transparent 70%),
+    linear-gradient(180deg, #f7faf8 0%, #eef2ef 100%);
+}
+.map-grid {
+  background-image:
+    linear-gradient(rgba(15,23,42,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* tmc segment hover */
+.tmc-seg { transition: stroke-width .15s ease, filter .15s ease; cursor: pointer; }
+.tmc-seg:hover { stroke-width: 6; filter: drop-shadow(0 0 6px rgba(250,204,21,0.5)); }
+.tmc-seg.selected { stroke-width: 7; filter: drop-shadow(0 0 8px rgba(250,204,21,0.75)); }
+
+/* dense table */
+.tbl tr td, .tbl tr th { border-bottom: 1px solid rgba(15,23,42,0.05); }
+.tbl tr:hover td { background:#FFFBEB; }
+
+/* measure tab — like an active button with bottom press */
+.m-tab { transition: all .08s; }
+.m-tab.active { background:#fff; border-color: rgba(15,23,42,0.08); box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
+.m-tab.active .m-tab-bar { background:#FACC15; }
+
+/* score swatches */
+.sw-good { background:#10B981; }
+.sw-warn { background:#F59E0B; }
+.sw-bad  { background:#EF4444; }
+.sw-na   { background:#94A3B8; }
+
+::selection { background:#FACC15; color:#0a0e13; }
+
+/* small multiples chart */
+.spk-bar { fill: #37576B; }
+.spk-bar-acc { fill: #FACC15; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="../ui_kits/transportny/icons.jsx"></script>
+<script type="text/babel" src="_chrome.jsx"></script>
+<script type="text/babel" src="_cards.jsx?v=3"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="map-21.jsx?v=9"></script>
+</head>
+<body class="bg-[#f1f3f6]">
+<div id="root"></div>
+</body>
+</html>
