@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tessera — The shape of your data is the shape of your site.</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ----- Marketing-homepage helpers ------------------------------------- */
+
+    /* Wordmark mockup (matches civic-overview pattern) */
+    .logo-mockup {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      text-decoration: none;
+      color: var(--color-slate);
+    }
+    .logo-mockup .mark-tile {
+      width: 14px;
+      height: 14px;
+      background: var(--color-oxide);
+      display: inline-block;
+      transform: translateY(2px);
+    }
+    .logo-mockup .word {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.012em;
+      color: var(--color-slate);
+    }
+
+    /* Hero band — full-bleed bone, no card chrome */
+    .marketing-hero {
+      padding: var(--space-9) 0 var(--space-9);
+      position: relative;
+    }
+    .marketing-hero-inner {
+      max-width: var(--grid-max);
+      margin: 0 auto;
+      padding: 0 var(--space-5);
+    }
+    .marketing-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-graphite);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding-bottom: var(--space-5);
+    }
+    .marketing-eyebrow .monogram {
+      width: 14px;
+      height: 14px;
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      gap: 1px;
+    }
+    .marketing-eyebrow .monogram span {
+      background: var(--color-fog);
+    }
+    .marketing-eyebrow .monogram span:nth-child(1) { background: var(--color-slate); }
+    .marketing-eyebrow .monogram span:nth-child(2) { background: var(--color-oxide); }
+    .marketing-eyebrow .monogram span:nth-child(3) { background: var(--color-slate); }
+    .marketing-eyebrow .monogram span:nth-child(5) { background: var(--color-slate); }
+    .marketing-eyebrow .monogram span:nth-child(8) { background: var(--color-slate); }
+    .marketing-eyebrow .monogram span:nth-child(4),
+    .marketing-eyebrow .monogram span:nth-child(6),
+    .marketing-eyebrow .monogram span:nth-child(7),
+    .marketing-eyebrow .monogram span:nth-child(9) { background: transparent; }
+
+    .hero-h1 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 76px;
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      color: var(--color-slate);
+      margin: 0;
+      max-width: 920px;
+      text-wrap: balance;
+    }
+    @media (max-width: 900px) { .hero-h1 { font-size: 52px; } }
+
+    .hero-lede {
+      font-family: var(--font-sans);
+      font-size: 20px;
+      line-height: 1.55;
+      color: var(--color-graphite);
+      max-width: 620px;
+      margin: var(--space-6) 0 0;
+    }
+    .hero-meta {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-graphite);
+      margin: var(--space-6) 0 0;
+    }
+    .hero-doors {
+      display: flex;
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    /* Cosmati frieze — a small repeating CSS-only ornament */
+    .frieze {
+      height: 24px;
+      width: 240px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          var(--color-slate) 0 12px,
+          transparent 12px 16px,
+          var(--color-oxide) 16px 20px,
+          transparent 20px 32px,
+          var(--color-slate) 32px 36px,
+          transparent 36px 48px
+        );
+      opacity: 0.5;
+      margin-top: var(--space-7);
+    }
+
+    /* Section header (used across content bands) */
+    .marketing-section-header {
+      margin-bottom: var(--space-6);
+      max-width: 720px;
+    }
+    .marketing-section-header h2 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 44px;
+      line-height: 1.1;
+      letter-spacing: -0.015em;
+      color: var(--color-slate);
+      margin: var(--space-3) 0 var(--space-3);
+    }
+    .marketing-section-header p {
+      font-family: var(--font-sans);
+      font-size: 17px;
+      line-height: 1.55;
+      color: var(--color-graphite);
+      margin: 0;
+      max-width: 620px;
+    }
+
+    /* Surfaces grid — 2x2 of demo thumbnails */
+    .surfaces-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--color-grout-light);
+      border: 1px solid var(--color-grout-light);
+    }
+    @media (max-width: 900px) { .surfaces-grid { grid-template-columns: 1fr; } }
+    .surface-tile {
+      background: var(--color-parchment);
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+    .surface-thumb {
+      aspect-ratio: 280 / 160;
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-limestone);
+      position: relative;
+      overflow: hidden;
+    }
+    .surface-thumb .topbar {
+      position: absolute; left: 0; right: 0; top: 0; height: 14%;
+      background: var(--color-slate);
+    }
+    .surface-meta { display: flex; flex-direction: column; gap: 4px; }
+    .surface-slug {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--color-slate);
+    }
+    .surface-kind {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-fog);
+    }
+    .surface-note {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--color-graphite);
+      margin: var(--space-2) 0 0;
+    }
+
+    /* Inline CSS thumbs */
+    .thumb-radio .thumb-title  { position: absolute; left: 5%; top: 24%; width: 28%; height: 4%; background: var(--color-slate); }
+    .thumb-radio .thumb-sub    { position: absolute; left: 5%; top: 32%; width: 14%; height: 2%; background: var(--color-fog); }
+    .thumb-radio .thumb-art    { position: absolute; left: 5%; top: 45%; width: 42%; height: 38%; background: var(--color-oxide); }
+    .thumb-radio .thumb-row1   { position: absolute; left: 50%; top: 45%; width: 42%; height: 9%; background: var(--color-limestone); border: 1px solid var(--color-grout-light); }
+    .thumb-radio .thumb-row2   { position: absolute; left: 50%; top: 58%; width: 42%; height: 9%; background: var(--color-limestone); border: 1px solid var(--color-grout-light); }
+    .thumb-radio .thumb-row3   { position: absolute; left: 50%; top: 71%; width: 36%; height: 9%; background: var(--color-limestone); border: 1px solid var(--color-grout-light); }
+
+    .thumb-civic .kpi          { position: absolute; top: 22%; height: 24%; background: var(--color-limestone); border: 1px solid var(--color-grout-light); }
+    .thumb-civic .kpi-1        { left: 5%;  width: 27%; }
+    .thumb-civic .kpi-2        { left: 35%; width: 27%; }
+    .thumb-civic .kpi-3        { left: 65%; width: 30%; }
+    .thumb-civic .map          { position: absolute; left: 5%; top: 52%; width: 57%; height: 40%; background: var(--color-grout-light); }
+    .thumb-civic .map::after   { content: ''; position: absolute; inset: 16%; background: var(--color-verdigris); opacity: 0.55; clip-path: polygon(8% 30%, 28% 18%, 52% 36%, 76% 22%, 92% 48%, 76% 78%, 38% 88%, 8% 70%); }
+    .thumb-civic .legend       { position: absolute; left: 65%; top: 52%; width: 30%; height: 4%; background: var(--color-verdigris); }
+    .thumb-civic .legend-2     { top: 60%; background: var(--color-oxide); }
+    .thumb-civic .legend-3     { top: 68%; background: var(--color-slate); }
+
+    .thumb-analytics .grid-h   { position: absolute; left: 5%; right: 5%; height: 1px; background: var(--color-grout-light); }
+    .thumb-analytics .grid-h.h1 { top: 38%; }
+    .thumb-analytics .grid-h.h2 { top: 58%; }
+    .thumb-analytics .grid-h.h3 { top: 78%; }
+    .thumb-analytics .bar      { position: absolute; bottom: 18%; width: 3.5%; background: var(--color-oxide); }
+
+    .thumb-docs .toc           { position: absolute; left: 0; top: 14%; width: 24%; height: 86%; background: var(--color-limestone); }
+    .thumb-docs .toc-active    { position: absolute; left: 4%; top: 24%; width: 18%; height: 3%; background: var(--color-slate); }
+    .thumb-docs .toc-1         { position: absolute; left: 4%; top: 30%; width: 14%; height: 2%; background: var(--color-fog); }
+    .thumb-docs .toc-2         { position: absolute; left: 4%; top: 35%; width: 16%; height: 2%; background: var(--color-fog); }
+    .thumb-docs .toc-3         { position: absolute; left: 4%; top: 40%; width: 14%; height: 2%; background: var(--color-fog); }
+    .thumb-docs .heading       { position: absolute; left: 30%; top: 24%; width: 42%; height: 5%; background: var(--color-slate); }
+    .thumb-docs .body-1        { position: absolute; left: 30%; top: 35%; width: 60%; height: 2%; background: var(--color-fog); }
+    .thumb-docs .body-2        { position: absolute; left: 30%; top: 40%; width: 62%; height: 2%; background: var(--color-fog); }
+    .thumb-docs .body-3        { position: absolute; left: 30%; top: 45%; width: 50%; height: 2%; background: var(--color-fog); }
+    .thumb-docs .code          { position: absolute; left: 30%; top: 56%; width: 60%; height: 32%; background: var(--color-limestone); border: 1px solid var(--color-grout-light); }
+
+    /* Two-doors grid (the WordPress.org/.com fork) */
+    .doors-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--color-grout-light);
+      border: 1px solid var(--color-grout-light);
+    }
+    @media (max-width: 900px) { .doors-grid { grid-template-columns: 1fr; } }
+    .door {
+      background: var(--color-parchment);
+      padding: var(--space-7);
+      display: flex;
+      flex-direction: column;
+      min-height: 380px;
+    }
+    .door-kind { margin-bottom: var(--space-4); }
+    .door-title {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 36px;
+      letter-spacing: -0.012em;
+      color: var(--color-slate);
+      margin: 0;
+    }
+    .door-blurb {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--color-graphite);
+      margin: var(--space-4) 0 0;
+      max-width: 460px;
+    }
+    .door dl {
+      margin: var(--space-6) 0 0;
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-grout-light);
+    }
+    .door .dl-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .door .dl-row dt {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-fog);
+      margin: 0;
+    }
+    .door .dl-row dd {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-slate);
+      margin: 0;
+    }
+    .door-cta {
+      margin-top: var(--space-5);
+      align-self: flex-start;
+    }
+
+    /* Proof points — three serif-italic quotes */
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-7);
+      margin-top: var(--space-5);
+    }
+    @media (max-width: 900px) { .proof-grid { grid-template-columns: 1fr; } }
+    .proof-fig {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+    .proof-quote {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 20px;
+      line-height: 1.45;
+      color: var(--color-slate);
+      margin: 0;
+      text-wrap: pretty;
+    }
+    .proof-quote .mark {
+      color: var(--color-oxide);
+      padding-right: 2px;
+    }
+    .proof-cite {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-graphite);
+      border-top: 1px solid var(--color-grout-light);
+      padding-top: 14px;
+    }
+
+    /* Theory link band — sits on limestone */
+    .theory-band {
+      background: var(--color-limestone);
+      padding: var(--space-9) 0;
+      border-top: 1px solid var(--color-grout-light);
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .theory-band-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 var(--space-5);
+    }
+    .theory-band h2 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 40px;
+      line-height: 1.18;
+      letter-spacing: -0.012em;
+      color: var(--color-slate);
+      margin: var(--space-3) 0 var(--space-5);
+      text-wrap: balance;
+    }
+    .theory-band .lede {
+      font-family: var(--font-specimen);
+      font-size: 19px;
+      line-height: 1.55;
+      color: var(--color-slate);
+      margin: 0;
+      max-width: 620px;
+    }
+    .theory-band .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: var(--space-6);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-slate);
+      text-decoration: none;
+      border-bottom: 1px solid var(--color-slate);
+      padding-bottom: 2px;
+    }
+
+    /* Marketing footer */
+    .marketing-footer {
+      background: var(--color-bone);
+      border-top: 1px solid var(--color-grout-light);
+      padding: var(--space-8) 0 var(--space-7);
+      width: 100%;
+    }
+    .marketing-footer-inner {
+      max-width: var(--grid-max);
+      margin: 0 auto;
+      padding: 0 var(--space-5);
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1fr 2.2fr;
+      gap: var(--space-8);
+      margin-bottom: var(--space-8);
+    }
+    @media (max-width: 900px) { .footer-top { grid-template-columns: 1fr; } }
+    .footer-brand { display: flex; flex-direction: column; gap: var(--space-4); max-width: 280px; }
+    .footer-tag {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--color-graphite);
+      margin: 0;
+    }
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-6);
+    }
+    @media (max-width: 900px) { .footer-links { grid-template-columns: repeat(2, 1fr); } }
+    .footer-group .designator-mono {
+      font-family: var(--font-mono);
+      font-weight: 400;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-graphite);
+      margin-bottom: var(--space-3);
+    }
+    .footer-group ul { list-style: none; padding: 0; margin: 0; }
+    .footer-group li { margin-bottom: 8px; }
+    .footer-group a {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-slate);
+      text-decoration: none;
+    }
+    .footer-group a:hover { text-decoration: underline; text-decoration-color: var(--color-slate); }
+
+    .footer-frieze {
+      height: 28px;
+      margin-bottom: var(--space-6);
+      opacity: 0.45;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          var(--color-slate) 0 8px,
+          transparent 8px 14px,
+          var(--color-oxide) 14px 18px,
+          transparent 18px 28px,
+          var(--color-slate) 28px 32px,
+          transparent 32px 44px
+        );
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-5);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-graphite);
+      letter-spacing: 0.04em;
+      flex-wrap: wrap;
+    }
+    .footer-bottom .colophon { max-width: 480px; }
+
+    /* Arrow glyph helper */
+    .arrow-glyph {
+      display: inline-block;
+      width: 0.85em;
+      line-height: 1;
+      margin-left: 4px;
+    }
+
+    /* TopNav — marketing variant uses larger wordmark and centred nav */
+    .marketing-nav-link {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-graphite);
+      text-decoration: none;
+      padding: 4px 0;
+      border-bottom: 1px solid transparent;
+    }
+    .marketing-nav-link--active {
+      color: var(--color-slate);
+      border-bottom-color: var(--color-slate);
+    }
+    .marketing-nav-link:hover { color: var(--color-slate); }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="marketing-homepage.html" class="logo-mockup" aria-label="Tessera home">
+              <span class="mark-tile"></span>
+              <span class="word">Tessera</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right" style="gap: var(--space-5); text-transform: none; letter-spacing: 0; font-family: var(--font-sans); font-size: 14px;">
+            <a href="#" class="marketing-nav-link marketing-nav-link--active">Product</a>
+            <a href="#" class="marketing-nav-link">Patterns</a>
+            <a href="marketing-comparison.html" class="marketing-nav-link">Hosted</a>
+            <a href="marketing-theory.html" class="marketing-nav-link">Theory</a>
+            <a href="#" class="marketing-nav-link">Docs</a>
+            <span style="width:1px;height:18px;background:var(--color-grout-light);"></span>
+            <a href="#" style="font-family: var(--font-sans); font-size: 14px; color: var(--color-slate); text-decoration: none;">Sign in</a>
+            <a href="#" class="btn btn-primary btn-sm">Get started</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+        <!-- No sidenav on marketing pages — content flows full-width. -->
+        <div class="dms-layout-child">
+
+          <!-- Hero band (header style — sits on bone, unboxed) -->
+          <section class="dms-group-header" style="padding: 0;">
+            <div class="dms-group-header-inner">
+              <div class="marketing-hero">
+                <div class="marketing-hero-inner">
+                  <div class="marketing-eyebrow">
+                    <span class="monogram" aria-hidden="true">
+                      <span></span><span></span><span></span>
+                      <span></span><span></span><span></span>
+                      <span></span><span></span><span></span>
+                    </span>
+                    <span>Tessera &middot; v0.1 preview</span>
+                  </div>
+
+                  <h1 class="hero-h1">The shape of your data<br>is the shape of your site.</h1>
+
+                  <p class="hero-lede">
+                    One typed row that can be a page, a section, a dataset, a query, or a theme &mdash; and every part of the system composes against it.
+                  </p>
+
+                  <p class="hero-meta">
+                    Open-source. Self-host or use the hosted service.
+                  </p>
+
+                  <div class="hero-doors">
+                    <a href="#" class="btn btn-primary">See it run &middot; wcdb.fm <span class="arrow-glyph">&rarr;</span></a>
+                    <a href="#" class="btn btn-secondary">Host your own <span class="arrow-glyph">&rarr;</span></a>
+                  </div>
+
+                  <div class="frieze" aria-hidden="true"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Surfaces grid -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SURFACES</div>
+                <header class="marketing-section-header">
+                  <h2>One representation. Many renderings.</h2>
+                  <p>
+                    A page is a row. A chart is a row. A map is a row. A join is two rows pointing at each other. The four sites below are driven by the same engine &mdash; no template forks, no special cases.
+                  </p>
+                </header>
+
+                <div class="surfaces-grid">
+                  <article class="surface-tile">
+                    <div class="surface-thumb thumb-radio">
+                      <div class="topbar"></div>
+                      <div class="thumb-title"></div>
+                      <div class="thumb-sub"></div>
+                      <div class="thumb-art"></div>
+                      <div class="thumb-row1"></div>
+                      <div class="thumb-row2"></div>
+                      <div class="thumb-row3"></div>
+                    </div>
+                    <div class="surface-meta">
+                      <div class="surface-slug">
+                        <span>wcdb.fm</span>
+                        <span aria-hidden="true">&#x2197;</span>
+                      </div>
+                      <div class="surface-kind">Radio station</div>
+                      <p class="surface-note">Live now-playing, schedule grid, archive.</p>
+                    </div>
+                  </article>
+
+                  <article class="surface-tile">
+                    <div class="surface-thumb thumb-civic">
+                      <div class="topbar"></div>
+                      <div class="kpi kpi-1"></div>
+                      <div class="kpi kpi-2"></div>
+                      <div class="kpi kpi-3"></div>
+                      <div class="map"></div>
+                      <div class="legend"></div>
+                      <div class="legend legend-2"></div>
+                      <div class="legend legend-3"></div>
+                    </div>
+                    <div class="surface-meta">
+                      <div class="surface-slug">
+                        <span>mitigate.ny.gov</span>
+                        <span aria-hidden="true">&#x2197;</span>
+                      </div>
+                      <div class="surface-kind">Civic dashboard</div>
+                      <p class="surface-note">Watershed indicators, region drill-downs.</p>
+                    </div>
+                  </article>
+
+                  <article class="surface-tile">
+                    <div class="surface-thumb thumb-analytics">
+                      <div class="topbar"></div>
+                      <div class="grid-h h1"></div>
+                      <div class="grid-h h2"></div>
+                      <div class="grid-h h3"></div>
+                      <div class="bar" style="left: 6%;  height: 24%;"></div>
+                      <div class="bar" style="left: 12%; height: 36%;"></div>
+                      <div class="bar" style="left: 18%; height: 30%;"></div>
+                      <div class="bar" style="left: 24%; height: 48%;"></div>
+                      <div class="bar" style="left: 30%; height: 38%;"></div>
+                      <div class="bar" style="left: 36%; height: 52%;"></div>
+                      <div class="bar" style="left: 42%; height: 44%;"></div>
+                      <div class="bar" style="left: 48%; height: 60%;"></div>
+                      <div class="bar" style="left: 54%; height: 50%;"></div>
+                      <div class="bar" style="left: 60%; height: 64%;"></div>
+                      <div class="bar" style="left: 66%; height: 56%;"></div>
+                      <div class="bar" style="left: 72%; height: 70%;"></div>
+                      <div class="bar" style="left: 78%; height: 58%;"></div>
+                      <div class="bar" style="left: 84%; height: 72%;"></div>
+                      <div class="bar" style="left: 90%; height: 64%;"></div>
+                    </div>
+                    <div class="surface-meta">
+                      <div class="surface-slug">
+                        <span>npmrds.tessera.io</span>
+                        <span aria-hidden="true">&#x2197;</span>
+                      </div>
+                      <div class="surface-kind">Analytics page</div>
+                      <p class="surface-note">Freight corridor performance, last 30d.</p>
+                    </div>
+                  </article>
+
+                  <article class="surface-tile">
+                    <div class="surface-thumb thumb-docs">
+                      <div class="topbar"></div>
+                      <div class="toc"></div>
+                      <div class="toc-active"></div>
+                      <div class="toc-1"></div>
+                      <div class="toc-2"></div>
+                      <div class="toc-3"></div>
+                      <div class="heading"></div>
+                      <div class="body-1"></div>
+                      <div class="body-2"></div>
+                      <div class="body-3"></div>
+                      <div class="code"></div>
+                    </div>
+                    <div class="surface-meta">
+                      <div class="surface-slug">
+                        <span>avail.docs.tessera.io</span>
+                        <span aria-hidden="true">&#x2197;</span>
+                      </div>
+                      <div class="surface-kind">Documentation</div>
+                      <p class="surface-note">API reference and pattern guides.</p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Two doors (WordPress.com / .org fork) -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>TWO DOORS</div>
+                <header class="marketing-section-header">
+                  <h2>Run it yourself, or let us run it.</h2>
+                </header>
+
+                <div class="doors-grid">
+                  <div class="door">
+                    <div class="door-kind"><span class="badge">Self-host</span></div>
+                    <h3 class="door-title">Tessera, open.</h3>
+                    <p class="door-blurb">
+                      Download the engine. Bring your own Postgres. Compose against the same primitives the hosted service uses &mdash; no feature gates.
+                    </p>
+                    <dl>
+                      <div class="dl-row"><dt>Engine</dt><dd>AGPL-3.0</dd></div>
+                      <div class="dl-row"><dt>Themes</dt><dd>MIT</dd></div>
+                      <div class="dl-row"><dt>DB</dt><dd>Postgres 14+</dd></div>
+                      <div class="dl-row"><dt>Deploy</dt><dd>Docker / systemd</dd></div>
+                    </dl>
+                    <a href="#" class="btn btn-secondary door-cta">Host your own <span class="arrow-glyph">&rarr;</span></a>
+                  </div>
+
+                  <div class="door">
+                    <div class="door-kind"><span class="badge badge-accent">Hosted</span></div>
+                    <h3 class="door-title">Tessera, run.</h3>
+                    <p class="door-blurb">
+                      The same engine, on our infrastructure. Backups, CDN, edge caching, custom domains. For when you'd rather place tiles than configure servers.
+                    </p>
+                    <dl>
+                      <div class="dl-row"><dt>Plan</dt><dd>Starter / Civic / Press</dd></div>
+                      <div class="dl-row"><dt>Region</dt><dd>US-EAST &middot; EU-WEST</dd></div>
+                      <div class="dl-row"><dt>Backups</dt><dd>Daily, 30d retention</dd></div>
+                      <div class="dl-row"><dt>SLA</dt><dd>99.9% &middot; audit on request</dd></div>
+                    </dl>
+                    <a href="#" class="btn btn-secondary door-cta">See pricing <span class="arrow-glyph">&rarr;</span></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Proof points -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>IN USE</div>
+
+                <div class="proof-grid">
+                  <figure class="proof-fig">
+                    <blockquote class="proof-quote">
+                      <span class="mark">&ldquo;</span>We replaced a hand-tooled CMS, an analytics dashboard, and a static-site generator with a single Tessera instance. The data didn't move; only the renderings did.
+                    </blockquote>
+                    <figcaption class="proof-cite">Maintainer &middot; State of New York, environmental data</figcaption>
+                  </figure>
+
+                  <figure class="proof-fig">
+                    <blockquote class="proof-quote">
+                      <span class="mark">&ldquo;</span>Our pages and our datasets used to drift. Now they're the same row, read two ways.
+                    </blockquote>
+                    <figcaption class="proof-cite">Engineer &middot; campus radio collective, Albany</figcaption>
+                  </figure>
+
+                  <figure class="proof-fig">
+                    <blockquote class="proof-quote">
+                      <span class="mark">&ldquo;</span>The team that ships our reference site uses the same engine the library uses to publish the archive. We compose against shared primitives.
+                    </blockquote>
+                    <figcaption class="proof-cite">Research lead &middot; municipal archives</figcaption>
+                  </figure>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Theory link band — on limestone, full-bleed -->
+          <section class="dms-group-content" style="padding: 0; max-width: 100%;">
+            <div class="dms-group-content-inner" style="padding: 0; background: transparent; border: 0; box-shadow: none;">
+              <div class="theory-band">
+                <div class="theory-band-inner">
+                  <div class="dms-section-eyebrow"><span class="mark"></span>THEORY</div>
+                  <h2><em>On placing</em> &mdash; an essay on why a typed row is the right primitive for a data-driven site.</h2>
+                  <p class="lede">
+                    A long-form companion to the documentation. Roman and Byzantine craftsmen spent careers placing tesserae one at a time into floors that lasted millennia. We think the same care belongs in the construction of a public dashboard or a civic data site. Read the full argument.
+                  </p>
+                  <a href="marketing-theory.html" class="cta">Read &ldquo;On placing&rdquo; <span class="arrow-glyph">&rarr;</span></a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Marketing footer (replaces standard dms-group-footer) -->
+          <footer class="marketing-footer">
+            <div class="marketing-footer-inner">
+              <div class="footer-top">
+                <div class="footer-brand">
+                  <span class="logo-mockup">
+                    <span class="mark-tile"></span>
+                    <span class="word">Tessera</span>
+                  </span>
+                  <p class="footer-tag">A typed row that can be a page, a section, a dataset, a query, or a theme.</p>
+                </div>
+
+                <div class="footer-links">
+                  <div class="footer-group">
+                    <div class="designator-mono">Product</div>
+                    <ul>
+                      <li><a href="#">Overview</a></li>
+                      <li><a href="#">Patterns</a></li>
+                      <li><a href="#">Themes</a></li>
+                      <li><a href="#">Datasets</a></li>
+                      <li><a href="#">Roadmap</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono">Hosted</div>
+                    <ul>
+                      <li><a href="marketing-comparison.html">Pricing</a></li>
+                      <li><a href="#">Civic plan</a></li>
+                      <li><a href="#">Press plan</a></li>
+                      <li><a href="#">Status</a></li>
+                      <li><a href="#">Security</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono">Open source</div>
+                    <ul>
+                      <li><a href="#">GitHub</a></li>
+                      <li><a href="#">Releases</a></li>
+                      <li><a href="#">Contributing</a></li>
+                      <li><a href="#">License</a></li>
+                      <li><a href="#">Acknowledgements</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono">Theory</div>
+                    <ul>
+                      <li><a href="marketing-theory.html">On placing</a></li>
+                      <li><a href="#">Representation primacy</a></li>
+                      <li><a href="#">Durability</a></li>
+                      <li><a href="#">Field notes</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono">Community</div>
+                    <ul>
+                      <li><a href="#">Forum</a></li>
+                      <li><a href="#">Office hours</a></li>
+                      <li><a href="#">Showcase</a></li>
+                      <li><a href="#">Letters</a></li>
+                      <li><a href="#">Mastodon</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="footer-frieze" aria-hidden="true"></div>
+
+              <div class="footer-bottom">
+                <div class="colophon">
+                  Tessera is open source, AGPL-3.0. The hosted service is operated by an independent cooperative.
+                </div>
+                <div>
+                  <span>v0.1 preview</span>
+                  <span>&middot;</span>
+                  <span>2026</span>
+                </div>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

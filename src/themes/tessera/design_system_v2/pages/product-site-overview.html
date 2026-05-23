@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>wcdb.fm · Site overview · Tessera Example</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ----- Page-specific styles ----- */
+
+    /* Pill recipe (lifted from components.html) */
+    .pill-base {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 999px;
+    }
+    .pill-neutral { background: var(--color-limestone); color: var(--color-graphite); border: 1px solid var(--color-grout-light); }
+    .pill-verdigris { color: var(--color-verdigris); border: 1px solid var(--color-verdigris); background: transparent; }
+    .pill-oxide { color: var(--color-oxide); border: 1px solid var(--color-oxide); background: transparent; }
+    .pill-ochre { color: var(--color-ochre); border: 1px solid var(--color-ochre); background: transparent; }
+    .pill-slate { background: var(--color-slate); color: var(--color-parchment); border: 1px solid var(--color-slate); }
+
+    /* KPI strip */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+    @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+    .kpi {
+      padding: var(--space-5);
+      border-right: 1px solid var(--color-grout-light);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .kpi:last-child { border-right: 0; }
+    @media (max-width: 900px) {
+      .kpi:nth-child(2) { border-right: 0; }
+    }
+    .kpi .label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-graphite);
+    }
+    .kpi .value {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 36px;
+      letter-spacing: -0.012em;
+      color: var(--color-slate);
+      font-variant-numeric: tabular-nums slashed-zero;
+      line-height: 1.05;
+    }
+    .kpi .delta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums slashed-zero;
+      letter-spacing: 0.02em;
+      color: var(--color-verdigris);
+    }
+    .kpi .delta.delta-down { color: var(--color-oxide); }
+
+    /* Section title row (between groups) */
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: var(--space-4);
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+    .section-title-row h2 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 24px;
+      letter-spacing: -0.008em;
+      color: var(--color-slate);
+      margin: 0;
+    }
+    .section-title-row .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-graphite);
+      margin-top: var(--space-1);
+    }
+
+    /* Patterns list (real table, not the tessera class — uses .table from dms tokens) */
+    .patterns-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 14px; color: var(--color-slate); }
+    .patterns-table thead th {
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-graphite);
+      font-weight: 400;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-grout-light);
+      background: var(--color-bone);
+    }
+    .patterns-table thead th.num { text-align: right; }
+    .patterns-table tbody td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-grout-light);
+      vertical-align: middle;
+    }
+    .patterns-table tbody tr:hover td { background: var(--color-limestone); }
+    .patterns-table tbody tr:last-child td { border-bottom: 0; }
+    .patterns-table .num {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+    .patterns-table .pattern-title {
+      font-weight: 500;
+      color: var(--color-slate);
+    }
+    .patterns-table .pattern-slug {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-graphite);
+      margin-top: 2px;
+    }
+    .patterns-table .ord {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-fog);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+    .patterns-table .renders-as {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-graphite);
+      border: 1px solid var(--color-grout-light);
+      padding: 2px 8px;
+      display: inline-block;
+    }
+    .patterns-table .ds {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-graphite);
+    }
+    .patterns-table .placed {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-graphite);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+    .patterns-table .chev {
+      color: var(--color-fog);
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    .table-frame {
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+
+    /* Activity log */
+    .activity-log {
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+    .activity-row {
+      display: grid;
+      grid-template-columns: 110px 28px 1fr 1.4fr auto;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-grout-light);
+      font-family: var(--font-sans);
+      font-size: 13px;
+    }
+    .activity-row:last-child { border-bottom: 0; }
+    .activity-row .ts {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-graphite);
+      font-variant-numeric: tabular-nums slashed-zero;
+    }
+    .activity-row .who {
+      width: 24px; height: 24px;
+      background: var(--color-slate);
+      color: var(--color-parchment);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.04em;
+    }
+    .activity-row .what { color: var(--color-slate); }
+    .activity-row .detail {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-graphite);
+    }
+    .activity-row .tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-fog);
+    }
+
+    /* Action button cluster */
+    .btn-row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+
+    /* Designator-mono helper */
+    .dm {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-graphite);
+    }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="#" class="dms-topnav-brand" style="text-decoration:none;">
+              <span class="mark">Tessera</span>
+              <span class="designator">wcdb.fm · workspace</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right" style="gap: var(--space-4);">
+            <a href="product-site-overview.html" style="color: var(--color-slate); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Overview</a>
+            <a href="product-page-editor.html" style="color: var(--color-graphite); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Editor</a>
+            <a href="product-dataset-view.html" style="color: var(--color-graphite); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Datasets</a>
+            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog);">am3081@gmail.com</span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav: workspace navigation -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">compose</div>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="#"><span class="dms-sidenav-item-mark"></span>Patterns<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">18</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Pages<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">42</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Blocks<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">7</span></a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">data</div>
+            <a class="dms-sidenav-item" href="product-dataset-view.html"><span class="dms-sidenav-item-mark"></span>Datasets<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">9</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Queries<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">14</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Joins<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">3</span></a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">render</div>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Theme</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Map styles<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">2</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Chart palette</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">operate</div>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark" style="background:var(--color-oxide);"></span>Publish queue<span style="margin-left:auto;"><span class="pill-base pill-oxide" style="padding:1px 6px;font-size:10px;">live</span></span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>History</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Settings</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">runtime</div>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog); padding: 0 var(--space-2); line-height: 1.7;">
+              tessera 0.14.2<br>
+              pg 16.1 · idle<br>
+              last publish 02:18 EST
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main content -->
+        <div class="dms-layout-child">
+
+          <!-- Header -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span>workspace</span>
+                <span class="sep">/</span>
+                <span>wcdb.fm</span>
+                <span class="sep">/</span>
+                <span>site overview</span>
+              </div>
+              <h1 class="dms-page-title">wcdb.fm</h1>
+              <p class="dms-page-lede">
+                Albany student radio, on the air since 1978. Eighteen patterns compose the public site; nine datasets feed them. Last publish 02:18 EST, with the now-playing block updating once per song.
+              </p>
+
+              <div class="btn-row" style="margin-top: var(--space-5);">
+                <button class="btn btn-primary">Compose new pattern</button>
+                <a href="product-page-editor.html" class="btn btn-secondary" style="text-decoration:none;">Open page editor</a>
+                <a href="product-dataset-view.html" class="btn btn-tertiary" style="text-decoration:none;">View datasets</a>
+                <button class="btn btn-tertiary">Publish queue · 1 ready</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- KPI strip -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner" style="padding: 0; background: transparent; border: 0; box-shadow: none;">
+              <div class="kpis">
+                <div class="kpi">
+                  <div class="label">Patterns</div>
+                  <div class="value">18</div>
+                  <div class="delta">+2 this week</div>
+                </div>
+                <div class="kpi">
+                  <div class="label">Pages</div>
+                  <div class="value">42</div>
+                  <div class="delta">+5 this week</div>
+                </div>
+                <div class="kpi">
+                  <div class="label">Rows · datasets</div>
+                  <div class="value">12,481</div>
+                  <div class="delta">+318 today</div>
+                </div>
+                <div class="kpi">
+                  <div class="label">Avg session</div>
+                  <div class="value">38m 04s</div>
+                  <div class="delta">+2m 11s wk</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Patterns table -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · PATTERNS</div>
+                <div class="section-title-row">
+                  <div>
+                    <h2>Patterns</h2>
+                    <div class="eyebrow">the eighteen sections this site is composed of</div>
+                  </div>
+                  <div class="btn-row">
+                    <button class="btn btn-tertiary btn-sm">Filter</button>
+                    <button class="btn btn-secondary btn-sm">Group by dataset</button>
+                    <button class="btn btn-primary btn-sm">Compose new pattern</button>
+                  </div>
+                </div>
+
+                <div class="table-frame">
+                  <table class="patterns-table">
+                    <thead>
+                      <tr>
+                        <th style="width:42px;"></th>
+                        <th>Pattern</th>
+                        <th>Renders as</th>
+                        <th>Dataset</th>
+                        <th class="num">Rows</th>
+                        <th class="num">Last placed</th>
+                        <th style="width:28px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span class="ord">01</span></td>
+                        <td>
+                          <div class="pattern-title">Now playing</div>
+                          <div class="pattern-slug">station.now_playing</div>
+                        </td>
+                        <td><span class="renders-as">live block</span></td>
+                        <td><span class="ds">play_log</span></td>
+                        <td class="num">1</td>
+                        <td class="num"><span class="placed">2m ago</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                      <tr>
+                        <td><span class="ord">02</span></td>
+                        <td>
+                          <div class="pattern-title">Tonight's schedule</div>
+                          <div class="pattern-slug">station.schedule</div>
+                        </td>
+                        <td><span class="renders-as">calendar</span></td>
+                        <td><span class="ds">wcdb_schedule</span></td>
+                        <td class="num">84</td>
+                        <td class="num"><span class="placed">18m ago</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                      <tr>
+                        <td><span class="ord">03</span></td>
+                        <td>
+                          <div class="pattern-title">Show archive</div>
+                          <div class="pattern-slug">station.archive</div>
+                        </td>
+                        <td><span class="renders-as">table</span></td>
+                        <td><span class="ds">wcdb_shows</span></td>
+                        <td class="num">1,340</td>
+                        <td class="num"><span class="placed">1h ago</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                      <tr>
+                        <td><span class="ord">04</span></td>
+                        <td>
+                          <div class="pattern-title">Front page</div>
+                          <div class="pattern-slug">station.home</div>
+                        </td>
+                        <td><span class="renders-as">compose</span></td>
+                        <td><span class="ds">—</span></td>
+                        <td class="num">—</td>
+                        <td class="num"><span class="placed">3h ago</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                      <tr>
+                        <td><span class="ord">05</span></td>
+                        <td>
+                          <div class="pattern-title">About</div>
+                          <div class="pattern-slug">station.about</div>
+                        </td>
+                        <td><span class="renders-as">prose</span></td>
+                        <td><span class="ds">—</span></td>
+                        <td class="num">—</td>
+                        <td class="num"><span class="placed">yesterday</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                      <tr>
+                        <td><span class="ord">06</span></td>
+                        <td>
+                          <div class="pattern-title">DJ profiles</div>
+                          <div class="pattern-slug">station.dj_profile</div>
+                        </td>
+                        <td><span class="renders-as">list · detail</span></td>
+                        <td><span class="ds">wcdb_djs</span></td>
+                        <td class="num">38</td>
+                        <td class="num"><span class="placed">2d ago</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                      <tr>
+                        <td><span class="ord">07</span></td>
+                        <td>
+                          <div class="pattern-title">Practice recordings</div>
+                          <div class="pattern-slug">station.practice</div>
+                        </td>
+                        <td><span class="renders-as">feed</span></td>
+                        <td><span class="ds">practice_recordings</span></td>
+                        <td class="num">512</td>
+                        <td class="num"><span class="placed">2d ago</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                      <tr>
+                        <td><span class="ord">08</span></td>
+                        <td>
+                          <div class="pattern-title">Demos · open submissions</div>
+                          <div class="pattern-slug">station.demos</div>
+                        </td>
+                        <td><span class="renders-as">form · list</span></td>
+                        <td><span class="ds">wcdb_demos</span></td>
+                        <td class="num">204</td>
+                        <td class="num"><span class="placed">3d ago</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                      <tr>
+                        <td><span class="ord">09</span></td>
+                        <td>
+                          <div class="pattern-title">Playlist export</div>
+                          <div class="pattern-slug">station.playlist</div>
+                        </td>
+                        <td><span class="renders-as">feed</span></td>
+                        <td><span class="ds">play_log</span></td>
+                        <td class="num">12,481</td>
+                        <td class="num"><span class="placed">2d ago</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                      <tr>
+                        <td><span class="ord">10</span></td>
+                        <td>
+                          <div class="pattern-title">Albany calendar</div>
+                          <div class="pattern-slug">station.events</div>
+                        </td>
+                        <td><span class="renders-as">calendar</span></td>
+                        <td><span class="ds">albany_events</span></td>
+                        <td class="num">221</td>
+                        <td class="num"><span class="placed">4d ago</span></td>
+                        <td class="chev">›</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-3); font-family: var(--font-sans); font-size: 13px; color: var(--color-graphite);">
+                  <span>Showing 10 of 18 patterns</span>
+                  <a href="#" style="color: var(--color-slate);">View all patterns →</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Recent activity -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · ACTIVITY</div>
+                <h2 class="dms-section-title">Recent activity</h2>
+                <p class="dms-section-lede">
+                  Edits, publishes, and dataset imports across the workspace. Held to twenty most recent entries; the full ledger lives under History.
+                </p>
+
+                <div class="activity-log" style="margin-top: var(--space-4);">
+                  <div class="activity-row">
+                    <span class="ts">02:18:04 EST</span>
+                    <span class="who">MT</span>
+                    <span class="what">Placed pattern</span>
+                    <span class="detail">station.archive</span>
+                    <span class="tag">compose</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="ts">02:11:55 EST</span>
+                    <span class="who">RB</span>
+                    <span class="what">Published to production</span>
+                    <span class="detail">station.now_playing &rarr; live</span>
+                    <span class="tag">publish</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="ts">01:48:30 EST</span>
+                    <span class="who">MT</span>
+                    <span class="what">Edited query</span>
+                    <span class="detail">wcdb_shows.by_dj</span>
+                    <span class="tag">data</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="ts">01:32:12 EST</span>
+                    <span class="who">RB</span>
+                    <span class="what">Imported dataset</span>
+                    <span class="detail">albany_events · 221 rows</span>
+                    <span class="tag">data</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="ts">01:18:00 EST</span>
+                    <span class="who">MT</span>
+                    <span class="what">Composed page</span>
+                    <span class="detail">station.home</span>
+                    <span class="tag">compose</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="ts">00:52:41 EST</span>
+                    <span class="who">RB</span>
+                    <span class="what">Added DJ profile</span>
+                    <span class="detail">wcdb_djs · DJ Calliope</span>
+                    <span class="tag">data</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="ts">00:31:09 EST</span>
+                    <span class="who">MT</span>
+                    <span class="what">Reordered patterns</span>
+                    <span class="detail">station.home · 6 sections</span>
+                    <span class="tag">compose</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Footer -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div style="display: flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
+                <div>
+                  <div class="dm">Tessera · wcdb.fm workspace</div>
+                  <div style="margin-top: var(--space-2); font-size: 13px; color: var(--color-graphite); max-width: 60ch;">
+                    A worked example demonstrating the Tessera theme on the admin product surface. Real composition; placeholder data.
+                  </div>
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog); text-align: right;">
+                  Tessera Design System v0.1 · 2026-05-22<br>
+                  <a href="../design-system/theme.html" style="color: inherit;">theme</a> ·
+                  <a href="../design-system/grid.html" style="color: inherit;">grid</a> ·
+                  <a href="../design-system/components.html" style="color: inherit;">components</a> ·
+                  <a href="../design-system/patterns.html" style="color: inherit;">patterns</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -3,10 +3,12 @@
 **v0.1 · 2026-05-22** · A DMS-format implementation of the TransportNY
 brand. Translates the HTML/JSX prototypes in
 `../design_handoff_transportny_design_system/` into the folder
-structure mandated by `dms-template/references/dms product/design-system-for-dms.md`.
+structure mandated by `src/dms/skills/designing-a-dms-theme.md`.
 
-> Read [design-system-for-dms.md](../../../../../references/dms%20product/design-system-for-dms.md){:target="_blank"}
-> first. This folder honors the contract it describes.
+> Read [`designing-a-dms-theme.md`](../../../../dms/skills/designing-a-dms-theme.md)
+> first. This folder honors the contract it describes — including the
+> rule that every mockup page is **plain HTML + Tailwind CDN only**
+> (no JSX, no React, no build step).
 
 ---
 
@@ -40,8 +42,6 @@ dms_design_system/
 │   └── README.md
 ├── design-system/         ← four pages documenting the theme
 │   ├── _shared.css            · mirror of theme/index.css.additions for mockup pages
-│   ├── _theme.jsx             · mirror of theme.js as window.TNYTheme (keeps mockups honest)
-│   ├── _dms.jsx               · Layout · LayoutGroup · Section · TNYSidebar · Button · Pill · TNYIcon — read from TNYTheme
 │   ├── theme.html             · foundation: color, type, icons, spacing
 │   ├── grid.html              · structural: Layout + LayoutGroup variants, nesting reference
 │   ├── components.html        · every UI primitive THIS theme uses
@@ -51,15 +51,23 @@ dms_design_system/
     └── map-21-pm3.html              · canonical product dashboard
 ```
 
-Open any HTML file directly in a browser — no build step. Each page is
-shaped as a real DMS page (`Layout > LayoutGroup > Section > Component`)
-and consumes class strings from the same theme object that
-`theme/theme.js` exports.
+Every HTML file is **plain HTML5 + Tailwind via CDN + the brand's
+`_shared.css`**. No JSX. No React. No build step. Open any file
+directly in a browser (`python -m http.server` from the project root)
+and edit it in a text editor — there is no toolchain.
 
-To see DMS structural annotations (`LAYOUT · GROUP · SECTION` badges
-overlaid on the page), open `theme.html` or `grid.html` — both ship with
-the `dms-annotated` class on `<body>`. Toggle it off to see the page
-the way an end user would.
+Class strings are hard-coded from `theme/theme.js`. If you change a
+value in `theme.js`, mirror the change in any mockup HTML that demos
+the affected primitive. The trade-off is intentional — see
+[`src/dms/skills/designing-a-dms-theme.md` §12.8](../../../../dms/skills/designing-a-dms-theme.md).
+
+Each page is shaped as a real DMS page (`Layout > LayoutGroup >
+Section > Component`) — open `theme.html` and you'll see
+`data-dms-layout`, `data-dms-group`, `data-dms-section` attributes on
+the wrappers. `theme.html` and `grid.html` ship with the
+`dms-annotated` class on `<body>` so structural badges (`LAYOUT ·
+GROUP · SECTION`) appear overlaid; toggle it off to see the page the
+way an end user would.
 
 ---
 
@@ -128,10 +136,13 @@ into the DMS site's `src/themes/transportny/`. Merge the tailwind
 additions into the site's `tailwind.config.js`. Append the CSS additions
 to the site's `index.css`.
 
-**When you change a token:** update both `theme/theme.js` *and*
-`design-system/_theme.jsx` (the mockup shim). They have the same shape;
-the mockup files are the only place the change is observable without
-running a real DMS site.
+**When you change a token:** update `theme/theme.js`, then manually
+mirror the new class string into any mockup HTML that demos the
+affected primitive (`grep` for the old string across
+`design-system/*.html` and `pages/*.html`). The mockups don't import
+from `theme.js` — that's the trade-off the skill spec calls out, and
+it's what keeps the mockups editable in a text editor with no
+toolchain.
 
 **To add a new primitive's theme:** put it in `theme/theme.js` first,
 then add a demo of it to `design-system/components.html`. If it composes
@@ -159,8 +170,8 @@ with other primitives in a recognisable pattern, add a Section to
 
 - `../design_handoff_transportny_design_system/` — the HTML/JSX
   prototypes this folder translates from.
-- `../../../../../references/dms product/design-system-for-dms.md` —
-  the design contract this folder honors.
+- `../../../../dms/skills/designing-a-dms-theme.md` — the design
+  contract / skill this folder honors.
 - `../../theme.js` — the existing DMS theme.js for TransportNY (the
   live site's overlay); this folder's `theme/theme.js` is a cleaner
   rebuild aligned to the spec.

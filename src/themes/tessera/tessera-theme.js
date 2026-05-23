@@ -8,7 +8,7 @@
    Read together with:
    - references/dms product/positioning-v2.md
    - references/dms product/brand-tessera.md
-   - references/dms product/design-system-for-dms.md
+   - src/dms/skills/designing-a-dms-theme.md
    - src/themes/tessera/Tessera Design System/README.md
 
    Conventions:

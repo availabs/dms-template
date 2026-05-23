@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hosted vs self-host — Tessera</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ----- Comparison page helpers --------------------------------------- */
+
+    .logo-mockup {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      text-decoration: none;
+      color: var(--color-slate);
+    }
+    .logo-mockup .mark-tile {
+      width: 14px;
+      height: 14px;
+      background: var(--color-oxide);
+      display: inline-block;
+      transform: translateY(2px);
+    }
+    .logo-mockup .word {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.012em;
+      color: var(--color-slate);
+    }
+
+    .marketing-nav-link {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-graphite);
+      text-decoration: none;
+      padding: 4px 0;
+      border-bottom: 1px solid transparent;
+    }
+    .marketing-nav-link--active {
+      color: var(--color-slate);
+      border-bottom-color: var(--color-slate);
+    }
+    .marketing-nav-link:hover { color: var(--color-slate); }
+
+    .comparison-hero h1 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 56px;
+      line-height: 1.05;
+      letter-spacing: -0.018em;
+      color: var(--color-slate);
+      margin: var(--space-3) 0 var(--space-5);
+      max-width: 880px;
+      text-wrap: balance;
+    }
+    @media (max-width: 900px) { .comparison-hero h1 { font-size: 40px; } }
+    .comparison-hero p {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      line-height: 1.55;
+      color: var(--color-graphite);
+      margin: 0;
+      max-width: 620px;
+    }
+
+    /* The comparison table */
+    .compare-card {
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+    }
+    .compare-table thead tr {
+      border-bottom: 1px solid var(--color-slate);
+    }
+    .compare-table th {
+      text-align: left;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-graphite);
+      padding: var(--space-4) var(--space-5);
+    }
+    .compare-table th.col-hosted {
+      background: rgba(181, 83, 44, 0.05);
+      color: var(--color-oxide);
+    }
+    .compare-table .cat-row td {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-fog);
+      background: var(--color-limestone);
+      padding: 10px var(--space-5);
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .compare-table tbody tr.row {
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .compare-table tbody tr.row:last-child {
+      border-bottom: 0;
+    }
+    .compare-table td.body {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-slate);
+      padding: 12px var(--space-5);
+    }
+    .compare-table td.value {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--color-slate);
+      padding: 12px var(--space-5);
+    }
+    .compare-table td.value.col-hosted {
+      background: rgba(181, 83, 44, 0.04);
+    }
+    .compare-table td.value .em { color: var(--color-slate); font-weight: 500; }
+    .compare-table td.value .neg { color: var(--color-fog); }
+
+    .compare-actions {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+      flex-wrap: wrap;
+    }
+
+    .arrow-glyph {
+      display: inline-block;
+      width: 0.85em;
+      margin-left: 4px;
+      line-height: 1;
+    }
+
+    /* Footer (matches marketing-homepage) */
+    .marketing-footer {
+      background: var(--color-bone);
+      border-top: 1px solid var(--color-grout-light);
+      padding: var(--space-8) 0 var(--space-7);
+      width: 100%;
+    }
+    .marketing-footer-inner {
+      max-width: var(--grid-max);
+      margin: 0 auto;
+      padding: 0 var(--space-5);
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1fr 2.2fr;
+      gap: var(--space-8);
+      margin-bottom: var(--space-8);
+    }
+    @media (max-width: 900px) { .footer-top { grid-template-columns: 1fr; } }
+    .footer-brand { display: flex; flex-direction: column; gap: var(--space-4); max-width: 280px; }
+    .footer-tag {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--color-graphite);
+      margin: 0;
+    }
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-6);
+    }
+    @media (max-width: 900px) { .footer-links { grid-template-columns: repeat(2, 1fr); } }
+    .footer-group .designator-mono {
+      font-family: var(--font-mono);
+      font-weight: 400;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-graphite);
+      margin-bottom: var(--space-3);
+    }
+    .footer-group ul { list-style: none; padding: 0; margin: 0; }
+    .footer-group li { margin-bottom: 8px; }
+    .footer-group a {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-slate);
+      text-decoration: none;
+    }
+    .footer-group a:hover { text-decoration: underline; }
+    .footer-frieze {
+      height: 28px;
+      margin-bottom: var(--space-6);
+      opacity: 0.45;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          var(--color-slate) 0 8px,
+          transparent 8px 14px,
+          var(--color-oxide) 14px 18px,
+          transparent 18px 28px,
+          var(--color-slate) 28px 32px,
+          transparent 32px 44px
+        );
+    }
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-5);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-graphite);
+      letter-spacing: 0.04em;
+      flex-wrap: wrap;
+    }
+    .footer-bottom .colophon { max-width: 480px; }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="marketing-homepage.html" class="logo-mockup" aria-label="Tessera home">
+              <span class="mark-tile"></span>
+              <span class="word">Tessera</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right" style="gap: var(--space-5); text-transform: none; letter-spacing: 0; font-family: var(--font-sans); font-size: 14px;">
+            <a href="#" class="marketing-nav-link">Product</a>
+            <a href="#" class="marketing-nav-link">Patterns</a>
+            <a href="marketing-comparison.html" class="marketing-nav-link marketing-nav-link--active">Hosted</a>
+            <a href="marketing-theory.html" class="marketing-nav-link">Theory</a>
+            <a href="#" class="marketing-nav-link">Docs</a>
+            <span style="width:1px;height:18px;background:var(--color-grout-light);"></span>
+            <a href="#" style="font-family: var(--font-sans); font-size: 14px; color: var(--color-slate); text-decoration: none;">Sign in</a>
+            <a href="#" class="btn btn-primary btn-sm">Get started</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+        <div class="dms-layout-child">
+
+          <!-- Header band -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="comparison-hero">
+                <div class="dms-page-meta">
+                  <span>tessera</span>
+                  <span class="sep">/</span>
+                  <span>hosted vs self-host</span>
+                </div>
+                <h1>Two doors. Same engine.</h1>
+                <p>
+                  Tessera is open-source. You can run the engine yourself, on any modern Linux host with a Postgres database. We also operate the hosted service for teams who would rather place tiles than configure servers. The two surfaces share a feature set; they differ in who operates the floor underneath.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Comparison table -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>CAPABILITY MATRIX</div>
+
+                <div class="compare-card">
+                  <table class="compare-table">
+                    <thead>
+                      <tr>
+                        <th>Capability</th>
+                        <th>Self-host</th>
+                        <th class="col-hosted">Hosted</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="cat-row"><td colspan="3">Engine</td></tr>
+                      <tr class="row">
+                        <td class="body">Same Tessera engine</td>
+                        <td class="value"><span class="em">yes</span></td>
+                        <td class="value col-hosted"><span class="em">yes</span></td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">Open-source (AGPL-3.0)</td>
+                        <td class="value"><span class="em">yes</span></td>
+                        <td class="value col-hosted"><span class="em">yes</span></td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">Patterns, themes, datasets</td>
+                        <td class="value"><span class="em">yes</span></td>
+                        <td class="value col-hosted"><span class="em">yes</span></td>
+                      </tr>
+
+                      <tr class="cat-row"><td colspan="3">Operate</td></tr>
+                      <tr class="row">
+                        <td class="body">Your hardware</td>
+                        <td class="value"><span class="em">yes</span></td>
+                        <td class="value col-hosted"><span class="neg">&mdash;</span></td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">Backups &amp; retention</td>
+                        <td class="value">on you</td>
+                        <td class="value col-hosted">daily / 30d</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">CDN &amp; edge caching</td>
+                        <td class="value">bring own</td>
+                        <td class="value col-hosted">included</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">DDoS / WAF</td>
+                        <td class="value">bring own</td>
+                        <td class="value col-hosted">included</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">Status page</td>
+                        <td class="value"><span class="neg">&mdash;</span></td>
+                        <td class="value col-hosted">status.tessera.io</td>
+                      </tr>
+
+                      <tr class="cat-row"><td colspan="3">Compliance</td></tr>
+                      <tr class="row">
+                        <td class="body">SOC 2</td>
+                        <td class="value"><span class="neg">&mdash;</span></td>
+                        <td class="value col-hosted">Type II in progress</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">Audit log export</td>
+                        <td class="value">DIY</td>
+                        <td class="value col-hosted">JSON / Parquet</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">Custom DPA</td>
+                        <td class="value"><span class="neg">&mdash;</span></td>
+                        <td class="value col-hosted">Civic plan and up</td>
+                      </tr>
+
+                      <tr class="cat-row"><td colspan="3">Cost</td></tr>
+                      <tr class="row">
+                        <td class="body">License</td>
+                        <td class="value">free</td>
+                        <td class="value col-hosted">monthly</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">Hardware</td>
+                        <td class="value">you pay</td>
+                        <td class="value col-hosted">included</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body">Support</td>
+                        <td class="value">community</td>
+                        <td class="value col-hosted">office hours</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="compare-actions">
+                  <a href="#" class="btn btn-primary">Host your own <span class="arrow-glyph">&rarr;</span></a>
+                  <a href="#" class="btn btn-secondary">See pricing <span class="arrow-glyph">&rarr;</span></a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Marketing footer -->
+          <footer class="marketing-footer">
+            <div class="marketing-footer-inner">
+              <div class="footer-top">
+                <div class="footer-brand">
+                  <span class="logo-mockup">
+                    <span class="mark-tile"></span>
+                    <span class="word">Tessera</span>
+                  </span>
+                  <p class="footer-tag">A typed row that can be a page, a section, a dataset, a query, or a theme.</p>
+                </div>
+
+                <div class="footer-links">
+                  <div class="footer-group">
+                    <div class="designator-mono">Product</div>
+                    <ul>
+                      <li><a href="marketing-homepage.html">Overview</a></li>
+                      <li><a href="#">Patterns</a></li>
+                      <li><a href="#">Themes</a></li>
+                      <li><a href="#">Datasets</a></li>
+                      <li><a href="#">Roadmap</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono">Hosted</div>
+                    <ul>
+                      <li><a href="marketing-comparison.html">Pricing</a></li>
+                      <li><a href="#">Civic plan</a></li>
+                      <li><a href="#">Press plan</a></li>
+                      <li><a href="#">Status</a></li>
+                      <li><a href="#">Security</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono">Open source</div>
+                    <ul>
+                      <li><a href="#">GitHub</a></li>
+                      <li><a href="#">Releases</a></li>
+                      <li><a href="#">Contributing</a></li>
+                      <li><a href="#">License</a></li>
+                      <li><a href="#">Acknowledgements</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono">Theory</div>
+                    <ul>
+                      <li><a href="marketing-theory.html">On placing</a></li>
+                      <li><a href="#">Representation primacy</a></li>
+                      <li><a href="#">Durability</a></li>
+                      <li><a href="#">Field notes</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono">Community</div>
+                    <ul>
+                      <li><a href="#">Forum</a></li>
+                      <li><a href="#">Office hours</a></li>
+                      <li><a href="#">Showcase</a></li>
+                      <li><a href="#">Letters</a></li>
+                      <li><a href="#">Mastodon</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="footer-frieze" aria-hidden="true"></div>
+
+              <div class="footer-bottom">
+                <div class="colophon">
+                  Tessera is open source, AGPL-3.0. The hosted service is operated by an independent cooperative.
+                </div>
+                <div>
+                  <span>v0.1 preview</span>
+                  <span>&middot;</span>
+                  <span>2026</span>
+                </div>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 > First-pass DMS-shaped design system for **Tessera**, translating the
 > v0.1 Claude design template (in `../Tessera Design System/`) into the
-> structure prescribed by `references/dms product/design-system-for-dms.md`.
+> structure prescribed by `src/dms/skills/designing-a-dms-theme.md`.
 >
 > v2 · 2026-05-22 · Tessera brand, applied to the DMS UI kit.
 
@@ -39,7 +39,7 @@ design_system_v2/
 | `../Tessera Design System/assets/logos/` | Logo lockups (wordmark, monogram, stacked, favicon). |
 | `references/dms product/positioning-v2.md` | Product positioning (what Tessera is). |
 | `references/dms product/brand-tessera.md` | Brand brief (aesthetics, voice, anti-patterns). |
-| `references/dms product/design-system-for-dms.md` | Design contract (the folder structure and DMS-shaped-pages principle this v2 honours). |
+| `src/dms/skills/designing-a-dms-theme.md` | Design contract / skill (the folder structure and DMS-shaped-pages principle this v2 honours; **mandates plain HTML + Tailwind CDN for mockup pages — no JSX, no build step**). |
 
 ## How the three folders relate
 
@@ -83,7 +83,7 @@ For a live DMS site that wants this theme:
 
 For a design pass refining or extending this work:
 
-1. Read `references/dms product/design-system-for-dms.md` first.
+1. Read `src/dms/skills/designing-a-dms-theme.md` first.
 2. Read this file and `theme/README.md`.
 3. Open the four `design-system/` pages and the example page to see
    what's already covered.
