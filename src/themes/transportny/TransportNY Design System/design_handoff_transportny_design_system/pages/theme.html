@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Theme · TransportNY</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="_icons.jsx"></script>
+<script type="text/babel" src="_chrome.jsx"></script>
+</head>
+<body class="tny-pane">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const Icon = window.TNYIcon;
+
+function Swatch({ hex, name, role }) {
+  const dark = ['#0a0e13','#12181F','#16307A','#1F3F8F','#0F2D4D','#0F1722','#2D3E4C','#37576B','#1e2530'].includes(hex.toUpperCase()) ||
+               ['#0A0E13','#12181F','#0F2D4D','#0F1722','#2D3E4C','#37576B','#1E2530'].includes(hex.toUpperCase());
+  return (
+    <div className="rounded-md overflow-hidden border border-zinc-950/10">
+      <div className="h-20" style={{background:hex}}/>
+      <div className="px-3 py-2.5">
+        <div className="font-oswald font-medium text-[13px] text-slate-900 uppercase tracking-wide">{name}</div>
+        <div className="text-[11px] text-slate-500 font-mono mt-0.5">{hex.toLowerCase()}</div>
+        {role && <div className="text-[11.5px] text-slate-600 mt-1.5 leading-snug">{role}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Section({ id, title, children, desc }) {
+  return (
+    <section id={id} className="tny-card p-8 mb-6">
+      <h2 className="font-oswald font-semibold text-[28px] text-slate-900 mb-1">{title}</h2>
+      {desc && <p className="text-[14px] text-slate-600 max-w-2xl mb-6 leading-relaxed">{desc}</p>}
+      {children}
+    </section>
+  );
+}
+
+function TypeSpec({ family, label, sample, size, weight, use }) {
+  return (
+    <div className="grid grid-cols-[200px_1fr_220px] gap-6 py-5 border-b border-zinc-950/10 items-baseline">
+      <div>
+        <div className="font-oswald uppercase text-[11px] tracking-wider text-slate-500">{label}</div>
+        <div className="font-oswald text-[16px] text-slate-900 mt-1">{family}</div>
+        <div className="text-[12px] text-slate-500 font-mono mt-1">{size} / {weight}</div>
+      </div>
+      <div className={family.includes('Oswald')?'font-oswald':'font-proxima'} style={{fontSize:size, fontWeight:weight, lineHeight:1.1, color:'#0F1722'}}>{sample}</div>
+      <div className="text-[12.5px] text-slate-600 leading-snug">{use}</div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div className="min-h-screen">
+      <TNYSidebar product="DESIGN" active="theme" expanded={true}
+        nav={[
+          { id:'theme', label:'Theme', icon:'Sections' },
+          { id:'grid', label:'Grid', icon:'Grid', onClick:'grid-system.html' },
+          { id:'components', label:'Components', icon:'Pages', onClick:'components.html' },
+          { id:'patterns', label:'Patterns', icon:'MapLayers', onClick:'patterns.html' },
+        ]}/>
+      <main className="ml-60">
+        <TNYHero title="Theme" subtitle="TransportNY Design Tokens"
+          desc="Color, type, elevation, and motion primitives shared across every TransportNY application — Macro, NPMRDS, Freight Atlas, TSMO, Transit, and Admin."/>
+
+        <div className="grid grid-cols-[1fr_220px] gap-10 px-10 py-8">
+          <div>
+            <Section id="brand" title="Brand DNA"
+              desc="The system is rooted in NYS Department of Transportation visual identity: the State silhouette mark, deep public-sector blue, and the warm amber used for active state.">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="rounded-md border border-zinc-950/10 p-6 flex items-center gap-4 bg-[#12181F]">
+                  <img src="../assets/nys_logo_white.svg" className="w-12 h-12"/>
+                  <div>
+                    <div className="font-oswald uppercase text-white text-[15px] tracking-wide">TransportNY</div>
+                    <div className="text-[11.5px] text-slate-400 font-mono">Sidebar lockup</div>
+                  </div>
+                </div>
+                <div className="rounded-md border border-zinc-950/10 p-6 flex items-center gap-4 bg-white">
+                  <img src="../assets/nys_logo.png" className="w-12 h-12 object-contain"/>
+                  <div>
+                    <div className="font-oswald uppercase text-slate-900 text-[15px] tracking-wide">NYS DOT</div>
+                    <div className="text-[11.5px] text-slate-500 font-mono">Light marks</div>
+                  </div>
+                </div>
+                <div className="rounded-md border border-zinc-950/10 p-6 bg-[#1F3F8F] text-white flex items-center">
+                  <div className="font-oswald font-semibold text-[28px] leading-none">Empire<br/>Civic</div>
+                </div>
+              </div>
+            </Section>
+
+            <Section id="color-core" title="Core Palette"
+              desc="Two-axis system: ink-dark navigation against light editorial canvases, with a saturated NYS blue used in filter strips and a yellow active marker.">
+              <div className="grid grid-cols-4 gap-4">
+                <Swatch hex="#1F3F8F" name="NYS Blue" role="Primary brand. Tone-bars, primary CTAs, links."/>
+                <Swatch hex="#16307A" name="Blue Press" role="Hover & active for primary blue surfaces."/>
+                <Swatch hex="#0F2D4D" name="Ink Navy" role="Table headers, callouts, deep accents."/>
+                <Swatch hex="#12181F" name="Sidebar Ink" role="Persistent left rail. Always paired with white text."/>
+                <Swatch hex="#0A0E13" name="Logo Plate" role="Top of sidebar, behind NYS mark."/>
+                <Swatch hex="#FACC15" name="Active Amber" role="Selected nav, highlighted toolbar buttons."/>
+                <Swatch hex="#EAAD43" name="Underline Amber" role="Section heading underline, anchored TOC."/>
+                <Swatch hex="#37576B" name="Slate Tag" role="Avatar gradient base, status chips."/>
+              </div>
+            </Section>
+
+            <Section id="color-data" title="Data Visualization"
+              desc="Chart palettes are split into a categorical set (for series swatches) and a sequential MPH ramp used on speed maps. Never use brand blue inside charts.">
+              <div className="grid grid-cols-5 gap-3">
+                <Swatch hex="#6F6F6F" name="Cat 1"/>
+                <Swatch hex="#E5A646" name="Cat 2"/>
+                <Swatch hex="#94C24E" name="Cat 3"/>
+                <Swatch hex="#E160A4" name="Cat 4"/>
+                <Swatch hex="#F2CB3D" name="Cat 5"/>
+              </div>
+              <div className="mt-6 grid grid-cols-5 gap-3">
+                <Swatch hex="#D6453B" name="42.12–42.46" role="Slowest"/>
+                <Swatch hex="#E8843F" name="42.46–44.41"/>
+                <Swatch hex="#F2E18A" name="44.41–47.14"/>
+                <Swatch hex="#A8D26B" name="47.14–49.62"/>
+                <Swatch hex="#3FA34D" name="49.62–50.61" role="Freeflow"/>
+              </div>
+              <div className="mt-6 flex gap-3">
+                <div className="flex items-center gap-2 text-[12px] text-slate-600"><span className="size-3 rounded-full bg-emerald-500"/> Δ improvement</div>
+                <div className="flex items-center gap-2 text-[12px] text-slate-600"><span className="size-3 rounded-full bg-rose-500"/> Δ regression</div>
+                <div className="flex items-center gap-2 text-[12px] text-slate-600"><span className="size-3 rounded-full bg-amber-400"/> Construction</div>
+                <div className="flex items-center gap-2 text-[12px] text-slate-600"><span className="size-3 rounded-full bg-rose-400"/> Recurrent</div>
+              </div>
+            </Section>
+
+            <Section id="surface" title="Surface & Canvas"
+              desc="The page is a grey pane that floats white cards. Three z-layers: ink sidebar, grey content pane, white card. A fourth bone-tinted card is reserved for editorial / jurisdictional documents.">
+              <div className="grid grid-cols-4 gap-4">
+                <Swatch hex="#ECEEF2" name="Content Pane" role="Body background under every card."/>
+                <Swatch hex="#FFFFFF" name="Card" role="Default surface for content. 8-px radius, 1-px hairline, single soft shadow."/>
+                <Swatch hex="#F7F8FA" name="Card Tint" role="Inner panel inside a card — example surfaces in the docs, ghost rows in tables."/>
+                <Swatch hex="#F5F1E8" name="Bone Card" role="Reserved for printable editorial cards — jurisdictional profile, narrative reports."/>
+              </div>
+              <div className="mt-6 grid grid-cols-3 gap-4">
+                <div className="tny-pane rounded-md p-4 border border-zinc-950/10">
+                  <div className="tny-card p-4">
+                    <div className="font-oswald uppercase text-[10.5px] tracking-wider text-slate-500">Card on pane</div>
+                    <div className="text-[13px] text-slate-700 mt-1.5">Body content lives here. Always at least 16-px gutter to the card edge.</div>
+                  </div>
+                </div>
+                <div className="tny-pane rounded-md p-4 border border-zinc-950/10">
+                  <div className="tny-card overflow-hidden">
+                    <div className="tny-card-tint px-4 py-2 border-b border-zinc-950/10">
+                      <div className="font-oswald uppercase text-[10.5px] tracking-wider text-slate-500">Title bar</div>
+                    </div>
+                    <div className="p-4 text-[13px] text-slate-700">Tinted title bar at top of card.</div>
+                  </div>
+                </div>
+                <div className="tny-pane rounded-md p-4 border border-zinc-950/10">
+                  <div className="rounded-md p-4 border-2 border-dashed border-amber-300" style={{background:'#F5F1E8'}}>
+                    <div className="font-oswald uppercase font-bold text-[13px] tracking-wide text-slate-900 border-b-2 border-amber-400 inline-block pb-0.5">EDITORIAL DOC</div>
+                    <div className="text-[12.5px] text-slate-700 mt-2">Bone surface for printable narrative.</div>
+                  </div>
+                </div>
+              </div>
+            </Section>
+
+            <Section id="type" title="Typography"
+              desc="Two families. Oswald is a condensed display face — used for chrome, headings and tabular labels. Proxima Nova handles all running prose and form copy.">
+              <TypeSpec family="Oswald 600" label="Display" size="52px" weight={600} sample="Getting Started" use="Hero titles. Always uppercase or sentence-case; tight tracking; never wraps to 3 lines."/>
+              <TypeSpec family="Oswald 600" label="H2 Section" size="28px" weight={600} sample="When to Use Each Tool" use="Section starts inside docs and dashboards. Pair with the Underline Amber rule when used as an anchor."/>
+              <TypeSpec family="Oswald 500" label="Card Title" size="14px" weight={500} sample="Total Congestion Cost" use="Section card headers. Sits on a Slate-50 tint inside the card."/>
+              <TypeSpec family="Oswald 600" label="Nav Glyph" size="13.5px" weight={500} sample="ROUTE ANALYSIS" use="Sidebar items, breadcrumbs and tab pills — uppercase, tracking-wide."/>
+              <TypeSpec family="Proxima Nova 400" label="Body" size="14.5px" weight={400} sample="Welcome to the Documentation section of the National Performance Research Data Set Platform." use="All running prose in docs and descriptors. Line-height 1.65, max-w 680px for legibility."/>
+              <TypeSpec family="Proxima Nova 400" label="Caption" size="12.5px" weight={400} sample="vs previous month / day" use="Card subtitles, TOC items, table footnotes."/>
+              <TypeSpec family="Mono" label="Numeric" size="22px" weight={500} sample="1,265 · 40.8/day" use="KPI value pairs. Tabular numerals enforced. Never use Oswald for numbers under 18px."/>
+            </Section>
+
+            <Section id="elevation" title="Elevation, Radius & Motion"
+              desc="A single subtle elevation step on cards; a heavier one on popovers and menus. Radii stay small (4–8px) — this is institutional software, not consumer.">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="rounded border border-zinc-950/10 bg-white p-6 shadow-sm">
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider">Card</div>
+                  <div className="text-[13px] text-slate-700 mt-1">radius 8 · shadow-sm</div>
+                </div>
+                <div className="rounded-lg border border-zinc-950/10 bg-white p-6 shadow-lg">
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider">Popover</div>
+                  <div className="text-[13px] text-slate-700 mt-1">radius 8 · shadow-lg</div>
+                </div>
+                <div className="rounded-full border border-zinc-950/10 bg-white px-4 py-3 shadow-xl flex items-center gap-2">
+                  <Icon name="Database" className="size-4 text-slate-500"/>
+                  <div className="text-[13px] text-slate-700">Floating dock · fully rounded</div>
+                </div>
+              </div>
+              <div className="mt-6 text-[13px] text-slate-600 grid grid-cols-3 gap-6">
+                <div><span className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider block">Hover</span>120ms ease-out</div>
+                <div><span className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider block">Tone-bar press</span>80ms — border drops 2px (mass effect)</div>
+                <div><span className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider block">Popover open</span>140ms · opacity + 6px translateY</div>
+              </div>
+            </Section>
+          </div>
+
+          <aside className="pt-1 sticky top-4 self-start">
+            <a href="#brand" className="tny-toc-item active">Brand DNA</a>
+            <a href="#color-core" className="tny-toc-item">Core Palette</a>
+            <a href="#color-data" className="tny-toc-item">Data Visualization</a>
+            <a href="#surface" className="tny-toc-item">Surface & Canvas</a>
+            <a href="#type" className="tny-toc-item">Typography</a>
+            <a href="#elevation" className="tny-toc-item">Elevation & Motion</a>
+          </aside>
+        </div>
+        <TNYFooter/>
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

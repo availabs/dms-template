@@ -1,0 +1,74 @@
+/* TransportNY — shared page styles */
+body { font-family:'Proxima Nova','Source Sans 3', system-ui, sans-serif; background:#ECEEF2; }
+.tny-pane { background:#ECEEF2; }
+.tny-pane-tint { background:#E4E8EE; }
+/* Inline code style — slate slab on a slightly-tinted background */
+.tny-mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:0.92em; padding:1px 5px; background:rgba(15,23,42,0.05); border:1px solid rgba(15,23,42,0.06); border-radius:3px; color:#37576B; white-space:nowrap; }
+/* Card defaults — float on the grey pane */
+.tny-card { background:#fff; border:1px solid rgba(15,23,42,0.08); border-radius:8px; box-shadow:0 1px 2px rgba(15,23,42,0.04), 0 1px 0 rgba(15,23,42,0.02); }
+.tny-card-tint { background:#FAFBFC; }
+.tny-card-bone { background:#F5F1E8; } /* warm bone for editorial/profile sections */
+.tny-card-ink { background:#0F2D4D; color:#fff; }
+.font-oswald { font-family:'Oswald','Bebas Neue',sans-serif; }
+.font-proxima { font-family:'Proxima Nova','Source Sans 3',system-ui,sans-serif; }
+.font-mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+
+.tny-active-bar { border-left: 3px solid #FACC15; }
+.tny-press { border-bottom-width:4px; transition:all .08s; }
+.tny-press:active { border-bottom-width:2px; margin-bottom:2px; }
+
+/* tone-bar — saturated NYS blue used for filter/templates strips */
+.tny-bluebar { background: #1F3F8F; }
+.tny-bluebar-dark { background: #16307A; }
+
+/* page hero — soft topo map bg, used on Floating Car / Getting Started / Docs */
+.tny-topo {
+  background:
+    radial-gradient(ellipse 70% 80% at 30% 40%, rgba(15,23,42,0.04) 0, transparent 60%),
+    repeating-linear-gradient(34deg, transparent 0 22px, rgba(15,23,42,0.025) 22px 23px),
+    repeating-linear-gradient(-50deg, transparent 0 28px, rgba(15,23,42,0.025) 28px 29px),
+    #F4F6F8;
+}
+/* dense table */
+.tbl tr td, .tbl tr th { border-bottom:1px solid rgba(15,23,42,0.06); }
+.tbl tr:hover td { background:#FFFBEB; }
+
+/* placeholder map texture (when no real map tiles) */
+.tny-map {
+  background:
+    radial-gradient(ellipse 30% 30% at 65% 55%, rgba(186,213,232,0.7) 0%, transparent 70%),
+    radial-gradient(ellipse 18% 18% at 30% 30%, rgba(186,213,232,0.4) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent 0 38px, rgba(120,140,120,0.06) 38px 39px),
+    repeating-linear-gradient(90deg, transparent 0 44px, rgba(120,140,120,0.06) 44px 45px),
+    #E8E4D2;
+}
+.tny-map-dark {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 50px, rgba(255,255,255,0.04) 50px 51px),
+    repeating-linear-gradient(90deg, transparent 0 60px, rgba(255,255,255,0.04) 60px 61px),
+    #2E384A;
+}
+
+/* topo for floating-car / getting-started / docs hero strip */
+.tny-hero-topo {
+  background:
+    radial-gradient(circle at 25% 30%, rgba(15,23,42,0.04), transparent 40%),
+    radial-gradient(circle at 75% 70%, rgba(15,23,42,0.05), transparent 50%),
+    repeating-linear-gradient(28deg, transparent 0 30px, rgba(15,23,42,0.035) 30px 31px, transparent 31px 60px),
+    repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15,23,42,0.028) 36px 37px, transparent 37px 70px),
+    #EEF1F3;
+}
+
+/* dropdown menu */
+.tny-menu { background:#fff; border:1px solid rgba(9,9,11,0.10); box-shadow: 0 10px 24px -4px rgba(0,0,0,0.18); border-radius:8px; }
+
+/* link in body */
+.tny-link { color:#1F3F8F; text-decoration:underline; text-underline-offset:2px; }
+.tny-link:hover { color:#16307A; }
+
+/* anchor toc */
+.tny-toc-item { display:flex; align-items:center; gap:8px; padding:4px 0; font-size:13px; color:#475569; border-left:2px solid #e2e8f0; padding-left:10px; }
+.tny-toc-item.active { color:#0f172a; font-weight:600; border-left-color:#EAAD43; }
+
+/* swatch */
+.tny-swatch { width:100%; aspect-ratio:1.6; border-radius:8px; border:1px solid rgba(0,0,0,.06); }

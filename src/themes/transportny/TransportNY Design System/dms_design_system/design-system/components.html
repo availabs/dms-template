@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Components · TransportNY DMS Design System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script type="text/babel" src="_theme.jsx"></script>
+<script type="text/babel" src="_dms.jsx"></script>
+</head>
+<body class="tny-pane">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { TNYIcon, getComponentTheme } = window;
+const t = window.TNYTheme;
+
+/* Small helper — wrap a primitive in a "card stage" so demos sit on the pane consistently */
+function Stage({ label, children, className = "" }) {
+  return (
+    <div className="rounded-[6px] border border-zinc-950/05 bg-white/70 p-4">
+      <div className="font-mono uppercase text-[10px] tracking-[0.18em] text-slate-500 mb-3">{label}</div>
+      <div className={`flex items-center gap-3 flex-wrap ${className}`}>{children}</div>
+    </div>
+  );
+}
+
+/* MultiSelect — three visual variants resolved from theme */
+function MultiSelect({ style = "default", placeholder = "Select region", value, options }) {
+  const sel = t.multiselect.styles.find((s) => s.name === style) || t.multiselect.styles[0];
+  const tone = style === "tone_bar";
+  return (
+    <div className={sel.inputWrapper}>
+      {value
+        ? <span className={sel.singleValue}>{value}</span>
+        : <span className={tone ? "font-semibold text-[13px] text-white/80" : "text-slate-400 text-[14px]"}>{placeholder}</span>}
+      <span className={sel.caretWrapper}><TNYIcon name="CaretDown" className="size-3.5"/></span>
+    </div>
+  );
+}
+
+/* Switch (Boolean toggle) */
+function Switch({ checked = false, label }) {
+  return (
+    <label className="inline-flex items-center gap-2 cursor-pointer">
+      <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${checked ? "bg-[#1F3F8F]" : "bg-slate-300"}`}>
+        <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-4" : "translate-x-0.5"}`}/>
+      </span>
+      {label && <span className="font-proxima text-[13px] text-slate-700">{label}</span>}
+    </label>
+  );
+}
+
+/* Tabs (default underline) */
+function Tabs({ items, active, style = "default" }) {
+  const sel = t.tabs.styles.find((s) => s.name === style) || t.tabs.styles[0];
+  return (
+    <div className={sel.tabList}>
+      {items.map((it) => (
+        <button key={it.id} className={it.id === active ? sel.tabActive : sel.tab}>
+          {it.icon && <TNYIcon name={it.icon} className="size-3.5"/>}
+          {it.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* Dialog snapshot (static; live overlays don't fit inline) */
+function DialogSnapshot({ size = "lg", title, children }) {
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 bg-zinc-950/40 rounded-[6px]"/>
+      <div className={`relative mx-auto my-6 ${t.dialog ? "" : ""} rounded-[12px] bg-white p-6 shadow-2xl ring-1 ring-zinc-950/10 ${t.dialog?.sizes?.[size] || "max-w-lg"}`}>
+        <div className="font-display uppercase text-[16px] tracking-tight text-[#0F1722] mb-2">{title}</div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* dataCard demos */
+function KpiCard({ kicker, title, value, delta, deltaColor }) {
+  const s = t.dataCard.styles.find((x) => x.name === "kpi");
+  return (
+    <div className={s.wrapper}>
+      {kicker && <span className="font-mono uppercase text-[10.5px] tracking-[0.2em] text-[#CA8A04]">{kicker}</span>}
+      <div className={s.header}>{title}</div>
+      <div className={s.value}>{value}</div>
+      {delta && <div className={`font-mono text-[12px] ${deltaColor || "text-emerald-700"}`}>{delta}</div>}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Layout style={1} name="app"
+      sideNav={<TNYSidebar active="components" product="DESIGN"/>}
+      footer={<Footer/>}>
+
+      <LayoutGroup style="hero" name="hero">
+        <Section span="1" name="intro" kicker="// 03 · CATALOG">
+          <h1 className={`${t.textSettings.styles[0].h1} mb-3`}>Components<span className="text-[#CA8A04]">.</span></h1>
+          <p className="font-proxima text-[15.5px] text-slate-600 max-w-[760px] leading-[1.65]">
+            Every UI primitive TransportNY uses, in every named-style variant. This page is
+            the contract for the primitive layer — an engineer comparing a live render against
+            this page should see them match.
+          </p>
+        </Section>
+      </LayoutGroup>
+
+      {/* ─── NAVIGATION primitives ─── */}
+      <LayoutGroup style="content" name="navigation">
+        <Section span="1" name="nav-heading" kicker="6.1" title="Navigation"/>
+
+        <Section span="1/2" name="sidenav">
+          <div className="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-zinc-950/05 font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">SideNav · default expanded</div>
+            <div className="bg-[#12181F] flex">
+              <div className="w-60 flex flex-col">
+                <div className="h-12 bg-[#0A0E13] px-3 flex items-center gap-2">
+                  <div className="size-6 rounded-sm bg-[#1F3F8F]"/>
+                  <span className="font-display uppercase text-white text-[13px]">DESIGN</span>
+                </div>
+                <a className="tny-active-bar bg-[#1e2530] flex items-center gap-3 px-4 py-2.5"><TNYIcon name="Sections" className="size-4 text-[#FACC15]"/><span className="font-proxima text-[13.5px] text-white">Theme</span></a>
+                <a className="flex items-center gap-3 px-4 py-2.5 border-l-[3px] border-transparent text-slate-300"><TNYIcon name="Grid" className="size-4"/><span className="font-proxima text-[13.5px]">Grid</span></a>
+                <a className="flex items-center gap-3 px-4 py-2.5 border-l-[3px] border-transparent text-slate-300"><TNYIcon name="Pages" className="size-4"/><span className="font-proxima text-[13.5px]">Components</span></a>
+                <a className="flex items-center gap-3 px-4 py-2.5 border-l-[3px] border-transparent text-slate-300"><TNYIcon name="MapLayers" className="size-4"/><span className="font-proxima text-[13.5px]">Patterns</span></a>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section span="1/2" name="topnav-and-breadcrumb">
+          <div className="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-zinc-950/05 font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">TopNav · marketing + breadcrumb</div>
+            <div className="bg-white">
+              <div className="h-[60px] flex items-center justify-between px-6 border-b border-zinc-950/05">
+                <div className="flex items-center gap-2"><div className="size-6 rounded bg-[#1F3F8F]"/><span className="font-display uppercase text-[#0F1722] text-[15px]">TransportNY</span></div>
+                <div className="hidden lg:flex items-center gap-6">
+                  <span className="font-display uppercase text-[13.5px] tracking-wide text-[#0F1722] border-b-2 border-[#FACC15]">NPMRDS</span>
+                  <span className="font-display uppercase text-[13.5px] tracking-wide text-slate-700">Macro</span>
+                  <span className="font-display uppercase text-[13.5px] tracking-wide text-slate-700">Datasets</span>
+                  <span className="font-display uppercase text-[13.5px] tracking-wide text-slate-700">Docs</span>
+                </div>
+                <Button style="default" icon="User">Sign in</Button>
+              </div>
+              <nav className="px-6 py-2.5 flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] border-b border-zinc-950/05">
+                <a className="text-slate-500 hover:text-[#0F1722]">NPMRDS</a><span className="text-slate-300 px-1">/</span>
+                <a className="text-slate-500 hover:text-[#0F1722]">MAP-21</a><span className="text-slate-300 px-1">/</span>
+                <span className="text-[#0F1722]">2024 · Per-year view</span>
+              </nav>
+            </div>
+          </div>
+        </Section>
+
+        <Section span="1" name="navigable-menu">
+          <Stage label="navigableMenu · row icon + open popover">
+            <button className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-slate-100 text-slate-500"><TNYIcon name="More" className="size-4"/></button>
+            <div className="tny-menu w-60 p-1">
+              <div className="px-2 py-1 font-display uppercase text-[11px] tracking-wide text-slate-500">Section menu</div>
+              <a className="flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] hover:bg-slate-50 text-[13px] text-slate-700"><TNYIcon name="PencilEdit" className="size-4"/>Edit columns</a>
+              <a className="flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] hover:bg-slate-50 text-[13px] text-slate-700"><TNYIcon name="Filter" className="size-4"/>Filters</a>
+              <a className="flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] hover:bg-slate-50 text-[13px] text-slate-700"><TNYIcon name="Download" className="size-4"/>Export</a>
+              <div className="w-full border-b border-zinc-950/05 my-1"/>
+              <a className="flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] hover:bg-rose-50 text-[13px] text-rose-700"><TNYIcon name="XMark" className="size-4"/>Remove section</a>
+            </div>
+          </Stage>
+        </Section>
+      </LayoutGroup>
+
+      {/* ─── FORM & INTERACTION ─── */}
+      <LayoutGroup style="content_tint" name="forms">
+        <Section span="1" name="form-heading" kicker="6.2" title="Form & Interaction"/>
+
+        <Section span="1/2" name="buttons">
+          <Stage label="Button · every named style">
+            <Button style="default" icon="Plus">Primary</Button>
+            <Button style="active" icon="Check">Active</Button>
+            <Button style="secondary">Secondary</Button>
+            <Button style="plain">Plain</Button>
+            <Button style="ghost">Ghost</Button>
+            <Button style="danger" icon="XMark">Delete</Button>
+            <Button style="compact" icon="Download">h-8 compact</Button>
+          </Stage>
+        </Section>
+
+        <Section span="1/2" name="inputs">
+          <Stage label="Input · default, textarea, edit-buttons">
+            <div className="flex flex-col gap-3 w-full">
+              <input className={t.input.input} placeholder="Search routes"/>
+              <textarea className={t.input.textarea} rows="3" placeholder="Notes…"/>
+              <div className="flex gap-2"><Button style="secondary">Cancel</Button><Button style="default">Save</Button></div>
+            </div>
+          </Stage>
+        </Section>
+
+        <Section span="1/2" name="multiselect-default">
+          <Stage label="MultiSelect · default (h-11 form field)">
+            <div className="w-full"><MultiSelect placeholder="Select region"/></div>
+          </Stage>
+        </Section>
+
+        <Section span="1/2" name="multiselect-compact">
+          <Stage label="MultiSelect · compact (h-8 header chip)">
+            <MultiSelect style="compact" value="2024" />
+            <MultiSelect style="compact" value="NY State" />
+            <MultiSelect style="compact" value="All Roads" />
+          </Stage>
+        </Section>
+
+        <Section span="1/2" name="multiselect-tone">
+          <div className="rounded-[8px] tny-bluebar p-3 flex items-center gap-6">
+            <div className="font-proxima text-[13px] text-white/70">Region: <MultiSelect style="tone_bar" value="Region 1"/></div>
+            <div className="font-proxima text-[13px] text-white/70">Month: <MultiSelect style="tone_bar" value="Jun 2024"/></div>
+            <div className="font-proxima text-[13px] text-white/70">Road: <MultiSelect style="tone_bar" value="All"/></div>
+          </div>
+        </Section>
+
+        <Section span="1/2" name="switch-tabs">
+          <Stage label="Switch · Tabs (default + segmented)">
+            <Switch checked label="Show MPO overlays"/>
+            <Switch label="Snap to roads"/>
+          </Stage>
+          <div className="mt-3 rounded-[6px] border border-zinc-950/05 bg-white/70 p-4">
+            <Tabs items={[
+              { id: "overview", label: "Overview" },
+              { id: "data",     label: "Data" },
+              { id: "history",  label: "History" },
+            ]} active="overview"/>
+            <div className="mt-3">
+              <Tabs style="segmented" items={[
+                { id: "graph", label: "Graph",  icon: "Activity" },
+                { id: "table", label: "Table",  icon: "Sections" },
+                { id: "cards", label: "Cards",  icon: "Grid" },
+              ]} active="graph"/>
+            </div>
+          </div>
+        </Section>
+      </LayoutGroup>
+
+      {/* ─── CONTAINERS & ATOMS ─── */}
+      <LayoutGroup style="content" name="containers">
+        <Section span="1" name="containers-heading" kicker="6.4" title="Containers & Atoms"/>
+
+        <Section span="1/3" name="kpi-1">
+          <KpiCard kicker="// METRIC" title="Hours of Excessive Delay" value="12,468" delta="▾ 2.4% MoM"/>
+        </Section>
+        <Section span="1/3" name="kpi-2">
+          <KpiCard kicker="// METRIC" title="Truck Reliability (TTTR)" value="1.34" delta="▴ 0.06 YoY" deltaColor="text-rose-700"/>
+        </Section>
+        <Section span="1/3" name="kpi-3">
+          <KpiCard kicker="// METRIC" title="Compliance" value="86.4%" delta="On target ≥ 82%"/>
+        </Section>
+
+        <Section span="1/2" name="datacard-title">
+          <div className={t.dataCard.styles.find((s) => s.name === "title_bar").wrapper}>
+            <div className={t.dataCard.styles.find((s) => s.name === "title_bar").header}>
+              <TNYIcon name="Drag" className="size-3.5 text-slate-400 cursor-grab"/>
+              <span className="flex-1">Most-delayed corridors</span>
+              <button className="h-7 px-2.5 inline-flex items-center gap-1.5 rounded border border-zinc-950/10 hover:bg-slate-50 text-slate-700 text-[12px]">Display <TNYIcon name="CaretDown" className="size-3"/></button>
+              <button className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-slate-50 text-slate-500"><TNYIcon name="More" className="size-3.5"/></button>
+            </div>
+            <div className={t.dataCard.styles.find((s) => s.name === "title_bar").value}>
+              <table className="w-full text-[13px]">
+                <thead><tr className="text-left font-display uppercase text-[11px] tracking-wide text-slate-600 border-b border-zinc-950/05">
+                  <th className="py-2">Route</th><th className="text-right">HED</th><th className="text-right">PHED</th>
+                </tr></thead>
+                <tbody className="divide-y divide-zinc-950/05">
+                  <tr><td className="py-1.5">I-87 NB · Westchester</td><td className="text-right font-mono tabular-nums">3,142</td><td className="text-right font-mono tabular-nums text-amber-700">▴ 12%</td></tr>
+                  <tr><td className="py-1.5">I-495 EB · Queens</td><td className="text-right font-mono tabular-nums">2,860</td><td className="text-right font-mono tabular-nums text-emerald-700">▾ 4%</td></tr>
+                  <tr><td className="py-1.5">I-90 EB · Buffalo</td><td className="text-right font-mono tabular-nums">1,420</td><td className="text-right font-mono tabular-nums text-slate-500">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </Section>
+
+        <Section span="1/2" name="datacard-editorial">
+          <div className={t.dataCard.styles.find((s) => s.name === "editorial").wrapper}>
+            <div className={t.dataCard.styles.find((s) => s.name === "editorial").header}>JURISDICTIONAL PROFILE</div>
+            <div className={t.dataCard.styles.find((s) => s.name === "editorial").value}>
+              <p>The Capital District Transportation Committee covers a four-county service area and reports congestion through both NPMRDS and supplemental sensor data. PM3 measures are calculated annually with quarterly publication.</p>
+              <div className="mt-3 font-mono uppercase text-[10.5px] tracking-[0.18em] text-amber-800">For printable narrative cards only · F5F1E8</div>
+            </div>
+          </div>
+        </Section>
+
+        <Section span="1" name="pills">
+          <Stage label="Pill · status dots + colour variants">
+            <Pill style="green">Compliant</Pill>
+            <Pill style="amber">Below target</Pill>
+            <Pill style="red">Non-compliant</Pill>
+            <Pill style="blue">Primary</Pill>
+            <Pill style="slate">Slate</Pill>
+            <Pill style="zinc">Neutral</Pill>
+            <span className="inline-flex items-center gap-1.5 text-[12px] text-emerald-700 ml-4"><span className="size-1.5 rounded-full bg-emerald-500"/>data current</span>
+            <span className="inline-flex items-center gap-1.5 text-[12px] text-amber-700"><span className="size-1.5 rounded-full bg-amber-400"/>refreshing</span>
+            <span className="inline-flex items-center gap-1.5 text-[12px] text-rose-700"><span className="size-1.5 rounded-full bg-rose-500 dot-pulse"/>stale</span>
+          </Stage>
+        </Section>
+
+        <Section span="1/2" name="table">
+          <div className={t.table.styles[0].wrapper}>
+            <table className={t.table.styles[0].table}>
+              <thead className={t.table.styles[0].thead}>
+                <tr><th className={t.table.styles[0].th}>MPO</th><th className={t.table.styles[0].th}>LOTTR (Pass)</th><th className={t.table.styles[0].th}>TTTR</th><th className={t.table.styles[0].th}>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr className={t.table.styles[0].tr}><td className={t.table.styles[0].td}>NYMTC</td><td className={t.table.styles[0].td}><span className="font-mono tabular-nums">82.1%</span></td><td className={t.table.styles[0].td}><span className="font-mono tabular-nums">1.34</span></td><td className={t.table.styles[0].td}><Pill style="green">PASS</Pill></td></tr>
+                <tr className={t.table.styles[0].tr}><td className={t.table.styles[0].td}>CDTC</td><td className={t.table.styles[0].td}><span className="font-mono tabular-nums">87.4%</span></td><td className={t.table.styles[0].td}><span className="font-mono tabular-nums">1.22</span></td><td className={t.table.styles[0].td}><Pill style="green">PASS</Pill></td></tr>
+                <tr className={t.table.styles[0].tr}><td className={t.table.styles[0].td}>GBNRTC</td><td className={t.table.styles[0].td}><span className="font-mono tabular-nums">78.9%</span></td><td className={t.table.styles[0].td}><span className="font-mono tabular-nums">1.41</span></td><td className={t.table.styles[0].td}><Pill style="amber">BELOW</Pill></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </Section>
+
+        <Section span="1/2" name="dialog">
+          <Stage label="Dialog · snapshot (size = md)">
+            <div className="w-full">
+              <DialogSnapshot size="md" title="Export this dashboard">
+                <p className="font-proxima text-[13.5px] text-slate-600 mb-4">Choose a format. Filter state and selected year will be embedded.</p>
+                <div className="flex flex-col gap-2 mb-4">
+                  <label className="flex items-center gap-2 text-[13.5px] text-slate-700"><input type="radio" name="fmt" defaultChecked/> CSV (raw data)</label>
+                  <label className="flex items-center gap-2 text-[13.5px] text-slate-700"><input type="radio" name="fmt"/> PDF (printable report)</label>
+                  <label className="flex items-center gap-2 text-[13.5px] text-slate-700"><input type="radio" name="fmt"/> PNG (current view)</label>
+                </div>
+                <div className="flex justify-end gap-2"><Button style="secondary">Cancel</Button><Button style="default" icon="Download">Export</Button></div>
+              </DialogSnapshot>
+            </div>
+          </Stage>
+        </Section>
+      </LayoutGroup>
+
+      {/* ─── RICH CONTENT ─── */}
+      <LayoutGroup style="content_tint" name="rich-content">
+        <Section span="1" name="rich-heading" kicker="6.5" title="Rich content"/>
+
+        <Section span="2/3" name="lexical">
+          <div className="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-8">
+            <h1 className={t.lexical?.h1 || "font-display font-semibold text-[40px]"}>Lexical · headings & prose</h1>
+            <h2 className={t.lexical?.h2 || "font-display font-semibold text-[28px]"}>How NPMRDS data is sourced</h2>
+            <p className="font-proxima text-[14.5px] text-slate-700 leading-[1.65] my-3">
+              The National Performance Management Research Data Set provides probe-derived
+              travel times for every TMC segment on the National Highway System. NYSDOT
+              ingests the feed nightly; the dashboard re-aggregates on the hour.
+            </p>
+            <h3 className="font-display font-medium text-[20px] text-[#0F1722] mt-3 mb-1">Quarterly publication</h3>
+            <p className="font-proxima text-[14.5px] text-slate-700 leading-[1.65] my-3">
+              PM3 measures are computed annually but published quarterly so MPOs and academic
+              partners can track in-year trends. See <a className="tny-link">MAP-21 guidance</a> for
+              the measure definitions.
+            </p>
+            <ul className="list-disc pl-6 space-y-1 text-[14.5px] text-slate-700">
+              <li>Level of Travel Time Reliability (LOTTR) — Interstate + NHS</li>
+              <li>Truck Travel Time Reliability (TTTR) — Interstate</li>
+              <li>Hours of Excessive Delay (HED) + Peak HED (PHED) — Urbanized Areas</li>
+            </ul>
+            <pre className="font-mono text-[12.5px] leading-[1.55] p-4 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto mt-4"><code>SELECT mpo, AVG(lottr_score)
+FROM map21_2024 WHERE mpo IS NOT NULL
+GROUP BY mpo ORDER BY 2 DESC;</code></pre>
+          </div>
+        </Section>
+
+        <Section span="1/3" name="graph-and-map">
+          <div className="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+            <div className="font-display uppercase text-[12.5px] tracking-wide text-slate-700 mb-2">Graph · multi-line</div>
+            <svg viewBox="0 0 200 90" className="w-full h-32">
+              <line x1="0" y1="80" x2="200" y2="80" stroke="rgba(15,23,42,0.15)"/>
+              <line x1="0" y1="20" x2="200" y2="20" strokeDasharray="3 3" stroke="#FACC15"/>
+              <polyline points="0,70 30,55 60,60 90,40 120,45 150,30 200,35" fill="none" stroke="#1F3F8F" strokeWidth="2"/>
+              <polyline points="0,75 30,72 60,65 90,68 120,60 150,55 200,52" fill="none" stroke="#6F6F6F" strokeWidth="1.5"/>
+              <polyline points="0,82 30,78 60,76 90,74 120,72 150,68 200,65" fill="none" stroke="#94C24E" strokeWidth="1.5"/>
+            </svg>
+            <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-amber-700">TARGET ≤ 82.0%</div>
+          </div>
+          <div className="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden mt-4">
+            <div className="font-display uppercase text-[12.5px] tracking-wide text-slate-700 p-3 border-b border-zinc-950/05">Map · placeholder texture</div>
+            <div className="tny-map h-40"/>
+          </div>
+        </Section>
+      </LayoutGroup>
+    </Layout>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

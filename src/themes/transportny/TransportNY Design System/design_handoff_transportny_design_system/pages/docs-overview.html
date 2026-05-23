@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Overview · NPMRDS — TransportNY</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="_icons.jsx"></script>
+<script type="text/babel" src="_chrome.jsx"></script>
+</head>
+<body class="tny-pane">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const Icon = window.TNYIcon;
+
+function App() {
+  return (
+    <div className="min-h-screen">
+      <TNYSidebar product="NPMRDS" active="docs-npmrds" expanded={true}
+        nav={[
+          { id:'docs-npmrds', label:'NPMRDS', icon:'Pages' },
+        ]}
+        showSubsection
+        subsection={[
+          { id:'overview', label:'Overview' },
+          { id:'quickstart', label:'Quick Start' },
+          { id:'route', label:'Route Analysis' },
+          { id:'regional', label:'Regional Analysis' },
+          { id:'pm3', label:'PM3 Measures' },
+          { id:'batch', label:'Batch Reports' },
+          { id:'disc', label:'Discussions' },
+          { id:'appendix', label:'Appendix' },
+          { id:'videos', label:'Training Videos' },
+        ]}/>
+      <main className="ml-60">
+        {/* Hero with primary action */}
+        <div className="tny-hero-topo px-10 pt-12 pb-10 flex items-start justify-between border-b border-zinc-950/10">
+          <div>
+            <h1 className="font-oswald font-semibold text-[52px] leading-none text-slate-900">Overview</h1>
+          </div>
+          <button className="h-11 px-6 rounded bg-[#1F3F8F] hover:bg-[#16307A] text-white font-proxima font-semibold text-[14px]">Primary Action</button>
+        </div>
+
+        {/* Blue tertiary links bar */}
+        <div className="tny-bluebar h-11 px-10 flex items-center gap-8 text-white">
+          {['Tertiary Link','Tertiary Link','Tertiary Link','Tertiary Link'].map((l,i)=>(
+            <a key={i} className="font-proxima text-[13.5px] hover:underline">{l}</a>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-[1fr_240px] gap-10 px-10 py-8">
+          <article className="tny-card p-8 max-w-[760px] font-proxima text-[14.5px] text-slate-700 leading-[1.65] space-y-5">
+            <p id="overview">Welcome to the Documentation section of the National Performance Research Data Set (NPMRDS) Platform. This platform was started as a means to process and visualize the NPMRDS data for New York State Department of Transportation (NYSDOT) and the New York Association of Metropolitan Planning Organizations (NYSAMPO).</p>
+            <p>The software modules contained within are useful in understanding congestion and reliability, and include auxiliary modules for analysis of traffic counts and incidents (i.e., accidents, construction). There are a number of different modules to discuss throughout this documentation as well as measures to define. Each module and data measure will have a section within the documentation:</p>
+            <ul className="list-disc pl-6 space-y-1.5 text-slate-700">
+              <li><strong className="font-semibold">Macro Tool</strong> — allows a user to view and export a variety of measures at the year aggregation for entire counties, regions, or the entire state.</li>
+              <li><strong className="font-semibold">Route Reports Tools</strong> — allows a user to conduct analysis of discreet collections of segments (routes/corridors), and to share those reports outside of the tools.</li>
+              <li><strong className="font-semibold">PM3 Measures</strong> — provides <a className="tny-link">MAP-21</a> performance measures at a variety of geographies.</li>
+            </ul>
+
+            <h2 id="usewhen" className="font-oswald font-semibold text-[26px] text-slate-900 pt-3">When to Use Each Tool</h2>
+            <p>The Macro Tool is a great tool to start your analysis. It is best for ranking the Traffic Messaging Channel (TMC) segments in your region. It provides an easy export option for looking at the entire collection of segments in your region, and for exporting a variety of different measures for each segment. The Macro Tool can be used to rank performance bottlenecks and to download performance measure data to begin calculating the costs of delay.</p>
+            <p>The Route Reports Tools are a data analysis Business Intelligence (BI) tool that allows users to make smaller collections of segments, such as corridors, intersections, or areas, for deeper, detailed analyses. A user can create their own routes and save them to their collection before opening a blank Report tool to build a completely custom report, or open a template for a quick start report. Templates cover a wide variety of use-cases.</p>
+
+            <h2 id="strengths" className="font-oswald font-semibold text-[26px] text-slate-900 pt-3">Strengths and Weaknesses</h2>
+            <p>NPMRDS provides comprehensive coverage of the NHS but has known temporal aggregation limits at low-volume hours. See the methodology appendix for the smoothing procedure applied to the 5-minute epoch data.</p>
+          </article>
+
+          <aside className="pt-1 sticky top-4 self-start">
+            <a href="#overview" className="tny-toc-item active">Overview</a>
+            <a href="#usewhen" className="tny-toc-item">What is the NPMRDS?</a>
+            <a href="#strengths" className="tny-toc-item">Strengths and Weaknesses</a>
+          </aside>
+        </div>
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

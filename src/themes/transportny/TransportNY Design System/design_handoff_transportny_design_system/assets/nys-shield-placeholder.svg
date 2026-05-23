@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f3450"></stop>
+      <stop offset="1" stop-color="#0d1a2b"></stop>
+    </linearGradient>
+  </defs>
+  <path d="M32 4 L56 12 V32 C56 46 44 56 32 60 C20 56 8 46 8 32 V12 Z" fill="url(#g)" stroke="#FACC15" stroke-width="1.5"></path>
+  <text x="32" y="40" font-family="Oswald, sans-serif" font-size="22" font-weight="600" text-anchor="middle" fill="#FACC15">NY</text>
+</svg>

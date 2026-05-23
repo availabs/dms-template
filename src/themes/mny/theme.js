@@ -631,6 +631,7 @@ const theme = {
         tabTitle: 'p-2 text-[#2D3E4C]'
       },
       {
+        name: 'pages-pane',
         tabGroup: 'flex flex-row divide-x divide-[#37576b8c]',
         tablist: 'flex flex-col gap-1 pt-12',
         tab: `

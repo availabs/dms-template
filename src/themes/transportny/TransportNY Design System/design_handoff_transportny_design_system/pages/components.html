@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Components · TransportNY</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="_icons.jsx"></script>
+<script type="text/babel" src="_chrome.jsx"></script>
+<script type="text/babel" src="_cards.jsx?v=3"></script>
+</head>
+<body class="tny-pane">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const Icon = window.TNYIcon;
+
+function Spec({ id, title, desc, children }) {
+  return (
+    <section id={id} className="tny-card p-8 mb-6">
+      <div className="flex items-baseline gap-3 mb-1">
+        <h2 className="font-oswald font-semibold text-[24px] text-slate-900">{title}</h2>
+      </div>
+      {desc && <p className="text-[13.5px] text-slate-600 max-w-2xl mb-6 leading-relaxed">{desc}</p>}
+      <div className="rounded-lg border border-zinc-950/10 bg-[#F7F8FA] p-8">{children}</div>
+    </section>
+  );
+}
+
+function Pill({color, label}) {
+  return (
+    <div className="h-8 px-3 pr-2 rounded-full bg-white text-slate-700 flex items-center gap-2 font-proxima text-[12.5px] shadow-sm border border-zinc-950/5">
+      <span className="size-2 rounded-full" style={{background:color}}/>
+      <span className="font-medium">{label}</span>
+      <Icon name="CaretDown" className="size-3 text-slate-500"/>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div className="min-h-screen">
+      <TNYSidebar product="DESIGN" active="components" expanded={true}
+        nav={[
+          { id:'theme', label:'Theme', icon:'Sections', onClick:'theme.html' },
+          { id:'grid', label:'Grid', icon:'Grid', onClick:'grid-system.html' },
+          { id:'components', label:'Components', icon:'Pages' },
+          { id:'patterns', label:'Patterns', icon:'MapLayers', onClick:'patterns.html' },
+        ]}/>
+      <main className="ml-60">
+        <TNYPageHeader
+          tone="hero"
+          kicker="// design system"
+          meta="v0.2 · components"
+          title="Components"
+          accent="."
+          desc="Every reusable surface used across TransportNY apps — page headers, buttons, inputs, navigation, cards, tables, popovers, and chart chrome — with the rules that keep them feeling like one system."
+        />
+
+        <div className="grid grid-cols-[1fr_220px] gap-10 px-10 py-8">
+          <div>
+
+            <Spec id="headers" title="Page headers"
+              desc={<>The canonical top-of-page header. One component, three tones. Always lives in the <code className="tny-mono">data</code> container (max-w 1480, px-8) so its left edge aligns with everything below it. Compose with <code className="tny-mono">TNYBreadcrumb</code> to add a breadcrumb above.</>}>
+              <div className="space-y-6">
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider mb-2">tone="data" · product / dashboard pages</div>
+                  <div className="rounded border border-zinc-950/10 overflow-hidden">
+                    <TNYPageHeader
+                      breadcrumb={[{label:'NPMRDS', href:'#'}, {label:'MAP-21 PM3'}]}
+                      kicker="// federal reporting"
+                      meta="23 CFR 490 · subparts e–g"
+                      title="MAP-21 PM3 performance"
+                      accent="."
+                      desc="Travel-time reliability, freight reliability, and peak-hour excessive delay for the New York State NHS."
+                      actions={<>
+                        <button className="h-9 px-4 rounded-md bg-[#EAAD43] hover:bg-[#F1CA87] text-[#37576B] font-proxima font-bold text-[11.5px] uppercase tracking-[0.12em] border-b-4 border-[#C68B1F]">PM3 HPMS report</button>
+                      </>}
+                      refresh="2026-05-08 04:12 EST"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider mb-2">tone="hero" · design-system docs, landing-style pages</div>
+                  <div className="rounded border border-zinc-950/10 overflow-hidden">
+                    <TNYPageHeader
+                      tone="hero"
+                      kicker="// design system"
+                      meta="v0.2 · components"
+                      title="Components"
+                      accent="."
+                      desc="Every reusable surface used across TransportNY apps."
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider mb-2">tone="editorial" · document or report titles</div>
+                  <div className="rounded border border-zinc-950/10 overflow-hidden">
+                    <TNYPageHeader
+                      tone="editorial"
+                      kicker="// regional report"
+                      meta="sullivan county · 2025"
+                      title="Bethel municipality profile"
+                      accent=""
+                      desc="Geographical description, government structure, land area, and population estimates for the Town of Bethel."
+                    />
+                  </div>
+                </div>
+                <div className="text-[12.5px] text-slate-600 leading-[1.55] pt-4 border-t border-zinc-950/05">
+                  <strong>Rule:</strong> use one header per page, at the very top, before any section. Don&apos;t roll a custom header — if the existing tones don&apos;t fit, talk to a maintainer before introducing a fourth.
+                </div>
+              </div>
+            </Spec>
+
+            <Spec id="breadcrumb" title="Breadcrumb"
+              desc={<>A standalone component (<code className="tny-mono">TNYBreadcrumb</code>) the page header consumes — but you can also use it on its own (modal trail, in-page nav). Items are <code className="tny-mono">{`{label, href?}`}</code>; the last item is always the current page and never a link. Mono uppercase, slate-500, ink-900 for the current item.</>}>
+              <div className="space-y-4">
+                <div className="rounded border border-zinc-950/10 bg-white px-4 py-3">
+                  <TNYBreadcrumb items={[{label:'NPMRDS', href:'#'}, {label:'MAP-21 PM3'}]}/>
+                </div>
+                <div className="rounded border border-zinc-950/10 bg-white px-4 py-3">
+                  <TNYBreadcrumb items={[{label:'Freight Atlas', href:'#'}, {label:'Corridors', href:'#'}, {label:'I-87 N · Albany → Saratoga'}]}/>
+                </div>
+                <div className="rounded border border-zinc-950/10 bg-white px-4 py-3">
+                  <TNYBreadcrumb items={[{label:'Design System', href:'#'}, {label:'Components', href:'#'}, {label:'Breadcrumb'}]}/>
+                </div>
+              </div>
+            </Spec>
+
+            <Spec id="buttons" title="Buttons"
+              desc="Primary on NYS Blue, secondary as a ghost. Use destructive in 100-tint container blocks, never as standalone CTAs.">
+              <div className="flex flex-wrap items-center gap-3">
+                <button className="h-11 px-6 rounded bg-[#1F3F8F] hover:bg-[#16307A] text-white font-proxima font-semibold text-[14px]">Primary Action</button>
+                <button className="h-11 px-6 rounded border border-[#1F3F8F] text-[#1F3F8F] font-proxima font-semibold text-[14px] hover:bg-[#1F3F8F]/5">Secondary</button>
+                <button className="h-11 px-6 rounded text-[#1F3F8F] font-proxima font-semibold text-[14px] hover:bg-[#1F3F8F]/5">Tertiary</button>
+                <button className="h-11 px-6 rounded bg-zinc-200 text-zinc-500 font-proxima font-semibold text-[14px] cursor-not-allowed">Disabled</button>
+                <button className="h-9 px-4 rounded border border-zinc-950/15 bg-white text-slate-700 font-proxima text-[13px] hover:bg-slate-50">Tone-bar action</button>
+                <button className="h-9 w-9 rounded border border-zinc-950/15 bg-white text-slate-700 hover:bg-slate-50 flex items-center justify-center"><Icon name="More" className="size-4"/></button>
+              </div>
+              <div className="mt-6 flex items-center gap-3">
+                <button className="h-9 px-3 flex items-center gap-1.5 rounded border border-zinc-950/15 bg-white text-slate-700 text-[12.5px] font-proxima hover:bg-slate-50">Display <Icon name="CaretDown" className="size-3 text-slate-500"/></button>
+                <button className="h-9 px-3 flex items-center gap-2 rounded border border-zinc-950/15 bg-white text-slate-700 text-[12.5px] font-proxima hover:bg-slate-50"><Icon name="Plus" className="size-3.5"/> Add Chart</button>
+                <button className="h-9 px-3 flex items-center gap-1.5 rounded bg-[#1F3F8F] text-white text-[12.5px] font-proxima font-semibold">Save as Template</button>
+              </div>
+            </Spec>
+
+            <Spec id="inputs" title="Inputs & Selectors"
+              desc={<>Three families: <strong>form fields</strong> (full-height, label-on-top, used in panels and forms), <strong>compact selectors</strong> (h-8 chips that live in page headers, filter bars and toolbars), and <strong>toggles/choices</strong> (switches, radios, checkboxes). The blue filter strip is its own surface variant — white-on-blue with a caret, never a chevron border.</>}>
+
+              {/* ── A · Form fields ─────────────────────────────────── */}
+              <div className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">// A · form fields · h-11 · label-on-top</div>
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-oswald mb-1">Region</label>
+                  <button className="w-full h-11 px-3 rounded border border-zinc-950/15 bg-white flex items-center text-[14px] text-slate-800">
+                    Region 3 — Central New York
+                    <Icon name="CaretDown" className="size-4 text-slate-500 ml-auto"/>
+                  </button>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1.5">Select</div>
+                </div>
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-oswald mb-1">Route ID</label>
+                  <input type="text" defaultValue="I-87 NB" className="w-full h-11 px-3 rounded border border-zinc-950/15 bg-white text-[14px] text-slate-800"/>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1.5">Text · focused border #1F3F8F</div>
+                </div>
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-oswald mb-1">Threshold (mph)</label>
+                  <div className="w-full h-11 rounded border border-zinc-950/15 bg-white flex items-stretch overflow-hidden">
+                    <input type="text" defaultValue="45" className="flex-1 px-3 text-[14px] text-slate-800 font-mono tabular-nums"/>
+                    <div className="flex flex-col border-l border-zinc-950/10">
+                      <button className="flex-1 w-8 text-slate-500 hover:bg-slate-50 flex items-center justify-center"><Icon name="CaretUp" className="size-3"/></button>
+                      <button className="flex-1 w-8 text-slate-500 hover:bg-slate-50 flex items-center justify-center border-t border-zinc-950/10"><Icon name="CaretDown" className="size-3"/></button>
+                    </div>
+                  </div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1.5">Number · mono tabular-nums</div>
+                </div>
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-oswald mb-1">Search</label>
+                  <div className="h-11 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] flex items-center gap-2 text-slate-300 text-[13px]">
+                    <Icon name="Search" className="size-4 text-slate-400"/>Search routes, reports…
+                  </div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1.5">Search · rounded-full · ink surface</div>
+                </div>
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-oswald mb-1">Date range</label>
+                  <div className="w-full h-11 rounded border border-zinc-950/15 bg-white flex items-center divide-x divide-zinc-950/10">
+                    <button className="flex-1 px-3 text-[14px] text-slate-800 font-mono tabular-nums text-left">2024-01-01</button>
+                    <span className="px-2 text-slate-400 text-[12px]">→</span>
+                    <button className="flex-1 px-3 text-[14px] text-slate-800 font-mono tabular-nums text-left">2024-12-31</button>
+                  </div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1.5">Date range · two-up</div>
+                </div>
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-oswald mb-1">Notes</label>
+                  <textarea defaultValue="Includes ramps and shoulders." rows={2} className="w-full px-3 py-2 rounded border border-zinc-950/15 bg-white text-[14px] text-slate-800 resize-none"></textarea>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1.5">Textarea</div>
+                </div>
+              </div>
+
+              {/* ── B · Filter chips & segmented (compact triggers) ── */}
+              <div className="mt-8 mb-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">// B · filter chips & segmented · h-8 · for filter rows, toolbars</div>
+              <div className="rounded border border-zinc-950/10 bg-slate-50 px-4 py-4 flex flex-wrap items-center gap-2">
+                <div className="h-8 inline-flex items-center gap-2 rounded-md bg-white border border-zinc-950/10 pl-2.5 pr-1.5">
+                  <Icon name="History" className="size-3.5 text-slate-400"/>
+                  <span className="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">period</span>
+                  <span className="text-[12px] text-[#0f1722] font-medium">AM peak (6–10)</span>
+                  <span className="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><Icon name="CaretDown" className="size-3"/></span>
+                </div>
+                <div className="h-8 inline-flex items-center gap-2 rounded-md bg-[#0f1722] text-white pl-2.5 pr-1.5">
+                  <span className="font-mono text-[10.5px] uppercase tracking-wider text-white/60">f-class</span>
+                  <span className="text-[12px] font-medium">Interstate</span>
+                  <button className="size-5 rounded hover:bg-white/10 flex items-center justify-center text-white/70"><Icon name="XMark" className="size-3"/></button>
+                </div>
+                <div className="h-8 inline-flex items-center rounded-md bg-white border border-zinc-950/10 p-0.5 gap-0.5">
+                  {[['Day',true],['Week',false],['Month',false]].map(([l,a]) => (
+                    <button key={l} className={`h-7 px-2.5 rounded text-[11.5px] font-mono uppercase tracking-wider ${a?'bg-[#0a0e13] text-white':'text-slate-500 hover:bg-slate-100'}`}>{l}</button>
+                  ))}
+                </div>
+                <button className="h-8 ml-auto inline-flex items-center gap-1.5 px-3 rounded-md border border-zinc-950/10 hover:bg-white text-slate-700 text-[11.5px] font-mono uppercase tracking-wider">
+                  <Icon name="XMark" className="size-3.5"/>Reset
+                </button>
+              </div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-2 grid grid-cols-3 gap-x-6 gap-y-1">
+                <div>filter chip · opens select menu</div>
+                <div>applied filter · ink-fill · removable</div>
+                <div>segmented · 2–4 short options</div>
+              </div>
+
+              {/* ── C · Tone-bar filters (saturated blue surface) ──── */}
+              <div className="mt-8 mb-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">// C · tone-bar filters · white-on-blue · caret, no border</div>
+              <div className="tny-bluebar rounded px-4 py-3 flex gap-8 text-white">
+                <div className="text-[12px]"><div className="text-white/70">Region:</div><button className="flex items-center gap-1.5 font-semibold">Region 3 <Icon name="CaretDown" className="size-3 text-white/70"/></button></div>
+                <div className="text-[12px]"><div className="text-white/70">Month:</div><button className="flex items-center gap-1.5 font-semibold">October '25 <Icon name="CaretDown" className="size-3 text-white/70"/></button></div>
+                <div className="text-[12px]"><div className="text-white/70">Road Class:</div><button className="flex items-center gap-1.5 font-semibold">All <Icon name="CaretDown" className="size-3 text-white/70"/></button></div>
+              </div>
+
+              {/* ── D · Toggles, radios, checkboxes ─────────────────── */}
+              <div className="mt-8 mb-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">// D · toggles & choice</div>
+              <div className="grid grid-cols-4 gap-6 items-start">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5"><span className="inline-flex h-5 w-9 rounded-full bg-[#1F3F8F] p-0.5"><span className="block h-4 w-4 rounded-full bg-white translate-x-4"/></span><span className="text-[13px] text-slate-700">On</span></div>
+                  <div className="flex items-center gap-2"><span className="inline-flex h-5 w-9 rounded-full bg-slate-300 p-0.5"><span className="block h-4 w-4 rounded-full bg-white"/></span><span className="text-[13px] text-slate-700">Off</span></div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-2">Switch · binary state</div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5"><input type="radio" checked readOnly className="accent-[#1F3F8F]"/><span className="text-[13px] text-slate-700">Total</span></div>
+                  <div className="flex items-center gap-2"><input type="radio" readOnly className="accent-[#1F3F8F]"/><span className="text-[13px] text-slate-700">Recurrent</span></div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-2">Radio · 1-of-N</div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5"><input type="checkbox" checked readOnly className="accent-[#1F3F8F] size-4"/><span className="text-[13px] text-slate-700">Interstate</span></div>
+                  <div className="flex items-center gap-2 mb-1.5"><input type="checkbox" checked readOnly className="accent-[#1F3F8F] size-4"/><span className="text-[13px] text-slate-700">Other NHS</span></div>
+                  <div className="flex items-center gap-2"><input type="checkbox" readOnly className="accent-[#1F3F8F] size-4"/><span className="text-[13px] text-slate-500">Non-NHS</span></div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-2">Checkbox · N-of-N</div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5"><span>opacity</span><span className="tabular-nums text-slate-700">0.65</span></div>
+                  <div className="h-1.5 rounded-full bg-slate-200 relative">
+                    <div className="absolute inset-y-0 left-0 w-[65%] rounded-full bg-[#1F3F8F]"></div>
+                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-4 rounded-full bg-white border border-[#1F3F8F] shadow-sm" style={{left:'65%'}}></div>
+                  </div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-2">Slider · numeric range</div>
+                </div>
+              </div>
+            </Spec>
+
+            <Spec id="selects" title="Selects"
+              desc={<>Four variants share the same trigger shape but differ in what the menu offers. <strong>Compact</strong> (h-8) lives in page headers and filter rows; the other three are h-11 form fields. Reach for <strong>multi-select with search</strong> any time the list is &gt;10 options or the user knows the value name they want.</>}>
+              <div className="grid grid-cols-4 gap-5">
+
+                {/* ── 01 · Compact select (MAP-21 year-picker) ── */}
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// 01 · Compact</div>
+                  <div className="text-[12px] text-slate-600 mb-3 leading-snug">Single-choice chip. Lives in page headers and filter rows. h-8.</div>
+                  <div className="h-8 inline-flex items-center gap-2 rounded-md bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 pl-2.5 pr-1.5">
+                    <span className="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">Year</span>
+                    <span className="font-mono tabular-nums text-[12px] text-[#0f1722] font-medium">2025</span>
+                    <span className="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><Icon name="CaretDown" className="size-3 rotate-180"/></span>
+                  </div>
+                  <div className="mt-1.5 w-[124px] rounded-md bg-white border border-zinc-950/10 shadow-lg ring-1 ring-black/5 py-1">
+                    <div className="px-3 pt-1 pb-1.5 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 border-b border-zinc-950/05 mb-1">CY · NPMRDS</div>
+                    {[[2025,true],[2024,false],[2023,false],[2022,false],[2021,false]].map(([y,a]) => (
+                      <button key={y} className={`w-full flex items-center justify-between pl-3 pr-2 h-7 text-[12px] font-mono tabular-nums ${a?'bg-[#0a0e13] text-white':'text-slate-600 hover:bg-slate-50'}`}>
+                        <span>{y}</span>{a && <span className="size-1.5 rounded-full bg-yellow-400"/>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── 02 · Standard select ── */}
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// 02 · Select</div>
+                  <div className="text-[12px] text-slate-600 mb-3 leading-snug">Single-choice form field. h-11. Up to ~10 options without search.</div>
+                  <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-oswald mb-1">Region</label>
+                  <button className="w-full h-11 px-3 rounded border border-[#37576B] ring-2 ring-[#37576B]/15 bg-white flex items-center text-[14px] text-slate-800">
+                    Region 3 — Central NY
+                    <Icon name="CaretDown" className="size-4 text-slate-500 ml-auto rotate-180"/>
+                  </button>
+                  <div className="mt-1 w-full rounded-md bg-white border border-zinc-950/10 shadow-lg ring-1 ring-black/5 py-1">
+                    {[
+                      ['Region 1 — Capital',false],
+                      ['Region 2 — Mohawk',false],
+                      ['Region 3 — Central NY',true],
+                      ['Region 4 — Genesee',false],
+                      ['Region 5 — Western',false],
+                    ].map(([l,a]) => (
+                      <button key={l} className={`w-full flex items-center pl-3 pr-2 h-8 text-[12.5px] text-left ${a?'bg-slate-50 text-[#0f1722] font-medium':'text-slate-700 hover:bg-slate-50'}`}>
+                        <span className="flex-1 truncate">{l}</span>
+                        {a && <Icon name="CaretUp" className="size-3.5 text-[#1F3F8F]"/>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── 03 · Multi-select ── */}
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// 03 · Multi-select</div>
+                  <div className="text-[12px] text-slate-600 mb-3 leading-snug">N-of-N. Trigger shows applied count + first selection; menu has checkboxes.</div>
+                  <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-oswald mb-1">Functional class</label>
+                  <button className="w-full h-11 px-3 rounded border border-[#37576B] ring-2 ring-[#37576B]/15 bg-white flex items-center gap-2 text-[14px] text-slate-800">
+                    <span className="h-5 px-1.5 rounded bg-[#1F3F8F] text-white font-mono text-[10.5px] tabular-nums flex items-center">3</span>
+                    <span className="truncate flex-1 text-left">Interstate, Other NHS…</span>
+                    <Icon name="CaretDown" className="size-4 text-slate-500 rotate-180"/>
+                  </button>
+                  <div className="mt-1 w-full rounded-md bg-white border border-zinc-950/10 shadow-lg ring-1 ring-black/5 py-1">
+                    {[
+                      ['Interstate',true],
+                      ['Other Fwy & Exp',true],
+                      ['Other Principal Arterial',true],
+                      ['Minor Arterial',false],
+                      ['Major Collector',false],
+                    ].map(([l,a]) => (
+                      <label key={l} className="w-full flex items-center gap-2 px-3 h-8 text-[12.5px] text-slate-700 hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" checked={a} readOnly className="accent-[#1F3F8F] size-3.5"/>
+                        <span className="truncate">{l}</span>
+                      </label>
+                    ))}
+                    <div className="border-t border-zinc-950/05 mt-1 pt-1 px-3 pb-1 flex items-center justify-between">
+                      <button className="font-mono text-[10px] uppercase tracking-wider text-[#37576B] hover:text-[#1f3450]">Clear</button>
+                      <button className="font-mono text-[10px] uppercase tracking-wider text-[#37576B] hover:text-[#1f3450]">Select all</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── 04 · Multi-select with search ── */}
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// 04 · Multi · search</div>
+                  <div className="text-[12px] text-slate-600 mb-3 leading-snug">Use when {'>'}10 options or names are known. Search field pinned at top of menu.</div>
+                  <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-oswald mb-1">TMCs</label>
+                  <button className="w-full h-11 px-3 rounded border border-[#37576B] ring-2 ring-[#37576B]/15 bg-white flex items-center gap-2 text-[14px] text-slate-800">
+                    <span className="h-5 px-1.5 rounded bg-[#1F3F8F] text-white font-mono text-[10.5px] tabular-nums flex items-center">12</span>
+                    <span className="truncate flex-1 text-left text-slate-500">Add TMCs…</span>
+                    <Icon name="CaretDown" className="size-4 text-slate-500 rotate-180"/>
+                  </button>
+                  <div className="mt-1 w-full rounded-md bg-white border border-zinc-950/10 shadow-lg ring-1 ring-black/5 overflow-hidden">
+                    <div className="p-2 border-b border-zinc-950/05 bg-slate-50">
+                      <div className="h-8 px-2.5 rounded bg-white border border-zinc-950/10 flex items-center gap-2 text-[12.5px]">
+                        <Icon name="Search" className="size-3.5 text-slate-400"/>
+                        <span className="text-slate-800">I-87</span>
+                        <span className="w-px h-3.5 bg-slate-700 animate-pulse"/>
+                        <span className="ml-auto font-mono text-[10px] text-slate-400 tabular-nums">3 of 412</span>
+                      </div>
+                    </div>
+                    <div className="py-1">
+                      {[
+                        ['I-87 NB · MM 12.4',true,'120N04519'],
+                        ['I-87 NB · MM 14.1',true,'120N04520'],
+                        ['I-87 SB · MM 12.4',false,'120P04519'],
+                      ].map(([l,a,tmc]) => (
+                        <label key={l} className="w-full flex items-center gap-2 px-3 h-9 text-[12.5px] text-slate-700 hover:bg-slate-50 cursor-pointer">
+                          <input type="checkbox" checked={a} readOnly className="accent-[#1F3F8F] size-3.5"/>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate">{l}</div>
+                            <div className="font-mono text-[9.5px] text-slate-400 tabular-nums">{tmc}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="border-t border-zinc-950/05 px-3 py-1.5 flex items-center justify-between bg-slate-50">
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">12 selected</span>
+                      <button className="font-mono text-[10px] uppercase tracking-wider text-[#37576B] hover:text-[#1f3450]">Clear all</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="mt-6 grid grid-cols-2 gap-x-8 gap-y-2 text-[12px] text-slate-600 leading-snug">
+                <div><span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">when to use compact</span><br/>Page headers, filter rows, dense toolbars — anywhere the label needs to read as part of a sentence ("Year 2025") rather than as a form field.</div>
+                <div><span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">when to use standard</span><br/>Inside forms, side panels, modals — any place that has room for a real label above the field.</div>
+                <div><span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">when to use multi</span><br/>Filtering by category sets (functional class, MPO, measure family). Show the applied count in the trigger; close menu only on outside-click, not on each tick.</div>
+                <div><span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">when to use multi · search</span><br/>Lists &gt;10 items, especially when users know the value name (TMC IDs, route names, ZIPs). Search filters in-place; selection state survives filtering.</div>
+              </div>
+            </Spec>
+
+            <Spec id="navigation" title="Navigation"
+              desc="A persistent ink rail anchors every product. Active items get an Amber left-bar and a tinted body; sub-sections indent into a darker plate.">
+              <div className="grid grid-cols-[260px_1fr] gap-6">
+                <div className="bg-[#12181F] rounded overflow-hidden h-[280px]">
+                  <div className="h-14 bg-[#0A0E13] flex items-center px-3 gap-2"><img src="../assets/nys_logo_white.svg" className="w-8 h-8"/><span className="font-oswald uppercase text-white text-[13.5px] flex-1">NPMRDS</span><Icon name="CaretDown" className="size-3.5 text-slate-400"/></div>
+                  <div className="py-1">
+                    <div className="px-4 py-2 flex items-center gap-3 text-slate-300"><Icon name="Pages" className="size-4 text-slate-400"/><span className="text-[13px]">Home</span></div>
+                    <div className="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-yellow-400 -ml-[3px]"><Icon name="MapLayers" className="size-4 text-yellow-400"/><span className="text-[13px]">Routes</span></div>
+                    <div className="pl-9 py-2 flex items-center gap-3 text-slate-300 bg-[#0d1117]"><span className="text-[13px]">Route Analysis</span></div>
+                    <div className="pl-9 py-2 flex items-center gap-3 text-white bg-[#0d1117] border-l-[3px] border-yellow-400 -ml-[3px]"><span className="text-[13px]">Regional Analysis</span></div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-1 text-[12.5px] text-slate-600"><span>NPMRDS</span><Icon name="ChevronRight" className="size-3 text-slate-400"/><span>Templates</span><Icon name="ChevronRight" className="size-3 text-slate-400"/><span className="text-slate-900 font-medium">Floating Car</span></div>
+                  <div className="tny-bluebar rounded h-12 flex items-center px-6 gap-8 text-white font-proxima text-[13px]"><span className="flex items-center gap-1.5 font-semibold">Templates <Icon name="CaretDown" className="size-3 text-white/70"/></span><span className="flex items-center gap-1.5 font-semibold">Routes <Icon name="CaretDown" className="size-3 text-white/70"/></span><span className="flex-1"/><span className="flex items-center gap-1.5 font-semibold">Chart Colors <Icon name="CaretDown" className="size-3 text-white/70"/></span></div>
+                  <div className="tny-bluebar-dark rounded h-14 flex items-center px-4 gap-2 overflow-hidden">
+                    <Pill color="#E5A646" label="2024 — Inner Loop 2"/>
+                    <Pill color="#F2CB3D" label="2024 — AM Peak"/>
+                    <Pill color="#C8D2E0" label="2024 — PM Peak"/>
+                  </div>
+                  <div className="flex gap-1.5 text-[12.5px]">
+                    <a className="tny-toc-item active flex-1 !pl-3">Overview</a>
+                    <a className="tny-toc-item flex-1 !pl-3">What is NPMRDS?</a>
+                    <a className="tny-toc-item flex-1 !pl-3">Strengths</a>
+                  </div>
+                </div>
+              </div>
+            </Spec>
+
+            <Spec id="cards" title="Cards"
+              desc={<>The card system has two layers. <strong>Primitives</strong> (<code className="tny-mono">Card</code>, <code className="tny-mono">CardKicker</code>, <code className="tny-mono">CardTitle</code>, <code className="tny-mono">CardScore</code>, <code className="tny-mono">CardMeta</code>, <code className="tny-mono">CardHint</code>, <code className="tny-mono">CardDelta</code>, <code className="tny-mono">CardTrend</code>, <code className="tny-mono">CardTargetBar</code>, <code className="tny-mono">CardStatus</code>) let you assemble any card shape. <strong>Composed cards</strong> (<code className="tny-mono">KpiCard</code>, <code className="tny-mono">KpiCardCompliance</code>, <code className="tny-mono">StatTile</code>, <code className="tny-mono">MetricCard</code>) cover ~90% of cases. Reach for a composed card first.</>}>
+
+              {/* ─── Single-column rule callout ─── */}
+              <div className="mb-8 rounded-lg border-2 border-[#CA8A04]/30 bg-[#fffbeb] p-5 grid grid-cols-[auto_1fr] gap-4 items-start">
+                <div className="font-oswald uppercase text-[11px] tracking-[0.2em] text-[#CA8A04] flex-shrink-0 mt-0.5">// rule</div>
+                <div>
+                  <div className="font-oswald font-medium text-[16px] text-[#0f1722] mb-1.5">Every section of a card lives on its own row.</div>
+                  <p className="font-proxima text-[13px] text-slate-700 leading-relaxed">
+                    No section splits horizontally into two columns. The trend sparkline always takes the full width of the card. This holds even when cards shrink to ~150 px in narrow grids — kickers, status pills, deltas, hints, and trends each stack on their own line. One deliberate exception: <code className="tny-mono">MetricCard</code> is horizontal by design (icon + content + delta).
+                  </p>
+                </div>
+              </div>
+
+              {/* ─── Primitives ─── */}
+              <div className="mb-8">
+                <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-[0.18em] mb-3">// Primitives</div>
+                <div className="grid grid-cols-3 gap-4">
+
+                  <div>
+                    <div className="text-[12px] font-mono uppercase tracking-wider text-slate-500 mb-2">Card</div>
+                    <div className="flex flex-col gap-2">
+                      <Card className="px-3 py-2 text-[12px] text-slate-600">tone="light"</Card>
+                      <Card tone="tint" className="px-3 py-2 text-[12px] text-slate-600">tone="tint"</Card>
+                      <Card tone="dark" className="px-3 py-2 text-[12px]">tone="dark"</Card>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[12px] font-mono uppercase tracking-wider text-slate-500 mb-2">CardKicker / Title / Meta / Hint</div>
+                    <Card className="px-3 py-3 flex flex-col gap-2">
+                      <CardKicker>// ingest · faf5</CardKicker>
+                      <CardTitle>Annual freight tonnage</CardTitle>
+                      <CardMeta>target 250 M tons / yr</CardMeta>
+                      <CardHint>Refreshed quarterly from FHWA feed.</CardHint>
+                    </Card>
+                  </div>
+
+                  <div>
+                    <div className="text-[12px] font-mono uppercase tracking-wider text-slate-500 mb-2">CardStatus</div>
+                    <Card className="px-3 py-3 flex flex-col gap-1.5 items-start">
+                      <CardStatus kind="good"/>
+                      <CardStatus kind="bad"/>
+                      <CardStatus kind="warn" label="check data"/>
+                      <CardStatus kind="neutral"/>
+                    </Card>
+                  </div>
+
+                  <div>
+                    <div className="text-[12px] font-mono uppercase tracking-wider text-slate-500 mb-2">CardScore <span className="text-slate-400 normal-case">(auto-sizes)</span></div>
+                    <Card className="px-3 py-3 flex flex-col gap-2">
+                      <CardScore value="84.2" unit="%"/>
+                      <CardScore value="1,204" unit="stations"/>
+                      <CardScore value="4,424,124" unit="hr/yr"/>
+                    </Card>
+                  </div>
+
+                  <div>
+                    <div className="text-[12px] font-mono uppercase tracking-wider text-slate-500 mb-2">CardDelta</div>
+                    <Card className="px-3 py-3 flex flex-col gap-1.5 items-start">
+                      <CardDelta value="+4.2%"/>
+                      <CardDelta value="-2.2%"/>
+                      <CardDelta value="±0.0"/>
+                    </Card>
+                  </div>
+
+                  <div>
+                    <div className="text-[12px] font-mono uppercase tracking-wider text-slate-500 mb-2">CardTrend <span className="text-slate-400 normal-case">(full-width)</span></div>
+                    <Card className="px-3 py-3 flex flex-col gap-2">
+                      <CardTrend values={[76,79,80,81,82,83,84]} stroke="#10B981"/>
+                      <CardTrend values={[19,17,18,17,16,15,14]} stroke="#EF4444"/>
+                      <CardTrend values={[1.55,1.51,1.48,1.46,1.44,1.43,1.42]} stroke="#37576B"/>
+                    </Card>
+                  </div>
+
+                  <div className="col-span-3">
+                    <div className="text-[12px] font-mono uppercase tracking-wider text-slate-500 mb-2">CardTargetBar</div>
+                    <Card className="px-4 py-3 flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <CardMeta>on track · 84 / 80</CardMeta>
+                        <CardTargetBar value={84} target={80}/>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <CardMeta>below · 73 / 76</CardMeta>
+                        <CardTargetBar value={73} target={76}/>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <CardMeta>lower-is-better · 1.42 / 1.55</CardMeta>
+                        <CardTargetBar value={1.42} target={1.55} max={2} good={false}/>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+
+              {/* ─── Composed: KpiCard ─── */}
+              <div className="mb-8">
+                <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-[0.18em] mb-3">// KpiCard — the default</div>
+                <p className="text-[12.5px] text-slate-600 mb-3 max-w-xl">Use this 80% of the time. Order: status → title → score → target → delta → hint → trend. Each on its own row.</p>
+                <div className="grid grid-cols-4 gap-4">
+                  <KpiCard
+                    status="good"
+                    title="Interstate reliable"
+                    value="84.2" unit="%"
+                    target="80%" delta="+4.2"
+                    trend={[76,79,80,81,82,83,84.2]} trendStroke="#10B981"/>
+                  <KpiCard
+                    status="bad"
+                    title="Annual excessive delay"
+                    value="4,424,124" unit="hr/yr"
+                    target="4,000,000" delta="+424,124"
+                    trend={[3.8,3.9,3.7,4.0,4.2,4.3,4.4]} trendStroke="#EF4444"/>
+                  <KpiCard
+                    title="Active TMC corridors"
+                    value="142"
+                    hint="NHS + TPF, statewide"
+                    trend={[120,124,128,132,136,140,142]}/>
+                  <KpiCard
+                    status="good"
+                    title="Live ingest feeds"
+                    value="7" unit="feeds"
+                    hint="FAF5, NPMRDS, HPMS, CCS, 511NY, AVAIL, FHWA"/>
+                </div>
+              </div>
+
+              {/* ─── Composed: KpiCardCompliance ─── */}
+              <div className="mb-8">
+                <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-[0.18em] mb-3">// KpiCardCompliance — target vs actual</div>
+                <p className="text-[12.5px] text-slate-600 mb-3 max-w-xl">Adds a prominent target bar. Use when target-vs-actual <em>is</em> the story (MAP-21 PM3, SLA dashboards). Same single-column shape as KpiCard with the bar inserted after the target line.</p>
+                <div className="grid grid-cols-4 gap-4">
+                  <KpiCardCompliance
+                    status="good"
+                    title="Interstate reliable"
+                    value="84.2" unit="%"
+                    target={80} delta="+4.2"
+                    trend={[76,79,80,81,82,83,84.2]} trendStroke="#10B981"
+                    hint="On track"/>
+                  <KpiCardCompliance
+                    status="bad"
+                    title="Non-Interstate NHS reliable"
+                    value="73.8" unit="%"
+                    target={76} delta="-2.2"
+                    trend={[71,72,71,72,73,73.5,73.8]} trendStroke="#EF4444"
+                    hint="Slowing — flag"/>
+                  <KpiCardCompliance
+                    status="good"
+                    title="Truck TT reliability"
+                    value="1.42"
+                    target={1.55} delta="-0.13"
+                    trend={[1.55,1.51,1.48,1.46,1.44,1.43,1.42]} trendStroke="#10B981"
+                    lowerIsBetter
+                    hint="Improving y/y"/>
+                  <KpiCardCompliance
+                    status="bad"
+                    title="Peak-hour excessive delay"
+                    value="4,424,124" unit="hr/yr"
+                    target={4000000} delta="+10.6%" deltaKind="bad"
+                    trend={[3.8,3.9,3.7,4.0,4.2,4.3,4.4]} trendStroke="#EF4444"
+                    lowerIsBetter
+                    hint="Urban pressure"/>
+                </div>
+              </div>
+
+              {/* ─── Narrow-width stress test ─── */}
+              <div className="mb-8">
+                <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-[0.18em] mb-3">// Narrow-width stress test</div>
+                <p className="text-[12.5px] text-slate-600 mb-3 max-w-xl">Same cards at ~160 px wide — what happens when a page shrinks or the card lives in a sidebar. Every section still reads.</p>
+                <div className="grid grid-cols-6 gap-3">
+                  <KpiCardCompliance
+                    status="good"
+                    title="Interstate reliable"
+                    value="84.2" unit="%"
+                    target={80} delta="+4.2"
+                    trend={[76,79,80,81,82,83,84.2]} trendStroke="#10B981"
+                    hint="On track"/>
+                  <KpiCardCompliance
+                    status="bad"
+                    title="Peak-hour excessive delay"
+                    value="4,424,124" unit="hr/yr"
+                    target={4000000} delta="+10.6%" deltaKind="bad"
+                    trend={[3.8,3.9,3.7,4.0,4.2,4.3,4.4]} trendStroke="#EF4444"
+                    lowerIsBetter
+                    hint="Urban pressure"/>
+                  <KpiCardCompliance
+                    status="good"
+                    title="Truck TT reliability"
+                    value="1.42"
+                    target={1.55} delta="-0.13"
+                    trend={[1.55,1.51,1.48,1.46,1.44,1.43,1.42]} trendStroke="#10B981"
+                    lowerIsBetter
+                    hint="Improving"/>
+                  <KpiCard
+                    status="good"
+                    title="Live ingest feeds"
+                    value="7" unit="feeds"
+                    hint="7 sources"/>
+                  <StatTile kicker="ONLINE" value="1,186" sub="/ 1,204" status="good" trend={[1180,1190,1196,1200,1203,1204]}/>
+                  <StatTile kicker="ANOMALIES" value="3" sub="last 1h" status="bad" trend={[1,2,1,2,3,3]} trendStroke="#EF4444"/>
+                </div>
+              </div>
+
+              {/* ─── StatTile + MetricCard ─── */}
+              <div className="mb-8 grid grid-cols-2 gap-8">
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-[0.18em] mb-3">// StatTile</div>
+                  <p className="text-[12.5px] text-slate-600 mb-3">Compact dashboard tile. Status sits in the top-right corner so it doesn&apos;t fight for row space.</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <StatTile kicker="ONLINE" value="1,186" sub="/ 1,204" status="good" trend={[1180,1190,1196,1200,1203,1204]}/>
+                    <StatTile kicker="LATENCY" value="142" unit="ms" status="warn" trend={[140,138,141,144,145,142]} trendStroke="#F59E0B"/>
+                    <StatTile kicker="THROUGHPUT" value="3.84" unit="k vph" trend={[3.4,3.5,3.7,3.6,3.8,3.84]}/>
+                    <StatTile kicker="ANOMALIES" value="3" sub="last 1h" status="bad" trend={[1,2,1,2,3,3]} trendStroke="#EF4444"/>
+                  </div>
+                </div>
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-[0.18em] mb-3">// MetricCard <span className="text-[#CA8A04] normal-case">— exception</span></div>
+                  <p className="text-[12.5px] text-slate-600 mb-3">Horizontal layout with leading icon. The single deliberate exception to the row-stacking rule — use when the row format IS the point (settings panels, inline metric lists), not as a default KPI.</p>
+                  <div className="flex flex-col gap-2">
+                    <MetricCard icon="Database" kicker="RECORDS" value="1.2M" sub="NPMRDS · Q4 2024" delta="+82k"/>
+                    <MetricCard icon="MapLayers" kicker="SEGMENTS" value="4,210" sub="TMC, NHS+TPF" delta="+18"/>
+                    <MetricCard icon="History" kicker="LAST SYNC" value="04:12" unit="EST" sub="today · cycle 4/4"/>
+                  </div>
+                </div>
+              </div>
+
+              {/* ─── Build your own ─── */}
+              <div className="mb-2 grid grid-cols-2 gap-8">
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-[0.18em] mb-3">// Build your own from primitives</div>
+                  <p className="text-[12.5px] text-slate-600 mb-3">When a composed card doesn&apos;t fit, stack primitives directly. Same single-column rule applies.</p>
+                  <Card className="p-5 flex flex-col gap-3">
+                    <CardKicker color="ochre">// faf5 · ingest</CardKicker>
+                    <CardStatus kind="good" label="streaming"/>
+                    <CardTitle>Annual freight tonnage</CardTitle>
+                    <CardScore value="248.7" unit="M tons / yr"/>
+                    <CardDelta value="+1.9%"/>
+                    <CardHint>Refreshed quarterly from FHWA FAF5 estimates.</CardHint>
+                    <div className="mt-auto pt-3 border-t border-zinc-950/05">
+                      <CardTrend values={[180,184,162,210,235,243,248]} stroke="#37576B"/>
+                    </div>
+                  </Card>
+                </div>
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-[0.18em] mb-3">// TNYCard — content shell (legacy)</div>
+                  <p className="text-[12.5px] text-slate-600 mb-3">Older title-bar container with a Display menu + drag handle. Still in use for chart-wrapped sections; prefer <code className="tny-mono">Card</code> for new work.</p>
+                  <TNYCard title="Total Congestion Cost" right={<span className="text-[11px] text-slate-500">vs prev month</span>}>
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <span className="size-2.5 rounded-full bg-rose-400 mt-1.5"/>
+                        <div className="flex-1">
+                          <div className="text-[11px] text-slate-500">Recurrent</div>
+                          <div className="flex items-baseline gap-2"><span className="font-mono text-[22px] font-semibold text-slate-900">1,265</span><span className="text-[11px] text-slate-500 font-mono">40.8/day</span></div>
+                        </div>
+                        <div className="text-right"><div className="text-[13px] font-medium text-emerald-600">↓ 0.8%</div></div>
+                      </div>
+                    </div>
+                  </TNYCard>
+                </div>
+              </div>
+
+              {/* ─── Rules ─── */}
+              <div className="mt-6 pt-4 border-t border-zinc-950/05 grid grid-cols-2 gap-6 text-[12.5px] text-slate-600">
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-emerald-700 tracking-wider mb-1.5">Do</div>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>Stack every section on its own row — including status, hint, delta, and trend</li>
+                    <li>Use <code className="tny-mono">size="auto"</code> on CardScore so 7-digit numbers stay legible</li>
+                    <li>Put trend at the bottom as a full-width sparkline</li>
+                    <li>Drop the kicker if it&apos;s just regulatory citation noise — the title carries the metric name</li>
+                    <li>Lean on composed cards; drop to primitives only when you need an atypical shape</li>
+                  </ul>
+                </div>
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-rose-700 tracking-wider mb-1.5">Don&apos;t</div>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>Put kicker + status pill in the same row — they fight for width</li>
+                    <li>Put a sparkline beside a label — stack them</li>
+                    <li>Force a fixed font size on a value that may grow past 6 digits</li>
+                    <li>Use both KpiCard and KpiCardCompliance in the same row — pick one shape per section</li>
+                    <li>Reach for MetricCard as a default KPI — it&apos;s for horizontal metric lists</li>
+                  </ul>
+                </div>
+              </div>
+            </Spec>
+
+            <Spec id="tables" title="Tables"
+              desc="Inverted in the editor (deep navy headers, bone tint) for printable jurisdictional documents; light-mode for in-app dashboards.">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider mb-2">Editorial</div>
+                  <table className="w-full border-collapse text-[12.5px]">
+                    <thead>
+                      <tr>
+                        <th className="bg-[#0F2D4D] text-white px-3 py-2 font-oswald font-semibold border border-white text-left">Jurisdiction</th>
+                        <th colSpan="2" className="bg-[#0F2D4D] text-white px-3 py-2 font-oswald font-semibold border border-white">Total Land Area</th>
+                      </tr>
+                      <tr>
+                        <th className="bg-[#F4F4F2] px-3 py-1.5 border border-slate-200"></th>
+                        <th className="bg-[#F4F4F2] px-3 py-1.5 font-semibold border border-slate-200">Acres</th>
+                        <th className="bg-[#F4F4F2] px-3 py-1.5 font-semibold border border-slate-200">Sq Miles</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td className="px-3 py-1.5 border border-slate-200">Bethel (T)</td><td className="px-3 py-1.5 border border-slate-200 text-right">51,761.8</td><td className="px-3 py-1.5 border border-slate-200 text-right">80.9</td></tr>
+                      <tr><td className="px-3 py-1.5 border border-slate-200">Liberty (T)</td><td className="px-3 py-1.5 border border-slate-200 text-right">62,440.1</td><td className="px-3 py-1.5 border border-slate-200 text-right">97.5</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider mb-2">Dashboard</div>
+                  <div className="border border-zinc-950/10 rounded overflow-hidden">
+                    <table className="w-full text-[12.5px]">
+                      <thead><tr className="bg-white border-b border-zinc-950/10 text-slate-700 font-oswald uppercase tracking-wide text-[11px]">
+                        <th className="px-3 py-2 text-left">Event</th><th className="px-3 py-2 text-left">Facility</th><th className="px-3 py-2 text-right">Cost</th><th className="px-3 py-2 text-right">Duration</th>
+                      </tr></thead>
+                      <tbody>
+                        {[1,2,3,4].map(i=>(<tr key={i} className="border-b border-zinc-950/5 hover:bg-amber-50/40"><td className="px-3 py-2"><div>Construction</div><div className="text-[11px] text-slate-500 font-mono">2025-10-15</div></td><td className="px-3 py-2"><div>I-81</div><div className="text-[11px] text-slate-500 font-mono">11:00:10</div></td><td className="px-3 py-2 text-right font-mono">$0.00</td><td className="px-3 py-2 text-right font-mono">7h 0m</td></tr>))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </Spec>
+
+            <Spec id="popovers" title="Popovers, Menus & Toolbars"
+              desc="Three shapes: list-checkbox menus from blue tone-bar selectors; right-anchored action menus on card ⋯; and the floating black dock used in document editing.">
+              <div className="grid grid-cols-3 gap-6">
+                <div className="tny-menu p-2 w-full">
+                  {['2024 — Inner Loop 2','Day of Week — Inner Loop','2024 — AM Peak','2024 — PM Peak','2023 — Inner Loop 2','2022 — Inner Loop 2'].map((l,i)=>(
+                    <div key={i} className="h-8 px-2 flex items-center gap-2.5 text-[13px] hover:bg-slate-50 rounded">
+                      <span className={`size-4 rounded-sm border ${i===0?'bg-[#1F3F8F] border-[#1F3F8F]':'border-slate-300'} flex items-center justify-center`}>{i===0 && <Icon name="Check" className="size-3 text-white"/>}</span>
+                      {l}
+                    </div>
+                  ))}
+                </div>
+                <div className="tny-menu w-full">
+                  {[
+                    ['Sections','View Graph Data'],['Pages','Add Message Box'],['MapLayers','Save as PNG'],['Settings','Select Graph Color'],['Copy','Duplicate Graph'],['Trash','Remove Graph'],
+                  ].map(([ic,l],i)=>(
+                    <div key={i} className="h-9 px-3 flex items-center gap-3 text-[13px] hover:bg-slate-50"><Icon name={ic} className="size-4 text-slate-500"/>{l}</div>
+                  ))}
+                </div>
+                <div className="self-start">
+                  <div className="h-10 px-3 rounded-full bg-[#1a2029] text-white inline-flex items-center gap-3 shadow-xl">
+                    {['Settings','Database','Pages','History','Lock','MapLayers'].map((i,k)=>(<button key={k} className="size-6 flex items-center justify-center text-slate-300 hover:text-yellow-400"><Icon name={i} className="size-3.5"/></button>))}
+                    <span className="ml-1 h-7 px-3 rounded bg-[#37576B] text-white text-[12px]">No Changes</span>
+                  </div>
+                  <div className="mt-3 text-[12px] text-slate-500">Editor dock — persistent within Documents app.</div>
+                </div>
+              </div>
+            </Spec>
+
+            <Spec id="charts" title="Chart Chrome"
+              desc={<>Charts are inset within standard cards. Axis labels are 9.5–10px mono slate; gridlines are 1px @ slate-200. Primary series uses NYS Blue <code className="tny-mono">#1F3F8F</code>; comparisons step down a slate ramp; targets and annotations use Amber. The Cat-5 palette is reserved for categorical breakdowns (bars, stacks), never for time-series lines.</>}>
+
+              {/* ── A · Bar — categorical comparison ─────────────────── */}
+              <div className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">// A · bar · categorical · 2–5 buckets</div>
+              <TNYCard title="Bar Graph Summary, Speed" right={<span className="font-mono text-[10.5px] text-slate-500 uppercase tracking-wider">mph · 2025</span>}>
+                <div className="p-4">
+                  <svg viewBox="0 0 600 180" className="w-full h-44">
+                    <g stroke="#e2e8f0" strokeWidth="1">
+                      {[0,1,2,3,4].map(i=>(<line key={i} x1="40" x2="590" y1={20+i*30} y2={20+i*30}/>))}
+                    </g>
+                    <g fontFamily="ui-monospace" fontSize="10" fill="#94a3b8">
+                      {[45,35,25,15,5].map((v,i)=>(<text key={i} x="35" y={24+i*30} textAnchor="end">{v}</text>))}
+                    </g>
+                    <rect x="80" y="20" width="100" height="135" fill="#6F6F6F"/>
+                    <rect x="200" y="20" width="100" height="135" fill="#E5A646"/>
+                    <rect x="320" y="20" width="100" height="135" fill="#94C24E"/>
+                    <rect x="440" y="20" width="100" height="135" fill="#E160A4"/>
+                    <g fontFamily="ui-sans-serif" fontSize="10" fill="#475569">
+                      <text x="130" y="172" textAnchor="middle">Inner Loop 2</text>
+                      <text x="250" y="172" textAnchor="middle">AM Peak</text>
+                      <text x="370" y="172" textAnchor="middle">PM Peak</text>
+                      <text x="490" y="172" textAnchor="middle">Off Peak</text>
+                    </g>
+                  </svg>
+                </div>
+              </TNYCard>
+
+              {/* ── B · Line — single series, area fill, continuous x ── */}
+              <div className="mt-8 mb-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">// B · line · single series · area fill · continuous x</div>
+              <TNYCard title="Travel-time index, weekday avg" right={<span className="font-mono text-[10.5px] text-slate-500 uppercase tracking-wider">TTI · I-787 NB · 2025</span>}>
+                <div className="p-4">
+                  {(() => {
+                    const tti = [1.05,1.04,1.03,1.02,1.02,1.05,1.18,1.40,1.62,1.45,1.20,1.15,1.18,1.20,1.25,1.42,1.68,1.78,1.55,1.30,1.18,1.12,1.08,1.06];
+                    const W=620,H=210,PL=42,PR=16,PT=18,PB=30;
+                    const pw=W-PL-PR, ph=H-PT-PB;
+                    const xAt=i=>PL+(i/(tti.length-1))*pw;
+                    const yMin=1.0,yMax=1.8;
+                    const yAt=v=>PT+(1-(v-yMin)/(yMax-yMin))*ph;
+                    const line=tti.map((v,i)=>(i===0?'M':'L')+xAt(i).toFixed(1)+','+yAt(v).toFixed(1)).join(' ');
+                    const area=`M ${xAt(0).toFixed(1)},${H-PB} L `+tti.map((v,i)=>xAt(i).toFixed(1)+','+yAt(v).toFixed(1)).join(' L ')+` L ${xAt(23).toFixed(1)},${H-PB} Z`;
+                    return (
+                      <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+                        <defs>
+                          <linearGradient id="ttiGrad" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stopColor="#1F3F8F" stopOpacity="0.22"/>
+                            <stop offset="100%" stopColor="#1F3F8F" stopOpacity="0"/>
+                          </linearGradient>
+                        </defs>
+                        <g stroke="#e2e8f0" strokeWidth="1">
+                          {[1.0,1.2,1.4,1.6,1.8].map(v=>(<line key={v} x1={PL} x2={W-PR} y1={yAt(v)} y2={yAt(v)}/>))}
+                        </g>
+                        <g fontFamily="ui-monospace" fontSize="9.5" fill="#94a3b8" textAnchor="end">
+                          {[1.0,1.2,1.4,1.6,1.8].map(v=>(<text key={v} x={PL-5} y={yAt(v)+3}>{v.toFixed(1)}</text>))}
+                        </g>
+                        <g fontFamily="ui-monospace" fontSize="9.5" fill="#94a3b8" textAnchor="middle">
+                          {[0,6,12,18,23].map(i=>(<text key={i} x={xAt(i)} y={H-PB+15}>{i.toString().padStart(2,'0')}:00</text>))}
+                        </g>
+                        {/* peak band */}
+                        <rect x={xAt(7)} y={PT} width={xAt(9)-xAt(7)} height={ph} fill="#FACC15" fillOpacity="0.08"/>
+                        <rect x={xAt(16)} y={PT} width={xAt(18)-xAt(16)} height={ph} fill="#FACC15" fillOpacity="0.08"/>
+                        <path d={area} fill="url(#ttiGrad)"/>
+                        <path d={line} fill="none" stroke="#1F3F8F" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/>
+                        {/* peaks annotated */}
+                        <g>
+                          <circle cx={xAt(8)} cy={yAt(tti[8])} r="3.5" fill="#fff" stroke="#1F3F8F" strokeWidth="2"/>
+                          <text x={xAt(8)} y={yAt(tti[8])-9} fontFamily="ui-monospace" fontSize="9.5" fill="#0f1722" textAnchor="middle">1.62</text>
+                          <circle cx={xAt(17)} cy={yAt(tti[17])} r="3.5" fill="#fff" stroke="#1F3F8F" strokeWidth="2"/>
+                          <text x={xAt(17)} y={yAt(tti[17])-9} fontFamily="ui-monospace" fontSize="9.5" fill="#0f1722" textAnchor="middle">1.78</text>
+                        </g>
+                      </svg>
+                    );
+                  })()}
+                  <div className="mt-3 flex items-center gap-4 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                    <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-4 bg-[#1F3F8F]"/>TTI · weekday avg</span>
+                    <span className="inline-flex items-center gap-1.5"><span className="size-2.5 bg-[#FACC15]/40"/>peak window</span>
+                  </div>
+                </div>
+              </TNYCard>
+
+              {/* ── C · Multi-line — series comparison ───────────────── */}
+              <div className="mt-8 mb-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">// C · multi-line · 2–4 series · YoY, A/B compare, peer corridors</div>
+              <TNYCard
+                title="LOTTR · Interstate · monthly"
+                right={
+                  <div className="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-1.5 text-[#0f1722]"><span className="h-0.5 w-4 bg-[#1F3F8F]"/>2025</span>
+                    <span className="inline-flex items-center gap-1.5 text-slate-500"><span className="h-0.5 w-4 bg-[#94A3B8]"/>2024</span>
+                    <span className="inline-flex items-center gap-1.5 text-slate-400"><span className="h-0.5 w-4 bg-[#CBD5E1]"/>2023</span>
+                  </div>
+                }>
+                <div className="p-4">
+                  {(() => {
+                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    const s25 = [1.18,1.22,1.20,1.28,1.35,1.40,1.46,1.42,1.30,1.24,1.22,1.20];
+                    const s24 = [1.20,1.25,1.24,1.32,1.38,1.44,1.50,1.48,1.36,1.28,1.26,1.22];
+                    const s23 = [1.25,1.30,1.28,1.36,1.42,1.48,1.54,1.50,1.40,1.32,1.30,1.26];
+                    const W=620,H=240,PL=42,PR=16,PT=22,PB=36;
+                    const pw=W-PL-PR, ph=H-PT-PB;
+                    const xAt=i=>PL+(i/(months.length-1))*pw;
+                    const yMin=1.0,yMax=1.6;
+                    const yAt=v=>PT+(1-(v-yMin)/(yMax-yMin))*ph;
+                    const pathFor=(v)=>v.map((p,i)=>(i===0?'M':'L')+xAt(i).toFixed(1)+','+yAt(p).toFixed(1)).join(' ');
+                    const fi=6; // focused index — July
+                    return (
+                      <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+                        <g stroke="#e2e8f0" strokeWidth="1">
+                          {[1.0,1.2,1.4,1.6].map(v=>(<line key={v} x1={PL} x2={W-PR} y1={yAt(v)} y2={yAt(v)}/>))}
+                        </g>
+                        {/* target threshold */}
+                        <line x1={PL} x2={W-PR} y1={yAt(1.5)} y2={yAt(1.5)} stroke="#EAAD43" strokeWidth="1" strokeDasharray="4 3"/>
+                        <text x={W-PR-4} y={yAt(1.5)-4} fontFamily="ui-monospace" fontSize="9" fill="#CA8A04" textAnchor="end" letterSpacing="0.5">TARGET ≤ 1.50</text>
+
+                        <g fontFamily="ui-monospace" fontSize="9.5" fill="#94a3b8" textAnchor="end">
+                          {[1.0,1.2,1.4,1.6].map(v=>(<text key={v} x={PL-5} y={yAt(v)+3}>{v.toFixed(1)}</text>))}
+                        </g>
+                        <g fontFamily="ui-monospace" fontSize="9.5" fill="#94a3b8" textAnchor="middle">
+                          {months.map((m,i)=>(<text key={i} x={xAt(i)} y={H-PB+15}>{m}</text>))}
+                        </g>
+
+                        <path d={pathFor(s23)} fill="none" stroke="#CBD5E1" strokeWidth="1.5" strokeLinejoin="round"/>
+                        <path d={pathFor(s24)} fill="none" stroke="#94A3B8" strokeWidth="1.5" strokeLinejoin="round"/>
+                        <path d={pathFor(s25)} fill="none" stroke="#1F3F8F" strokeWidth="2.5" strokeLinejoin="round"/>
+
+                        {/* focus line + dots */}
+                        <line x1={xAt(fi)} x2={xAt(fi)} y1={PT} y2={H-PB} stroke="#0f1722" strokeWidth="1" strokeDasharray="2 3" opacity="0.35"/>
+                        <circle cx={xAt(fi)} cy={yAt(s23[fi])} r="3" fill="#fff" stroke="#CBD5E1" strokeWidth="1.5"/>
+                        <circle cx={xAt(fi)} cy={yAt(s24[fi])} r="3" fill="#fff" stroke="#94A3B8" strokeWidth="1.5"/>
+                        <circle cx={xAt(fi)} cy={yAt(s25[fi])} r="4" fill="#1F3F8F"/>
+
+                        {/* tooltip */}
+                        <g transform={`translate(${xAt(fi)+12}, ${yAt(s25[fi])-44})`}>
+                          <rect width="108" height="64" rx="3" fill="#0a0e13"/>
+                          <text x="10" y="16" fontFamily="ui-monospace" fontSize="9" fill="#94a3b8" letterSpacing="0.8">JUL · LOTTR</text>
+                          <g transform="translate(10,28)">
+                            <circle cx="3" cy="-3" r="3" fill="#1F3F8F"/>
+                            <text x="12" y="0" fontFamily="ui-monospace" fontSize="10" fill="#fff">2025</text>
+                            <text x="88" y="0" fontFamily="ui-monospace" fontSize="10" fill="#fff" textAnchor="end">1.46</text>
+                          </g>
+                          <g transform="translate(10,42)">
+                            <circle cx="3" cy="-3" r="2.5" fill="none" stroke="#94A3B8" strokeWidth="1.5"/>
+                            <text x="12" y="0" fontFamily="ui-monospace" fontSize="9.5" fill="#cbd5e1">2024</text>
+                            <text x="88" y="0" fontFamily="ui-monospace" fontSize="9.5" fill="#cbd5e1" textAnchor="end">1.50</text>
+                          </g>
+                          <g transform="translate(10,55)">
+                            <circle cx="3" cy="-3" r="2.5" fill="none" stroke="#CBD5E1" strokeWidth="1.5"/>
+                            <text x="12" y="0" fontFamily="ui-monospace" fontSize="9.5" fill="#94a3b8">2023</text>
+                            <text x="88" y="0" fontFamily="ui-monospace" fontSize="9.5" fill="#94a3b8" textAnchor="end">1.54</text>
+                          </g>
+                        </g>
+                      </svg>
+                    );
+                  })()}
+                </div>
+              </TNYCard>
+
+              {/* ── usage matrix ───────────────────────────────── */}
+              <div className="mt-8 pt-5 border-t border-zinc-950/05 grid grid-cols-3 gap-x-8 gap-y-3 text-[12.5px] text-slate-600 leading-snug">
+                <div><span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 block mb-0.5">when to use bar</span>Categorical breakdowns: facility types, time-of-day buckets, mode splits — 2–5 categories. Cat-5 palette.</div>
+                <div><span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 block mb-0.5">when to use line</span>Continuous x: time-of-day, distance along corridor, daily reading. NYS Blue stroke + low-opacity area fill. Add dot markers on sparse data (≤12 points) or peaks worth annotating.</div>
+                <div><span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 block mb-0.5">when to use multi-line</span>Compare 2–4 series on the same axes — YoY, AM vs PM, peer corridors. <strong>Primary</strong> series in NYS Blue at 2.5px; <strong>comparisons</strong> step down a slate ramp (<code className="tny-mono">#94A3B8</code> → <code className="tny-mono">#CBD5E1</code>) at 1.5px. Never put two saturated colors on equal weight — pick a hero.</div>
+                <div className="col-span-3 pt-3 border-t border-zinc-950/05">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-700 block mb-1">Do</span>
+                  <ul className="list-disc pl-4 space-y-0.5">
+                    <li>Annotate peaks directly — a labeled dot at the maximum beats a hover-only tooltip on print</li>
+                    <li>Use a dashed Amber rule for targets/thresholds; label it inline at the right edge</li>
+                    <li>Tooltip stays attached to the focused x; show all series values stacked, with the primary value bold</li>
+                    <li>Keep gridlines slate-200; never solid black; never vertical (continuous x doesn&apos;t need them)</li>
+                  </ul>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-rose-700 block mt-3 mb-1">Don&apos;t</span>
+                  <ul className="list-disc pl-4 space-y-0.5">
+                    <li>Use brand NYS Blue for non-primary series — it pulls focus to the wrong line</li>
+                    <li>Stack {'>'} 4 lines without a focus + dim affordance — switch to small multiples instead</li>
+                    <li>Connect dots across known data gaps; break the path with <code className="tny-mono">null</code> and resume after</li>
+                    <li>Use Cat-5 palette for time-series lines — those colors are categorical, not ordinal</li>
+                  </ul>
+                </div>
+              </div>
+            </Spec>
+
+            <Spec id="badges" title="Badges, Pills & Status"
+              desc="Status is communicated by a colored dot, never a colored background. Pills are always white-on-blue when on a tone-bar, white-on-white when inside cards.">
+              <div className="flex flex-wrap gap-3">
+                <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-700"><span className="size-2 rounded-full bg-emerald-500"/> Improved</span>
+                <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-700"><span className="size-2 rounded-full bg-rose-500"/> Regressed</span>
+                <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-700"><span className="size-2 rounded-full bg-amber-400"/> Construction</span>
+                <span className="inline-flex items-center gap-1.5 text-[12px] text-slate-700"><span className="size-2 rounded-full bg-rose-400"/> Recurrent</span>
+                <span className="h-6 px-2 inline-flex items-center text-[11px] rounded bg-amber-100 text-amber-900 font-oswald uppercase tracking-wide">Beta</span>
+                <span className="h-6 px-2 inline-flex items-center text-[11px] rounded bg-slate-900 text-white font-oswald uppercase tracking-wide">Admin</span>
+                <Pill color="#E5A646" label="2024 — Inner Loop 2"/>
+              </div>
+            </Spec>
+
+          </div>
+          <aside className="pt-1 sticky top-4 self-start">
+            <a href="#headers" className="tny-toc-item active">Page headers</a>
+            <a href="#breadcrumb" className="tny-toc-item">Breadcrumb</a>
+            <a href="#buttons" className="tny-toc-item">Buttons</a>
+            <a href="#inputs" className="tny-toc-item">Inputs &amp; Selectors</a>
+            <a href="#selects" className="tny-toc-item">Selects</a>
+            <a href="#navigation" className="tny-toc-item">Navigation</a>
+            <a href="#cards" className="tny-toc-item">Cards</a>
+            <a href="#tables" className="tny-toc-item">Tables</a>
+            <a href="#popovers" className="tny-toc-item">Popovers &amp; Menus</a>
+            <a href="#charts" className="tny-toc-item">Chart Chrome</a>
+            <a href="#badges" className="tny-toc-item">Badges &amp; Pills</a>
+          </aside>
+        </div>
+        <TNYFooter/>
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

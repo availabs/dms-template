@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tessera — Design System / Patterns</title>
+  <link rel="stylesheet" href="_dms-page.css">
+  <style>
+    .sub-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-fog);
+      margin-bottom: var(--space-3);
+      margin-top: var(--space-6);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .sub-eyebrow:first-of-type { margin-top: 0; }
+    .sub-eyebrow .name { color: var(--color-slate); }
+
+    .demo {
+      background: var(--color-bone);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-5);
+      margin-bottom: var(--space-3);
+    }
+    .demo-caption {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-fog);
+      margin-top: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    /* Empty/loading/error states */
+    .state {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-7);
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+    .state .glyph {
+      width: 32px;
+      height: 32px;
+      border: 1.5px solid var(--color-fog);
+      display: inline-block;
+      margin-bottom: var(--space-3);
+    }
+    .state h3 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--color-slate);
+      margin: 0 0 var(--space-2);
+    }
+    .state p {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-graphite);
+      margin: 0 0 var(--space-4);
+      max-width: 42ch;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.55;
+    }
+
+    /* Skeleton (loading) */
+    .skel {
+      height: 14px;
+      background: var(--color-grout-light);
+      margin: var(--space-2) auto;
+      max-width: 280px;
+    }
+    .skel.short { max-width: 180px; }
+    .skel.tall { height: 32px; max-width: 320px; }
+
+    /* Filter chrome */
+    .filter-chrome {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-3) var(--space-4);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 4px 10px;
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-bone);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-graphite);
+    }
+    .filter-tag .key { color: var(--color-oxide); }
+    .filter-tag .x { color: var(--color-fog); cursor: pointer; margin-left: var(--space-1); }
+    .filter-op {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-fog);
+    }
+
+    /* Data section */
+    .data-section {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+    .data-section .ds-header {
+      padding: var(--space-4) var(--space-5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .data-section .ds-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--color-slate);
+    }
+    .data-section .ds-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-fog);
+    }
+    .data-section .ds-pagination {
+      padding: var(--space-3) var(--space-5);
+      border-top: 1px solid var(--color-grout-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--color-graphite);
+    }
+
+    /* Card grid */
+    .cg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+    .cg-card { background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); }
+    .cg-card .title { font-family: var(--font-display); font-size: 18px; font-weight: 500; color: var(--color-slate); margin: 0 0 var(--space-2); }
+    .cg-card .meta { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-fog); margin-bottom: var(--space-3); }
+    .cg-card .body { font-family: var(--font-sans); font-size: 14px; color: var(--color-graphite); line-height: 1.55; }
+    .cg-card .footer { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--color-grout-light); font-family: var(--font-mono); font-size: 11px; color: var(--color-graphite); display: flex; justify-content: space-between; }
+
+    /* Form layout */
+    .form-card { background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-6); max-width: 540px; box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); }
+    .form-card .field { margin-bottom: var(--space-4); }
+    .form-card label { display: block; font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--color-slate); margin-bottom: 6px; }
+    .form-card .help { font-family: var(--font-sans); font-size: 12px; color: var(--color-graphite); margin-top: 4px; }
+    .form-card .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .form-card .actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--color-grout-light); }
+
+    /* Modal w/ form */
+    .modal-bd { background: rgba(42, 47, 54, 0.40); padding: var(--space-5); display: flex; align-items: center; justify-content: center; min-height: 360px; }
+
+    /* Dataset overview */
+    .dso-grid { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-5); }
+    .dso-nav .cat { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-fog); margin-bottom: var(--space-2); padding: 0 var(--space-2); }
+    .dso-nav .item { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; font-family: var(--font-sans); font-size: 13px; color: var(--color-graphite); cursor: pointer; }
+    .dso-nav .item:hover { color: var(--color-slate); background: var(--color-limestone); }
+    .dso-nav .item.active { color: var(--color-slate); background: var(--color-limestone); border-left: 2px solid var(--color-oxide); margin-left: -1px; }
+    .dso-nav .item .count { font-family: var(--font-mono); font-size: 11px; color: var(--color-fog); }
+    .dso-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+    .dso-card { background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-4); cursor: pointer; }
+    .dso-card:hover { border-color: var(--color-fog); }
+    .dso-card .name { font-family: var(--font-display); font-size: 16px; font-weight: 500; color: var(--color-slate); margin-bottom: 4px; }
+    .dso-card .meta { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-fog); }
+
+    /* Auth login */
+    .auth-mockup { background: var(--color-bone); padding: var(--space-7); display: flex; align-items: center; justify-content: center; }
+    .auth-card { background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-7); width: 100%; max-width: 380px; box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); }
+    .auth-card .title { font-family: var(--font-display); font-size: 28px; font-weight: 500; color: var(--color-slate); text-align: center; margin: 0 0 var(--space-2); }
+    .auth-card .lede { font-family: var(--font-sans); font-size: 14px; color: var(--color-graphite); text-align: center; margin: 0 0 var(--space-5); }
+    .auth-card .field { margin-bottom: var(--space-3); }
+    .auth-card label { display: block; font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: var(--color-slate); margin-bottom: 4px; }
+    .auth-card .submit { width: 100%; padding: 10px; background: var(--color-slate); color: var(--color-parchment); border: 0; font-family: var(--font-sans); font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 2px; margin-top: var(--space-3); }
+    .auth-card .alt { text-align: center; font-family: var(--font-sans); font-size: 13px; color: var(--color-graphite); margin-top: var(--space-4); }
+    .auth-card .alt a { color: var(--color-slate); }
+
+    /* Section toolbar */
+    .sec-toolbar { background: var(--color-parchment); border: 1px solid var(--color-grout-light); border-bottom: 0; padding: 6px var(--space-3); display: flex; align-items: center; justify-content: space-between; }
+    .sec-toolbar .left { display: flex; align-items: center; gap: var(--space-3); }
+    .sec-toolbar .handle { color: var(--color-fog); font-family: var(--font-mono); font-size: 14px; cursor: grab; }
+    .sec-toolbar .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-graphite); }
+    .sec-toolbar .title .name { color: var(--color-slate); }
+    .sec-toolbar .right { display: flex; align-items: center; gap: var(--space-1); }
+    .sec-toolbar .tool { padding: 4px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--color-graphite); cursor: pointer; }
+    .sec-toolbar .tool:hover { background: var(--color-limestone); color: var(--color-slate); }
+    .sec-body { background: var(--color-parchment); border: 1px solid var(--color-grout-light); border-top: 0; padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="../../Tessera Design System/" class="dms-topnav-brand">
+              <span class="mark">Tessera</span>
+              <span class="designator">Design System v0.1</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right">
+            <span><a href="theme.html" style="color:inherit; text-decoration:none">theme</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span><a href="grid.html" style="color:inherit; text-decoration:none">grid</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span><a href="components.html" style="color:inherit; text-decoration:none">components</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span>patterns</span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">design system</div>
+            <a class="dms-sidenav-item" href="theme.html"><span class="dms-sidenav-item-mark"></span>theme</a>
+            <a class="dms-sidenav-item" href="grid.html"><span class="dms-sidenav-item-mark"></span>grid</a>
+            <a class="dms-sidenav-item" href="components.html"><span class="dms-sidenav-item-mark"></span>components</a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="patterns.html"><span class="dms-sidenav-item-mark"></span>patterns</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">pages</div>
+            <a class="dms-sidenav-item" href="../pages/civic-overview.html"><span class="dms-sidenav-item-mark"></span>civic overview</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item" href="#states" style="font-size:13px;font-weight:400">states (empty / loading / error)</a>
+            <a class="dms-sidenav-item" href="#data" style="font-size:13px;font-weight:400">data section + filters</a>
+            <a class="dms-sidenav-item" href="#cardgrid" style="font-size:13px;font-weight:400">card grid</a>
+            <a class="dms-sidenav-item" href="#form" style="font-size:13px;font-weight:400">form layout</a>
+            <a class="dms-sidenav-item" href="#modalform" style="font-size:13px;font-weight:400">modal with form</a>
+            <a class="dms-sidenav-item" href="#dataset" style="font-size:13px;font-weight:400">dataset overview</a>
+            <a class="dms-sidenav-item" href="#auth" style="font-size:13px;font-weight:400">auth login</a>
+            <a class="dms-sidenav-item" href="#editor" style="font-size:13px;font-weight:400">section toolbar</a>
+          </div>
+        </aside>
+
+        <div class="dms-layout-child">
+
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span>design system</span>
+                <span class="sep">/</span>
+                <span>patterns</span>
+              </div>
+              <h1 class="dms-page-title">Patterns — primitives in composition.</h1>
+              <p class="dms-page-lede">
+                Where individual primitives have to look right <em>together</em>. The data-section + filter chrome, the modal + form, the dataset-overview chrome — if anything's misaligned (chart colours fight the table, button padding doesn't match input padding), it shows up here first.
+              </p>
+            </div>
+          </section>
+
+          <!-- States: empty / loading / error -->
+          <section id="states" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · STATES</div>
+                <h2 class="dms-section-title">Empty, loading, error.</h2>
+                <p class="dms-section-lede">
+                  Three states every data-driven section must handle. Each is a chance for the brand's voice to speak — specific, considered, no exclamation marks.
+                </p>
+
+                <div class="sub-eyebrow"><span class="name">empty</span></div>
+                <div class="demo">
+                  <div class="state">
+                    <span class="glyph"></span>
+                    <h3>No sections yet</h3>
+                    <p>Add one to begin composing this page. The first section is usually a header.</p>
+                    <button class="btn btn-primary">Add a section</button>
+                  </div>
+                </div>
+
+                <div class="sub-eyebrow"><span class="name">loading</span></div>
+                <div class="demo">
+                  <div class="state">
+                    <div class="skel tall"></div>
+                    <div class="skel"></div>
+                    <div class="skel short"></div>
+                    <div style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog); margin-top: var(--space-3);">Fetching 247 rows from practice_recordings…</div>
+                  </div>
+                </div>
+
+                <div class="sub-eyebrow"><span class="name">error</span></div>
+                <div class="demo">
+                  <div class="state">
+                    <span class="glyph" style="border-color: var(--color-oxide);"></span>
+                    <h3>The view at id 2060672 could not be loaded</h3>
+                    <p>The row may have been deleted, or your token may have expired. Refresh, or sign in again.</p>
+                    <div style="display: flex; gap: var(--space-2); justify-content: center;">
+                      <button class="btn btn-secondary">Refresh</button>
+                      <button class="btn btn-tertiary">Sign in</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Data section with filters -->
+          <section id="data" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · DATA SECTION WITH FILTERS</div>
+                <h2 class="dms-section-title">A data section composed.</h2>
+
+                <div class="demo">
+                  <div class="filter-chrome" style="margin-bottom: var(--space-3);">
+                    <span class="filter-op">where</span>
+                    <span class="filter-tag"><span class="key">start_day</span> = Monday <span class="x">×</span></span>
+                    <span class="filter-op">and</span>
+                    <span class="filter-tag"><span class="key">genre</span> in (ambient, jazz) <span class="x">×</span></span>
+                    <button class="btn btn-tertiary btn-sm">+ filter</button>
+                  </div>
+
+                  <div class="data-section">
+                    <div class="ds-header">
+                      <div class="ds-title">Schedule · practice_recordings</div>
+                      <div class="ds-actions">
+                        <span>247 rows</span>
+                        <span style="color: var(--color-grout-light);">·</span>
+                        <button class="btn btn-tertiary btn-sm">Export</button>
+                      </div>
+                    </div>
+                    <table class="table" style="margin: 0;">
+                      <thead>
+                        <tr>
+                          <th>show name</th>
+                          <th>on air</th>
+                          <th>start day</th>
+                          <th class="num" style="text-align:right;">duration</th>
+                          <th>genre</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td>Morning Drift</td><td>DJ Aves</td><td>Monday</td><td class="num">2:00</td><td>ambient</td></tr>
+                        <tr><td>The Long Run</td><td>DJ Pelagic</td><td>Monday</td><td class="num">3:30</td><td>jazz</td></tr>
+                        <tr><td>Half Time</td><td>DJ Crater</td><td>Monday</td><td class="num">1:00</td><td>ambient</td></tr>
+                        <tr><td>Quiet Hours</td><td>DJ Stratus</td><td>Monday</td><td class="num">2:00</td><td>ambient</td></tr>
+                        <tr><td>Late Set</td><td>DJ Lumen</td><td>Monday</td><td class="num">2:30</td><td>jazz</td></tr>
+                      </tbody>
+                    </table>
+                    <div class="ds-pagination">
+                      <span>Showing 1–5 of 32 matching</span>
+                      <span style="font-family: var(--font-mono);">page 1 of 7</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption">filter chrome (pages.complexFilters) · header bar · table (theme.table) · pagination · all themed coherently</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Card grid -->
+          <section id="cardgrid" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · CARD GRID</div>
+                <h2 class="dms-section-title">A dataCard grid section.</h2>
+
+                <div class="demo">
+                  <div class="cg-grid">
+                    <div class="cg-card">
+                      <div class="meta">DJ · 247 shows</div>
+                      <div class="title">DJ Aves</div>
+                      <div class="body">Ambient and downtempo. Mondays 6–8am, Wednesdays 10pm–midnight. With WCDB since 2018.</div>
+                      <div class="footer"><span>27 listeners</span><span>last on 05-21</span></div>
+                    </div>
+                    <div class="cg-card">
+                      <div class="meta">DJ · 184 shows</div>
+                      <div class="title">DJ Pelagic</div>
+                      <div class="body">Long-form jazz, often live cuts. Two-hour sets Monday and Friday evenings.</div>
+                      <div class="footer"><span>34 listeners</span><span>last on 05-22</span></div>
+                    </div>
+                    <div class="cg-card">
+                      <div class="meta">DJ · 92 shows</div>
+                      <div class="title">DJ Crater</div>
+                      <div class="body">Indie and alt rock, occasionally local. One-hour Tuesday set; sometimes guest hosts.</div>
+                      <div class="footer"><span>18 listeners</span><span>last on 05-20</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption">cardsGrid (3-up) · per-card title / meta / body / footer · theme.dataCard with `auto-fill, minmax(280px, 1fr)`</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Form layout -->
+          <section id="form" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · FORM LAYOUT</div>
+                <h2 class="dms-section-title">A multi-field form.</h2>
+
+                <div class="demo">
+                  <div class="form-card">
+                    <div class="field">
+                      <label>Page title</label>
+                      <input type="text" value="Demos">
+                      <div class="help">Shown in nav, search results, and the browser tab.</div>
+                    </div>
+                    <div class="row-2">
+                      <div class="field">
+                        <label>URL slug</label>
+                        <input type="text" value="demos">
+                      </div>
+                      <div class="field">
+                        <label>Visibility</label>
+                        <select>
+                          <option>Published</option>
+                          <option>Draft only</option>
+                          <option>Restricted</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>Description</label>
+                      <textarea rows="3" placeholder="A short description of this page…"></textarea>
+                    </div>
+                    <div class="field">
+                      <label>Section group</label>
+                      <div class="ms-trigger" style="max-width: 100%;">
+                        <span class="ms-token">Group 1 <span class="x">×</span></span>
+                        <span class="caret">▾</span>
+                      </div>
+                    </div>
+                    <div class="actions">
+                      <button class="btn btn-tertiary">Cancel</button>
+                      <button class="btn btn-primary">Save changes</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption">FieldSet wrapper + label + input/textarea/select + multiselect + button-row · the canonical authoring form</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Modal w/ form -->
+          <section id="modalform" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · MODAL WITH FORM</div>
+                <h2 class="dms-section-title">A modal containing a form.</h2>
+
+                <div class="demo" style="padding: 0;">
+                  <div class="modal-bd">
+                    <div style="background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-6); width: 100%; max-width: 480px; box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);">
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-grout-light);">
+                        <div style="font-family: var(--font-display); font-size: 20px; font-weight: 500; color: var(--color-slate);">Create dataset</div>
+                        <span style="font-family: var(--font-mono); color: var(--color-fog); cursor: pointer;">×</span>
+                      </div>
+
+                      <div style="margin-bottom: var(--space-3);">
+                        <label style="display: block; font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--color-slate); margin-bottom: 6px;">Name</label>
+                        <input type="text" placeholder="e.g. wcdb_djs">
+                      </div>
+                      <div style="margin-bottom: var(--space-3);">
+                        <label style="display: block; font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--color-slate); margin-bottom: 6px;">Type</label>
+                        <select>
+                          <option>internal_table</option>
+                          <option>file_upload</option>
+                          <option>now_playing</option>
+                        </select>
+                      </div>
+                      <div style="margin-bottom: var(--space-3);">
+                        <label style="display: block; font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--color-slate); margin-bottom: 6px;">Category</label>
+                        <input type="text" value="Schedule">
+                      </div>
+
+                      <div style="display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--color-grout-light);">
+                        <button class="btn btn-tertiary">Cancel</button>
+                        <button class="btn btn-primary">Create dataset</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption">modal/dialog primitive + form-layout pattern inside</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Dataset overview -->
+          <section id="dataset" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · DATASET OVERVIEW</div>
+                <h2 class="dms-section-title">The datasets pattern chrome.</h2>
+
+                <div class="demo">
+                  <div class="dso-grid">
+
+                    <div class="dso-nav">
+                      <div style="margin-bottom: var(--space-4);">
+                        <div class="cat">all categories</div>
+                        <div class="item active">All datasets <span class="count">12</span></div>
+                      </div>
+                      <div style="margin-bottom: var(--space-4);">
+                        <div class="cat">by category</div>
+                        <div class="item">Schedule <span class="count">3</span></div>
+                        <div class="item">DJs <span class="count">1</span></div>
+                        <div class="item">Now Playing <span class="count">1</span></div>
+                        <div class="item">Practice Recordings <span class="count">1</span></div>
+                        <div class="item">Demos <span class="count">6</span></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class="dso-list">
+                        <div class="dso-card">
+                          <div class="name">practice_recordings</div>
+                          <div class="meta">FILE_UPLOAD · 10 versions · last updated 2026-05-22</div>
+                        </div>
+                        <div class="dso-card">
+                          <div class="name">wcdb_schedule</div>
+                          <div class="meta">INTERNAL_TABLE · 247 rows · last updated 2026-05-18</div>
+                        </div>
+                        <div class="dso-card">
+                          <div class="name">wcdb_djs</div>
+                          <div class="meta">INTERNAL_TABLE · 892 rows · last updated 2026-05-08</div>
+                        </div>
+                        <div class="dso-card">
+                          <div class="name">wcdb_stream_playlist</div>
+                          <div class="meta">NOW_PLAYING · 14,283 rows · live</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption">pages.datasets.datasetsList · category nav + grid of dataset cards · matches the datasets pattern chrome in the product</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Auth -->
+          <section id="auth" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · AUTH LOGIN</div>
+                <h2 class="dms-section-title">The sign-in page.</h2>
+
+                <div class="demo" style="padding: 0;">
+                  <div class="auth-mockup">
+                    <div class="auth-card">
+                      <div style="text-align: center; margin-bottom: var(--space-5);">
+                        <span class="logo-mockup" style="display: inline-flex;"><span class="mark-tile" style="width: 16px; height: 16px; background: var(--color-oxide); display: inline-block; transform: translateY(-1px);"></span><span class="word" style="font-family: var(--font-display); font-size: 24px; font-weight: 500; color: var(--color-slate);">&nbsp;Tessera</span></span>
+                      </div>
+                      <h2 class="title">Sign in</h2>
+                      <p class="lede">Continue to the Tessera Cloud workspace.</p>
+                      <div class="field">
+                        <label>Email</label>
+                        <input type="email" placeholder="you@example.org">
+                      </div>
+                      <div class="field">
+                        <label>Password</label>
+                        <input type="password" placeholder="••••••••">
+                      </div>
+                      <button class="submit">Sign in</button>
+                      <div class="alt">No account? <a href="#">Create one</a></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption">layoutGroup.styles[2] = auth · centred parchment card · pages.auth.login · single primary button</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section toolbar (editor) -->
+          <section id="editor" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · SECTION TOOLBAR</div>
+                <h2 class="dms-section-title">In-edit-mode section chrome.</h2>
+
+                <div class="demo">
+                  <div class="sec-toolbar">
+                    <div class="left">
+                      <span class="handle">⋮⋮</span>
+                      <span class="title">CARD · <span class="name">Practice recordings</span></span>
+                    </div>
+                    <div class="right">
+                      <span class="tool">Columns</span>
+                      <span class="tool">Filters</span>
+                      <span class="tool">More ▾</span>
+                      <span class="tool" style="color: var(--color-fog);">|</span>
+                      <span class="tool">Hide</span>
+                      <span class="tool" style="color: var(--color-oxide);">Delete</span>
+                    </div>
+                  </div>
+                  <div class="sec-body">
+                    <div style="font-family: var(--font-mono); font-size: 12px; color: var(--color-fog);">… section body renders inside the toolbar's frame …</div>
+                  </div>
+                </div>
+                <div class="demo-caption">pages.sectionGroupsPane · only visible in edit mode · drag handle + section type designator + tool buttons</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div style="display:flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
+                <div>
+                  <div class="designator">Tessera · Design System</div>
+                  <div style="margin-top: var(--space-2); font-size:13px; color: var(--color-graphite);">v0.1 · 2026-05-22</div>
+                </div>
+                <div style="font-family:var(--font-mono); font-size: 11px; color: var(--color-fog);">
+                  <a href="theme.html" style="color:inherit;">theme</a> · <a href="grid.html" style="color:inherit;">grid</a> · <a href="components.html" style="color:inherit;">components</a> · patterns
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
