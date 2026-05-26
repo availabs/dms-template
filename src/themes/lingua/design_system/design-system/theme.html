@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingua — Design System / Theme</title>
+  <link rel="stylesheet" href="_dms-page.css">
+  <style>
+    /* Page-specific styling. Most styling comes from _dms-page.css and _shared.css. */
+
+    /* Swatches */
+    .swatch-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+    @media (max-width: 900px) { .swatch-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .swatch {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: border-color var(--dur-snap) var(--ease-snap);
+    }
+    .swatch:hover { border-color: var(--color-border-strong); }
+    .swatch .chip { height: 88px; border-bottom: 1px solid var(--color-border); }
+    .swatch .meta { padding: 10px 12px; display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+    .swatch .meta .name { color: var(--color-ink); font-weight: 500; font-family: var(--font-mono); font-size: 12px; }
+    .swatch .meta .hex  { color: var(--color-mute); font-family: var(--font-mono); font-size: 11px; }
+    .swatch .role { padding: 0 12px 10px; color: var(--color-mute); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* Type specimen rows */
+    .type-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: var(--space-6);
+      padding: var(--space-5) 0;
+      border-bottom: 1px solid var(--color-border-subtle);
+      align-items: baseline;
+    }
+    .type-row:last-child { border-bottom: 0; }
+    .type-row .meta { font-family: var(--font-mono); font-size: 11px; color: var(--color-mute); }
+    .type-row .meta .name { color: var(--color-accent); display: block; margin-bottom: 4px; font-weight: 500; font-size: 12px; text-transform: none; }
+    .type-row .meta .spec { color: var(--color-mute); font-size: 10px; }
+
+    /* Spacing scale visualization */
+    .spacing-row { display: grid; grid-template-columns: 80px 60px 1fr; gap: var(--space-4); align-items: center; padding: 6px 0; border-bottom: 1px solid var(--color-border-subtle); }
+    .spacing-row:last-child { border-bottom: 0; }
+    .spacing-row .token { color: var(--color-accent); font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+    .spacing-row .value { color: var(--color-mute); font-family: var(--font-mono); font-size: 12px; }
+    .spacing-row .bar { background: var(--color-accent); height: 6px; border-radius: var(--radius-sm); }
+
+    /* Icon grid */
+    .icon-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: var(--space-3); }
+    @media (max-width: 900px) { .icon-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    .icon-cell {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+    }
+    .icon-cell:hover { border-color: var(--color-accent); background: var(--color-accent-soft); }
+    .icon-cell:hover svg { stroke: var(--color-accent); }
+    .icon-cell:hover .name { color: var(--color-accent); }
+    .icon-cell svg { width: 22px; height: 22px; stroke: var(--color-ink-soft); stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--dur-snap) var(--ease-snap); }
+    .icon-cell .name { color: var(--color-mute); text-align: center; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; transition: color var(--dur-snap) var(--ease-snap); }
+
+    /* Hero claim */
+    .hero-claim {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 4px 4px 4px 12px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin-bottom: var(--space-5);
+    }
+    .hero-claim .badge {
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      font-size: 10px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required on every page per design system skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="theme.html">theme</a>
+    <a class="lingua-metanav__link" href="layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="grid.html">grid</a>
+    <a class="lingua-metanav__link" href="components.html">components</a>
+    <a class="lingua-metanav__link" href="patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="../pages/marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="../pages/docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="../pages/civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="../pages/product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="../pages/product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="../pages/product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="../" class="dms-topnav-brand">
+              L<span class="diacritic">ī</span>ngua
+              <span class="designator">Design</span>
+            </a>
+            <div class="dms-topnav-links">
+              <a href="theme.html" class="active">Theme</a>
+              <a href="layouts.html">Layouts</a>
+              <a href="grid.html">Grid</a>
+              <a href="components.html">Components</a>
+              <a href="patterns.html">Patterns</a>
+            </div>
+          </div>
+          <div class="dms-topnav-right">
+            <span>v0.2</span>
+            <span style="color:var(--color-border)">·</span>
+            <span>2026-05-24</span>
+            <a href="../pages/marketing-homepage.html" class="ling-btn ling-btn--primary ling-btn--sm" style="margin-left:8px;">Start a site →</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">design system</div>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="theme.html">Theme</a>
+            <a class="dms-sidenav-item" href="layouts.html">Layouts</a>
+            <a class="dms-sidenav-item" href="grid.html">Grid</a>
+            <a class="dms-sidenav-item" href="components.html">Components</a>
+            <a class="dms-sidenav-item" href="patterns.html">Patterns</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">example pages</div>
+            <a class="dms-sidenav-item" href="../pages/marketing-homepage.html">Marketing &mdash; home</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-comparison.html">Marketing &mdash; compare</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-theory.html">Marketing &mdash; theory</a>
+            <a class="dms-sidenav-item" href="../pages/docs-page.html">Documentation</a>
+            <a class="dms-sidenav-item" href="../pages/civic-overview.html">Civic overview</a>
+            <a class="dms-sidenav-item" href="../pages/product-site-overview.html">Product &mdash; site</a>
+            <a class="dms-sidenav-item" href="../pages/product-page-editor.html">Product &mdash; editor</a>
+            <a class="dms-sidenav-item" href="../pages/product-dataset-view.html">Product &mdash; dataset</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#colors">Colors</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#type">Type</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#icons">Icons</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#spacing">Spacing &amp; radii</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#elevation">Elevation &amp; motion</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#code">Code surface</a>
+          </div>
+        </aside>
+
+        <!-- childWrapper -->
+        <div class="dms-layout-child">
+
+          <!-- LayoutGroup "header" -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="hero-claim">
+                <span class="badge">v0.2</span>
+                <span>design system &middot; foundations</span>
+              </div>
+              <h1 class="dms-page-title">Theme &mdash; the tokens every <span class="accent">surface</span> inherits.</h1>
+              <p class="dms-page-lede">
+                Color, type, icons, spacing, radii, elevation, motion, and the brand's signature dark code surface. The vocabulary Lingua speaks before it composes a sentence &mdash; everything in <a href="components.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">components</a> and <a href="patterns.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">patterns</a> reads from here.
+              </p>
+              <div style="display:flex; gap:var(--space-3); margin-top:var(--space-7);">
+                <a href="layouts.html" class="ling-btn ling-btn--primary ling-btn--lg">Read the structural layer →</a>
+                <a href="components.html" class="ling-btn ling-btn--secondary ling-btn--lg">See every primitive</a>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — COLORS -->
+          <section id="colors" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Color</div>
+                <h2 class="dms-section-title">Colors &mdash; cool whites, electric blue, dark code surfaces.</h2>
+                <p class="dms-section-lede">
+                  ~80% light surface + ink type. ~15% dark code/terminal surface (the brand's primary contrast move). ~5% one accent: Lingua blue. Status accents (signal/margin/success) are functional, not decorative. Pure white as the surface, near-black as the ink, electric ultramarine as the brand &mdash; no warm cream, no pastel tech-blue, no rainbow gradients.
+                </p>
+
+                <h3 class="l-monoXS" style="margin: var(--space-7) 0 var(--space-3);">Surface &middot; ~80% of any composition</h3>
+                <div class="swatch-grid">
+                  <div class="swatch">
+                    <div class="chip" style="background:#FFFFFF; border-bottom-color:var(--color-border);"></div>
+                    <div class="meta"><span class="name">surface</span><span class="hex">#FFFFFF</span></div>
+                    <div class="role">primary background</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#F7F7F8;"></div>
+                    <div class="meta"><span class="name">surface-soft</span><span class="hex">#F7F7F8</span></div>
+                    <div class="role">alternate surface</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#F1F1F3;"></div>
+                    <div class="meta"><span class="name">surface-sunken</span><span class="hex">#F1F1F3</span></div>
+                    <div class="role">sunken surface</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#E4E4E7;"></div>
+                    <div class="meta"><span class="name">border</span><span class="hex">#E4E4E7</span></div>
+                    <div class="role">hairline rule</div>
+                  </div>
+                </div>
+
+                <h3 class="l-monoXS" style="margin: var(--space-7) 0 var(--space-3);">Ink</h3>
+                <div class="swatch-grid">
+                  <div class="swatch">
+                    <div class="chip" style="background:#18181B;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">ink</span><span class="hex">#18181B</span></div>
+                    <div class="role">primary ink</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#3F3F46;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">ink-soft</span><span class="hex">#3F3F46</span></div>
+                    <div class="role">secondary ink</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#71717A;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">mute</span><span class="hex">#71717A</span></div>
+                    <div class="role">captions, eyebrows</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#A1A1AA;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">mute-soft</span><span class="hex">#A1A1AA</span></div>
+                    <div class="role">placeholders, disabled</div>
+                  </div>
+                </div>
+
+                <h3 class="l-monoXS" style="margin: var(--space-7) 0 var(--space-3);">Brand accent &middot; one color, one role</h3>
+                <div class="swatch-grid">
+                  <div class="swatch">
+                    <div class="chip" style="background:#3B5BFF;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">accent</span><span class="hex">#3B5BFF</span></div>
+                    <div class="role">Lingua blue &middot; the brand</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#2F4AE0;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">accent-hover</span><span class="hex">#2F4AE0</span></div>
+                    <div class="role">hover state</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#2540B8;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">accent-active</span><span class="hex">#2540B8</span></div>
+                    <div class="role">pressed state</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#EEF1FF;"></div>
+                    <div class="meta"><span class="name">accent-soft</span><span class="hex">#EEF1FF</span></div>
+                    <div class="role">tint &middot; highlights, hover bg</div>
+                  </div>
+                </div>
+
+                <h3 class="l-monoXS" style="margin: var(--space-7) 0 var(--space-3);">Status accents &middot; functional, sparing</h3>
+                <div class="swatch-grid">
+                  <div class="swatch">
+                    <div class="chip" style="background:#FF5630;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">signal</span><span class="hex">#FF5630</span></div>
+                    <div class="role">warning &middot; danger &middot; important</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#FFC83D;"></div>
+                    <div class="meta"><span class="name">margin</span><span class="hex">#FFC83D</span></div>
+                    <div class="role">highlight &middot; "new" &middot; margin note</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#14B881;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">success</span><span class="hex">#14B881</span></div>
+                    <div class="role">complete &middot; on &middot; live</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:linear-gradient(135deg,#3B5BFF,#2F4AE0);"></div>
+                    <div class="meta"><span class="name" style="color:#fff">grad-accent</span><span class="hex">single hue</span></div>
+                    <div class="role">the only allowed gradient</div>
+                  </div>
+                </div>
+
+                <h3 class="l-monoXS" style="margin: var(--space-7) 0 var(--space-3);">Code surface &middot; the brand's contrast move</h3>
+                <div class="swatch-grid">
+                  <div class="swatch">
+                    <div class="chip" style="background:#0E0F12;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">code-bg</span><span class="hex">#0E0F12</span></div>
+                    <div class="role">primary code surface</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#1A1B1F;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">code-bg-soft</span><span class="hex">#1A1B1F</span></div>
+                    <div class="role">chrome &middot; window-header</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#79B8FF;"></div>
+                    <div class="meta"><span class="name" style="color:#fff">code-accent</span><span class="hex">#79B8FF</span></div>
+                    <div class="role">function names, keywords</div>
+                  </div>
+                  <div class="swatch">
+                    <div class="chip" style="background:#B5F4A5;"></div>
+                    <div class="meta"><span class="name">code-string</span><span class="hex">#B5F4A5</span></div>
+                    <div class="role">strings</div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">color rules &rarr;</span> The accent is one color (Lingua blue). A page emphasizing blue does not also emphasize signal or margin. Code surface is the brand's contrast move &mdash; appears at least once on every marketing page. Customer logos render in their native colors per the Warpstream convention. Single-hue gradients allowed (accent &rarr; accent-hover). Rainbows, frosted glass, and pure-black surfaces are not in vocabulary.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — TYPE -->
+          <section id="type" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Type</div>
+                <h2 class="dms-section-title">Type &mdash; one sans, one mono, one editorial accent.</h2>
+                <p class="dms-section-lede">
+                  Inter Tight does 95% of the work, top to bottom. JetBrains Mono renders code, terminal output, KPI numerics, and the small mono labels that mark machine-readable surfaces. Fraunces Italic is the one editorial accent &mdash; reserved for the Theory page and the rare pull quote. The brand is sans-led; serif is a guest, not the host.
+                </p>
+                <p class="dms-section-lede">
+                  Token naming: <code>{role}{Size}[{Variant}]</code>. Roles: <code>display &middot; prose &middot; mono &middot; editorial</code>. Sizes use the t-shirt scale <code>Hero &middot; XL &middot; LG &middot; MD &middot; SM &middot; XS</code>. Body sets at <strong>16px</strong> (developer-product standard, not the v0.1 publication 17). Color, italic, tabular-nums, uppercase are <em>modifier axes</em>, not new tokens.
+                </p>
+
+                <!-- DISPLAY ROLE -->
+                <h3 class="l-monoXS ink-accent" style="margin: var(--space-7) 0 var(--space-3);">display &middot; Inter Tight 600/700 &middot; hero headlines, page titles, KPI</h3>
+                <div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">displayHero</span><span class="spec">Inter Tight 96 / 1.02 &middot; 700 &middot; &minus;0.04em</span></div>
+                    <div><span class="l-displayHero" style="display:block;">One vocabulary. Many speakers.</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">displayXL</span><span class="spec">Inter Tight 72 / 1.05 &middot; 600 &middot; &minus;0.035em</span></div>
+                    <div><span class="l-displayXL" style="display:block;">One row format. Every surface speaks it.</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">displayLG</span><span class="spec">Inter Tight 56 / 1.08 &middot; 600 &middot; &minus;0.03em</span></div>
+                    <div><span class="l-displayLG" style="display:block;">A page is a row. A chart is a row.</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">displayMD</span><span class="spec">Inter Tight 40 / 1.12 &middot; 600 &middot; &minus;0.025em</span></div>
+                    <div><span class="l-displayMD" style="display:block;">Section &middot; column configuration</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">displaySM</span><span class="spec">Inter Tight 32 / 1.18 &middot; 600 &middot; &minus;0.02em</span></div>
+                    <div><span class="l-displaySM" style="display:block;">Subscribers &middot; 2,847 rows</span></div>
+                  </div>
+                </div>
+
+                <!-- HEADINGS -->
+                <h3 class="l-monoXS ink-accent" style="margin: var(--space-7) 0 var(--space-3);">heading &middot; Inter Tight 600 &middot; content headings inside pages</h3>
+                <div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">h2</span><span class="spec">24 / 1.25 &middot; 600 &middot; &minus;0.012em</span></div>
+                    <div><span class="l-h2" style="display:block;">Authoring inside the row format</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">h3</span><span class="spec">20 / 1.30 &middot; 600 &middot; &minus;0.008em</span></div>
+                    <div><span class="l-h3" style="display:block;">Anatomy of a theme override</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">h4</span><span class="spec">18 / 1.35 &middot; 600 &minus;0.005em</span></div>
+                    <div><span class="l-h4" style="display:block;">Custom column types</span></div>
+                  </div>
+                </div>
+
+                <!-- PROSE -->
+                <h3 class="l-monoXS ink-accent" style="margin: var(--space-7) 0 var(--space-3);">prose &middot; Inter Tight 400 &middot; ledes, body, captions</h3>
+                <div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">proseLG</span><span class="spec">Inter Tight 20 / 1.55 &middot; 400 &middot; &minus;0.005em</span></div>
+                    <div><p class="l-proseLG" style="margin:0;">One typed row that can be a page, a section, a dataset, a query, or a theme &mdash; and every part of the system composes against it.</p></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">prose</span><span class="spec">Inter Tight 16 / 1.55 &middot; 400 &middot; <strong>base body</strong></span></div>
+                    <div><p class="l-prose" style="margin:0;">Lingua is one rich representation &mdash; typed rows that can be a page, a section, a dataset, a query, or a theme &mdash; that every part of the system composes against. Open-source and self-hostable, or hosted in a click.</p></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">proseSM</span><span class="spec">Inter Tight 14 / 1.50 &middot; 400</span></div>
+                    <div><p class="l-proseSM" style="margin:0;">Authors compose pages without writing code precisely because the primitives and the hierarchy are fixed. The constraint is the feature.</p></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">proseXS</span><span class="spec">Inter Tight 13 / 1.45 &middot; 400</span></div>
+                    <div><p class="l-proseXS" style="margin:0;">Last updated 2026-05-24 &middot; commit 1b3c&hellip;f4a &middot; view 2060672</p></div>
+                  </div>
+                </div>
+
+                <!-- MONO -->
+                <h3 class="l-monoXS ink-accent" style="margin: var(--space-7) 0 var(--space-3);">mono &middot; JetBrains Mono 400/500 &middot; code, labels, KPI, timestamps</h3>
+                <div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">mono</span><span class="spec">JetBrains Mono 14 / 1.45 &middot; 400 &middot; tabular</span></div>
+                    <div><span class="l-mono" style="display:block;">2,060,573 rows &middot; 1.2 MB &middot; last fetched 04:21:08 UTC</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">monoSM</span><span class="spec">JetBrains Mono 12 / 1.40 &middot; 400</span></div>
+                    <div><span class="l-monoSM" style="display:block;">app=lingua &middot; type=subscribers:view &middot; id=2060573</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">monoXS</span><span class="spec">JetBrains Mono 11 / 1.40 &middot; 500 &middot; upper &middot; +0.06em</span></div>
+                    <div><span class="l-monoXS" style="display:block;">section &middot; navigation &middot; KPI &middot; rows &middot; last 30d</span></div>
+                  </div>
+                </div>
+
+                <!-- EDITORIAL -->
+                <h3 class="l-monoXS ink-accent" style="margin: var(--space-7) 0 var(--space-3);">editorial &middot; Fraunces Italic 400 &middot; Theory page only</h3>
+                <div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">editorialLG</span><span class="spec">Fraunces Italic 48 / 1.18 &middot; 400 &middot; &minus;0.022em</span></div>
+                    <div><span class="l-editorialLG" style="display:block;">On placing &mdash; what a shared row format makes possible.</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">editorial</span><span class="spec">Fraunces Italic 32 / 1.30 &middot; 400 &middot; &minus;0.018em</span></div>
+                    <div><span class="l-editorial" style="display:block;">A page is a sentence. A section is a phrase. A dataset is a dictionary.</span></div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">theme key &rarr;</span> <code>textSettings.styles[0].{displayHero, displayXL..displaySM, h2, h3, h4, proseLG..proseXS, mono..monoXS, editorial, editorialLG}</code> &mdash; 16 tokens total (display 5 + heading 3 + prose 4 + mono 3 + editorial 2). Every text-rendering primitive (Card cells via <code>valueFontStyle</code>, Lexical headings, Header sections) picks one. Color, italic-on-prose, tabular-nums, uppercase are modifier axes applied at the call site.
+                </div>
+                <div class="dms-annotation-block" style="margin-top: var(--space-3);">
+                  <span class="key">earn-a-token rule &rarr;</span> A potential 17th must visibly differ from its neighbors by &ge; 2px <em>or</em> a weight step <em>or</em> a family change <em>or</em> a role change. Editorial is its own role precisely because it changes family AND style.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — ICONS -->
+          <section id="icons" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Icons</div>
+                <h2 class="dms-section-title">Icons &mdash; geometric, line, 1.5px stroke.</h2>
+                <p class="dms-section-lede">
+                  Lucide or Phosphor (regular) as the working set; swappable for a custom drawn set without re-keying. Icons are functional &mdash; every icon is paired with a label or stands for a known action. Code-related icons (terminal, brackets, git, file-tree, copy, run, format) get extra attention because Lingua uses them often.
+                </p>
+
+                <div class="icon-grid">
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg><span class="name">Menu</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span class="name">ChevronDown</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg><span class="name">ChevronRight</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg><span class="name">Close</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="name">Plus</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="name">Check</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><span class="name">Search</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg><span class="name">Settings</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M4 7l8 5 8-5M4 7v10l8 5 8-5V7M4 7l8-4 8 4"/></svg><span class="name">Package</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg><span class="name">Code</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg><span class="name">Terminal</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg><span class="name">Share</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="name">Clock</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 012-2h6l2 2h8a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><span class="name">Folder</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="name">File</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/><path d="M3 12a9 3 0 0018 0"/></svg><span class="name">Database</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg><span class="name">Filter</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M1 6l7-3 8 3 7-3v15l-7 3-8-3-7 3z"/><path d="M8 3v15M16 6v15"/></svg><span class="name">Map</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg><span class="name">Chart</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><span class="name">Grid</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg><span class="name">Live</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg><span class="name">Comment</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="17" cy="11" r="3" stroke-width="1.5"/></svg><span class="name">Users</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.29"/></svg><span class="name">Deploy</span></div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">theme key &rarr;</span> <code>Icons</code> &mdash; a name &rarr; React-component map. Components reference icons by string (e.g. <code>navigableMenu.styles[0].icon = "Menu"</code>), never by import. Hover any icon above to see the brand color in action.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — SPACING & RADII -->
+          <section id="spacing" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Spacing &amp; radii</div>
+                <h2 class="dms-section-title">Spacing &amp; radii &mdash; granular space, rounded by default.</h2>
+                <p class="dms-section-lede">
+                  4px base, 12-step scale. More granular than v0.1 because product surfaces need finer options. Corners are rounded by default &mdash; 4-6px on small chrome, 8px on cards, 12px on modals. <strong>Square corners are no longer the rule.</strong> v0.1's square-everywhere stance is retired.
+                </p>
+
+                <div class="dms-grid dms-grid-2" style="gap:var(--space-7); margin-top:var(--space-7);">
+                  <div>
+                    <h3 class="l-monoXS" style="margin: 0 0 var(--space-3);">Spacing scale &middot; 4px base</h3>
+                    <div>
+                      <div class="spacing-row"><span class="token">--space-1</span><span class="value">4</span><div class="bar" style="width:4px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-2</span><span class="value">8</span><div class="bar" style="width:8px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-3</span><span class="value">12</span><div class="bar" style="width:12px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-4</span><span class="value">16</span><div class="bar" style="width:16px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-5</span><span class="value">20</span><div class="bar" style="width:20px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-6</span><span class="value">24</span><div class="bar" style="width:24px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-7</span><span class="value">32</span><div class="bar" style="width:32px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-8</span><span class="value">40</span><div class="bar" style="width:40px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-9</span><span class="value">56</span><div class="bar" style="width:56px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-10</span><span class="value">80</span><div class="bar" style="width:80px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-11</span><span class="value">120</span><div class="bar" style="width:120px;"></div></div>
+                      <div class="spacing-row"><span class="token">--space-12</span><span class="value">160</span><div class="bar" style="width:160px;"></div></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 class="l-monoXS" style="margin: 0 0 var(--space-3);">Radii</h3>
+                    <div style="display:flex; flex-direction:column; gap:var(--space-4);">
+                      <div style="display:flex; align-items:center; gap:var(--space-4);">
+                        <div style="width:64px; height:64px; background:var(--color-accent); border-radius:4px;"></div>
+                        <div>
+                          <div class="l-mono ink-accent">--radius-sm &middot; 4px</div>
+                          <div class="l-proseSM ink-soft">small chrome &middot; chips, ms-tokens</div>
+                        </div>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:var(--space-4);">
+                        <div style="width:64px; height:64px; background:var(--color-accent); border-radius:6px;"></div>
+                        <div>
+                          <div class="l-mono ink-accent">--radius-md &middot; 6px</div>
+                          <div class="l-proseSM ink-soft">buttons &middot; inputs</div>
+                        </div>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:var(--space-4);">
+                        <div style="width:64px; height:64px; background:var(--color-accent); border-radius:8px;"></div>
+                        <div>
+                          <div class="l-mono ink-accent">--radius-lg &middot; 8px</div>
+                          <div class="l-proseSM ink-soft">cards &middot; primary surfaces</div>
+                        </div>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:var(--space-4);">
+                        <div style="width:64px; height:64px; background:var(--color-accent); border-radius:12px;"></div>
+                        <div>
+                          <div class="l-mono ink-accent">--radius-xl &middot; 12px</div>
+                          <div class="l-proseSM ink-soft">modals &middot; drawers &middot; hero panels</div>
+                        </div>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:var(--space-4);">
+                        <div style="width:64px; height:64px; background:var(--color-accent); border-radius:999px;"></div>
+                        <div>
+                          <div class="l-mono ink-accent">--radius-pill &middot; 999px</div>
+                          <div class="l-proseSM ink-soft">pills only</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <h3 class="l-monoXS" style="margin: var(--space-7) 0 var(--space-3);">Grid</h3>
+                    <div class="dms-annotation-block">
+                      <div>12 columns desktop &middot; 4 columns mobile</div>
+                      <div>24px gutters</div>
+                      <div>1280px max content width</div>
+                      <div>720px max measure for long-form prose</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — ELEVATION & MOTION -->
+          <section id="elevation" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Elevation &amp; motion</div>
+                <h2 class="dms-section-title">Elevation &amp; motion &mdash; soft shadows, snappy easing.</h2>
+                <p class="dms-section-lede">
+                  Three shadow tiers (sm/md/lg). Soft, neutral, never coloured. Cards lift on hover, modals float, popovers detach. v0.1's anti-shadow rule is retired &mdash; subtle depth is now part of the brand. Motion stays snappy: 120ms for hovers, 200ms for moves, 280ms for page transitions. No looping background animation.
+                </p>
+
+                <div class="dms-grid dms-grid-2" style="gap:var(--space-7); margin-top:var(--space-7);">
+                  <div>
+                    <h3 class="l-monoXS" style="margin: 0 0 var(--space-4);">Elevation</h3>
+                    <div style="display:flex; flex-direction:column; gap: var(--space-5);">
+                      <div>
+                        <div style="background:var(--color-surface); border:1px solid var(--color-border); padding: var(--space-5); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+                          <span class="l-mono ink-accent">--shadow-sm</span>
+                          <div class="l-proseSM ink-soft" style="margin-top:4px;">cards by default &middot; 1px soft</div>
+                        </div>
+                      </div>
+                      <div>
+                        <div style="background:var(--color-surface); border:1px solid var(--color-border); padding: var(--space-5); border-radius:var(--radius-lg); box-shadow:var(--shadow-md);">
+                          <span class="l-mono ink-accent">--shadow-md</span>
+                          <div class="l-proseSM ink-soft" style="margin-top:4px;">raised &middot; on-hover state, popovers</div>
+                        </div>
+                      </div>
+                      <div>
+                        <div style="background:var(--color-surface); border:1px solid var(--color-border); padding: var(--space-5); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg);">
+                          <span class="l-mono ink-accent">--shadow-lg</span>
+                          <div class="l-proseSM ink-soft" style="margin-top:4px;">floating &middot; modals, drawers, command palette</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 class="l-monoXS" style="margin: 0 0 var(--space-4);">Motion</h3>
+                    <div class="dms-annotation-block">
+                      <div><span class="key">--dur-snap</span> &middot; 120ms &middot; hover, small state changes</div>
+                      <div><span class="key">--dur-move</span> &middot; 200ms &middot; component moves, accordion open</div>
+                      <div><span class="key">--dur-page</span> &middot; 280ms &middot; page transitions, drawers, modals</div>
+                      <div><span class="key">--ease-snap</span> &middot; cubic-bezier(0.2, 0, 0.1, 1)</div>
+                      <div><span class="key">--ease-soft</span> &middot; cubic-bezier(0.4, 0, 0.2, 1)</div>
+                      <div style="margin-top: var(--space-3); color: var(--color-ink-soft);">
+                        Activity feeds and terminal demos animate (typing effect, new row appearing). Background decoration does not. No parallax. No scroll-jacked drama.
+                      </div>
+                    </div>
+
+                    <h3 class="l-monoXS" style="margin: var(--space-7) 0 var(--space-4);">Focus ring</h3>
+                    <div style="background:var(--color-surface); border:1px solid var(--color-border); padding: var(--space-6); display:flex; gap:var(--space-3); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+                      <button class="ling-btn ling-btn--primary" style="box-shadow: var(--focus-ring);">Focused</button>
+                      <button class="ling-btn ling-btn--secondary" style="box-shadow: var(--focus-ring);">Focused</button>
+                    </div>
+                    <div class="dms-annotation" style="margin-top: var(--space-2);">2px surface offset &middot; 2px Lingua-blue ring &middot; visible at all sizes</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — CODE SURFACE -->
+          <section id="code" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Code surface</div>
+                <h2 class="dms-section-title">Code surface &mdash; the brand's signature contrast move.</h2>
+                <p class="dms-section-lede">
+                  Lingua's products and surfaces are typed rows; the typed shape <em>is</em> the brand. So every marketing page shows code, and code lives on a deep slate surface that contrasts with the light page. The shift between light surface and dark code is the brand's compositional fingerprint. Use it on at least one section per marketing page.
+                </p>
+
+                <div class="ling-code" style="margin-top:var(--space-5);">
+                  <div class="ling-code__chrome">
+                    <span class="filename">site/sections/issue-archive.row.js</span>
+                    <div class="actions">
+                      <button>Copy</button>
+                      <button>Open</button>
+                    </div>
+                  </div>
+                  <div class="ling-code__body">
+<pre><span class="tk-com">// every row, everywhere, has the same shape</span>
+<span class="tk-kw">export const</span> <span class="tk-fn">issueArchive</span> <span class="tk-punc">=</span> <span class="tk-punc">{</span>
+  <span class="tk-prop">app</span><span class="tk-punc">:</span>      <span class="tk-str">"the-drift"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">type</span><span class="tk-punc">:</span>     <span class="tk-str">"issues|page"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">parent</span><span class="tk-punc">:</span>   <span class="tk-str">"the-drift:site"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">data</span><span class="tk-punc">:</span> <span class="tk-punc">{</span>
+    <span class="tk-prop">title</span><span class="tk-punc">:</span>     <span class="tk-str">"Issue archive"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">layout</span><span class="tk-punc">:</span>    <span class="tk-str">"app"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">sections</span><span class="tk-punc">:</span> <span class="tk-punc">[</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"Card"</span><span class="tk-punc">,</span> <span class="tk-prop">source</span><span class="tk-punc">:</span> <span class="tk-str">"issues"</span><span class="tk-punc">,</span> <span class="tk-prop">columns</span><span class="tk-punc">:</span> <span class="tk-num">6</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+    <span class="tk-punc">]</span><span class="tk-punc">,</span>
+  <span class="tk-punc">}</span><span class="tk-punc">,</span>
+<span class="tk-punc">}</span><span class="tk-punc">;</span></pre>
+                  </div>
+                </div>
+
+                <p class="dms-section-lede" style="margin-top:var(--space-7);">A terminal pane uses the same surface family:</p>
+
+                <div class="ling-terminal" style="margin-top:var(--space-3);">
+                  <div class="ling-terminal__chrome">
+                    <span class="dot" style="background:#FF5F57;"></span>
+                    <span class="dot" style="background:#FEBC2E;"></span>
+                    <span class="dot" style="background:#28C840;"></span>
+                    <span class="title">~/sites/the-drift</span>
+                  </div>
+                  <div class="ling-terminal__body">
+<pre><span class="prompt">lingua deploy</span>
+<span class="dim">  reading site config&hellip; ok</span>
+<span class="dim">  bundling 38 pages, 12 datasets&hellip; 1.2s</span>
+<span class="dim">  uploading to thedrift.com&hellip; 480 KB</span>
+<span class="ok">✓ deployed in 2.4s</span> <span class="dim">&middot; view at https://thedrift.com</span>
+<span class="prompt">lingua tail</span><span class="cursor"></span></pre>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">code-surface budget &rarr;</span> Every marketing page should include at least one code or terminal block. The dark surface is what makes the brand legible as a developer-adjacent product &mdash; without it, Lingua reads as generic SaaS.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "footer" -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div class="dms-grid dms-grid-3" style="gap:var(--space-7);">
+                <div>
+                  <div class="ling-logo" style="font-size:20px;">L<span class="diacritic">ī</span>ngua</div>
+                  <div class="l-proseSM ink-soft" style="margin-top: var(--space-3); max-width:32ch;">
+                    v0.2 &middot; 2026-05-24 &middot; modern technical brand, pivoted from the v0.1 magazine direction.
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">System</div>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <a href="theme.html" class="l-proseSM" style="color:var(--color-accent); text-decoration:none; font-weight:500;">Theme</a>
+                    <a href="layouts.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Layouts</a>
+                    <a href="grid.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Grid</a>
+                    <a href="components.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Components</a>
+                    <a href="patterns.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Patterns</a>
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Pages</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px var(--space-4);">
+                    <a href="../pages/marketing-homepage.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Home</a>
+                    <a href="../pages/marketing-comparison.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Compare</a>
+                    <a href="../pages/marketing-theory.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theory</a>
+                    <a href="../pages/docs-page.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Docs</a>
+                    <a href="../pages/civic-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Civic</a>
+                    <a href="../pages/product-site-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Site</a>
+                    <a href="../pages/product-page-editor.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Editor</a>
+                    <a href="../pages/product-dataset-view.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Dataset</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

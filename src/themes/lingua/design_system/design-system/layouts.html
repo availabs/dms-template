@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingua — Design System / Layouts</title>
+  <link rel="stylesheet" href="_dms-page.css">
+  <style>
+    /* Page-specific styling. Most styling comes from _dms-page.css and _shared.css. */
+
+    /* Hero claim badge — same shape as theme.html */
+    .hero-claim {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 4px 4px 4px 12px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin-bottom: var(--space-5);
+    }
+    .hero-claim .badge {
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    /* Hierarchy diagram — vertically stacked nodes with connecting lines */
+    .hierarchy {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      padding: var(--space-7) 0;
+    }
+    .hierarchy__node {
+      min-width: 280px;
+      text-align: center;
+    }
+    .hierarchy__line {
+      width: 2px;
+      height: 28px;
+      background: var(--color-border-strong);
+      position: relative;
+    }
+    .hierarchy__line::after {
+      content: "";
+      position: absolute;
+      bottom: -2px; left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 6px; height: 6px;
+      border-right: 2px solid var(--color-border-strong);
+      border-bottom: 2px solid var(--color-border-strong);
+    }
+    .hierarchy__row {
+      display: flex;
+      gap: var(--space-3);
+      align-items: stretch;
+      justify-content: center;
+    }
+    .hierarchy__row .ling-arch__node { min-width: 140px; }
+    .hierarchy__note {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 6px;
+    }
+
+    /* Mini layout-mockup — bordered rectangles representing chrome */
+    .mini-layout {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      height: 240px;
+      position: relative;
+    }
+    .mini-layout__chrome {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 5px 7px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mini-layout__chrome--top { border-bottom-width: 1px; }
+    .mini-layout__row { display: flex; flex: 1; gap: 6px; min-height: 0; }
+    .mini-layout__side {
+      width: 56px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .mini-layout__side .item {
+      height: 6px;
+      background: var(--color-surface-sunken);
+      border-radius: 2px;
+    }
+    .mini-layout__side .item--on {
+      background: var(--color-accent-soft);
+      border-left: 2px solid var(--color-accent);
+    }
+    .mini-layout__main {
+      flex: 1;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .mini-layout__main .line {
+      height: 5px;
+      border-radius: 2px;
+      background: var(--color-surface-sunken);
+    }
+    .mini-layout__main .line--w70 { width: 70%; }
+    .mini-layout__main .line--w50 { width: 50%; }
+    .mini-layout__main .line--w90 { width: 90%; }
+    .mini-layout__main .block {
+      flex: 1;
+      background: var(--color-surface-sunken);
+      border-radius: var(--radius-sm);
+    }
+    .mini-layout__main .block--accent {
+      background: var(--color-accent-soft);
+      border: 1px solid rgba(59,91,255,0.2);
+    }
+    .mini-layout__main .block--dark {
+      background: var(--color-code-bg);
+    }
+    .mini-layout__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); }
+    .mini-layout__dot--off { background: var(--color-mute-soft); }
+
+    /* Group-recipe card variants */
+    .recipe {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      height: 130px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+    .recipe--boxed {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-sm);
+    }
+    .recipe--unboxed {
+      background: var(--color-surface-soft);
+      border: 1px dashed var(--color-border-strong);
+      box-shadow: none;
+    }
+    .recipe--auth {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-md);
+      max-width: 200px;
+      margin: 0 auto;
+    }
+    .recipe--footer {
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border);
+      border-top: 2px solid var(--color-border-strong);
+      box-shadow: none;
+    }
+    .recipe--dark {
+      background: var(--color-code-bg);
+      border: 1px solid var(--color-code-border);
+      color: var(--color-code-fg);
+    }
+    .recipe .line {
+      height: 5px;
+      background: var(--color-surface-sunken);
+      border-radius: 2px;
+    }
+    .recipe--dark .line { background: var(--color-code-bg-soft); }
+    .recipe .line--accent { background: var(--color-accent-soft); }
+    .recipe .line--w60 { width: 60%; }
+    .recipe .line--w80 { width: 80%; }
+    .recipe .line--w40 { width: 40%; }
+    .recipe .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      margin-bottom: 4px;
+    }
+    .recipe--dark .label { color: var(--color-code-mute); }
+
+    /* Nesting example — the full-page composition with frame guides */
+    .nesting {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .nesting__band {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 18px var(--space-5);
+      position: relative;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nesting__band--header { background: transparent; border-style: dashed; }
+    .nesting__band--dark { background: var(--color-code-bg); color: var(--color-code-fg); border-color: var(--color-code-border); }
+    .nesting__band--footer { background: var(--color-surface-sunken); }
+    .nesting__band .line {
+      height: 6px;
+      background: var(--color-surface-sunken);
+      border-radius: 2px;
+    }
+    .nesting__band .line--accent { background: var(--color-accent-soft); width: 55%; }
+    .nesting__band .line--w70 { width: 70%; }
+    .nesting__band .line--w40 { width: 40%; }
+    .nesting__band--dark .line { background: var(--color-code-bg-soft); }
+
+    /* Reference table — tightened */
+    .ref-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink);
+    }
+    .ref-table th, .ref-table td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      vertical-align: top;
+    }
+    .ref-table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+      color: var(--color-mute);
+      border-bottom: 1px solid var(--color-border-strong);
+      background: var(--color-surface-soft);
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .ref-table td.tok { font-family: var(--font-mono); font-size: 12px; color: var(--color-accent); white-space: nowrap; }
+    .ref-table td.tok span { color: var(--color-mute); }
+    .ref-table tr:last-child td { border-bottom: 0; }
+    .ref-table tr:hover td { background: var(--color-surface-soft); }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required on every page per design system skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="theme.html">theme</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="grid.html">grid</a>
+    <a class="lingua-metanav__link" href="components.html">components</a>
+    <a class="lingua-metanav__link" href="patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="../pages/marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="../pages/docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="../pages/civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="../pages/product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="../pages/product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="../pages/product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="../" class="dms-topnav-brand">
+              L<span class="diacritic">ī</span>ngua
+              <span class="designator">Design</span>
+            </a>
+            <div class="dms-topnav-links">
+              <a href="theme.html">Theme</a>
+              <a href="layouts.html" class="active">Layouts</a>
+              <a href="grid.html">Grid</a>
+              <a href="components.html">Components</a>
+              <a href="patterns.html">Patterns</a>
+            </div>
+          </div>
+          <div class="dms-topnav-right">
+            <span>v0.2</span>
+            <span style="color:var(--color-border)">·</span>
+            <span>2026-05-24</span>
+            <a href="../pages/marketing-homepage.html" class="ling-btn ling-btn--primary ling-btn--sm" style="margin-left:8px;">Start a site →</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">design system</div>
+            <a class="dms-sidenav-item" href="theme.html">Theme</a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="layouts.html">Layouts</a>
+            <a class="dms-sidenav-item" href="grid.html">Grid</a>
+            <a class="dms-sidenav-item" href="components.html">Components</a>
+            <a class="dms-sidenav-item" href="patterns.html">Patterns</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">example pages</div>
+            <a class="dms-sidenav-item" href="../pages/marketing-homepage.html">Marketing &mdash; home</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-comparison.html">Marketing &mdash; compare</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-theory.html">Marketing &mdash; theory</a>
+            <a class="dms-sidenav-item" href="../pages/docs-page.html">Documentation</a>
+            <a class="dms-sidenav-item" href="../pages/civic-overview.html">Civic overview</a>
+            <a class="dms-sidenav-item" href="../pages/product-site-overview.html">Product &mdash; site</a>
+            <a class="dms-sidenav-item" href="../pages/product-page-editor.html">Product &mdash; editor</a>
+            <a class="dms-sidenav-item" href="../pages/product-dataset-view.html">Product &mdash; dataset</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#hierarchy">Hierarchy</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#layouts">Layout variants</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#groups">LayoutGroup variants</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#nesting">Nesting example</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#code">Page as a row</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#naming">Naming reference</a>
+          </div>
+        </aside>
+
+        <!-- childWrapper -->
+        <div class="dms-layout-child">
+
+          <!-- LayoutGroup "header" -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="hero-claim">
+                <span class="badge">v0.2</span>
+                <span>design system &middot; page chrome</span>
+              </div>
+              <h1 class="dms-page-title">Layouts &mdash; every page is a Layout, a stack of <span class="accent">LayoutGroups</span>, and the Sections inside them.</h1>
+              <p class="dms-page-lede">
+                Layout owns the page chrome (outer wrapper, optional nav rails, the content area). LayoutGroups are the bands that stack inside &mdash; header, content, dark code, auth, footer. Sections live inside groups. The grammar is fixed; the brand decides only how each variant looks. Everything in <a href="components.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">components</a> and <a href="patterns.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">patterns</a> renders inside this structure.
+              </p>
+              <div style="display:flex; gap:var(--space-3); margin-top:var(--space-7);">
+                <a href="#layouts" class="ling-btn ling-btn--primary ling-btn--lg">See the Layout variants →</a>
+                <a href="grid.html" class="ling-btn ling-btn--secondary ling-btn--lg">Read the column grid →</a>
+              </div>
+              <div class="dms-annotation-block" style="margin-top: var(--space-7); max-width: 64ch;">
+                <span class="key">scope &rarr;</span> This page documents page <strong>chrome</strong> shapes &mdash; Layout + LayoutGroup variants, the bands that stack down a page. For the page-content column grid that Sections sit on (the 12-column <code>sectionArray</code>), see <a href="grid.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">grid.html</a>.
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — HIERARCHY -->
+          <section id="hierarchy" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Hierarchy</div>
+                <h2 class="dms-section-title">Site &rarr; Layout &rarr; LayoutGroup &rarr; Section &rarr; Component.</h2>
+                <p class="dms-section-lede">
+                  Five layers. Every surface in DMS lives somewhere inside this nest &mdash; marketing homepage, dataset admin page, analytics dashboard, map viewer, sign-in screen. The same hierarchy renders all of them; the difference is which Sections appear in which LayoutGroups under which Layout. Below: the same diagram a brand reads on day one.
+                </p>
+
+                <div class="hierarchy">
+                  <div class="hierarchy__node">
+                    <div class="ling-arch__node ling-arch__node--dark" style="min-width:220px;">
+                      Site
+                      <span class="sub">DmsSite &middot; routing, theme</span>
+                    </div>
+                    <div class="hierarchy__note">supplies the theme context</div>
+                  </div>
+
+                  <div class="hierarchy__line"></div>
+
+                  <div class="hierarchy__node">
+                    <div class="ling-arch__node ling-arch__node--accent" style="min-width:220px;">
+                      Layout
+                      <span class="sub">Layout.jsx &middot; page chrome</span>
+                    </div>
+                    <div class="hierarchy__note">outer + topnav + sidenav + child wrapper</div>
+                  </div>
+
+                  <div class="hierarchy__line"></div>
+
+                  <div class="hierarchy__node">
+                    <div class="hierarchy__row">
+                      <div class="ling-arch__node">TopNav<span class="sub">optional</span></div>
+                      <div class="ling-arch__node">SideNav<span class="sub">optional</span></div>
+                      <div class="ling-arch__node ling-arch__node--accent">childWrapper<span class="sub">content area</span></div>
+                    </div>
+                    <div class="hierarchy__note">Layout decides which rails render</div>
+                  </div>
+
+                  <div class="hierarchy__line"></div>
+
+                  <div class="hierarchy__node">
+                    <div class="hierarchy__row">
+                      <div class="ling-arch__node">LayoutGroup<span class="sub">header</span></div>
+                      <div class="ling-arch__node ling-arch__node--accent">LayoutGroup<span class="sub">content</span></div>
+                      <div class="ling-arch__node">LayoutGroup<span class="sub">footer</span></div>
+                    </div>
+                    <div class="hierarchy__note">one band per page region</div>
+                  </div>
+
+                  <div class="hierarchy__line"></div>
+
+                  <div class="hierarchy__node">
+                    <div class="hierarchy__row">
+                      <div class="ling-arch__node">Section<span class="sub">title + chrome</span></div>
+                      <div class="ling-arch__node">Section<span class="sub">title + chrome</span></div>
+                      <div class="ling-arch__node">Section<span class="sub">title + chrome</span></div>
+                    </div>
+                    <div class="hierarchy__note">one editable block per Section</div>
+                  </div>
+
+                  <div class="hierarchy__line"></div>
+
+                  <div class="hierarchy__node">
+                    <div class="hierarchy__row">
+                      <div class="ling-arch__node">Card</div>
+                      <div class="ling-arch__node">Table</div>
+                      <div class="ling-arch__node">Lexical</div>
+                      <div class="ling-arch__node">Graph</div>
+                      <div class="ling-arch__node">Map</div>
+                    </div>
+                    <div class="hierarchy__note">components from the registry render the actual content</div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">read this as &rarr;</span> the brand styles <code>Layout</code> wrapper classes, <code>LayoutGroup</code> wrapper classes, and the components at the leaves. The hierarchy itself is fixed &mdash; an author cannot invent a new layer, and a brand cannot remove one. The constraint is the feature: every page composes from the same five parts, so primitives compose coherently everywhere.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — LAYOUT VARIANTS -->
+          <section id="layouts" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Layout variants</div>
+                <h2 class="dms-section-title">Layout &mdash; every page is wrapped.</h2>
+                <p class="dms-section-lede">
+                  Three named Layout styles ship in Lingua v0.2. <code>default</code> for marketing surfaces (topnav only, generous gutters). <code>app</code> for product/admin/dashboards (topnav + sidenav, denser). <code>bare</code> for auth, embeds, print (no chrome, content fills the viewport). Each card below is a mini-mockup of the chrome the variant produces &mdash; the boxes annotated map to the wrapper keys the JS theme will populate.
+                </p>
+
+                <div class="dms-grid dms-grid-3" style="margin-top:var(--space-7);">
+
+                  <!-- default -->
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">layout.styles[0] &middot; marketing</div>
+                    <h3 class="ling-card__title">default</h3>
+                    <p class="ling-card__body" style="margin-bottom:var(--space-4);">
+                      TopNav present, SideNav absent. Generous content area centered to 1280px. Used by homepage, comparison page, theory page.
+                    </p>
+                    <div class="mini-layout">
+                      <div class="mini-layout__chrome mini-layout__chrome--top">
+                        <span class="mini-layout__dot"></span>
+                        <span>topnav</span>
+                        <span style="margin-left:auto; opacity:0.6;">links + cta</span>
+                      </div>
+                      <div class="mini-layout__row">
+                        <div class="mini-layout__main">
+                          <div class="line line--w70"></div>
+                          <div class="line line--w50"></div>
+                          <div class="block"></div>
+                          <div class="block block--accent"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--accent">topnav: full</span>
+                      <span class="ling-pill">sidenav: none</span>
+                    </div>
+                  </div>
+
+                  <!-- app -->
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">layout.styles[1] &middot; product</div>
+                    <h3 class="ling-card__title">app</h3>
+                    <p class="ling-card__body" style="margin-bottom:var(--space-4);">
+                      TopNav + SideNav. Denser gutters, narrower content column. Used by site overview, page editor, dataset view, civic dashboard.
+                    </p>
+                    <div class="mini-layout">
+                      <div class="mini-layout__chrome mini-layout__chrome--top">
+                        <span class="mini-layout__dot"></span>
+                        <span>topnav</span>
+                        <span style="margin-left:auto; opacity:0.6;">env + user</span>
+                      </div>
+                      <div class="mini-layout__row">
+                        <div class="mini-layout__side">
+                          <div class="item item--on"></div>
+                          <div class="item"></div>
+                          <div class="item"></div>
+                          <div class="item"></div>
+                          <div class="item"></div>
+                        </div>
+                        <div class="mini-layout__main">
+                          <div class="line line--w50"></div>
+                          <div class="line line--w90"></div>
+                          <div class="block"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--accent">topnav: full</span>
+                      <span class="ling-pill ling-pill--accent">sidenav: rail</span>
+                    </div>
+                  </div>
+
+                  <!-- bare -->
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">layout.styles[2] &middot; auth, embed</div>
+                    <h3 class="ling-card__title">bare</h3>
+                    <p class="ling-card__body" style="margin-bottom:var(--space-4);">
+                      No TopNav, no SideNav. Content fills the viewport. Used by sign-in, sign-up, embedded views, print.
+                    </p>
+                    <div class="mini-layout">
+                      <div class="mini-layout__row">
+                        <div class="mini-layout__main" style="align-items:center; justify-content:center;">
+                          <div style="width:60%; height:90px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:var(--shadow-sm); padding:10px; display:flex; flex-direction:column; gap:5px;">
+                            <div class="line line--w70"></div>
+                            <div class="line line--w90"></div>
+                            <div class="line line--w50" style="background:var(--color-accent);"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill">topnav: none</span>
+                      <span class="ling-pill">sidenav: none</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">wrapper keys &rarr;</span> Each Layout style sets five class strings: <code>outerWrapper</code> (page background), <code>wrapper</code> (full-page flex direction), <code>wrapper2</code> (topnav-+-content column), <code>wrapper3</code> (sidenav-+-content row), <code>childWrapper</code> (parent of the LayoutGroups). The brand styles each &mdash; the translation skill will map these to <code>layout.styles[N].*</code> in <code>theme.js</code>.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — LAYOUTGROUP VARIANTS -->
+          <section id="groups" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>LayoutGroup variants</div>
+                <h2 class="dms-section-title">LayoutGroup &mdash; the band recipes.</h2>
+                <p class="dms-section-lede">
+                  A LayoutGroup is one band of content within a page. Five named styles ship in Lingua v0.2. Each card below shows the surface recipe &mdash; box vs unbox, shadow tier, padding density, background. The dark band is new in v0.2: it lets a page drop into the code surface for a code hero, terminal demo, or dark CTA without leaving the platform's structural grammar.
+                </p>
+
+                <div class="dms-grid dms-grid-3" style="margin-top:var(--space-7);">
+
+                  <!-- content -->
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">layoutGroup.styles[0]</div>
+                    <h3 class="ling-card__title">content</h3>
+                    <p class="ling-card__body" style="margin-bottom:var(--space-4);">
+                      The default body band. Boxed surface, 8px corners, soft <code>--shadow-sm</code>, generous interior padding. Holds the main Sections of any page.
+                    </p>
+                    <div class="recipe recipe--boxed">
+                      <div class="label">content &middot; boxed</div>
+                      <div class="line line--w60"></div>
+                      <div class="line line--w80"></div>
+                      <div class="line line--w40"></div>
+                      <div style="flex:1;"></div>
+                    </div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--accent">surface</span>
+                      <span class="ling-pill">shadow-sm</span>
+                      <span class="ling-pill">radius-lg</span>
+                    </div>
+                  </div>
+
+                  <!-- header -->
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">layoutGroup.styles[1]</div>
+                    <h3 class="ling-card__title">header</h3>
+                    <p class="ling-card__body" style="margin-bottom:var(--space-4);">
+                      The hero band. Unboxed &mdash; content sits directly on the Layout surface. No shadow, no rounded box, generous vertical padding. Page title + lede + CTAs go here.
+                    </p>
+                    <div class="recipe recipe--unboxed">
+                      <div class="label">header &middot; unboxed</div>
+                      <div class="line line--w80" style="height:8px;"></div>
+                      <div class="line line--w60"></div>
+                      <div class="line line--accent line--w40"></div>
+                    </div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill">no box</span>
+                      <span class="ling-pill">no shadow</span>
+                      <span class="ling-pill">vertical pad</span>
+                    </div>
+                  </div>
+
+                  <!-- auth -->
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">layoutGroup.styles[2]</div>
+                    <h3 class="ling-card__title">auth</h3>
+                    <p class="ling-card__body" style="margin-bottom:var(--space-4);">
+                      Centered vertically and horizontally. Narrow boxed surface (~440px). 12px corners, <code>--shadow-md</code>. Pairs with the <code>bare</code> Layout for sign-in / sign-up.
+                    </p>
+                    <div class="recipe">
+                      <div class="recipe--auth" style="padding:14px; height:auto;">
+                        <div class="label">auth &middot; centered card</div>
+                        <div class="line line--w70"></div>
+                        <div class="line line--w90"></div>
+                        <div class="line line--w40" style="background:var(--color-accent);"></div>
+                      </div>
+                    </div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--accent">centered</span>
+                      <span class="ling-pill">shadow-md</span>
+                      <span class="ling-pill">radius-xl</span>
+                    </div>
+                  </div>
+
+                  <!-- footer -->
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">layoutGroup.styles[3]</div>
+                    <h3 class="ling-card__title">footer</h3>
+                    <p class="ling-card__body" style="margin-bottom:var(--space-4);">
+                      Full-bleed band at page bottom. Sunken background, top border rule, no shadow. Holds the link block + brand + meta on every page.
+                    </p>
+                    <div class="recipe recipe--footer">
+                      <div class="label">footer &middot; sunken band</div>
+                      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; flex:1;">
+                        <div class="line line--w70"></div>
+                        <div class="line line--w80"></div>
+                        <div class="line line--w60"></div>
+                      </div>
+                      <div class="line line--w40" style="margin-top:auto;"></div>
+                    </div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill">full bleed</span>
+                      <span class="ling-pill">top rule</span>
+                      <span class="ling-pill">surface-soft</span>
+                    </div>
+                  </div>
+
+                  <!-- dark — NEW in v0.2 -->
+                  <div class="ling-card" style="grid-column: span 2;">
+                    <div class="ling-card__eyebrow">layoutGroup.styles[4] &middot; <span class="ling-pill ling-pill--margin" style="margin-left:6px;">new in v0.2</span></div>
+                    <h3 class="ling-card__title">dark &mdash; the code-surface band</h3>
+                    <p class="ling-card__body" style="margin-bottom:var(--space-4);">
+                      Full-bleed band on the brand's deep slate code surface (<code>--color-code-bg</code>, #0E0F12). Used for code heroes, terminal demos, architecture-diagram bands, and the occasional dark CTA. The light-to-dark shift between sections is Lingua's compositional fingerprint &mdash; budget at least one per marketing page.
+                    </p>
+                    <div class="recipe recipe--dark">
+                      <div class="label">dark &middot; code surface &middot; full bleed</div>
+                      <div style="display:flex; gap:var(--space-3); flex:1; align-items:stretch;">
+                        <div style="flex:1; background:var(--color-code-bg-soft); border:1px solid var(--color-code-border); border-radius:var(--radius-sm); padding:6px; display:flex; flex-direction:column; gap:4px;">
+                          <div class="line line--w80"></div>
+                          <div class="line line--w60"></div>
+                          <div class="line line--w40" style="background:var(--color-code-accent);"></div>
+                        </div>
+                        <div style="width:35%; display:flex; flex-direction:column; gap:5px;">
+                          <div class="line line--w80" style="background:var(--color-accent);"></div>
+                          <div class="line line--w60"></div>
+                          <div class="line line--w40"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--ink">code surface</span>
+                      <span class="ling-pill ling-pill--accent">brand signature</span>
+                      <span class="ling-pill">full bleed</span>
+                      <span class="ling-pill">no shadow</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">wrapper keys &rarr;</span> Each LayoutGroup style sets three class strings: <code>wrapper1</code> (outer full-width band &mdash; sets background + bleed), <code>wrapper2</code> (inner container &mdash; max-width + padding), <code>wrapper3</code> (content alignment). The translation skill maps these to <code>layoutGroup.styles[N].*</code> in <code>theme.js</code>.
+                </div>
+                <div class="dms-annotation-block" style="margin-top: var(--space-3);">
+                  <span class="key">v0.2 add &rarr;</span> The <code>dark</code> variant is new. v0.1 had no dark band; pages dropped to dark by overriding wrapper classes inline. v0.2 makes the dark drop a first-class variant so authors can pick it from the band-style dropdown without editing CSS.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — NESTING EXAMPLE -->
+          <section id="nesting" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Nesting example</div>
+                <h2 class="dms-section-title">A Layout with five LayoutGroups stacked.</h2>
+                <p class="dms-section-lede">
+                  Below: one Layout (the marketing <code>default</code> variant) containing a <code>header</code> band, two <code>content</code> bands, a <code>dark</code> code band, and a <code>footer</code> band. The frame guides mark which wrapper key each region maps to. Sections live <em>inside</em> each band &mdash; the dark band would typically hold a code-block Section and a callout, not bare lines.
+                </p>
+
+                <div class="nesting" style="margin-top:var(--space-7);">
+                  <div class="dms-frame-guide nesting__band nesting__band--header" data-guide="LayoutGroup &middot; header">
+                    <div class="line line--w70" style="height:14px;"></div>
+                    <div class="line line--w40" style="height:6px;"></div>
+                    <div class="line line--accent" style="height:6px; margin-top:6px;"></div>
+                  </div>
+
+                  <div class="dms-frame-guide nesting__band" data-guide="LayoutGroup &middot; content">
+                    <div class="line line--w40" style="height:6px;"></div>
+                    <div class="line line--w70" style="height:6px;"></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:8px;">
+                      <div style="height:50px; background:var(--color-surface-soft); border:1px solid var(--color-border); border-radius:var(--radius-md);"></div>
+                      <div style="height:50px; background:var(--color-surface-soft); border:1px solid var(--color-border); border-radius:var(--radius-md);"></div>
+                      <div style="height:50px; background:var(--color-surface-soft); border:1px solid var(--color-border); border-radius:var(--radius-md);"></div>
+                    </div>
+                  </div>
+
+                  <div class="dms-frame-guide nesting__band" data-guide="LayoutGroup &middot; content">
+                    <div class="line line--w40" style="height:6px;"></div>
+                    <div class="line line--w70" style="height:6px;"></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+                      <div style="height:50px; background:var(--color-surface-soft); border:1px solid var(--color-border); border-radius:var(--radius-md);"></div>
+                      <div style="height:50px; background:var(--color-surface-soft); border:1px solid var(--color-border); border-radius:var(--radius-md);"></div>
+                    </div>
+                  </div>
+
+                  <div class="dms-frame-guide nesting__band nesting__band--dark" data-guide="LayoutGroup &middot; dark">
+                    <div class="line line--w40" style="height:6px; background:var(--color-code-mute);"></div>
+                    <div class="line line--w70" style="height:6px;"></div>
+                    <div style="display:flex; gap:10px; margin-top:8px;">
+                      <div style="flex:1; height:60px; background:var(--color-code-bg-soft); border:1px solid var(--color-code-border); border-radius:var(--radius-md);"></div>
+                      <div style="flex:1; height:60px; background:var(--color-code-bg-soft); border:1px solid var(--color-code-border); border-radius:var(--radius-md);"></div>
+                    </div>
+                  </div>
+
+                  <div class="dms-frame-guide nesting__band nesting__band--footer" data-guide="LayoutGroup &middot; footer">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+                      <div>
+                        <div class="line line--w40" style="height:6px; margin-bottom:4px;"></div>
+                        <div class="line line--w70" style="height:5px;"></div>
+                      </div>
+                      <div>
+                        <div class="line line--w40" style="height:6px; margin-bottom:4px;"></div>
+                        <div class="line line--w70" style="height:5px;"></div>
+                      </div>
+                      <div>
+                        <div class="line line--w40" style="height:6px; margin-bottom:4px;"></div>
+                        <div class="line line--w70" style="height:5px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">read this as &rarr;</span> the <em>order</em> of LayoutGroups is the order they render. An author drops a <code>dark</code> band between two <code>content</code> bands by picking it from the band-style dropdown &mdash; no code, no override. The grammar lets the visual energy of a page shift mid-scroll without leaving the platform.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "dark" — THE PAGE AS A ROW (code surface demo) -->
+          <section id="code" class="dms-group-dark">
+            <div class="dms-group-dark-inner">
+
+              <div class="dms-section-eyebrow" style="color:var(--color-accent);"><span class="mark"></span>The page as a row</div>
+              <h2 class="dms-section-title" style="color:var(--color-code-fg);">Every page above &mdash; pages, sections, the lot &mdash; is a typed row.</h2>
+              <p class="dms-section-lede" style="color:var(--color-code-mute); max-width:64ch;">
+                Lingua's lingua franca is the row format. A Layout is a row. A LayoutGroup is a row. A Section is a row. The page you're reading lives in the database as something close to the JSON below &mdash; one parent row, child rows for each band, grandchild rows for each Section. The platform reads them, the renderer composes them, the theme styles them.
+              </p>
+
+              <div class="ling-code" style="margin-top:var(--space-7);">
+                <div class="ling-code__chrome">
+                  <span class="filename">design-system/layouts.row.js</span>
+                  <div class="actions">
+                    <button>Copy</button>
+                    <button>Open</button>
+                  </div>
+                </div>
+                <div class="ling-code__body">
+<pre><span class="tk-com">// this very page, expressed as DMS rows</span>
+<span class="tk-kw">export const</span> <span class="tk-fn">layoutsPage</span> <span class="tk-punc">=</span> <span class="tk-punc">{</span>
+  <span class="tk-prop">app</span><span class="tk-punc">:</span>    <span class="tk-str">"lingua"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">type</span><span class="tk-punc">:</span>   <span class="tk-str">"design_system|page"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">parent</span><span class="tk-punc">:</span> <span class="tk-str">"lingua|design_system:pattern"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">data</span><span class="tk-punc">:</span> <span class="tk-punc">{</span>
+    <span class="tk-prop">title</span><span class="tk-punc">:</span>  <span class="tk-str">"Layouts"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">slug</span><span class="tk-punc">:</span>   <span class="tk-str">"layouts"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">layout</span><span class="tk-punc">:</span> <span class="tk-str">"default"</span><span class="tk-punc">,</span>      <span class="tk-com">// one of layout.styles</span>
+    <span class="tk-prop">sections</span><span class="tk-punc">:</span> <span class="tk-punc">[</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">group</span><span class="tk-punc">:</span> <span class="tk-str">"header"</span><span class="tk-punc">,</span>  <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"Lexical"</span><span class="tk-punc">,</span> <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"Layouts &mdash; every page is wrapped"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">group</span><span class="tk-punc">:</span> <span class="tk-str">"content"</span><span class="tk-punc">,</span> <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"Lexical"</span><span class="tk-punc">,</span> <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"Hierarchy diagram"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">group</span><span class="tk-punc">:</span> <span class="tk-str">"content"</span><span class="tk-punc">,</span> <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"Card"</span><span class="tk-punc">,</span>    <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"Layout variants"</span><span class="tk-punc">,</span> <span class="tk-prop">source</span><span class="tk-punc">:</span> <span class="tk-str">"layouts"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">group</span><span class="tk-punc">:</span> <span class="tk-str">"content"</span><span class="tk-punc">,</span> <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"Card"</span><span class="tk-punc">,</span>    <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"LayoutGroup variants"</span><span class="tk-punc">,</span> <span class="tk-prop">source</span><span class="tk-punc">:</span> <span class="tk-str">"groups"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">group</span><span class="tk-punc">:</span> <span class="tk-str">"content"</span><span class="tk-punc">,</span> <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"Lexical"</span><span class="tk-punc">,</span> <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"Nesting example"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">group</span><span class="tk-punc">:</span> <span class="tk-str">"dark"</span><span class="tk-punc">,</span>    <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"Lexical"</span><span class="tk-punc">,</span> <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"The page as a row"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">group</span><span class="tk-punc">:</span> <span class="tk-str">"content"</span><span class="tk-punc">,</span> <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"Table"</span><span class="tk-punc">,</span>   <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"Naming reference"</span><span class="tk-punc">,</span> <span class="tk-prop">source</span><span class="tk-punc">:</span> <span class="tk-str">"naming"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">group</span><span class="tk-punc">:</span> <span class="tk-str">"footer"</span><span class="tk-punc">,</span>  <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"Footer"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+    <span class="tk-punc">]</span><span class="tk-punc">,</span>
+  <span class="tk-punc">}</span><span class="tk-punc">,</span>
+<span class="tk-punc">}</span><span class="tk-punc">;</span>
+
+<span class="tk-com">// every row, everywhere, has the same shape:</span>
+<span class="tk-com">// { app, type, data, parent, children }</span></pre>
+                </div>
+              </div>
+
+              <div class="dms-annotation-block" style="margin-top: var(--space-7); background: var(--color-code-bg-soft); border-color: var(--color-code-border); color: var(--color-code-fg);">
+                <span class="key" style="color:var(--color-accent);">why this matters &rarr;</span> Because the page is a row, it can be edited from the admin UI, exported as JSON, version-controlled, diffed, and re-imported on another site. The author touches the same shape the engineer touches. <em style="color:var(--color-code-mute);">One vocabulary. Many speakers.</em>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — NAMING REFERENCE -->
+          <section id="naming" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Naming reference</div>
+                <h2 class="dms-section-title">Which Layout, which bands &mdash; a quick reference.</h2>
+                <p class="dms-section-lede">
+                  When a brand or author asks "what should this page use?" &mdash; this is the table they read. Lingua ships three Layouts and five LayoutGroup variants; almost every page in the platform is composed from a small number of recipes below. New surfaces should match one of these unless the design genuinely needs a new variant (and if it does, add the variant to layouts.html before using it).
+                </p>
+
+                <table class="ref-table" style="margin-top:var(--space-7);">
+                  <thead>
+                    <tr>
+                      <th>Page kind</th>
+                      <th>Layout</th>
+                      <th>Bands (in order)</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Marketing homepage</td>
+                      <td class="tok">default</td>
+                      <td class="tok">header <span>&middot;</span> content <span>&middot;</span> dark <span>&middot;</span> content <span>&middot;</span> footer</td>
+                      <td>Hero band + feature grid + code band + customer logos + footer. The dark band carries the brand's contrast move.</td>
+                    </tr>
+                    <tr>
+                      <td>Marketing comparison</td>
+                      <td class="tok">default</td>
+                      <td class="tok">header <span>&middot;</span> content <span>&middot;</span> dark <span>&middot;</span> footer</td>
+                      <td>Hero + side-by-side architecture + capability matrix; dark band for the terminal demo or "speak it" code sample.</td>
+                    </tr>
+                    <tr>
+                      <td>Marketing theory (essay)</td>
+                      <td class="tok">default</td>
+                      <td class="tok">header <span>&middot;</span> content <span>&middot;</span> footer</td>
+                      <td>Long-form prose, narrow measure (720px). Editorial italic accents permitted on this page only. No dark band by default.</td>
+                    </tr>
+                    <tr>
+                      <td>Documentation page</td>
+                      <td class="tok">app</td>
+                      <td class="tok">content (narrow) <span>&middot;</span> footer</td>
+                      <td>SideNav carries the docs tree; content column is narrow (720px). Code blocks are frequent &mdash; they sit on the dark surface inline, no <code>dark</code> band needed.</td>
+                    </tr>
+                    <tr>
+                      <td>Product site overview</td>
+                      <td class="tok">app</td>
+                      <td class="tok">content <span>&middot;</span> content <span>&middot;</span> content</td>
+                      <td>KPI strip + patterns table + live activity. Full content density; sidenav is the primary navigation, no marketing header.</td>
+                    </tr>
+                    <tr>
+                      <td>Product page editor</td>
+                      <td class="tok">app</td>
+                      <td class="tok">content (full bleed)</td>
+                      <td>Three-pane editor (section list + canvas + inspector) fills the band. No header band &mdash; the topnav carries the page title.</td>
+                    </tr>
+                    <tr>
+                      <td>Civic / analytics dashboard</td>
+                      <td class="tok">app</td>
+                      <td class="tok">header <span>&middot;</span> content <span>&middot;</span> content <span>&middot;</span> footer</td>
+                      <td>Slim header (page title + filters), KPI strip + charts + tables in content bands. Dark band optional for the "what is this" intro.</td>
+                    </tr>
+                    <tr>
+                      <td>Sign-in / sign-up</td>
+                      <td class="tok">bare</td>
+                      <td class="tok">auth</td>
+                      <td>No chrome. One centered card. The <code>auth</code> band brings the rounded surface + shadow; the <code>bare</code> Layout strips the nav rails.</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">read this as &rarr;</span> three Layouts &times; five LayoutGroup variants is enough to describe every Lingua surface in the catalogue. Authors pick from these dropdowns; brands restyle the variants but don't add new ones &mdash; that's how the system stays composable across themes.
+                </div>
+                <div class="dms-annotation-block" style="margin-top: var(--space-3);">
+                  <span class="key">what about a new band? &rarr;</span> If a surface needs a band that doesn't fit any variant above, add it to <code>layouts.html</code> first &mdash; design it as a named LayoutGroup style, give it wrapper keys, then use it. <em>Don't smuggle one-off CSS into a page</em>; that's how systems drift.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "footer" -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div class="dms-grid dms-grid-3" style="gap:var(--space-7);">
+                <div>
+                  <div class="ling-logo" style="font-size:20px;">L<span class="diacritic">ī</span>ngua</div>
+                  <div class="l-proseSM ink-soft" style="margin-top: var(--space-3); max-width:32ch;">
+                    v0.2 &middot; 2026-05-24 &middot; modern technical brand, pivoted from the v0.1 magazine direction.
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">System</div>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <a href="theme.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theme</a>
+                    <a href="layouts.html" class="l-proseSM" style="color:var(--color-accent); text-decoration:none; font-weight:500;">Layouts</a>
+                    <a href="grid.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Grid</a>
+                    <a href="components.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Components</a>
+                    <a href="patterns.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Patterns</a>
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Pages</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px var(--space-4);">
+                    <a href="../pages/marketing-homepage.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Home</a>
+                    <a href="../pages/marketing-comparison.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Compare</a>
+                    <a href="../pages/marketing-theory.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theory</a>
+                    <a href="../pages/docs-page.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Docs</a>
+                    <a href="../pages/civic-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Civic</a>
+                    <a href="../pages/product-site-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Site</a>
+                    <a href="../pages/product-page-editor.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Editor</a>
+                    <a href="../pages/product-dataset-view.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Dataset</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+/* TransportNY · global CSS additions
+ *
+ * Append to the consuming project's index.css (or equivalent global
+ * stylesheet). Provides:
+ *   - @font-face for the two brand families
+ *   - .tny-pane / .tny-pane-tint / .tny-card / .tny-card-tint / .tny-card-bone
+ *     (surface utilities — referenced by name in theme.js layoutGroup styles)
+ *   - .tny-press                (tone-bar button press effect)
+ *   - .tny-active-bar           (sidebar amber left-rail)
+ *   - .tny-hero-topo / .tny-map (background textures for hero + map sections)
+ *
+ * Why these aren't pure Tailwind class strings: the topo and map textures
+ * use stacked gradients, and .tny-press depends on margin-shift on :active
+ * which would require an arbitrary-variant escape hatch in every button
+ * theme. Keeping them as CSS classes is the smallest legible surface.
+ */
+
+@font-face {
+  font-family: "Oswald";
+  src: url("./fonts/Oswald-Variable.woff2") format("woff2-variations");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Proxima Nova";
+  /* Source Sans 3 is the open-source substitute with very similar metrics.
+   * If you license Proxima Nova, swap to ProximaNova-Variable.woff2. */
+  src: url("./fonts/SourceSans3-Variable.woff2") format("woff2-variations");
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+body {
+  font-family: "Proxima Nova", "Source Sans 3", system-ui, sans-serif;
+  background: #ECEEF2;
+}
+
+/* ─── Surface utilities (cards-on-pane) ────────────────────────────── */
+.tny-pane       { background: #ECEEF2; }
+.tny-pane-tint  { background: #E4E8EE; }
+.tny-card {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+}
+.tny-card-tint  { background: #FAFBFC; }
+.tny-card-bone  { background: #F5F1E8; }
+.tny-card-ink   { background: #0F2D4D; color: #fff; }
+
+/* ─── Tone-bar press effect ────────────────────────────────────────── */
+.tny-press            { border-bottom-width: 4px; transition: all 0.08s; }
+.tny-press:active     { border-bottom-width: 2px; margin-bottom: 2px; }
+
+/* ─── Sidebar amber active-rail ────────────────────────────────────── */
+.tny-active-bar       { border-left: 3px solid #FACC15; }
+
+/* ─── Saturated NYS-blue tone bars (filter strips) ─────────────────── */
+.tny-bluebar          { background: #1F3F8F; color: #fff; }
+.tny-bluebar-dark     { background: #16307A; color: #fff; }
+
+/* ─── Soft topo hero background ────────────────────────────────────── */
+.tny-hero-topo {
+  background:
+    radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+    radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+    repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+    repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+    #EEF1F3;
+}
+
+/* ─── Placeholder map texture (no real tiles) ──────────────────────── */
+.tny-map {
+  background:
+    radial-gradient(ellipse 30% 30% at 65% 55%, rgba(186, 213, 232, 0.7) 0%, transparent 70%),
+    radial-gradient(ellipse 18% 18% at 30% 30%, rgba(186, 213, 232, 0.4) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent 0 38px, rgba(120, 140, 120, 0.06) 38px 39px),
+    repeating-linear-gradient(90deg, transparent 0 44px, rgba(120, 140, 120, 0.06) 44px 45px),
+    #E8E4D2;
+}
+
+/* ─── Inline body link / inline code / dropdown menu ───────────────── */
+.tny-link            { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+.tny-link:hover      { color: #16307A; }
+.tny-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  padding: 1px 5px;
+  background: rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 3px;
+  color: #37576B;
+  white-space: nowrap;
+}
+.tny-menu {
+  background: #fff;
+  border: 1px solid rgba(9, 9, 11, 0.10);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.18);
+  border-radius: 8px;
+}
+
+/* ─── TOC anchor ───────────────────────────────────────────────────── */
+.tny-toc-item        { display: flex; align-items: center; gap: 8px; padding: 4px 0 4px 10px; font-size: 13px; color: #475569; border-left: 2px solid #e2e8f0; }
+.tny-toc-item.active { color: #0f172a; font-weight: 600; border-left-color: #EAAD43; }
+
+/* ─── Pulsing status dot ───────────────────────────────────────────── */
+@keyframes tnyPulse  { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.dot-pulse           { animation: tnyPulse 2.4s ease-in-out infinite; }

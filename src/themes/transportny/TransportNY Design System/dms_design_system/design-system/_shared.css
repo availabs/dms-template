@@ -1,0 +1,80 @@
+/* Mirrors theme/index.css.additions for the design-system mockup pages.
+ * If you change a token here, change theme/index.css.additions too.
+ * (In a real build pipeline these are the same file; the mockups can't
+ *  import the canonical file directly because they load via CDN.) */
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../theme/fonts/Oswald-Variable.woff2") format("woff2-variations"),
+       url("../../design_handoff_transportny_design_system/fonts/Oswald-Variable.woff2") format("woff2-variations");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("../theme/fonts/SourceSans3-Variable.woff2") format("woff2-variations"),
+       url("../../design_handoff_transportny_design_system/fonts/SourceSans3-Variable.woff2") format("woff2-variations");
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+body { font-family: "Proxima Nova", "Source Sans 3", system-ui, sans-serif; background: #ECEEF2; }
+
+.font-display { font-family: "Oswald", "Bebas Neue", sans-serif; }
+.font-proxima { font-family: "Proxima Nova", "Source Sans 3", system-ui, sans-serif; }
+.font-mono    { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.tny-pane          { background: #ECEEF2; }
+.tny-pane-tint     { background: #E4E8EE; }
+.tny-card          { background: #fff; border: 1px solid rgba(15,23,42,0.08); border-radius: 8px; box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 1px 0 rgba(15,23,42,0.02); }
+.tny-card-tint     { background: #FAFBFC; }
+.tny-card-bone     { background: #F5F1E8; }
+.tny-card-ink      { background: #0F2D4D; color: #fff; }
+
+.tny-active-bar    { border-left: 3px solid #FACC15; }
+.tny-press         { border-bottom-width: 4px; transition: all 0.08s; }
+.tny-press:active  { border-bottom-width: 2px; margin-bottom: 2px; }
+
+.tny-bluebar       { background: #1F3F8F; color: #fff; }
+.tny-bluebar-dark  { background: #16307A; color: #fff; }
+
+.tny-hero-topo {
+  background:
+    radial-gradient(circle at 25% 30%, rgba(15,23,42,0.04), transparent 40%),
+    radial-gradient(circle at 75% 70%, rgba(15,23,42,0.05), transparent 50%),
+    repeating-linear-gradient(28deg, transparent 0 30px, rgba(15,23,42,0.035) 30px 31px, transparent 31px 60px),
+    repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15,23,42,0.028) 36px 37px, transparent 37px 70px),
+    #EEF1F3;
+}
+.tny-map {
+  background:
+    radial-gradient(ellipse 30% 30% at 65% 55%, rgba(186,213,232,0.7) 0%, transparent 70%),
+    radial-gradient(ellipse 18% 18% at 30% 30%, rgba(186,213,232,0.4) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent 0 38px, rgba(120,140,120,0.06) 38px 39px),
+    repeating-linear-gradient(90deg, transparent 0 44px, rgba(120,140,120,0.06) 44px 45px),
+    #E8E4D2;
+}
+
+.tny-link          { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+.tny-link:hover    { color: #16307A; }
+.tny-mono          { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; padding: 1px 5px; background: rgba(15,23,42,0.05); border: 1px solid rgba(15,23,42,0.06); border-radius: 3px; color: #37576B; white-space: nowrap; }
+.tny-menu          { background: #fff; border: 1px solid rgba(9,9,11,0.10); box-shadow: 0 10px 24px -4px rgba(0,0,0,0.18); border-radius: 8px; }
+
+.tny-toc-item        { display: flex; align-items: center; gap: 8px; padding: 4px 0 4px 10px; font-size: 13px; color: #475569; border-left: 2px solid #e2e8f0; }
+.tny-toc-item.active { color: #0f172a; font-weight: 600; border-left-color: #EAAD43; }
+
+@keyframes tnyPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.dot-pulse          { animation: tnyPulse 2.4s ease-in-out infinite; }
+
+/* DMS-mockup callouts — annotate Layout/LayoutGroup/Section regions
+ * so the structural grammar is visible in design-system pages. */
+[data-dms-layout]                { position: relative; }
+[data-dms-layout]::before        { content: "LAYOUT · " attr(data-dms-layout); position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font: 600 9px/1 ui-monospace, monospace; letter-spacing: 0.18em; color: #CA8A04; background: rgba(255,255,255,0.85); padding: 2px 6px; border-radius: 3px; z-index: 50; pointer-events: none; }
+[data-dms-group]                 { position: relative; }
+[data-dms-group]::before         { content: "GROUP · " attr(data-dms-group); position: absolute; top: 2px; right: 2px; font: 600 9px/1 ui-monospace, monospace; letter-spacing: 0.18em; color: #1F3F8F; background: rgba(255,255,255,0.85); padding: 2px 6px; border-radius: 3px; z-index: 30; pointer-events: none; }
+[data-dms-section]               { position: relative; }
+[data-dms-section]::before       { content: "SECTION · " attr(data-dms-section); position: absolute; top: -10px; left: 8px; font: 600 9px/1 ui-monospace, monospace; letter-spacing: 0.18em; color: #94A3B8; background: #ECEEF2; padding: 2px 6px; border-radius: 3px; z-index: 20; pointer-events: none; }
+/* Annotations are off by default; pages with `class="dms-annotated"` show them */
+body:not(.dms-annotated) [data-dms-layout]::before,
+body:not(.dms-annotated) [data-dms-group]::before,
+body:not(.dms-annotated) [data-dms-section]::before { display: none; }

@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Getting Started — NPMRDS — TransportNY</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+.report-card { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.report-card:hover { transform: translateY(-1px); box-shadow: 0 6px 20px -8px rgba(15,23,42,0.18); border-color: rgba(31,63,143,0.4); }
+.report-card:hover .report-card-arrow { transform: translateX(2px); color:#1F3F8F; }
+.template-card { transition: all .15s ease; }
+.template-card:hover { border-color: #1F3F8F; background:#F7FAFC; }
+.template-card:hover .template-card-cta { background:#1F3F8F; color:#fff; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="_icons.jsx"></script>
+<script type="text/babel" src="_chrome.jsx"></script>
+</head>
+<body class="tny-pane">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const Icon = window.TNYIcon;
+
+/* ─── Region selector (compact select chip — see Components → Selects · 01) ─── */
+function RegionSelect() {
+  return (
+    <button className="h-8 inline-flex items-center gap-2 rounded-md bg-white border border-zinc-950/15 pl-2.5 pr-1.5 hover:border-zinc-950/30 transition-colors">
+      <span className="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">Region</span>
+      <span className="text-[12.5px] text-[#0f1722] font-medium">Capital District</span>
+      <span className="size-5 rounded hover:bg-slate-100 flex items-center justify-center text-slate-400 ml-0.5">
+        <Icon name="CaretDown" className="size-3"/>
+      </span>
+    </button>
+  );
+}
+
+/* ─── Section head — matches grid-system / patterns numbering ────── */
+function SectionHead({ num, kicker, title, sub, count }) {
+  return (
+    <div className="flex items-end justify-between gap-8 mb-5">
+      <div>
+        <div className="flex items-center gap-3 mb-1.5">
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">{num}</span>
+          <span className="font-oswald uppercase text-[11px] tracking-[0.18em] text-slate-500">{kicker}</span>
+          {count != null && (
+            <span className="font-mono text-[10.5px] tabular-nums text-slate-400">· {count} {count === 1 ? 'report' : 'reports'}</span>
+          )}
+        </div>
+        <h2 className="font-oswald font-medium text-[22px] text-[#0f1722] leading-tight">{title}</h2>
+        {sub && <p className="font-proxima text-slate-600 text-[13.5px] leading-[1.6] mt-2 max-w-[680px]">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Subgroup label inside Regional Analysis ─────────────────── */
+function SubgroupLabel({ label, count }) {
+  return (
+    <div className="flex items-center gap-3 mb-3">
+      <span className="font-oswald uppercase text-[12px] tracking-[0.18em] text-[#0f1722] font-semibold">{label}</span>
+      <span className="h-px flex-1 bg-zinc-950/08"/>
+      <span className="font-mono text-[10px] tabular-nums uppercase tracking-wider text-slate-400">{count} {count === 1 ? 'report' : 'reports'}</span>
+    </div>
+  );
+}
+
+/* ─── Report card ────────────────────────────────────────────── */
+function ReportCard({ kicker, title, desc, outputs, href }) {
+  return (
+    <a href={href||'#'} className="report-card group block rounded-md border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col">
+      {kicker && <div className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">{kicker}</div>}
+      <div className="font-oswald font-medium text-[17px] text-[#0f1722] leading-tight group-hover:text-[#1F3F8F] transition-colors">{title}</div>
+      <p className="text-[12.5px] text-slate-600 mt-1.5 leading-[1.5] flex-1">{desc}</p>
+      <div className="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {outputs.map(o => (
+            <span key={o} className="font-mono text-[9.5px] uppercase tracking-wider text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">{o}</span>
+          ))}
+        </div>
+        <span className="report-card-arrow text-slate-400 transition-all">
+          <Icon name="ChevronRight" className="size-4"/>
+        </span>
+      </div>
+    </a>
+  );
+}
+
+/* ─── Template card ──────────────────────────────────────────── */
+function TemplateCard({ kicker, title, desc, steps, href, primary }) {
+  return (
+    <a href={href||'#'} className={`template-card group block rounded-md border bg-white p-5 cursor-pointer h-full flex flex-col ${primary?'border-[#1F3F8F]/30 bg-gradient-to-br from-[#F7FAFC] to-white':'border-zinc-950/10'}`}>
+      <div className="flex items-start gap-3">
+        <div className={`size-9 rounded flex-shrink-0 flex items-center justify-center ${primary?'bg-[#1F3F8F] text-white':'bg-slate-100 text-slate-500'}`}>
+          <Icon name="Plus" className="size-4"/>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">{kicker}</div>
+          <div className="font-oswald font-medium text-[17px] text-[#0f1722] leading-tight">{title}</div>
+        </div>
+      </div>
+      <p className="text-[12.5px] text-slate-600 mt-3 leading-[1.5]">{desc}</p>
+      <ol className="mt-3 space-y-1 text-[11.5px] text-slate-600">
+        {steps.map((s, i) => (
+          <li key={i} className="flex items-baseline gap-2">
+            <span className="font-mono text-[10px] tabular-nums text-slate-400">0{i+1}</span>
+            <span>{s}</span>
+          </li>
+        ))}
+      </ol>
+      <div className="mt-4 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Customizable</span>
+        <span className="template-card-cta inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider font-semibold text-[#37576B] border border-zinc-950/10 rounded px-2 py-1 transition-colors">
+          Start <Icon name="ChevronRight" className="size-3"/>
+        </span>
+      </div>
+    </a>
+  );
+}
+
+function App() {
+  return (
+    <div className="min-h-screen">
+      <TNYSidebar product="NPMRDS" active="home" expanded={true}/>
+      <main className="ml-60" data-screen-label="Getting Started">
+
+        <TNYPageHeader
+          tone="hero"
+          kicker="// NPMRDS · start here"
+          meta="v2.1"
+          title="Getting Started."
+          accent="."
+          desc="Pick a region, then run a pre-defined regional report — or start fresh with a Route Analysis template."
+          actions={<RegionSelect/>}
+        />
+
+        <div className="grid grid-cols-[1fr_240px] gap-10 px-10 py-10 max-w-[1480px] mx-auto">
+          <div className="space-y-12">
+
+            {/* ─── 01 · Regional Analysis ─── */}
+            <section id="regional" data-screen-label="01 Regional Analysis">
+              <SectionHead
+                num="// 01"
+                kicker="Regional analysis"
+                title="Pre-defined reports"
+                sub="Each report runs against the entire selected region and rolls up to a standard set of charts and tables. Pick a category, then a measure."
+              />
+
+              <div className="space-y-7">
+                <div>
+                  <SubgroupLabel label="Floating Car" count={3}/>
+                  <div className="grid grid-cols-3 gap-4">
+                    <ReportCard
+                      kicker="// p50 speed"
+                      title="50th Percentile Speed"
+                      desc="The median speed across all times of day and days of the week, by TMC."
+                      outputs={['map','table']}
+                      href="floating-car.html"
+                    />
+                    <ReportCard
+                      kicker="// p80 speed"
+                      title="80th Percentile Speed"
+                      desc="The 80th-percentile (faster) speed across all times of day and days of the week."
+                      outputs={['map','table']}
+                    />
+                    <ReportCard
+                      kicker="// freeflow"
+                      title="Freeflow Speed"
+                      desc="The theoretical speed when density and flow rate on a study segment are both zero."
+                      outputs={['map','table','time-series']}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <SubgroupLabel label="Reliability" count={2}/>
+                  <div className="grid grid-cols-3 gap-4">
+                    <ReportCard
+                      kicker="// LOTTR"
+                      title="Car (LOTTR)"
+                      desc="Level of Travel Time Reliability — 80th / 50th percentile, by AM peak, midday, PM peak, weekend."
+                      outputs={['map','table','PM3']}
+                    />
+                    <ReportCard
+                      kicker="// TTTR"
+                      title="Truck (TTTR)"
+                      desc="Truck Travel Time Reliability — 95th / 50th across five time periods. Interstate-only."
+                      outputs={['map','table','PM3']}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <SubgroupLabel label="Congestion" count={3}/>
+                  <div className="grid grid-cols-3 gap-4">
+                    <ReportCard
+                      kicker="// VHD"
+                      title="Vehicle Hours of Delay"
+                      desc="Total VHD on the regional network, indexed against the freeflow baseline."
+                      outputs={['summary','time-series']}
+                      href="congestion.html"
+                    />
+                    <ReportCard
+                      kicker="// $ delay"
+                      title="Cost of Delay"
+                      desc="Monetized regional delay using FHWA value-of-time tables and FAF freight values."
+                      outputs={['summary','table']}
+                    />
+                    <ReportCard
+                      kicker="// top N"
+                      title="Top Bottlenecks"
+                      desc="Ranked TMC segments by recurrent and non-recurrent congestion. Drillable to segment view."
+                      outputs={['map','ranked-table']}
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ─── 02 · Route Analysis Templates ─── */}
+            <section id="templates" data-screen-label="02 Route Templates">
+              <SectionHead
+                num="// 02"
+                kicker="Route analysis"
+                title="Build from a template"
+                sub="Templates pre-wire a route, a time window, and a measure set. Edit any of them after launch — they're just a starting point."
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <TemplateCard
+                  primary
+                  kicker="// blank"
+                  title="Blank route"
+                  desc="Draw a corridor on the map, then pick your own measures and time periods. Best when you know exactly what you want."
+                  steps={['Draw route on map', 'Pick measures', 'Set time window']}
+                />
+                <TemplateCard
+                  kicker="// AM vs PM"
+                  title="Trip analysis"
+                  desc="Compare AM-peak and PM-peak travel time over the same corridor, by day-of-week. Stacked bars + heatmap."
+                  steps={['Pick a corridor', 'Compare AM ↔ PM', 'Drill into worst hours']}
+                />
+                <TemplateCard
+                  kicker="// rank"
+                  title="Bottleneck inventory"
+                  desc="Auto-rank the worst TMC segments along your route by recurrent delay, with a scoreboard ready to export."
+                  steps={['Pick a corridor', 'Set delay threshold', 'Export scoreboard']}
+                />
+                <TemplateCard
+                  kicker="// YoY"
+                  title="Year-over-year comparison"
+                  desc="Hold a route fixed and compare any two calendar years on speed, reliability, and delay side-by-side."
+                  steps={['Pick a corridor', 'Pick two years', 'Compare measures']}
+                />
+              </div>
+            </section>
+
+          </div>
+
+          {/* ─── TOC ─── */}
+          <aside className="pt-1 sticky top-4 self-start">
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-2 pl-2.5">On this page</div>
+            <a href="#regional" className="tny-toc-item active">Regional analysis</a>
+            <a href="#templates" className="tny-toc-item">Route templates</a>
+            <div className="mt-5 pt-4 border-t border-zinc-950/08 pl-2.5 space-y-1.5">
+              <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-1">Continue</div>
+              <a href="docs-overview.html" className="block text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ NPMRDS docs</a>
+              <a href="map-21.html" className="block text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ MAP-21 PM3 page</a>
+              <a href="components.html" className="block text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ Design system</a>
+            </div>
+          </aside>
+        </div>
+        <TNYFooter/>
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

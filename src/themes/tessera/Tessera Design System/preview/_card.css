@@ -1,0 +1,50 @@
+/* Shared styling for design-system preview cards.
+   Cards sit at ~700×<height> px and contain *only* the specimen / swatches —
+   no titles, no chrome. */
+
+@import url("../colors_and_type.css");
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+body {
+  padding: var(--space-5) var(--space-6);
+  font-family: var(--font-sans);
+}
+.eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.swatch .chip {
+  height: 56px;
+  border: 1px solid var(--rule);
+}
+.swatch .meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.swatch .name {
+  color: var(--fg);
+}
+.swatch .hex {
+  color: var(--fg-muted);
+}
+.grid {
+  display: grid;
+  gap: var(--space-3);
+}

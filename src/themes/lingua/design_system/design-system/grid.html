@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingua — Design System / Grid</title>
+  <link rel="stylesheet" href="_dms-page.css">
+  <style>
+    /* Page-specific styling. Most styling comes from _dms-page.css and _shared.css. */
+
+    /* Hero claim badge — same shape as theme.html / layouts.html */
+    .hero-claim {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 4px 4px 4px 12px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin-bottom: var(--space-5);
+    }
+    .hero-claim .badge {
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    /* Reference table — tightened spec table (Setting · Value · Note) */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink);
+    }
+    .spec-table th, .spec-table td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      vertical-align: top;
+    }
+    .spec-table th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+      color: var(--color-mute);
+      border-bottom: 1px solid var(--color-border-strong);
+      background: var(--color-surface-soft);
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .spec-table td.key { font-family: var(--font-mono); font-size: 12px; color: var(--color-accent); white-space: nowrap; font-weight: 500; }
+    .spec-table td.val { font-family: var(--font-mono); font-size: 12px; color: var(--color-ink); }
+    .spec-table td.note { color: var(--color-mute); font-size: 13px; }
+    .spec-table tr:last-child td { border-bottom: 0; }
+    .spec-table tr:hover td { background: var(--color-surface-soft); }
+
+    /* ----- THE GRID — every demo grid uses these conventions ----- */
+    .lg-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: var(--space-3);
+      width: 100%;
+    }
+    .lg-grid > [data-span] {
+      min-width: 0;
+    }
+    .lg-grid > [data-span="12"] { grid-column: span 12; }
+    .lg-grid > [data-span="8"]  { grid-column: span 8; }
+    .lg-grid > [data-span="6"]  { grid-column: span 6; }
+    .lg-grid > [data-span="4"]  { grid-column: span 4; }
+    .lg-grid > [data-span="3"]  { grid-column: span 3; }
+    .lg-grid > [data-span="2"]  { grid-column: span 2; }
+    .lg-grid > [data-span="1"]  { grid-column: span 1; }
+
+    /* ----- Column ruler ----- */
+    .ruler-card {
+      background: var(--color-surface-soft);
+      border: 1px dashed var(--color-border-strong);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+    }
+    .ruler {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: var(--space-3);
+    }
+    .ruler__col {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      font-weight: 500;
+    }
+
+    /* ----- Span example tiles ----- */
+    .span-example {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+    }
+    .span-example__hd {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    .span-example__hd h4 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-ink);
+      letter-spacing: -0.005em;
+    }
+    .span-example__hd .meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .span-tile {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      min-height: 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      justify-content: center;
+      position: relative;
+    }
+    .span-tile__label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-accent);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .span-tile__body {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink-soft);
+      line-height: 1.45;
+    }
+    .span-tile--hero {
+      background: var(--color-accent-soft);
+      border-color: rgba(59, 91, 255, 0.25);
+      min-height: 96px;
+    }
+    .span-tile--hero .span-tile__hero {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--color-ink);
+      letter-spacing: -0.015em;
+      line-height: 1.15;
+    }
+    .span-tile--dark {
+      background: var(--color-code-bg);
+      border-color: var(--color-code-border);
+      color: var(--color-code-fg);
+    }
+    .span-tile--dark .span-tile__body { color: var(--color-code-fg); }
+    .span-tile--dark .span-tile__label { color: var(--color-code-accent); }
+    .span-tile--feature .ling-card__icon {
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-md);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px;
+    }
+    .span-tile--feature .ling-card__icon svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.75; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .span-tile--kpi {
+      background: var(--color-surface);
+      border-color: var(--color-border);
+    }
+    .span-tile--kpi .kpi-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      font-weight: 500;
+    }
+    .span-tile--kpi .kpi-value {
+      font-family: var(--font-mono);
+      font-size: 26px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      color: var(--color-ink);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin-top: 4px;
+    }
+    .span-tile--kpi .kpi-delta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-success);
+      margin-top: 2px;
+    }
+
+    /* ----- Rowspan demo ----- */
+    .rowspan-demo {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: repeat(3, 80px);
+      gap: var(--space-3);
+      background: var(--color-surface-soft);
+      border: 1px dashed var(--color-border-strong);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+    }
+    .rowspan-tile {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      justify-content: center;
+    }
+    .rowspan-tile .lbl {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-accent);
+      font-weight: 500;
+    }
+    .rowspan-tile .body {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--color-ink-soft);
+    }
+    .rs-1 { grid-row: span 1; }
+    .rs-2 { grid-row: span 2; }
+    .rs-3 { grid-row: span 3; }
+
+    /* ----- Editor "show grid" mockup ----- */
+    .editor-mock {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      position: relative;
+      overflow: hidden;
+    }
+    .editor-mock__chrome {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 8px 10px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+    }
+    .editor-mock__chrome .badge-on {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      font-weight: 500;
+      border: 1px solid rgba(59, 91, 255, 0.25);
+    }
+    .editor-mock__canvas {
+      position: relative;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      min-height: 240px;
+    }
+    .editor-mock__overlay {
+      position: absolute;
+      inset: var(--space-5);
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: var(--space-3);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .editor-mock__overlay > div {
+      background: rgba(59, 91, 255, 0.04);
+      border-left: 1px dashed rgba(59, 91, 255, 0.30);
+      border-right: 1px dashed rgba(59, 91, 255, 0.30);
+      border-radius: 2px;
+    }
+    .editor-mock__content {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: var(--space-3);
+    }
+    .editor-mock__section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 96px;
+    }
+    .editor-mock__section .lbl {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .editor-mock__section .ttl {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-ink);
+      letter-spacing: -0.01em;
+    }
+    .editor-mock__section .ln {
+      height: 5px;
+      background: var(--color-surface-sunken);
+      border-radius: 2px;
+    }
+
+    /* Span-label corner badge for sections (annotated) */
+    .span-corner {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-accent);
+      font-weight: 500;
+      background: var(--color-accent-soft);
+      padding: 1px 5px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(59, 91, 255, 0.20);
+    }
+
+    /* ----- Mini icon — used inside feature tiles ----- */
+    .micon { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.75; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required on every page per design system skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="theme.html">theme</a>
+    <a class="lingua-metanav__link" href="layouts.html">layouts</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="grid.html">grid</a>
+    <a class="lingua-metanav__link" href="components.html">components</a>
+    <a class="lingua-metanav__link" href="patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="../pages/marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="../pages/docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="../pages/civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="../pages/product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="../pages/product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="../pages/product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="../" class="dms-topnav-brand">
+              L<span class="diacritic">ī</span>ngua
+              <span class="designator">Design</span>
+            </a>
+            <div class="dms-topnav-links">
+              <a href="theme.html">Theme</a>
+              <a href="layouts.html">Layouts</a>
+              <a href="grid.html" class="active">Grid</a>
+              <a href="components.html">Components</a>
+              <a href="patterns.html">Patterns</a>
+            </div>
+          </div>
+          <div class="dms-topnav-right">
+            <span>v0.2</span>
+            <span style="color:var(--color-border)">·</span>
+            <span>2026-05-24</span>
+            <a href="../pages/marketing-homepage.html" class="ling-btn ling-btn--primary ling-btn--sm" style="margin-left:8px;">Start a site →</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">design system</div>
+            <a class="dms-sidenav-item" href="theme.html">Theme</a>
+            <a class="dms-sidenav-item" href="layouts.html">Layouts</a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="grid.html">Grid</a>
+            <a class="dms-sidenav-item" href="components.html">Components</a>
+            <a class="dms-sidenav-item" href="patterns.html">Patterns</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">example pages</div>
+            <a class="dms-sidenav-item" href="../pages/marketing-homepage.html">Marketing &mdash; home</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-comparison.html">Marketing &mdash; compare</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-theory.html">Marketing &mdash; theory</a>
+            <a class="dms-sidenav-item" href="../pages/docs-page.html">Documentation</a>
+            <a class="dms-sidenav-item" href="../pages/civic-overview.html">Civic overview</a>
+            <a class="dms-sidenav-item" href="../pages/product-site-overview.html">Product &mdash; site</a>
+            <a class="dms-sidenav-item" href="../pages/product-page-editor.html">Product &mdash; editor</a>
+            <a class="dms-sidenav-item" href="../pages/product-dataset-view.html">Product &mdash; dataset</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#spec">The grid spec</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#ruler">Column ruler</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#spans">Span vocabulary</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#fractional">Fractional aliases</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#rowspan">Row-span vocabulary</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#editor-view">In-editor grid view</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#rules">Rules for picking spans</a>
+          </div>
+        </aside>
+
+        <!-- childWrapper -->
+        <div class="dms-layout-child">
+
+          <!-- LayoutGroup "header" -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="hero-claim">
+                <span class="badge">v0.2</span>
+                <span>design system &middot; column grid</span>
+              </div>
+              <h1 class="dms-page-title">Grid &mdash; every section sits on this <span class="accent">column</span>.</h1>
+              <p class="dms-page-lede">
+                The column grid every Section is laid out on, inside any LayoutGroup. This is the <code>sectionArray</code> grid &mdash; 12 columns, defaultSize <code>12</code>, max-width 1280px. It is <strong>not</strong> the page chrome (Layout / LayoutGroup, the bands that stack down a page) &mdash; that lives in <a href="layouts.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">layouts</a>. Every Section in every example page snaps to one of the spans documented here; no freehand widths.
+              </p>
+              <div style="display:flex; gap:var(--space-3); margin-top:var(--space-7);">
+                <a href="layouts.html" class="ling-btn ling-btn--primary ling-btn--lg">Read the layouts page →</a>
+                <a href="components.html" class="ling-btn ling-btn--secondary ling-btn--lg">See components</a>
+              </div>
+              <div class="dms-annotation-block" style="margin-top: var(--space-7); max-width: 64ch;">
+                <span class="key">scope &rarr;</span> This page documents the <strong>column grid</strong> &mdash; the inner 12-column lattice Sections snap to inside every LayoutGroup. For the outer page chrome (Layout variants, LayoutGroup bands), see <a href="layouts.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">layouts.html</a>.
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — THE GRID SPEC -->
+          <section id="spec" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>The grid spec</div>
+                <h2 class="dms-section-title">12 columns, 1280px max, defaultSize 12.</h2>
+                <p class="dms-section-lede">
+                  Lingua v0.2 runs the modern 12-column <code>sectionArray</code> grid &mdash; finer-grained than the codebase default 6-column, matched to the contemporary web vocabulary. Every Section a user adds picks a <code>size</code> from the column-span vocabulary in this table; new sections that don't pick one default to a full row (<code>"12"</code>). The grid is the same across every LayoutGroup on every page in the system &mdash; one grid for the brand, no per-page reconfiguration.
+                </p>
+
+                <table class="spec-table" style="margin-top:var(--space-7);">
+                  <thead>
+                    <tr>
+                      <th>Setting</th>
+                      <th>Value</th>
+                      <th>Note</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="key">gridSize</td>
+                      <td class="val">12</td>
+                      <td class="note">Number of columns the grid divides into. Codebase default is 6; Lingua follows the modern recommendation of 12 (≈8.3% per column).</td>
+                    </tr>
+                    <tr>
+                      <td class="key">defaultSize</td>
+                      <td class="val">"12"</td>
+                      <td class="note">What a new Section gets when no size is picked. Full row &mdash; authors must opt in to splitting.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">layouts.centered</td>
+                      <td class="val">max-w-[1280px] mx-auto</td>
+                      <td class="note">Max content width when a group is not full-bleed. Matches <code>--grid-max</code>. Full-bleed groups override.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">layouts.fullwidth</td>
+                      <td class="val">""</td>
+                      <td class="note">Full-bleed groups (the dark code band, the footer) override centered to span the viewport.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">sectionPadding</td>
+                      <td class="val">p-3 &middot; 12px</td>
+                      <td class="note">Inner padding around each section's content. Modest in Lingua &mdash; the LayoutGroup's wrapper carries most padding.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">container.gap</td>
+                      <td class="val">gap-3 &middot; 12px</td>
+                      <td class="note">Gutter between columns. Matches <code>--space-3</code>. Tight enough to read as one composition; wide enough that adjacent sections breathe.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">sizes</td>
+                      <td class="val">12 &middot; 8 &middot; 6 &middot; 4 &middot; 3 &middot; aliases</td>
+                      <td class="note">Column-span vocabulary. See <a href="#spans" style="color:var(--color-accent);text-decoration:none;font-weight:500;">§spans</a> for examples and <a href="#fractional" style="color:var(--color-accent);text-decoration:none;font-weight:500;">§fractional</a> for the legacy <code>1/3</code>/<code>1/2</code>/<code>2/3</code>/<code>1</code> alias mapping.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">rowspans</td>
+                      <td class="val">1 &middot; 2 &middot; 3 &middot; &hellip; 8</td>
+                      <td class="note">Optional row-span override for sections that need vertical hierarchy. Default <code>1</code>. See <a href="#rowspan" style="color:var(--color-accent);text-decoration:none;font-weight:500;">§rowspan</a>.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">gridviewGrid</td>
+                      <td class="val">bg-zinc-50 h-full</td>
+                      <td class="note">The "show grid" overlay backdrop authors see in edit mode. Subtle, off-white.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">gridviewItem</td>
+                      <td class="val">border-x border-dashed border-accent/30</td>
+                      <td class="note">The 12 column tracks visible behind sections when the editor toggles "show grid". Hairline accent-blue dashes.</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">where this comes from &rarr;</span> Theme keys live under <code>pages.sectionArray.styles[0]</code>. The Lingua theme overlay (v0.3) populates these from the values above; the translation skill maps every row in this table to one key in <code>theme.js</code>. Source of truth: <code>src/dms/packages/dms/src/patterns/page/components/sections/sectionArray.theme.jsx</code>.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — COLUMN RULER -->
+          <section id="ruler" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Column ruler</div>
+                <h2 class="dms-section-title">Twelve tracks. Pick a span.</h2>
+                <p class="dms-section-lede">
+                  The lattice every Section snaps to. The 12 numbered cells below are the real columns &mdash; same gap, same proportions, same max-width as the live page. Every example further down this page lays its tiles on this ruler; reading the ruler first calibrates the eye.
+                </p>
+
+                <div class="ruler-card" style="margin-top:var(--space-7);">
+                  <div class="ruler">
+                    <div class="ruler__col">1</div>
+                    <div class="ruler__col">2</div>
+                    <div class="ruler__col">3</div>
+                    <div class="ruler__col">4</div>
+                    <div class="ruler__col">5</div>
+                    <div class="ruler__col">6</div>
+                    <div class="ruler__col">7</div>
+                    <div class="ruler__col">8</div>
+                    <div class="ruler__col">9</div>
+                    <div class="ruler__col">10</div>
+                    <div class="ruler__col">11</div>
+                    <div class="ruler__col">12</div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">read this as &rarr;</span> a Section with <code>size: "6"</code> covers columns 1&ndash;6 or 7&ndash;12; <code>size: "4"</code> covers a third of the row (4 tracks); <code>size: "3"</code> covers a quarter (3 tracks). The author never thinks in pixels &mdash; they think in tracks.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — SPAN VOCABULARY -->
+          <section id="spans" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Span vocabulary</div>
+                <h2 class="dms-section-title">Every recipe an author can compose, by sight.</h2>
+                <p class="dms-section-lede">
+                  Six recipes cover the bulk of Lingua surfaces. Below: each composition laid out on the real 12-column grid, with the section spans marked. These are the patterns an author should reach for first; bespoke splits earn their justification.
+                </p>
+
+                <!-- 12: hero band -->
+                <div class="span-example" style="margin-top:var(--space-7);">
+                  <div class="span-example__hd">
+                    <h4>Full row &mdash; <code>12</code></h4>
+                    <span class="meta">1 section &middot; defaultSize</span>
+                  </div>
+                  <div class="lg-grid">
+                    <div data-span="12">
+                      <div class="span-tile span-tile--hero">
+                        <span class="span-tile__label">span 12 &middot; full row</span>
+                        <div class="span-tile__hero">Lingua &mdash; every site speaks the same row.</div>
+                        <span class="span-corner">12</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dms-annotation-block" style="margin-top: var(--space-4);">
+                    <span class="key">use for &rarr;</span> hero bands, page titles, callouts, code-block sections, any "single statement" Section.
+                  </div>
+                </div>
+
+                <!-- 6 + 6: side-by-side intro -->
+                <div class="span-example" style="margin-top:var(--space-6);">
+                  <div class="span-example__hd">
+                    <h4>Two-up &mdash; <code>6 + 6</code></h4>
+                    <span class="meta">2 sections</span>
+                  </div>
+                  <div class="lg-grid">
+                    <div data-span="6">
+                      <div class="span-tile">
+                        <span class="span-tile__label">span 6 &middot; left</span>
+                        <div class="span-tile__body"><strong>Author + engineer.</strong> One vocabulary, two seats. Pick a data source, pick columns, set spans &mdash; no code path required.</div>
+                        <span class="span-corner">6</span>
+                      </div>
+                    </div>
+                    <div data-span="6">
+                      <div class="span-tile">
+                        <span class="span-tile__label">span 6 &middot; right</span>
+                        <div class="span-tile__body"><strong>Same row format.</strong> The shape on the screen is the shape in the database is the shape in the export. Diff it, version it, re-import it.</div>
+                        <span class="span-corner">6</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dms-annotation-block" style="margin-top: var(--space-4);">
+                    <span class="key">use for &rarr;</span> intro pairs, side-by-side architecture diagrams, before/after comparisons, two-column form layouts.
+                  </div>
+                </div>
+
+                <!-- 4 + 4 + 4: three-up feature grid -->
+                <div class="span-example" style="margin-top:var(--space-6);">
+                  <div class="span-example__hd">
+                    <h4>Three-up &mdash; <code>4 + 4 + 4</code></h4>
+                    <span class="meta">3 sections &middot; feature grid</span>
+                  </div>
+                  <div class="lg-grid">
+                    <div data-span="4">
+                      <div class="span-tile span-tile--feature">
+                        <span class="span-tile__label">span 4 &middot; feature</span>
+                        <div class="ling-card__icon">
+                          <svg class="micon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                        </div>
+                        <div class="span-tile__body"><strong>Compose.</strong> Pick from the registry.</div>
+                        <span class="span-corner">4</span>
+                      </div>
+                    </div>
+                    <div data-span="4">
+                      <div class="span-tile span-tile--feature">
+                        <span class="span-tile__label">span 4 &middot; feature</span>
+                        <div class="ling-card__icon">
+                          <svg class="micon" viewBox="0 0 24 24"><path d="M3 12l4 4L21 4"/></svg>
+                        </div>
+                        <div class="span-tile__body"><strong>Configure.</strong> Set columns, spans, fonts.</div>
+                        <span class="span-corner">4</span>
+                      </div>
+                    </div>
+                    <div data-span="4">
+                      <div class="span-tile span-tile--feature">
+                        <span class="span-tile__label">span 4 &middot; feature</span>
+                        <div class="ling-card__icon">
+                          <svg class="micon" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+                        </div>
+                        <div class="span-tile__body"><strong>Ship.</strong> Push to a domain or to staging.</div>
+                        <span class="span-corner">4</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dms-annotation-block" style="margin-top: var(--space-4);">
+                    <span class="key">use for &rarr;</span> feature grids, capability tiles, primitive-set summaries. The most common multi-section recipe in marketing surfaces.
+                  </div>
+                </div>
+
+                <!-- 3 + 6 + 3: sidebar + main + rail -->
+                <div class="span-example" style="margin-top:var(--space-6);">
+                  <div class="span-example__hd">
+                    <h4>Asymmetric &mdash; <code>3 + 6 + 3</code></h4>
+                    <span class="meta">3 sections &middot; sidebar + main + ad slot</span>
+                  </div>
+                  <div class="lg-grid">
+                    <div data-span="3">
+                      <div class="span-tile">
+                        <span class="span-tile__label">span 3 &middot; left rail</span>
+                        <div class="span-tile__body">In-page nav, filters, attributions.</div>
+                        <span class="span-corner">3</span>
+                      </div>
+                    </div>
+                    <div data-span="6">
+                      <div class="span-tile">
+                        <span class="span-tile__label">span 6 &middot; main</span>
+                        <div class="span-tile__body"><strong>Editorial body.</strong> The primary content of the band &mdash; a long-form section, a table, an architecture diagram. Reads at a comfortable measure inside the wider grid.</div>
+                        <span class="span-corner">6</span>
+                      </div>
+                    </div>
+                    <div data-span="3">
+                      <div class="span-tile">
+                        <span class="span-tile__label">span 3 &middot; right rail</span>
+                        <div class="span-tile__body">CTAs, callouts, side notes.</div>
+                        <span class="span-corner">3</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dms-annotation-block" style="margin-top: var(--space-4);">
+                    <span class="key">use for &rarr;</span> docs pages with a left nav and right TOC, marketing bands with a side callout, civic dashboards with filters + body + status rail.
+                  </div>
+                </div>
+
+                <!-- 8 + 4: main + rail -->
+                <div class="span-example" style="margin-top:var(--space-6);">
+                  <div class="span-example__hd">
+                    <h4>Main + rail &mdash; <code>8 + 4</code></h4>
+                    <span class="meta">2 sections &middot; primary + secondary</span>
+                  </div>
+                  <div class="lg-grid">
+                    <div data-span="8">
+                      <div class="span-tile span-tile--dark">
+                        <span class="span-tile__label">span 8 &middot; main</span>
+                        <div class="span-tile__body" style="color:var(--color-code-fg);"><strong style="color:var(--color-surface);">Code surface.</strong> A code block, terminal, or chart that wants horizontal room. Sits in 8 of 12 columns, leaving 4 for a captioning rail.</div>
+                        <span class="span-corner" style="background:rgba(59,91,255,0.20); border-color:rgba(59,91,255,0.40); color:var(--color-code-accent);">8</span>
+                      </div>
+                    </div>
+                    <div data-span="4">
+                      <div class="span-tile">
+                        <span class="span-tile__label">span 4 &middot; rail</span>
+                        <div class="span-tile__body"><strong>Caption.</strong> What the demo shows, what to try next, what the link to docs is.</div>
+                        <span class="span-corner">4</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dms-annotation-block" style="margin-top: var(--space-4);">
+                    <span class="key">use for &rarr;</span> code-demo + caption, chart + legend, hero asset + supporting copy. The asymmetric main-with-rail.
+                  </div>
+                </div>
+
+                <!-- 3 + 3 + 3 + 3: KPI strip -->
+                <div class="span-example" style="margin-top:var(--space-6);">
+                  <div class="span-example__hd">
+                    <h4>KPI strip &mdash; <code>3 + 3 + 3 + 3</code></h4>
+                    <span class="meta">4 sections &middot; quartet</span>
+                  </div>
+                  <div class="lg-grid">
+                    <div data-span="3">
+                      <div class="span-tile span-tile--kpi">
+                        <div class="kpi-label">deploys / week</div>
+                        <div class="kpi-value">128</div>
+                        <div class="kpi-delta">+12.4%</div>
+                        <span class="span-corner">3</span>
+                      </div>
+                    </div>
+                    <div data-span="3">
+                      <div class="span-tile span-tile--kpi">
+                        <div class="kpi-label">avg p95 ttfb</div>
+                        <div class="kpi-value">88<span style="font-size:14px; color:var(--color-mute); margin-left:2px;">ms</span></div>
+                        <div class="kpi-delta">&minus;6.1%</div>
+                        <span class="span-corner">3</span>
+                      </div>
+                    </div>
+                    <div data-span="3">
+                      <div class="span-tile span-tile--kpi">
+                        <div class="kpi-label">active sites</div>
+                        <div class="kpi-value">2,184</div>
+                        <div class="kpi-delta">+38</div>
+                        <span class="span-corner">3</span>
+                      </div>
+                    </div>
+                    <div data-span="3">
+                      <div class="span-tile span-tile--kpi">
+                        <div class="kpi-label">authors / mo</div>
+                        <div class="kpi-value">412</div>
+                        <div class="kpi-delta">+18.0%</div>
+                        <span class="span-corner">3</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dms-annotation-block" style="margin-top: var(--space-4);">
+                    <span class="key">use for &rarr;</span> KPI rows at the top of product/admin/civic dashboards. Four equal tracks read as one strip; the eye scans across without resorting.
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — FRACTIONAL ALIASES -->
+          <section id="fractional" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Fractional aliases</div>
+                <h2 class="dms-section-title">Legacy fractions, in 12-col terms.</h2>
+                <p class="dms-section-lede">
+                  The old codebase grid used fractional <code>size</code> keys &mdash; <code>1/3</code>, <code>1/2</code>, <code>2/3</code>, <code>1</code>. Lingua keeps these aliases so existing pages don't break: each one maps cleanly into the 12-column equivalent. New work should prefer the raw integer (<code>"4"</code>, <code>"6"</code>, etc.) since it reads more directly against the column ruler &mdash; but either is valid.
+                </p>
+
+                <table class="spec-table" style="margin-top:var(--space-7);">
+                  <thead>
+                    <tr>
+                      <th>Legacy alias</th>
+                      <th>12-col equivalent</th>
+                      <th>Common name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="key">"1/3"</td>
+                      <td class="val">"4"</td>
+                      <td class="note">Third. Three-up grids, sidebar widgets.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">"1/2"</td>
+                      <td class="val">"6"</td>
+                      <td class="note">Half. Side-by-side intro pairs, two-up grids.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">"2/3"</td>
+                      <td class="val">"8"</td>
+                      <td class="note">Two-thirds. Main column with a 4-track rail.</td>
+                    </tr>
+                    <tr>
+                      <td class="key">"1"</td>
+                      <td class="val">"12"</td>
+                      <td class="note">Full row. The defaultSize.</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">how the theme resolves a size &rarr;</span> The sectionArray theme's <code>sizes</code> map keys both forms to the same Tailwind <code>col-span-N</code> string. A Section with <code>size: "1/2"</code> resolves to the same class as one with <code>size: "6"</code>. Authors can pick either; the rendered row is identical.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — ROWSPAN VOCABULARY -->
+          <section id="rowspan" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Row-span vocabulary</div>
+                <h2 class="dms-section-title">Vertical spans &mdash; for hierarchy moments only.</h2>
+                <p class="dms-section-lede">
+                  A Section can claim more than one row of the implicit grid via <code>rowspan</code>. Below: a <code>rowspan: 1</code> default next to a <code>rowspan: 2</code> tall and a <code>rowspan: 3</code> very tall, all on the same 12-column grid. Row-spans are powerful and dangerous &mdash; they reorder how the grid auto-flows and can leave gaps. Reach for them only when the hero of a band genuinely deserves vertical weight.
+                </p>
+
+                <div class="rowspan-demo" style="margin-top:var(--space-7);">
+                  <div class="rowspan-tile rs-1" style="grid-column: span 4;">
+                    <span class="lbl">rowspan 1 &middot; span 4</span>
+                    <span class="body">Default height.</span>
+                  </div>
+                  <div class="rowspan-tile rs-2" style="grid-column: span 4;">
+                    <span class="lbl">rowspan 2 &middot; span 4</span>
+                    <span class="body">Two rows tall. Use for a primary chart or a featured Card amongst secondaries.</span>
+                  </div>
+                  <div class="rowspan-tile rs-3" style="grid-column: span 4;">
+                    <span class="lbl">rowspan 3 &middot; span 4</span>
+                    <span class="body">Three rows tall. The hero of the band &mdash; a code block, a screenshot, a key insight.</span>
+                  </div>
+                  <div class="rowspan-tile rs-1" style="grid-column: span 4;">
+                    <span class="lbl">rowspan 1 &middot; span 4</span>
+                    <span class="body">Sits beside the row-2 tile.</span>
+                  </div>
+                  <div class="rowspan-tile rs-1" style="grid-column: span 4;">
+                    <span class="lbl">rowspan 1 &middot; span 4</span>
+                    <span class="body">Sits beside the row-2 tile.</span>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">cost of a rowspan &rarr;</span> Row-spans reorder how the grid packs. A <code>rowspan-3</code> tile in column 1 forces everything else to flow around it; subsequent sections may snap to lower rows than the eye expects. Use a row-span when the visual hierarchy demands it &mdash; not as a default.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — IN-EDITOR GRID VIEW -->
+          <section id="editor-view" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>In-editor grid view</div>
+                <h2 class="dms-section-title">What authors see when "show grid" is toggled.</h2>
+                <p class="dms-section-lede">
+                  In the page editor, an author can toggle a "show grid" overlay that draws 12 dashed column tracks behind the live Sections. This is how they verify a section snaps to the lattice. The mockup below shows the editor's content area with the overlay on; two sample sections sit on the grid &mdash; one spans 8 tracks (a main column), the other spans 4 (a rail).
+                </p>
+
+                <div class="editor-mock" style="margin-top:var(--space-7);">
+                  <div class="editor-mock__chrome">
+                    <span>page editor &middot; design_system / grid</span>
+                    <span style="margin-left:auto; display:inline-flex; align-items:center; gap:6px;">
+                      <span class="badge-on">show grid: on</span>
+                      <span style="font-family:var(--font-mono);font-size:11px;color:var(--color-mute);">12 cols &middot; gap 12px</span>
+                    </span>
+                  </div>
+                  <div class="editor-mock__canvas">
+                    <!-- 12-track overlay -->
+                    <div class="editor-mock__overlay">
+                      <div></div><div></div><div></div><div></div><div></div><div></div>
+                      <div></div><div></div><div></div><div></div><div></div><div></div>
+                    </div>
+                    <!-- Sample sections on the grid -->
+                    <div class="editor-mock__content">
+                      <div class="editor-mock__section" style="grid-column: span 8;">
+                        <span class="lbl">Section &middot; group: content &middot; size: 8</span>
+                        <span class="ttl">Main column</span>
+                        <span class="ln" style="width:75%;"></span>
+                        <span class="ln" style="width:90%;"></span>
+                        <span class="ln" style="width:60%;"></span>
+                        <span class="span-corner" style="position:absolute;">span 8</span>
+                      </div>
+                      <div class="editor-mock__section" style="grid-column: span 4;">
+                        <span class="lbl">Section &middot; group: content &middot; size: 4</span>
+                        <span class="ttl">Rail</span>
+                        <span class="ln" style="width:70%;"></span>
+                        <span class="ln" style="width:90%;"></span>
+                        <span class="span-corner" style="position:absolute;">span 4</span>
+                      </div>
+                      <div class="editor-mock__section" style="grid-column: span 12;">
+                        <span class="lbl">Section &middot; group: content &middot; size: 12</span>
+                        <span class="ttl">Full-row band</span>
+                        <span class="ln" style="width:80%;"></span>
+                        <span class="ln" style="width:50%;"></span>
+                        <span class="span-corner" style="position:absolute;">span 12</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">theme keys &rarr;</span> The dashed lattice uses <code>gridviewGrid</code> (the soft backdrop) and <code>gridviewItem</code> (the 12 column tracks). In Lingua the tracks are a faint accent-blue dashed border so they're visible against the white surface without dominating. Authors toggle this on from the editor toolbar; in view-mode the overlay is hidden.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — RULES FOR PICKING SPANS -->
+          <section id="rules" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Rules for picking spans</div>
+                <h2 class="dms-section-title">Author guidance &mdash; pick a span, don't invent one.</h2>
+                <p class="dms-section-lede">
+                  A short list of guardrails that keep Lingua pages legible across the catalogue. Most of these are about <em>not</em> doing things &mdash; the grid is most powerful when the variation across pages is small and the recipes are familiar.
+                </p>
+
+                <div class="dms-annotation-block" style="margin-top:var(--space-7); line-height:1.8;">
+                  <div><span class="key">1. Default to full-row.</span> If you don't have a reason to split, leave the section at <code>"12"</code>. A page of full-row sections reads like a paper; a page of mixed splits reads like a feed.</div>
+                  <div style="margin-top:8px;"><span class="key">2. Favor balanced splits.</span> <code>6 + 6</code> and <code>4 + 4 + 4</code> beat <code>5 + 7</code> and <code>3 + 5 + 4</code> unless the data justifies the asymmetry. Balanced splits read as composition; lopsided splits read as accident.</div>
+                  <div style="margin-top:8px;"><span class="key">3. Use the integer spans for new work.</span> <code>"4"</code> beats <code>"1/3"</code> because it reads directly against the 12-track ruler. The fractional aliases exist for back-compat; let them age out.</div>
+                  <div style="margin-top:8px;"><span class="key">4. Row-spans only for hierarchy moments.</span> A <code>rowspan-2</code> next to two <code>rowspan-1</code>s is a hero pattern, not a default. Most pages should ship with all sections at <code>rowspan: 1</code>.</div>
+                  <div style="margin-top:8px;"><span class="key">5. Don't override <code>sectionPadding</code> per-section.</span> The grid's gap + the LayoutGroup's wrapper padding handle breathing room. Custom padding per-section is a code-smell &mdash; usually the layout calls for a different group variant instead.</div>
+                  <div style="margin-top:8px;"><span class="key">6. Don't reinvent the grid per page.</span> The same 12 columns serve marketing surfaces, dashboards, docs, and product chrome. If a page seems to "need" a different gridSize, that's almost always a sign the wrong LayoutGroup is being used.</div>
+                  <div style="margin-top:8px;"><span class="key">7. Read the ruler before adding a section.</span> Pick the span first against the ruler in §ruler, then drop the section in. Authors who write the span last end up nudging widths post-hoc; that's not how the grid wants to be used.</div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top:var(--space-5);">
+                  <span class="key">when these break down &rarr;</span> They break down when a page is genuinely advanced &mdash; a dataset explorer with a sticky-left filter rail + scrolling body, or an editor with three resizable panes. Those cases use a layout-level grid (set on the Layout's <code>childWrapper</code>, documented in <a href="layouts.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">layouts.html</a>), with the sectionArray grid still ruling each column. v0.2 doesn't ship this pattern yet; it's reserved for the page editor.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "footer" -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div class="dms-grid dms-grid-3" style="gap:var(--space-7);">
+                <div>
+                  <div class="ling-logo" style="font-size:20px;">L<span class="diacritic">ī</span>ngua</div>
+                  <div class="l-proseSM ink-soft" style="margin-top: var(--space-3); max-width:32ch;">
+                    v0.2 &middot; 2026-05-24 &middot; modern technical brand. The grid Sections sit on; the layouts pages sit in.
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">System</div>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <a href="theme.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theme</a>
+                    <a href="layouts.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Layouts</a>
+                    <a href="grid.html" class="l-proseSM" style="color:var(--color-accent); text-decoration:none; font-weight:500;">Grid</a>
+                    <a href="components.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Components</a>
+                    <a href="patterns.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Patterns</a>
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Pages</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px var(--space-4);">
+                    <a href="../pages/marketing-homepage.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Home</a>
+                    <a href="../pages/marketing-comparison.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Compare</a>
+                    <a href="../pages/marketing-theory.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theory</a>
+                    <a href="../pages/docs-page.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Docs</a>
+                    <a href="../pages/civic-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Civic</a>
+                    <a href="../pages/product-site-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Site</a>
+                    <a href="../pages/product-page-editor.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Editor</a>
+                    <a href="../pages/product-dataset-view.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Dataset</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

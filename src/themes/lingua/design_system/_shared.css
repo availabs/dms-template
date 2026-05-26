@@ -1,0 +1,201 @@
+/* =============================================================================
+   Lingua — brand foundation v0.2
+   -----------------------------------------------------------------------------
+   The brand's vocabulary as CSS custom properties. Loaded by every page in
+   `design-system/` and `pages/`. The values here mirror what the JS theme
+   will read.
+
+   Brand essence (v0.2 — see research/dms product/brand-lingua.md):
+     A modern technical product. Sans-led, blue-accented, rounded-corner,
+     with dark code surfaces and visible product demonstration. Closer to
+     Hex / Zed / Warpstream than to a literary magazine.
+
+   What changed from v0.1: dropped the cream-paper / italic-serif / square-
+   corner / anti-shadow direction. v0.1 read as a publication; v0.2 reads
+   as a platform.
+
+   Source: research/dms product/brand-lingua.md (v0.2)
+   ============================================================================= */
+
+/* ----- Fonts ------------------------------------------------------- */
+/* Inter Tight: the brand sans (display + body). Has display weights and
+   tightened tracking that reads as deliberate at hero scale.
+   JetBrains Mono: code, terminal, mono labels, KPI numerics.
+   Fraunces: editorial accent, used ONLY on the Theory page (and rare
+   pull quotes) — kept in the load list so it's available without an
+   extra request when the moment comes. */
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&display=swap");
+
+:root {
+  /* ----- Type families ----------------------------------------------- */
+  --font-display: 'Inter Tight', 'Geist', 'Söhne', system-ui, -apple-system, sans-serif;
+  --font-sans:    'Inter Tight', 'Geist', 'Söhne', system-ui, -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Geist Mono', 'Berkeley Mono', ui-monospace, monospace;
+  --font-editorial: 'Fraunces', 'Reckless', 'GT Alpina', Georgia, serif; /* used sparingly — Theory only */
+
+  /* ----- Surface (light mode default) ------------------------------- */
+  --color-surface:        #FFFFFF;  /* primary background — pure white */
+  --color-surface-soft:   #F7F7F8;  /* subtle alternate surface */
+  --color-surface-sunken: #F1F1F3;  /* sunken — cards on a background */
+  --color-surface-tint:   #FAFAFB;  /* very subtle tint for striping */
+  --color-border:         #E4E4E7;  /* default border / hairline */
+  --color-border-strong:  #D4D4D8;  /* heavier rule */
+  --color-border-subtle:  #EEEEEF;  /* very subtle internal divider */
+
+  /* ----- Ink (zinc-ish, slightly warm-cool neutral) ----------------- */
+  --color-ink:        #18181B;  /* primary ink — near-black */
+  --color-ink-soft:   #3F3F46;  /* secondary ink */
+  --color-mute:       #71717A;  /* tertiary ink, captions */
+  --color-mute-soft:  #A1A1AA;  /* placeholders, disabled */
+
+  /* ----- Brand accent — Lingua blue --------------------------------- */
+  --color-accent:        #3B5BFF;  /* electric ultramarine — the brand */
+  --color-accent-hover:  #2F4AE0;
+  --color-accent-active: #2540B8;
+  --color-accent-soft:   #EEF1FF;  /* tint for backgrounds, highlights */
+  --color-accent-ink:    #FFFFFF;  /* text on accent surfaces */
+
+  /* ----- Status accents (functional, sparing) ----------------------- */
+  --color-signal:       #FF5630;  /* vermillion — warnings, danger, important */
+  --color-signal-soft:  #FFE9E2;
+  --color-margin:       #FFC83D;  /* citrus — highlights, "new", margin */
+  --color-margin-soft:  #FFF5D8;
+  --color-success:      #14B881;  /* emerald — complete, "on" states */
+  --color-success-soft: #DEF7EC;
+
+  /* ----- Code / terminal surface (dark, always) --------------------- */
+  --color-code-bg:        #0E0F12;  /* deep slate — primary code surface */
+  --color-code-bg-soft:   #1A1B1F;  /* secondary code surface */
+  --color-code-border:    #26272D;  /* rule within code surfaces */
+  --color-code-fg:        #E6E7EA;
+  --color-code-mute:      #6C7079;  /* comments */
+  --color-code-accent:    #79B8FF;  /* function names, keywords */
+  --color-code-string:    #B5F4A5;
+  --color-code-keyword:   #FFA8B4;
+  --color-code-number:    #FFC83D;
+
+  /* ----- Spacing (4px base, more granular than v0.1) ---------------- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-7:  32px;
+  --space-8:  40px;
+  --space-9:  56px;
+  --space-10: 80px;
+  --space-11: 120px;
+  --space-12: 160px;
+
+  /* ----- Radii (rounded by default — opposite of v0.1) -------------- */
+  --radius-sm:   4px;    /* small chrome — chips, ms-tokens */
+  --radius-md:   6px;    /* buttons, inputs */
+  --radius-lg:   8px;    /* cards, primary surfaces */
+  --radius-xl:   12px;   /* modals, drawers, hero panels */
+  --radius-pill: 999px;  /* pills */
+
+  /* ----- Elevation (subtle shadows now ALLOWED — opposite of v0.1) -- */
+  --shadow-sm:   0 1px 2px rgba(24, 24, 27, 0.04);
+  --shadow-md:   0 4px 12px rgba(24, 24, 27, 0.06), 0 1px 2px rgba(24, 24, 27, 0.04);
+  --shadow-lg:   0 12px 32px rgba(24, 24, 27, 0.08), 0 2px 6px rgba(24, 24, 27, 0.04);
+
+  /* On dark code surfaces, shadow needs more contrast */
+  --shadow-on-dark-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-on-dark-md: 0 6px 24px rgba(0, 0, 0, 0.4);
+
+  /* ----- Motion (snappy, not stately) ------------------------------- */
+  --dur-snap:  120ms;
+  --dur-move:  200ms;
+  --dur-page:  280ms;
+  --ease-snap: cubic-bezier(0.2, 0, 0.1, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ----- Focus ring (visible, brand-colored) ------------------------ */
+  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-accent);
+
+  /* ----- Grid ------------------------------------------------------- */
+  --grid-gutter: 24px;
+  --grid-max:    1280px;
+  --grid-narrow: 1080px;       /* for marketing pages that feel less wide */
+  --measure-max: 720px;        /* long-form reading column */
+
+  /* ----- Type scale anchors ---------------------------------------- */
+  --fs-display-hero: 96px;
+  --fs-display-xl:   72px;
+  --fs-display-lg:   56px;
+  --fs-display-md:   40px;
+  --fs-display-sm:   32px;
+  --fs-h2:           24px;
+  --fs-h3:           20px;
+  --fs-h4:           18px;
+  --fs-prose:        16px;
+  --fs-prose-sm:     14px;
+  --fs-caption:      13px;
+  --fs-micro:        11px;
+  --fs-mono:         14px;
+  --fs-mono-sm:      12px;
+  --fs-mono-xs:      11px;
+
+  --lh-display:      1.08;
+  --lh-display-tight: 1.04;
+  --lh-body:         1.5;
+  --lh-tight:        1.3;
+  --lh-mono:         1.55;
+
+  /* ----- Tracking -------------------------------------------------- */
+  --tracking-tight:    -0.04em;   /* display hero */
+  --tracking-display:  -0.025em;  /* display */
+  --tracking-body:      0;
+  --tracking-mono-up:   0.06em;   /* uppercase mono labels */
+}
+
+/* =============================================================================
+   Brand surface utilities — components built into the CSS layer because they
+   would otherwise repeat as inline styles across every page.
+   ============================================================================= */
+
+/* The standard light surface card — used as the base for content blocks */
+.ling-surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* The dark "code surface" — used for code blocks, terminals, occasional hero bands */
+.ling-darksurface {
+  background: var(--color-code-bg);
+  color: var(--color-code-fg);
+  border-radius: var(--radius-lg);
+}
+
+/* The hairline rule the brand uses */
+.ling-rule       { border: 0; border-top: 1px solid var(--color-border); margin: var(--space-7) 0; }
+.ling-rule-soft  { border: 0; border-top: 1px solid var(--color-border-subtle); margin: var(--space-5) 0; }
+.ling-rule-strong{ border: 0; border-top: 1px solid var(--color-border-strong); margin: var(--space-7) 0; }
+
+/* The brand subtle gradient — single-hue, accent → accent-hover, used at most
+   once per page (under hero text or behind a feature card). NEVER rainbow. */
+.ling-grad-accent {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  color: var(--color-accent-ink);
+}
+
+/* Body reset */
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-prose);
+  line-height: var(--lh-body);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01'; /* Inter Tight: slightly distinctive numerals */
+}
+*, *::before, *::after { box-sizing: border-box; }
+a { color: inherit; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+img, svg { display: block; max-width: 100%; }

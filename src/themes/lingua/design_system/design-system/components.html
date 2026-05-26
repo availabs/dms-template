@@ -1,0 +1,3070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingua — Design System / Components</title>
+  <link rel="stylesheet" href="_dms-page.css">
+  <style>
+    /* =========================================================================
+       components.html — page-local styling for primitive demos only.
+       The brand surface utilities live in _dms-page.css / _shared.css.
+       What follows is layout scaffolding to display the primitives in tidy
+       state-grids, plus the overlay snapshots (Dialog, Modal, Drawer,
+       Popup, DeleteModal) and the static command-palette mockup.
+       ========================================================================= */
+
+    /* Primitive demo wrappers — each section uses these consistently */
+    .demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .demo-stack { display: flex; flex-direction: column; gap: var(--space-4); }
+    .demo-cluster {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      align-items: flex-start;
+    }
+    .demo-sub-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-mute);
+      margin: var(--space-5) 0 var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .demo-sub-eyebrow .num {
+      color: var(--color-accent);
+      font-weight: 600;
+    }
+    .demo-pane {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+    .demo-pane--dark {
+      background: var(--color-code-bg);
+      color: var(--color-code-fg);
+      border-color: var(--color-code-border);
+    }
+    .demo-caption {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      margin-top: var(--space-3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* Section anchor TOC inside content cards */
+    .toc-rail {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .toc-rail a {
+      color: var(--color-mute);
+      text-decoration: none;
+      transition: color var(--dur-snap) var(--ease-snap);
+    }
+    .toc-rail a:hover { color: var(--color-accent); }
+    .toc-rail .sep { color: var(--color-border-strong); }
+
+    /* TopNav demo (compact mockup with default/hover/active triplets) */
+    .topnav-demo {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--color-surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .topnav-demo__bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-5);
+      height: 56px;
+      border-bottom: 1px solid var(--color-border);
+      background: rgba(255, 255, 255, 0.92);
+    }
+    .topnav-demo__left {
+      display: flex; align-items: center; gap: var(--space-7);
+    }
+    .topnav-demo__brand {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 17px;
+      letter-spacing: -0.018em;
+    }
+    .topnav-demo__brand .diacritic { color: var(--color-accent); }
+    .topnav-demo__links {
+      display: flex;
+      gap: var(--space-6);
+      font-size: 14px;
+      font-weight: 500;
+      align-items: center;
+      position: relative;
+    }
+    .topnav-demo__links a {
+      text-decoration: none;
+      color: var(--color-ink-soft);
+      padding: 4px 0;
+      border-bottom: 2px solid transparent;
+      transition: color var(--dur-snap) var(--ease-snap),
+                  border-color var(--dur-snap) var(--ease-snap);
+      display: inline-flex; align-items: center; gap: 4px;
+      position: relative;
+    }
+    .topnav-demo__links a.hover { color: var(--color-ink); }
+    .topnav-demo__links a.active {
+      color: var(--color-ink);
+      border-bottom-color: var(--color-accent);
+    }
+    .topnav-demo__links a .caret {
+      width: 10px; height: 10px;
+      stroke: currentColor; stroke-width: 1.6;
+      fill: none; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .topnav-demo__right {
+      display: flex; align-items: center; gap: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+    }
+    .topnav-demo__submenu {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: -16px;
+      width: 240px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 6px;
+      z-index: 2;
+    }
+    .topnav-demo__submenu .item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 8px 10px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      border-radius: var(--radius-md);
+    }
+    .topnav-demo__submenu .item:hover { background: var(--color-surface-soft); color: var(--color-ink); }
+    .topnav-demo__submenu .item.active {
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+    .topnav-demo__submenu .item .meta {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+    }
+    .topnav-demo__submenu .item.active .meta { color: var(--color-accent); opacity: 0.8; }
+    .topnav-demo__divider { height: 1px; background: var(--color-border-subtle); margin: 4px 0; }
+
+    /* State-triplet display */
+    .state-grid {
+      display: grid;
+      grid-template-columns: 100px repeat(5, minmax(0, 1fr));
+      gap: var(--space-3);
+      align-items: center;
+    }
+    .state-grid .row-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+    }
+    .state-grid .col-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      text-align: center;
+    }
+
+    /* SideNav demo (compact + expanded) */
+    .sidenav-demo {
+      display: grid;
+      grid-template-columns: 80px 280px;
+      gap: var(--space-4);
+    }
+    .sidenav-mini {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3);
+      display: flex; flex-direction: column; gap: var(--space-2);
+      align-items: center;
+    }
+    .sidenav-mini__brand {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-md);
+      background: var(--color-ink);
+      color: var(--color-surface);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .sidenav-mini__brand .diacritic { color: var(--color-accent); }
+    .sidenav-mini__icon {
+      width: 36px; height: 36px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-md);
+      color: var(--color-ink-soft);
+      transition: background var(--dur-snap) var(--ease-snap);
+    }
+    .sidenav-mini__icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .sidenav-mini__icon.active {
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+    .sidenav-mini__icon:hover {
+      background: var(--color-surface);
+      color: var(--color-ink);
+    }
+    .sidenav-mini__spacer { flex: 1; }
+    .sidenav-mini__avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+      color: var(--color-surface);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .sidenav-full {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      display: flex; flex-direction: column;
+      min-height: 480px;
+    }
+    .sidenav-full__group { padding: var(--space-2) 0; }
+    .sidenav-full__group + .sidenav-full__group {
+      border-top: 1px solid var(--color-border-subtle);
+      margin-top: var(--space-2);
+      padding-top: var(--space-4);
+    }
+    .sidenav-full__eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-mute);
+      padding: 0 var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+    .sidenav-full__item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 7px 10px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      position: relative;
+    }
+    .sidenav-full__item:hover {
+      background: var(--color-surface);
+      color: var(--color-ink);
+    }
+    .sidenav-full__item.active {
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+    .sidenav-full__item .caret {
+      width: 12px; height: 12px;
+      stroke: currentColor; stroke-width: 1.7;
+      fill: none; stroke-linecap: round; stroke-linejoin: round;
+      margin-left: auto;
+      transition: transform var(--dur-snap) var(--ease-snap);
+    }
+    .sidenav-full__item .caret--open { transform: rotate(90deg); }
+    .sidenav-full__item .icon {
+      width: 16px; height: 16px;
+      stroke: currentColor; stroke-width: 1.6;
+      fill: none; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sidenav-full__sub {
+      padding-left: var(--space-5);
+      margin-top: 2px;
+      display: flex; flex-direction: column;
+    }
+    .sidenav-full__sub .sidenav-full__item {
+      font-size: 12.5px;
+      color: var(--color-mute);
+      font-weight: 400;
+    }
+    .sidenav-full__sub .sidenav-full__item.active {
+      color: var(--color-accent);
+      background: var(--color-accent-soft);
+    }
+    .sidenav-full__sub--3 {
+      padding-left: var(--space-7);
+      border-left: 1px solid var(--color-border);
+      margin-left: var(--space-5);
+      padding-top: 2px;
+    }
+    .sidenav-full__sub--3 .sidenav-full__item {
+      font-size: 12px;
+      padding: 5px 10px;
+      color: var(--color-mute);
+    }
+    .sidenav-full__bottom {
+      margin-top: auto;
+      border-top: 1px solid var(--color-border-subtle);
+      padding-top: var(--space-3);
+      display: flex; align-items: center; gap: var(--space-2);
+    }
+    .sidenav-full__bottom .avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--color-ink);
+      color: var(--color-surface);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .sidenav-full__bottom .who {
+      flex: 1;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-ink);
+      line-height: 1.2;
+    }
+    .sidenav-full__bottom .who .org {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+    .sidenav-full__bottom .theme-toggle {
+      width: 28px; height: 28px;
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--color-ink-soft);
+    }
+    .sidenav-full__bottom .theme-toggle svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* NavigableMenu */
+    .nm-demo {
+      display: flex; flex-wrap: wrap; gap: var(--space-7); align-items: flex-start;
+    }
+    .nm-trigger {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: 8px 12px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-ink);
+      cursor: pointer;
+    }
+    .nm-trigger svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .nm-popover {
+      width: 240px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 6px;
+    }
+    .nm-popover .nm-item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 8px 10px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+    }
+    .nm-popover .nm-item:hover { background: var(--color-surface-soft); color: var(--color-ink); }
+    .nm-popover .nm-item svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; color: var(--color-mute); }
+    .nm-popover .nm-shortcut {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .nm-popover .nm-divider { height: 1px; background: var(--color-border-subtle); margin: 4px 0; }
+
+    /* Command palette */
+    .palette {
+      width: 560px;
+      max-width: 100%;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .palette__search {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .palette__search svg { width: 16px; height: 16px; stroke: var(--color-mute); stroke-width: 1.6; fill: none; }
+    .palette__search input {
+      flex: 1;
+      border: 0; outline: none;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      color: var(--color-ink);
+      background: transparent;
+      padding: 0;
+    }
+    .palette__search .kbd {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      padding: 2px 6px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface-soft);
+    }
+    .palette__group {
+      padding: 6px 8px 10px;
+    }
+    .palette__group-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-mute);
+      padding: 6px 12px 4px;
+    }
+    .palette__item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 9px 12px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink-soft);
+      cursor: pointer;
+      transition: background var(--dur-snap) var(--ease-snap);
+    }
+    .palette__item:hover { background: var(--color-surface-soft); color: var(--color-ink); }
+    .palette__item.is-selected {
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+    .palette__item svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
+    .palette__item .what { flex: 1; }
+    .palette__item .hint {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .palette__item.is-selected .hint { color: var(--color-accent); opacity: 0.8; }
+    .palette__footer {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 8px 18px;
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface-soft);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+    }
+    .palette__footer .kbd {
+      padding: 1px 5px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface);
+      color: var(--color-ink-soft);
+      font-size: 10px;
+    }
+    .palette__footer .spacer { flex: 1; }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+    }
+    .breadcrumb a {
+      color: var(--color-mute);
+      text-decoration: none;
+      padding: 2px 4px;
+      border-radius: var(--radius-sm);
+    }
+    .breadcrumb a:hover { color: var(--color-ink-soft); background: var(--color-surface-soft); }
+    .breadcrumb .current { color: var(--color-ink); }
+    .breadcrumb .sep {
+      color: var(--color-border-strong);
+      font-size: 11px;
+    }
+
+    /* Input with leading icon / trailing button */
+    .ling-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .ling-input-wrap .lead {
+      position: absolute;
+      left: 12px;
+      width: 14px; height: 14px;
+      stroke: var(--color-mute);
+      stroke-width: 1.6;
+      fill: none;
+      stroke-linecap: round; stroke-linejoin: round;
+      pointer-events: none;
+    }
+    .ling-input-wrap .ling-input.with-lead { padding-left: 34px; }
+    .ling-input-group {
+      display: inline-flex;
+      align-items: stretch;
+      width: 100%;
+    }
+    .ling-input-group .ling-input {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right: 0;
+    }
+    .ling-input-group .trail-btn {
+      border: 1px solid var(--color-border-strong);
+      border-left: 0;
+      border-top-right-radius: var(--radius-md);
+      border-bottom-right-radius: var(--radius-md);
+      padding: 9px 14px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--color-surface-soft);
+      color: var(--color-ink);
+      cursor: pointer;
+    }
+    .ling-input-group .trail-btn:hover { background: var(--color-surface-sunken); }
+
+    /* Multiselect open menu */
+    .ms-open {
+      width: 260px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .ms-open__search {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .ms-open__search input {
+      width: 100%;
+      border: 0; outline: none;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink);
+    }
+    .ms-open__list { padding: 4px; max-height: 220px; overflow-y: auto; }
+    .ms-open__opt {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 7px 10px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+    }
+    .ms-open__opt:hover { background: var(--color-surface-soft); }
+    .ms-open__check {
+      width: 14px; height: 14px;
+      border: 1px solid var(--color-border-strong);
+      border-radius: 3px;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .ms-open__opt.is-checked .ms-open__check {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+      color: var(--color-surface);
+    }
+    .ms-open__opt.is-checked .ms-open__check svg { width: 10px; height: 10px; stroke: currentColor; stroke-width: 2.2; fill: none; }
+    .ms-open__opt .meta {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .ms-tabular {
+      width: 100%;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      font-family: var(--font-sans);
+      font-size: 13px;
+    }
+    .ms-tabular__hd {
+      display: grid;
+      grid-template-columns: 1fr 90px 60px;
+      gap: var(--space-3);
+      padding: 8px 12px;
+      background: var(--color-surface-soft);
+      border-bottom: 1px solid var(--color-border);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      font-weight: 500;
+    }
+    .ms-tabular__row {
+      display: grid;
+      grid-template-columns: 1fr 90px 60px;
+      gap: var(--space-3);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      align-items: center;
+    }
+    .ms-tabular__row:last-child { border-bottom: 0; }
+    .ms-tabular__row:hover { background: var(--color-surface-soft); }
+    .ms-tabular__row .num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-ink-soft);
+      text-align: right;
+    }
+
+    /* Checkboxes / radios */
+    .checkbox, .radio {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink);
+      cursor: pointer;
+    }
+    .checkbox__box, .radio__box {
+      width: 16px; height: 16px;
+      border: 1px solid var(--color-border-strong);
+      background: var(--color-surface);
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all var(--dur-snap) var(--ease-snap);
+    }
+    .checkbox__box { border-radius: 3px; }
+    .radio__box { border-radius: 50%; }
+    .checkbox.is-checked .checkbox__box,
+    .checkbox.is-indeterminate .checkbox__box {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+      color: var(--color-surface);
+    }
+    .checkbox.is-checked .checkbox__box svg { width: 10px; height: 10px; stroke: currentColor; stroke-width: 2.2; fill: none; }
+    .checkbox.is-indeterminate .checkbox__box::after {
+      content: ""; width: 8px; height: 2px;
+      background: var(--color-surface);
+      border-radius: 1px;
+    }
+    .radio.is-checked .radio__box {
+      border-color: var(--color-accent);
+    }
+    .radio.is-checked .radio__box::after {
+      content: ""; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--color-accent);
+    }
+    .checkbox.is-disabled, .radio.is-disabled {
+      opacity: 0.45; cursor: not-allowed; color: var(--color-mute);
+    }
+
+    /* Overlay backdrop / floats */
+    .overlay-stage {
+      position: relative;
+      background:
+        repeating-linear-gradient(
+          135deg,
+          rgba(24, 24, 27, 0.025) 0 1px,
+          transparent 1px 12px
+        ),
+        var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-7);
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .overlay-stage::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: rgba(24, 24, 27, 0.18);
+      z-index: 0;
+    }
+    .overlay-stage > * { position: relative; z-index: 1; }
+    .dialog {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      margin: 0 auto;
+    }
+    .dialog--xs { width: 320px; max-width: 100%; }
+    .dialog--md { width: 520px; max-width: 100%; }
+    .dialog--xl { width: 800px; max-width: 100%; }
+    .dialog__hd {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--color-border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .dialog__title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+      color: var(--color-ink);
+    }
+    .dialog__close {
+      background: transparent; border: 0;
+      color: var(--color-mute);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: var(--radius-sm);
+    }
+    .dialog__close:hover { color: var(--color-ink); background: var(--color-surface-soft); }
+    .dialog__close svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .dialog__body {
+      padding: 20px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink-soft);
+      line-height: 1.55;
+    }
+    .dialog__ft {
+      padding: 14px 20px;
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface-soft);
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: var(--space-3);
+    }
+
+    /* Drawer */
+    .drawer-stage {
+      position: relative;
+      background:
+        repeating-linear-gradient(
+          135deg,
+          rgba(24, 24, 27, 0.03) 0 1px,
+          transparent 1px 12px
+        ),
+        var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      height: 460px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .drawer-stage::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: rgba(24, 24, 27, 0.18);
+      z-index: 0;
+    }
+    .drawer {
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 380px;
+      max-width: 90%;
+      background: var(--color-surface);
+      border-left: 1px solid var(--color-border);
+      box-shadow: var(--shadow-lg);
+      display: flex; flex-direction: column;
+      z-index: 1;
+    }
+    .drawer__hd {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--color-border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .drawer__title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+      color: var(--color-ink);
+    }
+    .drawer__body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex; flex-direction: column; gap: var(--space-5);
+    }
+    .drawer__ft {
+      padding: 14px 20px;
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface-soft);
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: var(--space-3);
+    }
+
+    /* Tooltip */
+    .tooltip-stage {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-7);
+      display: flex; align-items: center; justify-content: center;
+      min-height: 180px;
+    }
+    .tooltip {
+      position: relative;
+      background: var(--color-ink);
+      color: var(--color-surface);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      padding: 7px 11px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      max-width: 260px;
+    }
+    .tooltip .tt-key {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute-soft);
+      margin-left: 4px;
+      padding: 0 4px;
+      border: 1px solid #2c2c30;
+      border-radius: 3px;
+    }
+    .tooltip::after {
+      content: "";
+      position: absolute;
+      bottom: -5px; left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 10px; height: 10px;
+      background: var(--color-ink);
+    }
+
+    /* DataCard primitive */
+    .datacard {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column;
+    }
+    .datacard__img {
+      aspect-ratio: 4/3;
+      background: linear-gradient(135deg, var(--color-accent-soft) 0%, #DCE3FF 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .datacard__img::after {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 80% 30%, rgba(59, 91, 255, 0.18), transparent 50%),
+        radial-gradient(circle at 25% 80%, rgba(255, 200, 61, 0.18), transparent 50%);
+    }
+    .datacard__img--green { background: linear-gradient(135deg, var(--color-success-soft), #C4F0DD); }
+    .datacard__img--signal { background: linear-gradient(135deg, var(--color-signal-soft), #FFD4C5); }
+    .datacard__img--ink {
+      background: var(--color-ink);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .datacard__img--ink::after { display: none; }
+    .datacard__img--ink .glyph {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 64px;
+      letter-spacing: -0.04em;
+      color: var(--color-surface);
+    }
+    .datacard__img--ink .glyph .diacritic { color: var(--color-accent); }
+    .datacard__body { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .datacard__eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+    }
+    .datacard__title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--color-ink);
+      line-height: 1.3;
+    }
+    .datacard__meta {
+      display: flex; gap: var(--space-4);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      margin-top: 4px;
+    }
+    .datacard__meta .v { color: var(--color-ink-soft); font-weight: 500; }
+
+    /* DataCard cells-grid (2x3) inside a single card */
+    .datacard-cells {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--color-border);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .datacard-cells .cell {
+      background: var(--color-surface);
+      padding: var(--space-5);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .datacard-cells .cell--fullbleed {
+      padding: 0;
+      grid-column: span 3;
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+      color: var(--color-surface);
+      position: relative;
+      overflow: hidden;
+      min-height: 180px;
+    }
+    .datacard-cells .cell--fullbleed::after {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 85% 25%, rgba(255, 255, 255, 0.18), transparent 50%),
+        radial-gradient(circle at 15% 90%, rgba(0, 0, 0, 0.18), transparent 50%);
+    }
+    .datacard-cells .cell--fullbleed .layer {
+      position: relative; z-index: 1;
+      padding: var(--space-6);
+      display: flex; flex-direction: column; gap: 8px;
+      height: 100%;
+    }
+    .datacard-cells .cell .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+    }
+    .datacard-cells .cell--fullbleed .eyebrow { color: rgba(255, 255, 255, 0.8); }
+    .datacard-cells .cell .value-display {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+      color: var(--color-ink);
+    }
+    .datacard-cells .cell--fullbleed .value-display {
+      color: var(--color-surface);
+      font-size: 40px;
+      letter-spacing: -0.025em;
+      margin-top: auto;
+    }
+    .datacard-cells .cell .value-num {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      color: var(--color-ink);
+      letter-spacing: -0.015em;
+    }
+    .datacard-cells .cell .value-tab {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-variant-numeric: tabular-nums;
+      color: var(--color-ink);
+    }
+    .datacard-cells .cell .value-link {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-accent);
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .datacard-cells .cell .value-link svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .datacard-cells .cell .help {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .datacard-cells .cell--fullbleed .help { color: rgba(255, 255, 255, 0.7); }
+
+    /* Pagination */
+    .pagination {
+      display: inline-flex; gap: 2px; align-items: center;
+    }
+    .pagination__num, .pagination__nav {
+      min-width: 32px; height: 32px;
+      padding: 0 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-ink-soft);
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      background: transparent;
+      text-decoration: none;
+    }
+    .pagination__num:hover, .pagination__nav:hover {
+      background: var(--color-surface-soft);
+      color: var(--color-ink);
+    }
+    .pagination__num.is-active {
+      background: var(--color-accent);
+      color: var(--color-surface);
+    }
+    .pagination__num.is-active:hover { background: var(--color-accent); color: var(--color-surface); }
+    .pagination__gap { color: var(--color-mute); padding: 0 4px; font-family: var(--font-mono); font-size: 12px; }
+    .pagination__nav svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Logo lockup demos */
+    .logo-lockup {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-7);
+      display: flex; flex-direction: column; gap: var(--space-4);
+      align-items: center; justify-content: center;
+      min-height: 180px;
+    }
+    .logo-lockup--dark {
+      background: var(--color-code-bg);
+      border-color: var(--color-code-border);
+    }
+    .logo-lockup--dark .l-monoXS { color: var(--color-code-mute); }
+    .logo-lockup__cap {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+    }
+    .favicon-row {
+      display: flex; gap: var(--space-5); align-items: flex-end; justify-content: center;
+    }
+    .favicon {
+      background: var(--color-ink);
+      color: var(--color-surface);
+      border-radius: var(--radius-sm);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+    }
+    .favicon .diacritic { color: var(--color-accent); }
+    .favicon--16 { width: 16px; height: 16px; font-size: 10px; border-radius: 2px; }
+    .favicon--32 { width: 32px; height: 32px; font-size: 17px; }
+    .favicon--192 { width: 80px; height: 80px; font-size: 44px; border-radius: var(--radius-lg); letter-spacing: -0.04em; }
+
+    /* Architecture diagram (SVG-based) */
+    .arch-canvas {
+      position: relative;
+      min-height: 320px;
+      padding: 0;
+    }
+    .arch-canvas .ling-arch__node {
+      position: absolute;
+    }
+
+    /* Graph placeholders */
+    .graph-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      display: flex; flex-direction: column; gap: var(--space-3);
+    }
+    .graph-card__hd {
+      display: flex; align-items: baseline; justify-content: space-between;
+    }
+    .graph-card__title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-ink);
+      letter-spacing: -0.01em;
+    }
+    .graph-card__meta {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+    }
+
+    /* Map placeholder */
+    .map-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      display: flex; flex-direction: column; gap: var(--space-3);
+    }
+
+    /* Lexical sample */
+    .lexical {
+      max-width: 720px;
+      font-family: var(--font-sans);
+      color: var(--color-ink);
+    }
+    .lexical h1, .lexical h2, .lexical h3, .lexical h4 {
+      font-family: var(--font-display);
+      letter-spacing: -0.018em;
+      color: var(--color-ink);
+      margin: var(--space-7) 0 var(--space-3);
+      line-height: 1.18;
+    }
+    .lexical h1 { font-size: 40px; font-weight: 700; letter-spacing: -0.025em; margin-top: 0; }
+    .lexical h2 { font-size: 28px; font-weight: 600; }
+    .lexical h3 { font-size: 22px; font-weight: 600; }
+    .lexical h4 { font-size: 18px; font-weight: 600; }
+    .lexical p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--color-ink-soft);
+      margin: 0 0 var(--space-4);
+    }
+    .lexical a { color: var(--color-accent); text-decoration: none; border-bottom: 1px solid rgba(59, 91, 255, 0.35); }
+    .lexical a:hover { border-bottom-color: var(--color-accent); }
+    .lexical ul, .lexical ol { color: var(--color-ink-soft); padding-left: var(--space-6); margin: 0 0 var(--space-4); }
+    .lexical li { margin: 6px 0; }
+    .lexical blockquote {
+      border-left: 3px solid var(--color-accent);
+      margin: var(--space-5) 0;
+      padding: 4px 0 4px var(--space-5);
+      color: var(--color-ink-soft);
+      font-family: var(--font-sans);
+      font-size: 18px;
+      font-style: italic;
+      line-height: 1.5;
+    }
+    .lexical code.inline {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--color-surface-soft);
+      padding: 1px 6px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      color: var(--color-ink);
+    }
+    .lexical strong { font-weight: 600; color: var(--color-ink); }
+    .lexical em { font-style: italic; }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required on every page per design system skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="theme.html">theme</a>
+    <a class="lingua-metanav__link" href="layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="grid.html">grid</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="components.html">components</a>
+    <a class="lingua-metanav__link" href="patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="../pages/marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="../pages/docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="../pages/civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="../pages/product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="../pages/product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="../pages/product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav (mark Components active) -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="../" class="dms-topnav-brand">
+              L<span class="diacritic">ī</span>ngua
+              <span class="designator">Design</span>
+            </a>
+            <div class="dms-topnav-links">
+              <a href="theme.html">Theme</a>
+              <a href="layouts.html">Layouts</a>
+              <a href="grid.html">Grid</a>
+              <a href="components.html" class="active">Components</a>
+              <a href="patterns.html">Patterns</a>
+            </div>
+          </div>
+          <div class="dms-topnav-right">
+            <span>v0.2</span>
+            <span style="color:var(--color-border)">·</span>
+            <span>2026-05-24</span>
+            <a href="../pages/marketing-homepage.html" class="ling-btn ling-btn--primary ling-btn--sm" style="margin-left:8px;">Start a site →</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav (mark Components active + show component-page TOC) -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">design system</div>
+            <a class="dms-sidenav-item" href="theme.html">Theme</a>
+            <a class="dms-sidenav-item" href="layouts.html">Layouts</a>
+            <a class="dms-sidenav-item" href="grid.html">Grid</a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="components.html">Components</a>
+            <a class="dms-sidenav-item" href="patterns.html">Patterns</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#nav">Navigation</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#form">Form &amp; interaction</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#overlays">Overlays</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#containers">Containers &amp; atoms</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#signature">Brand signature</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#rich">Rich content</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">example pages</div>
+            <a class="dms-sidenav-item" href="../pages/marketing-homepage.html">Marketing &mdash; home</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-comparison.html">Marketing &mdash; compare</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-theory.html">Marketing &mdash; theory</a>
+            <a class="dms-sidenav-item" href="../pages/docs-page.html">Documentation</a>
+            <a class="dms-sidenav-item" href="../pages/civic-overview.html">Civic overview</a>
+            <a class="dms-sidenav-item" href="../pages/product-site-overview.html">Product &mdash; site</a>
+            <a class="dms-sidenav-item" href="../pages/product-page-editor.html">Product &mdash; editor</a>
+            <a class="dms-sidenav-item" href="../pages/product-dataset-view.html">Product &mdash; dataset</a>
+          </div>
+        </aside>
+
+        <!-- childWrapper -->
+        <div class="dms-layout-child">
+
+          <!-- ================================================================
+               LayoutGroup "header" — title + lede + CTAs
+               ================================================================ -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span class="badge">v0.2</span>
+                <span>design system</span>
+                <span class="sep">·</span>
+                <span>components</span>
+                <span class="sep">·</span>
+                <span>32 primitives, every state</span>
+              </div>
+              <h1 class="dms-page-title">Components &mdash; every <span class="accent">primitive</span> the brand speaks.</h1>
+              <p class="dms-page-lede">
+                The Lingua v0.2 primitive gallery. Navigation, form, overlays, atoms, brand-signature surfaces (code blocks, terminals, architecture diagrams, KPI strips, live activity), and rich content &mdash; each shown with all relevant states and variants. An engineer comparing live primitive renders against this page should see them match. Read alongside <a href="theme.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">theme</a> for the tokens and <a href="patterns.html" style="color:var(--color-accent);text-decoration:none;font-weight:500;">patterns</a> for the compositions.
+              </p>
+              <div style="display:flex; gap:var(--space-3); margin-top:var(--space-7);">
+                <a href="#nav" class="ling-btn ling-btn--primary ling-btn--lg">Jump to navigation →</a>
+                <a href="#signature" class="ling-btn ling-btn--secondary ling-btn--lg">See the brand signature</a>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               LayoutGroup "content" — NAVIGATION PRIMITIVES
+               ================================================================ -->
+          <section id="nav" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>1 &middot; Navigation primitives</div>
+                <h2 class="dms-section-title">Nav, side, breadcrumb, palette &mdash; how Lingua moves you.</h2>
+                <p class="dms-section-lede">
+                  These primitives wrap every other surface in the product. They are also the easiest to underspecify &mdash; multi-level menus, hover states, indicator carets, depth-styled siblings. Each one below is shown with active states, hover states, and at least two nesting levels so the live nav has nothing to invent.
+                </p>
+
+                <div class="toc-rail" style="margin-bottom: var(--space-7);">
+                  <a href="#topnav">TopNav</a>
+                  <span class="sep">/</span>
+                  <a href="#sidenav">SideNav</a>
+                  <span class="sep">/</span>
+                  <a href="#nm">NavigableMenu</a>
+                  <span class="sep">/</span>
+                  <a href="#palette">Command palette</a>
+                  <span class="sep">/</span>
+                  <a href="#breadcrumb">Breadcrumb</a>
+                </div>
+
+                <!-- TopNav -->
+                <h3 id="topnav" class="l-h2" style="margin: var(--space-7) 0 var(--space-2);">TopNav</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Horizontal page chrome. Brand at left, level-1 menu with submenu flyout, version + CTA at right. Active item carries a 2px accent underline; submenu items styled with default, hover, and active states.
+                </p>
+
+                <div class="demo-sub-eyebrow"><span class="num">a</span> Full nav with open submenu (level 1 + level 2)</div>
+                <div class="topnav-demo">
+                  <div class="topnav-demo__bar">
+                    <div class="topnav-demo__left">
+                      <span class="topnav-demo__brand">L<span class="diacritic">ī</span>ngua</span>
+                      <div class="topnav-demo__links">
+                        <a href="#">Product
+                          <!-- icon: CaretDown -->
+                          <svg class="caret" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg>
+                          <div class="topnav-demo__submenu">
+                            <a class="item" href="#">
+                              <span>Editor</span>
+                              <span class="meta">live</span>
+                            </a>
+                            <a class="item active" href="#">
+                              <span>Sections</span>
+                              <span class="meta">selected</span>
+                            </a>
+                            <a class="item" href="#">
+                              <span>Datasets</span>
+                              <span class="meta">beta</span>
+                            </a>
+                            <div class="topnav-demo__divider"></div>
+                            <a class="item" href="#">
+                              <span>Themes</span>
+                              <span class="meta">42</span>
+                            </a>
+                            <a class="item" href="#">
+                              <span>Plugins</span>
+                              <span class="meta">18</span>
+                            </a>
+                          </div>
+                        </a>
+                        <a href="#" class="active">Docs</a>
+                        <a href="#">Pricing</a>
+                        <a href="#">Theory</a>
+                        <a href="#">Sign in</a>
+                      </div>
+                    </div>
+                    <div class="topnav-demo__right">
+                      <span>v1.3.0</span>
+                      <a href="#" class="ling-btn ling-btn--primary ling-btn--sm">Start a site →</a>
+                    </div>
+                  </div>
+                </div>
+                <p class="demo-caption">Product · open submenu · level-2 active item highlighted in accent-soft &middot; Docs · level-1 active with underline</p>
+
+                <div class="demo-sub-eyebrow"><span class="num">b</span> Level-1 item state triplet</div>
+                <div class="demo-pane">
+                  <div class="state-grid" style="grid-template-columns: 100px repeat(3, 1fr);">
+                    <span></span>
+                    <span class="col-label">Default</span>
+                    <span class="col-label">Hover</span>
+                    <span class="col-label">Active</span>
+                    <span class="row-label">Item</span>
+                    <span style="text-align:center;"><a href="#" style="color:var(--color-ink-soft); font-family:var(--font-sans); font-size:14px; font-weight:500; text-decoration:none; padding:4px 0; border-bottom:2px solid transparent;">Docs</a></span>
+                    <span style="text-align:center;"><a href="#" style="color:var(--color-ink); font-family:var(--font-sans); font-size:14px; font-weight:500; text-decoration:none; padding:4px 0; border-bottom:2px solid transparent;">Docs</a></span>
+                    <span style="text-align:center;"><a href="#" style="color:var(--color-ink); font-family:var(--font-sans); font-size:14px; font-weight:500; text-decoration:none; padding:4px 0; border-bottom:2px solid var(--color-accent);">Docs</a></span>
+                  </div>
+                </div>
+
+                <!-- SideNav -->
+                <h3 id="sidenav" class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">SideNav</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Vertical chrome for app-style layouts. Compact (icon-only) and expanded variants. Up to three nesting levels with depth-specific styling; expandable items carry a caret indicator. Bottom utility slot holds avatar + theme toggle.
+                </p>
+
+                <div class="sidenav-demo">
+                  <!-- Compact -->
+                  <div>
+                    <div class="demo-sub-eyebrow"><span class="num">a</span> Compact</div>
+                    <div class="sidenav-mini">
+                      <span class="sidenav-mini__brand">L<span class="diacritic">ī</span></span>
+                      <div style="height: var(--space-3)"></div>
+                      <span class="sidenav-mini__icon">
+                        <!-- icon: Home -->
+                        <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h4v-6h6v6h4V10"/></svg>
+                      </span>
+                      <span class="sidenav-mini__icon active">
+                        <!-- icon: Grid -->
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                      </span>
+                      <span class="sidenav-mini__icon">
+                        <!-- icon: Database -->
+                        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/><path d="M3 12a9 3 0 0018 0"/></svg>
+                      </span>
+                      <span class="sidenav-mini__icon">
+                        <!-- icon: Chart -->
+                        <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                      </span>
+                      <span class="sidenav-mini__icon">
+                        <!-- icon: Settings -->
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+                      </span>
+                      <span class="sidenav-mini__spacer"></span>
+                      <span class="sidenav-mini__avatar">AB</span>
+                    </div>
+                  </div>
+
+                  <!-- Expanded with nested levels -->
+                  <div>
+                    <div class="demo-sub-eyebrow"><span class="num">b</span> Expanded &middot; L1 / L2 / L3 with active states</div>
+                    <div class="sidenav-full">
+                      <div class="sidenav-full__group">
+                        <div class="sidenav-full__eyebrow">workspace</div>
+                        <a class="sidenav-full__item" href="#">
+                          <svg class="icon" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h4v-6h6v6h4V10"/></svg>
+                          Overview
+                        </a>
+                        <a class="sidenav-full__item active" href="#">
+                          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                          Sites
+                          <svg class="caret caret--open" viewBox="0 0 12 12"><path d="M4.5 3l3 3-3 3"/></svg>
+                        </a>
+                        <div class="sidenav-full__sub">
+                          <a class="sidenav-full__item" href="#">The Drift</a>
+                          <a class="sidenav-full__item active" href="#">
+                            Mitigation Atlas
+                            <svg class="caret caret--open" viewBox="0 0 12 12"><path d="M4.5 3l3 3-3 3"/></svg>
+                          </a>
+                          <div class="sidenav-full__sub sidenav-full__sub--3">
+                            <a class="sidenav-full__item" href="#">Pages</a>
+                            <a class="sidenav-full__item active" href="#">Sections</a>
+                            <a class="sidenav-full__item" href="#">Datasets</a>
+                            <a class="sidenav-full__item" href="#">Themes</a>
+                          </div>
+                          <a class="sidenav-full__item" href="#">NPMRDS analytics</a>
+                          <a class="sidenav-full__item" href="#">WCDB.fm</a>
+                        </div>
+                        <a class="sidenav-full__item" href="#">
+                          <svg class="icon" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/><path d="M3 12a9 3 0 0018 0"/></svg>
+                          Datasets
+                          <svg class="caret" viewBox="0 0 12 12"><path d="M4.5 3l3 3-3 3"/></svg>
+                        </a>
+                        <a class="sidenav-full__item" href="#">
+                          <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                          Analytics
+                        </a>
+                      </div>
+                      <div class="sidenav-full__group">
+                        <div class="sidenav-full__eyebrow">admin</div>
+                        <a class="sidenav-full__item" href="#">
+                          <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+                          Members
+                        </a>
+                        <a class="sidenav-full__item" href="#">
+                          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+                          Settings
+                        </a>
+                      </div>
+                      <div class="sidenav-full__bottom">
+                        <span class="avatar">AB</span>
+                        <span class="who">
+                          Adrian Brody
+                          <span class="org">availabs</span>
+                        </span>
+                        <span class="theme-toggle" title="Toggle theme">
+                          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4" y1="12" x2="2" y2="12"/><line x1="22" y1="12" x2="20" y2="12"/></svg>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- NavigableMenu -->
+                <h3 id="nm" class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">NavigableMenu</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Keyboard-navigable popover menu used inside section toolbars, column-config flyouts, and overflow buttons. Trigger button + floating panel with grouped items and dividers.
+                </p>
+                <div class="nm-demo">
+                  <div class="demo-stack">
+                    <div class="demo-sub-eyebrow"><span class="num">a</span> Closed trigger</div>
+                    <span class="nm-trigger">
+                      Actions
+                      <svg viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg>
+                    </span>
+                  </div>
+                  <div class="demo-stack">
+                    <div class="demo-sub-eyebrow"><span class="num">b</span> Open popover</div>
+                    <div class="nm-popover">
+                      <a class="nm-item" href="#">
+                        <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg>
+                        Rename section
+                        <span class="nm-shortcut">R</span>
+                      </a>
+                      <a class="nm-item" href="#">
+                        <svg viewBox="0 0 24 24"><rect x="8" y="2" width="12" height="14" rx="1"/><path d="M4 6v14h12"/></svg>
+                        Duplicate
+                        <span class="nm-shortcut">⌘D</span>
+                      </a>
+                      <a class="nm-item" href="#">
+                        <svg viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"/><path d="M12 12v9"/><path d="M20 16V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8"/></svg>
+                        Export JSON
+                      </a>
+                      <div class="nm-divider"></div>
+                      <a class="nm-item" href="#" style="color: var(--color-signal);">
+                        <svg viewBox="0 0 24 24" style="color: var(--color-signal); opacity: 0.85;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                        Delete section
+                        <span class="nm-shortcut" style="color: var(--color-signal); opacity: 0.7;">⌫</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Command palette -->
+                <h3 id="palette" class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Command palette</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  New in v0.2. The Zed/Linear-style <code class="lexical" style="font-family:var(--font-mono); font-size:13px; background:var(--color-surface-soft); padding:1px 6px; border:1px solid var(--color-border); border-radius:var(--radius-sm);">⌘K</code> palette &mdash; search input at top, grouped results below, current selection highlighted in accent-soft. Triggers global navigation, section creation, and recent items.
+                </p>
+                <div class="overlay-stage" style="min-height: 460px; display: flex; align-items: flex-start; justify-content: center; padding-top: var(--space-9);">
+                  <div class="palette">
+                    <div class="palette__search">
+                      <!-- icon: Search -->
+                      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                      <input type="text" value="data" />
+                      <span class="kbd">esc</span>
+                    </div>
+
+                    <div class="palette__group">
+                      <div class="palette__group-eyebrow">Navigate</div>
+                      <div class="palette__item">
+                        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/><path d="M3 12a9 3 0 0018 0"/></svg>
+                        <span class="what">Go to <strong style="color:var(--color-ink); font-weight:600;">Datasets</strong></span>
+                        <span class="hint">G D</span>
+                      </div>
+                      <div class="palette__item is-selected">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                        <span class="what">Open dataset <strong style="font-weight:600;">traffic_counts</strong></span>
+                        <span class="hint">⏎</span>
+                      </div>
+                      <div class="palette__item">
+                        <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                        <span class="what">Open analytics for <strong style="color:var(--color-ink); font-weight:600;">NPMRDS</strong></span>
+                        <span class="hint">G A</span>
+                      </div>
+                    </div>
+
+                    <div class="palette__group" style="border-top: 1px solid var(--color-border);">
+                      <div class="palette__group-eyebrow">Create</div>
+                      <div class="palette__item">
+                        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                        <span class="what">New <strong style="color:var(--color-ink); font-weight:600;">data</strong> section</span>
+                        <span class="hint">N S</span>
+                      </div>
+                      <div class="palette__item">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span class="what">New <strong style="color:var(--color-ink); font-weight:600;">data</strong>set from CSV</span>
+                        <span class="hint">⌘N</span>
+                      </div>
+                    </div>
+
+                    <div class="palette__footer">
+                      <span class="kbd">↑</span>
+                      <span class="kbd">↓</span>
+                      <span>navigate</span>
+                      <span class="kbd">⏎</span>
+                      <span>open</span>
+                      <span class="spacer"></span>
+                      <span style="opacity:0.7;">11 results · 2.4ms</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Breadcrumb -->
+                <h3 id="breadcrumb" class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Breadcrumb</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Mono-styled trail. Chevron separators, current item in ink, ancestors in mute. Used at the top of every editor-pattern surface.
+                </p>
+                <div class="demo-pane">
+                  <div class="breadcrumb">
+                    <a href="#">availabs</a>
+                    <span class="sep">›</span>
+                    <a href="#">mitigation_atlas</a>
+                    <span class="sep">›</span>
+                    <a href="#">pages</a>
+                    <span class="sep">›</span>
+                    <span class="current">county_overview</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               LayoutGroup "content" — FORM & INTERACTION
+               ================================================================ -->
+          <section id="form" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>2 &middot; Form &amp; interaction</div>
+                <h2 class="dms-section-title">Buttons, inputs, selects, toggles &mdash; the interaction surface.</h2>
+                <p class="dms-section-lede">
+                  Six named button styles. Three input variants. The full state grid for each primitive &mdash; default, hover, focus, active, disabled. Inputs, selects, switches, tabs, fieldsets, checkbox + radio.
+                </p>
+
+                <!-- Buttons -->
+                <h3 class="l-h2" style="margin: var(--space-7) 0 var(--space-2);">Button</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Six named styles &times; five states. Primary carries the brand; secondary is the neutral default; ghost is the chrome action; link is the inline option; danger is the destructive option; dark is the inverse hero CTA.
+                </p>
+
+                <div class="demo-pane">
+                  <div class="state-grid">
+                    <span></span>
+                    <span class="col-label">Default</span>
+                    <span class="col-label">Hover</span>
+                    <span class="col-label">Focus</span>
+                    <span class="col-label">Active</span>
+                    <span class="col-label">Disabled</span>
+
+                    <span class="row-label">Primary</span>
+                    <button class="ling-btn ling-btn--primary">Start a site</button>
+                    <button class="ling-btn ling-btn--primary" style="background:var(--color-accent-hover); border-color:var(--color-accent-hover);">Start a site</button>
+                    <button class="ling-btn ling-btn--primary" style="box-shadow: 0 0 0 3px rgba(59,91,255,0.25);">Start a site</button>
+                    <button class="ling-btn ling-btn--primary" style="background:var(--color-accent-active); border-color:var(--color-accent-active); transform:translateY(1px);">Start a site</button>
+                    <button class="ling-btn ling-btn--primary ling-btn--disabled">Start a site</button>
+
+                    <span class="row-label">Secondary</span>
+                    <button class="ling-btn ling-btn--secondary">Read docs</button>
+                    <button class="ling-btn ling-btn--secondary" style="border-color:var(--color-ink);">Read docs</button>
+                    <button class="ling-btn ling-btn--secondary" style="box-shadow: 0 0 0 3px rgba(59,91,255,0.18); border-color: var(--color-accent);">Read docs</button>
+                    <button class="ling-btn ling-btn--secondary" style="background:var(--color-surface-sunken); border-color:var(--color-ink);">Read docs</button>
+                    <button class="ling-btn ling-btn--secondary ling-btn--disabled">Read docs</button>
+
+                    <span class="row-label">Ghost</span>
+                    <button class="ling-btn ling-btn--ghost">Cancel</button>
+                    <button class="ling-btn ling-btn--ghost" style="background:var(--color-surface-sunken); color:var(--color-ink);">Cancel</button>
+                    <button class="ling-btn ling-btn--ghost" style="box-shadow: 0 0 0 3px rgba(59,91,255,0.18); background:var(--color-surface-soft); color:var(--color-ink);">Cancel</button>
+                    <button class="ling-btn ling-btn--ghost" style="background:var(--color-surface-sunken); color:var(--color-ink); transform: translateY(1px);">Cancel</button>
+                    <button class="ling-btn ling-btn--ghost ling-btn--disabled">Cancel</button>
+
+                    <span class="row-label">Link</span>
+                    <a href="#" class="ling-btn ling-btn--link">Learn more</a>
+                    <a href="#" class="ling-btn ling-btn--link" style="color: var(--color-accent-hover); text-decoration:underline; text-underline-offset:4px;">Learn more</a>
+                    <a href="#" class="ling-btn ling-btn--link" style="outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 2px;">Learn more</a>
+                    <a href="#" class="ling-btn ling-btn--link" style="color:var(--color-accent-active); text-decoration:underline; text-underline-offset:4px;">Learn more</a>
+                    <a href="#" class="ling-btn ling-btn--link ling-btn--disabled">Learn more</a>
+
+                    <span class="row-label">Danger</span>
+                    <button class="ling-btn ling-btn--danger">Delete row</button>
+                    <button class="ling-btn ling-btn--danger" style="background:#E04020; border-color:#E04020;">Delete row</button>
+                    <button class="ling-btn ling-btn--danger" style="box-shadow: 0 0 0 3px rgba(255,86,48,0.25);">Delete row</button>
+                    <button class="ling-btn ling-btn--danger" style="background:#C73818; border-color:#C73818; transform:translateY(1px);">Delete row</button>
+                    <button class="ling-btn ling-btn--danger ling-btn--disabled">Delete row</button>
+
+                    <span class="row-label">Dark</span>
+                    <button class="ling-btn ling-btn--dark">Sign in</button>
+                    <button class="ling-btn ling-btn--dark" style="background:var(--color-ink-soft); border-color:var(--color-ink-soft);">Sign in</button>
+                    <button class="ling-btn ling-btn--dark" style="box-shadow: 0 0 0 3px rgba(59,91,255,0.30);">Sign in</button>
+                    <button class="ling-btn ling-btn--dark" style="background:#000; border-color:#000; transform:translateY(1px);">Sign in</button>
+                    <button class="ling-btn ling-btn--dark ling-btn--disabled">Sign in</button>
+                  </div>
+                </div>
+
+                <div class="demo-sub-eyebrow"><span class="num">a</span> Size variants &middot; primary</div>
+                <div class="demo-row">
+                  <button class="ling-btn ling-btn--primary ling-btn--lg">Start a site →</button>
+                  <button class="ling-btn ling-btn--primary">Start a site</button>
+                  <button class="ling-btn ling-btn--primary ling-btn--sm">Start a site</button>
+                  <span class="l-monoXS" style="margin-left:var(--space-3);">lg &middot; default &middot; sm</span>
+                </div>
+
+                <!-- Input -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Input</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Single-line text + textarea, with size and mono variants and the two standard adornments (leading icon, trailing button).
+                </p>
+
+                <div class="dms-grid dms-grid-2" style="gap: var(--space-6);">
+                  <div class="ling-field">
+                    <label class="ling-field-label">Site name</label>
+                    <input class="ling-input" type="text" value="The Drift" />
+                    <span class="ling-field-help">Shown in the browser tab and the sitemap.</span>
+                  </div>
+
+                  <div class="ling-field">
+                    <label class="ling-field-label">Domain (large)</label>
+                    <input class="ling-input ling-input--lg" type="text" value="thedrift.lingua.app" />
+                    <span class="ling-field-help">Use the <code style="font-family:var(--font-mono); font-size:11px;">--lg</code> variant for hero settings.</span>
+                  </div>
+
+                  <div class="ling-field">
+                    <label class="ling-field-label">Slug (mono)</label>
+                    <input class="ling-input ling-input--mono" type="text" value="county_overview_2025" />
+                    <span class="ling-field-help">JetBrains Mono. For IDs, codes, slugs, file paths.</span>
+                  </div>
+
+                  <div class="ling-field">
+                    <label class="ling-field-label">Description (textarea)</label>
+                    <textarea class="ling-input" rows="3">A quarterly literary magazine published in Brooklyn, rendered on Lingua with three editorial sections.</textarea>
+                    <span class="ling-field-help">Used for SEO meta-description and the marketing card.</span>
+                  </div>
+
+                  <div class="ling-field">
+                    <label class="ling-field-label">Search rows</label>
+                    <div class="ling-input-wrap">
+                      <svg class="lead" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                      <input class="ling-input with-lead" type="text" placeholder="Filter by name, id, or status…" />
+                    </div>
+                    <span class="ling-field-help">Leading icon variant.</span>
+                  </div>
+
+                  <div class="ling-field">
+                    <label class="ling-field-label">Invite teammate</label>
+                    <div class="ling-input-group">
+                      <input class="ling-input" type="email" placeholder="alex@availabs.com" />
+                      <button class="trail-btn">Invite</button>
+                    </div>
+                    <span class="ling-field-help">Trailing button variant.</span>
+                  </div>
+                </div>
+
+                <!-- MultiSelect -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">MultiSelect</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  The canonical selection primitive. Used for tags, taxonomy, filters, and single-select where a dropdown is the right affordance. Five sub-treatments below.
+                </p>
+
+                <div class="dms-grid dms-grid-2" style="gap:var(--space-6); align-items:flex-start;">
+                  <div>
+                    <div class="demo-sub-eyebrow"><span class="num">a</span> Closed trigger</div>
+                    <div class="ling-multiselect">
+                      <span class="ink-mute">Pick a category…</span>
+                      <span class="caret">▾</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="demo-sub-eyebrow"><span class="num">b</span> Single-select (filled)</div>
+                    <div class="ling-multiselect">
+                      <span>Mitigation Atlas</span>
+                      <span class="caret">▾</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="demo-sub-eyebrow"><span class="num">c</span> Multi-select with token chips</div>
+                    <div class="ling-multiselect" style="min-width: 300px;">
+                      <span style="display:inline-flex; gap:4px; flex-wrap:wrap;">
+                        <span class="ling-multiselect-token">essay <span style="opacity:0.7;">×</span></span>
+                        <span class="ling-multiselect-token">interview <span style="opacity:0.7;">×</span></span>
+                        <span class="ling-multiselect-token">review <span style="opacity:0.7;">×</span></span>
+                      </span>
+                      <span class="caret">▾</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="demo-sub-eyebrow"><span class="num">d</span> Error state (signal border)</div>
+                    <div class="ling-multiselect" style="border-color: var(--color-signal); background: var(--color-signal-soft);">
+                      <span style="color:var(--color-signal);">Required &mdash; pick at least one</span>
+                      <span class="caret" style="color:var(--color-signal);">▾</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-grid dms-grid-2" style="gap:var(--space-6); margin-top:var(--space-7); align-items:flex-start;">
+                  <div>
+                    <div class="demo-sub-eyebrow"><span class="num">e</span> Open menu (search + 6 options, 2 checked)</div>
+                    <div class="ms-open">
+                      <div class="ms-open__search">
+                        <input type="text" placeholder="Filter options…" value="" />
+                      </div>
+                      <div class="ms-open__list">
+                        <div class="ms-open__opt is-checked">
+                          <span class="ms-open__check"><svg viewBox="0 0 12 12"><path d="M2 6.5l3 3 5-6"/></svg></span>
+                          <span>Essay</span>
+                          <span class="meta">42</span>
+                        </div>
+                        <div class="ms-open__opt is-checked">
+                          <span class="ms-open__check"><svg viewBox="0 0 12 12"><path d="M2 6.5l3 3 5-6"/></svg></span>
+                          <span>Interview</span>
+                          <span class="meta">18</span>
+                        </div>
+                        <div class="ms-open__opt">
+                          <span class="ms-open__check"></span>
+                          <span>Review</span>
+                          <span class="meta">23</span>
+                        </div>
+                        <div class="ms-open__opt">
+                          <span class="ms-open__check"></span>
+                          <span>Fiction</span>
+                          <span class="meta">11</span>
+                        </div>
+                        <div class="ms-open__opt">
+                          <span class="ms-open__check"></span>
+                          <span>Poetry</span>
+                          <span class="meta">7</span>
+                        </div>
+                        <div class="ms-open__opt">
+                          <span class="ms-open__check"></span>
+                          <span>Letter from the editor</span>
+                          <span class="meta">4</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="demo-sub-eyebrow"><span class="num">f</span> Tabular mode (sortable, with value column)</div>
+                    <div class="ms-tabular">
+                      <div class="ms-tabular__hd">
+                        <span>Theme</span>
+                        <span style="text-align:right;">Sites</span>
+                        <span style="text-align:right;">Use</span>
+                      </div>
+                      <div class="ms-tabular__row">
+                        <span>tessera</span>
+                        <span class="num">38</span>
+                        <span class="num" style="color:var(--color-accent);">62%</span>
+                      </div>
+                      <div class="ms-tabular__row">
+                        <span>lingua</span>
+                        <span class="num">12</span>
+                        <span class="num" style="color:var(--color-accent);">19%</span>
+                      </div>
+                      <div class="ms-tabular__row">
+                        <span>catalyst</span>
+                        <span class="num">7</span>
+                        <span class="num">11%</span>
+                      </div>
+                      <div class="ms-tabular__row">
+                        <span>transportny</span>
+                        <span class="num">5</span>
+                        <span class="num">8%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Switch -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Switch</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Compact boolean. Off / on / disabled.
+                </p>
+                <div class="demo-pane demo-row" style="gap: var(--space-7);">
+                  <label class="checkbox" style="cursor:pointer;">
+                    <span class="ling-switch"></span>
+                    <span>Hidden from public</span>
+                  </label>
+                  <label class="checkbox" style="cursor:pointer;">
+                    <span class="ling-switch ling-switch--on"></span>
+                    <span>Live</span>
+                  </label>
+                  <label class="checkbox is-disabled">
+                    <span class="ling-switch" style="opacity: 0.45;"></span>
+                    <span>Featured (locked)</span>
+                  </label>
+                </div>
+
+                <!-- Tabs -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Tabs</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Horizontal tab strip, 2px accent underline on the active tab, optional count badges.
+                </p>
+                <div class="demo-pane" style="background: var(--color-surface);">
+                  <div class="ling-tabs">
+                    <a class="ling-tab ling-tab--active" href="#">Data <span class="count">2,420</span></a>
+                    <a class="ling-tab" href="#">Map <span class="count">3</span></a>
+                    <a class="ling-tab" href="#">Chart</a>
+                    <a class="ling-tab" href="#">Schema <span class="count">17</span></a>
+                  </div>
+                  <p class="l-proseSM" style="margin: var(--space-5) 0 0;">
+                    The active tab carries the brand underline. Counts in mono with a hairline pill background.
+                  </p>
+                </div>
+
+                <!-- FieldSet -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">FieldSet</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Labeled container for related fields. Group label + help text + N fields.
+                </p>
+                <div class="demo-pane" style="background: var(--color-surface);">
+                  <fieldset style="border: 0; padding: 0; margin: 0;">
+                    <legend style="padding: 0; margin: 0 0 4px;">
+                      <span class="l-h4">Author byline</span>
+                    </legend>
+                    <p class="l-proseSM" style="margin: 0 0 var(--space-5);">Used in the article header and the open-graph card.</p>
+                    <div class="dms-grid dms-grid-2" style="gap:var(--space-4);">
+                      <div class="ling-field">
+                        <label class="ling-field-label">Display name</label>
+                        <input class="ling-input" type="text" value="Ana Karenin" />
+                      </div>
+                      <div class="ling-field">
+                        <label class="ling-field-label">Role</label>
+                        <input class="ling-input" type="text" value="Senior editor" />
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+
+                <!-- Checkbox + Radio -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Checkbox &amp; Radio</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Default · checked · indeterminate · disabled.
+                </p>
+                <div class="demo-pane" style="background: var(--color-surface);">
+                  <div class="dms-grid dms-grid-2" style="gap:var(--space-7);">
+                    <div>
+                      <div class="demo-sub-eyebrow" style="margin-top:0;"><span class="num">a</span> Checkbox</div>
+                      <div class="demo-stack">
+                        <label class="checkbox"><span class="checkbox__box"></span> Default unchecked</label>
+                        <label class="checkbox is-checked"><span class="checkbox__box"><svg viewBox="0 0 12 12"><path d="M2 6.5l3 3 5-6"/></svg></span> Checked</label>
+                        <label class="checkbox is-indeterminate"><span class="checkbox__box"></span> Indeterminate (some)</label>
+                        <label class="checkbox is-disabled"><span class="checkbox__box"></span> Disabled</label>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="demo-sub-eyebrow" style="margin-top:0;"><span class="num">b</span> Radio</div>
+                      <div class="demo-stack">
+                        <label class="radio"><span class="radio__box"></span> Default</label>
+                        <label class="radio is-checked"><span class="radio__box"></span> Selected</label>
+                        <label class="radio"><span class="radio__box"></span> Alternate</label>
+                        <label class="radio is-disabled"><span class="radio__box"></span> Disabled</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               LayoutGroup "content" — OVERLAYS
+               ================================================================ -->
+          <section id="overlays" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>3 &middot; Overlays</div>
+                <h2 class="dms-section-title">Dialogs, modals, drawers, popups &mdash; surfaces that float.</h2>
+                <p class="dms-section-lede">
+                  Each overlay is captured as a static snapshot on a tinted backdrop. The brand uses the long-shadow <code class="lexical" style="font-family:var(--font-mono); font-size:13px; background:var(--color-surface-soft); padding:1px 6px; border:1px solid var(--color-border); border-radius:var(--radius-sm);">--shadow-lg</code> elevation token, 12px corner radius, and a hairline border at the edge.
+                </p>
+
+                <!-- Dialog (3 sizes) -->
+                <h3 class="l-h2" style="margin: var(--space-7) 0 var(--space-2);">Dialog &middot; three sizes</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  xs (~320px), md (~520px), xl (~800px). Each with header (title + close), body, footer (right-aligned actions).
+                </p>
+
+                <div class="demo-sub-eyebrow"><span class="num">a</span> xs &middot; 320px &middot; quick confirmation</div>
+                <div class="overlay-stage" style="min-height: 240px; display: flex; align-items: center; justify-content: center;">
+                  <div class="dialog dialog--xs">
+                    <div class="dialog__hd">
+                      <span class="dialog__title">Discard draft?</span>
+                      <button class="dialog__close"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="dialog__body">
+                      Your unsaved changes will be lost.
+                    </div>
+                    <div class="dialog__ft">
+                      <button class="ling-btn ling-btn--ghost ling-btn--sm">Keep editing</button>
+                      <button class="ling-btn ling-btn--primary ling-btn--sm">Discard</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="demo-sub-eyebrow"><span class="num">b</span> md &middot; 520px &middot; rename section</div>
+                <div class="overlay-stage" style="min-height: 280px; display: flex; align-items: center; justify-content: center;">
+                  <div class="dialog dialog--md">
+                    <div class="dialog__hd">
+                      <span class="dialog__title">Rename section</span>
+                      <button class="dialog__close"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="dialog__body">
+                      <div class="ling-field">
+                        <label class="ling-field-label">Section title</label>
+                        <input class="ling-input" type="text" value="Recent essays" />
+                        <span class="ling-field-help">Authors see this in the page tree. Updates the URL slug.</span>
+                      </div>
+                    </div>
+                    <div class="dialog__ft">
+                      <button class="ling-btn ling-btn--ghost">Cancel</button>
+                      <button class="ling-btn ling-btn--primary">Rename</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="demo-sub-eyebrow"><span class="num">c</span> xl &middot; 800px &middot; new dataset wizard</div>
+                <div class="overlay-stage" style="min-height: 460px; display: flex; align-items: center; justify-content: center;">
+                  <div class="dialog dialog--xl">
+                    <div class="dialog__hd">
+                      <span class="dialog__title">New dataset &middot; from CSV</span>
+                      <button class="dialog__close"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="dialog__body">
+                      <div class="dms-grid dms-grid-2" style="gap: var(--space-5);">
+                        <div class="ling-field">
+                          <label class="ling-field-label">Dataset name</label>
+                          <input class="ling-input" type="text" value="NPMRDS travel times" />
+                        </div>
+                        <div class="ling-field">
+                          <label class="ling-field-label">Slug (mono)</label>
+                          <input class="ling-input ling-input--mono" type="text" value="npmrds_travel_times" />
+                        </div>
+                      </div>
+                      <div class="ling-field" style="margin-top: var(--space-5);">
+                        <label class="ling-field-label">Source URL</label>
+                        <input class="ling-input ling-input--mono" type="text" value="https://data.availabs.org/npmrds/2024-q4.csv" />
+                        <span class="ling-field-help">Lingua streams the file; rows route to a per-type split table.</span>
+                      </div>
+                      <div class="dms-grid dms-grid-3" style="gap: var(--space-4); margin-top: var(--space-5);">
+                        <div class="ling-card" style="padding: var(--space-4); box-shadow:none;">
+                          <div class="ling-card__eyebrow">columns</div>
+                          <div class="l-mono ink-ink" style="font-size: 22px; font-weight:500;">42</div>
+                        </div>
+                        <div class="ling-card" style="padding: var(--space-4); box-shadow:none;">
+                          <div class="ling-card__eyebrow">est. rows</div>
+                          <div class="l-mono ink-ink" style="font-size: 22px; font-weight:500;">1.2M</div>
+                        </div>
+                        <div class="ling-card" style="padding: var(--space-4); box-shadow:none;">
+                          <div class="ling-card__eyebrow">est. ingest</div>
+                          <div class="l-mono" style="font-size: 22px; font-weight:500; color: var(--color-accent);">~3 min</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="dialog__ft">
+                      <button class="ling-btn ling-btn--ghost">Cancel</button>
+                      <button class="ling-btn ling-btn--secondary">Save as draft</button>
+                      <button class="ling-btn ling-btn--primary">Create dataset →</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Modal (larger persistent) -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Modal &middot; larger, persistent</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  The persistent overlay used for multi-step workflows. Larger than a dialog, with a denser internal grid.
+                </p>
+                <div class="overlay-stage" style="min-height: 500px; display: flex; align-items: center; justify-content: center;">
+                  <div class="dialog" style="width: 920px; max-width: 100%;">
+                    <div class="dialog__hd">
+                      <span class="dialog__title">Configure section &middot; <span style="color:var(--color-mute); font-weight:500;">Recent essays</span></span>
+                      <button class="dialog__close"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="dialog__body" style="padding: 0;">
+                      <div style="display: grid; grid-template-columns: 220px 1fr;">
+                        <aside style="border-right: 1px solid var(--color-border); background: var(--color-surface-soft); padding: var(--space-5);">
+                          <div class="demo-sub-eyebrow" style="margin: 0 0 var(--space-3);">Steps</div>
+                          <div class="demo-stack" style="gap: 2px;">
+                            <span style="padding: 8px 10px; border-radius: var(--radius-md); background: var(--color-accent-soft); color: var(--color-accent); font-family: var(--font-sans); font-size: 13px; font-weight: 500;">1. Data source</span>
+                            <span style="padding: 8px 10px; color: var(--color-ink-soft); font-family: var(--font-sans); font-size: 13px; font-weight: 500;">2. Columns</span>
+                            <span style="padding: 8px 10px; color: var(--color-ink-soft); font-family: var(--font-sans); font-size: 13px; font-weight: 500;">3. Layout</span>
+                            <span style="padding: 8px 10px; color: var(--color-mute); font-family: var(--font-sans); font-size: 13px;">4. Filters</span>
+                            <span style="padding: 8px 10px; color: var(--color-mute); font-family: var(--font-sans); font-size: 13px;">5. Preview</span>
+                          </div>
+                        </aside>
+                        <div style="padding: var(--space-6);">
+                          <h4 class="l-h3" style="margin: 0 0 var(--space-2);">Pick a data source</h4>
+                          <p class="l-proseSM" style="margin: 0 0 var(--space-5);">Sections render rows from a source. Pick one or import a new one.</p>
+                          <div class="ling-field">
+                            <label class="ling-field-label">Source</label>
+                            <div class="ling-multiselect">
+                              <span>essays_2025</span>
+                              <span class="caret">▾</span>
+                            </div>
+                          </div>
+                          <div class="dms-grid dms-grid-2" style="gap: var(--space-4); margin-top: var(--space-5);">
+                            <div class="ling-card" style="padding: var(--space-4); box-shadow:none;">
+                              <div class="ling-card__eyebrow">rows</div>
+                              <div class="l-mono" style="font-size: 18px;">412</div>
+                            </div>
+                            <div class="ling-card" style="padding: var(--space-4); box-shadow:none;">
+                              <div class="ling-card__eyebrow">last updated</div>
+                              <div class="l-mono" style="font-size: 18px;">2 hr ago</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="dialog__ft">
+                      <button class="ling-btn ling-btn--ghost">Cancel</button>
+                      <div style="flex:1;"></div>
+                      <button class="ling-btn ling-btn--secondary">Back</button>
+                      <button class="ling-btn ling-btn--primary">Next: Columns →</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Drawer -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Drawer &middot; slide-in right panel</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Edge-anchored panel used for inspectors and side-config. Slides from the right; pushes nothing.
+                </p>
+
+                <div class="drawer-stage">
+                  <div class="drawer">
+                    <div class="drawer__hd">
+                      <span class="drawer__title">Inspector</span>
+                      <button class="dialog__close"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="drawer__body">
+                      <div class="ling-field">
+                        <label class="ling-field-label">Section name</label>
+                        <input class="ling-input" type="text" value="Recent essays" />
+                      </div>
+                      <div class="ling-field">
+                        <label class="ling-field-label">Layout</label>
+                        <div class="ling-multiselect">
+                          <span>Cards in grid &middot; 3 cols</span>
+                          <span class="caret">▾</span>
+                        </div>
+                      </div>
+                      <div class="ling-field">
+                        <label class="ling-field-label">Image cells</label>
+                        <div class="demo-row">
+                          <label class="checkbox is-checked"><span class="checkbox__box"><svg viewBox="0 0 12 12"><path d="M2 6.5l3 3 5-6"/></svg></span> Cover</label>
+                          <label class="checkbox"><span class="checkbox__box"></span> Inline</label>
+                        </div>
+                      </div>
+                      <div class="ling-field">
+                        <label class="ling-field-label">Sort</label>
+                        <div class="ling-multiselect">
+                          <span>published_at ↓</span>
+                          <span class="caret">▾</span>
+                        </div>
+                      </div>
+                      <div class="demo-pane" style="padding: var(--space-4);">
+                        <div class="ling-card__eyebrow">visibility</div>
+                        <label class="checkbox" style="margin-top: 6px;">
+                          <span class="ling-switch ling-switch--on"></span>
+                          <span style="margin-left:8px;">Live</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="drawer__ft">
+                      <button class="ling-btn ling-btn--ghost">Discard</button>
+                      <button class="ling-btn ling-btn--primary">Save</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tooltip -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Tooltip &middot; small, dark</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Ink-background, white-text. Inline kbd hint for keyboard-shortcut tooltips. Arrow points to the trigger.
+                </p>
+                <div class="tooltip-stage">
+                  <div class="tooltip">
+                    Add a new section <span class="tt-key">N S</span>
+                  </div>
+                </div>
+
+                <!-- DeleteModal -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">DeleteModal &middot; destructive confirmation</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Type-to-confirm input with danger button. Used only for irreversible operations &mdash; deleting a dataset, a site, a pattern.
+                </p>
+                <div class="overlay-stage" style="min-height: 360px; display: flex; align-items: center; justify-content: center;">
+                  <div class="dialog dialog--md" style="border-top: 3px solid var(--color-signal);">
+                    <div class="dialog__hd">
+                      <span class="dialog__title" style="display:inline-flex; align-items:center; gap:8px;">
+                        <span style="width:24px; height:24px; border-radius:50%; background:var(--color-signal-soft); color:var(--color-signal); display:inline-flex; align-items:center; justify-content:center;">
+                          <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                        </span>
+                        Delete dataset
+                      </span>
+                      <button class="dialog__close"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="dialog__body">
+                      <p class="l-prose" style="margin: 0 0 var(--space-4);">This will permanently delete <strong style="font-weight:600;">npmrds_travel_times</strong> and all 1,234,567 rows. Views and pages that read from it will break.</p>
+                      <p class="l-proseSM" style="margin: 0 0 var(--space-4);">Type the dataset name to confirm.</p>
+                      <input class="ling-input ling-input--mono" type="text" placeholder="npmrds_travel_times" value="npmrds_travel" />
+                      <div class="l-monoXS" style="margin-top: 6px; color: var(--color-signal); text-transform:none; letter-spacing: 0;">↑ doesn't match yet</div>
+                    </div>
+                    <div class="dialog__ft">
+                      <button class="ling-btn ling-btn--ghost">Cancel</button>
+                      <button class="ling-btn ling-btn--danger ling-btn--disabled">I understand &mdash; delete</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               LayoutGroup "content" — CONTAINERS & ATOMS
+               ================================================================ -->
+          <section id="containers" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>4 &middot; Containers &amp; atoms</div>
+                <h2 class="dms-section-title">Cards, pills, pagination, icons, logos &mdash; the small surfaces.</h2>
+                <p class="dms-section-lede">
+                  Authors compose every Lingua page out of these. The dataCard especially &mdash; configured columns laid into a grid &mdash; carries 90% of the product's content surface. Show it well, theme it well, and the rest of the system feels considered.
+                </p>
+
+                <!-- Card -->
+                <h3 class="l-h2" style="margin: var(--space-7) 0 var(--space-2);">Card</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  The generic Card: eyebrow + title + body + footer with a pill or button.
+                </p>
+                <div class="dms-grid dms-grid-3">
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">essay &middot; vol. 14</div>
+                    <h4 class="ling-card__title">The lingua franca of data: a defense of shared shape</h4>
+                    <p class="ling-card__body">An argument that the most successful data tools are the ones whose representation is small, fixed, and universally legible.</p>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--accent">read &middot; 12 min</span>
+                      <a href="#" class="l-monoXS" style="color: var(--color-accent); text-transform: none; letter-spacing: 0;">Open →</a>
+                    </div>
+                  </div>
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">case study &middot; civic</div>
+                    <h4 class="ling-card__title">Mitigation Atlas &mdash; 62 counties on one schema</h4>
+                    <p class="ling-card__body">How New York State publishes flood, fire, and storm risk data through a shared row-shape that maps, charts, and dashboards all speak.</p>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--success ling-pill--dot">live</span>
+                      <a href="#" class="l-monoXS" style="color: var(--color-accent); text-transform: none; letter-spacing: 0;">Open →</a>
+                    </div>
+                  </div>
+                  <div class="ling-card">
+                    <div class="ling-card__eyebrow">release &middot; 1.3.0</div>
+                    <h4 class="ling-card__title">Self-host: one command, one binary, no Docker</h4>
+                    <p class="ling-card__body">Lingua now ships as a static binary with embedded Postgres. <code style="font-family:var(--font-mono); font-size:12px;">lingua up</code> starts a working install on any Unix.</p>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--margin">new</span>
+                      <a href="#" class="l-monoXS" style="color: var(--color-accent); text-transform: none; letter-spacing: 0;">Changelog →</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card — feature variant -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Card &middot; feature variant</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Icon at top, larger title, longer body. The marketing-page feature card.
+                </p>
+                <div class="dms-grid dms-grid-3">
+                  <div class="ling-card ling-card--feature">
+                    <span class="ling-card__icon">
+                      <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h4v-6h6v6h4V10"/></svg>
+                    </span>
+                    <h4 class="ling-card__title" style="font-size: 22px;">One row format. Every surface.</h4>
+                    <p class="ling-card__body">A page is a row. A section is a row. A dataset is a row. The same typed shape drives every primitive in the product.</p>
+                  </div>
+                  <div class="ling-card ling-card--feature">
+                    <span class="ling-card__icon">
+                      <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    </span>
+                    <h4 class="ling-card__title" style="font-size: 22px;">Authored and engineered, on one canvas.</h4>
+                    <p class="ling-card__body">A marketing editor and a backend engineer look at the same page tree and both see themselves. Lingua earns the dual-author claim.</p>
+                  </div>
+                  <div class="ling-card ling-card--feature">
+                    <span class="ling-card__icon">
+                      <svg viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.29"/></svg>
+                    </span>
+                    <h4 class="ling-card__title" style="font-size: 22px;">Self-host or hosted. Same vocabulary.</h4>
+                    <p class="ling-card__body">Open-source core. Move between hosted and self-hosted with one <code style="font-family:var(--font-mono); font-size:12px;">lingua export</code> command. Zero lock-in.</p>
+                  </div>
+                </div>
+
+                <!-- dataCard — variant (a): cards in grid -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">dataCard &middot; cards-in-grid mode</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  The workhorse. One card per row, columns wired into image / title / meta cells. The dataset → page flow.
+                </p>
+                <div class="dms-grid dms-grid-4">
+                  <div class="datacard">
+                    <div class="datacard__img"></div>
+                    <div class="datacard__body">
+                      <div class="datacard__eyebrow">essay &middot; vol. 14</div>
+                      <div class="datacard__title">A defense of shared shape</div>
+                      <div class="datacard__meta"><span>by <span class="v">Ana Karenin</span></span><span>12 min</span></div>
+                    </div>
+                  </div>
+                  <div class="datacard">
+                    <div class="datacard__img datacard__img--green"></div>
+                    <div class="datacard__body">
+                      <div class="datacard__eyebrow">interview &middot; vol. 14</div>
+                      <div class="datacard__title">Susan Sontag on the row format</div>
+                      <div class="datacard__meta"><span>by <span class="v">Jon Berger</span></span><span>18 min</span></div>
+                    </div>
+                  </div>
+                  <div class="datacard">
+                    <div class="datacard__img datacard__img--signal"></div>
+                    <div class="datacard__body">
+                      <div class="datacard__eyebrow">review &middot; vol. 13</div>
+                      <div class="datacard__title">The 2025 data tools, surveyed</div>
+                      <div class="datacard__meta"><span>by <span class="v">P. Eisenman</span></span><span>9 min</span></div>
+                    </div>
+                  </div>
+                  <div class="datacard">
+                    <div class="datacard__img datacard__img--ink">
+                      <span class="glyph">L<span class="diacritic">ī</span></span>
+                    </div>
+                    <div class="datacard__body">
+                      <div class="datacard__eyebrow">letter &middot; vol. 14</div>
+                      <div class="datacard__title">From the editor — the case for technical magazines</div>
+                      <div class="datacard__meta"><span>by <span class="v">D. Lattimore</span></span><span>4 min</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- dataCard — variant (b): cells-in-grid (single card with 6 cells) -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">dataCard &middot; cells-grid mode</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  One card, multiple cells in a 2x3 layout with mixed column types &mdash; full-bleed image, link cell, formatted-number, tabular value. The detail-page primitive.
+                </p>
+                <div class="datacard-cells">
+                  <div class="cell cell--fullbleed">
+                    <div class="layer">
+                      <div class="eyebrow">site &middot; mitigation atlas</div>
+                      <div style="flex: 1;"></div>
+                      <div class="value-display">62 counties</div>
+                      <div class="help" style="margin-top: 4px;">covered by shared schema · 100% NY State</div>
+                    </div>
+                  </div>
+                  <div class="cell">
+                    <div class="eyebrow">total rows</div>
+                    <div class="value-num">1,247,392</div>
+                    <div class="help">across 8 datasets</div>
+                  </div>
+                  <div class="cell">
+                    <div class="eyebrow">last sync</div>
+                    <div class="value-tab">2026-05-24 09:14:22</div>
+                    <div class="help">ingested 2,420 new rows</div>
+                  </div>
+                  <div class="cell">
+                    <div class="eyebrow">pattern</div>
+                    <div class="value-tab" style="font-family: var(--font-mono); font-size: 14px; color: var(--color-ink-soft);">prod|civic:pattern</div>
+                    <div class="help">type · split table routed</div>
+                  </div>
+                  <div class="cell">
+                    <div class="eyebrow">api</div>
+                    <a class="value-link" href="#">api.lingua.app/civic/v1
+                      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    </a>
+                    <div class="help">read · public · CORS open</div>
+                  </div>
+                  <div class="cell">
+                    <div class="eyebrow">status</div>
+                    <div style="margin-top: 4px;"><span class="ling-pill ling-pill--success ling-pill--dot">healthy</span></div>
+                    <div class="help" style="margin-top: 6px;">p95 240ms · 99.98% uptime</div>
+                  </div>
+                </div>
+
+                <!-- Pill -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Pill</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Inline status / badge / chip. Six color variants + optional leading dot.
+                </p>
+                <div class="demo-pane">
+                  <div class="demo-sub-eyebrow" style="margin-top:0;"><span class="num">a</span> Color variants</div>
+                  <div class="demo-row">
+                    <span class="ling-pill">default</span>
+                    <span class="ling-pill ling-pill--accent">accent</span>
+                    <span class="ling-pill ling-pill--signal">signal</span>
+                    <span class="ling-pill ling-pill--margin">margin</span>
+                    <span class="ling-pill ling-pill--success">success</span>
+                    <span class="ling-pill ling-pill--ink">ink</span>
+                  </div>
+                  <div class="demo-sub-eyebrow"><span class="num">b</span> Dot variant</div>
+                  <div class="demo-row">
+                    <span class="ling-pill ling-pill--dot">draft</span>
+                    <span class="ling-pill ling-pill--accent ling-pill--dot">preview</span>
+                    <span class="ling-pill ling-pill--success ling-pill--dot">live</span>
+                    <span class="ling-pill ling-pill--margin ling-pill--dot">new</span>
+                    <span class="ling-pill ling-pill--signal ling-pill--dot">error</span>
+                  </div>
+                </div>
+
+                <!-- Pagination -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Pagination</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Numbered pager with prev/next. Active page in the accent.
+                </p>
+                <div class="demo-pane">
+                  <div class="pagination">
+                    <a href="#" class="pagination__nav"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> Prev</a>
+                    <a href="#" class="pagination__num is-active">1</a>
+                    <a href="#" class="pagination__num">2</a>
+                    <a href="#" class="pagination__num">3</a>
+                    <span class="pagination__gap">…</span>
+                    <a href="#" class="pagination__num">9</a>
+                    <a href="#" class="pagination__num">10</a>
+                    <a href="#" class="pagination__nav">Next <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></a>
+                  </div>
+                </div>
+
+                <!-- Icon -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Icon</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Line-based, 1.5px stroke, no fills. Three sizes (16 · 24 · 32 px). Names map 1:1 to <code style="font-family:var(--font-mono); font-size:12px;">icons[name]</code> entries in the theme registry.
+                </p>
+                <div class="demo-pane">
+                  <div class="demo-row" style="gap: var(--space-4); flex-wrap:wrap;">
+                    <!-- 12 icons at 16px -->
+                    <span title="Menu @ 16"><svg width="16" height="16" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg></span>
+                    <span title="Search @ 16"><svg width="16" height="16" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></span>
+                    <span title="Database @ 16"><svg width="16" height="16" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/><path d="M3 12a9 3 0 0018 0"/></svg></span>
+                    <span title="Chart @ 16"><svg width="16" height="16" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>
+                    <!-- 12 icons at 24px -->
+                    <span title="Code @ 24"><svg width="24" height="24" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></span>
+                    <span title="Terminal @ 24"><svg width="24" height="24" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></span>
+                    <span title="Folder @ 24"><svg width="24" height="24" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 012-2h6l2 2h8a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
+                    <span title="Map @ 24"><svg width="24" height="24" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l7-3 8 3 7-3v15l-7 3-8-3-7 3z"/><path d="M8 3v15M16 6v15"/></svg></span>
+                    <!-- 12 icons at 32px -->
+                    <span title="Deploy @ 32"><svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.29"/></svg></span>
+                    <span title="Users @ 32"><svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg></span>
+                    <span title="Settings @ 32"><svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--color-ink-soft)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg></span>
+                    <span title="Live @ 32"><svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--color-accent)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" fill="var(--color-accent)"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg></span>
+                  </div>
+                  <p class="demo-caption">12 icons · 16 · 24 · 32 px · 1.5 stroke</p>
+                </div>
+
+                <!-- Logo -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Logo</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Three lockups, plus favicon size variants. The macron-over-i is the brand's only ornament.
+                </p>
+                <div class="dms-grid dms-grid-3">
+                  <div class="logo-lockup">
+                    <span class="ling-logo" style="font-size: 36px;">L<span class="diacritic">ī</span>ngua</span>
+                    <span class="logo-lockup__cap">wordmark · diacritic · light surface</span>
+                  </div>
+                  <div class="logo-lockup logo-lockup--dark">
+                    <span class="ling-logo ling-logo--bracket" style="font-size: 28px; color: var(--color-code-fg);">
+                      <span style="color: var(--color-accent);">[</span>lingua<span style="color: var(--color-accent);">]</span>
+                    </span>
+                    <span class="logo-lockup__cap">bracket-mono · developer surface</span>
+                  </div>
+                  <div class="logo-lockup">
+                    <div class="favicon-row">
+                      <span class="favicon favicon--16">L<span class="diacritic">ī</span></span>
+                      <span class="favicon favicon--32">L<span class="diacritic">ī</span></span>
+                      <span class="favicon favicon--192">L<span class="diacritic">ī</span></span>
+                    </div>
+                    <span class="logo-lockup__cap">favicon · 16 / 32 / 192</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               LayoutGroup "content" — BRAND-SIGNATURE PRIMITIVES
+               ================================================================ -->
+          <section id="signature" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>5 &middot; Brand-signature primitives</div>
+                <h2 class="dms-section-title">Code, terminals, architecture, KPI, activity &mdash; how Lingua proves its claims.</h2>
+                <p class="dms-section-lede">
+                  These are the v0.2 brand's defining surfaces. Light page, dark code block. Boxy rounded architecture diagram. KPI strip in mono. Live activity in a vertical rail. Customer logos in their colors. The brand earns "modern technical" by showing &mdash; not by saying.
+                </p>
+
+                <!-- Code block -->
+                <h3 class="l-h2" style="margin: var(--space-7) 0 var(--space-2);">Code block</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  The brand's most distinctive surface. Deep slate background, JetBrains Mono, syntax-highlighted, optional window chrome (filename + copy button). At least one per marketing page.
+                </p>
+
+                <div class="demo-sub-eyebrow"><span class="num">a</span> Full block with chrome &middot; row.js</div>
+                <div class="ling-code">
+                  <div class="ling-code__chrome">
+                    <span class="filename">row.js</span>
+                    <span class="actions">
+                      <button>copy</button>
+                      <button>raw</button>
+                    </span>
+                  </div>
+                  <div class="ling-code__body">
+<pre><span class="tk-com">// Every row, everywhere in Lingua, has the same shape.</span>
+<span class="tk-com">// A page is a row. A section is a row. A dataset is a row.</span>
+
+<span class="tk-kw">export const</span> <span class="tk-fn">row</span> = {
+  <span class="tk-prop">app</span><span class="tk-punc">:</span>        <span class="tk-str">"the_drift"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">type</span><span class="tk-punc">:</span>       <span class="tk-str">"essays|page"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">data</span><span class="tk-punc">:</span>       { <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"A defense of shared shape"</span><span class="tk-punc">,</span> <span class="tk-prop">wordcount</span><span class="tk-punc">:</span> <span class="tk-num">3420</span> }<span class="tk-punc">,</span>
+  <span class="tk-prop">attributes</span><span class="tk-punc">:</span> { <span class="tk-prop">live</span><span class="tk-punc">:</span> <span class="tk-kw">true</span><span class="tk-punc">,</span> <span class="tk-prop">publishedAt</span><span class="tk-punc">:</span> <span class="tk-str">"2026-05-24"</span> }<span class="tk-punc">,</span>
+  <span class="tk-prop">parent</span><span class="tk-punc">:</span>     <span class="tk-str">"essays|page:vol_14"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">children</span><span class="tk-punc">:</span>   [ <span class="tk-str">"essays|page:vol_14|section:lede"</span> ]<span class="tk-punc">,</span>
+}<span class="tk-punc">;</span>
+
+<span class="tk-com">// Pages, charts, maps, datasets — all read the same shape.</span>
+<span class="tk-kw">export function</span> <span class="tk-fn">render</span><span class="tk-punc">(</span><span class="tk-prop">row</span><span class="tk-punc">,</span> <span class="tk-prop">theme</span><span class="tk-punc">)</span> {
+  <span class="tk-kw">return</span> <span class="tk-fn">theme</span><span class="tk-punc">.</span><span class="tk-fn">components</span><span class="tk-punc">[</span><span class="tk-fn">row</span><span class="tk-punc">.</span><span class="tk-prop">type</span><span class="tk-punc">.</span><span class="tk-fn">split</span><span class="tk-punc">(</span><span class="tk-str">"|"</span><span class="tk-punc">)</span><span class="tk-punc">.</span><span class="tk-fn">pop</span><span class="tk-punc">(</span><span class="tk-punc">)</span><span class="tk-punc">]</span><span class="tk-punc">;</span>
+}</pre>
+                  </div>
+                </div>
+
+                <div class="demo-sub-eyebrow"><span class="num">b</span> Inline / small block &middot; CLI hint</div>
+                <div class="ling-code" style="max-width: 480px;">
+                  <div class="ling-code__body" style="padding: 12px 16px;">
+<pre><span class="tk-com">$</span> <span class="tk-fn">lingua</span> <span class="tk-kw">init</span> the_drift <span class="tk-com">--theme</span>=<span class="tk-str">lingua</span></pre>
+                  </div>
+                </div>
+
+                <!-- Terminal -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Terminal</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Live-looking shell pane. Prompt, command, output, exit status. The CLI as a brand surface.
+                </p>
+                <div class="ling-terminal">
+                  <div class="ling-terminal__chrome">
+                    <span class="dot" style="background: #FF5F57;"></span>
+                    <span class="dot" style="background: #FEBC2E;"></span>
+                    <span class="dot" style="background: #28C840;"></span>
+                    <span class="title">~/sites/the_drift &mdash; lingua &middot; v1.3.0</span>
+                  </div>
+                  <div class="ling-terminal__body">
+<pre><span class="prompt">lingua deploy --target=hosted</span>
+<span class="dim">→ resolving project · the_drift</span>
+<span class="dim">→ reading 412 rows from </span><span class="out">data_items</span>
+<span class="dim">→ bundling theme · </span><span class="out">lingua@0.2.1</span>
+<span class="dim">→ uploading static assets · 2.4 MB</span>
+<span class="ok">✓ deployed to thedrift.lingua.app</span>
+<span class="warn">!  1 deprecated column type (`text_v1`) — review at /admin/sources</span>
+<span class="dim">⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯</span>
+<span class="ok">  done</span> <span class="dim">in 4.2s · 1 warning · 0 errors</span>
+<span class="prompt"></span><span class="cursor"></span></pre>
+                  </div>
+                </div>
+
+                <!-- Architecture diagram -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Architecture diagram</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Warpstream-style. Boxy rounded nodes, brand-color-coded by role (accent = Lingua, ink = your stack), connected by hairline SVG lines.
+                </p>
+                <div class="ling-arch arch-canvas" style="min-height: 340px;">
+                  <div class="ling-arch__title">How Lingua composes a site.</div>
+                  <svg style="position: absolute; inset: 0; pointer-events: none;" viewBox="0 0 800 340" preserveAspectRatio="none" width="100%" height="100%">
+                    <defs>
+                      <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                        <path d="M0,0 L8,4 L0,8 Z" fill="#A1A1AA"/>
+                      </marker>
+                    </defs>
+                    <!-- Source → Lingua core -->
+                    <line x1="170" y1="120" x2="320" y2="160" stroke="#A1A1AA" stroke-width="1.25" marker-end="url(#arrow)"/>
+                    <!-- Theme → Lingua core -->
+                    <line x1="320" y1="60" x2="380" y2="135" stroke="#A1A1AA" stroke-width="1.25" marker-end="url(#arrow)"/>
+                    <!-- Lingua core → Pages -->
+                    <line x1="480" y1="160" x2="600" y2="100" stroke="#3B5BFF" stroke-width="1.4" marker-end="url(#arrow)"/>
+                    <!-- Lingua core → Datasets -->
+                    <line x1="480" y1="180" x2="600" y2="180" stroke="#3B5BFF" stroke-width="1.4" marker-end="url(#arrow)"/>
+                    <!-- Lingua core → Visualizations -->
+                    <line x1="480" y1="200" x2="600" y2="260" stroke="#3B5BFF" stroke-width="1.4" marker-end="url(#arrow)"/>
+                  </svg>
+                  <div class="ling-arch__node" style="top: 90px; left: 40px; min-width: 130px;">
+                    Data source
+                    <span class="sub">postgres · csv</span>
+                  </div>
+                  <div class="ling-arch__node" style="top: 30px; left: 230px; min-width: 130px;">
+                    Theme
+                    <span class="sub">lingua · tessera</span>
+                  </div>
+                  <div class="ling-arch__node ling-arch__node--accent" style="top: 145px; left: 320px; min-width: 170px; min-height: 70px; display:flex; flex-direction:column; justify-content:center;">
+                    Lingua core
+                    <span class="sub" style="text-transform:none; letter-spacing:0; font-size:11px;">row format · renderer · API</span>
+                  </div>
+                  <div class="ling-arch__node ling-arch__node--accent" style="top: 70px; right: 40px; min-width: 130px;">
+                    Pages
+                    <span class="sub">marketing · docs</span>
+                  </div>
+                  <div class="ling-arch__node" style="top: 160px; right: 40px; min-width: 130px;">
+                    Datasets
+                    <span class="sub">filterable rows</span>
+                  </div>
+                  <div class="ling-arch__node ling-arch__node--dark" style="top: 245px; right: 40px; min-width: 130px;">
+                    Charts &amp; maps
+                    <span class="sub">graph · maplibre</span>
+                  </div>
+                </div>
+
+                <!-- KPI strip -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">KPI strip</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Four-card row. Label in mono uppercase, value in big mono with tabular figures, delta indicator (up = success, down = signal, flat = mute).
+                </p>
+                <div class="dms-grid dms-grid-4">
+                  <div class="ling-kpi">
+                    <span class="ling-kpi__label">Live sites</span>
+                    <span class="ling-kpi__value">1,420</span>
+                    <span class="ling-kpi__delta">↑ 12.4% &middot; 30d</span>
+                  </div>
+                  <div class="ling-kpi">
+                    <span class="ling-kpi__label">Rows ingested</span>
+                    <span class="ling-kpi__value">38.2M</span>
+                    <span class="ling-kpi__delta">↑ 4.1% &middot; 30d</span>
+                  </div>
+                  <div class="ling-kpi">
+                    <span class="ling-kpi__label">p95 query</span>
+                    <span class="ling-kpi__value">240ms</span>
+                    <span class="ling-kpi__delta ling-kpi__delta--down">↓ 8.2% &middot; faster</span>
+                  </div>
+                  <div class="ling-kpi">
+                    <span class="ling-kpi__label">Themes shipped</span>
+                    <span class="ling-kpi__value">42</span>
+                    <span class="ling-kpi__delta ling-kpi__delta--flat">→ 0.0% &middot; 30d</span>
+                  </div>
+                </div>
+
+                <!-- Live activity -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Live activity feed</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Vertical rail of recent events. Avatars (mono initials), accent verb, mono timestamps. Pulls from commits, publishes, edits.
+                </p>
+                <div class="demo-pane" style="background: var(--color-surface);">
+                  <div class="ling-activity">
+                    <div class="ling-activity__row">
+                      <span class="ling-activity__avatar">AB</span>
+                      <span class="ling-activity__text"><span class="what">Ana Berger</span> <span class="verb">published</span> "A defense of shared shape" to <span class="what">the_drift</span></span>
+                      <span class="ling-activity__time">2 min ago</span>
+                    </div>
+                    <div class="ling-activity__row">
+                      <span class="ling-activity__avatar">RD</span>
+                      <span class="ling-activity__text"><span class="what">Rafa Diaz</span> <span class="verb">committed</span> <code style="font-family:var(--font-mono); font-size:13px;">add tessera v2 dataCard image cell knobs</code></span>
+                      <span class="ling-activity__time">9 min ago</span>
+                    </div>
+                    <div class="ling-activity__row">
+                      <span class="ling-activity__avatar">SM</span>
+                      <span class="ling-activity__text"><span class="what">Sofia Mendez</span> <span class="verb">edited</span> the <span class="what">npmrds_travel_times</span> schema (added <code style="font-family:var(--font-mono); font-size:13px;">vehicle_class</code>)</span>
+                      <span class="ling-activity__time">22 min ago</span>
+                    </div>
+                    <div class="ling-activity__row">
+                      <span class="ling-activity__avatar">JV</span>
+                      <span class="ling-activity__text"><span class="what">Jon Valim</span> <span class="verb">deployed</span> <span class="what">availabs/dms-template@v1.3.0</span></span>
+                      <span class="ling-activity__time">1 h ago</span>
+                    </div>
+                    <div class="ling-activity__row">
+                      <span class="ling-activity__avatar">PE</span>
+                      <span class="ling-activity__text"><span class="what">P. Eisenman</span> <span class="verb">forked</span> the <span class="what">mitigation_atlas</span> theme into <span class="what">flood_atlas</span></span>
+                      <span class="ling-activity__time">3 h ago</span>
+                    </div>
+                    <div class="ling-activity__row">
+                      <span class="ling-activity__avatar">DL</span>
+                      <span class="ling-activity__text"><span class="what">D. Lattimore</span> <span class="verb">opened</span> issue <code style="font-family:var(--font-mono); font-size:13px;">#412 &mdash; codeblock copy button on mobile</code></span>
+                      <span class="ling-activity__time">5 h ago</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Customer logos -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Customer logo strip</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Partner brands in their representative colors. Don't desaturate &mdash; the variety is the point.
+                </p>
+                <div class="demo-pane" style="background: var(--color-surface);">
+                  <div class="ling-logos">
+                    <span class="ling-logos__item" style="color: #FF4F00;">Hex Tech</span>
+                    <span class="ling-logos__item" style="color: #5E6AD2;">Linear</span>
+                    <span class="ling-logos__item" style="color: #000;">▲ Vercel</span>
+                    <span class="ling-logos__item" style="color: #100F11;">⎔ Zed</span>
+                    <span class="ling-logos__item" style="color: #2D62E1;">Warpstream</span>
+                    <span class="ling-logos__item" style="color: #1AB7B7;">Resend</span>
+                    <span class="ling-logos__item" style="color: #003B5C;">AVAIL</span>
+                    <span class="ling-logos__item" style="color: #635BFF;">Stripe</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               LayoutGroup "content" — RICH CONTENT
+               ================================================================ -->
+          <section id="rich" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>6 &middot; Rich content</div>
+                <h2 class="dms-section-title">Lexical, table, graph, map &mdash; the long-form surfaces.</h2>
+                <p class="dms-section-lede">
+                  Where prose, data, and visualization meet the brand. Lexical renders every heading + body style. Tables in tabular figures with hairline rules. Graphs use Lingua blue with at most two status accents. Maps in the light-mode treatment with brand-colored markers.
+                </p>
+
+                <!-- Lexical -->
+                <h3 class="l-h2" style="margin: var(--space-7) 0 var(--space-2);">Lexical &middot; rich text</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  All heading levels, paragraph, bold, italic, link, ordered + unordered lists, blockquote, inline code, code block.
+                </p>
+                <div class="demo-pane" style="background: var(--color-surface);">
+                  <div class="lexical">
+                    <h1>The lingua franca of data</h1>
+                    <p>A page is a row. A section is a row. A dataset is a row. The same typed shape drives every primitive Lingua ships — and because the shape is shared, the parts compose without translation. That's the idea. Below: what it actually looks like when you build something.</p>
+
+                    <h2>One vocabulary, many speakers</h2>
+                    <p>The brief was simple. A non-technical author opens the editor and sees pages and sections. An engineer opens the same project and sees <strong>typed rows</strong>, <em>parents and children</em>, and a <a href="#">Falcor-shaped API</a> they can hit from anywhere. Both views are real; both surfaces are first-class.</p>
+
+                    <h3>What you write</h3>
+                    <p>Pages. Sections. Datasets. Themes. All of them rows of <code class="inline">{ app, type, data, attributes, parent, children }</code>.</p>
+
+                    <ul>
+                      <li>A <strong>marketing page</strong> is a page row with section children.</li>
+                      <li>A <strong>dashboard</strong> is a page row with data-section children that read from datasets.</li>
+                      <li>A <strong>dataset view</strong> is a source row with view children that share the same data table.</li>
+                    </ul>
+
+                    <h3>What you get</h3>
+                    <ol>
+                      <li>One renderer for every surface.</li>
+                      <li>One API for every consumer.</li>
+                      <li>One migration story when the schema changes.</li>
+                    </ol>
+
+                    <h4>The exception that proves the rule</h4>
+                    <p>The exception is the long-form essay. We keep one editorial face — Fraunces italic — for exactly that surface. It's the brand's one moment of <em>publication</em>, deliberately distinct from everything else.</p>
+
+                    <blockquote>
+                      The most successful data tools are the ones whose representation is small, fixed, and universally legible.
+                    </blockquote>
+
+                    <p>What that looks like as code:</p>
+
+                    <div class="ling-code" style="margin: var(--space-5) 0;">
+                      <div class="ling-code__chrome">
+                        <span class="filename">section.js</span>
+                        <span class="actions"><button>copy</button></span>
+                      </div>
+                      <div class="ling-code__body">
+<pre><span class="tk-kw">export const</span> <span class="tk-fn">section</span> = {
+  <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"essays|page|section"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">data</span><span class="tk-punc">:</span> { <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"Recent essays"</span><span class="tk-punc">,</span> <span class="tk-prop">component</span><span class="tk-punc">:</span> <span class="tk-str">"dataCard"</span> }<span class="tk-punc">,</span>
+}<span class="tk-punc">;</span></pre>
+                      </div>
+                    </div>
+
+                    <p>And the same row, rendered, drives marketing pages, civic dashboards, and the Theory essay you're reading from.</p>
+                  </div>
+                </div>
+
+                <!-- Table -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Table</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Mono uppercase headers (sortable with caret), hairline rules between rows, no vertical rules, subtle hover, tabular figures, paginated tfoot.
+                </p>
+                <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden;">
+                  <table class="ling-table">
+                    <thead>
+                      <tr>
+                        <th>Site</th>
+                        <th>Theme</th>
+                        <th>
+                          <span style="display:inline-flex; align-items:center; gap:4px; color: var(--color-accent);">
+                            Rows
+                            <svg width="10" height="10" viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3-3 3 3M3 7l3 3 3-3"/></svg>
+                          </span>
+                        </th>
+                        <th>p95</th>
+                        <th>Status</th>
+                        <th>Last sync</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>The Drift</td>
+                        <td class="mono">lingua</td>
+                        <td class="num">412</td>
+                        <td class="num">180ms</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                        <td class="mono">2 min ago</td>
+                      </tr>
+                      <tr>
+                        <td>Mitigation Atlas</td>
+                        <td class="mono">lingua</td>
+                        <td class="num">1,247,392</td>
+                        <td class="num">240ms</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                        <td class="mono">14 min ago</td>
+                      </tr>
+                      <tr style="background: var(--color-accent-soft);">
+                        <td>NPMRDS analytics</td>
+                        <td class="mono">tessera</td>
+                        <td class="num">38,210,492</td>
+                        <td class="num">420ms</td>
+                        <td><span class="ling-pill ling-pill--margin ling-pill--dot">degraded</span></td>
+                        <td class="mono">22 min ago</td>
+                      </tr>
+                      <tr>
+                        <td>WCDB.fm</td>
+                        <td class="mono">tessera</td>
+                        <td class="num">2,140</td>
+                        <td class="num">95ms</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                        <td class="mono">1 h ago</td>
+                      </tr>
+                      <tr>
+                        <td>AVAIL docs</td>
+                        <td class="mono">lingua</td>
+                        <td class="num">348</td>
+                        <td class="num">110ms</td>
+                        <td><span class="ling-pill">draft</span></td>
+                        <td class="mono">3 h ago</td>
+                      </tr>
+                      <tr>
+                        <td>TransportNY</td>
+                        <td class="mono">transportny</td>
+                        <td class="num">4,820,114</td>
+                        <td class="num">310ms</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                        <td class="mono">5 h ago</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="6" style="background: var(--color-surface-soft); border-bottom: 0; padding: 10px 16px;">
+                          <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span class="l-monoSM" style="text-transform: uppercase; letter-spacing: 0.06em;">6 of 42 sites · 7 pages</span>
+                            <div class="pagination">
+                              <a href="#" class="pagination__nav"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> Prev</a>
+                              <a href="#" class="pagination__num is-active">1</a>
+                              <a href="#" class="pagination__num">2</a>
+                              <a href="#" class="pagination__num">3</a>
+                              <span class="pagination__gap">…</span>
+                              <a href="#" class="pagination__num">7</a>
+                              <a href="#" class="pagination__nav">Next <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></a>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                <!-- Graphs -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Graph</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Three chart placeholders &mdash; bar (two-series Lingua blue + ink), line (single accent series), area (with hairline grid). Brand palette throughout; no rainbow.
+                </p>
+                <div class="dms-grid dms-grid-3">
+                  <div class="graph-card">
+                    <div class="graph-card__hd">
+                      <span class="graph-card__title">Sites by theme</span>
+                      <span class="graph-card__meta">2025 q4 · 12 mo</span>
+                    </div>
+                    <svg viewBox="0 0 240 140" style="width:100%; height: 140px;">
+                      <!-- gridlines -->
+                      <line x1="20" y1="20" x2="240" y2="20" stroke="var(--color-border-subtle)" stroke-width="1"/>
+                      <line x1="20" y1="60" x2="240" y2="60" stroke="var(--color-border-subtle)" stroke-width="1"/>
+                      <line x1="20" y1="100" x2="240" y2="100" stroke="var(--color-border-subtle)" stroke-width="1"/>
+                      <line x1="20" y1="125" x2="240" y2="125" stroke="var(--color-border)" stroke-width="1"/>
+                      <!-- bars series A (accent) -->
+                      <rect x="30" y="55" width="14" height="70" fill="#3B5BFF" rx="2"/>
+                      <rect x="60" y="40" width="14" height="85" fill="#3B5BFF" rx="2"/>
+                      <rect x="90" y="65" width="14" height="60" fill="#3B5BFF" rx="2"/>
+                      <rect x="120" y="30" width="14" height="95" fill="#3B5BFF" rx="2"/>
+                      <rect x="150" y="48" width="14" height="77" fill="#3B5BFF" rx="2"/>
+                      <rect x="180" y="22" width="14" height="103" fill="#3B5BFF" rx="2"/>
+                      <rect x="210" y="35" width="14" height="90" fill="#3B5BFF" rx="2"/>
+                      <!-- bars series B (ink) -->
+                      <rect x="46" y="90" width="10" height="35" fill="#18181B" rx="2"/>
+                      <rect x="76" y="85" width="10" height="40" fill="#18181B" rx="2"/>
+                      <rect x="106" y="100" width="10" height="25" fill="#18181B" rx="2"/>
+                      <rect x="136" y="78" width="10" height="47" fill="#18181B" rx="2"/>
+                      <rect x="166" y="92" width="10" height="33" fill="#18181B" rx="2"/>
+                      <rect x="196" y="70" width="10" height="55" fill="#18181B" rx="2"/>
+                      <rect x="226" y="83" width="10" height="42" fill="#18181B" rx="2"/>
+                    </svg>
+                    <div class="demo-row" style="gap: var(--space-4); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-mute);">
+                      <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; background:#3B5BFF; border-radius:2px;"></span> Lingua</span>
+                      <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; background:#18181B; border-radius:2px;"></span> Tessera</span>
+                    </div>
+                  </div>
+
+                  <div class="graph-card">
+                    <div class="graph-card__hd">
+                      <span class="graph-card__title">p95 query · 30d</span>
+                      <span class="graph-card__meta">ms · lower is better</span>
+                    </div>
+                    <svg viewBox="0 0 240 140" style="width:100%; height: 140px;">
+                      <!-- gridlines -->
+                      <line x1="20" y1="20" x2="240" y2="20" stroke="var(--color-border-subtle)" stroke-width="1"/>
+                      <line x1="20" y1="60" x2="240" y2="60" stroke="var(--color-border-subtle)" stroke-width="1"/>
+                      <line x1="20" y1="100" x2="240" y2="100" stroke="var(--color-border-subtle)" stroke-width="1"/>
+                      <line x1="20" y1="125" x2="240" y2="125" stroke="var(--color-border)" stroke-width="1"/>
+                      <!-- line -->
+                      <polyline points="20,90 50,82 80,70 110,75 140,55 170,48 200,40 230,30"
+                        fill="none" stroke="#3B5BFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <!-- points -->
+                      <circle cx="20" cy="90" r="2.5" fill="#3B5BFF"/>
+                      <circle cx="50" cy="82" r="2.5" fill="#3B5BFF"/>
+                      <circle cx="80" cy="70" r="2.5" fill="#3B5BFF"/>
+                      <circle cx="110" cy="75" r="2.5" fill="#3B5BFF"/>
+                      <circle cx="140" cy="55" r="2.5" fill="#3B5BFF"/>
+                      <circle cx="170" cy="48" r="2.5" fill="#3B5BFF"/>
+                      <circle cx="200" cy="40" r="2.5" fill="#3B5BFF"/>
+                      <circle cx="230" cy="30" r="3.5" fill="#3B5BFF" stroke="#fff" stroke-width="2"/>
+                    </svg>
+                    <div class="l-monoXS" style="text-align:right; color: var(--color-success); text-transform:none; letter-spacing:0;">240ms · ↓ 8% vs 30d ago</div>
+                  </div>
+
+                  <div class="graph-card">
+                    <div class="graph-card__hd">
+                      <span class="graph-card__title">Rows ingested</span>
+                      <span class="graph-card__meta">7d · cumulative</span>
+                    </div>
+                    <svg viewBox="0 0 240 140" style="width:100%; height: 140px;">
+                      <defs>
+                        <linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="#3B5BFF" stop-opacity="0.4"/>
+                          <stop offset="100%" stop-color="#3B5BFF" stop-opacity="0.04"/>
+                        </linearGradient>
+                      </defs>
+                      <!-- gridlines -->
+                      <line x1="20" y1="20" x2="240" y2="20" stroke="var(--color-border-subtle)" stroke-width="1"/>
+                      <line x1="20" y1="60" x2="240" y2="60" stroke="var(--color-border-subtle)" stroke-width="1"/>
+                      <line x1="20" y1="100" x2="240" y2="100" stroke="var(--color-border-subtle)" stroke-width="1"/>
+                      <line x1="20" y1="125" x2="240" y2="125" stroke="var(--color-border)" stroke-width="1"/>
+                      <!-- area -->
+                      <path d="M20,115 L50,100 L80,92 L110,72 L140,60 L170,42 L200,35 L230,25 L230,125 L20,125 Z" fill="url(#areaG)"/>
+                      <polyline points="20,115 50,100 80,92 110,72 140,60 170,42 200,35 230,25"
+                        fill="none" stroke="#3B5BFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="l-monoXS" style="text-align:right; color: var(--color-mute); text-transform:none; letter-spacing:0;">38.2M rows · +4.1% wk</div>
+                  </div>
+                </div>
+
+                <!-- Map -->
+                <h3 class="l-h2" style="margin: var(--space-9) 0 var(--space-2);">Map</h3>
+                <p class="l-prose ink-soft" style="margin: 0 0 var(--space-5); max-width: 64ch;">
+                  Light-mode placeholder. Hairline coastline, three markers in brand colors (signal / accent / success), labels in Inter Tight.
+                </p>
+                <div class="map-card">
+                  <div class="graph-card__hd">
+                    <span class="graph-card__title">New York State &middot; flood incidents</span>
+                    <span class="graph-card__meta">2026 Q1 · 142 events</span>
+                  </div>
+                  <svg viewBox="0 0 600 320" style="width: 100%; height: 320px; background: var(--color-surface-soft); border-radius: var(--radius-md);">
+                    <!-- subtle grid -->
+                    <defs>
+                      <pattern id="mapgrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M40 0 L0 0 0 40" fill="none" stroke="#EEEEEF" stroke-width="0.5"/>
+                      </pattern>
+                    </defs>
+                    <rect width="600" height="320" fill="url(#mapgrid)"/>
+                    <!-- coastline (a simple loose NY-ish shape) -->
+                    <path d="M40 120 C 60 90, 110 70, 160 80 C 210 90, 240 70, 280 80 C 320 90, 360 70, 410 80 C 460 90, 510 100, 560 130 L 555 200 C 520 230, 470 240, 420 230 C 370 220, 320 240, 270 250 C 220 260, 170 240, 120 230 C 80 220, 60 200, 50 180 Z"
+                      fill="#FFFFFF" stroke="#D4D4D8" stroke-width="1"/>
+                    <!-- internal hairline -->
+                    <path d="M120 160 L 280 140 L 420 170 L 510 160"
+                      fill="none" stroke="#E4E4E7" stroke-width="0.75" stroke-dasharray="2 4"/>
+                    <!-- region labels -->
+                    <text x="120" y="125" font-family="Inter Tight, sans-serif" font-size="11" fill="#71717A">Western NY</text>
+                    <text x="290" y="125" font-family="Inter Tight, sans-serif" font-size="11" fill="#71717A">Mohawk Valley</text>
+                    <text x="450" y="125" font-family="Inter Tight, sans-serif" font-size="11" fill="#71717A">Hudson Valley</text>
+                    <text x="380" y="220" font-family="Inter Tight, sans-serif" font-size="11" fill="#71717A">NYC metro</text>
+                    <!-- markers -->
+                    <g>
+                      <circle cx="170" cy="175" r="10" fill="#FF5630" fill-opacity="0.2"/>
+                      <circle cx="170" cy="175" r="5" fill="#FF5630"/>
+                      <text x="184" y="179" font-family="Inter Tight, sans-serif" font-size="12" font-weight="500" fill="#18181B">Erie · 42 events</text>
+                    </g>
+                    <g>
+                      <circle cx="350" cy="190" r="10" fill="#3B5BFF" fill-opacity="0.2"/>
+                      <circle cx="350" cy="190" r="5" fill="#3B5BFF"/>
+                      <text x="364" y="194" font-family="Inter Tight, sans-serif" font-size="12" font-weight="500" fill="#18181B">Albany · 31 events</text>
+                    </g>
+                    <g>
+                      <circle cx="480" cy="210" r="10" fill="#14B881" fill-opacity="0.2"/>
+                      <circle cx="480" cy="210" r="5" fill="#14B881"/>
+                      <text x="494" y="214" font-family="Inter Tight, sans-serif" font-size="12" font-weight="500" fill="#18181B">Westchester · 7 events</text>
+                    </g>
+                  </svg>
+                  <div class="demo-row" style="gap: var(--space-5); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-mute);">
+                    <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:8px; height:8px; background:#FF5630; border-radius:50%;"></span> &gt;30 events</span>
+                    <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:8px; height:8px; background:#3B5BFF; border-radius:50%;"></span> 10–30</span>
+                    <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:8px; height:8px; background:#14B881; border-radius:50%;"></span> &lt;10</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               LayoutGroup "footer"
+               ================================================================ -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div class="dms-grid dms-grid-3" style="gap:var(--space-7);">
+                <div>
+                  <div class="ling-logo" style="font-size:20px;">L<span class="diacritic">ī</span>ngua</div>
+                  <div class="l-proseSM ink-soft" style="margin-top: var(--space-3); max-width:32ch;">
+                    v0.2 &middot; 2026-05-24 &middot; modern technical brand. Components page documents every primitive the theme will read.
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">System</div>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <a href="theme.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theme</a>
+                    <a href="layouts.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Layouts</a>
+                    <a href="grid.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Grid</a>
+                    <a href="components.html" class="l-proseSM" style="color:var(--color-accent); text-decoration:none; font-weight:500;">Components</a>
+                    <a href="patterns.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Patterns</a>
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Pages</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px var(--space-4);">
+                    <a href="../pages/marketing-homepage.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Home</a>
+                    <a href="../pages/marketing-comparison.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Compare</a>
+                    <a href="../pages/marketing-theory.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theory</a>
+                    <a href="../pages/docs-page.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Docs</a>
+                    <a href="../pages/civic-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Civic</a>
+                    <a href="../pages/product-site-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Site</a>
+                    <a href="../pages/product-page-editor.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Editor</a>
+                    <a href="../pages/product-dataset-view.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Dataset</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

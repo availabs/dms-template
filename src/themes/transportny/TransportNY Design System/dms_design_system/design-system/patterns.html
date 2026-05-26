@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Patterns · TransportNY DMS Design System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- SIDENAV -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <img src="../../design_handoff_transportny_design_system/assets/nys_logo_white.svg" class="w-9 h-9 object-contain" alt="NYS"/>
+              <span class="font-display uppercase text-white text-[15px] tracking-wide truncate ml-3 flex-1">DESIGN</span>
+            </div>
+            <div class="px-4 py-2 text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-[0.2em]">System</div>
+            <div class="flex-1 py-1">
+              <a href="theme.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Theme</a>
+              <a href="grid.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Grid</a>
+              <a href="components.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Components</a>
+              <a href="patterns.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]">Patterns</a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- HERO -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mx-auto w-full max-w-[1480px] px-8 py-14">
+              <div data-dms-section="intro">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] block mb-3">// 04 · COMPOSITIONS</span>
+                <h1 class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight text-[#0F1722] mb-3">Patterns<span class="text-[#CA8A04]">.</span></h1>
+                <p class="font-proxima text-[15.5px] text-slate-600 max-w-[760px] leading-[1.65]">
+                  Multi-primitive compositions that recur across the product. Each Section below
+                  is one pattern: an empty state, a loading state, a data section with filters, a
+                  form layout. If a primitive looks wrong in composition, this is where it shows up.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ STATES ═══ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="states">
+            <div class="mx-auto w-full max-w-[1480px] px-8 flex flex-col gap-6">
+              <div data-dms-section="states-heading">
+                <div class="flex items-center gap-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">01</span><span class="h-px w-10 bg-[#CA8A04]/50"></span><h3 class="font-display font-semibold text-[20px] text-[#0F1722]">State patterns</h3></div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <!-- Empty -->
+                <div class="col-span-12 md:col-span-6" data-dms-section="empty">
+                  <div class="mb-3 flex items-center gap-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">EMPTY</span><h4 class="font-display font-medium text-[16px] text-[#0F1722]">Empty state</h4></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="px-4 py-3 border-b border-zinc-950/05 font-proxima text-[12.5px] text-slate-600">Data section with no rows · icon + message + call-to-action.</div>
+                    <div class="p-4">
+                      <div class="flex flex-col items-center text-center py-10">
+                        <div class="size-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 12C20 13.657 16.418 15 12 15C7.582 15 4 13.657 4 12"/><path d="M20 5V19C20 20.657 16.418 22 12 22C7.582 22 4 20.657 4 19V5"/></svg>
+                        </div>
+                        <div class="font-display uppercase text-[14px] tracking-wide text-[#0F1722]">No segments in this region</div>
+                        <div class="font-proxima text-[13px] text-slate-600 mt-1 max-w-sm">Pick a different region in the tone-bar, or upload a custom corridor.</div>
+                        <div class="mt-4">
+                          <button class="tny-press inline-flex items-center gap-2 px-4 h-10 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" class="size-4"><path d="M12 4V20M4 12H20"/></svg>
+                            Add corridor
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="col-span-12 md:col-span-6" data-dms-section="loading">
+                  <div class="mb-3 flex items-center gap-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">LOADING</span><h4 class="font-display font-medium text-[16px] text-[#0F1722]">Loading state</h4></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="px-4 py-3 border-b border-zinc-950/05 font-proxima text-[12.5px] text-slate-600">Skeleton placeholder while the section's data is in flight.</div>
+                    <div class="p-4">
+                      <div class="flex flex-col gap-2 py-2">
+                        <div class="h-3 rounded bg-slate-100 animate-pulse w-[90%]"></div>
+                        <div class="h-3 rounded bg-slate-100 animate-pulse w-[70%]"></div>
+                        <div class="h-3 rounded bg-slate-100 animate-pulse w-[50%]"></div>
+                        <div class="h-3 rounded bg-slate-100 animate-pulse w-[80%]"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Error -->
+                <div class="col-span-12 md:col-span-6" data-dms-section="error">
+                  <div class="mb-3 flex items-center gap-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">ERROR</span><h4 class="font-display font-medium text-[16px] text-[#0F1722]">Error state</h4></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="px-4 py-3 border-b border-zinc-950/05 font-proxima text-[12.5px] text-slate-600">Inline error with retry. Doesn't replace the whole card surface.</div>
+                    <div class="p-4">
+                      <div class="flex items-start gap-3 rounded-[6px] border border-rose-200 bg-rose-50/60 p-4">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-5 text-rose-600 mt-0.5"><path d="M6 18 18 6M6 6l12 12"/></svg>
+                        <div class="flex-1">
+                          <div class="font-display uppercase text-[13px] tracking-wide text-rose-700">Couldn't load data</div>
+                          <div class="font-proxima text-[13px] text-slate-600 mt-1">The NPMRDS gateway returned a 502. We'll retry automatically.</div>
+                          <div class="mt-3">
+                            <button class="inline-flex items-center gap-2 px-4 h-10 bg-white border border-zinc-950/15 text-slate-800 font-proxima text-[13px] font-medium rounded-[6px]">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-3.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                              Retry now
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Stale -->
+                <div class="col-span-12 md:col-span-6" data-dms-section="stale">
+                  <div class="mb-3 flex items-center gap-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">STALE</span><h4 class="font-display font-medium text-[16px] text-[#0F1722]">Stale-data state</h4></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="px-4 py-3 border-b border-zinc-950/05 font-proxima text-[12.5px] text-slate-600">Header pill + pulsing rose dot. Card still renders the last-good values.</div>
+                    <div class="p-4">
+                      <div class="flex items-center justify-between mb-3">
+                        <span class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">Hours of Excessive Delay</span>
+                        <span class="inline-flex items-center gap-1.5 text-[12px] text-rose-700"><span class="size-1.5 rounded-full bg-rose-500 dot-pulse"></span>data stale · 2h 14m old</span>
+                      </div>
+                      <div class="font-mono text-[28px] font-medium tabular-nums text-[#0F1722]/60">12,468</div>
+                      <div class="font-mono text-[12px] text-slate-500">last refresh · 06:14 ET</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ DATA SECTION ═══ -->
+          <div class="w-full bg-[#E4E8EE] py-12" data-dms-group="data-section">
+            <div class="mx-auto w-full max-w-[1480px] px-8 flex flex-col gap-6">
+              <div data-dms-section="data-heading">
+                <div class="flex items-center gap-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span><span class="h-px w-10 bg-[#CA8A04]/50"></span><h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Data section with filters</h3></div>
+              </div>
+              <div data-dms-section="data-section-full">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="size-3.5 text-slate-400 cursor-grab"><circle cx="9" cy="6" r="1.25"/><circle cx="15" cy="6" r="1.25"/><circle cx="9" cy="12" r="1.25"/><circle cx="15" cy="12" r="1.25"/><circle cx="9" cy="18" r="1.25"/><circle cx="15" cy="18" r="1.25"/></svg>
+                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">MAP-21 PM3 · MPO leaderboard</span>
+                    <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded border border-zinc-950/10 hover:bg-slate-50 text-slate-700 text-[12px]">Display
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-3"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </button>
+                    <button class="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-slate-50 text-slate-500">
+                      <svg viewBox="0 0 24 24" fill="currentColor" class="size-3.5"><circle cx="12" cy="6" r="1.25"/><circle cx="12" cy="12" r="1.25"/><circle cx="12" cy="18" r="1.25"/></svg>
+                    </button>
+                  </div>
+                  <div class="bg-slate-50/40 border-b border-zinc-950/05 px-3 py-2 flex flex-wrap items-center gap-3">
+                    <span class="font-display uppercase text-[11px] tracking-wide text-slate-500">Filters</span>
+                    <span class="px-1.5 py-0.5 bg-[#EAAD43]/15 text-amber-800 rounded-[4px] text-[11.5px]">MPO · 12 selected</span>
+                    <span class="px-1.5 py-0.5 bg-[#EAAD43]/15 text-amber-800 rounded-[4px] text-[11.5px]">Year · 2024</span>
+                    <span class="px-1.5 py-0.5 bg-[#EAAD43]/15 text-amber-800 rounded-[4px] text-[11.5px]">Road class · Interstate, NHS</span>
+                    <button class="ml-auto text-[12px] text-[#1F3F8F] hover:text-[#16307A]">+ add filter</button>
+                  </div>
+                  <table class="w-full text-[13px]">
+                    <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                      <tr>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">MPO</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">LOTTR Pass</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">TTTR</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">HED</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Δ YoY</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">NYMTC</td><td class="px-3 py-2 font-mono tabular-nums">82.1%</td><td class="px-3 py-2 font-mono tabular-nums">1.34</td><td class="px-3 py-2 font-mono tabular-nums">12,468</td><td class="px-3 py-2 font-mono tabular-nums text-slate-600">▾ 2.4%</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#10B981]/30 bg-[#10B981]/10 text-[#065F46]">PASS</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">CDTC</td><td class="px-3 py-2 font-mono tabular-nums">87.4%</td><td class="px-3 py-2 font-mono tabular-nums">1.22</td><td class="px-3 py-2 font-mono tabular-nums">1,420</td><td class="px-3 py-2 font-mono tabular-nums text-slate-600">▾ 0.8%</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#10B981]/30 bg-[#10B981]/10 text-[#065F46]">PASS</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">GBNRTC</td><td class="px-3 py-2 font-mono tabular-nums">78.9%</td><td class="px-3 py-2 font-mono tabular-nums">1.41</td><td class="px-3 py-2 font-mono tabular-nums">3,860</td><td class="px-3 py-2 font-mono tabular-nums text-slate-600">▴ 1.2%</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#EAAD43]/30 bg-[#EAAD43]/15 text-[#7C5A12]">BELOW</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">BMTS</td><td class="px-3 py-2 font-mono tabular-nums">84.2%</td><td class="px-3 py-2 font-mono tabular-nums">1.28</td><td class="px-3 py-2 font-mono tabular-nums">920</td><td class="px-3 py-2 font-mono tabular-nums text-slate-600">—</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#10B981]/30 bg-[#10B981]/10 text-[#065F46]">PASS</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">AGFTC</td><td class="px-3 py-2 font-mono tabular-nums">76.4%</td><td class="px-3 py-2 font-mono tabular-nums">1.49</td><td class="px-3 py-2 font-mono tabular-nums">640</td><td class="px-3 py-2 font-mono tabular-nums text-slate-600">▴ 4.6%</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#EF4444]/30 bg-[#EF4444]/10 text-[#991B1B]">FAIL</span></td></tr>
+                    </tbody>
+                  </table>
+                  <div class="px-3 h-10 flex items-center justify-between border-t border-zinc-950/05 bg-slate-50/40">
+                    <span class="font-mono text-[11px] uppercase tracking-wider text-slate-500">5 of 14 MPOs</span>
+                    <div class="flex items-center gap-1">
+                      <button class="px-2 py-0.5 text-[12px] text-slate-600 hover:bg-slate-100 rounded">‹</button>
+                      <button class="px-2 py-0.5 text-[12px] text-[#0F1722] bg-slate-200 rounded font-medium">1</button>
+                      <button class="px-2 py-0.5 text-[12px] text-slate-600 hover:bg-slate-100 rounded">2</button>
+                      <button class="px-2 py-0.5 text-[12px] text-slate-600 hover:bg-slate-100 rounded">3</button>
+                      <button class="px-2 py-0.5 text-[12px] text-slate-600 hover:bg-slate-100 rounded">›</button>
+                    </div>
+                  </div>
+                  <div class="w-full px-3 py-1.5 flex gap-2 text-[11px] text-slate-500 font-mono uppercase tracking-wide border-t border-zinc-950/05 bg-slate-50/40">
+                    SOURCE · <a class="text-[#1F3F8F] hover:text-[#16307A]">NPMRDS 2024 monthly</a> · LAST INGESTED 2026-05-21 06:14 ET
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ CARD GRID + FORM ═══ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="card-grid">
+            <div class="mx-auto w-full max-w-[1480px] px-8 flex flex-col gap-6">
+              <div data-dms-section="cardgrid-heading">
+                <div class="flex items-center gap-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span><span class="h-px w-10 bg-[#CA8A04]/50"></span><h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Card grid + Form pattern</h3></div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <!-- Card grid -->
+                <div class="col-span-12 md:col-span-8" data-dms-section="cardgrid">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Route analysis · templates</span>
+                    </div>
+                    <div class="p-4 grid grid-cols-2 gap-3">
+                      <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-3 transition-colors block">
+                        <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">Floating Car · 50p Speed</div>
+                        <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">NPMRDS · TEMPLATE</div>
+                        <div class="font-proxima text-[12.5px] text-slate-600 mt-2 leading-snug">Median speed by hour-of-day for a single corridor.</div>
+                      </a>
+                      <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-3 transition-colors block">
+                        <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">Reliability · LOTTR</div>
+                        <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">NPMRDS · TEMPLATE</div>
+                        <div class="font-proxima text-[12.5px] text-slate-600 mt-2 leading-snug">Pass/fail by segment for the chosen MPO.</div>
+                      </a>
+                      <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-3 transition-colors block">
+                        <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">Congestion · HED + PHED</div>
+                        <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">NPMRDS · TEMPLATE</div>
+                        <div class="font-proxima text-[12.5px] text-slate-600 mt-2 leading-snug">Hours of excessive delay, weekday peaks.</div>
+                      </a>
+                      <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-3 transition-colors block">
+                        <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">Work Zones · Active</div>
+                        <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">NPMRDS · TEMPLATE</div>
+                        <div class="font-proxima text-[12.5px] text-slate-600 mt-2 leading-snug">All TMC-overlapping work zones in the period.</div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Form -->
+                <div class="col-span-12 md:col-span-4" data-dms-section="form">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                    <div class="font-display uppercase text-[16px] tracking-tight text-[#0F1722] mb-5">Run a new report</div>
+                    <div class="flex flex-col gap-4 mb-5">
+                      <div>
+                        <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 mb-1.5">Template</div>
+                        <div class="flex items-center gap-1.5 min-h-11 px-3 rounded-[6px] border border-zinc-950/15 bg-white cursor-pointer text-[14px] text-[#0F1722]">Floating Car · 50p Speed
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-3.5 ml-auto text-slate-500"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 mb-1.5">Corridor</div>
+                        <input class="relative w-full block rounded-[6px] px-3 h-11 text-[14px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/15 bg-white" placeholder="Paste TMC list or pick on map…"/>
+                      </div>
+                      <div>
+                        <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 mb-1.5">Year range</div>
+                        <div class="flex gap-2 items-center">
+                          <input class="w-24 rounded-[6px] px-3 h-11 text-[14px] border border-zinc-950/15 bg-white" value="2020"/>
+                          <span class="font-mono text-slate-400">→</span>
+                          <input class="w-24 rounded-[6px] px-3 h-11 text-[14px] border border-zinc-950/15 bg-white" value="2024"/>
+                        </div>
+                      </div>
+                      <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <span class="relative inline-flex h-5 w-9 items-center rounded-full bg-[#1F3F8F]"><span class="inline-block h-4 w-4 rounded-full bg-white shadow translate-x-4"></span></span>
+                        <span class="font-proxima text-[13px] text-slate-700">Include MPO benchmarks</span>
+                      </label>
+                    </div>
+                    <div class="flex gap-2 justify-end">
+                      <button class="inline-flex items-center gap-2 px-3 h-9 hover:bg-slate-100 text-slate-600 font-proxima text-[13px] rounded-[6px]">Cancel</button>
+                      <button class="tny-press inline-flex items-center gap-2 px-4 h-10 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                        Run report
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ AUTH + SECTION TOOLBAR ═══ -->
+          <div class="w-full bg-[#E4E8EE] py-12" data-dms-group="auth-toolbar">
+            <div class="mx-auto w-full max-w-[1480px] px-8 flex flex-col gap-6">
+              <div data-dms-section="auth-heading">
+                <div class="flex items-center gap-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span><span class="h-px w-10 bg-[#CA8A04]/50"></span><h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Auth + admin chrome</h3></div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-6" data-dms-section="auth">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-8">
+                    <div class="font-display uppercase text-[20px] tracking-tight text-[#0F1722] mb-6">Sign in</div>
+                    <div class="flex flex-col gap-4 mb-5">
+                      <div><div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 mb-1.5">Email</div><input type="email" class="relative w-full block rounded-[6px] px-3 h-11 text-[14px] border border-zinc-950/15 bg-white" placeholder="you@dot.ny.gov"/></div>
+                      <div><div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600 mb-1.5">Password</div><input type="password" class="relative w-full block rounded-[6px] px-3 h-11 text-[14px] border border-zinc-950/15 bg-white" placeholder="••••••••"/></div>
+                    </div>
+                    <button class="tny-press inline-flex items-center gap-2 px-4 h-10 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px] w-full justify-center">Sign in</button>
+                    <div class="flex items-center gap-3 my-5 text-[11px] font-mono uppercase tracking-[0.18em] text-slate-400"><span class="flex-1 h-px bg-zinc-950/10"></span>or<span class="flex-1 h-px bg-zinc-950/10"></span></div>
+                    <button class="w-full h-11 inline-flex items-center justify-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white hover:bg-slate-50 font-proxima text-[13.5px] text-slate-800">Continue with NY.gov ID</button>
+                  </div>
+                </div>
+
+                <div class="col-span-12 md:col-span-6" data-dms-section="section-toolbar">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 bg-slate-50 border-b border-zinc-950/05 font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">Section toolbar (edit mode)</div>
+                    <div class="p-4 bg-[#ECEEF2]">
+                      <div class="relative">
+                        <div class="absolute inset-0 border border-dashed border-[#1F3F8F]/40 rounded-[6px] pointer-events-none"></div>
+                        <div class="absolute -top-7 left-0 right-0 flex items-center gap-2">
+                          <span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 text-[#0F2D4D]">drag</span>
+                          <span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#37576B]/20 bg-[#37576B]/10 text-[#0F2D4D]">SECTION · KPI · 1/3</span>
+                          <div class="flex-1"></div>
+                          <button class="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-slate-50 text-slate-500 bg-white border border-zinc-950/10">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-3.5"><path d="M16.21 4.98L17.62 3.58C18.39 2.81 19.65 2.81 20.42 3.58C21.19 4.35 21.19 5.61 20.42 6.38L19.02 7.79M16.21 4.98L10.98 10.22"/></svg>
+                          </button>
+                          <button class="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-slate-50 text-slate-500 bg-white border border-zinc-950/10">
+                            <svg viewBox="0 0 24 24" fill="currentColor" class="size-3.5"><circle cx="12" cy="6" r="1.25"/><circle cx="12" cy="12" r="1.25"/><circle cx="12" cy="18" r="1.25"/></svg>
+                          </button>
+                        </div>
+                        <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 mt-4">
+                          <div class="font-display uppercase text-[12.5px] tracking-[0.04em] text-slate-500">Total Compliance</div>
+                          <div class="font-mono text-[28px] font-medium tabular-nums text-[#0F1722]">86.4%</div>
+                          <div class="font-proxima text-[12px] text-slate-500">on target ≥ 82%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mx-auto w-full max-w-[1480px] px-8 py-4 flex items-center justify-between text-[13px]">
+              <div class="flex gap-6"><a class="tny-link">User Guide</a><a class="tny-link">API Guide</a><a class="tny-link">Data Dictionary</a></div>
+              <span class="text-slate-500 font-mono text-[11px]">© NYSDOT · DMS v0.1</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

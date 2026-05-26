@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editing Issue 47 · The Drift · Lingua Page Editor</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* =========================================================================
+       Page-local CSS for the page-editor canvas
+       -------------------------------------------------------------------------
+       The childWrapper here is a three-pane grid: left section-list, middle
+       preview, right inspector. The chrome is dense — but the breathing room
+       between panes, the soft shadows, and the generous radii keep it from
+       feeling like Excel.
+       ========================================================================= */
+
+    /* ---------- Editor toolbar (replaces TopNav content) ---------- */
+    .editor-topnav-inner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      padding: 0 var(--space-5);
+      height: 56px;
+      max-width: 100%;
+      margin: 0;
+      border-bottom: 1px solid var(--color-border);
+      background: rgba(255, 255, 255, 0.94);
+    }
+    .editor-breadcrumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+      letter-spacing: 0;
+    }
+    .editor-breadcrumb a { color: var(--color-mute); text-decoration: none; transition: color var(--dur-snap) var(--ease-snap); }
+    .editor-breadcrumb a:hover { color: var(--color-ink-soft); }
+    .editor-breadcrumb .sep { color: var(--color-border-strong); }
+    .editor-breadcrumb .current { color: var(--color-ink); font-weight: 500; }
+    .editor-spacer { flex: 1; }
+    .editor-save-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      letter-spacing: 0.04em;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+    }
+    .editor-save-status .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-success);
+      box-shadow: 0 0 0 3px rgba(20, 184, 129, 0.16);
+    }
+    .editor-iconbtn {
+      width: 30px; height: 30px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-ink-soft);
+      cursor: pointer;
+      transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+    }
+    .editor-iconbtn:hover { border-color: var(--color-border-strong); color: var(--color-ink); background: var(--color-surface-soft); }
+    .editor-iconbtn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ---------- Three-pane shell ---------- */
+    .editor-shell {
+      display: grid;
+      grid-template-columns: 288px minmax(0, 1fr) 360px;
+      gap: 0;
+      align-items: stretch;
+      min-height: calc(100vh - 36px - 56px);
+      background: var(--color-surface-soft);
+    }
+    @media (max-width: 1280px) {
+      .editor-shell { grid-template-columns: 256px minmax(0, 1fr) 320px; }
+    }
+    @media (max-width: 1024px) {
+      .editor-shell { grid-template-columns: 1fr; min-height: auto; }
+      .editor-pane--left, .editor-pane--right { border: 0; max-height: none; position: static; }
+    }
+
+    .editor-pane {
+      background: var(--color-surface);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .editor-pane--left {
+      border-right: 1px solid var(--color-border);
+      background: var(--color-surface-soft);
+    }
+    .editor-pane--middle {
+      background: var(--color-surface-soft);
+      padding: var(--space-7) var(--space-6) var(--space-9);
+      overflow-x: auto;
+    }
+    .editor-pane--right {
+      border-left: 1px solid var(--color-border);
+      background: var(--color-surface);
+      position: sticky;
+      top: 92px;
+      align-self: flex-start;
+      max-height: calc(100vh - 36px - 56px);
+      overflow-y: auto;
+    }
+
+    /* ---------- Pane headers (the eyebrow strip) ---------- */
+    .pane-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: 14px var(--space-4) 12px;
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+    .editor-pane--left .pane-header { background: var(--color-surface-soft); }
+    .pane-header .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .pane-header .count {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-ink-soft);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- Left pane: section list ---------- */
+    .section-list { padding: var(--space-3) var(--space-2); flex: 1; }
+    .section-row {
+      display: grid;
+      grid-template-columns: 16px 56px 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      margin: 1px 0;
+      transition: background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+    }
+    .section-row:hover { background: var(--color-surface); }
+    .section-row.is-selected {
+      background: var(--color-accent-soft);
+      border-left-color: var(--color-accent);
+    }
+    .section-row .handle {
+      color: var(--color-mute-soft);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1;
+      cursor: grab;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .section-row:hover .handle { color: var(--color-ink-soft); }
+    .section-row .type-chip {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 5px;
+      border-radius: var(--radius-sm);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      color: var(--color-mute);
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    .section-row .type-chip.tc-cards    { color: var(--color-accent); border-color: rgba(59,91,255,0.20); background: var(--color-accent-soft); }
+    .section-row .type-chip.tc-header   { color: var(--color-ink); border-color: var(--color-border-strong); background: var(--color-surface); }
+    .section-row .type-chip.tc-lexical  { color: var(--color-ink-soft); border-color: var(--color-border-strong); }
+    .section-row .type-chip.tc-table    { color: var(--color-success); border-color: rgba(20,184,129,0.30); background: var(--color-success-soft); }
+    .section-row .type-chip.tc-map      { color: #946A00; border-color: rgba(255,200,61,0.40); background: var(--color-margin-soft); }
+    .section-row .type-chip.tc-form     { color: var(--color-signal); border-color: rgba(255,86,48,0.20); background: var(--color-signal-soft); }
+    .section-row .section-name {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-ink-soft);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .section-row.is-selected .section-name { color: var(--color-ink); }
+
+    .add-section-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: calc(100% - 16px);
+      margin: var(--space-3) 8px var(--space-3);
+      padding: 9px 12px;
+      border: 1px dashed var(--color-border-strong);
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--color-mute);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+    }
+    .add-section-btn:hover { border-color: var(--color-accent); color: var(--color-accent); background: var(--color-accent-soft); }
+
+    .left-footer {
+      padding: var(--space-3) var(--space-4);
+      border-top: 1px solid var(--color-border);
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .left-footer .pile { display: inline-flex; gap: 4px; }
+    .left-footer .pile span { width: 18px; height: 4px; border-radius: 2px; background: var(--color-border); }
+    .left-footer .pile span.on { background: var(--color-accent); }
+
+    /* ---------- Middle pane: preview ---------- */
+    .preview-eyebrow {
+      max-width: 800px;
+      margin: 0 auto var(--space-5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      letter-spacing: 0.04em;
+    }
+    .preview-eyebrow .left { display: inline-flex; align-items: center; gap: var(--space-2); }
+    .preview-eyebrow .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+    }
+    .preview-eyebrow .pill .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--color-success); }
+
+    .preview-canvas {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    /* Sections inside the preview */
+    .pv-section {
+      padding: var(--space-9) var(--space-9) var(--space-9);
+      border-bottom: 1px solid var(--color-border-subtle);
+      position: relative;
+    }
+    .pv-section:last-child { border-bottom: 0; }
+    .pv-section + .pv-section { padding-top: var(--space-9); }
+
+    /* Selected section: 2px accent outline + floating toolbar */
+    .pv-section.is-selected {
+      outline: 2px solid var(--color-accent);
+      outline-offset: -2px;
+      background: linear-gradient(180deg, rgba(59,91,255,0.015) 0%, transparent 40%);
+    }
+    .pv-section.is-selected::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: 0;
+    }
+
+    /* Floating toolbar above the selected section */
+    .pv-toolbar {
+      position: absolute;
+      top: -34px;
+      left: -2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      height: 30px;
+      background: var(--color-ink);
+      border-radius: var(--radius-md);
+      padding: 0 4px;
+      box-shadow: var(--shadow-md);
+      color: var(--color-surface);
+      font-family: var(--font-sans);
+      z-index: 5;
+    }
+    .pv-toolbar .grip {
+      width: 22px; height: 30px;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.6);
+      cursor: grab;
+      font-family: var(--font-mono);
+      font-size: 14px;
+    }
+    .pv-toolbar .grip:hover { color: var(--color-surface); }
+    .pv-toolbar .divider { width: 1px; height: 16px; background: rgba(255,255,255,0.15); margin: 0 2px; }
+    .pv-toolbar .title-input {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--color-surface);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      width: 200px;
+      outline: none;
+      transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+    }
+    .pv-toolbar .title-input:hover { background: rgba(255,255,255,0.06); }
+    .pv-toolbar .title-input:focus { border-color: var(--color-accent); background: rgba(255,255,255,0.10); }
+    .pv-toolbar .designator {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: rgba(255,255,255,0.65);
+      padding: 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .pv-toolbar .designator .accent { color: #79B8FF; }
+    .pv-toolbar .tb-btn {
+      width: 26px; height: 22px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent;
+      border: 0;
+      color: rgba(255,255,255,0.7);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+    }
+    .pv-toolbar .tb-btn:hover { background: rgba(255,255,255,0.10); color: var(--color-surface); }
+
+    /* Header section content */
+    .masthead-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-accent);
+      margin-bottom: var(--space-3);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .masthead-eyebrow .mark { width: 6px; height: 6px; background: var(--color-accent); border-radius: var(--radius-sm); }
+    .masthead-title {
+      font-family: var(--font-display);
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1.04;
+      letter-spacing: -0.035em;
+      color: var(--color-ink);
+      margin: 0 0 var(--space-4);
+      text-wrap: balance;
+    }
+    .masthead-lede {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      line-height: 1.5;
+      color: var(--color-ink-soft);
+      max-width: 56ch;
+      margin: 0 0 var(--space-5);
+    }
+    .masthead-byline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex; align-items: center; gap: var(--space-3);
+    }
+    .masthead-byline .sep { color: var(--color-border-strong); }
+
+    /* Cards section grid */
+    .pv-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+    .pv-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      display: flex; flex-direction: column; gap: var(--space-2);
+    }
+    .pv-card .nrow {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: var(--space-2);
+    }
+    .pv-card .nrow .num { color: var(--color-accent); font-weight: 500; }
+    .pv-card .ptitle {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.012em;
+      color: var(--color-ink);
+      margin: 0;
+      text-wrap: balance;
+    }
+    .pv-card .pblurb {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--color-ink-soft);
+      margin: 0;
+    }
+    .pv-card .pmeta {
+      margin-top: auto;
+      padding-top: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex; justify-content: space-between; gap: 6px;
+    }
+
+    /* Lexical (prose) section */
+    .pv-prose {
+      max-width: 64ch;
+    }
+    .pv-prose p {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--color-ink-soft);
+      margin: 0 0 var(--space-4);
+    }
+    .pv-prose p:last-child { margin-bottom: 0; }
+    .pv-prose p .em { font-style: italic; color: var(--color-ink); }
+
+    /* ---------- Right pane: inspector ---------- */
+    .insp-panel {
+      border-bottom: 1px solid var(--color-border);
+    }
+    .insp-panel:last-of-type { border-bottom: 0; }
+    .insp-panel__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 11px var(--space-4);
+      cursor: pointer;
+      transition: background var(--dur-snap) var(--ease-snap);
+    }
+    .insp-panel__head:hover { background: var(--color-surface-soft); }
+    .insp-panel__title {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-ink);
+      letter-spacing: -0.005em;
+    }
+    .insp-panel__title .chev {
+      color: var(--color-mute);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      width: 12px; display: inline-flex; justify-content: center;
+    }
+    .insp-panel__hint {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .insp-panel__body {
+      padding: 4px var(--space-4) var(--space-4);
+    }
+    .insp-panel--collapsed .insp-panel__body { display: none; }
+
+    /* Source pill */
+    .src-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px 4px 6px;
+      border-radius: var(--radius-md);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-ink);
+    }
+    .src-pill .icn { width: 14px; height: 14px; color: var(--color-accent); }
+    .src-pill .icn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Column rows in inspector */
+    .col-list { display: flex; flex-direction: column; }
+    .col-row {
+      display: grid;
+      grid-template-columns: 14px 1fr 48px 56px 28px;
+      gap: 6px;
+      align-items: center;
+      padding: 7px 4px;
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .col-row:last-child { border-bottom: 0; }
+    .col-row .handle {
+      color: var(--color-mute-soft);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      cursor: grab;
+      text-align: center;
+    }
+    .col-row .cname {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .col-row .cname .sub {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+    .col-row .ctype {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-align: center;
+      padding: 2px 4px;
+      border-radius: var(--radius-sm);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      color: var(--color-mute);
+      text-transform: lowercase;
+    }
+    .col-row .ctype.t-image { color: var(--color-accent); background: var(--color-accent-soft); border-color: rgba(59,91,255,0.20); }
+    .col-row .ctype.t-link  { color: var(--color-success); background: var(--color-success-soft); border-color: rgba(20,184,129,0.25); }
+    .col-row .ctype.t-num   { color: #946A00; background: var(--color-margin-soft); border-color: rgba(255,200,61,0.40); }
+    .col-row .span {
+      display: inline-flex; align-items: center; gap: 0;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      height: 22px;
+    }
+    .col-row .span button {
+      width: 18px; height: 22px;
+      border: 0; background: var(--color-surface);
+      color: var(--color-mute);
+      font-family: var(--font-mono);
+      font-size: 12px; line-height: 1;
+      cursor: pointer;
+      padding: 0;
+    }
+    .col-row .span button:hover { color: var(--color-ink); background: var(--color-surface-soft); }
+    .col-row .span .val {
+      width: 18px; height: 22px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-ink);
+      background: var(--color-surface-soft);
+      border-left: 1px solid var(--color-border);
+      border-right: 1px solid var(--color-border);
+      font-variant-numeric: tabular-nums;
+    }
+    .col-row .vis { display: inline-flex; align-items: center; justify-content: center; }
+    .col-row .ling-switch--xs { width: 26px; height: 14px; padding: 1px; }
+    .col-row .ling-switch--xs::after { width: 12px; height: 12px; }
+    .col-row .ling-switch--xs.ling-switch--on::after { transform: translateX(12px); }
+
+    /* Settings line */
+    .insp-settings-line {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-ink-soft);
+      line-height: 1.6;
+      letter-spacing: 0.02em;
+    }
+    .insp-settings-line .k { color: var(--color-mute); }
+    .insp-settings-line .v { color: var(--color-accent); }
+    .insp-settings-line .sep { color: var(--color-border-strong); margin: 0 4px; }
+
+    .danger-strip {
+      padding: var(--space-4);
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface-soft);
+      position: sticky;
+      bottom: 0;
+    }
+    .btn-delete {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 12px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-signal);
+      color: var(--color-signal);
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+    }
+    .btn-delete:hover { background: var(--color-signal); color: var(--color-surface); }
+
+    /* ---------- Footer ---------- */
+    .editor-footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-5);
+      flex-wrap: wrap;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      letter-spacing: 0.02em;
+    }
+    .editor-footer-row .keys { display: inline-flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+    .editor-footer-row .kbd {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-ink-soft);
+    }
+    .editor-footer-row .kbd kbd {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-bottom-width: 2px;
+      border-radius: var(--radius-sm);
+      padding: 1px 5px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-ink);
+      box-shadow: var(--shadow-sm);
+    }
+    .editor-footer-links {
+      display: flex; gap: var(--space-4); flex-wrap: wrap;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+    }
+    .editor-footer-links a { color: var(--color-mute); text-decoration: none; transition: color var(--dur-snap) var(--ease-snap); }
+    .editor-footer-links a:hover { color: var(--color-accent); }
+    .editor-footer-links .group-label { color: var(--color-ink-soft); margin-right: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required on every page per design system skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="../design-system/theme.html">theme</a>
+    <a class="lingua-metanav__link" href="../design-system/layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="../design-system/grid.html">grid</a>
+    <a class="lingua-metanav__link" href="../design-system/components.html">components</a>
+    <a class="lingua-metanav__link" href="../design-system/patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="product-site-overview.html">site</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<!-- LAYOUT: "app" — TopNav + no sidenav (the editor is its own three-pane shell) -->
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TOPNAV — editor toolbar (brand + breadcrumb + save + Preview + Publish) -->
+      <header class="dms-topnav">
+        <div class="editor-topnav-inner">
+          <a class="dms-topnav-brand" href="product-site-overview.html" style="font-size: 16px;">
+            L<span class="diacritic">ī</span>ngua<span class="designator">editor</span>
+          </a>
+
+          <div class="editor-breadcrumb">
+            <a href="product-site-overview.html">The Drift</a>
+            <span class="sep">/</span>
+            <a href="product-site-overview.html">Pages</a>
+            <span class="sep">/</span>
+            <span class="current">Issue 47</span>
+          </div>
+
+          <div class="editor-spacer"></div>
+
+          <span class="editor-save-status">
+            <span class="dot"></span>
+            <span>Saved · 2s ago</span>
+          </span>
+
+          <button class="editor-iconbtn" title="Undo">
+            <!-- icon: Undo -->
+            <svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v0a5 5 0 0 1-5 5h-4"/></svg>
+          </button>
+          <button class="editor-iconbtn" title="Redo">
+            <!-- icon: Redo -->
+            <svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 0 0-5 5v0a5 5 0 0 0 5 5h4"/></svg>
+          </button>
+
+          <a class="ling-btn ling-btn--ghost ling-btn--sm" href="#preview">
+            <!-- icon: Eye -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview
+          </a>
+          <a class="ling-btn ling-btn--primary ling-btn--sm" href="#publish">
+            Publish
+            <!-- icon: ArrowUp -->
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          </a>
+        </div>
+      </header>
+
+      <!-- CHILD WRAPPER — three-pane editor shell -->
+      <div class="dms-layout-child">
+        <div class="editor-shell">
+
+          <!-- ================================================================
+               LEFT PANE — Section list
+               ================================================================ -->
+          <aside class="editor-pane editor-pane--left">
+            <div class="pane-header">
+              <span class="label">
+                <!-- icon: Layers -->
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                Sections
+                <span class="count">10</span>
+              </span>
+              <button class="editor-iconbtn" style="width: 24px; height: 24px;" title="Add section">
+                <!-- icon: Plus -->
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+            </div>
+
+            <div class="section-list">
+              <div class="section-row">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-header">HEADER</span>
+                <span class="section-name">Masthead</span>
+              </div>
+              <div class="section-row">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-lexical">LEXICAL</span>
+                <span class="section-name">Editor&rsquo;s note</span>
+              </div>
+              <div class="section-row">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-table">TABLE</span>
+                <span class="section-name">Contributors index</span>
+              </div>
+              <div class="section-row is-selected">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-cards">CARDS</span>
+                <span class="section-name">The folio</span>
+              </div>
+              <div class="section-row">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-lexical">LEXICAL</span>
+                <span class="section-name">From the archives</span>
+              </div>
+              <div class="section-row">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-cards">CARDS</span>
+                <span class="section-name">Notes &amp; marginalia</span>
+              </div>
+              <div class="section-row">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-map">MAP</span>
+                <span class="section-name">Where the issue traveled</span>
+              </div>
+              <div class="section-row">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-lexical">LEXICAL</span>
+                <span class="section-name">Letters in response</span>
+              </div>
+              <div class="section-row">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-form">FORM</span>
+                <span class="section-name">Subscribe band</span>
+              </div>
+              <div class="section-row">
+                <span class="handle">&#9776;</span>
+                <span class="type-chip tc-lexical">LEXICAL</span>
+                <span class="section-name">Colophon</span>
+              </div>
+
+              <button class="add-section-btn">+&nbsp;&nbsp;Add section</button>
+            </div>
+
+            <div class="left-footer">
+              <span>10 sections · 4 sources</span>
+              <span class="pile" title="section completion"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span></span>
+            </div>
+          </aside>
+
+          <!-- ================================================================
+               MIDDLE PANE — Live preview
+               ================================================================ -->
+          <main class="editor-pane editor-pane--middle">
+
+            <div class="preview-eyebrow">
+              <span class="left">
+                <span class="pill"><span class="dot"></span>Preview&nbsp;·&nbsp;desktop&nbsp;·&nbsp;1200px&nbsp;·&nbsp;live data</span>
+              </span>
+              <span>showing 3 of 10 sections · scroll for more</span>
+            </div>
+
+            <div class="preview-canvas">
+
+              <!-- PREVIEW SECTION 1: Header (Masthead) -->
+              <div class="pv-section">
+                <div class="masthead-eyebrow"><span class="mark"></span>The Drift · Issue 47 · May 2026</div>
+                <h1 class="masthead-title">A field guide to durable systems.</h1>
+                <p class="masthead-lede">
+                  Ten essays on the things software keeps having to relearn — protocols, file
+                  formats, plain text, and the long quiet work of writing for the people who
+                  come after you.
+                </p>
+                <div class="masthead-byline">
+                  <span>EDITED · M. TOWNSEND</span>
+                  <span class="sep">·</span>
+                  <span>PUBLISHED · 2026-05-21</span>
+                  <span class="sep">·</span>
+                  <span>READ · 38 MIN</span>
+                </div>
+              </div>
+
+              <!-- PREVIEW SECTION 2: Cards (SELECTED — has the accent outline + floating toolbar) -->
+              <div class="pv-section is-selected">
+
+                <!-- Floating toolbar above the selected section -->
+                <div class="pv-toolbar">
+                  <span class="grip">&#9776;</span>
+                  <span class="divider"></span>
+                  <input class="title-input" value="The folio" aria-label="Section title">
+                  <span class="divider"></span>
+                  <span class="designator"><span class="accent">Cards</span> · 3 cols · 6 rows</span>
+                  <span class="divider"></span>
+                  <button class="tb-btn" title="Duplicate">&#10063;</button>
+                  <button class="tb-btn" title="Hide">&#9678;</button>
+                  <button class="tb-btn" title="More">&middot;&middot;&middot;</button>
+                </div>
+
+                <div class="pv-cards">
+                  <article class="pv-card">
+                    <div class="nrow"><span class="num">Nº 01</span><span>essay</span></div>
+                    <h3 class="ptitle">Why the row format won the long argument with the schema.</h3>
+                    <p class="pblurb">A short defense of representational primacy — and the
+                      decade of mistakes that taught us to stop fighting it.</p>
+                    <div class="pmeta"><span>L. AMARI</span><span>14 MIN</span></div>
+                  </article>
+                  <article class="pv-card">
+                    <div class="nrow"><span class="num">Nº 02</span><span>essay</span></div>
+                    <h3 class="ptitle">Protocols outlive products. Write yours down.</h3>
+                    <p class="pblurb">Notes on documenting wire formats so the next maintainer
+                      can read what the current one was trying to say.</p>
+                    <div class="pmeta"><span>D. KORE</span><span>9 MIN</span></div>
+                  </article>
+                  <article class="pv-card">
+                    <div class="nrow"><span class="num">Nº 03</span><span>essay</span></div>
+                    <h3 class="ptitle">The migration that never happens: against the rewrite reflex.</h3>
+                    <p class="pblurb">In which the author admits, at length, that the legacy
+                      system was usually right and the rewrite usually wasn&rsquo;t.</p>
+                    <div class="pmeta"><span>S. PERETZ</span><span>11 MIN</span></div>
+                  </article>
+                </div>
+              </div>
+
+              <!-- PREVIEW SECTION 3: Lexical (prose) -->
+              <div class="pv-section">
+                <div class="pv-prose">
+                  <p>
+                    The first three essays of the issue circle a single argument: <span class="em">the
+                    representations a system commits to are more durable than the code that
+                    manipulates them.</span> A team will rewrite its database client three times
+                    before it considers changing the on-the-wire format. A protocol that has
+                    seven implementations will not be retired, even if every implementation
+                    is undermaintained. The shape is sticky; the code is fluid.
+                  </p>
+                  <p>
+                    The essays in the rest of the issue take this seriously and look at what
+                    follows from it. If the format outlives the code, the format deserves the
+                    same care that the code gets — versioning, documentation, deprecation
+                    plans, ergonomics, taste. The plain-text people figured this out a long
+                    time ago. The rest of us are still catching up.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </main>
+
+          <!-- ================================================================
+               RIGHT PANE — Inspector
+               ================================================================ -->
+          <aside class="editor-pane editor-pane--right">
+            <div class="pane-header">
+              <span class="label">
+                <!-- icon: Sliders -->
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                Inspect · Cards · Section 4
+              </span>
+              <span class="insp-panel__hint">read-write</span>
+            </div>
+
+            <!-- PANEL: Source (collapsed) -->
+            <div class="insp-panel insp-panel--collapsed">
+              <div class="insp-panel__head">
+                <span class="insp-panel__title"><span class="chev">&#9656;</span>Source</span>
+                <span class="src-pill">
+                  <span class="icn">
+                    <!-- icon: Database -->
+                    <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg>
+                  </span>
+                  essays_index
+                </span>
+              </div>
+              <div class="insp-panel__body">
+                <div class="insp-settings-line">
+                  <span class="k">type:</span> <span class="v">dataset</span><span class="sep">·</span>
+                  <span class="k">rows:</span> <span class="v">6</span><span class="sep">·</span>
+                  <span class="k">view:</span> <span class="v">v3_published</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL: Columns (EXPANDED) -->
+            <div class="insp-panel">
+              <div class="insp-panel__head">
+                <span class="insp-panel__title"><span class="chev">&#9662;</span>Columns</span>
+                <span class="insp-panel__hint">6 · drag to reorder</span>
+              </div>
+              <div class="insp-panel__body">
+                <div class="col-list">
+
+                  <div class="col-row">
+                    <span class="handle">&#8285;&#8285;</span>
+                    <span class="cname">number<span class="sub">cards.num</span></span>
+                    <span class="ctype t-num">number</span>
+                    <span class="span"><button>&minus;</button><span class="val">1</span><button>+</button></span>
+                    <span class="vis"><span class="ling-switch ling-switch--xs ling-switch--on" aria-label="visible"></span></span>
+                  </div>
+
+                  <div class="col-row">
+                    <span class="handle">&#8285;&#8285;</span>
+                    <span class="cname">title<span class="sub">cards.heading</span></span>
+                    <span class="ctype">text</span>
+                    <span class="span"><button>&minus;</button><span class="val">3</span><button>+</button></span>
+                    <span class="vis"><span class="ling-switch ling-switch--xs ling-switch--on" aria-label="visible"></span></span>
+                  </div>
+
+                  <div class="col-row">
+                    <span class="handle">&#8285;&#8285;</span>
+                    <span class="cname">blurb<span class="sub">cards.body</span></span>
+                    <span class="ctype">text</span>
+                    <span class="span"><button>&minus;</button><span class="val">3</span><button>+</button></span>
+                    <span class="vis"><span class="ling-switch ling-switch--xs ling-switch--on" aria-label="visible"></span></span>
+                  </div>
+
+                  <div class="col-row">
+                    <span class="handle">&#8285;&#8285;</span>
+                    <span class="cname">author<span class="sub">cards.meta_left</span></span>
+                    <span class="ctype">text</span>
+                    <span class="span"><button>&minus;</button><span class="val">2</span><button>+</button></span>
+                    <span class="vis"><span class="ling-switch ling-switch--xs ling-switch--on" aria-label="visible"></span></span>
+                  </div>
+
+                  <div class="col-row">
+                    <span class="handle">&#8285;&#8285;</span>
+                    <span class="cname">read_minutes<span class="sub">cards.meta_right</span></span>
+                    <span class="ctype t-num">number</span>
+                    <span class="span"><button>&minus;</button><span class="val">1</span><button>+</button></span>
+                    <span class="vis"><span class="ling-switch ling-switch--xs ling-switch--on" aria-label="visible"></span></span>
+                  </div>
+
+                  <div class="col-row">
+                    <span class="handle">&#8285;&#8285;</span>
+                    <span class="cname">cover_image<span class="sub">cards.image</span></span>
+                    <span class="ctype t-image">image</span>
+                    <span class="span"><button>&minus;</button><span class="val">3</span><button>+</button></span>
+                    <span class="vis"><span class="ling-switch ling-switch--xs" aria-label="hidden"></span></span>
+                  </div>
+
+                  <div class="col-row">
+                    <span class="handle">&#8285;&#8285;</span>
+                    <span class="cname">permalink<span class="sub">cards.link</span></span>
+                    <span class="ctype t-link">link</span>
+                    <span class="span"><button>&minus;</button><span class="val">0</span><button>+</button></span>
+                    <span class="vis"><span class="ling-switch ling-switch--xs" aria-label="hidden"></span></span>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL: Display (collapsed) -->
+            <div class="insp-panel insp-panel--collapsed">
+              <div class="insp-panel__head">
+                <span class="insp-panel__title"><span class="chev">&#9656;</span>Display</span>
+                <span class="insp-panel__hint">grid · 3 cols</span>
+              </div>
+              <div class="insp-panel__body">
+                <div class="insp-settings-line">
+                  <span class="k">cardsGridSize:</span> <span class="v">3</span>
+                  <span class="sep">·</span>
+                  <span class="k">valueFontStyle:</span> <span class="v">prose</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL: Filter (collapsed) -->
+            <div class="insp-panel insp-panel--collapsed">
+              <div class="insp-panel__head">
+                <span class="insp-panel__title"><span class="chev">&#9656;</span>Filter</span>
+                <span class="insp-panel__hint">1 rule active</span>
+              </div>
+              <div class="insp-panel__body">
+                <div class="insp-settings-line">
+                  <span class="k">where</span> <span class="v">issue</span> <span class="k">=</span> <span class="v">"47"</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL: Sort (collapsed) -->
+            <div class="insp-panel insp-panel--collapsed">
+              <div class="insp-panel__head">
+                <span class="insp-panel__title"><span class="chev">&#9656;</span>Sort</span>
+                <span class="insp-panel__hint">by num · asc</span>
+              </div>
+              <div class="insp-panel__body">
+                <div class="insp-settings-line">
+                  <span class="k">order_by:</span> <span class="v">cards.num</span>
+                  <span class="sep">·</span>
+                  <span class="k">dir:</span> <span class="v">asc</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Danger zone -->
+            <div class="danger-strip">
+              <button class="btn-delete">
+                <!-- icon: Trash -->
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+                Delete section
+              </button>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+
+      <!-- FOOTER — slim editor footer with version + deliverable link block -->
+      <footer class="dms-group-footer" style="margin-top: 0;">
+        <div class="dms-group-footer-inner">
+          <div class="editor-footer-row">
+            <div class="keys">
+              <span>Lingua editor · v0.2.0</span>
+              <span class="kbd"><kbd>&#8984;</kbd>+<kbd>S</kbd>&nbsp;Speak</span>
+              <span class="kbd"><kbd>&#8984;</kbd>+<kbd>K</kbd>&nbsp;Set</span>
+              <span class="kbd"><kbd>&#8984;</kbd>+<kbd>P</kbd>&nbsp;Render</span>
+              <span class="kbd"><kbd>&#8984;</kbd>+<kbd>Enter</kbd>&nbsp;Publish</span>
+            </div>
+            <span>session · 18m 42s · MT&nbsp;@ Linwood</span>
+          </div>
+
+          <div class="editor-footer-row">
+            <div class="editor-footer-links">
+              <span class="group-label">System</span>
+              <a href="../design-system/theme.html">theme</a>
+
+              <a href="../design-system/layouts.html">layouts</a>
+              <a href="../design-system/grid.html">grid</a>
+              <a href="../design-system/components.html">components</a>
+              <a href="../design-system/patterns.html">patterns</a>
+            </div>
+            <div class="editor-footer-links">
+              <span class="group-label">Pages</span>
+              <a href="marketing-homepage.html">home</a>
+              <a href="marketing-comparison.html">compare</a>
+              <a href="marketing-theory.html">theory</a>
+              <a href="docs-page.html">docs</a>
+              <a href="civic-overview.html">civic</a>
+              <a href="product-site-overview.html">site</a>
+              <a href="product-page-editor.html">editor</a>
+              <a href="product-dataset-view.html">dataset</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

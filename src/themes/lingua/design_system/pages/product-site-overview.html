@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Drift — Site Overview · Lingua</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ============================================================
+       Page-local styling — only what isn't covered by _dms-page.css
+       ============================================================ */
+
+    /* Mono breadcrumb */
+    .breadcrumb {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin-bottom: var(--space-5);
+    }
+    .breadcrumb .sep { color: var(--color-border-strong); }
+    .breadcrumb a { color: var(--color-mute); text-decoration: none; transition: color var(--dur-snap) var(--ease-snap); }
+    .breadcrumb a:hover { color: var(--color-ink); }
+    .breadcrumb .current { color: var(--color-ink-soft); }
+
+    /* Site title accent — the diacritic-mark device */
+    .site-title { display: inline; }
+    .site-title .accent { color: var(--color-accent); }
+
+    /* Page title row — title + actions */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+      flex-wrap: wrap;
+    }
+
+    /* TopNav — site selector pill */
+    .site-selector {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 6px 12px;
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-ink);
+      cursor: pointer;
+      transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+    }
+    .site-selector:hover { border-color: var(--color-border-strong); background: var(--color-surface); }
+    .site-selector .domain {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      padding-right: var(--space-2);
+      border-right: 1px solid var(--color-border);
+      margin-right: 2px;
+    }
+    .site-selector .caret { color: var(--color-mute); font-size: 10px; }
+    .site-selector .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--color-success);
+      box-shadow: 0 0 0 2px var(--color-success-soft);
+    }
+
+    /* TopNav — user widget + theme toggle */
+    .top-utility {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .top-utility .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px; height: 32px;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: var(--radius-md);
+      color: var(--color-mute);
+      cursor: pointer;
+      transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+    }
+    .top-utility .icon-btn:hover { background: var(--color-surface-sunken); color: var(--color-ink); }
+    .top-utility .icon-btn svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.75; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .top-utility .user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 4px 10px 4px 4px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-ink);
+      cursor: pointer;
+      transition: border-color var(--dur-snap) var(--ease-snap);
+    }
+    .top-utility .user-chip:hover { border-color: var(--color-border-strong); }
+    .top-utility .user-chip .avatar {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* KPI strip — overflow row */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+    @media (max-width: 900px) { .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    /* Patterns table — pattern cell with icon */
+    .pattern-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .pattern-cell .icon {
+      width: 28px; height: 28px;
+      border-radius: var(--radius-md);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .pattern-cell .icon svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.75; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .pattern-cell .label { font-weight: 500; color: var(--color-ink); }
+    .pattern-cell .slug { font-family: var(--font-mono); font-size: 11px; color: var(--color-mute); display: block; margin-top: 1px; }
+
+    .table-action-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+    }
+    .table-action-row .meta-line { font-family: var(--font-mono); font-size: 11px; color: var(--color-mute); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* Activity feed wrap — two-column for density on this surface */
+    .activity-wrap {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-6);
+    }
+
+    /* Dataset cards grid */
+    .dataset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+    @media (max-width: 900px) { .dataset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) { .dataset-grid { grid-template-columns: 1fr; } }
+
+    .ds-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column;
+      gap: var(--space-3);
+      transition: border-color var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap);
+    }
+    .ds-card:hover { border-color: var(--color-border-strong); box-shadow: var(--shadow-md); }
+    .ds-card__head {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .ds-card__icon {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-md);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      color: var(--color-ink-soft);
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ds-card__icon svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.75; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .ds-card__name {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-ink);
+      letter-spacing: -0.005em;
+    }
+    .ds-card__type {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      margin-top: 2px;
+    }
+    .ds-card__stats {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-4);
+      padding: var(--space-3) 0 0;
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .ds-card__stats .stat { display: flex; flex-direction: column; gap: 2px; }
+    .ds-card__stats .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+    }
+    .ds-card__stats .stat-value {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .ds-card__chart {
+      height: 28px;
+      margin-top: 2px;
+    }
+    .ds-card__chart svg { width: 100%; height: 100%; overflow: visible; }
+
+    /* Section heading inside content groups */
+    .pane-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    .pane-head .title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+      color: var(--color-ink);
+      margin: 0;
+    }
+    .pane-head .sub {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .pane-head .tools { display: inline-flex; gap: var(--space-2); align-items: center; }
+
+    /* Footer */
+    .footer-cols {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: var(--space-7);
+    }
+    @media (max-width: 900px) { .footer-cols { grid-template-columns: 1fr 1fr; } }
+    .footer-col h5 {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin: 0 0 var(--space-3);
+      font-weight: 500;
+    }
+    .footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    .footer-col a {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      transition: color var(--dur-snap) var(--ease-snap);
+    }
+    .footer-col a:hover { color: var(--color-accent); }
+
+    .footer-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      align-items: center;
+    }
+    .footer-meta .build { color: var(--color-ink-soft); }
+    .footer-meta .build .ok { color: var(--color-success); }
+
+    /* Terminal caption */
+    .terminal-caption {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      margin-top: var(--space-3);
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="../design-system/theme.html">theme</a>
+    <a class="lingua-metanav__link" href="../design-system/layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="../design-system/grid.html">grid</a>
+    <a class="lingua-metanav__link" href="../design-system/components.html">components</a>
+    <a class="lingua-metanav__link" href="../design-system/patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="civic-overview.html">civic</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<!-- LAYOUT — "app" variant (SideNav visible) -->
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav: Lingua brand + site selector + user widget + theme toggle -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a class="dms-topnav-brand" href="#">
+              L<span class="diacritic">ī</span>ngua<span class="designator">admin</span>
+            </a>
+            <button class="site-selector" type="button" aria-label="Switch site">
+              <span class="live-dot" aria-hidden="true"></span>
+              <span>The Drift</span>
+              <span class="domain">thedrift.com</span>
+              <span class="caret">⌄</span>
+            </button>
+          </div>
+          <div class="top-utility">
+            <button class="icon-btn" type="button" aria-label="Search">
+              <!-- icon: Search -->
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </button>
+            <button class="icon-btn" type="button" aria-label="Notifications">
+              <!-- icon: Bell -->
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 5 3 9H3c0-4 3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+            </button>
+            <button class="icon-btn" type="button" aria-label="Toggle theme">
+              <!-- icon: Sun / theme toggle -->
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </button>
+            <button class="user-chip" type="button">
+              <span class="avatar">AM</span>
+              <span>Alex Martin</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav: 3 sections -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">Site</div>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="#">
+              <!-- icon: Home -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 3l9 7v10a2 2 0 0 1-2 2h-3v-7H10v7H5a2 2 0 0 1-2-2z"/></svg>
+              Overview
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: FileText -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg>
+              Pages
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: Database -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"/></svg>
+              Datasets
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: Palette -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/><path d="M12 21a3 3 0 0 1 0-6 2 2 0 0 0 0-4"/></svg>
+              Themes
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: Plug -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0z"/><path d="M12 18v4"/></svg>
+              Plugins
+            </a>
+          </div>
+
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">Patterns</div>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: Archive -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="4" rx="1"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7M10 12h4"/></svg>
+              Issue archive
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: User -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              Author bio
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: Calendar -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+              Editorial calendar
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: Mail -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg>
+              Subscriptions
+            </a>
+          </div>
+
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">Workspace</div>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: Users -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9.5" r="2.5"/><path d="M3 20a6 6 0 0 1 12 0M15 19a4 4 0 0 1 6 0"/></svg>
+              Members
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: Settings -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .4 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.4 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .4-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.4-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.4H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.4l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.4 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+              Settings
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: CreditCard -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+              Billing
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <!-- icon: HelpCircle -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5"/></svg>
+              Help
+            </a>
+          </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <div class="dms-layout-child">
+
+          <!-- ======================================================
+               HEADER LayoutGroup
+               ====================================================== -->
+          <div class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-section">
+
+                <nav class="breadcrumb" aria-label="Breadcrumb">
+                  <a href="#">Sites</a>
+                  <span class="sep">/</span>
+                  <a href="#">The Drift</a>
+                  <span class="sep">/</span>
+                  <span class="current">Overview</span>
+                </nav>
+
+                <h1 class="l-displayLG site-title">The Dr<span class="accent">ī</span>ft</h1>
+
+                <p class="l-proseLG" style="margin: var(--space-4) 0 0; color: var(--color-ink-soft); max-width: 60ch;">
+                  thedrift.com &middot; published every Tuesday &middot; 1,247 readers this week
+                </p>
+
+                <div class="header-actions">
+                  <a class="ling-btn ling-btn--primary" href="#">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    New page
+                  </a>
+                  <a class="ling-btn ling-btn--secondary" href="#">
+                    View site
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                  </a>
+                  <a class="ling-btn ling-btn--ghost" href="#">Settings</a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================
+               KPI STRIP LayoutGroup (content)
+               ====================================================== -->
+          <div class="dms-group-content">
+            <div class="dms-group-content-inner" style="padding: var(--space-7);">
+              <div class="kpi-row">
+
+                <div class="ling-kpi">
+                  <div class="ling-kpi__label">Pages</div>
+                  <div class="ling-kpi__value">38</div>
+                  <div class="ling-kpi__delta">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+                    +2 this week
+                  </div>
+                </div>
+
+                <div class="ling-kpi">
+                  <div class="ling-kpi__label">Datasets</div>
+                  <div class="ling-kpi__value">12</div>
+                  <div class="ling-kpi__delta ling-kpi__delta--flat">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+                    no change
+                  </div>
+                </div>
+
+                <div class="ling-kpi">
+                  <div class="ling-kpi__label">Published this month</div>
+                  <div class="ling-kpi__value">5</div>
+                  <div class="ling-kpi__delta">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+                    +1 vs April
+                  </div>
+                </div>
+
+                <div class="ling-kpi">
+                  <div class="ling-kpi__label">Drafts</div>
+                  <div class="ling-kpi__value">3</div>
+                  <div class="ling-kpi__delta ling-kpi__delta--down">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    2 stale &gt; 14d
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================
+               PATTERNS LayoutGroup (content) — table
+               ====================================================== -->
+          <div class="dms-group-content">
+            <div class="dms-group-content-inner" style="padding: var(--space-7);">
+
+              <div class="pane-head">
+                <div>
+                  <h2 class="title">Patterns</h2>
+                  <div class="sub" style="margin-top: 4px;">8 active &middot; 1 draft</div>
+                </div>
+                <div class="tools">
+                  <button class="ling-multiselect" type="button" style="font-size: 12px; padding: 6px 10px;">
+                    <span>All types</span>
+                    <span class="caret">⌄</span>
+                  </button>
+                  <a class="ling-btn ling-btn--secondary ling-btn--sm" href="#">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    New pattern
+                  </a>
+                </div>
+              </div>
+
+              <table class="ling-table">
+                <thead>
+                  <tr>
+                    <th>Pattern</th>
+                    <th>Type</th>
+                    <th class="num">Pages</th>
+                    <th>Last edit</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="pattern-cell">
+                        <span class="icon">
+                          <!-- icon: Archive -->
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="4" rx="1"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/></svg>
+                        </span>
+                        <span>
+                          <span class="label">Issue archive</span>
+                          <span class="slug">issue_archive</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="mono">page</td>
+                    <td class="num">47</td>
+                    <td class="mono">2h ago</td>
+                    <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pattern-cell">
+                        <span class="icon">
+                          <!-- icon: User -->
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                        </span>
+                        <span>
+                          <span class="label">Author bio</span>
+                          <span class="slug">author_bio</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="mono">page</td>
+                    <td class="num">23</td>
+                    <td class="mono">yesterday</td>
+                    <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pattern-cell">
+                        <span class="icon">
+                          <!-- icon: Calendar -->
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+                        </span>
+                        <span>
+                          <span class="label">Editorial calendar</span>
+                          <span class="slug">editorial_calendar</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="mono">dataset</td>
+                    <td class="num">1</td>
+                    <td class="mono">3d ago</td>
+                    <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pattern-cell">
+                        <span class="icon">
+                          <!-- icon: Mail -->
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg>
+                        </span>
+                        <span>
+                          <span class="label">Subscriber settings</span>
+                          <span class="slug">subscriber_settings</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="mono">form</td>
+                    <td class="num">2</td>
+                    <td class="mono">5d ago</td>
+                    <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pattern-cell">
+                        <span class="icon">
+                          <!-- icon: BookOpen -->
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h6v18H5a2 2 0 0 1-2-2zM21 5a2 2 0 0 0-2-2h-6v18h6a2 2 0 0 0 2-2z"/></svg>
+                        </span>
+                        <span>
+                          <span class="label">Essay layout</span>
+                          <span class="slug">essay_layout</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="mono">page</td>
+                    <td class="num">128</td>
+                    <td class="mono">1w ago</td>
+                    <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pattern-cell">
+                        <span class="icon">
+                          <!-- icon: List -->
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                        </span>
+                        <span>
+                          <span class="label">Contributor index</span>
+                          <span class="slug">contributor_index</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="mono">page</td>
+                    <td class="num">1</td>
+                    <td class="mono">2w ago</td>
+                    <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pattern-cell">
+                        <span class="icon">
+                          <!-- icon: ShoppingBag -->
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 4 7v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7l-2-4zM4 7h16M9 11a3 3 0 0 0 6 0"/></svg>
+                        </span>
+                        <span>
+                          <span class="label">Store catalog</span>
+                          <span class="slug">store_catalog</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="mono">dataset</td>
+                    <td class="num">14</td>
+                    <td class="mono">3w ago</td>
+                    <td><span class="ling-pill ling-pill--margin ling-pill--dot">draft</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pattern-cell">
+                        <span class="icon">
+                          <!-- icon: Newspaper -->
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h11v18H5a2 2 0 0 1-2-2zM16 8h5v11a2 2 0 0 1-2 2h-3M7 7h6M7 11h6M7 15h6"/></svg>
+                        </span>
+                        <span>
+                          <span class="label">Masthead</span>
+                          <span class="slug">masthead</span>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="mono">page</td>
+                    <td class="num">1</td>
+                    <td class="mono">1mo ago</td>
+                    <td><span class="ling-pill ling-pill--success ling-pill--dot">live</span></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="table-action-row">
+                <span class="meta-line">8 patterns &middot; sorted by recently edited</span>
+                <a class="ling-btn ling-btn--link" href="#">Manage all patterns &rarr;</a>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ======================================================
+               RECENT ACTIVITY LayoutGroup (content)
+               ====================================================== -->
+          <div class="dms-group-content">
+            <div class="dms-group-content-inner" style="padding: var(--space-7);">
+
+              <div class="pane-head">
+                <div>
+                  <h2 class="title">Recent activity</h2>
+                  <div class="sub" style="margin-top: 4px;">live &middot; last 24h</div>
+                </div>
+                <div class="tools">
+                  <span class="ling-pill ling-pill--accent ling-pill--dot">streaming</span>
+                  <a class="ling-btn ling-btn--ghost ling-btn--sm" href="#">Full feed &rarr;</a>
+                </div>
+              </div>
+
+              <div class="activity-wrap">
+                <div class="ling-activity">
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar">AM</span>
+                    <span class="ling-activity__text">
+                      Alex <span class="verb">published</span> <span class="what">"On placing"</span> in Issue 47
+                    </span>
+                    <span class="ling-activity__time">8 min ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar" style="background: var(--color-accent-soft); color: var(--color-accent); border-color: rgba(59,91,255,0.20);">JH</span>
+                    <span class="ling-activity__text">
+                      Jenny <span class="verb">edited</span> <span class="what">"The end of the open web"</span>
+                    </span>
+                    <span class="ling-activity__time">17 min ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar">RK</span>
+                    <span class="ling-activity__text">
+                      Rachel <span class="verb">synced</span> <span class="what">subscribers</span> from Stripe (3 new)
+                    </span>
+                    <span class="ling-activity__time">42 min ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar">DM</span>
+                    <span class="ling-activity__text">
+                      Daniel <span class="verb">wrote</span> <span class="what">"Notes from the readings"</span> &middot; draft
+                    </span>
+                    <span class="ling-activity__time">1h ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar">AM</span>
+                    <span class="ling-activity__text">
+                      Alex <span class="verb">rendered</span> Issue 47 cover &middot; 4 variants
+                    </span>
+                    <span class="ling-activity__time">2h ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar">SP</span>
+                    <span class="ling-activity__text">
+                      Sam <span class="verb">added</span> contributor <span class="what">Mira Sethi</span>
+                    </span>
+                    <span class="ling-activity__time">3h ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar">JH</span>
+                    <span class="ling-activity__text">
+                      Jenny <span class="verb">scheduled</span> <span class="what">Issue 48</span> for May 31
+                    </span>
+                    <span class="ling-activity__time">5h ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar" style="background: var(--color-success-soft); color: var(--color-success); border-color: rgba(20,184,129,0.20);">CI</span>
+                    <span class="ling-activity__text">
+                      <span class="what">CI</span> <span class="verb">deployed</span> theme <span class="what">drift-press v3.2.1</span>
+                    </span>
+                    <span class="ling-activity__time">7h ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar">RK</span>
+                    <span class="ling-activity__text">
+                      Rachel <span class="verb">imported</span> 42 rows into <span class="what">store_catalog</span>
+                    </span>
+                    <span class="ling-activity__time">9h ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar">DM</span>
+                    <span class="ling-activity__text">
+                      Daniel <span class="verb">edited</span> <span class="what">"Author bio"</span> pattern (3 fields)
+                    </span>
+                    <span class="ling-activity__time">12h ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar">AM</span>
+                    <span class="ling-activity__text">
+                      Alex <span class="verb">published</span> <span class="what">"Letter from the editor"</span>
+                    </span>
+                    <span class="ling-activity__time">18h ago</span>
+                  </div>
+
+                  <div class="ling-activity__row">
+                    <span class="ling-activity__avatar" style="background: var(--color-margin-soft); color: #946A00; border-color: rgba(255,200,61,0.40);">!</span>
+                    <span class="ling-activity__text">
+                      System <span class="verb">flagged</span> <span class="what">3 stale drafts</span> for review
+                    </span>
+                    <span class="ling-activity__time">22h ago</span>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ======================================================
+               DATASETS SUMMARY LayoutGroup (content)
+               ====================================================== -->
+          <div class="dms-group-content">
+            <div class="dms-group-content-inner" style="padding: var(--space-7);">
+
+              <div class="pane-head">
+                <div>
+                  <h2 class="title">Datasets</h2>
+                  <div class="sub" style="margin-top: 4px;">6 of 12 &middot; sorted by last sync</div>
+                </div>
+                <div class="tools">
+                  <a class="ling-btn ling-btn--ghost ling-btn--sm" href="#">Browse all &rarr;</a>
+                </div>
+              </div>
+
+              <div class="dataset-grid">
+
+                <!-- Dataset card 1 — Essays -->
+                <div class="ds-card">
+                  <div class="ds-card__head">
+                    <span class="ds-card__icon">
+                      <!-- icon: FileText -->
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                    </span>
+                    <div>
+                      <div class="ds-card__name">Essays</div>
+                      <div class="ds-card__type">page-data &middot; 8 cols</div>
+                    </div>
+                  </div>
+                  <div class="ds-card__stats">
+                    <div class="stat">
+                      <span class="stat-label">Rows</span>
+                      <span class="stat-value">128</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label">Last sync</span>
+                      <span class="stat-value">2h ago</span>
+                    </div>
+                  </div>
+                  <div class="ds-card__chart" aria-label="Activity sparkline">
+                    <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+                      <polyline points="0,22 10,18 20,20 30,15 40,16 50,11 60,13 70,8 80,10 90,6 100,9" fill="none" stroke="#3B5BFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <polyline points="0,22 10,18 20,20 30,15 40,16 50,11 60,13 70,8 80,10 90,6 100,9 100,28 0,28" fill="rgba(59,91,255,0.08)" stroke="none"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Dataset card 2 — Contributors -->
+                <div class="ds-card">
+                  <div class="ds-card__head">
+                    <span class="ds-card__icon">
+                      <!-- icon: Users -->
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9.5" r="2.5"/><path d="M3 20a6 6 0 0 1 12 0M15 19a4 4 0 0 1 6 0"/></svg>
+                    </span>
+                    <div>
+                      <div class="ds-card__name">Contributors</div>
+                      <div class="ds-card__type">people &middot; 12 cols</div>
+                    </div>
+                  </div>
+                  <div class="ds-card__stats">
+                    <div class="stat">
+                      <span class="stat-label">Rows</span>
+                      <span class="stat-value">87</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label">Last sync</span>
+                      <span class="stat-value">4h ago</span>
+                    </div>
+                  </div>
+                  <div class="ds-card__chart" aria-label="Activity bars">
+                    <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+                      <rect x="2"  y="20" width="6" height="8"  fill="#3B5BFF" rx="1"/>
+                      <rect x="12" y="16" width="6" height="12" fill="#3B5BFF" rx="1"/>
+                      <rect x="22" y="22" width="6" height="6"  fill="#3B5BFF" rx="1"/>
+                      <rect x="32" y="14" width="6" height="14" fill="#3B5BFF" rx="1"/>
+                      <rect x="42" y="10" width="6" height="18" fill="#3B5BFF" rx="1"/>
+                      <rect x="52" y="18" width="6" height="10" fill="#3B5BFF" rx="1"/>
+                      <rect x="62" y="12" width="6" height="16" fill="#3B5BFF" rx="1"/>
+                      <rect x="72" y="8"  width="6" height="20" fill="#3B5BFF" rx="1"/>
+                      <rect x="82" y="6"  width="6" height="22" fill="#3B5BFF" rx="1"/>
+                      <rect x="92" y="4"  width="6" height="24" fill="#3B5BFF" rx="1"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Dataset card 3 — Subscribers -->
+                <div class="ds-card">
+                  <div class="ds-card__head">
+                    <span class="ds-card__icon">
+                      <!-- icon: Mail -->
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg>
+                    </span>
+                    <div>
+                      <div class="ds-card__name">Subscribers</div>
+                      <div class="ds-card__type">people &middot; 6 cols</div>
+                    </div>
+                  </div>
+                  <div class="ds-card__stats">
+                    <div class="stat">
+                      <span class="stat-label">Rows</span>
+                      <span class="stat-value">4,302</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label">Last sync</span>
+                      <span class="stat-value">42m ago</span>
+                    </div>
+                  </div>
+                  <div class="ds-card__chart" aria-label="Subscriber growth">
+                    <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+                      <polyline points="0,24 12,23 24,22 36,21 48,19 60,17 72,14 84,10 100,5" fill="none" stroke="#14B881" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <polyline points="0,24 12,23 24,22 36,21 48,19 60,17 72,14 84,10 100,5 100,28 0,28" fill="rgba(20,184,129,0.10)" stroke="none"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Dataset card 4 — Issues -->
+                <div class="ds-card">
+                  <div class="ds-card__head">
+                    <span class="ds-card__icon">
+                      <!-- icon: BookOpen -->
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h6v18H5a2 2 0 0 1-2-2zM21 5a2 2 0 0 0-2-2h-6v18h6a2 2 0 0 0 2-2z"/></svg>
+                    </span>
+                    <div>
+                      <div class="ds-card__name">Issues</div>
+                      <div class="ds-card__type">archive &middot; 10 cols</div>
+                    </div>
+                  </div>
+                  <div class="ds-card__stats">
+                    <div class="stat">
+                      <span class="stat-label">Rows</span>
+                      <span class="stat-value">47</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label">Last sync</span>
+                      <span class="stat-value">yesterday</span>
+                    </div>
+                  </div>
+                  <div class="ds-card__chart" aria-label="Issues cadence">
+                    <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+                      <rect x="3"  y="10" width="8" height="18" fill="#18181B" rx="1"/>
+                      <rect x="16" y="10" width="8" height="18" fill="#18181B" rx="1"/>
+                      <rect x="29" y="10" width="8" height="18" fill="#18181B" rx="1"/>
+                      <rect x="42" y="10" width="8" height="18" fill="#18181B" rx="1"/>
+                      <rect x="55" y="10" width="8" height="18" fill="#18181B" rx="1"/>
+                      <rect x="68" y="10" width="8" height="18" fill="#18181B" rx="1"/>
+                      <rect x="81" y="10" width="8" height="18" fill="#18181B" rx="1"/>
+                      <rect x="94" y="10" width="3" height="18" fill="#3B5BFF" rx="1"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Dataset card 5 — Store catalog -->
+                <div class="ds-card">
+                  <div class="ds-card__head">
+                    <span class="ds-card__icon">
+                      <!-- icon: ShoppingBag -->
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3 4 7v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7l-2-4zM4 7h16M9 11a3 3 0 0 0 6 0"/></svg>
+                    </span>
+                    <div>
+                      <div class="ds-card__name">Store catalog</div>
+                      <div class="ds-card__type">commerce &middot; 14 cols</div>
+                    </div>
+                  </div>
+                  <div class="ds-card__stats">
+                    <div class="stat">
+                      <span class="stat-label">Rows</span>
+                      <span class="stat-value">14</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label">Last sync</span>
+                      <span class="stat-value">3w ago</span>
+                    </div>
+                  </div>
+                  <div class="ds-card__chart" aria-label="Sales sparkline">
+                    <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+                      <polyline points="0,14 10,12 20,16 30,10 40,14 50,11 60,18 70,15 80,20 90,17 100,22" fill="none" stroke="#FFC83D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Dataset card 6 — Editorial calendar -->
+                <div class="ds-card">
+                  <div class="ds-card__head">
+                    <span class="ds-card__icon">
+                      <!-- icon: Calendar -->
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+                    </span>
+                    <div>
+                      <div class="ds-card__name">Editorial calendar</div>
+                      <div class="ds-card__type">schedule &middot; 7 cols</div>
+                    </div>
+                  </div>
+                  <div class="ds-card__stats">
+                    <div class="stat">
+                      <span class="stat-label">Rows</span>
+                      <span class="stat-value">62</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label">Last sync</span>
+                      <span class="stat-value">3d ago</span>
+                    </div>
+                  </div>
+                  <div class="ds-card__chart" aria-label="Calendar density">
+                    <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+                      <rect x="2"  y="6"  width="6" height="22" fill="#3B5BFF" rx="1" opacity="0.4"/>
+                      <rect x="12" y="14" width="6" height="14" fill="#3B5BFF" rx="1" opacity="0.7"/>
+                      <rect x="22" y="20" width="6" height="8"  fill="#3B5BFF" rx="1" opacity="0.9"/>
+                      <rect x="32" y="12" width="6" height="16" fill="#3B5BFF" rx="1"/>
+                      <rect x="42" y="18" width="6" height="10" fill="#3B5BFF" rx="1" opacity="0.7"/>
+                      <rect x="52" y="10" width="6" height="18" fill="#3B5BFF" rx="1"/>
+                      <rect x="62" y="16" width="6" height="12" fill="#3B5BFF" rx="1" opacity="0.6"/>
+                      <rect x="72" y="22" width="6" height="6"  fill="#3B5BFF" rx="1"/>
+                      <rect x="82" y="14" width="6" height="14" fill="#3B5BFF" rx="1" opacity="0.5"/>
+                      <rect x="92" y="8"  width="6" height="20" fill="#3B5BFF" rx="1" opacity="0.3"/>
+                    </svg>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ======================================================
+               CLI QUICK-ACTIONS LayoutGroup (content)
+               ====================================================== -->
+          <div class="dms-group-content">
+            <div class="dms-group-content-inner" style="padding: var(--space-7);">
+
+              <div class="pane-head">
+                <div>
+                  <h2 class="title">Run from anywhere</h2>
+                  <div class="sub" style="margin-top: 4px;">cli &middot; lingua v1.3.0</div>
+                </div>
+                <div class="tools">
+                  <a class="ling-btn ling-btn--ghost ling-btn--sm" href="#">CLI docs &rarr;</a>
+                </div>
+              </div>
+
+              <div class="ling-terminal">
+                <div class="ling-terminal__chrome">
+                  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                  <span class="title">~/sites/the-drift &mdash; lingua</span>
+                </div>
+                <div class="ling-terminal__body">
+<pre style="margin:0;"><span class="dim"># publish a scheduled issue</span>
+<span class="prompt">lingua publish issue-47</span>
+<span class="out">  <span class="ok">&#10003;</span> rendered 12 pages</span>
+<span class="out">  <span class="ok">&#10003;</span> synced to thedrift.com</span>
+<span class="out">  <span class="ok">&#10003;</span> notified 4,302 subscribers</span>
+<span class="dim">  done in 3.4s &middot; <span style="color: var(--color-code-accent);">https://thedrift.com/47</span></span>
+
+<span class="dim"># follow the live activity feed</span>
+<span class="prompt">lingua tail --site the-drift</span>
+<span class="out">  17:42  jenny  edited   "The end of the open web"</span>
+<span class="out">  17:31  alex   published "On placing"</span>
+<span class="out">  17:18  rachel synced   subscribers (3 new)</span>
+<span class="dim">  ...streaming. ctrl-c to stop.</span>
+
+<span class="dim"># export a dataset to JSON</span>
+<span class="prompt">lingua dataset dump contributors &gt; out.json</span>
+<span class="out">  <span class="ok">&#10003;</span> 87 rows &middot; 12 cols &middot; 142 KB</span>
+
+<span class="dim"># roll back the last deploy</span>
+<span class="prompt">lingua revert --to v3.2.0</span>
+<span class="warn">  &#9888;  this will redeploy 38 pages. continue? [y/N]</span><span class="cursor"></span></pre>
+                </div>
+              </div>
+
+              <p class="terminal-caption">Or run from your terminal.</p>
+
+            </div>
+          </div>
+
+          <!-- ======================================================
+               FOOTER
+               ====================================================== -->
+          <div class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+
+              <div class="footer-cols">
+                <div class="footer-col">
+                  <h5>Lingua admin</h5>
+                  <p style="margin: 0; max-width: 38ch; color: var(--color-mute); font-size: 13px; line-height: 1.55;">
+                    One row format. Pages, data, charts, and maps speak it. You're looking at the site
+                    overview for <strong style="color: var(--color-ink-soft); font-weight: 500;">The Drift</strong>.
+                  </p>
+                </div>
+
+                <div class="footer-col">
+                  <h5>Product</h5>
+                  <ul>
+                    <li><a href="#">Changelog</a></li>
+                    <li><a href="#">Roadmap</a></li>
+                    <li><a href="#">Status</a></li>
+                    <li><a href="#">CLI reference</a></li>
+                  </ul>
+                </div>
+
+                <div class="footer-col">
+                  <h5>Support</h5>
+                  <ul>
+                    <li><a href="#">Help center</a></li>
+                    <li><a href="#">Send feedback</a></li>
+                    <li><a href="#">Contact sales</a></li>
+                    <li><a href="#">Community</a></li>
+                  </ul>
+                </div>
+
+                <div class="footer-col">
+                  <h5>Deliverable</h5>
+                  <ul>
+                    <li><a href="../design-system/theme.html">theme</a></li>
+                    <li><a href="../design-system/layouts.html">layouts</a></li>
+                    <li><a href="../design-system/grid.html">grid</a></li>
+                    <li><a href="../design-system/components.html">components</a></li>
+                    <li><a href="../design-system/patterns.html">patterns</a></li>
+                    <li><a href="marketing-homepage.html">home</a></li>
+                    <li><a href="marketing-comparison.html">compare</a></li>
+                    <li><a href="marketing-theory.html">theory</a></li>
+                    <li><a href="docs-page.html">docs</a></li>
+                    <li><a href="civic-overview.html">civic</a></li>
+                    <li><a href="product-page-editor.html">editor</a></li>
+                    <li><a href="product-dataset-view.html">dataset</a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="footer-meta">
+                <span class="build">
+                  <span class="ok">&#9679;</span>
+                  lingua v1.3.0 &middot; admin build 2026.05.24
+                </span>
+                <span>The Drift &middot; thedrift.com &middot; us-east-1</span>
+              </div>
+
+            </div>
+          </div>
+
+        </div><!-- /dms-layout-child -->
+      </div><!-- /dms-layout-wrapper3 -->
+    </div><!-- /dms-layout-wrapper2 -->
+  </div><!-- /dms-layout-wrapper -->
+</div><!-- /dms-layout-outer -->
+
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NPMRDS · Getting Started · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../design-system/_shared.css"/>
+</head>
+<body class="tny-pane">
+<!-- NPMRDS · Getting Started · public landing
+     Layout: app · LayoutGroups: hero → content (3 regional groups) →
+     content_tint (4 templates) → content (editorial + status) → footer. -->
+
+<div class="bg-[#ECEEF2]">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- SIDENAV -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <img src="../../design_handoff_transportny_design_system/assets/nys_logo_white.svg" class="w-9 h-9 object-contain" alt="NYS"/>
+              <span class="font-display uppercase text-white text-[15px] tracking-wide truncate ml-3 flex-1">NPMRDS</span>
+            </div>
+            <div class="flex-1 py-1">
+              <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-[18px] mr-3 text-[#FACC15]"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5"/></svg>
+                Home
+              </a>
+              <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Routes</a>
+              <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Reports</a>
+              <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Macro</a>
+              <a href="map-21-pm3.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-[18px] mr-3 text-slate-400"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+                MAP-21 PM3
+              </a>
+              <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Batch</a>
+            </div>
+            <div class="flex items-center gap-3 px-4 py-2 border-t border-[#2a3545]">
+              <a href="#" class="flex items-center gap-3 hover:bg-[#1e2530] -mx-1 px-1 py-1 rounded transition-colors w-full">
+                <div class="w-8 h-8 rounded-full bg-[#1a2029] border border-[#2a3545] flex items-center justify-center text-slate-500 flex-shrink-0">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><circle cx="12" cy="7.5" r="3.5"/><path d="M5.5 20v-2c0-1.5 1-2.5 2.5-3 1-.5 2.5-1 4-1s3 .5 4 1c1.5.5 2.5 1.5 2.5 3v2"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Sign in</div>
+                  <div class="font-mono text-slate-500 text-[10px] uppercase tracking-[0.18em] truncate">Public-read access</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- HERO -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10">
+            <div class="mx-auto w-full max-w-[1480px] px-8 py-14">
+              <div class="flex items-end justify-between gap-8">
+                <div class="max-w-[760px]">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] block mb-3">NPMRDS · GETTING STARTED</span>
+                  <h1 class="font-display font-semibold text-[#0F1722] text-[52px] leading-[1.02] tracking-tight">Getting Started<span class="text-[#CA8A04]">.</span></h1>
+                  <p class="font-proxima text-slate-600 text-[15px] leading-[1.65] mt-4 max-w-[640px]">
+                    Two ways to explore NPMRDS data: <strong class="text-[#0F1722]">regional analysis</strong>
+                    for a chosen region or MPO, and <strong class="text-[#0F1722]">route-analysis templates</strong>
+                    for a corridor you pick. Pick one to start.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1.5 h-8 px-2.5 rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white text-[12px] cursor-pointer">
+                    <span class="font-display uppercase text-[10px] tracking-wide text-slate-500">Region</span>
+                    <span class="text-[12px] text-slate-700 font-medium">All NYS</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-3 text-slate-500"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                  </div>
+                  <button class="inline-flex items-center gap-2 px-4 h-10 bg-white hover:bg-slate-50 border border-zinc-950/15 text-slate-800 font-proxima text-[13px] font-medium rounded-[6px]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M21 21l-4.5-4.5"/><circle cx="11" cy="11" r="9"/></svg>
+                    Search routes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTENT · Regional analysis -->
+          <div class="w-full bg-[#ECEEF2] py-12">
+            <div class="mx-auto w-full max-w-[1480px] px-8 flex flex-col gap-6">
+              <div>
+                <div class="flex items-center gap-3 mb-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span><span class="h-px w-10 bg-[#CA8A04]/50"></span><h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Regional analysis</h3></div>
+              </div>
+
+              <!-- Group 1 · Floating Car -->
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                  <span class="font-mono uppercase text-[10.5px] tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                  <span class="font-display font-medium text-[14px] text-[#2D3E4C]">Floating Car</span>
+                  <span class="ml-auto text-[12px] text-slate-500">3 reports</span>
+                </div>
+                <div class="p-4 grid grid-cols-3 gap-3">
+                  <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-4 transition-colors block">
+                    <div class="flex items-start gap-3">
+                      <div class="size-9 rounded-[6px] bg-[#1F3F8F]/10 text-[#1F3F8F] flex items-center justify-center flex-shrink-0">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">50p Speed</div>
+                        <div class="font-proxima text-[12.5px] text-slate-600 mt-1 leading-snug">Median speed by hour-of-day for a single corridor.</div>
+                      </div>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-slate-400 mt-1"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    </div>
+                  </a>
+                  <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-4 transition-colors block">
+                    <div class="flex items-start gap-3">
+                      <div class="size-9 rounded-[6px] bg-[#1F3F8F]/10 text-[#1F3F8F] flex items-center justify-center flex-shrink-0">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-5"><path d="M6.43 9.75 2.25 12l4.18 2.25M2.25 7.5 12 2.25l9.75 5.25"/></svg>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">Free-flow</div>
+                        <div class="font-proxima text-[12.5px] text-slate-600 mt-1 leading-snug">Off-peak baseline used by reliability calculations.</div>
+                      </div>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-slate-400 mt-1"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    </div>
+                  </a>
+                  <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-4 transition-colors block">
+                    <div class="flex items-start gap-3">
+                      <div class="size-9 rounded-[6px] bg-[#1F3F8F]/10 text-[#1F3F8F] flex items-center justify-center flex-shrink-0">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-5"><path d="M12 22C6.477 22 2 17.523 2 12C2 6.477 6.477 2 12 2C16.478 2 20.226 4.943 21.5 9H19"/><path d="M12 8V12L14 14"/></svg>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">Travel Time</div>
+                        <div class="font-proxima text-[12.5px] text-slate-600 mt-1 leading-snug">Origin-destination travel time on selected hours.</div>
+                      </div>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-slate-400 mt-1"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Group 2 · Reliability -->
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                  <span class="font-mono uppercase text-[10.5px] tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                  <span class="font-display font-medium text-[14px] text-[#2D3E4C]">Reliability</span>
+                  <span class="ml-auto text-[12px] text-slate-500">3 reports</span>
+                </div>
+                <div class="p-4 grid grid-cols-3 gap-3">
+                  <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-4 block">
+                    <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">LOTTR</div>
+                    <div class="font-proxima text-[12.5px] text-slate-600 mt-1 leading-snug">Level of Travel Time Reliability; pass/fail vs FHWA target.</div>
+                  </a>
+                  <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-4 block">
+                    <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">TTTR</div>
+                    <div class="font-proxima text-[12.5px] text-slate-600 mt-1 leading-snug">Truck Travel Time Reliability on Interstate corridors.</div>
+                  </a>
+                  <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-4 block">
+                    <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">Delay</div>
+                    <div class="font-proxima text-[12.5px] text-slate-600 mt-1 leading-snug">Mean and percentile delay against the free-flow baseline.</div>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Group 3 · Congestion -->
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                  <span class="font-mono uppercase text-[10.5px] tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                  <span class="font-display font-medium text-[14px] text-[#2D3E4C]">Congestion</span>
+                  <span class="ml-auto text-[12px] text-slate-500">3 reports</span>
+                </div>
+                <div class="p-4 grid grid-cols-3 gap-3">
+                  <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-4 block">
+                    <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">HED + PHED</div>
+                    <div class="font-proxima text-[12.5px] text-slate-600 mt-1 leading-snug">Hours of excessive delay in urbanized areas.</div>
+                  </a>
+                  <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-4 block">
+                    <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">Weekday peaks</div>
+                    <div class="font-proxima text-[12.5px] text-slate-600 mt-1 leading-snug">AM/PM peak-period delay by hour of day.</div>
+                  </a>
+                  <a class="rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white p-4 block">
+                    <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">Bottleneck atlas</div>
+                    <div class="font-proxima text-[12.5px] text-slate-600 mt-1 leading-snug">Top-50 congested corridors statewide, monthly.</div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTENT_TINT · Route templates -->
+          <div class="w-full bg-[#E4E8EE] py-12">
+            <div class="mx-auto w-full max-w-[1480px] px-8 flex flex-col gap-6">
+              <div>
+                <div class="flex items-center gap-3 mb-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span><span class="h-px w-10 bg-[#CA8A04]/50"></span><h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Route analysis templates</h3></div>
+              </div>
+              <div class="grid grid-cols-12 gap-6">
+                <a class="col-span-12 md:col-span-6 rounded-[8px] border border-zinc-950/10 hover:border-[#37576B] bg-white shadow-sm p-5 transition-colors block">
+                  <div class="font-mono uppercase text-[10.5px] tracking-[0.2em] text-[#CA8A04]">// TEMPLATE · NPMRDS</div>
+                  <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722] mt-1">Floating Car · 50p Speed</div>
+                  <div class="font-proxima text-[13.5px] text-slate-600 mt-2 leading-relaxed">Median speed by hour-of-day for one corridor.</div>
+                  <div class="mt-4 inline-flex items-center gap-2 text-[12.5px] text-[#1F3F8F] hover:text-[#16307A] font-medium">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    Run on a corridor
+                  </div>
+                </a>
+                <a class="col-span-12 md:col-span-6 rounded-[8px] border border-zinc-950/10 hover:border-[#37576B] bg-white shadow-sm p-5 transition-colors block">
+                  <div class="font-mono uppercase text-[10.5px] tracking-[0.2em] text-[#CA8A04]">// TEMPLATE · NPMRDS</div>
+                  <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722] mt-1">Reliability · LOTTR</div>
+                  <div class="font-proxima text-[13.5px] text-slate-600 mt-2 leading-relaxed">Pass/fail by segment for the chosen MPO.</div>
+                  <div class="mt-4 inline-flex items-center gap-2 text-[12.5px] text-[#1F3F8F] hover:text-[#16307A] font-medium">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    Run on a corridor
+                  </div>
+                </a>
+                <a class="col-span-12 md:col-span-6 rounded-[8px] border border-zinc-950/10 hover:border-[#37576B] bg-white shadow-sm p-5 transition-colors block">
+                  <div class="font-mono uppercase text-[10.5px] tracking-[0.2em] text-[#CA8A04]">// TEMPLATE · NPMRDS</div>
+                  <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722] mt-1">Congestion · HED + PHED</div>
+                  <div class="font-proxima text-[13.5px] text-slate-600 mt-2 leading-relaxed">Hours of excessive delay, weekday peaks.</div>
+                  <div class="mt-4 inline-flex items-center gap-2 text-[12.5px] text-[#1F3F8F] hover:text-[#16307A] font-medium">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    Run on a corridor
+                  </div>
+                </a>
+                <a class="col-span-12 md:col-span-6 rounded-[8px] border border-zinc-950/10 hover:border-[#37576B] bg-white shadow-sm p-5 transition-colors block">
+                  <div class="font-mono uppercase text-[10.5px] tracking-[0.2em] text-[#CA8A04]">// TEMPLATE · NPMRDS</div>
+                  <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722] mt-1">Work Zones · Active</div>
+                  <div class="font-proxima text-[13.5px] text-slate-600 mt-2 leading-relaxed">TMC-overlapping work zones in the period.</div>
+                  <div class="mt-4 inline-flex items-center gap-2 text-[12.5px] text-[#1F3F8F] hover:text-[#16307A] font-medium">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    Run on a corridor
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTENT · Editorial + Status -->
+          <div class="w-full bg-[#ECEEF2] py-12">
+            <div class="mx-auto w-full max-w-[1480px] px-8">
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-8">
+                  <div class="rounded-[8px] border-2 border-dashed border-amber-300 bg-[#F5F1E8] p-8">
+                    <div class="font-display uppercase font-bold text-[14px] tracking-wide text-[#0F1722] border-b-2 border-[#EAAD43] inline-block pb-0.5">PUBLIC-READ ACCESS</div>
+                    <p class="font-proxima text-[14px] text-slate-700 mt-4 leading-[1.65]">
+                      You're browsing without signing in. All published dashboards and reports are
+                      available; <a class="tny-link">sign in with NY.gov ID</a> to save corridors,
+                      schedule batch reports, and access internal datasets.
+                    </p>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                    <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] mb-3">System status</div>
+                    <div class="flex flex-col gap-2 text-[13px]">
+                      <div class="flex items-center justify-between"><span class="text-slate-700">NPMRDS feed</span><span class="inline-flex items-center gap-1.5 text-[12px] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>current</span></div>
+                      <div class="flex items-center justify-between"><span class="text-slate-700">Route engine</span><span class="inline-flex items-center gap-1.5 text-[12px] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>current</span></div>
+                      <div class="flex items-center justify-between"><span class="text-slate-700">Batch queue</span><span class="inline-flex items-center gap-1.5 text-[12px] text-amber-700"><span class="size-1.5 rounded-full bg-amber-400"></span>delayed 4 min</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="w-full bg-white border-t border-zinc-950/10">
+            <div class="mx-auto w-full max-w-[1480px] px-8 py-4 flex items-center justify-between text-[13px]">
+              <div class="flex gap-6"><a class="tny-link">User Guide</a><a class="tny-link">API Guide</a><a class="tny-link">Data Dictionary</a></div>
+              <span class="text-slate-500 font-mono text-[11px]">© NYSDOT</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

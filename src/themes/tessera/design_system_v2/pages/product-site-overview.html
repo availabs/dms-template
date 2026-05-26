@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>wcdb.fm · Site overview · Tessera Example</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ----- Page-specific styles ----- */
+
+    /* Pill recipe (lifted from components.html) */
+    .pill-base {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+    .pill-neutral { background: var(--color-limestone); color: var(--color-graphite); border: 1px solid var(--color-grout-light); }
+    .pill-verdigris { color: var(--color-verdigris); border: 1px solid var(--color-verdigris); background: transparent; }
+    .pill-oxide { color: var(--color-oxide); border: 1px solid var(--color-oxide); background: transparent; }
+    .pill-ochre { color: var(--color-ochre); border: 1px solid var(--color-ochre); background: transparent; }
+    .pill-slate { background: var(--color-slate); color: var(--color-parchment); border: 1px solid var(--color-slate); }
+
+    /* KPI strip */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+    @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+    .kpi {
+      padding: var(--space-5);
+      border-right: 1px solid var(--color-grout-light);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .kpi:last-child { border-right: 0; }
+    @media (max-width: 900px) {
+      .kpi:nth-child(2) { border-right: 0; }
+    }
+
+    /* Section title row (between groups) */
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: var(--space-4);
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+    .section-title-row h2 { margin: 0; }
+    .section-title-row .eyebrow { margin-top: var(--space-1); }
+
+    /* Patterns list (real table, not the tessera class — uses .table from dms tokens) */
+    .patterns-table { width: 100%; border-collapse: collapse; }
+    .patterns-table thead th {
+      text-align: left;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-grout-light);
+      background: var(--color-bone);
+    }
+    .patterns-table thead th.num { text-align: right; }
+    .patterns-table tbody td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-grout-light);
+      vertical-align: middle;
+    }
+    .patterns-table tbody tr:hover td { background: var(--color-limestone); }
+    .patterns-table tbody tr:last-child td { border-bottom: 0; }
+    .patterns-table .num { text-align: right; }
+    .patterns-table .pattern-slug { margin-top: 2px; }
+    .patterns-table .renders-as {
+      border: 1px solid var(--color-grout-light);
+      padding: 2px 8px;
+      display: inline-block;
+    }
+
+    .table-frame {
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+
+    /* Activity log */
+    .activity-log {
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+    .activity-row {
+      display: grid;
+      grid-template-columns: 110px 28px 1fr 1.4fr auto;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .activity-row:last-child { border-bottom: 0; }
+    .activity-row .who {
+      width: 24px; height: 24px;
+      background: var(--color-slate);
+      color: var(--color-parchment);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Action button cluster */
+    .btn-row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="#" class="dms-topnav-brand" style="text-decoration:none;">
+              <span class="mark">Tessera</span>
+              <span class="designator">wcdb.fm · workspace</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right" style="gap: var(--space-4);">
+            <a href="product-site-overview.html" class="t-proseSM weight-500" style="text-decoration: none;">Overview</a>
+            <a href="product-page-editor.html" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Editor</a>
+            <a href="product-dataset-view.html" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Datasets</a>
+            <span class="t-metaSM ink-fog">am3081@gmail.com</span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav: workspace navigation -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">compose</div>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="#"><span class="dms-sidenav-item-mark"></span>Patterns<span class="t-metaSM ink-fog tabular" style="margin-left:auto;">18</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Pages<span class="t-metaSM ink-fog tabular" style="margin-left:auto;">42</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Blocks<span class="t-metaSM ink-fog tabular" style="margin-left:auto;">7</span></a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">data</div>
+            <a class="dms-sidenav-item" href="product-dataset-view.html"><span class="dms-sidenav-item-mark"></span>Datasets<span class="t-metaSM ink-fog tabular" style="margin-left:auto;">9</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Queries<span class="t-metaSM ink-fog tabular" style="margin-left:auto;">14</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Joins<span class="t-metaSM ink-fog tabular" style="margin-left:auto;">3</span></a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">render</div>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Theme</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Map styles<span class="t-metaSM ink-fog tabular" style="margin-left:auto;">2</span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Chart palette</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">operate</div>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark" style="background:var(--color-oxide);"></span>Publish queue<span style="margin-left:auto;"><span class="pill-base pill-oxide t-metaXS" style="padding:1px 6px;">live</span></span></a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>History</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Settings</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">runtime</div>
+            <div class="t-metaSM ink-fog" style="padding: 0 var(--space-2); line-height: 1.7;">
+              tessera 0.14.2<br>
+              pg 16.1 · idle<br>
+              last publish 02:18 EST
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main content -->
+        <div class="dms-layout-child">
+
+          <!-- Header -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span>workspace</span>
+                <span class="sep">/</span>
+                <span>wcdb.fm</span>
+                <span class="sep">/</span>
+                <span>site overview</span>
+              </div>
+              <h1 class="dms-page-title t-displayLG">wcdb.fm</h1>
+              <p class="dms-page-lede t-proseLG ink-graphite">
+                Albany student radio, on the air since 1978. Eighteen patterns compose the public site; nine datasets feed them. Last publish 02:18 EST, with the now-playing block updating once per song.
+              </p>
+
+              <div class="btn-row" style="margin-top: var(--space-5);">
+                <button class="btn btn-primary">Compose new pattern</button>
+                <a href="product-page-editor.html" class="btn btn-secondary" style="text-decoration:none;">Open page editor</a>
+                <a href="product-dataset-view.html" class="btn btn-tertiary" style="text-decoration:none;">View datasets</a>
+                <button class="btn btn-tertiary">Publish queue · 1 ready</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- KPI strip -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner" style="padding: 0; background: transparent; border: 0; box-shadow: none;">
+              <div class="kpis">
+                <div class="kpi">
+                  <div class="t-metaSM ink-graphite">Patterns</div>
+                  <div class="t-displayLG tabular">18</div>
+                  <div class="t-metaSM ink-verdigris tabular">+2 this week</div>
+                </div>
+                <div class="kpi">
+                  <div class="t-metaSM ink-graphite">Pages</div>
+                  <div class="t-displayLG tabular">42</div>
+                  <div class="t-metaSM ink-verdigris tabular">+5 this week</div>
+                </div>
+                <div class="kpi">
+                  <div class="t-metaSM ink-graphite">Rows · datasets</div>
+                  <div class="t-displayLG tabular">12,481</div>
+                  <div class="t-metaSM ink-verdigris tabular">+318 today</div>
+                </div>
+                <div class="kpi">
+                  <div class="t-metaSM ink-graphite">Avg session</div>
+                  <div class="t-displayLG tabular">38m 04s</div>
+                  <div class="t-metaSM ink-verdigris tabular">+2m 11s wk</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Patterns table -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · PATTERNS</div>
+                <div class="section-title-row">
+                  <div>
+                    <h2 class="t-displayMD">Patterns</h2>
+                    <div class="eyebrow t-metaSM ink-graphite">the eighteen sections this site is composed of</div>
+                  </div>
+                  <div class="btn-row">
+                    <button class="btn btn-tertiary btn-sm">Filter</button>
+                    <button class="btn btn-secondary btn-sm">Group by dataset</button>
+                    <button class="btn btn-primary btn-sm">Compose new pattern</button>
+                  </div>
+                </div>
+
+                <div class="table-frame">
+                  <table class="patterns-table">
+                    <thead>
+                      <tr>
+                        <th style="width:42px;"></th>
+                        <th class="t-metaSM ink-graphite tabular">Pattern</th>
+                        <th class="t-metaSM ink-graphite tabular">Renders as</th>
+                        <th class="t-metaSM ink-graphite tabular">Dataset</th>
+                        <th class="num t-metaSM ink-graphite tabular">Rows</th>
+                        <th class="num t-metaSM ink-graphite tabular">Last placed</th>
+                        <th style="width:28px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">01</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">Now playing</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.now_playing</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">live block</span></td>
+                        <td><span class="t-metaMD ink-graphite">play_log</span></td>
+                        <td class="num t-metaMD tabular">1</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">2m ago</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">02</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">Tonight's schedule</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.schedule</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">calendar</span></td>
+                        <td><span class="t-metaMD ink-graphite">wcdb_schedule</span></td>
+                        <td class="num t-metaMD tabular">84</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">18m ago</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">03</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">Show archive</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.archive</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">table</span></td>
+                        <td><span class="t-metaMD ink-graphite">wcdb_shows</span></td>
+                        <td class="num t-metaMD tabular">1,340</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">1h ago</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">04</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">Front page</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.home</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">compose</span></td>
+                        <td><span class="t-metaMD ink-graphite">—</span></td>
+                        <td class="num t-metaMD tabular">—</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">3h ago</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">05</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">About</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.about</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">prose</span></td>
+                        <td><span class="t-metaMD ink-graphite">—</span></td>
+                        <td class="num t-metaMD tabular">—</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">yesterday</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">06</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">DJ profiles</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.dj_profile</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">list · detail</span></td>
+                        <td><span class="t-metaMD ink-graphite">wcdb_djs</span></td>
+                        <td class="num t-metaMD tabular">38</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">2d ago</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">07</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">Practice recordings</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.practice</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">feed</span></td>
+                        <td><span class="t-metaMD ink-graphite">practice_recordings</span></td>
+                        <td class="num t-metaMD tabular">512</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">2d ago</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">08</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">Demos · open submissions</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.demos</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">form · list</span></td>
+                        <td><span class="t-metaMD ink-graphite">wcdb_demos</span></td>
+                        <td class="num t-metaMD tabular">204</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">3d ago</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">09</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">Playlist export</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.playlist</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">feed</span></td>
+                        <td><span class="t-metaMD ink-graphite">play_log</span></td>
+                        <td class="num t-metaMD tabular">12,481</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">2d ago</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-metaSM ink-fog tabular">10</span></td>
+                        <td>
+                          <div class="pattern-title t-proseSM weight-500">Albany calendar</div>
+                          <div class="pattern-slug t-metaSM ink-graphite">station.events</div>
+                        </td>
+                        <td><span class="renders-as t-metaSM ink-graphite">calendar</span></td>
+                        <td><span class="t-metaMD ink-graphite">albany_events</span></td>
+                        <td class="num t-metaMD tabular">221</td>
+                        <td class="num"><span class="t-metaMD ink-graphite tabular">4d ago</span></td>
+                        <td><span class="t-metaMD ink-fog">›</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="t-proseSM ink-graphite" style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-3);">
+                  <span>Showing 10 of 18 patterns</span>
+                  <a href="#" class="ink-slate">View all patterns →</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Recent activity -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · ACTIVITY</div>
+                <h2 class="dms-section-title t-displayMD">Recent activity</h2>
+                <p class="dms-section-lede t-prose ink-graphite">
+                  Edits, publishes, and dataset imports across the workspace. Held to twenty most recent entries; the full ledger lives under History.
+                </p>
+
+                <div class="activity-log" style="margin-top: var(--space-4);">
+                  <div class="activity-row">
+                    <span class="t-metaSM ink-graphite tabular">02:18:04 EST</span>
+                    <span class="who t-metaXS">MT</span>
+                    <span class="t-proseSM">Placed pattern</span>
+                    <span class="t-metaMD ink-graphite">station.archive</span>
+                    <span class="t-metaXS ink-fog">compose</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="t-metaSM ink-graphite tabular">02:11:55 EST</span>
+                    <span class="who t-metaXS">RB</span>
+                    <span class="t-proseSM">Published to production</span>
+                    <span class="t-metaMD ink-graphite">station.now_playing &rarr; live</span>
+                    <span class="t-metaXS ink-fog">publish</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="t-metaSM ink-graphite tabular">01:48:30 EST</span>
+                    <span class="who t-metaXS">MT</span>
+                    <span class="t-proseSM">Edited query</span>
+                    <span class="t-metaMD ink-graphite">wcdb_shows.by_dj</span>
+                    <span class="t-metaXS ink-fog">data</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="t-metaSM ink-graphite tabular">01:32:12 EST</span>
+                    <span class="who t-metaXS">RB</span>
+                    <span class="t-proseSM">Imported dataset</span>
+                    <span class="t-metaMD ink-graphite">albany_events · 221 rows</span>
+                    <span class="t-metaXS ink-fog">data</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="t-metaSM ink-graphite tabular">01:18:00 EST</span>
+                    <span class="who t-metaXS">MT</span>
+                    <span class="t-proseSM">Composed page</span>
+                    <span class="t-metaMD ink-graphite">station.home</span>
+                    <span class="t-metaXS ink-fog">compose</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="t-metaSM ink-graphite tabular">00:52:41 EST</span>
+                    <span class="who t-metaXS">RB</span>
+                    <span class="t-proseSM">Added DJ profile</span>
+                    <span class="t-metaMD ink-graphite">wcdb_djs · DJ Calliope</span>
+                    <span class="t-metaXS ink-fog">data</span>
+                  </div>
+                  <div class="activity-row">
+                    <span class="t-metaSM ink-graphite tabular">00:31:09 EST</span>
+                    <span class="who t-metaXS">MT</span>
+                    <span class="t-proseSM">Reordered patterns</span>
+                    <span class="t-metaMD ink-graphite">station.home · 6 sections</span>
+                    <span class="t-metaXS ink-fog">compose</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Footer -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div style="display: flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
+                <div>
+                  <div class="t-metaSM ink-graphite">Tessera · wcdb.fm workspace</div>
+                  <div class="t-proseSM ink-graphite" style="margin-top: var(--space-2); max-width: 60ch;">
+                    A worked example demonstrating the Tessera theme on the admin product surface. Real composition; placeholder data.
+                  </div>
+                </div>
+                <div class="t-metaSM ink-fog" style="text-align: right;">
+                  Tessera Design System v0.1 · 2026-05-22<br>
+                  <a href="../design-system/theme.html" style="color: inherit;">theme</a> ·
+                  <a href="../design-system/layouts.html" style="color: inherit;">layouts</a> ·
+                  <a href="../design-system/grid.html" style="color: inherit;">grid</a> ·
+                  <a href="../design-system/components.html" style="color: inherit;">components</a> ·
+                  <a href="../design-system/patterns.html" style="color: inherit;">patterns</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
