@@ -13,6 +13,63 @@
 
 @import url("../../Tessera Design System/colors_and_type.css");
 
+/* ----- Reset ------------------------------------------------------------ */
+/* Without box-sizing: border-box, `width: 100%` plus padding overflows the
+   parent — what was producing the horizontal scrollbar on every page. */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ----- Type tokens (the 15-token system from theme.html#type) ----------
+   Universal pattern: {role}{Size}[{Variant}]
+     role:  display · displayItalic · prose · meta
+     Size:  Hero · XL · LG · MD · SM · XS (base body drops the suffix)
+   Color, italic-on-prose, tabular-nums, and uppercase tracking-only
+   variants are MODIFIER AXES applied at the call site (`.ink-graphite`,
+   `.ink-fog`, `.italic`, `.tabular`, etc.) — they do NOT spawn new tokens.
+   See `design-system/theme.html#type` for live specimens. */
+
+/* ----- Display (Newsreader, weight 500, tight tracking) ----------------- */
+.t-displayHero { font-family: var(--font-display); font-size: 76px; font-weight: 500; line-height: 1.04; letter-spacing: -0.02em; color: var(--color-slate); }
+.t-displayXL   { font-family: var(--font-display); font-size: 48px; font-weight: 500; line-height: 1.08; letter-spacing: -0.012em; color: var(--color-slate); }
+.t-displayLG   { font-family: var(--font-display); font-size: 36px; font-weight: 500; line-height: 1.08; letter-spacing: -0.012em; color: var(--color-slate); }
+.t-displayMD   { font-family: var(--font-display); font-size: 28px; font-weight: 500; line-height: 1.2;  letter-spacing: -0.012em; color: var(--color-slate); }
+.t-displaySM   { font-family: var(--font-display); font-size: 22px; font-weight: 500; line-height: 1.2;  letter-spacing: -0.008em; color: var(--color-slate); }
+
+/* ----- Display Italic (Newsreader Italic, weight 400) ------------------- */
+.t-displayItalicHero { font-family: var(--font-display); font-style: italic; font-size: 64px; font-weight: 400; line-height: 1.05; letter-spacing: -0.018em; color: var(--color-slate); }
+.t-displayItalicLG   { font-family: var(--font-display); font-style: italic; font-size: 40px; font-weight: 400; line-height: 1.18; letter-spacing: -0.012em; color: var(--color-slate); }
+.t-displayItalicMD   { font-family: var(--font-display); font-style: italic; font-size: 26px; font-weight: 400; line-height: 1.35; color: var(--color-slate); }
+
+/* ----- Prose (IBM Plex Sans, weight 400) -------------------------------- */
+.t-proseLG     { font-family: var(--font-sans); font-size: 20px; font-weight: 400; line-height: 1.55; color: var(--color-slate); }
+.t-prose       { font-family: var(--font-sans); font-size: 16px; font-weight: 400; line-height: 1.55; color: var(--color-slate); }
+.t-proseSM     { font-family: var(--font-sans); font-size: 14px; font-weight: 400; line-height: 1.5;  color: var(--color-slate); }
+.t-proseXS     { font-family: var(--font-sans); font-size: 12px; font-weight: 400; line-height: 1.45; color: var(--color-slate); }
+
+/* ----- Meta (IBM Plex Mono, weight 400) --------------------------------- */
+.t-metaMD      { font-family: var(--font-mono); font-size: 14px; font-weight: 400; line-height: 1.45; color: var(--color-slate); font-variant-numeric: tabular-nums; }
+.t-metaSM      { font-family: var(--font-mono); font-size: 11px; font-weight: 400; line-height: 1.4;  letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-graphite); }
+.t-metaXS      { font-family: var(--font-mono); font-size: 10px; font-weight: 400; line-height: 1.4;  letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-graphite); }
+
+/* ----- Modifier axes ---------------------------------------------------- */
+/* Color — overrides any token's default ink. */
+.ink-slate    { color: var(--color-slate); }
+.ink-graphite { color: var(--color-graphite); }
+.ink-fog      { color: var(--color-fog); }
+.ink-oxide    { color: var(--color-oxide); }
+.ink-verdigris { color: var(--color-verdigris); }
+.ink-ochre    { color: var(--color-ochre); }
+.ink-tile     { color: var(--color-tile); }
+
+/* Modifiers */
+.tabular     { font-variant-numeric: tabular-nums; }
+.weight-500  { font-weight: 500; }
+.italic      { font-style: italic; }
+.upper       { text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* When you genuinely need to override a token's default line-height / weight
+   for a one-off call site, use these utility modifiers — but if you find
+   yourself reaching for them often on the same combination, add a token. */
+
 /* ----- Layout (Site → page chrome) --------------------------------------- */
 
 .dms-layout-outer {

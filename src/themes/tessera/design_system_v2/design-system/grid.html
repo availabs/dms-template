@@ -6,169 +6,178 @@
   <title>Tessera — Design System / Grid</title>
   <link rel="stylesheet" href="_dms-page.css">
   <style>
-    /* Page-specific styling for the grid/structural-spec mockups. */
+    /* Page-specific styling for the column-grid spec mockups.
+       Type comes from t-* token classes on elements; rules here are
+       layout / color / borders only. */
 
-    /* The hierarchy diagram */
-    .hierarchy {
-      display: grid;
-      grid-template-columns: 200px 1fr 1fr;
-      gap: var(--space-3);
-      font-family: var(--font-mono);
-      font-size: 12px;
-    }
-    .hierarchy .level {
-      display: contents;
-    }
-    .hierarchy .level-name {
-      padding: var(--space-3) var(--space-3);
-      background: var(--color-parchment);
-      border: 1px solid var(--color-grout-light);
-      border-right: 3px solid var(--color-oxide);
-      color: var(--color-slate);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      display: flex;
-      align-items: center;
-    }
-    .hierarchy .level-owns {
-      padding: var(--space-3) var(--space-3);
-      background: var(--color-bone);
-      border: 1px solid var(--color-grout-light);
-      color: var(--color-graphite);
-      line-height: 1.55;
-    }
-    .hierarchy .level-styles {
-      padding: var(--space-3) var(--space-3);
-      background: var(--color-bone);
-      border: 1px solid var(--color-grout-light);
-      color: var(--color-graphite);
-      line-height: 1.55;
-    }
-    .hierarchy .arrow {
-      grid-column: 1 / -1;
-      text-align: center;
-      color: var(--color-fog);
-      font-size: 14px;
-    }
-
-    /* Layout mockup — shows TopNav / SideNav / content area chrome */
-    .layout-mockup {
-      background: var(--color-bone);
-      border: 1px solid var(--color-grout-light);
-      padding: 0;
-      overflow: hidden;
-    }
-    .layout-mockup .lm-topnav {
-      height: 32px;
-      background: var(--color-bone);
-      border-bottom: 1px solid var(--color-grout-light);
-      display: flex;
-      align-items: center;
-      padding: 0 var(--space-3);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--color-graphite);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .layout-mockup .lm-body {
-      display: flex;
-      min-height: 180px;
-    }
-    .layout-mockup .lm-sidenav {
-      width: 80px;
-      background: var(--color-bone);
-      border-right: 1px solid var(--color-grout-light);
-      padding: var(--space-3);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--color-graphite);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .layout-mockup .lm-content {
-      flex: 1;
-      padding: var(--space-4);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3);
-    }
-    .layout-mockup .lm-group {
-      background: var(--color-parchment);
-      border: 1px solid var(--color-grout-light);
-      padding: var(--space-3);
-      min-height: 40px;
-      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--color-graphite);
-    }
-    .layout-mockup .lm-group-header {
-      background: transparent;
-      box-shadow: none;
-      border: 1px dashed var(--color-fog);
-    }
-
-    /* LayoutGroup variant mockup (single band in isolation) */
-    .group-mockup {
-      background: var(--color-bone);
-      border: 1px solid var(--color-grout-light);
-      padding: var(--space-4);
-      min-height: 120px;
-    }
-
-    /* Caption row beneath each mockup */
-    .caption {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-      margin-top: var(--space-3);
-    }
-    .caption .name {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--color-slate);
-      font-weight: 500;
-    }
-    .caption .desc {
-      font-family: var(--font-sans);
-      font-size: 13px;
-      color: var(--color-graphite);
-      line-height: 1.5;
-    }
-
-    /* Picker matrix for "which Layout / LayoutGroup for which page" */
-    .picker-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: var(--font-sans);
-      font-size: 14px;
-    }
-    .picker-table th {
+    /* The grid spec table */
+    .spec-table { width: 100%; border-collapse: collapse; }
+    .spec-table th {
       text-align: left;
-      font-family: var(--font-sans);
-      font-size: 11px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--color-graphite);
-      border-bottom: 1px solid var(--color-slate);
       padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--color-slate);
+      color: var(--color-graphite);
     }
-    .picker-table td {
+    .spec-table td {
       padding: var(--space-3);
       border-bottom: 1px solid var(--color-grout-light);
       vertical-align: top;
       color: var(--color-slate);
     }
-    .picker-table tr:last-child td { border-bottom: 0; }
-    .picker-table .key {
-      font-family: var(--font-mono);
-      font-size: 12px;
+    .spec-table tr:last-child td { border-bottom: 0; }
+    .spec-table code {
+      background: var(--color-limestone);
+      padding: 0.06em 0.32em;
+      border: 1px solid var(--color-grout-light);
+      border-radius: 2px;
+      color: var(--color-slate);
+    }
+
+    /* Column ruler — the faux 12-col grid that sits above every example */
+    .col-ruler {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+    .col-ruler .col {
+      background: var(--color-limestone);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-2) 0;
+      text-align: center;
+      color: var(--color-fog);
+    }
+
+    /* Span demo grid — same shape, used to lay out the actual example tiles */
+    .span-row {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+    .span-tile {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-4);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .span-tile .tile-eyebrow {
       color: var(--color-oxide);
+    }
+    .span-tile .tile-title {
+      color: var(--color-slate);
+    }
+    .span-tile .tile-body {
+      color: var(--color-graphite);
+    }
+
+    /* Column-span class helpers — match tessera-theme.js sizes map */
+    .cs-1  { grid-column: span 1; }
+    .cs-2  { grid-column: span 2; }
+    .cs-3  { grid-column: span 3; }
+    .cs-4  { grid-column: span 4; }
+    .cs-5  { grid-column: span 5; }
+    .cs-6  { grid-column: span 6; }
+    .cs-7  { grid-column: span 7; }
+    .cs-8  { grid-column: span 8; }
+    .cs-9  { grid-column: span 9; }
+    .cs-10 { grid-column: span 10; }
+    .cs-11 { grid-column: span 11; }
+    .cs-12 { grid-column: span 12; }
+
+    /* The span label that sits at the top of each tile */
+    .span-label {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-1);
+      color: var(--color-fog);
+    }
+    .span-label .key {
+      color: var(--color-oxide);
+    }
+
+    /* Row-span example — give the row a fixed cell-height so spans show */
+    .row-row {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-auto-rows: 60px;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+    .rs-1 { grid-row: span 1; }
+    .rs-2 { grid-row: span 2; }
+    .rs-3 { grid-row: span 3; }
+
+    /* In-editor grid view — mirrors tessera-theme.js gridviewItem treatment.
+       The codebase default for gridviewItem is dashed-bordered slate-50 columns;
+       Tessera leans on bone + grout-light hairline dashed. */
+    .editor-view {
+      position: relative;
+      background: var(--color-bone);
+      border: 1px solid var(--color-grout-light);
+      padding: 0;
+    }
+    .editor-view .grid-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--space-2);
+      padding: var(--space-3);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .editor-view .grid-overlay .cell {
+      background: rgba(217, 210, 194, 0.18);
+      border-left: 1px dashed var(--color-grout-light);
+      border-right: 1px dashed var(--color-grout-light);
+      height: 100%;
+    }
+    .editor-view .sections {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--space-2);
+      padding: var(--space-3);
+    }
+    .editor-view .ed-section {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+      padding: var(--space-3);
+      min-height: 56px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .editor-view .ed-section.outlined {
+      border: 1px dashed var(--color-oxide);
+    }
+
+    /* Rules-for-picking list */
+    .rule-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+    }
+    .rule-list .rule {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: var(--space-3);
+      align-items: baseline;
+    }
+    .rule-list .rule .num {
+      color: var(--color-oxide);
+      text-align: right;
+    }
+    .rule-list .rule .body {
+      color: var(--color-slate);
     }
   </style>
 </head>
@@ -189,6 +198,8 @@
           <div class="dms-topnav-right">
             <span><a href="theme.html" style="color:inherit; text-decoration:none">theme</a></span>
             <span style="color:var(--color-grout-light)">·</span>
+            <span><a href="layouts.html" style="color:inherit; text-decoration:none">layouts</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
             <span>grid</span>
             <span style="color:var(--color-grout-light)">·</span>
             <span><a href="components.html" style="color:inherit; text-decoration:none">components</a></span>
@@ -204,6 +215,7 @@
           <div class="dms-sidenav-section">
             <div class="dms-sidenav-eyebrow">design system</div>
             <a class="dms-sidenav-item" href="theme.html"><span class="dms-sidenav-item-mark"></span>theme</a>
+            <a class="dms-sidenav-item" href="layouts.html"><span class="dms-sidenav-item-mark"></span>layouts</a>
             <a class="dms-sidenav-item dms-sidenav-item--active" href="grid.html"><span class="dms-sidenav-item-mark"></span>grid</a>
             <a class="dms-sidenav-item" href="components.html"><span class="dms-sidenav-item-mark"></span>components</a>
             <a class="dms-sidenav-item" href="patterns.html"><span class="dms-sidenav-item-mark"></span>patterns</a>
@@ -211,14 +223,22 @@
           <div class="dms-sidenav-section">
             <div class="dms-sidenav-eyebrow">pages</div>
             <a class="dms-sidenav-item" href="../pages/civic-overview.html"><span class="dms-sidenav-item-mark"></span>civic overview</a>
+            <a class="dms-sidenav-item" href="../pages/docs-page.html"><span class="dms-sidenav-item-mark"></span>docs page</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-homepage.html"><span class="dms-sidenav-item-mark"></span>marketing home</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-comparison.html"><span class="dms-sidenav-item-mark"></span>marketing compare</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-theory.html"><span class="dms-sidenav-item-mark"></span>marketing theory</a>
+            <a class="dms-sidenav-item" href="../pages/product-dataset-view.html"><span class="dms-sidenav-item-mark"></span>dataset view</a>
+            <a class="dms-sidenav-item" href="../pages/product-page-editor.html"><span class="dms-sidenav-item-mark"></span>page editor</a>
+            <a class="dms-sidenav-item" href="../pages/product-site-overview.html"><span class="dms-sidenav-item-mark"></span>site overview</a>
           </div>
           <div class="dms-sidenav-section">
             <div class="dms-sidenav-eyebrow">on this page</div>
-            <a class="dms-sidenav-item" href="#hierarchy" style="font-size:13px;font-weight:400">hierarchy</a>
-            <a class="dms-sidenav-item" href="#layouts" style="font-size:13px;font-weight:400">layout variants</a>
-            <a class="dms-sidenav-item" href="#groups" style="font-size:13px;font-weight:400">layoutGroup variants</a>
-            <a class="dms-sidenav-item" href="#nesting" style="font-size:13px;font-weight:400">nesting</a>
-            <a class="dms-sidenav-item" href="#picker" style="font-size:13px;font-weight:400">which to use</a>
+            <a class="dms-sidenav-item t-proseSM" href="#spec">grid spec</a>
+            <a class="dms-sidenav-item t-proseSM" href="#vocab">column spans</a>
+            <a class="dms-sidenav-item t-proseSM" href="#fractions">fraction keys</a>
+            <a class="dms-sidenav-item t-proseSM" href="#rowspans">row spans</a>
+            <a class="dms-sidenav-item t-proseSM" href="#editor">editor view</a>
+            <a class="dms-sidenav-item t-proseSM" href="#rules">picking spans</a>
           </div>
         </aside>
 
@@ -231,323 +251,420 @@
                 <span class="sep">/</span>
                 <span>grid</span>
               </div>
-              <h1 class="dms-page-title">Grid — the structural layer.</h1>
+              <h1 class="dms-page-title">Grid — every section sits on this column grid.</h1>
               <p class="dms-page-lede">
-                Layout and LayoutGroup are the two primitives every DMS page is built from. They have no rich content of their own — they're the bands and surfaces every Section sits inside. The brand decides which variants exist; authors pick which one each page or band uses.
+                This page documents the <strong>sectionArray</strong> column grid that every Section inside any LayoutGroup is laid out on. It is <em>not</em> the page chrome (Layout / LayoutGroup variants — see <a href="layouts.html">layouts</a>). The grid covers the page-content area only: it begins where Sections begin. Pick a span from the documented <code>sizes</code> vocabulary for each Section; never set a freehand width.
               </p>
             </div>
           </section>
 
-          <!-- Hierarchy diagram -->
-          <section id="hierarchy" class="dms-group-content">
+          <!-- Grid spec -->
+          <section id="spec" class="dms-group-content">
             <div class="dms-group-content-inner">
               <div class="dms-section">
-                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · HIERARCHY</div>
-                <h2 class="dms-section-title">The five layers.</h2>
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · GRID SPEC</div>
+                <h2 class="dms-section-title">The spec — Tessera's chosen sectionArray values.</h2>
                 <p class="dms-section-lede">
-                  Every DMS surface lives somewhere inside this nest. The brand styles the layers; authors arrange Sections inside them. Nothing in DMS sits outside this hierarchy.
+                  Pulled directly from <code>tessera-theme.js</code> · <code>pages.sectionArray.styles[0]</code>. The codebase default is a 6-column grid with a 1020px <code>centered</code> max-width; Tessera ships a 12-column grid at 1280px to give authors finer span control and to align with the brand's gallery surface.
                 </p>
 
-                <div class="hierarchy" style="margin-top: var(--space-5);">
-                  <div class="level-name">Site</div>
-                  <div class="level-owns">routing · ThemeContext · theme resolution</div>
-                  <div class="level-styles">supplies the theme; styled only via theme overrides</div>
-
-                  <div class="arrow">↓</div>
-
-                  <div class="level-name">Layout</div>
-                  <div class="level-owns">page chrome: outer wrapper, optional TopNav, optional SideNav, content area</div>
-                  <div class="level-styles">3 wrapper class keys (outerWrapper, wrapper, wrapper2, wrapper3, childWrapper) + nav configuration</div>
-
-                  <div class="arrow">↓</div>
-
-                  <div class="level-name">LayoutGroup</div>
-                  <div class="level-owns">a band within a Layout: header / content / footer / auth</div>
-                  <div class="level-styles">3 wrapper class keys (wrapper1, wrapper2, wrapper3) per named variant</div>
-
-                  <div class="arrow">↓</div>
-
-                  <div class="level-name">Section</div>
-                  <div class="level-owns">an editable block: title, group membership, the component instance it wraps</div>
-                  <div class="level-styles">section chrome from the pages pattern theme</div>
-
-                  <div class="arrow">↓</div>
-
-                  <div class="level-name">Component</div>
-                  <div class="level-owns">the actual content: Card, Spreadsheet, Graph, Map, Lexical, Header, …</div>
-                  <div class="level-styles">each primitive's own theme keys (see <a href="components.html">components</a>)</div>
-                </div>
-
-                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
-                  <span style="color:var(--color-oxide);">⌘ the contract →</span> a brand styles the chrome and the primitives; authors compose pages by picking which LayoutGroup variants to use and which Sections to drop inside. There are no bespoke per-page layouts because there are no escape hatches from the hierarchy. <strong>The constraint is the feature.</strong>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Layout variants -->
-          <section id="layouts" class="dms-group-content">
-            <div class="dms-group-content-inner">
-              <div class="dms-section">
-                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · LAYOUT VARIANTS</div>
-                <h2 class="dms-section-title">Layout — three named styles.</h2>
-                <p class="dms-section-lede">
-                  Each named Layout style is a different page-chrome configuration. The brand ships three; sites can add more. Switch styles per route to differentiate marketing, app, and bare surfaces.
-                </p>
-
-                <div class="dms-grid dms-grid-3" style="margin-top: var(--space-5); gap: var(--space-5);">
-
-                  <div>
-                    <div class="layout-mockup">
-                      <div class="lm-topnav">TopNav · main</div>
-                      <div class="lm-body">
-                        <div class="lm-content">
-                          <div class="lm-group lm-group-header">header</div>
-                          <div class="lm-group">content</div>
-                          <div class="lm-group">content</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="caption">
-                      <span class="name">layout.styles[0] · default</span>
-                      <span class="desc">Marketing, public-facing. TopNav visible, SideNav absent, generous content area on bone.</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div class="layout-mockup">
-                      <div class="lm-topnav">TopNav · compact</div>
-                      <div class="lm-body">
-                        <div class="lm-sidenav">SideNav<br>compact</div>
-                        <div class="lm-content">
-                          <div class="lm-group">content</div>
-                          <div class="lm-group">content</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="caption">
-                      <span class="name">layout.styles[1] · app</span>
-                      <span class="desc">Authoring, admin, dashboards. Both navs visible. Denser content gutters; the chrome the working surface lives inside.</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div class="layout-mockup">
-                      <div class="lm-body">
-                        <div class="lm-content" style="padding: var(--space-5); align-items: center; justify-content: center;">
-                          <div class="lm-group" style="width: 60%; text-align: center;">content fills viewport</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="caption">
-                      <span class="name">layout.styles[2] · bare</span>
-                      <span class="desc">Auth, embedded views, print. No navs, no chrome; content fills the viewport.</span>
-                    </div>
-                  </div>
-
-                </div>
-
-                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
-                  <span class="key">theme key →</span> <code>layout.styles[N] = { outerWrapper, wrapper, wrapper2, wrapper3, childWrapper }</code> · 5 class keys per named style · TopNav and SideNav visibility configured via <code>layout.options.{topNav, sideNav}.size</code>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- LayoutGroup variants -->
-          <section id="groups" class="dms-group-content">
-            <div class="dms-group-content-inner">
-              <div class="dms-section">
-                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · LAYOUTGROUP VARIANTS</div>
-                <h2 class="dms-section-title">LayoutGroup — four surface recipes.</h2>
-                <p class="dms-section-lede">
-                  A LayoutGroup is a single band of content. Each named variant is a different surface recipe: boxed vs. unboxed, hairline vs. flat, padding density, background. Authors pick which recipe for each band on a page.
-                </p>
-
-                <div class="dms-grid dms-grid-2" style="margin-top: var(--space-5); gap: var(--space-5);">
-
-                  <!-- content -->
-                  <div>
-                    <div class="group-mockup">
-                      <div style="background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); min-height: 80px;">
-                        <div class="designator" style="margin-bottom: var(--space-2);">A Section lives here</div>
-                        <div style="font-family: var(--font-sans); font-size: 14px; color: var(--color-graphite);">Boxed parchment surface · hairline frame · single subtle lift</div>
-                      </div>
-                    </div>
-                    <div class="caption">
-                      <span class="name">layoutGroup.styles[0] · content</span>
-                      <span class="desc">The default. Parchment card, hairline frame, the single lifted shadow. Main page body and most content bands.</span>
-                    </div>
-                  </div>
-
-                  <!-- header -->
-                  <div>
-                    <div class="group-mockup">
-                      <div style="padding: var(--space-5); min-height: 80px;">
-                        <div class="designator" style="margin-bottom: var(--space-2);">A Section lives here</div>
-                        <div style="font-family: var(--font-display); font-size: 24px; color: var(--color-slate); line-height: 1.2;">Unboxed, sits on the bone background</div>
-                      </div>
-                    </div>
-                    <div class="caption">
-                      <span class="name">layoutGroup.styles[1] · header</span>
-                      <span class="desc">No card surface, no shadow. Content sits directly on the page background. For heroes, page titles, full-bleed bands.</span>
-                    </div>
-                  </div>
-
-                  <!-- auth -->
-                  <div>
-                    <div class="group-mockup" style="display: flex; align-items: center; justify-content: center;">
-                      <div style="background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); width: 240px; text-align: center;">
-                        <div style="font-family: var(--font-display); font-size: 18px; color: var(--color-slate); margin-bottom: var(--space-2);">Sign in</div>
-                        <div style="font-family: var(--font-sans); font-size: 13px; color: var(--color-graphite);">A Section lives here</div>
-                      </div>
-                    </div>
-                    <div class="caption">
-                      <span class="name">layoutGroup.styles[2] · auth</span>
-                      <span class="desc">Boxed and centred vertically. Sign-in, sign-up, password reset.</span>
-                    </div>
-                  </div>
-
-                  <!-- footer -->
-                  <div>
-                    <div class="group-mockup" style="background: var(--color-limestone); border-top: 1px solid var(--color-grout-light); border-bottom: 0; border-left: 0; border-right: 0;">
-                      <div style="padding: var(--space-4); display: flex; justify-content: space-between; align-items: center;">
-                        <span class="designator">Tessera · Design System</span>
-                        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog);">v0.1 · 2026-05-22</span>
-                      </div>
-                    </div>
-                    <div class="caption">
-                      <span class="name">layoutGroup.styles[3] · footer</span>
-                      <span class="desc">Full-bleed band, limestone background, no shadow. Distinct contrast at the bottom of the page.</span>
-                    </div>
-                  </div>
-
-                </div>
-
-                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
-                  <span class="key">theme key →</span> <code>layoutGroup.styles[N] = { wrapper1, wrapper2, wrapper3 }</code> · 3 class keys per named style · Authors pick the variant per band from a dropdown in the section-group editor.
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Nesting example -->
-          <section id="nesting" class="dms-group-content">
-            <div class="dms-group-content-inner">
-              <div class="dms-section">
-                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · NESTING</div>
-                <h2 class="dms-section-title">Nesting — a real page stacks LayoutGroups.</h2>
-                <p class="dms-section-lede">
-                  A page is one Layout containing one or more LayoutGroups. Different bands use different variants — header for the title, content for the body, footer at the bottom. This is what every page in <a href="../pages/">pages/</a> does.
-                </p>
-
-                <div style="margin-top: var(--space-5); background: var(--color-bone); border: 1px solid var(--color-grout-light); padding: 0; overflow: hidden;">
-
-                  <div class="dms-frame-guide" data-guide="LAYOUT · default · TopNav visible" style="padding: var(--space-3);">
-
-                    <div class="dms-frame-guide" data-guide="LAYOUTGROUP · header" style="padding: var(--space-4) var(--space-4) var(--space-4); margin-top: var(--space-4);">
-                      <div style="font-family: var(--font-display); font-size: 28px; color: var(--color-slate); line-height: 1.2;">Page title goes here</div>
-                      <div style="font-family: var(--font-sans); font-size: 14px; color: var(--color-graphite); margin-top: var(--space-2);">Lede paragraph sits on bone, no card surface.</div>
-                    </div>
-
-                    <div class="dms-frame-guide" data-guide="LAYOUTGROUP · content" style="padding: var(--space-4); margin-top: var(--space-3);">
-                      <div style="background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);">
-                        <div class="designator" style="margin-bottom: var(--space-2);">Section · Lexical</div>
-                        <div style="font-family: var(--font-sans); font-size: 14px; color: var(--color-slate);">A rich-text section sits inside the content card.</div>
-                      </div>
-                    </div>
-
-                    <div class="dms-frame-guide" data-guide="LAYOUTGROUP · content" style="padding: var(--space-4); margin-top: var(--space-3);">
-                      <div style="background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);">
-                        <div class="designator" style="margin-bottom: var(--space-2);">Section · dataCard</div>
-                        <div style="font-family: var(--font-sans); font-size: 14px; color: var(--color-slate);">A data-driven card section.</div>
-                      </div>
-                    </div>
-
-                    <div class="dms-frame-guide" data-guide="LAYOUTGROUP · footer" style="margin-top: var(--space-3); padding: var(--space-4); background: var(--color-limestone);">
-                      <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-graphite);">FOOTER · LIMESTONE · NO SHADOW</div>
-                    </div>
-
-                  </div>
-                </div>
-
-                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
-                  <span class="key">authoring →</span> the editor surfaces each LayoutGroup's style as a dropdown. Author picks <code>header</code> for the title band, <code>content</code> for the body, <code>footer</code> for the bottom. No HTML written; the chrome composes itself from the theme.
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Picker matrix -->
-          <section id="picker" class="dms-group-content">
-            <div class="dms-group-content-inner">
-              <div class="dms-section">
-                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · WHICH TO USE</div>
-                <h2 class="dms-section-title">Pick the variant; the chrome composes itself.</h2>
-                <p class="dms-section-lede">
-                  Reference for authors and designers: which Layout / LayoutGroup variant to use for which page kind.
-                </p>
-
-                <table class="picker-table" style="margin-top: var(--space-5);">
+                <table class="spec-table" style="margin-top: var(--space-5);">
                   <thead>
                     <tr>
-                      <th style="width: 24%;">Page kind</th>
-                      <th style="width: 22%;">Layout variant</th>
-                      <th style="width: 54%;">LayoutGroup variants typically stacked</th>
+                      <th class="t-metaSM weight-500" style="width:24%;">Key</th>
+                      <th class="t-metaSM weight-500" style="width:30%;">Tessera value</th>
+                      <th class="t-metaSM weight-500" style="width:46%;">Notes</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>Marketing homepage</td>
-                      <td><span class="key">default</span></td>
-                      <td><span class="key">header</span> (hero) → <span class="key">content</span> (×3–5) → <span class="key">footer</span></td>
+                      <td class="t-metaSM"><code>gridSize</code></td>
+                      <td class="t-proseSM"><code>12</code></td>
+                      <td class="t-proseSM ink-graphite">Twelve columns. Each section's <code>size</code> is a 1–12 span.</td>
                     </tr>
                     <tr>
-                      <td>Long-form / Theory page</td>
-                      <td><span class="key">default</span></td>
-                      <td><span class="key">header</span> (title) → <span class="key">content</span> (single, narrow measure) → <span class="key">footer</span></td>
+                      <td class="t-metaSM"><code>defaultSize</code></td>
+                      <td class="t-proseSM"><code>"12"</code></td>
+                      <td class="t-proseSM ink-graphite">New sections render full-width by default — authors narrow them deliberately, not the other way around.</td>
                     </tr>
                     <tr>
-                      <td>Dashboard / analytics</td>
-                      <td><span class="key">app</span></td>
-                      <td><span class="key">content</span> (header card) → <span class="key">content</span> (chart cards stacked or in grid)</td>
+                      <td class="t-metaSM"><code>container</code></td>
+                      <td class="t-proseSM"><code>w-full grid grid-cols-12</code></td>
+                      <td class="t-proseSM ink-graphite">The Tailwind grid the sections lay on. Twelve columns, gutters from <code>sectionPadding</code>.</td>
                     </tr>
                     <tr>
-                      <td>Dataset / table view</td>
-                      <td><span class="key">app</span></td>
-                      <td><span class="key">content</span> (filter chrome) → <span class="key">content</span> (table card)</td>
+                      <td class="t-metaSM"><code>sectionPadding</code></td>
+                      <td class="t-proseSM"><code>p-2</code> · 8px</td>
+                      <td class="t-proseSM ink-graphite">Per-section inner padding. Codebase default is <code>p-4</code> (16px); Tessera tightens to 8px so the LayoutGroup wrapper's <code>p-6</code> doesn't double-pad.</td>
                     </tr>
                     <tr>
-                      <td>Page editor</td>
-                      <td><span class="key">app</span></td>
-                      <td>Editor chrome lives in the SideNav; <span class="key">content</span> hosts the live preview</td>
+                      <td class="t-metaSM"><code>layouts.centered</code></td>
+                      <td class="t-proseSM"><code>max-w-[1280px] mx-auto</code></td>
+                      <td class="t-proseSM ink-graphite">Matches Tessera's <code>--grid-max</code>. The codebase default is <code>max-w-[1020px]</code>; the override prevents content from rendering as a narrow column inside the wider parchment LayoutGroup.</td>
                     </tr>
                     <tr>
-                      <td>Sign-in / sign-up</td>
-                      <td><span class="key">bare</span></td>
-                      <td><span class="key">auth</span> (single, centred)</td>
+                      <td class="t-metaSM"><code>layouts.fullwidth</code></td>
+                      <td class="t-proseSM"><code>""</code></td>
+                      <td class="t-proseSM ink-graphite">Unchanged — for the rare full-bleed band (gallery hero, edge-to-edge map).</td>
                     </tr>
                     <tr>
-                      <td>Embedded / print</td>
-                      <td><span class="key">bare</span></td>
-                      <td><span class="key">content</span> (single, no chrome)</td>
+                      <td class="t-metaSM"><code>sizes</code> keys</td>
+                      <td class="t-proseSM"><code>"1" · "2" · "3" · "4" · "5" · "6" · "7" · "8" · "9" · "10" · "11" · "12"</code></td>
+                      <td class="t-proseSM ink-graphite">Each key maps to <code>col-span-12 md:col-span-N</code> — stack on mobile, take the requested span at md+.</td>
+                    </tr>
+                    <tr>
+                      <td class="t-metaSM"><code>gridviewItem</code></td>
+                      <td class="t-proseSM">bone + grout-light dashed</td>
+                      <td class="t-proseSM ink-graphite">The "show grid" overlay authors toggle in the editor. See the <a href="#editor">editor view</a> below for the rendered treatment.</td>
                     </tr>
                   </tbody>
                 </table>
 
+                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
+                  <span style="color:var(--color-oxide);">⌘ the contract →</span> the <code>sizes</code> vocabulary is the API authors compose against. The keys are stable strings; new spans require an extra row in the map, never a freehand width on a section.
+                </div>
               </div>
             </div>
           </section>
 
+          <!-- Column-span vocabulary -->
+          <section id="vocab" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · COLUMN-SPAN VOCABULARY</div>
+                <h2 class="dms-section-title">Twelve columns — every span the brand uses, shown to scale.</h2>
+                <p class="dms-section-lede">
+                  The faux ruler below is the same grid every Section sits on. Each example beneath it is a real content stub at the labelled span. Authors compose page bands by stacking these spans inside a LayoutGroup.
+                </p>
+
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-5) 0 var(--space-3); color: var(--color-graphite);">The ruler · 12 columns</h3>
+                <div class="col-ruler t-metaXS">
+                  <div class="col">1</div>
+                  <div class="col">2</div>
+                  <div class="col">3</div>
+                  <div class="col">4</div>
+                  <div class="col">5</div>
+                  <div class="col">6</div>
+                  <div class="col">7</div>
+                  <div class="col">8</div>
+                  <div class="col">9</div>
+                  <div class="col">10</div>
+                  <div class="col">11</div>
+                  <div class="col">12</div>
+                </div>
+
+                <!-- 12 — hero band -->
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-6) 0 var(--space-3); color: var(--color-graphite);"><span style="color:var(--color-oxide)">12</span> · hero band — single section fills the row</h3>
+                <div class="span-row">
+                  <div class="span-tile cs-12">
+                    <span class="span-label t-metaXS"><span class="key">size: "12"</span> · col-span-12</span>
+                    <div class="tile-eyebrow t-metaXS">FEATURE</div>
+                    <div class="tile-title t-displayMD">Sullivan County mitigation overview</div>
+                    <div class="tile-body t-proseSM">A single full-row hero band introduces a page. One section, full width, no neighbours.</div>
+                  </div>
+                </div>
+
+                <!-- 6 + 6 — two-column intro -->
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-6) 0 var(--space-3); color: var(--color-graphite);"><span style="color:var(--color-oxide)">6 + 6</span> · two-column intro — symmetric pair</h3>
+                <div class="span-row">
+                  <div class="span-tile cs-6">
+                    <span class="span-label t-metaXS"><span class="key">size: "6"</span> · col-span-6</span>
+                    <div class="tile-eyebrow t-metaXS">CONTEXT</div>
+                    <div class="tile-title t-displaySM">Why the river floods.</div>
+                    <div class="tile-body t-proseSM">Sullivan sits on the East Branch of the Delaware. Half the county drains to one of two narrow gorges.</div>
+                  </div>
+                  <div class="span-tile cs-6">
+                    <span class="span-label t-metaXS"><span class="key">size: "6"</span> · col-span-6</span>
+                    <div class="tile-eyebrow t-metaXS">ACTION</div>
+                    <div class="tile-title t-displaySM">What the plan funds.</div>
+                    <div class="tile-body t-proseSM">Stream-restoration, culvert sizing, and three early-warning gauges along NY-17.</div>
+                  </div>
+                </div>
+
+                <!-- 4 + 4 + 4 — three-up feature grid -->
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-6) 0 var(--space-3); color: var(--color-graphite);"><span style="color:var(--color-oxide)">4 + 4 + 4</span> · three-up feature grid — even thirds</h3>
+                <div class="span-row">
+                  <div class="span-tile cs-4">
+                    <span class="span-label t-metaXS"><span class="key">size: "4"</span> · col-span-4</span>
+                    <div class="tile-eyebrow t-metaXS">HAZARD</div>
+                    <div class="tile-title t-displaySM">Flooding</div>
+                    <div class="tile-body t-proseSM">Riverine and pluvial. 14 federally declared events since 2000.</div>
+                  </div>
+                  <div class="span-tile cs-4">
+                    <span class="span-label t-metaXS"><span class="key">size: "4"</span> · col-span-4</span>
+                    <div class="tile-eyebrow t-metaXS">HAZARD</div>
+                    <div class="tile-title t-displaySM">Wildfire</div>
+                    <div class="tile-body t-proseSM">WUI exposure across the western towns. Risk rising with drier autumns.</div>
+                  </div>
+                  <div class="span-tile cs-4">
+                    <span class="span-label t-metaXS"><span class="key">size: "4"</span> · col-span-4</span>
+                    <div class="tile-eyebrow t-metaXS">HAZARD</div>
+                    <div class="tile-title t-displaySM">Winter storm</div>
+                    <div class="tile-body t-proseSM">Lake-effect bands cross the Catskills. Roads and grid most exposed.</div>
+                  </div>
+                </div>
+
+                <!-- 3 + 6 + 3 — asymmetric -->
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-6) 0 var(--space-3); color: var(--color-graphite);"><span style="color:var(--color-oxide)">3 + 6 + 3</span> · asymmetric — sidebar + body + sidebar</h3>
+                <div class="span-row">
+                  <div class="span-tile cs-3">
+                    <span class="span-label t-metaXS"><span class="key">size: "3"</span></span>
+                    <div class="tile-eyebrow t-metaXS">META</div>
+                    <div class="tile-body t-proseSM">Published 2026-03-12. Reviewed quarterly.</div>
+                  </div>
+                  <div class="span-tile cs-6">
+                    <span class="span-label t-metaXS"><span class="key">size: "6"</span></span>
+                    <div class="tile-eyebrow t-metaXS">BODY</div>
+                    <div class="tile-title t-displaySM">The mitigation strategy</div>
+                    <div class="tile-body t-proseSM">A single half-width body column sits between two narrow sidebars. The sidebars carry meta + a related-pages list.</div>
+                  </div>
+                  <div class="span-tile cs-3">
+                    <span class="span-label t-metaXS"><span class="key">size: "3"</span></span>
+                    <div class="tile-eyebrow t-metaXS">RELATED</div>
+                    <div class="tile-body t-proseSM">→ Flood plan<br>→ Capital projects<br>→ Funding sources</div>
+                  </div>
+                </div>
+
+                <!-- 8 + 4 — body + sidebar -->
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-6) 0 var(--space-3); color: var(--color-graphite);"><span style="color:var(--color-oxide)">8 + 4</span> · body + sidebar — long-form pairing</h3>
+                <div class="span-row">
+                  <div class="span-tile cs-8">
+                    <span class="span-label t-metaXS"><span class="key">size: "8"</span></span>
+                    <div class="tile-eyebrow t-metaXS">ESSAY</div>
+                    <div class="tile-title t-displaySM">Placing the data on the land.</div>
+                    <div class="tile-body t-proseSM">Long-form reading sits at 8/12 — a comfortable ~66% width that keeps line measure under 90 characters. The remaining 4/12 carries notes, citations, or a thumbnail map.</div>
+                  </div>
+                  <div class="span-tile cs-4">
+                    <span class="span-label t-metaXS"><span class="key">size: "4"</span></span>
+                    <div class="tile-eyebrow t-metaXS">SIDENOTE</div>
+                    <div class="tile-body t-proseSM">"Place" here means a typed row that knows its lat/lon, its watershed, and its plan-code.</div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key t-metaMD ink-oxide">vocabulary →</span> every section on every page in <a href="../pages/">pages/</a> uses one of these <code>size</code> values. A reviewer should be able to imagine the ruler under any band and see each section snap to it.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Per-section span examples / fraction keys -->
+          <section id="fractions" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · FRACTION KEYS</div>
+                <h2 class="dms-section-title">Fraction keys — codebase default, mapped to Tessera's 12-col grid.</h2>
+                <p class="dms-section-lede">
+                  The DMS codebase ships <code>"1/3"</code>, <code>"1/2"</code>, <code>"2/3"</code>, <code>"1"</code> on the 6-column default. Tessera's <code>_replace: ['sizes']</code> wholesale-replaces that map with the 12-col integer keys above — older pages that still encode <code>size: "1/2"</code> won't resolve. The table below shows the conversion authors should make when migrating from the codebase default.
+                </p>
+
+                <table class="spec-table" style="margin-top: var(--space-5);">
+                  <thead>
+                    <tr>
+                      <th class="t-metaSM weight-500" style="width:24%;">Legacy fraction key</th>
+                      <th class="t-metaSM weight-500" style="width:24%;">Tessera 12-col equivalent</th>
+                      <th class="t-metaSM weight-500" style="width:52%;">Rendered as</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="t-metaSM"><code>"1/3"</code></td>
+                      <td class="t-metaSM"><code>"4"</code></td>
+                      <td class="t-proseSM ink-graphite"><code>col-span-12 md:col-span-4</code> — a third of the row at md+</td>
+                    </tr>
+                    <tr>
+                      <td class="t-metaSM"><code>"1/2"</code></td>
+                      <td class="t-metaSM"><code>"6"</code></td>
+                      <td class="t-proseSM ink-graphite"><code>col-span-12 md:col-span-6</code> — half the row at md+</td>
+                    </tr>
+                    <tr>
+                      <td class="t-metaSM"><code>"2/3"</code></td>
+                      <td class="t-metaSM"><code>"8"</code></td>
+                      <td class="t-proseSM ink-graphite"><code>col-span-12 md:col-span-8</code> — two thirds at md+</td>
+                    </tr>
+                    <tr>
+                      <td class="t-metaSM"><code>"1"</code></td>
+                      <td class="t-metaSM"><code>"12"</code></td>
+                      <td class="t-proseSM ink-graphite"><code>col-span-12 md:col-span-12</code> — full row</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
+                  <span style="color:var(--color-oxide);">⌘ migration note →</span> the <code>_replace: ['sizes']</code> flag on Tessera's sectionArray override exists precisely because deep-merging the codebase default would leave the fraction keys live, and <code>"1"</code> would resolve as "1 of 12" (8% width). Tessera's 12-col grid is integer-only.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Row-span vocabulary -->
+          <section id="rowspans" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · ROW SPANS</div>
+                <h2 class="dms-section-title">Row spans — Tessera does not ship them yet.</h2>
+                <p class="dms-section-lede">
+                  The codebase default exposes a <code>rowspans</code> map (<code>"1"</code>..<code>"8"</code>, mapped to <code>md:row-span-N</code>). Tessera's <code>sectionArray</code> style does not declare its own <code>rowspans</code> override — so the codebase default is what's live. The examples below show the <code>"1"</code> / <code>"2"</code> / <code>"3"</code> shapes authors get if they reach for the field.
+                </p>
+
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-5) 0 var(--space-3); color: var(--color-graphite);">Single row · <span style="color:var(--color-oxide)">rowspan "1"</span> (default)</h3>
+                <div class="row-row">
+                  <div class="span-tile cs-6 rs-1">
+                    <span class="span-label t-metaXS"><span class="key">size: "6"</span> · rowspan: "1"</span>
+                    <div class="tile-body t-proseSM">One row tall — the default. Nothing special.</div>
+                  </div>
+                  <div class="span-tile cs-6 rs-1">
+                    <span class="span-label t-metaXS"><span class="key">size: "6"</span> · rowspan: "1"</span>
+                    <div class="tile-body t-proseSM">Sits beside its sibling on the same row.</div>
+                  </div>
+                </div>
+
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-6) 0 var(--space-3); color: var(--color-graphite);">Two-row tall · <span style="color:var(--color-oxide)">rowspan "2"</span></h3>
+                <div class="row-row">
+                  <div class="span-tile cs-4 rs-2">
+                    <span class="span-label t-metaXS"><span class="key">size: "4"</span> · rowspan: "2"</span>
+                    <div class="tile-eyebrow t-metaXS">FEATURE TILE</div>
+                    <div class="tile-body t-proseSM">A tall feature card pinned beside two stacked siblings.</div>
+                  </div>
+                  <div class="span-tile cs-8 rs-1">
+                    <span class="span-label t-metaXS"><span class="key">size: "8"</span> · rowspan: "1"</span>
+                    <div class="tile-body t-proseSM">Top of the column.</div>
+                  </div>
+                  <div class="span-tile cs-8 rs-1">
+                    <span class="span-label t-metaXS"><span class="key">size: "8"</span> · rowspan: "1"</span>
+                    <div class="tile-body t-proseSM">Bottom of the column.</div>
+                  </div>
+                </div>
+
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-6) 0 var(--space-3); color: var(--color-graphite);">Three-row tall · <span style="color:var(--color-oxide)">rowspan "3"</span></h3>
+                <div class="row-row">
+                  <div class="span-tile cs-3 rs-3">
+                    <span class="span-label t-metaXS"><span class="key">size: "3"</span> · rowspan: "3"</span>
+                    <div class="tile-body t-proseSM">A tall navigation column.</div>
+                  </div>
+                  <div class="span-tile cs-9 rs-1"><span class="span-label t-metaXS">"9" · "1"</span><div class="tile-body t-proseSM">Body row 1.</div></div>
+                  <div class="span-tile cs-9 rs-1"><span class="span-label t-metaXS">"9" · "1"</span><div class="tile-body t-proseSM">Body row 2.</div></div>
+                  <div class="span-tile cs-9 rs-1"><span class="span-label t-metaXS">"9" · "1"</span><div class="tile-body t-proseSM">Body row 3.</div></div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
+                  <span style="color:var(--color-oxide);">⌘ guidance →</span> Tessera pages prefer stacking rather than row-spans. Reach for <code>rowspan</code> only when a single visual moment genuinely needs to span the height of two or three neighbours — a tall feature image beside short text rows, for example.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- In-editor grid view -->
+          <section id="editor" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · IN-EDITOR GRID VIEW</div>
+                <h2 class="dms-section-title">"Show grid" — what authors see in the page editor.</h2>
+                <p class="dms-section-lede">
+                  When an author toggles the grid overlay in the page editor, the 12-column ruler is rendered behind the sections as bone-tinted columns with hairline dashed dividers. Sections currently being edited get an oxide dashed outline; resting sections keep their parchment surface. The screenshot below is a static mockup of that view.
+                </p>
+
+                <div class="editor-view" style="margin-top: var(--space-5); min-height: 280px;">
+                  <div class="grid-overlay">
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                  </div>
+                  <div class="sections">
+                    <div class="ed-section cs-12 outlined">
+                      <span class="span-label t-metaXS"><span class="key">size: "12"</span> · editing</span>
+                      <div class="t-displaySM ink-slate">Page hero — being edited</div>
+                    </div>
+                    <div class="ed-section cs-8">
+                      <span class="span-label t-metaXS"><span class="key">size: "8"</span></span>
+                      <div class="t-proseSM ink-slate">Body section, two-thirds width.</div>
+                    </div>
+                    <div class="ed-section cs-4">
+                      <span class="span-label t-metaXS"><span class="key">size: "4"</span></span>
+                      <div class="t-proseSM ink-slate">Sidebar.</div>
+                    </div>
+                    <div class="ed-section cs-4">
+                      <span class="span-label t-metaXS"><span class="key">size: "4"</span></span>
+                      <div class="t-proseSM ink-slate">Feature A.</div>
+                    </div>
+                    <div class="ed-section cs-4">
+                      <span class="span-label t-metaXS"><span class="key">size: "4"</span></span>
+                      <div class="t-proseSM ink-slate">Feature B.</div>
+                    </div>
+                    <div class="ed-section cs-4">
+                      <span class="span-label t-metaXS"><span class="key">size: "4"</span></span>
+                      <div class="t-proseSM ink-slate">Feature C.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
+                  <span class="key t-metaMD ink-oxide">theme keys →</span> <code>gridviewGrid</code> drives the overlay container; <code>gridviewItem</code> drives each ruler column. <code>sectionEditing</code> drives the oxide dashed outline on the section being edited. All three are themable per-site from the <code>pages.sectionArray.styles[0]</code> object.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Rules for picking spans -->
+          <section id="rules" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · PICKING SPANS</div>
+                <h2 class="dms-section-title">Rules for picking spans.</h2>
+                <p class="dms-section-lede">
+                  Short author guidance. Read once; reach for it whenever a page band feels off.
+                </p>
+
+                <div class="rule-list">
+                  <div class="rule">
+                    <div class="num t-metaMD weight-500">01</div>
+                    <div class="body t-proseSM"><strong>Default to full row.</strong> A new section starts at <code>size: "12"</code>. Narrow only when there is a clear reason — pairing two equal ideas, separating body from sidenote, splitting a feature grid.</div>
+                  </div>
+                  <div class="rule">
+                    <div class="num t-metaMD weight-500">02</div>
+                    <div class="body t-proseSM"><strong>Favor symmetric splits.</strong> <code>6 + 6</code> or <code>4 + 4 + 4</code> over <code>5 + 7</code> or <code>3 + 6 + 3</code>. Asymmetric splits earn their place only when the data justifies it (a body essay beside a sidenote, a sticky meta column).</div>
+                  </div>
+                  <div class="rule">
+                    <div class="num t-metaMD weight-500">03</div>
+                    <div class="body t-proseSM"><strong>Long-form reads at 8/12.</strong> Body essays and Lexical sections sit at <code>"8"</code> — wide enough to feel like prose, narrow enough to keep the line measure comfortable. Pair with <code>"4"</code> for notes / citations.</div>
+                  </div>
+                  <div class="rule">
+                    <div class="num t-metaMD weight-500">04</div>
+                    <div class="body t-proseSM"><strong>Heroes are <code>"12"</code>, never <code>"10"</code>.</strong> The whole point of a hero is to claim the page. Don't shave a column off it to feel restrained — use a smaller font instead.</div>
+                  </div>
+                  <div class="rule">
+                    <div class="num t-metaMD weight-500">05</div>
+                    <div class="body t-proseSM"><strong>Row-spans for hierarchy, not as a default.</strong> A tall feature beside short rows is the right moment. "Two of these stacked" is the wrong moment — use two sections instead.</div>
+                  </div>
+                  <div class="rule">
+                    <div class="num t-metaMD weight-500">06</div>
+                    <div class="body t-proseSM"><strong>No freehand widths.</strong> Every Section's width must come from the <code>sizes</code> map. If the desired width isn't there, add a span row to the theme first; don't reach for inline <code>w-[420px]</code>.</div>
+                  </div>
+                  <div class="rule">
+                    <div class="num t-metaMD weight-500">07</div>
+                    <div class="body t-proseSM"><strong>Mobile stacks.</strong> Every <code>"N"</code> resolves to <code>col-span-12 md:col-span-N</code> — sections stack vertically below md, take their declared span at md+. Author for desktop; trust the stack on mobile.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Footer -->
           <section class="dms-group-footer">
             <div class="dms-group-footer-inner">
               <div style="display:flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
                 <div>
-                  <div class="designator">Tessera · Design System</div>
-                  <div style="margin-top: var(--space-2); font-size:13px; color: var(--color-graphite);">v0.1 · 2026-05-22</div>
+                  <div class="designator t-metaSM">Tessera · Design System</div>
+                  <div class="t-proseSM ink-graphite" style="margin-top: var(--space-2);">v0.1 · 2026-05-22 · sectionArray column grid reference.</div>
                 </div>
-                <div style="font-family:var(--font-mono); font-size: 11px; color: var(--color-fog);">
-                  <a href="theme.html" style="color:inherit;">theme</a> · grid · <a href="components.html" style="color:inherit;">components</a> · <a href="patterns.html" style="color:inherit;">patterns</a>
+                <div class="t-metaSM ink-fog" style="display: grid; gap: var(--space-3); justify-items: end;">
+                  <div>
+                    <a href="theme.html" style="color:inherit;">theme</a> · <a href="layouts.html" style="color:inherit;">layouts</a> · grid · <a href="components.html" style="color:inherit;">components</a> · <a href="patterns.html" style="color:inherit;">patterns</a>
+                  </div>
+                  <div>
+                    <a href="../pages/civic-overview.html" style="color:inherit;">civic overview</a> · <a href="../pages/docs-page.html" style="color:inherit;">docs page</a> · <a href="../pages/marketing-homepage.html" style="color:inherit;">marketing home</a> · <a href="../pages/marketing-comparison.html" style="color:inherit;">marketing compare</a> · <a href="../pages/marketing-theory.html" style="color:inherit;">marketing theory</a> · <a href="../pages/product-dataset-view.html" style="color:inherit;">dataset view</a> · <a href="../pages/product-page-editor.html" style="color:inherit;">page editor</a> · <a href="../pages/product-site-overview.html" style="color:inherit;">site overview</a>
+                  </div>
                 </div>
               </div>
             </div>

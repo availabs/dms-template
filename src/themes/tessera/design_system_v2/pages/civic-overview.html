@@ -18,27 +18,12 @@
       box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
     }
     .kpi .label {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--color-graphite);
       margin-bottom: var(--space-2);
     }
     .kpi .value {
-      font-family: var(--font-display);
-      font-size: 40px;
-      font-weight: 500;
-      color: var(--color-slate);
-      letter-spacing: -0.012em;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
       margin-bottom: var(--space-2);
     }
     .kpi .meta {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--color-fog);
       display: flex;
       justify-content: space-between;
     }
@@ -96,9 +81,6 @@
       padding: var(--space-3) var(--space-4);
       display: flex;
       justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--color-fog);
     }
     .map-attrib .key { color: var(--color-graphite); }
 
@@ -110,16 +92,9 @@
       box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
     }
     .chart-card .title {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 500;
-      color: var(--color-slate);
       margin: 0 0 var(--space-1);
     }
     .chart-card .sub {
-      font-family: var(--font-sans);
-      font-size: 13px;
-      color: var(--color-graphite);
       margin: 0 0 var(--space-4);
     }
     .bars {
@@ -136,11 +111,6 @@
       display: flex;
       gap: 6px;
       margin-top: var(--space-2);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--color-fog);
     }
     .bar-axis span { flex: 1; text-align: center; min-width: 0; }
 
@@ -148,9 +118,6 @@
       display: flex;
       gap: var(--space-4);
       margin-top: var(--space-4);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--color-graphite);
       flex-wrap: wrap;
     }
     .legend .item { display: inline-flex; align-items: center; gap: 6px; }
@@ -173,31 +140,13 @@
       background: var(--color-limestone);
       border: 1px solid var(--color-grout-light);
       display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--color-graphite);
-    }
-    .stakeholder .name {
-      font-family: var(--font-sans);
-      font-size: 14px;
-      color: var(--color-slate);
     }
     .stakeholder .role {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--color-fog);
       margin-top: 2px;
     }
     .stakeholder .status {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       padding: 2px 6px;
       border: 1px solid var(--color-grout-light);
-      color: var(--color-graphite);
     }
     .stakeholder .status.draft { color: var(--color-ochre); border-color: var(--color-ochre); }
     .stakeholder .status.submitted { color: var(--color-verdigris); border-color: var(--color-verdigris); }
@@ -212,21 +161,16 @@
       margin-bottom: var(--space-3);
     }
     .side-card .title {
-      font-family: var(--font-display);
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--color-slate);
       margin: 0 0 var(--space-3);
     }
     .side-card .row {
       display: flex; justify-content: space-between; align-items: baseline;
       padding: 6px 0;
       border-bottom: 1px solid var(--color-grout-light);
-      font-family: var(--font-sans); font-size: 13px;
     }
     .side-card .row:last-child { border-bottom: 0; }
     .side-card .row .k { color: var(--color-graphite); }
-    .side-card .row .v { color: var(--color-slate); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+    .side-card .row .v { color: var(--color-slate); }
   </style>
 </head>
 <body>
@@ -245,11 +189,11 @@
             </a>
           </div>
           <div class="dms-topnav-right" style="gap: var(--space-4);">
-            <a href="#" style="color: var(--color-slate); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Counties</a>
-            <a href="#" style="color: var(--color-graphite); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Hazards</a>
-            <a href="#" style="color: var(--color-graphite); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Actions</a>
-            <a href="#" style="color: var(--color-graphite); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Plans</a>
-            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog);">am3081@gmail.com</span>
+            <a href="#" class="t-proseSM weight-500 ink-slate" style="text-decoration: none;">Counties</a>
+            <a href="#" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Hazards</a>
+            <a href="#" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Actions</a>
+            <a href="#" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Plans</a>
+            <span class="t-metaSM ink-fog">am3081@gmail.com</span>
           </div>
         </div>
       </nav>
@@ -269,17 +213,17 @@
           </div>
           <div class="dms-sidenav-section">
             <div class="dms-sidenav-eyebrow">catskills counties</div>
-            <a class="dms-sidenav-item" href="#" style="font-weight:400;font-size:13px;"><span class="dms-sidenav-item-mark"></span>Delaware</a>
-            <a class="dms-sidenav-item" href="#" style="font-weight:400;font-size:13px;"><span class="dms-sidenav-item-mark"></span>Greene</a>
-            <a class="dms-sidenav-item" href="#" style="font-weight:400;font-size:13px;"><span class="dms-sidenav-item-mark" style="background:var(--color-oxide);"></span>Sullivan</a>
-            <a class="dms-sidenav-item" href="#" style="font-weight:400;font-size:13px;"><span class="dms-sidenav-item-mark"></span>Ulster</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Delaware</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Greene</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark" style="background:var(--color-oxide);"></span>Sullivan</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Ulster</a>
           </div>
           <div class="dms-sidenav-section">
             <div class="dms-sidenav-eyebrow">on this page</div>
-            <a class="dms-sidenav-item" href="#summary" style="font-weight:400;font-size:13px;">Summary</a>
-            <a class="dms-sidenav-item" href="#map" style="font-weight:400;font-size:13px;">Hazard map</a>
-            <a class="dms-sidenav-item" href="#actions" style="font-weight:400;font-size:13px;">Mitigation actions</a>
-            <a class="dms-sidenav-item" href="#stakeholders" style="font-weight:400;font-size:13px;">Stakeholders</a>
+            <a class="dms-sidenav-item" href="#summary">Summary</a>
+            <a class="dms-sidenav-item" href="#map">Hazard map</a>
+            <a class="dms-sidenav-item" href="#actions">Mitigation actions</a>
+            <a class="dms-sidenav-item" href="#stakeholders">Stakeholders</a>
           </div>
         </aside>
 
@@ -314,24 +258,24 @@
             <div class="dms-group-content-inner" style="padding: 0; background: transparent; border: 0; box-shadow: none;">
               <div class="kpis">
                 <div class="kpi">
-                  <div class="label">Active actions</div>
-                  <div class="value">47</div>
-                  <div class="meta"><span>since 2023-09-15</span><span class="delta">+4 YTD</span></div>
+                  <div class="label t-metaXS ink-graphite">Active actions</div>
+                  <div class="value t-displayLG tabular ink-slate">47</div>
+                  <div class="meta t-metaSM ink-fog"><span>since 2023-09-15</span><span class="delta">+4 YTD</span></div>
                 </div>
                 <div class="kpi">
-                  <div class="label">Completed</div>
-                  <div class="value">12</div>
-                  <div class="meta"><span>25.5% of total</span><span class="delta">+3 YTD</span></div>
+                  <div class="label t-metaXS ink-graphite">Completed</div>
+                  <div class="value t-displayLG tabular ink-slate">12</div>
+                  <div class="meta t-metaSM ink-fog"><span>25.5% of total</span><span class="delta">+3 YTD</span></div>
                 </div>
                 <div class="kpi">
-                  <div class="label">Overdue</div>
-                  <div class="value">6</div>
-                  <div class="meta"><span>3 jurisdictions</span><span class="delta-down">+1 YTD</span></div>
+                  <div class="label t-metaXS ink-graphite">Overdue</div>
+                  <div class="value t-displayLG tabular ink-slate">6</div>
+                  <div class="meta t-metaSM ink-fog"><span>3 jurisdictions</span><span class="delta-down">+1 YTD</span></div>
                 </div>
                 <div class="kpi">
-                  <div class="label">Funding obligated</div>
-                  <div class="value">$3.4M</div>
-                  <div class="meta"><span>FEMA HMGP · HMA</span><span class="delta">+$420K YTD</span></div>
+                  <div class="label t-metaXS ink-graphite">Funding obligated</div>
+                  <div class="value t-displayLG tabular ink-slate">$3.4M</div>
+                  <div class="meta t-metaSM ink-fog"><span>FEMA HMGP · HMA</span><span class="delta">+$420K YTD</span></div>
                 </div>
               </div>
             </div>
@@ -357,13 +301,13 @@
                     <div class="map-overlay-pin" style="left: 50%; top: 65%;"></div>
                     <div class="map-overlay-pin" style="left: 65%; top: 70%;"></div>
                   </div>
-                  <div class="map-attrib">
+                  <div class="map-attrib t-metaSM ink-fog">
                     <span><span class="key">Source</span> · FEMA NFIP Claims v2 · 2,917 records · 1978–2025</span>
                     <span>View · 1962564 · last refreshed 2026-05-22 04:21</span>
                   </div>
                 </div>
 
-                <div class="legend" style="margin-top: var(--space-4);">
+                <div class="legend t-metaSM ink-graphite" style="margin-top: var(--space-4);">
                   <span class="item"><span class="swatch" style="background: var(--color-oxide);"></span> Repetitive loss · 4+ claims</span>
                   <span class="item"><span class="swatch" style="background: var(--color-slate);"></span> Insured property</span>
                   <span class="item"><span class="swatch" style="background: rgba(181, 83, 44, 0.22); border: 1px solid var(--color-oxide);"></span> 1% annual chance flood zone</span>
@@ -386,8 +330,8 @@
 
                   <!-- Stacked bar chart -->
                   <div class="chart-card">
-                    <div class="title">Actions by hazard · status</div>
-                    <div class="sub">Stacked. Sullivan County, 2026-Q2.</div>
+                    <div class="title t-proseLG weight-500 ink-slate">Actions by hazard · status</div>
+                    <div class="sub t-proseSM ink-graphite">Stacked. Sullivan County, 2026-Q2.</div>
 
                     <div class="bars">
                       <!-- Flooding: 22 total (10 active, 7 complete, 3 in progress, 2 overdue) -->
@@ -439,7 +383,7 @@
                         <div class="stack" style="background: var(--color-slate); height: 5%;"></div>
                       </div>
                     </div>
-                    <div class="bar-axis">
+                    <div class="bar-axis t-metaXS ink-fog">
                       <span>Flooding<br>22</span>
                       <span>Severe<br>storm<br>11</span>
                       <span>Wildfire<br>6</span>
@@ -448,7 +392,7 @@
                       <span>Landslide<br>2</span>
                     </div>
 
-                    <div class="legend">
+                    <div class="legend t-metaSM ink-graphite">
                       <span class="item"><span class="swatch" style="background: var(--color-slate);"></span>Active</span>
                       <span class="item"><span class="swatch" style="background: var(--color-verdigris);"></span>Complete</span>
                       <span class="item"><span class="swatch" style="background: var(--color-ochre);"></span>In progress</span>
@@ -460,20 +404,20 @@
                   <!-- Side cards: KPIs + funding -->
                   <div>
                     <div class="side-card">
-                      <div class="title">Plan timeline</div>
-                      <div class="row"><span class="k">Adopted</span><span class="v">2023-09-15</span></div>
-                      <div class="row"><span class="k">Next update due</span><span class="v">2028-09-15</span></div>
-                      <div class="row"><span class="k">Quarterly review</span><span class="v">2026-09-30</span></div>
-                      <div class="row"><span class="k">FEMA approval</span><span class="v">2023-10-04</span></div>
+                      <div class="title t-displaySM weight-500 ink-slate">Plan timeline</div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">Adopted</span><span class="v t-metaMD ink-slate">2023-09-15</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">Next update due</span><span class="v t-metaMD ink-slate">2028-09-15</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">Quarterly review</span><span class="v t-metaMD ink-slate">2026-09-30</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">FEMA approval</span><span class="v t-metaMD ink-slate">2023-10-04</span></div>
                     </div>
 
                     <div class="side-card">
-                      <div class="title">Funding sources</div>
-                      <div class="row"><span class="k">HMGP (FEMA)</span><span class="v">$2,180,000</span></div>
-                      <div class="row"><span class="k">BRIC (FEMA)</span><span class="v">$840,000</span></div>
-                      <div class="row"><span class="k">FMA (FEMA)</span><span class="v">$240,000</span></div>
-                      <div class="row"><span class="k">State match</span><span class="v">$140,000</span></div>
-                      <div class="row" style="margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--color-slate);"><span class="k" style="font-weight: 500; color: var(--color-slate);">Total obligated</span><span class="v" style="color: var(--color-slate); font-weight: 500;">$3,400,000</span></div>
+                      <div class="title t-displaySM weight-500 ink-slate">Funding sources</div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">HMGP (FEMA)</span><span class="v t-metaMD ink-slate">$2,180,000</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">BRIC (FEMA)</span><span class="v t-metaMD ink-slate">$840,000</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">FMA (FEMA)</span><span class="v t-metaMD ink-slate">$240,000</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">State match</span><span class="v t-metaMD ink-slate">$140,000</span></div>
+                      <div class="row" style="margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--color-slate);"><span class="k t-proseSM weight-500 ink-slate">Total obligated</span><span class="v t-metaMD weight-500 ink-slate">$3,400,000</span></div>
                     </div>
                   </div>
                 </div>
@@ -502,7 +446,7 @@
                   </thead>
                   <tbody>
                     <tr>
-                      <td><span class="mono" style="font-size:12px; color:var(--color-graphite);">SU-014</span></td>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-014</span></td>
                       <td>Acquire and demolish 4 repetitive-loss properties on Liberty Rd</td>
                       <td>Liberty, Town of</td>
                       <td>Flooding</td>
@@ -511,7 +455,7 @@
                       <td>2026-05-21</td>
                     </tr>
                     <tr>
-                      <td><span class="mono" style="font-size:12px; color:var(--color-graphite);">SU-022</span></td>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-022</span></td>
                       <td>Install backup generators at 3 emergency shelters</td>
                       <td>Sullivan County (EOC)</td>
                       <td>Severe storm</td>
@@ -520,7 +464,7 @@
                       <td>2026-05-18</td>
                     </tr>
                     <tr>
-                      <td><span class="mono" style="font-size:12px; color:var(--color-graphite);">SU-031</span></td>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-031</span></td>
                       <td>Elevate Town Hall HVAC above 100-yr floodplain</td>
                       <td>Fallsburg, Town of</td>
                       <td>Flooding</td>
@@ -529,7 +473,7 @@
                       <td>2026-05-14</td>
                     </tr>
                     <tr>
-                      <td><span class="mono" style="font-size:12px; color:var(--color-graphite);">SU-007</span></td>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-007</span></td>
                       <td>Fuel-break clearance on Burnt Hill ridge</td>
                       <td>Bethel, Town of</td>
                       <td>Wildfire</td>
@@ -538,7 +482,7 @@
                       <td>2026-05-09</td>
                     </tr>
                     <tr>
-                      <td><span class="mono" style="font-size:12px; color:var(--color-graphite);">SU-019</span></td>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-019</span></td>
                       <td>Stormwater retention pond — Co Rt 161</td>
                       <td>Liberty, Village of</td>
                       <td>Flooding</td>
@@ -547,7 +491,7 @@
                       <td>2026-05-08</td>
                     </tr>
                     <tr>
-                      <td><span class="mono" style="font-size:12px; color:var(--color-graphite);">SU-045</span></td>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-045</span></td>
                       <td>Hazard awareness curriculum · grades 4–6</td>
                       <td>Sullivan County BOCES</td>
                       <td>Multi-hazard</td>
@@ -558,9 +502,9 @@
                   </tbody>
                 </table>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-3); font-family: var(--font-sans); font-size: 13px; color: var(--color-graphite);">
+                <div class="t-proseSM ink-graphite" style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-3);">
                   <span>Showing 6 of 47 actions</span>
-                  <a href="#" style="color: var(--color-slate);">View all actions →</a>
+                  <a href="#" class="ink-slate">View all actions →</a>
                 </div>
               </div>
             </div>
@@ -578,60 +522,60 @@
 
                 <div class="stakeholders" style="margin-top: var(--space-4);">
                   <div class="stakeholder">
-                    <div class="ini">SC</div>
+                    <div class="ini t-metaSM ink-graphite">SC</div>
                     <div>
-                      <div class="name">Sullivan County Planning</div>
-                      <div class="role">Lead · county-level actions</div>
+                      <div class="name t-proseSM ink-slate">Sullivan County Planning</div>
+                      <div class="role t-metaXS ink-fog">Lead · county-level actions</div>
                     </div>
-                    <div class="status submitted">submitted</div>
+                    <div class="status submitted t-metaXS">submitted</div>
                   </div>
                   <div class="stakeholder">
-                    <div class="ini">LI</div>
+                    <div class="ini t-metaSM ink-graphite">LI</div>
                     <div>
-                      <div class="name">Liberty, Town of</div>
-                      <div class="role">14 actions assigned</div>
+                      <div class="name t-proseSM ink-slate">Liberty, Town of</div>
+                      <div class="role t-metaXS ink-fog">14 actions assigned</div>
                     </div>
-                    <div class="status submitted">submitted</div>
+                    <div class="status submitted t-metaXS">submitted</div>
                   </div>
                   <div class="stakeholder">
-                    <div class="ini">FA</div>
+                    <div class="ini t-metaSM ink-graphite">FA</div>
                     <div>
-                      <div class="name">Fallsburg, Town of</div>
-                      <div class="role">9 actions assigned</div>
+                      <div class="name t-proseSM ink-slate">Fallsburg, Town of</div>
+                      <div class="role t-metaXS ink-fog">9 actions assigned</div>
                     </div>
-                    <div class="status overdue">overdue</div>
+                    <div class="status overdue t-metaXS">overdue</div>
                   </div>
                   <div class="stakeholder">
-                    <div class="ini">BE</div>
+                    <div class="ini t-metaSM ink-graphite">BE</div>
                     <div>
-                      <div class="name">Bethel, Town of</div>
-                      <div class="role">7 actions assigned</div>
+                      <div class="name t-proseSM ink-slate">Bethel, Town of</div>
+                      <div class="role t-metaXS ink-fog">7 actions assigned</div>
                     </div>
-                    <div class="status submitted">submitted</div>
+                    <div class="status submitted t-metaXS">submitted</div>
                   </div>
                   <div class="stakeholder">
-                    <div class="ini">MO</div>
+                    <div class="ini t-metaSM ink-graphite">MO</div>
                     <div>
-                      <div class="name">Monticello, Village of</div>
-                      <div class="role">6 actions assigned</div>
+                      <div class="name t-proseSM ink-slate">Monticello, Village of</div>
+                      <div class="role t-metaXS ink-fog">6 actions assigned</div>
                     </div>
-                    <div class="status draft">draft</div>
+                    <div class="status draft t-metaXS">draft</div>
                   </div>
                   <div class="stakeholder">
-                    <div class="ini">NE</div>
+                    <div class="ini t-metaSM ink-graphite">NE</div>
                     <div>
-                      <div class="name">Neversink, Town of</div>
-                      <div class="role">4 actions assigned</div>
+                      <div class="name t-proseSM ink-slate">Neversink, Town of</div>
+                      <div class="role t-metaXS ink-fog">4 actions assigned</div>
                     </div>
-                    <div class="status submitted">submitted</div>
+                    <div class="status submitted t-metaXS">submitted</div>
                   </div>
                   <div class="stakeholder">
-                    <div class="ini">CA</div>
+                    <div class="ini t-metaSM ink-graphite">CA</div>
                     <div>
-                      <div class="name">Callicoon, Town of</div>
-                      <div class="role">3 actions assigned</div>
+                      <div class="name t-proseSM ink-slate">Callicoon, Town of</div>
+                      <div class="role t-metaXS ink-fog">3 actions assigned</div>
                     </div>
-                    <div class="status overdue">overdue</div>
+                    <div class="status overdue t-metaXS">overdue</div>
                   </div>
                 </div>
               </div>
@@ -644,13 +588,14 @@
               <div style="display: flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
                 <div>
                   <div class="designator">Mitigation Atlas · NY State Hazard Plan</div>
-                  <div style="margin-top: var(--space-2); font-size: 13px; color: var(--color-graphite); max-width: 60ch;">
+                  <div class="t-proseSM ink-graphite" style="margin-top: var(--space-2); max-width: 60ch;">
                     A worked example demonstrating the Tessera theme on a civic-dashboard surface. Real composition; placeholder data.
                   </div>
                 </div>
-                <div style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog); text-align: right;">
+                <div class="t-metaSM ink-fog" style="text-align: right;">
                   Tessera Design System v0.1 · 2026-05-22<br>
                   <a href="../design-system/theme.html" style="color: inherit;">theme</a> ·
+                  <a href="../design-system/layouts.html" style="color: inherit;">layouts</a> ·
                   <a href="../design-system/grid.html" style="color: inherit;">grid</a> ·
                   <a href="../design-system/components.html" style="color: inherit;">components</a> ·
                   <a href="../design-system/patterns.html" style="color: inherit;">patterns</a>

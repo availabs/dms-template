@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingua — Docs / Concepts / Themes</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* =======================================================================
+       Page-local styling for the documentation template. Most styling comes
+       from _dms-page.css and _shared.css; this block carries only the docs-
+       specific chrome (3-pane layout, breadcrumb, drop-cap, on-this-page
+       rail, prev/next nav). Brief §6.3 / §4.4 — docs are Lingua's home
+       turf; the drop-cap on chapter openers is the one v0.1 holdover.
+       ======================================================================= */
+
+    /* ---- Docs-shaped TopNav (overrides the generic one) ---- */
+    .docs-topnav-inner {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: var(--space-6);
+      padding: 0 var(--space-6);
+      height: 60px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    .docs-topnav-brand {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      text-decoration: none;
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.018em;
+      color: var(--color-ink);
+    }
+    .docs-topnav-brand .diacritic { color: var(--color-accent); }
+    .docs-topnav-brand .sep { color: var(--color-border-strong); font-weight: 400; margin: 0 6px; }
+    .docs-topnav-brand .area { font-family: var(--font-mono); font-size: 13px; color: var(--color-mute); font-weight: 400; letter-spacing: 0; }
+    .docs-search {
+      position: relative;
+      display: flex;
+      align-items: center;
+      max-width: 520px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .docs-search svg {
+      position: absolute;
+      left: 12px;
+      width: 14px;
+      height: 14px;
+      stroke: var(--color-mute);
+      stroke-width: 1.75;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+    .docs-search input {
+      flex: 1;
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 8px 12px 8px 34px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink-soft);
+      outline: none;
+      transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+    }
+    .docs-search input::placeholder { color: var(--color-mute); }
+    .docs-search input:focus { border-color: var(--color-accent); background: var(--color-surface); }
+    .docs-search .kbd {
+      position: absolute;
+      right: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      pointer-events: none;
+    }
+    .docs-topnav-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-ink-soft);
+    }
+    .docs-topnav-right a { text-decoration: none; color: var(--color-ink-soft); display: inline-flex; align-items: center; gap: 6px; }
+    .docs-topnav-right a:hover { color: var(--color-ink); }
+    .docs-topnav-right svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.75; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ---- Three-pane childWrapper ---- */
+    .docs-shell {
+      display: grid;
+      grid-template-columns: 256px minmax(0, 1fr) 220px;
+      align-items: start;
+      width: 100%;
+      max-width: 100%;
+      gap: 0;
+      flex: 1;
+    }
+    @media (max-width: 1200px) {
+      .docs-shell { grid-template-columns: 240px minmax(0, 1fr); }
+      .docs-rail { display: none; }
+    }
+    @media (max-width: 900px) {
+      .docs-shell { grid-template-columns: minmax(0, 1fr); }
+      .docs-sidebar { display: none; }
+    }
+    .docs-sidebar {
+      position: sticky;
+      top: 60px;
+      align-self: stretch;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      padding: var(--space-6) var(--space-4) var(--space-7);
+    }
+    .docs-rail {
+      position: sticky;
+      top: 60px;
+      align-self: stretch;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      padding: var(--space-7) var(--space-5);
+      border-left: 1px solid var(--color-border-subtle);
+    }
+
+    /* ---- Prose column ---- */
+    .docs-prose-outer {
+      padding: var(--space-9) var(--space-7) var(--space-10);
+      display: flex;
+      justify-content: center;
+    }
+    .docs-prose {
+      max-width: 720px;
+      width: 100%;
+      font-family: var(--font-sans);
+      color: var(--color-ink);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+    .docs-prose p { margin: 0 0 var(--space-5); color: var(--color-ink-soft); font-size: 16px; line-height: 1.65; }
+    .docs-prose p strong, .docs-prose strong { color: var(--color-ink); font-weight: 600; }
+    .docs-prose a { color: var(--color-accent); text-decoration: none; border-bottom: 1px solid rgba(59, 91, 255, 0.30); transition: border-color var(--dur-snap) var(--ease-snap); }
+    .docs-prose a:hover { border-bottom-color: var(--color-accent); }
+    .docs-prose code:not(.ling-code code):not(.ling-terminal code) {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--color-surface-sunken);
+      border: 1px solid var(--color-border-subtle);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      color: var(--color-ink);
+    }
+    .docs-prose .l-h3 { margin: var(--space-9) 0 var(--space-4); }
+    .docs-prose .ling-code,
+    .docs-prose .ling-terminal,
+    .docs-prose .ling-table-wrap,
+    .docs-prose .docs-callout { margin: var(--space-7) 0; }
+
+    /* ---- Breadcrumb ---- */
+    .docs-breadcrumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: var(--space-4);
+    }
+    .docs-breadcrumb a { color: var(--color-mute); text-decoration: none; border: 0; }
+    .docs-breadcrumb a:hover { color: var(--color-ink-soft); }
+    .docs-breadcrumb .chev { width: 10px; height: 10px; stroke: var(--color-border-strong); stroke-width: 1.5; fill: none; }
+    .docs-breadcrumb .here { color: var(--color-ink-soft); }
+
+    /* ---- Chapter title + subtitle ---- */
+    .docs-chapter-title { margin: 0 0 var(--space-4); text-wrap: balance; }
+    .docs-chapter-subtitle {
+      margin: 0 0 var(--space-5);
+      color: var(--color-ink-soft);
+      text-wrap: pretty;
+    }
+    .docs-meta-pills {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0;
+      margin: 0 0 var(--space-8);
+    }
+
+    /* ---- Drop-cap on first paragraph (allowed on docs chapter openers
+           per brief §4.4 — not editorial italic, just a chapter device.) ---- */
+    .docs-dropcap::first-letter {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 64px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      color: var(--color-ink);
+      float: left;
+      padding: 4px 12px 0 0;
+      margin-top: 4px;
+    }
+
+    /* ---- Table wrapper (so the bordered card surrounds it) ---- */
+    .ling-table-wrap {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--color-surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .ling-table-wrap .ling-table th:first-child,
+    .ling-table-wrap .ling-table td:first-child { padding-left: 20px; }
+    .ling-table-wrap .ling-table th:last-child,
+    .ling-table-wrap .ling-table td:last-child { padding-right: 20px; }
+
+    /* ---- Callout (a card with an accent left rule; NOT italic display) ---- */
+    .docs-callout {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-left: 4px solid var(--color-accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-5) var(--space-6);
+      box-shadow: var(--shadow-sm);
+    }
+    .docs-callout__label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: var(--space-2);
+    }
+    .docs-callout__label::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-accent);
+    }
+    .docs-callout p { margin: 0; color: var(--color-ink-soft); font-size: 14px; line-height: 1.6; }
+
+    /* ---- Prev / next chapter navigation ---- */
+    .docs-pager {
+      margin-top: var(--space-10);
+      padding-top: var(--space-7);
+      border-top: 1px solid var(--color-border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+    .docs-pager a {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: var(--space-4) var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+    }
+    .docs-pager a:hover {
+      border-color: var(--color-border-strong);
+      background: var(--color-surface-soft);
+    }
+    .docs-pager a.next { text-align: right; align-items: flex-end; }
+    .docs-pager .step {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+    }
+    .docs-pager .title {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-ink);
+      letter-spacing: -0.01em;
+    }
+
+    /* ---- On-this-page rail ---- */
+    .rail-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      font-weight: 500;
+      margin-bottom: var(--space-3);
+      padding-left: 10px;
+    }
+    .rail-list { display: flex; flex-direction: column; gap: 1px; margin-bottom: var(--space-7); }
+    .rail-link {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-mute);
+      text-decoration: none;
+      padding: 5px 0 5px 10px;
+      border-left: 2px solid transparent;
+      transition: color var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+      line-height: 1.45;
+    }
+    .rail-link:hover { color: var(--color-ink-soft); }
+    .rail-link--active {
+      color: var(--color-accent);
+      border-left-color: var(--color-accent);
+      font-weight: 500;
+    }
+    .rail-edit {
+      padding-left: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-mute);
+      text-decoration: none;
+    }
+    .rail-edit:hover { color: var(--color-accent); }
+    .rail-edit svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 1.75; fill: none; }
+
+    /* ---- Footer (docs-specific) ---- */
+    .docs-feedback {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .docs-feedback .q {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink-soft);
+      font-weight: 500;
+      margin-right: var(--space-3);
+    }
+    .docs-feedback-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      color: var(--color-ink-soft);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: border-color var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+    }
+    .docs-feedback-btn:hover { border-color: var(--color-ink); color: var(--color-ink); }
+
+    .docs-foot-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-5);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding-bottom: var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .docs-foot-meta strong { color: var(--color-ink-soft); font-weight: 500; }
+    .docs-foot-meta .commit {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      color: var(--color-accent);
+      letter-spacing: 0.04em;
+    }
+
+    .docs-foot-links {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-7);
+    }
+    @media (max-width: 900px) { .docs-foot-links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .docs-foot-links .col h4 {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      margin: 0 0 var(--space-3);
+    }
+    .docs-foot-links .col a {
+      display: block;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      padding: 4px 0;
+      transition: color var(--dur-snap) var(--ease-snap);
+    }
+    .docs-foot-links .col a:hover { color: var(--color-accent); }
+    .docs-foot-links .col a.here { color: var(--color-accent); font-weight: 500; }
+
+    .docs-foot-base {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: var(--space-6);
+      margin-top: var(--space-2);
+      border-top: 1px solid var(--color-border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .docs-foot-base .lockup { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--color-ink); text-transform: none; letter-spacing: -0.018em; }
+    .docs-foot-base .lockup .diacritic { color: var(--color-accent); }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required on every page per skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="../design-system/theme.html">theme</a>
+    <a class="lingua-metanav__link" href="../design-system/layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="../design-system/grid.html">grid</a>
+    <a class="lingua-metanav__link" href="../design-system/components.html">components</a>
+    <a class="lingua-metanav__link" href="../design-system/patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- Docs-shaped TopNav: brand · search · github / changelog / sign-in -->
+      <nav class="dms-topnav">
+        <div class="docs-topnav-inner">
+          <a class="docs-topnav-brand" href="../design-system/theme.html">
+            L<span class="diacritic">ī</span>ngua<span class="sep">/</span><span class="area">docs</span>
+          </a>
+          <div class="docs-search">
+            <!-- icon: Search -->
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Search the docs — types, sections, CLI commands…" aria-label="Search docs">
+            <span class="kbd">&#8984;K</span>
+          </div>
+          <div class="docs-topnav-right">
+            <a href="#">
+              <!-- icon: Github -->
+              <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+              GitHub
+            </a>
+            <a href="#">Changelog</a>
+            <a href="#" class="ling-btn ling-btn--secondary ling-btn--sm">Sign in</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- Three-pane childWrapper -->
+        <div class="dms-layout-child" style="padding:0;">
+          <div class="docs-shell">
+
+            <!-- ========== LEFT: docs sidebar ========== -->
+            <aside class="docs-sidebar dms-sidenav" style="background:transparent; border-right:1px solid var(--color-border); padding-top: var(--space-6);">
+
+              <div class="dms-sidenav-section">
+                <div class="dms-sidenav-eyebrow">Getting started</div>
+                <a class="dms-sidenav-item" href="#">Installation</a>
+                <a class="dms-sidenav-item" href="#">First page</a>
+                <a class="dms-sidenav-item" href="#">Adding data</a>
+                <a class="dms-sidenav-item" href="#">Publishing</a>
+              </div>
+
+              <div class="dms-sidenav-section">
+                <div class="dms-sidenav-eyebrow">Concepts</div>
+                <a class="dms-sidenav-item" href="#">The row format</a>
+                <a class="dms-sidenav-item" href="#">Patterns</a>
+                <a class="dms-sidenav-item dms-sidenav-item--active" href="#">Themes</a>
+                <a class="dms-sidenav-item" href="#">Plugins</a>
+                <a class="dms-sidenav-item" href="#">Hosting models</a>
+              </div>
+
+              <div class="dms-sidenav-section">
+                <div class="dms-sidenav-eyebrow">Reference</div>
+                <a class="dms-sidenav-item" href="#">Card columns</a>
+                <a class="dms-sidenav-item" href="#">Lexical</a>
+                <a class="dms-sidenav-item" href="#">Datasets</a>
+                <a class="dms-sidenav-item" href="#">Auth</a>
+                <a class="dms-sidenav-item" href="#">CLI</a>
+                <a class="dms-sidenav-item" href="#">Theme keys</a>
+              </div>
+
+              <div class="dms-sidenav-section">
+                <div class="dms-sidenav-eyebrow">Cookbook</div>
+                <a class="dms-sidenav-item" href="#">Civic dashboard</a>
+                <a class="dms-sidenav-item" href="#">Radio station</a>
+                <a class="dms-sidenav-item" href="#">Documentation site</a>
+                <a class="dms-sidenav-item" href="#">Analytics page</a>
+              </div>
+
+            </aside>
+
+            <!-- ========== MIDDLE: prose column (max 720px) ========== -->
+            <main class="docs-prose-outer">
+              <article class="docs-prose">
+
+                <!-- Mono breadcrumb -->
+                <nav class="docs-breadcrumb" aria-label="Breadcrumb">
+                  <a href="#">Docs</a>
+                  <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+                  <a href="#">Concepts</a>
+                  <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+                  <span class="here">Themes</span>
+                </nav>
+
+                <h1 class="l-displayMD docs-chapter-title">Themes &mdash; the brand the rows wear.</h1>
+                <p class="l-proseLG docs-chapter-subtitle">
+                  A Lingua theme is a small JavaScript object that maps every primitive in the platform to a brand &mdash; the same row data, rendered in your voice.
+                </p>
+
+                <div class="docs-meta-pills">
+                  <span class="ling-pill ling-pill--accent">v0.2</span>
+                  <span class="ling-pill">Last edited 2026-05-24</span>
+                  <span class="ling-pill">10 min read</span>
+                </div>
+
+                <!-- ===== Opening paragraph with drop-cap ===== -->
+                <p class="docs-dropcap" id="overview">
+                  Lingua treats every page, section, dataset, and query as a row with the same shape. A theme is the layer that decides what those rows <em>look like</em> on the screen &mdash; the font of a headline, the radius of a button, the depth of a shadow under a card, the color of a focused input&rsquo;s border. The data underneath is invariant; the theme is the dialect spoken on top of it. Two sites can hold the same content and feel completely different, because the theme &mdash; not the row &mdash; owns the visual voice.
+                </p>
+
+                <p>
+                  Themes are plain JavaScript. There is no theme compiler, no preprocessing step, no proprietary token format. Everything a theme can change is reachable through three top-level keys: <code>layout</code>, <code>components</code>, and <code>textSettings</code>. The rest of this chapter walks through how those keys compose, what they expect, and how to author a theme that survives the four canonical surfaces &mdash; marketing, docs, dashboards, and dataset views &mdash; without forking.
+                </p>
+
+                <p>
+                  Before we open a file: a theme is <strong>additive</strong>. You don&rsquo;t inherit the default theme and then override it &mdash; you supply only the keys you want to change, and Lingua deep-merges your object over the baseline. This is why most published themes are short. The Lingua default is already opinionated; a brand-correct theme usually fits in under 400 lines.
+                </p>
+
+                <!-- ===== Code sample 1: theme skeleton ===== -->
+                <div class="ling-code">
+                  <div class="ling-code__chrome">
+                    <span class="filename">themes/my-brand/index.js</span>
+                    <div class="actions">
+                      <button type="button">Copy</button>
+                    </div>
+                  </div>
+                  <div class="ling-code__body"><pre><span class="tk-com">// A minimal theme. Three keys; everything else inherits from the default.</span>
+<span class="tk-kw">import</span> { defaultTheme } <span class="tk-kw">from</span> <span class="tk-str">"@availabs/lingua"</span><span class="tk-punc">;</span>
+
+<span class="tk-kw">export const</span> <span class="tk-fn">theme</span> <span class="tk-punc">=</span> <span class="tk-punc">{</span>
+  <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"my-brand"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">version</span><span class="tk-punc">:</span> <span class="tk-str">"0.1.0"</span><span class="tk-punc">,</span>
+
+  <span class="tk-prop">layout</span><span class="tk-punc">:</span> <span class="tk-punc">{</span>
+    <span class="tk-prop">styles</span><span class="tk-punc">:</span> <span class="tk-punc">[</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"default"</span><span class="tk-punc">,</span> <span class="tk-prop">outerWrapper</span><span class="tk-punc">:</span> <span class="tk-str">"bg-white text-zinc-900"</span> <span class="tk-punc">},</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"app"</span><span class="tk-punc">,</span>     <span class="tk-prop">outerWrapper</span><span class="tk-punc">:</span> <span class="tk-str">"bg-zinc-50 text-zinc-900"</span> <span class="tk-punc">},</span>
+    <span class="tk-punc">]</span><span class="tk-punc">,</span>
+  <span class="tk-punc">},</span>
+
+  <span class="tk-prop">components</span><span class="tk-punc">:</span> <span class="tk-punc">{</span>
+    <span class="tk-prop">button</span><span class="tk-punc">:</span> <span class="tk-punc">{</span>
+      <span class="tk-prop">primary</span><span class="tk-punc">:</span> <span class="tk-str">"bg-[#3B5BFF] text-white rounded-md px-4 py-2"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">ghost</span><span class="tk-punc">:</span>   <span class="tk-str">"text-zinc-700 hover:bg-zinc-100 rounded-md px-3 py-2"</span><span class="tk-punc">,</span>
+    <span class="tk-punc">},</span>
+  <span class="tk-punc">},</span>
+
+  <span class="tk-prop">textSettings</span><span class="tk-punc">:</span> <span class="tk-punc">{</span>
+    <span class="tk-prop">styles</span><span class="tk-punc">:</span> <span class="tk-punc">[</span><span class="tk-punc">{</span>
+      <span class="tk-prop">display</span><span class="tk-punc">:</span> <span class="tk-str">"font-display font-bold tracking-tight"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">prose</span><span class="tk-punc">:</span>   <span class="tk-str">"font-sans text-base leading-relaxed"</span><span class="tk-punc">,</span>
+    <span class="tk-punc">}]</span><span class="tk-punc">,</span>
+  <span class="tk-punc">},</span>
+<span class="tk-punc">}</span><span class="tk-punc">;</span></pre></div>
+                </div>
+
+                <p>
+                  A theme that exports an object of this shape is registerable. The next section &mdash; <a href="#anatomy">Anatomy of a theme override</a> &mdash; walks each key, but it&rsquo;s worth pausing on the structure. <code>layout</code> owns the chrome around every page: outer wrapper, top nav, side nav, the slot where content lives. <code>components</code> owns the visual treatment of every primitive the platform renders &mdash; <code>button</code>, <code>card</code>, <code>input</code>, <code>multiSelect</code>, <code>topnav</code>, and the rest. <code>textSettings</code> owns the named font styles authors pick from inside Card cells.
+                </p>
+
+                <!-- ===== Code sample 2: layout variant ===== -->
+                <div class="ling-code">
+                  <div class="ling-code__chrome">
+                    <span class="filename">themes/my-brand/layout.js</span>
+                    <div class="actions">
+                      <button type="button">Copy</button>
+                    </div>
+                  </div>
+                  <div class="ling-code__body"><pre><span class="tk-com">// Layout styles are an ordered list; the page tree picks one by name.</span>
+<span class="tk-kw">export const</span> <span class="tk-fn">layout</span> <span class="tk-punc">=</span> <span class="tk-punc">{</span>
+  <span class="tk-prop">styles</span><span class="tk-punc">:</span> <span class="tk-punc">[</span>
+    <span class="tk-punc">{</span>
+      <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"default"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">outerWrapper</span><span class="tk-punc">:</span> <span class="tk-str">"bg-white text-zinc-900"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">wrapper</span><span class="tk-punc">:</span>      <span class="tk-str">"flex flex-col min-h-screen"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">wrapper2</span><span class="tk-punc">:</span>     <span class="tk-str">"flex-1 flex flex-col w-full"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">wrapper3</span><span class="tk-punc">:</span>     <span class="tk-str">"flex flex-1 w-full"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">childWrapper</span><span class="tk-punc">:</span> <span class="tk-str">"flex-1 flex flex-col"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">topNav</span><span class="tk-punc">:</span>       <span class="tk-punc">{</span> <span class="tk-prop">size</span><span class="tk-punc">:</span> <span class="tk-str">"md"</span><span class="tk-punc">,</span> <span class="tk-prop">sticky</span><span class="tk-punc">:</span> <span class="tk-kw">true</span> <span class="tk-punc">},</span>
+      <span class="tk-prop">sideNav</span><span class="tk-punc">:</span>      <span class="tk-punc">{</span> <span class="tk-prop">size</span><span class="tk-punc">:</span> <span class="tk-str">"none"</span> <span class="tk-punc">},</span>
+    <span class="tk-punc">},</span>
+    <span class="tk-punc">{</span>
+      <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"docs"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">outerWrapper</span><span class="tk-punc">:</span> <span class="tk-str">"bg-white text-zinc-900"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">childWrapper</span><span class="tk-punc">:</span> <span class="tk-str">"grid grid-cols-[256px_1fr_220px]"</span><span class="tk-punc">,</span>
+      <span class="tk-prop">topNav</span><span class="tk-punc">:</span>       <span class="tk-punc">{</span> <span class="tk-prop">size</span><span class="tk-punc">:</span> <span class="tk-str">"md"</span><span class="tk-punc">,</span> <span class="tk-prop">sticky</span><span class="tk-punc">:</span> <span class="tk-kw">true</span><span class="tk-punc">,</span> <span class="tk-prop">search</span><span class="tk-punc">:</span> <span class="tk-kw">true</span> <span class="tk-punc">},</span>
+      <span class="tk-prop">sideNav</span><span class="tk-punc">:</span>      <span class="tk-punc">{</span> <span class="tk-prop">size</span><span class="tk-punc">:</span> <span class="tk-str">"compact"</span><span class="tk-punc">,</span> <span class="tk-prop">side</span><span class="tk-punc">:</span> <span class="tk-str">"left"</span> <span class="tk-punc">},</span>
+    <span class="tk-punc">},</span>
+  <span class="tk-punc">],</span>
+<span class="tk-punc">}</span><span class="tk-punc">;</span></pre></div>
+                </div>
+
+                <p>
+                  Each Layout style is a recipe for the page chrome. The page&rsquo;s row decides which recipe to use by name (<code>layoutStyle: "docs"</code>), and Lingua renders the matching wrapper stack with the configured navigation. The recipe you&rsquo;re reading right now uses a three-column <code>docs</code> layout &mdash; a sidebar on the left, a 720-pixel reading column in the middle, an on-this-page rail on the right &mdash; assembled from exactly those keys.
+                </p>
+
+                <!-- ===== Terminal: create-theme CLI ===== -->
+                <div class="ling-terminal">
+                  <div class="ling-terminal__chrome">
+                    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                    <span class="title">~/sites/avail-docs</span>
+                  </div>
+                  <div class="ling-terminal__body">
+<span class="prompt">lingua theme new my-theme</span>
+<span class="dim">  ↳ scaffolded</span> <span class="out">themes/my-theme/index.js</span>
+<span class="dim">  ↳ scaffolded</span> <span class="out">themes/my-theme/layout.js</span>
+<span class="dim">  ↳ scaffolded</span> <span class="out">themes/my-theme/components.js</span>
+<span class="dim">  ↳ scaffolded</span> <span class="out">themes/my-theme/textSettings.js</span>
+<span class="dim">  ↳ registered in</span> <span class="out">themes/index.js</span>
+<span class="ok">✓ theme &quot;my-theme&quot; ready in 184ms</span>
+
+<span class="dim">Next:</span>
+  <span class="out">lingua dev</span>           <span class="dim">— open the site with the new theme active</span>
+  <span class="out">lingua theme apply my-theme</span>  <span class="dim">— set as the site default</span><span class="cursor"></span></div>
+                </div>
+
+                <p>
+                  The CLI scaffolds the four files at the shape Lingua expects, then registers them in the theme index. If you prefer to start from someone else&rsquo;s theme, <code>lingua theme fork &lt;name&gt;</code> copies an existing theme into your project so you can edit it like your own. Either way the result is the same: a folder of plain JS the rest of the codebase can read.
+                </p>
+
+                <!-- ===== H3 sub-heading + 2 paragraphs + 1 more code sample ===== -->
+                <h3 class="l-h3" id="anatomy">Anatomy of a theme override</h3>
+
+                <p>
+                  Most theme work happens inside <code>components</code>. Each primitive entry is either a string of Tailwind classes (for primitives with a single visual treatment) or an object of <em>named styles</em>, where each named style is itself a string of classes. The named-style pattern is what lets a brand ship variants &mdash; <code>primary</code>, <code>secondary</code>, <code>danger</code>, <code>ghost</code> &mdash; that author-facing tools surface as a dropdown. The contract between theme and platform is the set of keys the primitive&rsquo;s <code>.theme.jsx</code> sibling declares; supply any subset and the rest fall back to the default.
+                </p>
+
+                <p>
+                  The button is the canonical example. Its <code>.theme.jsx</code> sibling exports a default object listing every key the live <code>&lt;Button&gt;</code> reads: <code>primary</code>, <code>secondary</code>, <code>ghost</code>, <code>danger</code>, plus optional state variants like <code>disabled</code>. A theme that ships only <code>primary</code> and <code>ghost</code> will still render the other two &mdash; the live <code>&lt;Button&gt;</code> just falls back to the default classes for the unsupplied keys.
+                </p>
+
+                <!-- ===== Code sample 3: components.button styled ===== -->
+                <div class="ling-code">
+                  <div class="ling-code__chrome">
+                    <span class="filename">themes/my-brand/components.js</span>
+                    <div class="actions">
+                      <button type="button">Copy</button>
+                    </div>
+                  </div>
+                  <div class="ling-code__body"><pre><span class="tk-com">// One named style per button variant. Each value is a string of</span>
+<span class="tk-com">// Tailwind utilities the live Button.jsx will apply.</span>
+<span class="tk-kw">export const</span> <span class="tk-fn">components</span> <span class="tk-punc">=</span> <span class="tk-punc">{</span>
+  <span class="tk-prop">button</span><span class="tk-punc">:</span> <span class="tk-punc">{</span>
+    <span class="tk-prop">primary</span><span class="tk-punc">:</span> [
+      <span class="tk-str">"inline-flex items-center gap-2 px-4 py-2"</span><span class="tk-punc">,</span>
+      <span class="tk-str">"bg-[#3B5BFF] hover:bg-[#2F4AE0] active:bg-[#2540B8]"</span><span class="tk-punc">,</span>
+      <span class="tk-str">"text-white text-sm font-medium rounded-md"</span><span class="tk-punc">,</span>
+      <span class="tk-str">"transition-colors duration-150 ease-out"</span><span class="tk-punc">,</span>
+    ].<span class="tk-fn">join</span>(<span class="tk-str">" "</span>)<span class="tk-punc">,</span>
+    <span class="tk-prop">ghost</span><span class="tk-punc">:</span>   <span class="tk-str">"text-zinc-700 hover:bg-zinc-100 rounded-md px-3 py-2"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">danger</span><span class="tk-punc">:</span>  <span class="tk-str">"bg-[#FF5630] text-white rounded-md px-4 py-2 hover:bg-[#E04020]"</span><span class="tk-punc">,</span>
+  <span class="tk-punc">},</span>
+
+  <span class="tk-prop">card</span><span class="tk-punc">:</span> <span class="tk-punc">{</span>
+    <span class="tk-prop">wrapper</span><span class="tk-punc">:</span> <span class="tk-str">"bg-white border border-zinc-200 rounded-lg shadow-sm"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">header</span><span class="tk-punc">:</span>  <span class="tk-str">"p-6 border-b border-zinc-100"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">body</span><span class="tk-punc">:</span>    <span class="tk-str">"p-6"</span><span class="tk-punc">,</span>
+  <span class="tk-punc">},</span>
+<span class="tk-punc">}</span><span class="tk-punc">;</span></pre></div>
+                </div>
+
+                <!-- ===== Callout: docs-style note ===== -->
+                <aside class="docs-callout" role="note">
+                  <div class="docs-callout__label">Note</div>
+                  <p>
+                    Theme strings are Tailwind utility classes resolved at build time. If you reach for an arbitrary value &mdash; <code>bg-[#3B5BFF]</code> &mdash; make sure your <code>tailwind.config.js</code> safelists the brand palette, or the class will be pruned in production. The CLI&rsquo;s <code>lingua theme apply</code> step rewrites the safelist for you; if you wire a theme by hand, mirror its <code>content</code> array.
+                  </p>
+                </aside>
+
+                <p>
+                  The same pattern applies to every primitive: <code>input</code>, <code>multiSelect</code>, <code>tabs</code>, <code>switch</code>, <code>card</code>, <code>topnav</code>, <code>sidenav</code>, <code>dataCard</code>. The list of keys is fixed by the source files; the values are entirely yours. To find the keys for a primitive you haven&rsquo;t touched before, open its <code>.theme.jsx</code> sibling in <code>src/dms/packages/dms/src/ui/components/</code> &mdash; the default export <em>is</em> the contract.
+                </p>
+
+                <!-- ===== Theme keys reference table ===== -->
+                <div class="ling-table-wrap">
+                  <table class="ling-table">
+                    <thead>
+                      <tr>
+                        <th>Key</th>
+                        <th>Component</th>
+                        <th>Default</th>
+                        <th>Brand override</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="mono">layout.styles[0].outerWrapper</td>
+                        <td>Layout</td>
+                        <td class="mono">bg-white</td>
+                        <td class="mono">bg-white text-zinc-900</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">layout.styles[0].topNav.size</td>
+                        <td>Layout</td>
+                        <td class="mono">md</td>
+                        <td class="mono">md sticky</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">components.button.primary</td>
+                        <td>Button</td>
+                        <td class="mono">bg-blue-600</td>
+                        <td class="mono">bg-[#3B5BFF] rounded-md</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">components.button.ghost</td>
+                        <td>Button</td>
+                        <td class="mono">text-zinc-600</td>
+                        <td class="mono">text-zinc-700 hover:bg-zinc-100</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">components.card.wrapper</td>
+                        <td>Card</td>
+                        <td class="mono">border rounded</td>
+                        <td class="mono">border-zinc-200 rounded-lg shadow-sm</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">components.input.base</td>
+                        <td>Input</td>
+                        <td class="mono">border rounded</td>
+                        <td class="mono">border-zinc-300 rounded-md focus:border-[#3B5BFF]</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">components.topnav.wrapper</td>
+                        <td>TopNav</td>
+                        <td class="mono">bg-white border-b</td>
+                        <td class="mono">bg-white/90 backdrop-blur sticky top-0</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">textSettings.styles[0].display</td>
+                        <td>Card / Lexical</td>
+                        <td class="mono">font-bold</td>
+                        <td class="mono">font-display font-bold tracking-tight</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <p id="resolution">
+                  When a row is rendered, Lingua walks the theme in a fixed order: the site-level theme first, the Layout style&rsquo;s overrides next, the LayoutGroup style&rsquo;s overrides after that, then the Section&rsquo;s, then the Component&rsquo;s. Each layer can shadow the one above it without replacing it &mdash; an <code>app</code>-style Layout that sets a denser <code>card.body</code> doesn&rsquo;t lose the brand&rsquo;s <code>card.wrapper</code> radius. The merge is deep and class-aware, so two layers that touch the same key get a sensibly resolved string rather than a stomped one.
+                </p>
+
+                <p>
+                  This is why themes survive surface changes. Add a new Layout variant tomorrow &mdash; an <code>analytics</code> shape with a sticky filter bar &mdash; and your existing theme keeps working: the analytics Layout reads the same component keys as every other Layout. The brand voice is decoupled from the page chrome because the merge contract guarantees it.
+                </p>
+
+                <!-- ===== Code sample 4: textSettings ===== -->
+                <div class="ling-code">
+                  <div class="ling-code__chrome">
+                    <span class="filename">themes/my-brand/textSettings.js</span>
+                    <div class="actions">
+                      <button type="button">Copy</button>
+                    </div>
+                  </div>
+                  <div class="ling-code__body"><pre><span class="tk-com">// textSettings.styles[0] is the brand's default named-style set.</span>
+<span class="tk-com">// Authors pick these by name in the Card cell editor's "Value font" dropdown.</span>
+<span class="tk-kw">export const</span> <span class="tk-fn">textSettings</span> <span class="tk-punc">=</span> <span class="tk-punc">{</span>
+  <span class="tk-prop">styles</span><span class="tk-punc">:</span> <span class="tk-punc">[{</span>
+    <span class="tk-prop">displayHero</span><span class="tk-punc">:</span> <span class="tk-str">"font-display font-bold text-7xl tracking-tighter leading-[1.02]"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">displayXL</span><span class="tk-punc">:</span>   <span class="tk-str">"font-display font-semibold text-5xl tracking-tight leading-tight"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">displayMD</span><span class="tk-punc">:</span>   <span class="tk-str">"font-display font-semibold text-3xl tracking-tight"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">h2</span><span class="tk-punc">:</span>          <span class="tk-str">"font-display font-semibold text-2xl tracking-[-0.012em]"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">h3</span><span class="tk-punc">:</span>          <span class="tk-str">"font-display font-semibold text-xl tracking-[-0.008em]"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">prose</span><span class="tk-punc">:</span>       <span class="tk-str">"font-sans text-base leading-relaxed text-zinc-900"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">proseSM</span><span class="tk-punc">:</span>     <span class="tk-str">"font-sans text-sm leading-normal text-zinc-700"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">mono</span><span class="tk-punc">:</span>        <span class="tk-str">"font-mono text-sm tabular-nums text-zinc-700"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">monoXS</span><span class="tk-punc">:</span>      <span class="tk-str">"font-mono text-[11px] uppercase tracking-[0.06em] text-zinc-500"</span><span class="tk-punc">,</span>
+  <span class="tk-punc">}]</span><span class="tk-punc">,</span>
+<span class="tk-punc">}</span><span class="tk-punc">;</span></pre></div>
+                </div>
+
+                <p id="custom-keys">
+                  The <code>textSettings.styles[0]</code> object is the type system in code form &mdash; one entry per token in your design system&rsquo;s Type section. Add an entry here and it appears in the Card cell editor&rsquo;s &ldquo;Value font&rdquo; dropdown, available to every author across the site. Remove one and the pages that referenced it fall back to <code>prose</code>. This is how a brand keeps its type discipline portable: the dropdown is the entire menu.
+                </p>
+
+                <p>
+                  Themes are also the right place to register brand-specific column types &mdash; small focused renderers that the Card grid can slot in alongside data cells. The <code>theme.columnTypes</code> map carries them; each entry pairs a <code>cardHints</code> object (so the Card knows the cell&rsquo;s default span and behavior) with a <code>ViewComp</code> React component. The pattern is intentionally narrow: one column type renders one visual element. Anything larger should be configured Card cells, not a custom component &mdash; see <a href="#">Card columns</a> for the longer argument.
+                </p>
+
+                <!-- ===== Prev / next chapter nav ===== -->
+                <nav class="docs-pager" aria-label="Chapter navigation">
+                  <a href="#" class="prev">
+                    <span class="step">&larr; Previous</span>
+                    <span class="title">Patterns</span>
+                  </a>
+                  <a href="#" class="next">
+                    <span class="step">Next &rarr;</span>
+                    <span class="title">Plugins</span>
+                  </a>
+                </nav>
+
+              </article>
+            </main>
+
+            <!-- ========== RIGHT: on-this-page rail ========== -->
+            <aside class="docs-rail" aria-label="On this page">
+              <div class="rail-eyebrow">On this page</div>
+              <nav class="rail-list">
+                <a class="rail-link" href="#overview">Overview</a>
+                <a class="rail-link" href="#">A theme is plain JS</a>
+                <a class="rail-link" href="#">Layout styles</a>
+                <a class="rail-link rail-link--active" href="#anatomy">Anatomy of a theme override</a>
+                <a class="rail-link" href="#resolution">Resolution order</a>
+                <a class="rail-link" href="#custom-keys">textSettings &amp; column types</a>
+              </nav>
+              <a href="#" class="rail-edit l-proseXS">
+                <!-- icon: ExternalLink -->
+                <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                Edit this page on GitHub &rarr;
+              </a>
+            </aside>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========== FOOTER ========== -->
+      <footer class="dms-group-footer">
+        <div class="dms-group-footer-inner">
+
+          <!-- Was this helpful? -->
+          <div class="docs-feedback">
+            <span class="q">Was this page helpful?</span>
+            <button type="button" class="docs-feedback-btn">
+              <!-- icon: ThumbsUp -->
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+              Yes
+            </button>
+            <button type="button" class="docs-feedback-btn">
+              <!-- icon: ThumbsDown -->
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
+              No
+            </button>
+            <span style="flex:1;"></span>
+            <a href="#" class="ling-btn ling-btn--ghost ling-btn--sm">Open an issue &rarr;</a>
+          </div>
+
+          <!-- Meta-info row: last edited, commit, version -->
+          <div class="docs-foot-meta">
+            <span><strong>Last edited</strong> &nbsp; 2026-05-24 14:08 UTC</span>
+            <span><strong>Commit</strong> &nbsp; <span class="commit">a1ea138</span></span>
+            <span><strong>Version</strong> &nbsp; lingua@0.2.0</span>
+            <span><strong>Author</strong> &nbsp; @lingua-docs</span>
+            <span><strong>Read time</strong> &nbsp; ~10 min</span>
+          </div>
+
+          <!-- Deliverable link block (4 design-system + 8 pages) -->
+          <div class="docs-foot-links">
+            <div class="col">
+              <h4>Design system</h4>
+              <a href="../design-system/theme.html">Theme</a>
+              <a href="../design-system/layouts.html">Layouts</a>
+              <a href="../design-system/grid.html">Grid</a>
+              <a href="../design-system/components.html">Components</a>
+              <a href="../design-system/patterns.html">Patterns</a>
+            </div>
+            <div class="col">
+              <h4>Marketing pages</h4>
+              <a href="marketing-homepage.html">Homepage</a>
+              <a href="marketing-comparison.html">Hosted vs. self-host</a>
+              <a href="marketing-theory.html">Theory</a>
+              <a href="docs-page.html" class="here">Documentation</a>
+            </div>
+            <div class="col">
+              <h4>Product pages</h4>
+              <a href="product-site-overview.html">Site overview</a>
+              <a href="product-page-editor.html">Page editor</a>
+              <a href="product-dataset-view.html">Dataset view</a>
+              <a href="civic-overview.html">Civic overview</a>
+            </div>
+            <div class="col">
+              <h4>Resources</h4>
+              <a href="#">GitHub repository</a>
+              <a href="#">Changelog</a>
+              <a href="#">Theme catalog</a>
+              <a href="#">Community Discord</a>
+            </div>
+          </div>
+
+          <!-- Footer baseline -->
+          <div class="docs-foot-base">
+            <span class="lockup">L<span class="diacritic">ī</span>ngua</span>
+            <span>One row format &middot; pages, data, charts, and maps speak it.</span>
+            <span>&copy; 2026 Lingua &middot; MIT license</span>
+          </div>
+
+        </div>
+      </footer>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

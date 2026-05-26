@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sullivan County · Mitigation Atlas — Lingua</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ---------------------------------------------------------------------
+       Page-local styling for the civic dashboard. Most chrome comes from
+       _dms-page.css + _shared.css. Anything here is page-specific layout.
+       --------------------------------------------------------------------- */
+
+    .civic-breadcrumb {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin-bottom: var(--space-4);
+    }
+    .civic-breadcrumb .sep { color: var(--color-border-strong); opacity: 0.8; }
+    .civic-breadcrumb .here { color: var(--color-accent); }
+    .civic-breadcrumb a {
+      color: var(--color-mute);
+      text-decoration: none;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+    }
+    .civic-breadcrumb a:hover { background: var(--color-surface-soft); color: var(--color-ink); }
+
+    .civic-stats {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+    }
+    .civic-stats .dot { color: var(--color-border-strong); }
+    .civic-stats .num { color: var(--color-ink); font-weight: 500; }
+    .civic-stats .label { color: var(--color-mute); }
+
+    .civic-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-top: var(--space-7);
+    }
+
+    /* KPI strip — 4-column grid */
+    .civic-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+    @media (max-width: 900px) {
+      .civic-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    /* Map card */
+    .civic-map {
+      background: var(--color-surface-soft);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      overflow: hidden;
+    }
+    .civic-map svg { display: block; width: 100%; height: auto; background: #FBFBFC; }
+    .civic-map__legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-6);
+      padding: 12px 18px;
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      letter-spacing: 0.04em;
+    }
+    .civic-map__legend .item { display: inline-flex; align-items: center; gap: 8px; }
+    .civic-map__legend .item .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.08); }
+    .civic-map__legend .item .swatch-box { width: 14px; height: 10px; border-radius: 2px; display: inline-block; }
+    .civic-map__legend .item .label { color: var(--color-ink-soft); }
+    .civic-map__legend .item .count { color: var(--color-mute); margin-left: 4px; }
+
+    /* Bar chart — horizontal stacked */
+    .civic-chart-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 140px;
+      gap: var(--space-4);
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .civic-chart-row:last-child { border-bottom: 0; }
+    .civic-chart-row .cat {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-ink-soft);
+    }
+    .civic-chart-row .bar {
+      display: flex;
+      height: 14px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--color-surface-sunken);
+    }
+    .civic-chart-row .bar .seg { height: 100%; }
+    .civic-chart-row .nums {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+      color: var(--color-mute);
+    }
+    .civic-chart-row .nums .total { color: var(--color-ink); font-weight: 500; }
+
+    .civic-chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-5);
+      padding-top: var(--space-5);
+      margin-top: var(--space-3);
+      border-top: 1px solid var(--color-border-subtle);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      letter-spacing: 0.04em;
+    }
+    .civic-chart-legend .item { display: inline-flex; align-items: center; gap: 8px; }
+    .civic-chart-legend .swatch-box { width: 14px; height: 10px; border-radius: 2px; display: inline-block; }
+    .civic-chart-legend .label { color: var(--color-ink-soft); }
+
+    /* Stakeholder cards */
+    .civic-stake-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+    @media (max-width: 900px) {
+      .civic-stake-grid { grid-template-columns: 1fr; }
+    }
+    .civic-stake-org {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    .civic-stake-mark {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-md);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .civic-stake-mark--ink { background: var(--color-ink); color: var(--color-surface); }
+    .civic-stake-mark--margin { background: var(--color-margin-soft); color: #946A00; }
+
+    /* Arch diagram nodes laid out left-to-right with connectors */
+    .civic-arch-row {
+      display: grid;
+      grid-template-columns: 1fr 24px 1fr 24px 1fr;
+      gap: var(--space-3);
+      align-items: center;
+      margin-top: var(--space-5);
+    }
+    .civic-arch-row .arrow {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      color: var(--color-mute-soft);
+      text-align: center;
+    }
+    .civic-arch-cap {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      margin-top: var(--space-5);
+      letter-spacing: 0.04em;
+    }
+
+    /* Civic footer — data sources */
+    .civic-footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: var(--space-7);
+    }
+    @media (max-width: 900px) {
+      .civic-footer-grid { grid-template-columns: 1fr; }
+    }
+    .civic-footer-col h4 {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin: 0 0 var(--space-3);
+    }
+    .civic-footer-col ul {
+      margin: 0; padding: 0; list-style: none;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .civic-footer-col li {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-ink-soft);
+    }
+    .civic-footer-col li .src { color: var(--color-accent); }
+    .civic-footer-col li .ver { color: var(--color-mute); margin-left: 8px; }
+    .civic-footer-col a { color: var(--color-ink-soft); text-decoration: none; }
+    .civic-footer-col a:hover { color: var(--color-accent); }
+
+    .civic-footer-stamp {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+      padding-top: var(--space-6);
+      margin-top: var(--space-6);
+      border-top: 1px solid var(--color-border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+    }
+    .civic-footer-stamp .dot { color: var(--color-border-strong); }
+
+    .civic-footer-deliv {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-2);
+      margin-top: var(--space-6);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border);
+    }
+    @media (max-width: 900px) {
+      .civic-footer-deliv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .civic-footer-deliv a {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      padding: 6px 0;
+      transition: color var(--dur-snap) var(--ease-snap);
+    }
+    .civic-footer-deliv a:hover { color: var(--color-accent); }
+    .civic-footer-deliv .group {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      padding-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required on every page per design system skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="../design-system/theme.html">theme</a>
+    <a class="lingua-metanav__link" href="../design-system/layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="../design-system/grid.html">grid</a>
+    <a class="lingua-metanav__link" href="../design-system/components.html">components</a>
+    <a class="lingua-metanav__link" href="../design-system/patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="docs-page.html">docs</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav — Mitigation Atlas branded -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="#" class="dms-topnav-brand">
+              Mitigation Atlas
+              <span class="designator">NY</span>
+            </a>
+            <div class="dms-topnav-links">
+              <a href="#" class="active">Counties</a>
+              <a href="#">Hazards</a>
+              <a href="#">Actions</a>
+              <a href="#">Plans</a>
+            </div>
+          </div>
+          <div class="dms-topnav-right">
+            <span class="l-monoXS" style="color:var(--color-mute);">Sullivan / EOC</span>
+            <span style="color:var(--color-border);">·</span>
+            <span>v1.3.0</span>
+            <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border:1px solid var(--color-border); border-radius: var(--radius-pill); background: var(--color-surface);">
+              <span style="width:18px; height:18px; border-radius:50%; background: var(--color-accent-soft); color: var(--color-accent); display:inline-flex; align-items:center; justify-content:center; font-family: var(--font-mono); font-size: 10px; font-weight: 600;">MK</span>
+              <span style="font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: var(--color-ink);">m.kowalski</span>
+            </span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav — regional county navigation -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">regions</div>
+            <a class="dms-sidenav-item" href="#">
+              <span style="width:6px; height:6px; border-radius:50%; background: var(--color-mute-soft);"></span>
+              Adirondacks
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="width:6px; height:6px; border-radius:50%; background: var(--color-mute-soft);"></span>
+              Capital District
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="width:6px; height:6px; border-radius:50%; background: var(--color-accent);"></span>
+              Catskills
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="width:6px; height:6px; border-radius:50%; background: var(--color-mute-soft);"></span>
+              Finger Lakes
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="width:6px; height:6px; border-radius:50%; background: var(--color-mute-soft);"></span>
+              Hudson Valley
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="width:6px; height:6px; border-radius:50%; background: var(--color-mute-soft);"></span>
+              Long Island
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="width:6px; height:6px; border-radius:50%; background: var(--color-mute-soft);"></span>
+              Mohawk Valley
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="width:6px; height:6px; border-radius:50%; background: var(--color-mute-soft);"></span>
+              Western NY
+            </a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">catskills counties</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">Delaware</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">Greene</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">Schoharie</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub dms-sidenav-item--active" href="#">Sullivan</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">Ulster</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#kpis">Indicators</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#exposure">Hazard exposure</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#status">Action status</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#recent">Recent actions</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#data-flow">Data flow</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#stakeholders">Stakeholders</a>
+          </div>
+        </aside>
+
+        <!-- childWrapper -->
+        <div class="dms-layout-child">
+
+          <!-- LayoutGroup "header" — page header -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="civic-breadcrumb">
+                <a href="#">Mitigation Atlas</a>
+                <span class="sep">/</span>
+                <a href="#">Catskills</a>
+                <span class="sep">/</span>
+                <span class="here">Sullivan County</span>
+              </div>
+
+              <h1 class="l-displayLG" style="margin: 0 0 var(--space-4); max-width: 18ch; text-wrap: balance;">
+                Sullivan County
+              </h1>
+
+              <p class="l-proseLG" style="max-width: 64ch; color: var(--color-ink-soft); margin: 0;">
+                The county's All-Hazards Mitigation Plan, adopted 2023. Tracks 58 jurisdiction-level
+                actions across 8 hazard categories, with quarterly reporting from town and village
+                stakeholders and live NFIP claim joins.
+              </p>
+
+              <div class="civic-stats">
+                <span class="ling-pill ling-pill--dot ling-pill--accent">Plan adopted</span>
+                <span class="ling-pill">FEMA-approved</span>
+                <span class="ling-pill ling-pill--margin">Q2 review open</span>
+                <span class="dot">·</span>
+                <span class="label">Pop.</span> <span class="num">75,432</span>
+                <span class="dot">·</span>
+                <span class="num">4</span> <span class="label">hazard zones</span>
+                <span class="dot">·</span>
+                <span class="label">Last updated</span> <span class="num">2026-05-24 04:21 UTC</span>
+              </div>
+
+              <div class="civic-actions">
+                <a href="#" class="ling-btn ling-btn--primary">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download report
+                </a>
+                <a href="#" class="ling-btn ling-btn--secondary">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4m6 6h10a2 2 0 0 0 2-2v-4"/></svg>
+                  Compare county
+                </a>
+                <a href="#" class="ling-btn ling-btn--ghost">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit data
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — KPI strip -->
+          <section id="kpis" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="ling-section-hd">
+                  <div>
+                    <div class="dms-section-eyebrow"><span class="mark"></span>Indicators</div>
+                    <h2 class="l-h2" style="margin:0;">Mitigation indicators &mdash; this quarter</h2>
+                  </div>
+                  <span class="l-monoXS">2026-Q2 &middot; vs prior quarter</span>
+                </div>
+
+                <div class="civic-kpi-grid">
+                  <div class="ling-kpi">
+                    <div class="ling-kpi__label">Hazard events</div>
+                    <div class="ling-kpi__value">47</div>
+                    <div class="ling-kpi__delta">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                      +3 vs Q1
+                    </div>
+                  </div>
+                  <div class="ling-kpi">
+                    <div class="ling-kpi__label">NFIP claims</div>
+                    <div class="ling-kpi__value">2,917</div>
+                    <div class="ling-kpi__delta">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                      +127 lifetime
+                    </div>
+                  </div>
+                  <div class="ling-kpi">
+                    <div class="ling-kpi__label">Actions complete</div>
+                    <div class="ling-kpi__value">47<span style="color:var(--color-mute); font-size: 22px;">/58</span></div>
+                    <div class="ling-kpi__delta">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                      +12 vs Q1
+                    </div>
+                  </div>
+                  <div class="ling-kpi">
+                    <div class="ling-kpi__label">Plan completion</div>
+                    <div class="ling-kpi__value">81%</div>
+                    <div class="ling-kpi__delta">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                      +6pp vs Q1
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — Hazard exposure map -->
+          <section id="exposure" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="ling-section-hd">
+                  <div>
+                    <div class="dms-section-eyebrow"><span class="mark"></span>Hazard exposure</div>
+                    <h2 class="l-h2" style="margin:0;">NFIP claim density &mdash; Sullivan County, NY</h2>
+                  </div>
+                  <div style="display:flex; gap: var(--space-3); align-items:center;">
+                    <span class="l-monoXS">2,917 claims &middot; 1978&ndash;2025</span>
+                    <a href="#" class="ling-btn ling-btn--secondary ling-btn--sm">Open in viewer</a>
+                  </div>
+                </div>
+
+                <p class="l-prose" style="max-width: 72ch; color: var(--color-ink-soft); margin: 0 0 var(--space-5);">
+                  FEMA NFIP claims joined to county parcels and overlaid with the 2023 Hazard
+                  Mitigation Plan's identified flood-prone zones. Repetitive-loss properties are
+                  shown in signal; standard claims in the brand accent.
+                </p>
+
+                <div class="ling-card" style="padding: 0; overflow: hidden;">
+                  <div class="civic-map">
+                    <svg viewBox="0 0 800 460" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of Sullivan County NFIP claims">
+                      <!-- subtle background grid -->
+                      <defs>
+                        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#EEEEEF" stroke-width="0.5"/>
+                        </pattern>
+                        <pattern id="grid-coarse" width="160" height="160" patternUnits="userSpaceOnUse">
+                          <path d="M 160 0 L 0 0 0 160" fill="none" stroke="#E4E4E7" stroke-width="0.6"/>
+                        </pattern>
+                      </defs>
+                      <rect x="0" y="0" width="800" height="460" fill="#FBFBFC"/>
+                      <rect x="0" y="0" width="800" height="460" fill="url(#grid)"/>
+                      <rect x="0" y="0" width="800" height="460" fill="url(#grid-coarse)"/>
+
+                      <!-- Neighboring counties (hairline coastline mute) -->
+                      <path d="M 60 80 L 220 50 L 240 140 L 90 170 Z" fill="none" stroke="#D4D4D8" stroke-width="0.75" stroke-dasharray="2 4"/>
+                      <path d="M 600 60 L 760 90 L 750 220 L 590 180 Z" fill="none" stroke="#D4D4D8" stroke-width="0.75" stroke-dasharray="2 4"/>
+                      <path d="M 90 320 L 250 350 L 240 430 L 80 410 Z" fill="none" stroke="#D4D4D8" stroke-width="0.75" stroke-dasharray="2 4"/>
+                      <path d="M 580 340 L 760 360 L 740 440 L 560 420 Z" fill="none" stroke="#D4D4D8" stroke-width="0.75" stroke-dasharray="2 4"/>
+
+                      <!-- Neighboring labels -->
+                      <text x="140" y="120" fill="#A1A1AA" font-family="Inter Tight, sans-serif" font-size="10" letter-spacing="0.06em" text-transform="uppercase">DELAWARE CO.</text>
+                      <text x="660" y="135" fill="#A1A1AA" font-family="Inter Tight, sans-serif" font-size="10" letter-spacing="0.06em">ULSTER CO.</text>
+                      <text x="140" y="395" fill="#A1A1AA" font-family="Inter Tight, sans-serif" font-size="10" letter-spacing="0.06em">PIKE CO. (PA)</text>
+                      <text x="640" y="400" fill="#A1A1AA" font-family="Inter Tight, sans-serif" font-size="10" letter-spacing="0.06em">ORANGE CO.</text>
+
+                      <!-- Sullivan county outline + subtle accent fill -->
+                      <path d="M 200 130 L 320 110 L 460 105 L 580 130 L 600 200 L 590 280 L 540 340 L 440 360 L 320 350 L 240 320 L 200 250 Z"
+                            fill="#EEF1FF" fill-opacity="0.6" stroke="#18181B" stroke-width="1.5" stroke-linejoin="round"/>
+
+                      <!-- Hazard / flood zone hints (very subtle) -->
+                      <path d="M 270 180 Q 310 200 350 195 Q 410 200 470 220 Q 520 240 540 280"
+                            fill="none" stroke="#3B5BFF" stroke-width="1" stroke-opacity="0.25" stroke-linecap="round"/>
+                      <path d="M 240 280 Q 290 295 340 290 Q 400 285 460 305"
+                            fill="none" stroke="#3B5BFF" stroke-width="1" stroke-opacity="0.20" stroke-linecap="round"/>
+
+                      <!-- Town labels -->
+                      <text x="288" y="158" fill="#71717A" font-family="Inter Tight, sans-serif" font-size="11" font-weight="500">Liberty</text>
+                      <text x="394" y="180" fill="#71717A" font-family="Inter Tight, sans-serif" font-size="11" font-weight="500">Monticello</text>
+                      <text x="498" y="248" fill="#71717A" font-family="Inter Tight, sans-serif" font-size="11" font-weight="500">Wurtsboro</text>
+                      <text x="240" y="225" fill="#71717A" font-family="Inter Tight, sans-serif" font-size="11" font-weight="500">Callicoon</text>
+                      <text x="445" y="320" fill="#71717A" font-family="Inter Tight, sans-serif" font-size="11" font-weight="500">Bloomingburg</text>
+                      <text x="265" y="305" fill="#71717A" font-family="Inter Tight, sans-serif" font-size="11" font-weight="500">Narrowsburg</text>
+
+                      <!-- Standard claims (accent) -->
+                      <circle cx="295" cy="170" r="4.5" fill="#3B5BFF" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1"/>
+                      <circle cx="320" cy="195" r="3.5" fill="#3B5BFF" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1"/>
+                      <circle cx="270" cy="240" r="3.5" fill="#3B5BFF" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1"/>
+                      <circle cx="370" cy="215" r="4" fill="#3B5BFF" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1"/>
+                      <circle cx="430" cy="240" r="4" fill="#3B5BFF" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1"/>
+                      <circle cx="480" cy="265" r="3.5" fill="#3B5BFF" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1"/>
+                      <circle cx="525" cy="290" r="4" fill="#3B5BFF" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1"/>
+                      <circle cx="350" cy="290" r="3.5" fill="#3B5BFF" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1"/>
+                      <circle cx="290" cy="315" r="3.5" fill="#3B5BFF" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1"/>
+
+                      <!-- Repetitive-loss (signal) -->
+                      <circle cx="395" cy="195" r="8" fill="#FF5630" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1.5"/>
+                      <circle cx="455" cy="335" r="7" fill="#FF5630" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1.5"/>
+                      <circle cx="250" cy="285" r="7" fill="#FF5630" fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1.5"/>
+
+                      <!-- Map title in mono mark -->
+                      <g transform="translate(40, 40)">
+                        <rect x="0" y="0" width="6" height="6" fill="#3B5BFF"/>
+                        <text x="14" y="6" fill="#71717A" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="0.08em">NFIP CLAIM DENSITY · 1978–2025</text>
+                      </g>
+
+                      <!-- scale bar -->
+                      <g transform="translate(620, 420)">
+                        <line x1="0" y1="0" x2="120" y2="0" stroke="#71717A" stroke-width="1"/>
+                        <line x1="0" y1="-3" x2="0" y2="3" stroke="#71717A" stroke-width="1"/>
+                        <line x1="60" y1="-3" x2="60" y2="3" stroke="#71717A" stroke-width="1"/>
+                        <line x1="120" y1="-3" x2="120" y2="3" stroke="#71717A" stroke-width="1"/>
+                        <text x="60" y="-8" fill="#71717A" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle">10 mi</text>
+                      </g>
+                    </svg>
+                    <div class="civic-map__legend">
+                      <span class="item">
+                        <span class="swatch-box" style="background:#EEF1FF; border:1px solid #18181B;"></span>
+                        <span class="label">Sullivan County</span>
+                      </span>
+                      <span class="item">
+                        <span class="dot" style="background:#3B5BFF;"></span>
+                        <span class="label">NFIP claim</span>
+                        <span class="count">2,847</span>
+                      </span>
+                      <span class="item">
+                        <span class="dot" style="background:#FF5630;"></span>
+                        <span class="label">Repetitive-loss property</span>
+                        <span class="count">70</span>
+                      </span>
+                      <span class="item">
+                        <span class="swatch-box" style="background:#3B5BFF; opacity: 0.25;"></span>
+                        <span class="label">Flood zone (Zone A / AE)</span>
+                      </span>
+                      <span class="item" style="margin-left: auto;">
+                        <span class="label" style="font-family: var(--font-mono); color: var(--color-mute);">EPSG:4326 · join: parcel_id</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — Action status by category -->
+          <section id="status" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="ling-section-hd">
+                  <div>
+                    <div class="dms-section-eyebrow"><span class="mark"></span>Action status</div>
+                    <h2 class="l-h2" style="margin:0;">Action status by category</h2>
+                  </div>
+                  <span class="l-monoXS">2026-Q2 &middot; 58 actions</span>
+                </div>
+
+                <p class="l-prose" style="max-width: 72ch; color: var(--color-ink-soft); margin: 0 0 var(--space-5);">
+                  Mitigation actions, grouped by hazard category. Bars stack
+                  <span style="color: var(--color-success); font-weight: 500;">complete</span>,
+                  <span style="color: #946A00; font-weight: 500;">in&nbsp;progress</span>,
+                  <span style="color: var(--color-signal); font-weight: 500;">planned</span>, and
+                  <span style="color: var(--color-mute); font-weight: 500;">awaiting&nbsp;capacity</span>.
+                </p>
+
+                <div class="ling-card" style="padding: var(--space-6);">
+                  <!-- Flood: 12 actions (8/2/1/1) -->
+                  <div class="civic-chart-row">
+                    <span class="cat">Flood</span>
+                    <span class="bar">
+                      <span class="seg" style="width:66.7%; background: var(--color-success);"></span>
+                      <span class="seg" style="width:16.7%; background: var(--color-margin);"></span>
+                      <span class="seg" style="width:8.3%;  background: var(--color-signal);"></span>
+                      <span class="seg" style="width:8.3%;  background: var(--color-mute);"></span>
+                    </span>
+                    <span class="nums"><span>8/2/1/1</span><span class="total">12</span></span>
+                  </div>
+                  <!-- Wind: 9 actions (7/1/1/0) -->
+                  <div class="civic-chart-row">
+                    <span class="cat">Wind</span>
+                    <span class="bar">
+                      <span class="seg" style="width:77.8%; background: var(--color-success);"></span>
+                      <span class="seg" style="width:11.1%; background: var(--color-margin);"></span>
+                      <span class="seg" style="width:11.1%; background: var(--color-signal);"></span>
+                      <span class="seg" style="width:0%;    background: var(--color-mute);"></span>
+                    </span>
+                    <span class="nums"><span>7/1/1/0</span><span class="total">9</span></span>
+                  </div>
+                  <!-- Drought: 5 actions (3/1/0/1) -->
+                  <div class="civic-chart-row">
+                    <span class="cat">Drought</span>
+                    <span class="bar">
+                      <span class="seg" style="width:60%; background: var(--color-success);"></span>
+                      <span class="seg" style="width:20%; background: var(--color-margin);"></span>
+                      <span class="seg" style="width:0%;  background: var(--color-signal);"></span>
+                      <span class="seg" style="width:20%; background: var(--color-mute);"></span>
+                    </span>
+                    <span class="nums"><span>3/1/0/1</span><span class="total">5</span></span>
+                  </div>
+                  <!-- Wildfire: 6 actions (4/1/1/0) -->
+                  <div class="civic-chart-row">
+                    <span class="cat">Wildfire</span>
+                    <span class="bar">
+                      <span class="seg" style="width:66.7%; background: var(--color-success);"></span>
+                      <span class="seg" style="width:16.7%; background: var(--color-margin);"></span>
+                      <span class="seg" style="width:16.7%; background: var(--color-signal);"></span>
+                      <span class="seg" style="width:0%;    background: var(--color-mute);"></span>
+                    </span>
+                    <span class="nums"><span>4/1/1/0</span><span class="total">6</span></span>
+                  </div>
+                  <!-- Erosion: 7 actions (5/1/0/1) -->
+                  <div class="civic-chart-row">
+                    <span class="cat">Erosion</span>
+                    <span class="bar">
+                      <span class="seg" style="width:71.4%; background: var(--color-success);"></span>
+                      <span class="seg" style="width:14.3%; background: var(--color-margin);"></span>
+                      <span class="seg" style="width:0%;    background: var(--color-signal);"></span>
+                      <span class="seg" style="width:14.3%; background: var(--color-mute);"></span>
+                    </span>
+                    <span class="nums"><span>5/1/0/1</span><span class="total">7</span></span>
+                  </div>
+                  <!-- Landslide: 4 actions (2/1/1/0) -->
+                  <div class="civic-chart-row">
+                    <span class="cat">Landslide</span>
+                    <span class="bar">
+                      <span class="seg" style="width:50%; background: var(--color-success);"></span>
+                      <span class="seg" style="width:25%; background: var(--color-margin);"></span>
+                      <span class="seg" style="width:25%; background: var(--color-signal);"></span>
+                      <span class="seg" style="width:0%;  background: var(--color-mute);"></span>
+                    </span>
+                    <span class="nums"><span>2/1/1/0</span><span class="total">4</span></span>
+                  </div>
+                  <!-- Heat: 6 actions (5/0/0/1) -->
+                  <div class="civic-chart-row">
+                    <span class="cat">Heat</span>
+                    <span class="bar">
+                      <span class="seg" style="width:83.3%; background: var(--color-success);"></span>
+                      <span class="seg" style="width:0%;    background: var(--color-margin);"></span>
+                      <span class="seg" style="width:0%;    background: var(--color-signal);"></span>
+                      <span class="seg" style="width:16.7%; background: var(--color-mute);"></span>
+                    </span>
+                    <span class="nums"><span>5/0/0/1</span><span class="total">6</span></span>
+                  </div>
+                  <!-- Storm: 9 actions (6/2/0/1) -->
+                  <div class="civic-chart-row">
+                    <span class="cat">Storm</span>
+                    <span class="bar">
+                      <span class="seg" style="width:66.7%; background: var(--color-success);"></span>
+                      <span class="seg" style="width:22.2%; background: var(--color-margin);"></span>
+                      <span class="seg" style="width:0%;    background: var(--color-signal);"></span>
+                      <span class="seg" style="width:11.1%; background: var(--color-mute);"></span>
+                    </span>
+                    <span class="nums"><span>6/2/0/1</span><span class="total">9</span></span>
+                  </div>
+
+                  <div class="civic-chart-legend">
+                    <span class="item">
+                      <span class="swatch-box" style="background: var(--color-success);"></span>
+                      <span class="label">Complete (47)</span>
+                    </span>
+                    <span class="item">
+                      <span class="swatch-box" style="background: var(--color-margin);"></span>
+                      <span class="label">In progress (9)</span>
+                    </span>
+                    <span class="item">
+                      <span class="swatch-box" style="background: var(--color-signal);"></span>
+                      <span class="label">Planned (4)</span>
+                    </span>
+                    <span class="item">
+                      <span class="swatch-box" style="background: var(--color-mute);"></span>
+                      <span class="label">Awaiting capacity (4)</span>
+                    </span>
+                    <span class="item" style="margin-left: auto;">
+                      <span class="label">Σ 64 status flags · 58 actions · 6 multi-status</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — Recent actions table -->
+          <section id="recent" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="ling-section-hd">
+                  <div>
+                    <div class="dms-section-eyebrow"><span class="mark"></span>Recent actions</div>
+                    <h2 class="l-h2" style="margin:0;">Actions updated this quarter</h2>
+                  </div>
+                  <div style="display:flex; gap: var(--space-3); align-items:center;">
+                    <span class="ling-multiselect">
+                      <span>All categories</span>
+                      <span class="caret">▾</span>
+                    </span>
+                    <span class="ling-multiselect">
+                      <span>Q2 2026</span>
+                      <span class="caret">▾</span>
+                    </span>
+                    <a href="#" class="ling-btn ling-btn--secondary ling-btn--sm">Export CSV</a>
+                  </div>
+                </div>
+
+                <div class="ling-card" style="padding: 0; overflow: hidden;">
+                  <table class="ling-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 36%;">Action</th>
+                        <th style="width: 14%;">Category</th>
+                        <th style="width: 14%;">Status</th>
+                        <th style="width: 18%; text-align: right;">Funding</th>
+                        <th style="width: 18%;">Updated</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <div style="font-weight: 500; color: var(--color-ink);">Callicoon levee &mdash; phase II</div>
+                          <div class="l-monoXS" style="margin-top: 4px;">SC-FL-0214 &middot; Town of Delaware</div>
+                        </td>
+                        <td class="mono">Flood</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Complete</span></td>
+                        <td class="num">$2,180,000</td>
+                        <td class="mono">2026-05-22</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div style="font-weight: 500; color: var(--color-ink);">Monticello stormwater retrofit</div>
+                          <div class="l-monoXS" style="margin-top: 4px;">SC-FL-0331 &middot; Village of Monticello</div>
+                        </td>
+                        <td class="mono">Flood</td>
+                        <td><span class="ling-pill ling-pill--margin ling-pill--dot">In progress</span></td>
+                        <td class="num">$840,000</td>
+                        <td class="mono">2026-05-19</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div style="font-weight: 500; color: var(--color-ink);">Generator backup &mdash; Liberty EOC</div>
+                          <div class="l-monoXS" style="margin-top: 4px;">SC-ST-0118 &middot; Sullivan County (EOC)</div>
+                        </td>
+                        <td class="mono">Storm</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Complete</span></td>
+                        <td class="num">$340,000</td>
+                        <td class="mono">2026-05-16</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div style="font-weight: 500; color: var(--color-ink);">Wurtsboro Mtn. fuel break</div>
+                          <div class="l-monoXS" style="margin-top: 4px;">SC-WF-0042 &middot; NYS DEC Region 3</div>
+                        </td>
+                        <td class="mono">Wildfire</td>
+                        <td><span class="ling-pill ling-pill--signal ling-pill--dot">Overdue</span></td>
+                        <td class="num">$420,000</td>
+                        <td class="mono">2026-05-14</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div style="font-weight: 500; color: var(--color-ink);">Bloomingburg parcel buyout (4)</div>
+                          <div class="l-monoXS" style="margin-top: 4px;">SC-FL-0188 &middot; Village of Bloomingburg</div>
+                        </td>
+                        <td class="mono">Flood</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Complete</span></td>
+                        <td class="num">$1,260,000</td>
+                        <td class="mono">2026-05-11</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div style="font-weight: 500; color: var(--color-ink);">Cooling-center upgrade (3 sites)</div>
+                          <div class="l-monoXS" style="margin-top: 4px;">SC-HT-0009 &middot; Sullivan County DOH</div>
+                        </td>
+                        <td class="mono">Heat</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Complete</span></td>
+                        <td class="num">$185,000</td>
+                        <td class="mono">2026-05-07</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div style="font-weight: 500; color: var(--color-ink);">Narrowsburg riverbank stabilisation</div>
+                          <div class="l-monoXS" style="margin-top: 4px;">SC-ER-0027 &middot; Town of Tusten</div>
+                        </td>
+                        <td class="mono">Erosion</td>
+                        <td><span class="ling-pill ling-pill--margin ling-pill--dot">In progress</span></td>
+                        <td class="num">$580,000</td>
+                        <td class="mono">2026-05-03</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div style="font-weight: 500; color: var(--color-ink);">SR-17 culvert capacity study</div>
+                          <div class="l-monoXS" style="margin-top: 4px;">SC-FL-0402 &middot; NYSDOT Region 9</div>
+                        </td>
+                        <td class="mono">Flood</td>
+                        <td><span class="ling-pill ling-pill--dot">Planned</span></td>
+                        <td class="num">$95,000</td>
+                        <td class="mono">2026-04-28</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-top: var(--space-5); font-family: var(--font-mono); font-size: 12px; color: var(--color-mute);">
+                  <span>Showing 8 of 58 actions &middot; <a href="#" style="color: var(--color-accent); text-decoration: none;">view all →</a></span>
+                  <span>page 1 / 8</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — Architecture diagram (data flow) -->
+          <section id="data-flow" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="ling-section-hd">
+                  <div>
+                    <div class="dms-section-eyebrow"><span class="mark"></span>Data flow</div>
+                    <h2 class="l-h2" style="margin:0;">Where the data comes from.</h2>
+                  </div>
+                  <span class="l-monoXS">composed at request time</span>
+                </div>
+
+                <p class="l-prose" style="max-width: 72ch; color: var(--color-ink-soft); margin: 0 0 var(--space-5);">
+                  Every chart, table, and map on this page reads the same rows. Sources land in
+                  the Lingua row store as typed records; the dashboard composes views from those
+                  rows without copying or transforming them upstream.
+                </p>
+
+                <div class="ling-arch">
+                  <div class="ling-arch__title">SOURCES → ROW STORE → THIS DASHBOARD</div>
+                  <div class="civic-arch-row">
+                    <div style="display:flex; flex-direction: column; gap: var(--space-2);">
+                      <div class="ling-arch__node">FEMA NFIP
+                        <span class="sub">2,917 claims</span>
+                      </div>
+                      <div class="ling-arch__node">FEMA HMA tracker
+                        <span class="sub">58 actions</span>
+                      </div>
+                      <div class="ling-arch__node">NYS DHSES plans
+                        <span class="sub">1 plan · v2023</span>
+                      </div>
+                      <div class="ling-arch__node">Sullivan parcels
+                        <span class="sub">38,114 records</span>
+                      </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div style="display:flex; flex-direction: column; gap: var(--space-2); align-items: stretch;">
+                      <div class="ling-arch__node ling-arch__node--accent" style="padding: var(--space-5) var(--space-4);">
+                        Lingua row store
+                        <span class="sub">{ app, type, data, attributes, parent, children }</span>
+                      </div>
+                      <div class="l-monoXS" style="text-align: center; color: var(--color-mute); margin-top: var(--space-2);">
+                        join on parcel_id · county_fips
+                      </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div style="display:flex; flex-direction: column; gap: var(--space-2);">
+                      <div class="ling-arch__node ling-arch__node--dark">KPI strip
+                        <span class="sub">4 cards</span>
+                      </div>
+                      <div class="ling-arch__node ling-arch__node--dark">Hazard map
+                        <span class="sub">SVG + MapLibre</span>
+                      </div>
+                      <div class="ling-arch__node ling-arch__node--dark">Status chart
+                        <span class="sub">8 categories</span>
+                      </div>
+                      <div class="ling-arch__node ling-arch__node--dark">Actions table
+                        <span class="sub">58 rows</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="civic-arch-cap">Every chart, table, and map reads the same rows. Add a row upstream, every view inherits it.</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — Stakeholders -->
+          <section id="stakeholders" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="ling-section-hd">
+                  <div>
+                    <div class="dms-section-eyebrow"><span class="mark"></span>Stakeholders</div>
+                    <h2 class="l-h2" style="margin:0;">Stakeholders &amp; contacts</h2>
+                  </div>
+                  <a href="#" class="ling-btn ling-btn--secondary ling-btn--sm">Manage stakeholders →</a>
+                </div>
+
+                <div class="civic-stake-grid">
+                  <!-- FEMA -->
+                  <div class="ling-card">
+                    <div class="civic-stake-org">
+                      <span class="civic-stake-mark">F</span>
+                      <div>
+                        <div class="l-h4" style="margin: 0;">FEMA Region 2</div>
+                        <div class="l-monoXS" style="color: var(--color-mute);">federal · funding</div>
+                      </div>
+                    </div>
+                    <p class="l-proseSM" style="margin: 0 0 var(--space-4); color: var(--color-ink-soft);">
+                      Approves the county's All-Hazards Mitigation Plan; administers HMGP, BRIC,
+                      and FMA grant programs. Joint lead on the 2023 plan adoption.
+                    </p>
+                    <div class="l-mono" style="font-size: 12px; color: var(--color-ink-soft); display: flex; flex-direction: column; gap: 4px;">
+                      <span>region2@fema.dhs.gov</span>
+                      <span style="color: var(--color-mute);">+1 212 680 3600</span>
+                    </div>
+                  </div>
+
+                  <!-- NY State DHSES -->
+                  <div class="ling-card">
+                    <div class="civic-stake-org">
+                      <span class="civic-stake-mark civic-stake-mark--ink">NY</span>
+                      <div>
+                        <div class="l-h4" style="margin: 0;">NYS DHSES</div>
+                        <div class="l-monoXS" style="color: var(--color-mute);">state · review</div>
+                      </div>
+                    </div>
+                    <p class="l-proseSM" style="margin: 0 0 var(--space-4); color: var(--color-ink-soft);">
+                      State Division of Homeland Security and Emergency Services. Reviews local
+                      plan updates before FEMA submission; provides MitigateNY data feeds.
+                    </p>
+                    <div class="l-mono" style="font-size: 12px; color: var(--color-ink-soft); display: flex; flex-direction: column; gap: 4px;">
+                      <span>mitigation@dhses.ny.gov</span>
+                      <span style="color: var(--color-mute);">+1 518 292 2200</span>
+                    </div>
+                  </div>
+
+                  <!-- Sullivan County Planning -->
+                  <div class="ling-card">
+                    <div class="civic-stake-org">
+                      <span class="civic-stake-mark">SC</span>
+                      <div>
+                        <div class="l-h4" style="margin: 0;">Sullivan County Planning</div>
+                        <div class="l-monoXS" style="color: var(--color-mute);">county · lead author</div>
+                      </div>
+                    </div>
+                    <p class="l-proseSM" style="margin: 0 0 var(--space-4); color: var(--color-ink-soft);">
+                      Lead authoring agency for the county HMP. Coordinates quarterly status from
+                      all 15 towns and 6 villages; maintains parcel-level joins.
+                    </p>
+                    <div class="l-mono" style="font-size: 12px; color: var(--color-ink-soft); display: flex; flex-direction: column; gap: 4px;">
+                      <span>planning@sullivanny.us</span>
+                      <span style="color: var(--color-mute);">+1 845 807 0527</span>
+                    </div>
+                  </div>
+
+                  <!-- Sullivan County EOC -->
+                  <div class="ling-card">
+                    <div class="civic-stake-org">
+                      <span class="civic-stake-mark civic-stake-mark--margin">EOC</span>
+                      <div>
+                        <div class="l-h4" style="margin: 0;">Sullivan County EOC</div>
+                        <div class="l-monoXS" style="color: var(--color-mute);">county · operations</div>
+                      </div>
+                    </div>
+                    <p class="l-proseSM" style="margin: 0 0 var(--space-4); color: var(--color-ink-soft);">
+                      Emergency Operations Center. Activated for declared events; provides
+                      post-event damage assessments that feed action-tracker updates.
+                    </p>
+                    <div class="l-mono" style="font-size: 12px; color: var(--color-ink-soft); display: flex; flex-direction: column; gap: 4px;">
+                      <span>eoc@sullivanny.us</span>
+                      <span style="color: var(--color-mute);">+1 845 794 3000</span>
+                    </div>
+                  </div>
+
+                  <!-- USACE -->
+                  <div class="ling-card">
+                    <div class="civic-stake-org">
+                      <span class="civic-stake-mark civic-stake-mark--ink">US</span>
+                      <div>
+                        <div class="l-h4" style="margin: 0;">USACE &mdash; NY District</div>
+                        <div class="l-monoXS" style="color: var(--color-mute);">federal · technical</div>
+                      </div>
+                    </div>
+                    <p class="l-proseSM" style="margin: 0 0 var(--space-4); color: var(--color-ink-soft);">
+                      US Army Corps of Engineers. Technical lead on levee and channel projects;
+                      provides hydraulic modelling for flood-prone basins.
+                    </p>
+                    <div class="l-mono" style="font-size: 12px; color: var(--color-ink-soft); display: flex; flex-direction: column; gap: 4px;">
+                      <span>nan-pao@usace.army.mil</span>
+                      <span style="color: var(--color-mute);">+1 917 790 8007</span>
+                    </div>
+                  </div>
+
+                  <!-- NYS DEC -->
+                  <div class="ling-card">
+                    <div class="civic-stake-org">
+                      <span class="civic-stake-mark">DEC</span>
+                      <div>
+                        <div class="l-h4" style="margin: 0;">NYS DEC Region 3</div>
+                        <div class="l-monoXS" style="color: var(--color-mute);">state · environmental</div>
+                      </div>
+                    </div>
+                    <p class="l-proseSM" style="margin: 0 0 var(--space-4); color: var(--color-ink-soft);">
+                      Permitting authority for stream-corridor and wetland work; lead on
+                      wildfire fuel-break planning in the Catskill Preserve.
+                    </p>
+                    <div class="l-mono" style="font-size: 12px; color: var(--color-ink-soft); display: flex; flex-direction: column; gap: 4px;">
+                      <span>r3@dec.ny.gov</span>
+                      <span style="color: var(--color-mute);">+1 845 256 3000</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div><!-- /childWrapper -->
+      </div><!-- /wrapper3 -->
+
+      <!-- LayoutGroup "footer" — civic chrome footer -->
+      <section class="dms-group-footer">
+        <div class="dms-group-footer-inner">
+
+          <div class="civic-footer-grid">
+            <div class="civic-footer-col">
+              <h4>Data sources</h4>
+              <ul>
+                <li><span class="src">FEMA NFIP Claims v2</span> <span class="ver">1978–2025 · 2,917 records</span></li>
+                <li><span class="src">FEMA HMA Action Tracker</span> <span class="ver">v2026.04 · 58 actions</span></li>
+                <li><span class="src">NYS HMP Catalog</span> <span class="ver">2023-10-04 adoption</span></li>
+                <li><span class="src">Sullivan County Parcels</span> <span class="ver">v2026-03 · 38,114 records</span></li>
+                <li><span class="src">NOAA Storm Events</span> <span class="ver">1996–2026 · 47 events</span></li>
+                <li><span class="src">USGS National Hydrography</span> <span class="ver">v2024-09</span></li>
+              </ul>
+            </div>
+
+            <div class="civic-footer-col">
+              <h4>Methodology</h4>
+              <ul>
+                <li><a href="#">Action status classification</a></li>
+                <li><a href="#">NFIP claim joins</a></li>
+                <li><a href="#">Repetitive-loss criteria</a></li>
+                <li><a href="#">Reporting cadence</a></li>
+                <li><a href="#">Plan version history</a></li>
+              </ul>
+            </div>
+
+            <div class="civic-footer-col">
+              <h4>Governance</h4>
+              <ul>
+                <li><a href="#">Plan adoption (2023)</a></li>
+                <li><a href="#">Next plan review (2028)</a></li>
+                <li><a href="#">Public comment window</a></li>
+                <li><a href="#">Open records request</a></li>
+                <li><a href="#">Contact: planning@sullivanny.us</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="civic-footer-stamp">
+            <span>Mitigation Atlas v1.3.0</span>
+            <span class="dot">·</span>
+            <span>built on Lingua</span>
+            <span class="dot">·</span>
+            <span>data refreshed 2026-05-24 04:21 UTC</span>
+            <span class="dot">·</span>
+            <span>row store: <span style="color: var(--color-accent);">mitigate-ny / prod</span></span>
+            <span class="dot">·</span>
+            <span>commit <span style="color: var(--color-ink);">8f4ac21</span></span>
+            <span style="flex: 1;"></span>
+            <span>© 2026 Sullivan County · NYS DHSES · FEMA</span>
+          </div>
+
+          <!-- Deliverable link block — meta-nav repeated in footer per skill §7.0 -->
+          <div class="civic-footer-deliv">
+            <div>
+              <div class="group">design system</div>
+              <a href="../design-system/theme.html">theme</a>
+
+              <a href="../design-system/layouts.html">layouts</a>
+              <a href="../design-system/grid.html">grid</a>
+              <a href="../design-system/components.html">components</a>
+              <a href="../design-system/patterns.html">patterns</a>
+            </div>
+            <div>
+              <div class="group">marketing</div>
+              <a href="marketing-homepage.html">home</a>
+              <a href="marketing-comparison.html">compare</a>
+              <a href="marketing-theory.html">theory</a>
+            </div>
+            <div>
+              <div class="group">product</div>
+              <a href="docs-page.html">docs</a>
+              <a href="product-site-overview.html">site overview</a>
+              <a href="product-page-editor.html">page editor</a>
+              <a href="product-dataset-view.html">dataset view</a>
+            </div>
+            <div>
+              <div class="group">civic</div>
+              <a href="civic-overview.html" style="color: var(--color-accent);">Sullivan County (this page)</a>
+              <a href="#" style="opacity: 0.5;">Delaware County</a>
+              <a href="#" style="opacity: 0.5;">Ulster County</a>
+              <a href="#" style="opacity: 0.5;">All counties →</a>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div><!-- /wrapper2 -->
+  </div><!-- /wrapper -->
+</div><!-- /outer -->
+
+</body>
+</html>

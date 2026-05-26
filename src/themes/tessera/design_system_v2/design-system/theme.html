@@ -14,10 +14,12 @@
 
     .swatch { background: var(--color-parchment); border: 1px solid var(--color-grout-light); }
     .swatch .chip { height: 96px; border-bottom: 1px solid var(--color-grout-light); }
-    .swatch .meta { padding: var(--space-3); display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); font-family: var(--font-mono); font-size: 11px; }
+    /* Font: type token (t-metaSM) is applied on the .meta element directly. */
+    .swatch .meta { padding: var(--space-3); display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
     .swatch .meta .name { color: var(--color-slate); }
     .swatch .meta .hex { color: var(--color-fog); }
-    .swatch .role { padding: 0 var(--space-3) var(--space-3); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-graphite); }
+    /* Font: type token (t-metaXS) is applied on the .role element directly. */
+    .swatch .role { padding: 0 var(--space-3) var(--space-3); color: var(--color-graphite); }
 
     /* Type specimen rows */
     .type-row { display: grid; grid-template-columns: 180px 1fr; gap: var(--space-5); padding: var(--space-4) 0; border-bottom: 1px solid var(--color-grout-light); align-items: baseline; }
@@ -29,8 +31,9 @@
     /* Spacing scale visualization */
     .spacing-row { display: grid; grid-template-columns: 60px 80px 1fr; gap: var(--space-4); align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--color-grout-light); }
     .spacing-row:last-child { border-bottom: 0; }
-    .spacing-row .token { font-family: var(--font-mono); font-size: 11px; color: var(--color-graphite); }
-    .spacing-row .value { font-family: var(--font-mono); font-size: 11px; color: var(--color-fog); }
+    /* Font: type token (t-metaMD) is applied on .token / .value elements directly. */
+    .spacing-row .token { color: var(--color-graphite); }
+    .spacing-row .value { color: var(--color-fog); }
     .spacing-row .bar { background: var(--color-slate); height: 12px; }
 
     /* Icon grid */
@@ -38,7 +41,8 @@
     @media (max-width: 900px) { .icon-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     .icon-cell { background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-3); display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
     .icon-cell svg { width: 24px; height: 24px; stroke: var(--color-slate); stroke-width: 1.5; fill: none; }
-    .icon-cell .name { font-family: var(--font-mono); font-size: 10px; color: var(--color-graphite); text-align: center; }
+    /* Font: type token (t-metaXS) is applied on .name elements directly. */
+    .icon-cell .name { color: var(--color-graphite); text-align: center; }
   </style>
 </head>
 <body>
@@ -59,6 +63,8 @@
           <div class="dms-topnav-right">
             <span>theme</span>
             <span style="color:var(--color-grout-light)">·</span>
+            <span><a href="layouts.html" style="color:inherit; text-decoration:none">layouts</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
             <span><a href="grid.html" style="color:inherit; text-decoration:none">grid</a></span>
             <span style="color:var(--color-grout-light)">·</span>
             <span><a href="components.html" style="color:inherit; text-decoration:none">components</a></span>
@@ -76,6 +82,9 @@
             <div class="dms-sidenav-eyebrow">design system</div>
             <a class="dms-sidenav-item dms-sidenav-item--active" href="theme.html">
               <span class="dms-sidenav-item-mark"></span>theme
+            </a>
+            <a class="dms-sidenav-item" href="layouts.html">
+              <span class="dms-sidenav-item-mark"></span>layouts
             </a>
             <a class="dms-sidenav-item" href="grid.html">
               <span class="dms-sidenav-item-mark"></span>grid
@@ -95,11 +104,11 @@
           </div>
           <div class="dms-sidenav-section">
             <div class="dms-sidenav-eyebrow">on this page</div>
-            <a class="dms-sidenav-item" href="#colors" style="font-size:13px;font-weight:400">colors</a>
-            <a class="dms-sidenav-item" href="#type" style="font-size:13px;font-weight:400">type</a>
-            <a class="dms-sidenav-item" href="#icons" style="font-size:13px;font-weight:400">icons</a>
-            <a class="dms-sidenav-item" href="#spacing" style="font-size:13px;font-weight:400">spacing &amp; radii</a>
-            <a class="dms-sidenav-item" href="#elevation" style="font-size:13px;font-weight:400">elevation</a>
+            <a class="dms-sidenav-item t-proseSM" href="#colors">colors</a>
+            <a class="dms-sidenav-item t-proseSM" href="#type">type</a>
+            <a class="dms-sidenav-item t-proseSM" href="#icons">icons</a>
+            <a class="dms-sidenav-item t-proseSM" href="#spacing">spacing &amp; radii</a>
+            <a class="dms-sidenav-item t-proseSM" href="#elevation">elevation</a>
           </div>
         </aside>
 
@@ -132,75 +141,75 @@
                   ~85% surface, ~15% accent. Surface is the floor; accent is the inlay. Pure white, pure black, tech-blue, neon, and gradients are out of vocabulary. Accents appear as emphasis on labels, links, and warnings — never as decoration.
                 </p>
 
-                <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: var(--space-5) 0 var(--space-3); font-weight:500;">Surface · ~85% of any composition</h3>
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-5) 0 var(--space-3);">Surface · ~85% of any composition</h3>
                 <div class="swatch-grid">
                   <div class="swatch">
                     <div class="chip" style="background:#F4F1EA;"></div>
-                    <div class="meta"><span class="name">bone</span><span class="hex">#F4F1EA</span></div>
-                    <div class="role">primary background</div>
+                    <div class="meta t-metaSM"><span class="name">bone</span><span class="hex">#F4F1EA</span></div>
+                    <div class="role t-metaXS">primary background</div>
                   </div>
                   <div class="swatch">
                     <div class="chip" style="background:#E8E2D5;"></div>
-                    <div class="meta"><span class="name">limestone</span><span class="hex">#E8E2D5</span></div>
-                    <div class="role">cards · sunken</div>
+                    <div class="meta t-metaSM"><span class="name">limestone</span><span class="hex">#E8E2D5</span></div>
+                    <div class="role t-metaXS">cards · sunken</div>
                   </div>
                   <div class="swatch">
                     <div class="chip" style="background:#FBF9F4;"></div>
-                    <div class="meta"><span class="name">parchment</span><span class="hex">#FBF9F4</span></div>
-                    <div class="role">lifted · modals</div>
+                    <div class="meta t-metaSM"><span class="name">parchment</span><span class="hex">#FBF9F4</span></div>
+                    <div class="role t-metaXS">lifted · modals</div>
                   </div>
                   <div class="swatch">
                     <div class="chip" style="background:#D9D2C2;"></div>
-                    <div class="meta"><span class="name">grout-light</span><span class="hex">#D9D2C2</span></div>
-                    <div class="role">hairline rule</div>
+                    <div class="meta t-metaSM"><span class="name">grout-light</span><span class="hex">#D9D2C2</span></div>
+                    <div class="role t-metaXS">hairline rule</div>
                   </div>
                 </div>
 
-                <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: var(--space-6) 0 var(--space-3); font-weight:500;">Ink</h3>
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-6) 0 var(--space-3);">Ink</h3>
                 <div class="swatch-grid">
                   <div class="swatch">
                     <div class="chip" style="background:#2A2F36;"></div>
-                    <div class="meta"><span class="name" style="color:#fff">slate</span><span class="hex">#2A2F36</span></div>
-                    <div class="role">primary ink</div>
+                    <div class="meta t-metaSM"><span class="name" style="color:#fff">slate</span><span class="hex">#2A2F36</span></div>
+                    <div class="role t-metaXS">primary ink</div>
                   </div>
                   <div class="swatch">
                     <div class="chip" style="background:#4A5160;"></div>
-                    <div class="meta"><span class="name" style="color:#fff">graphite</span><span class="hex">#4A5160</span></div>
-                    <div class="role">captions · secondary</div>
+                    <div class="meta t-metaSM"><span class="name" style="color:#fff">graphite</span><span class="hex">#4A5160</span></div>
+                    <div class="role t-metaXS">captions · secondary</div>
                   </div>
                   <div class="swatch">
                     <div class="chip" style="background:#A7ADB6;"></div>
-                    <div class="meta"><span class="name">fog</span><span class="hex">#A7ADB6</span></div>
-                    <div class="role">disabled · tertiary</div>
+                    <div class="meta t-metaSM"><span class="name">fog</span><span class="hex">#A7ADB6</span></div>
+                    <div class="role t-metaXS">disabled · tertiary</div>
                   </div>
                   <div class="swatch">
                     <div class="chip" style="background:#1A1D22;"></div>
-                    <div class="meta"><span class="name" style="color:#fff">grout-dark</span><span class="hex">#1A1D22</span></div>
-                    <div class="role">contrast frame</div>
+                    <div class="meta t-metaSM"><span class="name" style="color:#fff">grout-dark</span><span class="hex">#1A1D22</span></div>
+                    <div class="role t-metaXS">contrast frame</div>
                   </div>
                 </div>
 
-                <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: var(--space-6) 0 var(--space-3); font-weight:500;">Accent · ≤15% · emphasis only</h3>
+                <h3 class="t-metaSM weight-500" style="margin: var(--space-6) 0 var(--space-3);">Accent · ≤15% · emphasis only</h3>
                 <div class="swatch-grid">
                   <div class="swatch">
                     <div class="chip" style="background:#B5532C;"></div>
-                    <div class="meta"><span class="name" style="color:#fff">oxide</span><span class="hex">#B5532C</span></div>
-                    <div class="role">primary accent · terracotta</div>
+                    <div class="meta t-metaSM"><span class="name" style="color:#fff">oxide</span><span class="hex">#B5532C</span></div>
+                    <div class="role t-metaXS">primary accent · terracotta</div>
                   </div>
                   <div class="swatch">
                     <div class="chip" style="background:#7F1D1D;"></div>
-                    <div class="meta"><span class="name" style="color:#fff">tile</span><span class="hex">#7F1D1D</span></div>
-                    <div class="role">deep tile red</div>
+                    <div class="meta t-metaSM"><span class="name" style="color:#fff">tile</span><span class="hex">#7F1D1D</span></div>
+                    <div class="role t-metaXS">deep tile red</div>
                   </div>
                   <div class="swatch">
                     <div class="chip" style="background:#5D8A85;"></div>
-                    <div class="meta"><span class="name" style="color:#fff">verdigris</span><span class="hex">#5D8A85</span></div>
-                    <div class="role">oxidized copper</div>
+                    <div class="meta t-metaSM"><span class="name" style="color:#fff">verdigris</span><span class="hex">#5D8A85</span></div>
+                    <div class="role t-metaXS">oxidized copper</div>
                   </div>
                   <div class="swatch">
                     <div class="chip" style="background:#B45309;"></div>
-                    <div class="meta"><span class="name" style="color:#fff">ochre</span><span class="hex">#B45309</span></div>
-                    <div class="role">warning · highlight</div>
+                    <div class="meta t-metaSM"><span class="name" style="color:#fff">ochre</span><span class="hex">#B45309</span></div>
+                    <div class="role t-metaXS">warning · highlight</div>
                   </div>
                 </div>
 
@@ -216,60 +225,114 @@
             <div class="dms-group-content-inner">
               <div class="dms-section">
                 <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · TYPE</div>
-                <h2 class="dms-section-title">Type — two families, four roles.</h2>
+                <h2 class="dms-section-title">Type — three families, fifteen tokens.</h2>
                 <p class="dms-section-lede">
-                  Newsreader (display, in place of Tiempos Headline until licensed) does the headlines and long-form. IBM Plex Sans is the UI and body voice. IBM Plex Mono renders every number, code sample, and tabular surface. Tabular figures everywhere a digit appears.
+                  Tiempos Headline does the headlines and most display work; Tiempos Fine takes over at hero scale (60+ px) where its finer hairlines look deliberate. Newsreader stays loaded as a fallback during the font-display swap window. IBM Plex Sans is the UI and body voice. IBM Plex Mono renders every number, code sample, and tabular surface. Tabular figures everywhere a digit appears.
+                </p>
+                <p class="dms-section-lede">
+                  Token naming is universal across themes: <code>{role}{Size}[{Variant}]</code>. Roles are <code>display · displayItalic · prose · meta</code>. Sizes use the t-shirt scale <code>Hero · XL · LG · MD · SM · XS</code> (the base body size drops the suffix — <code>prose</code> alone is the 16px default, matching Tailwind's <code>text-base</code> convention). Color, weight, tabular numerals, and uppercase tracking are <em>modifier axes</em>, not new tokens — <code>prose</code> in graphite is "prose + color-secondary," not <code>body-card</code>.
+                </p>
+                <p class="dms-section-lede">
+                  <strong>Rule:</strong> every text variation used anywhere in <code>pages/</code> or <code>design-system/</code> must use one of the 15 tokens below. A potential 15th must visibly differ from its neighbors by ≥ 2px <em>or</em> a weight step <em>or</em> a family/style change <em>or</em> a role change — color alone doesn't earn a slot.
                 </p>
 
+                <!-- ===== ROLE 1: DISPLAY · Tiempos Headline 500 · tight tracking ===== -->
+                <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: var(--space-6) 0 var(--space-3); font-weight:500;">display · Tiempos Headline 500 · headlines, page titles, KPI values</h3>
                 <div>
                   <div class="type-row">
-                    <div class="meta"><span class="name">h1</span><span class="spec">48 / 1.08</span></div>
+                    <div class="meta"><span class="name">displayHero</span><span class="spec">Tiempos Fine 76 / 1.04 · 500 · −0.02em</span></div>
+                    <div><span style="font-family:var(--font-fine); font-size:76px; font-weight:500; line-height:1.04; letter-spacing:-0.02em; color:var(--color-slate); display:block;">The shape of your data is the shape of your site.</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">displayXL</span><span class="spec">Tiempos Headline 48 / 1.08 · 500 · −0.012em</span></div>
                     <div><h1 style="margin:0;">The shape of your data is the shape of your site</h1></div>
                   </div>
                   <div class="type-row">
-                    <div class="meta"><span class="name">h2</span><span class="spec">36 / 1.08</span></div>
+                    <div class="meta"><span class="name">displayLG</span><span class="spec">Tiempos Headline 36 / 1.08 · 500 · −0.012em</span></div>
                     <div><h2 style="margin:0;">One representation, many renderings</h2></div>
                   </div>
                   <div class="type-row">
-                    <div class="meta"><span class="name">h3</span><span class="spec">28 / 1.2</span></div>
+                    <div class="meta"><span class="name">displayMD</span><span class="spec">Tiempos Headline 28 / 1.2 · 500 · −0.012em</span></div>
                     <div><h3 style="margin:0;">A page is a row. A chart is a row.</h3></div>
                   </div>
                   <div class="type-row">
-                    <div class="meta"><span class="name">h4</span><span class="spec">24 / 1.2</span></div>
-                    <div><h4 style="margin:0;">Place the data. Set the layout. Publish.</h4></div>
+                    <div class="meta"><span class="name">displaySM</span><span class="spec">Tiempos Headline 22 / 1.2 · 500 · −0.008em</span></div>
+                    <div><span style="font-family:var(--font-display); font-size:22px; font-weight:500; line-height:1.2; letter-spacing:-0.008em; color:var(--color-slate); display:block;">Section · column config</span></div>
+                  </div>
+                </div>
+                <p class="dms-section-lede" style="font-size:13px; margin-top:var(--space-3); color:var(--color-graphite);">
+                  Numeric uses (KPI value, big stats) use the same scale with <code>tabular-nums</code> applied at the call site — no separate <code>displayNum</code> tokens. Topnav brand mark uses <code>displaySM</code> at the topnav level; not a separate "topnav-mark" token.
+                </p>
+
+                <!-- ===== ROLE 2: DISPLAY ITALIC · Tiempos Headline Italic 400 ===== -->
+                <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: var(--space-7) 0 var(--space-3); font-weight:500;">displayItalic · Tiempos Headline Italic 400 · pull quotes, essay heads</h3>
+                <div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">displayItalicHero</span><span class="spec">Tiempos Fine Italic 64 / 1.05 · 400 · −0.018em</span></div>
+                    <div><span style="font-family:var(--font-fine); font-size:64px; font-weight:400; font-style:italic; line-height:1.05; letter-spacing:-0.018em; color:var(--color-slate); display:block;">On placing</span></div>
                   </div>
                   <div class="type-row">
-                    <div class="meta"><span class="name">body</span><span class="spec">16 / 1.55</span></div>
+                    <div class="meta"><span class="name">displayItalicLG</span><span class="spec">Tiempos Headline Italic 40 / 1.18 · 400 · −0.012em</span></div>
+                    <div><span style="font-family:var(--font-display); font-size:40px; font-weight:400; font-style:italic; line-height:1.18; letter-spacing:-0.012em; color:var(--color-slate); display:block;">Roman craftsmen spent careers placing tesserae</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">displayItalicMD</span><span class="spec">Newsreader Italic 26 / 1.35 · 400</span></div>
+                    <div><span style="font-family:var(--font-display); font-size:26px; font-weight:400; font-style:italic; line-height:1.35; color:var(--color-slate); display:block;">We replaced a hand-tooled CMS, an analytics dashboard, and a static-site generator with a single Tessera instance.</span></div>
+                  </div>
+                </div>
+                <p class="dms-section-lede" style="font-size:13px; margin-top:var(--space-3); color:var(--color-graphite);">
+                  Proof quotes at 20px italic use <code>prose</code> family at 20px italic — they're prose, not a display moment. Specimen paragraphs (19–20 italic) collapse into the same.
+                </p>
+
+                <!-- ===== ROLE 3: PROSE · IBM Plex Sans 400 ===== -->
+                <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: var(--space-7) 0 var(--space-3); font-weight:500;">prose · IBM Plex Sans 400 · ledes, body, captions</h3>
+                <div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">proseLG</span><span class="spec">Plex Sans 20 / 1.55 · 400</span></div>
+                    <div><p style="font-family:var(--font-sans); font-size:20px; font-weight:400; line-height:1.55; color:var(--color-graphite); margin:0;">One typed row that can be a page, a section, a dataset, a query, or a theme — and every part of the system composes against it.</p></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">prose</span><span class="spec">Plex Sans 16 / 1.55 · 400</span></div>
                     <div><p>Tessera is one rich representation — typed rows that can be a page, a section, a dataset, a query, or a theme — that every part of the system composes against. Open-source and self-hostable, or run it as a hosted service.</p></div>
                   </div>
                   <div class="type-row">
-                    <div class="meta"><span class="name">body-sm</span><span class="spec">14 / 1.5</span></div>
+                    <div class="meta"><span class="name">proseSM</span><span class="spec">Plex Sans 14 / 1.5 · 400</span></div>
                     <div><p class="body-sm">Authors compose pages without writing code precisely because the primitives and the hierarchy are fixed. The constraint is the feature.</p></div>
                   </div>
                   <div class="type-row">
-                    <div class="meta"><span class="name">caption</span><span class="spec">12 / 1.45</span></div>
+                    <div class="meta"><span class="name">proseXS</span><span class="spec">Plex Sans 12 / 1.45 · 400</span></div>
                     <div><p class="small">Updated 2026-05-22 · committed at 1b3c…f4a · view 2060672</p></div>
                   </div>
+                </div>
+                <p class="dms-section-lede" style="font-size:13px; margin-top:var(--space-3); color:var(--color-graphite);">
+                  Color is a separate axis. <code>prose</code> in graphite (secondary ink) is "prose + <code>color-graphite</code>," not a new <code>body-card</code> token. <code>body-lede</code> at 17px folds into <code>proseLG</code> at 20 or <code>prose</code> at 16 — pick the closer one. Button label uses <code>proseSM</code> at weight 500 via a button-specific override; not its own token.
+                </p>
+
+                <!-- ===== ROLE 4: META · IBM Plex Mono 400 ===== -->
+                <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: var(--space-7) 0 var(--space-3); font-weight:500;">meta · IBM Plex Mono 400 · numbers, labels, eyebrows, codes, chrome</h3>
+                <div>
                   <div class="type-row">
-                    <div class="meta"><span class="name">designator</span><span class="spec">12 · small caps · +80‰</span></div>
-                    <div><span class="designator">DATASETS · PRACTICE RECORDINGS · ID 2060573</span></div>
-                  </div>
-                  <div class="type-row">
-                    <div class="meta"><span class="name">mono</span><span class="spec">14 · tabular</span></div>
+                    <div class="meta"><span class="name">metaMD</span><span class="spec">Plex Mono 14 / 1.45 · 400 · tabular</span></div>
                     <div><span class="mono">2,060,573 rows · 1.2 MB · last fetched 04:21:08</span></div>
                   </div>
                   <div class="type-row">
-                    <div class="meta"><span class="name">specimen</span><span class="spec">19 italic · 620px measure</span></div>
-                    <div>
-                      <p class="specimen" style="font-style: italic;">
-                        A tessera is a single tile in a Roman or Byzantine mosaic — the smallest unit of a deliberately composed surface. Roman and Byzantine craftsmen spent careers placing tesserae one at a time into floors and ceilings that lasted millennia. Each tessera is small and ordinary; the composition is what's beautiful and durable.
-                      </p>
-                    </div>
+                    <div class="meta"><span class="name">metaSM</span><span class="spec">Plex Mono 11 / 1.4 · 400 · uppercase · +0.06em</span></div>
+                    <div><span style="font-family:var(--font-mono); font-size:11px; font-weight:400; line-height:1.4; letter-spacing:0.06em; color:var(--color-graphite); text-transform:uppercase;">DATASETS · PRACTICE RECORDINGS · ID 2060573 · genre = jazz</span></div>
+                  </div>
+                  <div class="type-row">
+                    <div class="meta"><span class="name">metaXS</span><span class="spec">Plex Mono 10 / 1.4 · 400 · uppercase · +0.08em</span></div>
+                    <div><span style="font-family:var(--font-mono); font-size:10px; font-weight:400; line-height:1.4; letter-spacing:0.08em; color:var(--color-graphite); text-transform:uppercase;">SECTION · NAVIGATION · KPI · rows · last 30d</span></div>
                   </div>
                 </div>
+                <p class="dms-section-lede" style="font-size:13px; margin-top:var(--space-3); color:var(--color-graphite);">
+                  Color and tabular-nums are modifier axes. <code>metaSM</code> in <code>color-fog</code> is the timestamp variant; in <code>color-slate</code> is the filter chip; bordered is the version badge. All three are the same token. Code blocks at 13px use <code>metaMD</code> at the inline scale with the bone-surface modifier applied at the block level — not a separate <code>mono-code</code> token.
+                </p>
 
-                <div class="dms-annotation-block" style="margin-top: var(--space-5);">
-                  <span class="key">theme key →</span> <code>textSettings.styles[0].{h1..h6, textXS..text8XL, body, bodySmall, caption, label, designator}</code> — every text-rendering primitive (Card cells via <code>valueFontStyle</code>, Lexical headings, Header sections) reads from this single named-style object.
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">theme key →</span> <code>textSettings.styles[0].{displayHero, displayXL..displaySM, displayItalicHero..displayItalicMD, proseLG..proseXS, metaMD..metaXS}</code> — fourteen tokens total. Every text-rendering primitive (Card cells via <code>valueFontStyle</code>, Lexical headings, Header sections) picks one. Tabular numerals, italic-on-prose, color, and uppercase tracking are modifier axes applied at the call site, not separate tokens.
+                </div>
+                <div class="dms-annotation-block" style="margin-top: var(--space-3);">
+                  <span class="key">earn-a-token rule →</span> A potential 15th must visibly differ from its neighbors by ≥ 2px <em>or</em> a weight step <em>or</em> a family/style change <em>or</em> a role change. Color alone, "uppercase vs. sentence case" alone, and "graphite vs. fog ink" alone do not earn a slot.
                 </div>
               </div>
             </div>
@@ -286,22 +349,22 @@
                 </p>
 
                 <div class="icon-grid">
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg><span class="name">Menu</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span class="name">ChevronDown</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg><span class="name">ChevronRight</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg><span class="name">ChevronLeft</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg><span class="name">XMark</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="name">Plus</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="name">Check</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><span class="name">Search</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 6h18M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/><path d="M10 11v6M14 11v6"/></svg><span class="name">Trash</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span class="name">Pencil</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span class="name">Settings</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="name">User</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/><path d="M3 12a9 3 0 0018 0"/></svg><span class="name">Database</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg><span class="name">Filter</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M1 6l7-3 8 3 7-3v15l-7 3-8-3-7 3z"/><path d="M8 3v15M16 6v15"/></svg><span class="name">Map</span></div>
-                  <div class="icon-cell"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16"/></svg><span class="name">Tessera</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg><span class="name t-metaXS">Menu</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span class="name t-metaXS">ChevronDown</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg><span class="name t-metaXS">ChevronRight</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg><span class="name t-metaXS">ChevronLeft</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg><span class="name t-metaXS">XMark</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="name t-metaXS">Plus</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="name t-metaXS">Check</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><span class="name t-metaXS">Search</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M3 6h18M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/><path d="M10 11v6M14 11v6"/></svg><span class="name t-metaXS">Trash</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span class="name t-metaXS">Pencil</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span class="name t-metaXS">Settings</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="name t-metaXS">User</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/><path d="M3 12a9 3 0 0018 0"/></svg><span class="name t-metaXS">Database</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg><span class="name t-metaXS">Filter</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><path d="M1 6l7-3 8 3 7-3v15l-7 3-8-3-7 3z"/><path d="M8 3v15M16 6v15"/></svg><span class="name t-metaXS">Map</span></div>
+                  <div class="icon-cell"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16"/></svg><span class="name t-metaXS">Tessera</span></div>
                 </div>
 
                 <div class="dms-annotation-block" style="margin-top: var(--space-5);">
@@ -323,48 +386,48 @@
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-7); margin-top: var(--space-5);">
                   <div>
-                    <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: 0 0 var(--space-3); font-weight:500;">Spacing scale · 4px base</h3>
+                    <h3 class="t-metaSM weight-500" style="margin: 0 0 var(--space-3);">Spacing scale · 4px base</h3>
                     <div>
-                      <div class="spacing-row"><span class="token">--space-1</span><span class="value">4px</span><div class="bar" style="width:4px;"></div></div>
-                      <div class="spacing-row"><span class="token">--space-2</span><span class="value">8px</span><div class="bar" style="width:8px;"></div></div>
-                      <div class="spacing-row"><span class="token">--space-3</span><span class="value">12px</span><div class="bar" style="width:12px;"></div></div>
-                      <div class="spacing-row"><span class="token">--space-4</span><span class="value">16px</span><div class="bar" style="width:16px;"></div></div>
-                      <div class="spacing-row"><span class="token">--space-5</span><span class="value">24px</span><div class="bar" style="width:24px;"></div></div>
-                      <div class="spacing-row"><span class="token">--space-6</span><span class="value">32px</span><div class="bar" style="width:32px;"></div></div>
-                      <div class="spacing-row"><span class="token">--space-7</span><span class="value">48px</span><div class="bar" style="width:48px;"></div></div>
-                      <div class="spacing-row"><span class="token">--space-8</span><span class="value">64px</span><div class="bar" style="width:64px;"></div></div>
-                      <div class="spacing-row"><span class="token">--space-9</span><span class="value">96px</span><div class="bar" style="width:96px;"></div></div>
-                      <div class="spacing-row"><span class="token">--space-10</span><span class="value">128px</span><div class="bar" style="width:128px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-1</span><span class="value t-metaMD">4px</span><div class="bar" style="width:4px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-2</span><span class="value t-metaMD">8px</span><div class="bar" style="width:8px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-3</span><span class="value t-metaMD">12px</span><div class="bar" style="width:12px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-4</span><span class="value t-metaMD">16px</span><div class="bar" style="width:16px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-5</span><span class="value t-metaMD">24px</span><div class="bar" style="width:24px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-6</span><span class="value t-metaMD">32px</span><div class="bar" style="width:32px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-7</span><span class="value t-metaMD">48px</span><div class="bar" style="width:48px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-8</span><span class="value t-metaMD">64px</span><div class="bar" style="width:64px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-9</span><span class="value t-metaMD">96px</span><div class="bar" style="width:96px;"></div></div>
+                      <div class="spacing-row"><span class="token t-metaMD">--space-10</span><span class="value t-metaMD">128px</span><div class="bar" style="width:128px;"></div></div>
                     </div>
                   </div>
 
                   <div>
-                    <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: 0 0 var(--space-3); font-weight:500;">Radii</h3>
+                    <h3 class="t-metaSM weight-500" style="margin: 0 0 var(--space-3);">Radii</h3>
                     <div style="display:flex; flex-direction:column; gap:var(--space-3);">
                       <div style="display:flex; align-items:center; gap: var(--space-4);">
                         <div style="width:64px; height:64px; background:var(--color-slate); border-radius:0;"></div>
                         <div>
-                          <div style="font-family:var(--font-mono); font-size:12px; color:var(--color-slate);">--radius-0 · 0px</div>
-                          <div style="font-family:var(--font-sans); font-size:13px; color:var(--color-graphite);">default — all surfaces, cards, modals, charts, sections</div>
+                          <div class="t-metaMD ink-slate">--radius-0 · 0px</div>
+                          <div class="t-proseSM ink-graphite">default — all surfaces, cards, modals, charts, sections</div>
                         </div>
                       </div>
                       <div style="display:flex; align-items:center; gap: var(--space-4);">
                         <div style="width:64px; height:64px; background:var(--color-slate); border-radius:2px;"></div>
                         <div>
-                          <div style="font-family:var(--font-mono); font-size:12px; color:var(--color-slate);">--radius-1 · 2px</div>
-                          <div style="font-family:var(--font-sans); font-size:13px; color:var(--color-graphite);">buttons, inputs, small badges</div>
+                          <div class="t-metaMD ink-slate">--radius-1 · 2px</div>
+                          <div class="t-proseSM ink-graphite">buttons, inputs, small badges</div>
                         </div>
                       </div>
                       <div style="display:flex; align-items:center; gap: var(--space-4);">
                         <div style="width:64px; height:64px; background:var(--color-slate); border-radius:50%;"></div>
                         <div>
-                          <div style="font-family:var(--font-mono); font-size:12px; color:var(--color-slate);">--radius-pill · 999px</div>
-                          <div style="font-family:var(--font-sans); font-size:13px; color:var(--color-graphite);">pills only — never on cards, never on surfaces</div>
+                          <div class="t-metaMD ink-slate">--radius-pill · 999px</div>
+                          <div class="t-proseSM ink-graphite">pills only — never on cards, never on surfaces</div>
                         </div>
                       </div>
                     </div>
 
-                    <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: var(--space-7) 0 var(--space-3); font-weight:500;">Grid</h3>
+                    <h3 class="t-metaSM weight-500" style="margin: var(--space-7) 0 var(--space-3);">Grid</h3>
                     <div class="dms-annotation-block">
                       <div>12 columns desktop · 4 columns mobile</div>
                       <div>24px gutters</div>
@@ -389,17 +452,17 @@
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-7); margin-top: var(--space-5);">
                   <div>
-                    <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: 0 0 var(--space-3); font-weight:500;">Elevation</h3>
+                    <h3 class="t-metaSM weight-500" style="margin: 0 0 var(--space-3);">Elevation</h3>
                     <div style="display:flex; flex-direction:column; gap: var(--space-5);">
                       <div>
                         <div style="background:var(--color-parchment); border:1px solid var(--color-grout-light); padding: var(--space-4);">
-                          <span class="designator">flat · the default</span>
+                          <span class="designator t-metaSM ink-graphite">flat · the default</span>
                         </div>
                         <div class="dms-annotation" style="margin-top: var(--space-2);">no shadow · 1px grout-light frame</div>
                       </div>
                       <div>
                         <div style="background:var(--color-parchment); border:1px solid var(--color-grout-light); padding: var(--space-4); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);">
-                          <span class="designator">lifted · the single elevation</span>
+                          <span class="designator t-metaSM ink-graphite">lifted · the single elevation</span>
                         </div>
                         <div class="dms-annotation" style="margin-top: var(--space-2);">--shadow-lift · 0 1px 2px rgba(42, 47, 54, 0.04)</div>
                       </div>
@@ -407,7 +470,7 @@
                   </div>
 
                   <div>
-                    <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: 0 0 var(--space-3); font-weight:500;">Motion</h3>
+                    <h3 class="t-metaSM weight-500" style="margin: 0 0 var(--space-3);">Motion</h3>
                     <div class="dms-annotation-block">
                       <div><span class="key">--dur-snap</span> · 100ms · tile placement, hover</div>
                       <div><span class="key">--dur-move</span> · 180ms · larger transitions</div>
@@ -417,7 +480,7 @@
                       </div>
                     </div>
 
-                    <h3 style="font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--color-graphite); margin: var(--space-7) 0 var(--space-3); font-weight:500;">Focus ring</h3>
+                    <h3 class="t-metaSM weight-500" style="margin: var(--space-7) 0 var(--space-3);">Focus ring</h3>
                     <div style="background:var(--color-parchment); border:1px solid var(--color-grout-light); padding: var(--space-5); display:flex; gap:var(--space-3);">
                       <button class="btn btn-primary" style="box-shadow: var(--focus-ring);">Focused</button>
                       <button class="btn btn-secondary" style="box-shadow: var(--focus-ring);">Focused</button>
@@ -434,13 +497,13 @@
             <div class="dms-group-footer-inner">
               <div style="display:flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
                 <div>
-                  <div class="designator">Tessera · Design System</div>
-                  <div style="margin-top: var(--space-2); font-size:13px; color: var(--color-graphite);">
+                  <div class="designator t-metaSM ink-graphite">Tessera · Design System</div>
+                  <div class="t-proseSM ink-graphite" style="margin-top: var(--space-2);">
                     v0.1 · 2026-05-22 · faithful translation of the brand brief into DMS theme tokens.
                   </div>
                 </div>
-                <div style="font-family:var(--font-mono); font-size: 11px; color: var(--color-fog);">
-                  theme · <a href="grid.html" style="color:inherit;">grid</a> · <a href="components.html" style="color:inherit;">components</a> · <a href="patterns.html" style="color:inherit;">patterns</a>
+                <div class="t-metaSM ink-fog">
+                  theme · <a href="layouts.html" style="color:inherit;">layouts</a> · <a href="grid.html" style="color:inherit;">grid</a> · <a href="components.html" style="color:inherit;">components</a> · <a href="patterns.html" style="color:inherit;">patterns</a>
                 </div>
               </div>
             </div>

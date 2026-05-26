@@ -14,7 +14,6 @@
       align-items: baseline;
       gap: var(--space-2);
       text-decoration: none;
-      color: var(--color-slate);
     }
     .logo-mockup .mark-tile {
       width: 14px;
@@ -22,13 +21,6 @@
       background: var(--color-oxide);
       display: inline-block;
       transform: translateY(2px);
-    }
-    .logo-mockup .word {
-      font-family: var(--font-display);
-      font-size: 22px;
-      font-weight: 500;
-      letter-spacing: -0.012em;
-      color: var(--color-slate);
     }
 
     /* Hero band — full-bleed bone, no card chrome */
@@ -45,11 +37,6 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--color-graphite);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
       padding-bottom: var(--space-5);
     }
     .marketing-eyebrow .monogram {
@@ -74,32 +61,19 @@
     .marketing-eyebrow .monogram span:nth-child(9) { background: transparent; }
 
     .hero-h1 {
-      font-family: var(--font-display);
-      font-weight: 500;
-      font-size: 76px;
-      line-height: 1.04;
-      letter-spacing: -0.02em;
-      color: var(--color-slate);
+      /* Tiempos Fine at hero scale — finer hairlines designed for 60+px.
+         Matches the runtime tessera theme's `displayHero` token. */
+      font-family: var(--font-fine);
       margin: 0;
       max-width: 920px;
       text-wrap: balance;
     }
-    @media (max-width: 900px) { .hero-h1 { font-size: 52px; } }
 
     .hero-lede {
-      font-family: var(--font-sans);
-      font-size: 20px;
-      line-height: 1.55;
-      color: var(--color-graphite);
       max-width: 620px;
       margin: var(--space-6) 0 0;
     }
     .hero-meta {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--color-graphite);
       margin: var(--space-6) 0 0;
     }
     .hero-doors {
@@ -133,19 +107,9 @@
       max-width: 720px;
     }
     .marketing-section-header h2 {
-      font-family: var(--font-display);
-      font-weight: 500;
-      font-size: 44px;
-      line-height: 1.1;
-      letter-spacing: -0.015em;
-      color: var(--color-slate);
       margin: var(--space-3) 0 var(--space-3);
     }
     .marketing-section-header p {
-      font-family: var(--font-sans);
-      font-size: 17px;
-      line-height: 1.55;
-      color: var(--color-graphite);
       margin: 0;
       max-width: 620px;
     }
@@ -182,22 +146,8 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      color: var(--color-slate);
-    }
-    .surface-kind {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--color-fog);
     }
     .surface-note {
-      font-family: var(--font-sans);
-      font-size: 14px;
-      line-height: 1.5;
-      color: var(--color-graphite);
       margin: var(--space-2) 0 0;
     }
 
@@ -254,18 +204,9 @@
     }
     .door-kind { margin-bottom: var(--space-4); }
     .door-title {
-      font-family: var(--font-display);
-      font-weight: 500;
-      font-size: 36px;
-      letter-spacing: -0.012em;
-      color: var(--color-slate);
       margin: 0;
     }
     .door-blurb {
-      font-family: var(--font-sans);
-      font-size: 16px;
-      line-height: 1.55;
-      color: var(--color-graphite);
       margin: var(--space-4) 0 0;
       max-width: 460px;
     }
@@ -281,17 +222,9 @@
       border-bottom: 1px solid var(--color-grout-light);
     }
     .door .dl-row dt {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--color-fog);
       margin: 0;
     }
     .door .dl-row dd {
-      font-family: var(--font-sans);
-      font-size: 14px;
-      color: var(--color-slate);
       margin: 0;
     }
     .door-cta {
@@ -314,12 +247,6 @@
       gap: var(--space-5);
     }
     .proof-quote {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-weight: 400;
-      font-size: 20px;
-      line-height: 1.45;
-      color: var(--color-slate);
       margin: 0;
       text-wrap: pretty;
     }
@@ -328,11 +255,6 @@
       padding-right: 2px;
     }
     .proof-cite {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--color-graphite);
       border-top: 1px solid var(--color-grout-light);
       padding-top: 14px;
     }
@@ -350,20 +272,10 @@
       padding: 0 var(--space-5);
     }
     .theory-band h2 {
-      font-family: var(--font-display);
-      font-weight: 400;
-      font-size: 40px;
-      line-height: 1.18;
-      letter-spacing: -0.012em;
-      color: var(--color-slate);
       margin: var(--space-3) 0 var(--space-5);
       text-wrap: balance;
     }
     .theory-band .lede {
-      font-family: var(--font-specimen);
-      font-size: 19px;
-      line-height: 1.55;
-      color: var(--color-slate);
       margin: 0;
       max-width: 620px;
     }
@@ -372,10 +284,6 @@
       align-items: center;
       gap: 8px;
       margin-top: var(--space-6);
-      font-family: var(--font-sans);
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--color-slate);
       text-decoration: none;
       border-bottom: 1px solid var(--color-slate);
       padding-bottom: 2px;
@@ -402,11 +310,6 @@
     @media (max-width: 900px) { .footer-top { grid-template-columns: 1fr; } }
     .footer-brand { display: flex; flex-direction: column; gap: var(--space-4); max-width: 280px; }
     .footer-tag {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-size: 16px;
-      line-height: 1.5;
-      color: var(--color-graphite);
       margin: 0;
     }
     .footer-links {
@@ -416,20 +319,11 @@
     }
     @media (max-width: 900px) { .footer-links { grid-template-columns: repeat(2, 1fr); } }
     .footer-group .designator-mono {
-      font-family: var(--font-mono);
-      font-weight: 400;
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--color-graphite);
       margin-bottom: var(--space-3);
     }
     .footer-group ul { list-style: none; padding: 0; margin: 0; }
     .footer-group li { margin-bottom: 8px; }
     .footer-group a {
-      font-family: var(--font-sans);
-      font-size: 14px;
-      color: var(--color-slate);
       text-decoration: none;
     }
     .footer-group a:hover { text-decoration: underline; text-decoration-color: var(--color-slate); }
@@ -454,10 +348,6 @@
       display: flex;
       justify-content: space-between;
       gap: var(--space-5);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--color-graphite);
-      letter-spacing: 0.04em;
       flex-wrap: wrap;
     }
     .footer-bottom .colophon { max-width: 480px; }
@@ -472,19 +362,13 @@
 
     /* TopNav — marketing variant uses larger wordmark and centred nav */
     .marketing-nav-link {
-      font-family: var(--font-sans);
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--color-graphite);
       text-decoration: none;
       padding: 4px 0;
       border-bottom: 1px solid transparent;
     }
     .marketing-nav-link--active {
-      color: var(--color-slate);
       border-bottom-color: var(--color-slate);
     }
-    .marketing-nav-link:hover { color: var(--color-slate); }
   </style>
 </head>
 <body>
@@ -499,17 +383,17 @@
           <div class="dms-topnav-left">
             <a href="marketing-homepage.html" class="logo-mockup" aria-label="Tessera home">
               <span class="mark-tile"></span>
-              <span class="word">Tessera</span>
+              <span class="word t-displaySM">Tessera</span>
             </a>
           </div>
-          <div class="dms-topnav-right" style="gap: var(--space-5); text-transform: none; letter-spacing: 0; font-family: var(--font-sans); font-size: 14px;">
-            <a href="#" class="marketing-nav-link marketing-nav-link--active">Product</a>
-            <a href="#" class="marketing-nav-link">Patterns</a>
-            <a href="marketing-comparison.html" class="marketing-nav-link">Hosted</a>
-            <a href="marketing-theory.html" class="marketing-nav-link">Theory</a>
-            <a href="#" class="marketing-nav-link">Docs</a>
+          <div class="dms-topnav-right" style="gap: var(--space-5);">
+            <a href="#" class="marketing-nav-link t-proseSM weight-500 ink-graphite marketing-nav-link--active ink-slate">Product</a>
+            <a href="#" class="marketing-nav-link t-proseSM weight-500 ink-graphite">Patterns</a>
+            <a href="marketing-comparison.html" class="marketing-nav-link t-proseSM weight-500 ink-graphite">Hosted</a>
+            <a href="marketing-theory.html" class="marketing-nav-link t-proseSM weight-500 ink-graphite">Theory</a>
+            <a href="#" class="marketing-nav-link t-proseSM weight-500 ink-graphite">Docs</a>
             <span style="width:1px;height:18px;background:var(--color-grout-light);"></span>
-            <a href="#" style="font-family: var(--font-sans); font-size: 14px; color: var(--color-slate); text-decoration: none;">Sign in</a>
+            <a href="#" class="t-proseSM ink-slate" style="text-decoration: none;">Sign in</a>
             <a href="#" class="btn btn-primary btn-sm">Get started</a>
           </div>
         </div>
@@ -524,7 +408,7 @@
             <div class="dms-group-header-inner">
               <div class="marketing-hero">
                 <div class="marketing-hero-inner">
-                  <div class="marketing-eyebrow">
+                  <div class="marketing-eyebrow t-metaSM ink-graphite">
                     <span class="monogram" aria-hidden="true">
                       <span></span><span></span><span></span>
                       <span></span><span></span><span></span>
@@ -533,13 +417,13 @@
                     <span>Tessera &middot; v0.1 preview</span>
                   </div>
 
-                  <h1 class="hero-h1">The shape of your data<br>is the shape of your site.</h1>
+                  <h1 class="hero-h1 t-displayHero">The shape of your data<br>is the shape of your site.</h1>
 
-                  <p class="hero-lede">
+                  <p class="hero-lede t-proseLG ink-graphite">
                     One typed row that can be a page, a section, a dataset, a query, or a theme &mdash; and every part of the system composes against it.
                   </p>
 
-                  <p class="hero-meta">
+                  <p class="hero-meta t-metaSM ink-graphite">
                     Open-source. Self-host or use the hosted service.
                   </p>
 
@@ -558,10 +442,10 @@
           <section class="dms-group-content">
             <div class="dms-group-content-inner">
               <div class="dms-section">
-                <div class="dms-section-eyebrow"><span class="mark"></span>SURFACES</div>
+                <div class="dms-section-eyebrow t-metaXS ink-fog"><span class="mark"></span>SURFACES</div>
                 <header class="marketing-section-header">
-                  <h2>One representation. Many renderings.</h2>
-                  <p>
+                  <h2 class="t-displayLG">One representation. Many renderings.</h2>
+                  <p class="t-proseLG ink-graphite">
                     A page is a row. A chart is a row. A map is a row. A join is two rows pointing at each other. The four sites below are driven by the same engine &mdash; no template forks, no special cases.
                   </p>
                 </header>
@@ -578,12 +462,12 @@
                       <div class="thumb-row3"></div>
                     </div>
                     <div class="surface-meta">
-                      <div class="surface-slug">
+                      <div class="surface-slug t-displaySM">
                         <span>wcdb.fm</span>
                         <span aria-hidden="true">&#x2197;</span>
                       </div>
-                      <div class="surface-kind">Radio station</div>
-                      <p class="surface-note">Live now-playing, schedule grid, archive.</p>
+                      <div class="surface-kind t-metaSM ink-fog">Radio station</div>
+                      <p class="surface-note t-proseSM ink-graphite">Live now-playing, schedule grid, archive.</p>
                     </div>
                   </article>
 
@@ -599,12 +483,12 @@
                       <div class="legend legend-3"></div>
                     </div>
                     <div class="surface-meta">
-                      <div class="surface-slug">
+                      <div class="surface-slug t-displaySM">
                         <span>mitigate.ny.gov</span>
                         <span aria-hidden="true">&#x2197;</span>
                       </div>
-                      <div class="surface-kind">Civic dashboard</div>
-                      <p class="surface-note">Watershed indicators, region drill-downs.</p>
+                      <div class="surface-kind t-metaSM ink-fog">Civic dashboard</div>
+                      <p class="surface-note t-proseSM ink-graphite">Watershed indicators, region drill-downs.</p>
                     </div>
                   </article>
 
@@ -631,12 +515,12 @@
                       <div class="bar" style="left: 90%; height: 64%;"></div>
                     </div>
                     <div class="surface-meta">
-                      <div class="surface-slug">
+                      <div class="surface-slug t-displaySM">
                         <span>npmrds.tessera.io</span>
                         <span aria-hidden="true">&#x2197;</span>
                       </div>
-                      <div class="surface-kind">Analytics page</div>
-                      <p class="surface-note">Freight corridor performance, last 30d.</p>
+                      <div class="surface-kind t-metaSM ink-fog">Analytics page</div>
+                      <p class="surface-note t-proseSM ink-graphite">Freight corridor performance, last 30d.</p>
                     </div>
                   </article>
 
@@ -655,12 +539,12 @@
                       <div class="code"></div>
                     </div>
                     <div class="surface-meta">
-                      <div class="surface-slug">
+                      <div class="surface-slug t-displaySM">
                         <span>avail.docs.tessera.io</span>
                         <span aria-hidden="true">&#x2197;</span>
                       </div>
-                      <div class="surface-kind">Documentation</div>
-                      <p class="surface-note">API reference and pattern guides.</p>
+                      <div class="surface-kind t-metaSM ink-fog">Documentation</div>
+                      <p class="surface-note t-proseSM ink-graphite">API reference and pattern guides.</p>
                     </div>
                   </article>
                 </div>
@@ -672,38 +556,38 @@
           <section class="dms-group-content">
             <div class="dms-group-content-inner">
               <div class="dms-section">
-                <div class="dms-section-eyebrow"><span class="mark"></span>TWO DOORS</div>
+                <div class="dms-section-eyebrow t-metaXS ink-fog"><span class="mark"></span>TWO DOORS</div>
                 <header class="marketing-section-header">
-                  <h2>Run it yourself, or let us run it.</h2>
+                  <h2 class="t-displayLG">Run it yourself, or let us run it.</h2>
                 </header>
 
                 <div class="doors-grid">
                   <div class="door">
                     <div class="door-kind"><span class="badge">Self-host</span></div>
-                    <h3 class="door-title">Tessera, open.</h3>
-                    <p class="door-blurb">
+                    <h3 class="door-title t-displayMD">Tessera, open.</h3>
+                    <p class="door-blurb t-prose ink-graphite">
                       Download the engine. Bring your own Postgres. Compose against the same primitives the hosted service uses &mdash; no feature gates.
                     </p>
                     <dl>
-                      <div class="dl-row"><dt>Engine</dt><dd>AGPL-3.0</dd></div>
-                      <div class="dl-row"><dt>Themes</dt><dd>MIT</dd></div>
-                      <div class="dl-row"><dt>DB</dt><dd>Postgres 14+</dd></div>
-                      <div class="dl-row"><dt>Deploy</dt><dd>Docker / systemd</dd></div>
+                      <div class="dl-row"><dt class="t-metaXS ink-fog">Engine</dt><dd class="t-metaSM tabular ink-slate">AGPL-3.0</dd></div>
+                      <div class="dl-row"><dt class="t-metaXS ink-fog">Themes</dt><dd class="t-metaSM tabular ink-slate">MIT</dd></div>
+                      <div class="dl-row"><dt class="t-metaXS ink-fog">DB</dt><dd class="t-metaSM tabular ink-slate">Postgres 14+</dd></div>
+                      <div class="dl-row"><dt class="t-metaXS ink-fog">Deploy</dt><dd class="t-metaSM tabular ink-slate">Docker / systemd</dd></div>
                     </dl>
                     <a href="#" class="btn btn-secondary door-cta">Host your own <span class="arrow-glyph">&rarr;</span></a>
                   </div>
 
                   <div class="door">
                     <div class="door-kind"><span class="badge badge-accent">Hosted</span></div>
-                    <h3 class="door-title">Tessera, run.</h3>
-                    <p class="door-blurb">
+                    <h3 class="door-title t-displayMD">Tessera, run.</h3>
+                    <p class="door-blurb t-prose ink-graphite">
                       The same engine, on our infrastructure. Backups, CDN, edge caching, custom domains. For when you'd rather place tiles than configure servers.
                     </p>
                     <dl>
-                      <div class="dl-row"><dt>Plan</dt><dd>Starter / Civic / Press</dd></div>
-                      <div class="dl-row"><dt>Region</dt><dd>US-EAST &middot; EU-WEST</dd></div>
-                      <div class="dl-row"><dt>Backups</dt><dd>Daily, 30d retention</dd></div>
-                      <div class="dl-row"><dt>SLA</dt><dd>99.9% &middot; audit on request</dd></div>
+                      <div class="dl-row"><dt class="t-metaXS ink-fog">Plan</dt><dd class="t-metaSM tabular ink-slate">Starter / Civic / Press</dd></div>
+                      <div class="dl-row"><dt class="t-metaXS ink-fog">Region</dt><dd class="t-metaSM tabular ink-slate">US-EAST &middot; EU-WEST</dd></div>
+                      <div class="dl-row"><dt class="t-metaXS ink-fog">Backups</dt><dd class="t-metaSM tabular ink-slate">Daily, 30d retention</dd></div>
+                      <div class="dl-row"><dt class="t-metaXS ink-fog">SLA</dt><dd class="t-metaSM tabular ink-slate">99.9% &middot; audit on request</dd></div>
                     </dl>
                     <a href="#" class="btn btn-secondary door-cta">See pricing <span class="arrow-glyph">&rarr;</span></a>
                   </div>
@@ -716,28 +600,28 @@
           <section class="dms-group-content">
             <div class="dms-group-content-inner">
               <div class="dms-section">
-                <div class="dms-section-eyebrow"><span class="mark"></span>IN USE</div>
+                <div class="dms-section-eyebrow t-metaXS ink-fog"><span class="mark"></span>IN USE</div>
 
                 <div class="proof-grid">
                   <figure class="proof-fig">
-                    <blockquote class="proof-quote">
+                    <blockquote class="proof-quote t-displayItalicMD">
                       <span class="mark">&ldquo;</span>We replaced a hand-tooled CMS, an analytics dashboard, and a static-site generator with a single Tessera instance. The data didn't move; only the renderings did.
                     </blockquote>
-                    <figcaption class="proof-cite">Maintainer &middot; State of New York, environmental data</figcaption>
+                    <figcaption class="proof-cite t-metaSM ink-graphite">Maintainer &middot; State of New York, environmental data</figcaption>
                   </figure>
 
                   <figure class="proof-fig">
-                    <blockquote class="proof-quote">
+                    <blockquote class="proof-quote t-displayItalicMD">
                       <span class="mark">&ldquo;</span>Our pages and our datasets used to drift. Now they're the same row, read two ways.
                     </blockquote>
-                    <figcaption class="proof-cite">Engineer &middot; campus radio collective, Albany</figcaption>
+                    <figcaption class="proof-cite t-metaSM ink-graphite">Engineer &middot; campus radio collective, Albany</figcaption>
                   </figure>
 
                   <figure class="proof-fig">
-                    <blockquote class="proof-quote">
+                    <blockquote class="proof-quote t-displayItalicMD">
                       <span class="mark">&ldquo;</span>The team that ships our reference site uses the same engine the library uses to publish the archive. We compose against shared primitives.
                     </blockquote>
-                    <figcaption class="proof-cite">Research lead &middot; municipal archives</figcaption>
+                    <figcaption class="proof-cite t-metaSM ink-graphite">Research lead &middot; municipal archives</figcaption>
                   </figure>
                 </div>
               </div>
@@ -749,12 +633,12 @@
             <div class="dms-group-content-inner" style="padding: 0; background: transparent; border: 0; box-shadow: none;">
               <div class="theory-band">
                 <div class="theory-band-inner">
-                  <div class="dms-section-eyebrow"><span class="mark"></span>THEORY</div>
-                  <h2><em>On placing</em> &mdash; an essay on why a typed row is the right primitive for a data-driven site.</h2>
-                  <p class="lede">
+                  <div class="dms-section-eyebrow t-metaXS ink-fog"><span class="mark"></span>THEORY</div>
+                  <h2 class="t-displayItalicLG"><em>On placing</em> &mdash; an essay on why a typed row is the right primitive for a data-driven site.</h2>
+                  <p class="lede t-proseLG ink-graphite">
                     A long-form companion to the documentation. Roman and Byzantine craftsmen spent careers placing tesserae one at a time into floors that lasted millennia. We think the same care belongs in the construction of a public dashboard or a civic data site. Read the full argument.
                   </p>
-                  <a href="marketing-theory.html" class="cta">Read &ldquo;On placing&rdquo; <span class="arrow-glyph">&rarr;</span></a>
+                  <a href="marketing-theory.html" class="cta t-proseSM weight-500 ink-slate">Read &ldquo;On placing&rdquo; <span class="arrow-glyph">&rarr;</span></a>
                 </div>
               </div>
             </div>
@@ -767,59 +651,59 @@
                 <div class="footer-brand">
                   <span class="logo-mockup">
                     <span class="mark-tile"></span>
-                    <span class="word">Tessera</span>
+                    <span class="word t-displaySM">Tessera</span>
                   </span>
-                  <p class="footer-tag">A typed row that can be a page, a section, a dataset, a query, or a theme.</p>
+                  <p class="footer-tag t-proseSM ink-graphite italic">A typed row that can be a page, a section, a dataset, a query, or a theme.</p>
                 </div>
 
                 <div class="footer-links">
                   <div class="footer-group">
-                    <div class="designator-mono">Product</div>
+                    <div class="designator-mono t-metaXS ink-fog">Product</div>
                     <ul>
-                      <li><a href="#">Overview</a></li>
-                      <li><a href="#">Patterns</a></li>
-                      <li><a href="#">Themes</a></li>
-                      <li><a href="#">Datasets</a></li>
-                      <li><a href="#">Roadmap</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Overview</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Patterns</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Themes</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Datasets</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Roadmap</a></li>
                     </ul>
                   </div>
                   <div class="footer-group">
-                    <div class="designator-mono">Hosted</div>
+                    <div class="designator-mono t-metaXS ink-fog">Hosted</div>
                     <ul>
-                      <li><a href="marketing-comparison.html">Pricing</a></li>
-                      <li><a href="#">Civic plan</a></li>
-                      <li><a href="#">Press plan</a></li>
-                      <li><a href="#">Status</a></li>
-                      <li><a href="#">Security</a></li>
+                      <li><a href="marketing-comparison.html" class="t-proseSM ink-slate">Pricing</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Civic plan</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Press plan</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Status</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Security</a></li>
                     </ul>
                   </div>
                   <div class="footer-group">
-                    <div class="designator-mono">Open source</div>
+                    <div class="designator-mono t-metaXS ink-fog">Open source</div>
                     <ul>
-                      <li><a href="#">GitHub</a></li>
-                      <li><a href="#">Releases</a></li>
-                      <li><a href="#">Contributing</a></li>
-                      <li><a href="#">License</a></li>
-                      <li><a href="#">Acknowledgements</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">GitHub</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Releases</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Contributing</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">License</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Acknowledgements</a></li>
                     </ul>
                   </div>
                   <div class="footer-group">
-                    <div class="designator-mono">Theory</div>
+                    <div class="designator-mono t-metaXS ink-fog">Theory</div>
                     <ul>
-                      <li><a href="marketing-theory.html">On placing</a></li>
-                      <li><a href="#">Representation primacy</a></li>
-                      <li><a href="#">Durability</a></li>
-                      <li><a href="#">Field notes</a></li>
+                      <li><a href="marketing-theory.html" class="t-proseSM ink-slate">On placing</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Representation primacy</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Durability</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Field notes</a></li>
                     </ul>
                   </div>
                   <div class="footer-group">
-                    <div class="designator-mono">Community</div>
+                    <div class="designator-mono t-metaXS ink-fog">Community</div>
                     <ul>
-                      <li><a href="#">Forum</a></li>
-                      <li><a href="#">Office hours</a></li>
-                      <li><a href="#">Showcase</a></li>
-                      <li><a href="#">Letters</a></li>
-                      <li><a href="#">Mastodon</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Forum</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Office hours</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Showcase</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Letters</a></li>
+                      <li><a href="#" class="t-proseSM ink-slate">Mastodon</a></li>
                     </ul>
                   </div>
                 </div>
@@ -827,7 +711,7 @@
 
               <div class="footer-frieze" aria-hidden="true"></div>
 
-              <div class="footer-bottom">
+              <div class="footer-bottom t-metaXS ink-graphite">
                 <div class="colophon">
                   Tessera is open source, AGPL-3.0. The hosted service is operated by an independent cooperative.
                 </div>
@@ -836,6 +720,14 @@
                   <span>&middot;</span>
                   <span>2026</span>
                 </div>
+              </div>
+              <div class="t-metaXS ink-fog" style="margin-top: var(--space-3); text-align: right;">
+                design system ·
+                <a href="../design-system/theme.html" style="color: inherit;">theme</a> ·
+                <a href="../design-system/layouts.html" style="color: inherit;">layouts</a> ·
+                <a href="../design-system/grid.html" style="color: inherit;">grid</a> ·
+                <a href="../design-system/components.html" style="color: inherit;">components</a> ·
+                <a href="../design-system/patterns.html" style="color: inherit;">patterns</a>
               </div>
             </div>
           </footer>

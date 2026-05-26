@@ -6,6 +6,107 @@
 
 /* ---------- Webfonts ----------------------------------------- */
 
+/* Tiempos — the licensed display family. Files live at the repo root in
+   public/fonts/tessera/tiempos/. From this CSS file's location
+   (src/themes/tessera/Tessera Design System/colors_and_type.css), four
+   directory levels up reaches the repo root, then into public/. The same
+   relative path works whether the page is served by Vite (URL-style) or
+   opened directly via file:// (filesystem-style).
+
+   Two optical-size cuts in use:
+     - Tiempos Headline → display sizes 18–48px (most tokens)
+     - Tiempos Fine     → very large display 60+px (displayHero,
+                          displayItalicHero) — finer hairlines look
+                          intentional at hero size
+   Newsreader (loaded below) stays as a fallback during the brief
+   font-display:swap window. */
+
+@font-face {
+  font-family: "Tiempos Headline";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-Regular-BF66457a508e31a.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Headline";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-RegularItalic-BF66457a5091d70.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Headline";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-Medium-BF66457a509b4ec.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Headline";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-MediumItalic-BF66457a50b4260.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Headline";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-Semibold-BF66457a509040b.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Headline";
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-SemiboldItalic-BF66457a510c462.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Tiempos Fine";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-Regular-BF66457a50e8bc9.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Fine";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-RegularItalic-BF66457a50e36f9.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Fine";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-Medium-BF66457a50e62cd.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Fine";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-MediumItalic-BF66457a511be83.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Fine";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-Semibold-BF66457a50f016a.otf") format("opentype");
+}
+@font-face {
+  font-family: "Tiempos Fine";
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-SemiboldItalic-BF66457a50b0e18.otf") format("opentype");
+}
+
 @font-face {
   font-family: "Newsreader";
   font-style: normal;
@@ -116,14 +217,17 @@
   --series-4: var(--color-ochre);
   --series-5: var(--color-tile);
 
-  /* Type families */
-  --font-display: "Newsreader", "Tiempos Headline", "GT Sectra", "Recoleta",
+  /* Type families. Tiempos is now the licensed primary; Newsreader stays
+     in the stack as a fallback during the brief font-display: swap window. */
+  --font-display: "Tiempos Headline", "Newsreader", "GT Sectra", "Recoleta",
                   Georgia, "Times New Roman", serif;
+  --font-fine:    "Tiempos Fine", "Tiempos Headline", "Newsreader",
+                  "GT Alpina", Georgia, serif;
   --font-sans:    "IBM Plex Sans", "Söhne", system-ui, -apple-system,
                   "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono:    "IBM Plex Mono", "JetBrains Mono", ui-monospace,
                   SFMono-Regular, Menlo, monospace;
-  --font-specimen:"Newsreader", "GT Alpina", Georgia, serif;
+  --font-specimen:"Tiempos Headline", "Newsreader", "GT Alpina", Georgia, serif;
 
   /* Type scale (px) */
   --fs-display-1: 48px;

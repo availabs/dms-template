@@ -17,12 +17,13 @@ design_system_v2/
 │   ├── tailwind.additions.js suggested tailwind.config extensions
 │   ├── icons/                custom SVGs (empty in v0.1)
 │   └── README.md
-├── design-system/       ← FOUR DMS-shaped docs pages
+├── design-system/       ← FIVE DMS-shaped docs pages
 │   ├── theme.html           foundation tokens (color, type, icons, spacing, radii, elevation)
-│   ├── grid.html            Layout + LayoutGroup variants with diagrams
+│   ├── layouts.html         Layout + LayoutGroup variants with diagrams (page chrome shapes)
+│   ├── grid.html            the page-content column grid (sectionArray, 12 columns)
 │   ├── components.html      every UI primitive themed
 │   ├── patterns.html        composed multi-primitive patterns
-│   └── _dms-page.css        shared chrome for the four pages
+│   └── _dms-page.css        shared chrome for the five pages
 └── pages/               ← OPTIONAL example page(s) — theme's choice
     └── civic-overview.html  Sullivan County mitigation overview
                               (a MitigateNY-shaped surface)
@@ -46,7 +47,7 @@ design_system_v2/
 - **`theme/`** — the **shipped code artifact**. JS, icons, Tailwind
   additions. What ends up in `src/themes/<brand>/` for a production
   consumer.
-- **`design-system/`** — **introspective documentation pages.** Four
+- **`design-system/`** — **introspective documentation pages.** Five
   DMS-shaped pages that document the theme on its own terms. Each page
   is laid out as a real DMS page (Layout > LayoutGroup > Section), so
   the design system documents itself using the platform it documents.
@@ -63,10 +64,11 @@ Open any HTML file directly in a browser — they're plain HTML with relative im
 Try this order:
 
 1. `design-system/theme.html` — orientation: see the brand's vocabulary.
-2. `design-system/grid.html` — the structural layer.
-3. `design-system/components.html` — every primitive.
-4. `design-system/patterns.html` — primitives composed.
-5. `pages/civic-overview.html` — the system applied to a real surface.
+2. `design-system/layouts.html` — the page chrome (Layout + LayoutGroup variants).
+3. `design-system/grid.html` — the page-content column grid every section sits on.
+4. `design-system/components.html` — every primitive.
+5. `design-system/patterns.html` — primitives composed.
+6. `pages/civic-overview.html` — the system applied to a real surface.
 
 ## How to use it
 
@@ -85,7 +87,7 @@ For a design pass refining or extending this work:
 
 1. Read `src/dms/skills/designing-a-dms-theme.md` first.
 2. Read this file and `theme/README.md`.
-3. Open the four `design-system/` pages and the example page to see
+3. Open the five `design-system/` pages and the example page to see
    what's already covered.
 4. The brand brief (`references/dms product/brand-tessera.md`) is the
    gospel for aesthetic decisions — anti-patterns, motion principles,

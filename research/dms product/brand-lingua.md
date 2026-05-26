@@ -1,14 +1,32 @@
-# Lingua — Brand Brief (v0.1)
+# Lingua — Brand Brief (v0.2)
 
-> First-pass branding document for the product currently called DMS, in
+> Second-pass branding document for the product currently called DMS, in
 > the event the name **Lingua** is chosen. Intended as input to a design
-> agent producing a first-pass design system (tokens, components,
-> patterns, marketing site mockups).
+> agent producing the design system (tokens, components, patterns,
+> marketing site mockups).
 >
 > Pair with `positioning-v2.md` for product context. This document
 > covers only what's specific to the *Lingua* identity — what the name
 > means, how it should look, how it should sound, and what artifacts a
-> v0.1 design system should ship.
+> v0.2 design system should ship.
+>
+> **What changed from v0.1.** v0.1 framed Lingua as a literary
+> magazine — warm cream paper, italic Fraunces, drop-caps, square
+> corners, anti-tech-startup, generous editorial space. That direction
+> made Lingua read as a *publication* rather than a *platform*, and
+> the resulting design system landed too close visually to Tessera (which
+> is also an editorial-serif paper-feeling brand). v0.2 reframes Lingua
+> as a **modern technical product** taking cues from
+> [hex.tech](https://hex.tech), [zed.dev](https://zed.dev), and
+> [warpstream.com](https://www.warpstream.com): sans-led, blue-accented,
+> rounded-corner, dark-code-surfaced, with architecture diagrams and
+> live activity as canonical brand devices. The lingua-franca essence
+> survives, but it's expressed through the *clarity of a well-designed
+> developer tool*, not through the *texture of a literary journal*.
+>
+> Editorial moments still exist (the Theory essay page, the occasional
+> pull quote) but they're *accents inside a sans-serif brand*, not the
+> default voice.
 
 ---
 
@@ -26,10 +44,12 @@ row format is the lingua franca that lets pages talk to charts, charts
 talk to maps, maps talk to datasets, and plugins talk to themes — none
 of them giving up what they are, all of them sharing one vocabulary.
 
-The brand should feel **articulate, editorial, contemporary, and
-inviting**. It is closer to a contemporary art magazine, a translation
-imprint, or a public-radio program than to a tech startup. Authority
-comes from clarity of voice, not from feature lists or volume.
+The brand should feel **precise, modern, technically confident, and
+welcoming to both authors and engineers**. It is closer to a modern
+developer-tool company (Hex, Zed, Linear, Vercel, Warpstream) than to a
+literary magazine. Authority comes from clarity of demonstration —
+visible code, visible data, visible architecture — not from typographic
+restraint.
 
 ---
 
@@ -48,11 +68,13 @@ comes from clarity of voice, not from feature lists or volume.
 - **Refusing:** "no-code platform," "internal tool builder," "open-source
   Notion," "infinitely flexible." These are not Lingua.
 
-The Lingua-specific angle on the positioning: **lean into voice and
-communication.** The product's strongest single line — *the same
-product non-technical users author on, technical users extend* —
-reads as a language argument. Lingua is the brand that makes the
-dual-author claim the headline.
+The Lingua-specific angle: **lean into the dual-author claim and prove
+it visually.** Lingua is one of very few products where a non-technical
+author and a technical operator look at the same surface and both see
+themselves. Mockups should make that legible — a marketing page,
+beside a code sample, beside a data-table panel, beside an
+architecture diagram — *all in the same brand*. The visual proof of
+"one vocabulary" is showing the unlike rendered in the same voice.
 
 ---
 
@@ -60,18 +82,24 @@ dual-author claim the headline.
 
 | Trait | Lingua is… | Lingua is not… |
 |---|---|---|
-| Tone | Articulate, contemporary, slightly literary | Corporate, marketing-y, ironic |
-| Pace | Confident, present-tense, generous | Urgent, hype-driven |
-| Authority | Earned by clarity | Asserted by jargon |
-| Texture | Print-magazine, typographic | Glassy, illustrated, gradient-rich |
-| Sense of humor | Wry, well-timed | Memetic, irreverent |
-| Politics of design | Pluralist, inclusive, open-standards | Disruptive, growth-hacky |
+| Tone | Precise, modern, confident | Corporate-bureaucratic, ironic, cute |
+| Pace | Deliberate, present-tense, demonstrative | Urgent, hype-driven |
+| Authority | Earned by showing | Asserted by adjective |
+| Texture | Crisp, gridded, clean — light surfaces with deliberate dark moments | Cream paper, glassy, illustrated |
+| Sense of humor | Wry, in the copy of empty states and error pages | Memetic, irreverent |
+| Politics of design | Pluralist, open-source-minded, dev-friendly | Disruptive, growth-hacky, exclusionary |
 
-If Lingua were a magazine, it would be *The Believer* or *The Drift* —
-not *Wired*. If it were a publisher, New Directions, Fitzcarraldo,
-NYRB Classics. If it were a typeface foundry, Klim, Production Type,
-Dinamo. The thread is editorial sophistication, multilingual reach, and
-care for the written word.
+If Lingua were a peer company, it would be **Hex** (technical product
+that takes design seriously), **Zed** (developer tool with bold,
+contemporary aesthetics), **Linear** (precise, opinionated, dark when
+needed), **Vercel** (clean grid + strong type + dark code surfaces),
+**Warpstream** (technical confidence + architecture diagrams), or
+**Resend** (developer product with editorial calm). The thread is
+*modern developer-product aesthetics applied to a dual-audience tool*.
+
+It is **not** a literary magazine, a print publisher, a typography
+specimen, or a content-art project. Those references belonged to a
+different brand pass and have been retired.
 
 ---
 
@@ -79,167 +107,284 @@ care for the written word.
 
 ### 4.1 Mood
 
-- **Typographically led.** The brand is literally about language; the
-  design treats type as the primary visual element, not as a wrapper
-  around imagery.
-- **Editorial.** Layouts borrow from contemporary magazines: confident
-  use of white space, strong type hierarchy, occasional asymmetry.
-- **Multilingual / multi-voice.** The brand can express the same idea
-  in multiple scripts, weights, or registers without losing identity —
-  in fact that's part of the identity.
-- **Contemporary, not nostalgic.** Lingua is not a "we honour the
-  classics" brand. It uses contemporary typography, contemporary
-  color, contemporary editorial moves.
+- **Sans-serif led.** A single confident grotesque does 95% of the
+  visual work. The brand voice is communicated through type weight,
+  size, and rhythm — not through serif-vs-sans contrast.
+- **Light surfaces, dark moments.** The default surface is a clean,
+  cool off-white or pure white. **Code blocks, terminals, and certain
+  hero moments** sit on a deep slate surface and provide the brand's
+  dramatic contrast. The shift between light and dark surfaces is a
+  *brand signature*.
+- **Crisp grid.** Generous but deliberate. Densely-packed information
+  blocks (code samples, KPI strips, data tables) sit inside spacious
+  frames. The mix of density and air is the brand's compositional
+  fingerprint.
+- **Demonstrative.** Every marketing surface shows the product *doing
+  something*: a code snippet, a live editor mock, an architecture
+  diagram, a data table with real rows, a terminal command. Lingua
+  proves its claims by showing.
+- **One strong accent.** A single confident accent color (an electric
+  ultramarine — "Lingua blue") carries the brand. A small set of
+  supporting accents covers status (warn / success / highlight) but
+  the brand reads as essentially blue.
 
 ### 4.2 Reference points (mood-board cues)
 
-- *The Drift, n+1, The Believer* — contemporary literary magazine
-  design.
-- Klim Type Foundry's specimen pages — type doing all the work.
-- Pentagram's identity for *The Public Theater* (Paula Scher).
-- *Granta*'s book covers under Peter Dyer / Suzanne Dean.
-- Studio Dumbar's wayfinding work.
-- The *Are.na* identity — quiet, editorial, restrained color, type-
-  forward.
-- *Rest of World* (the publication) — multilingual, editorial,
-  contemporary.
-- The Serpentine Galleries' identity (Hyperkit / North).
-- Production Type's website.
+- [**Hex.tech**](https://hex.tech) — modern analytics product;
+  generous white surfaces, navy ink, bright accent on CTAs, live
+  product screenshots throughout. The benchmark for "technical-but-
+  warm."
+- [**Zed.dev**](https://zed.dev) — code editor; bold sans-serif
+  display type, prominent live activity feed (GitHub commits), large
+  hero claims, customer logos with credibility names (Dan Abramov,
+  José Valim). The benchmark for "developer credibility through
+  showing the work."
+- [**Warpstream.com**](https://www.warpstream.com) — infrastructure
+  product; large hero claims ("10x cheaper than Kafka"), side-by-side
+  architecture diagrams, customer logos with brand colors preserved,
+  terminal/CLI visuals. The benchmark for "technical comparison done
+  cleanly."
+- **Linear** — opinionated developer product; dark sections + light
+  sections; precise spacing; the brand of *taste applied to a
+  developer tool*.
+- **Vercel** — sharp grotesque type; high-contrast hero; dark code
+  blocks against light surfaces; minimal decorative debt.
+- **Resend** — developer email product; calm grid; clean type; the
+  "Stripe-but-quieter" feel.
+
+What is **not** on the mood board (changes from v0.1):
+
+- ~~The Drift, n+1, The Believer~~ — magazine references are
+  retired.
+- ~~Klim, Production Type, GT Alpina specimens~~ — type-foundry
+  worship is retired.
+- ~~Pentagram for The Public Theater (Paula Scher)~~ — masthead
+  typographic posture is retired.
+- ~~Granta, Fitzcarraldo, NYRB Classics~~ — literary-publisher
+  references are retired.
+- ~~Are.na's identity~~ — too quiet for the new direction.
 
 ### 4.3 Color palette (starter tokens)
 
-A confident editorial palette. Cream paper, sharp ink, one strong
-accent that does most of the work. Restraint comes from how few
-colors are present at once, not from how muted each one is.
+A modern technical palette. Clean cool whites and grays as the floor;
+one strong blue as the brand accent; deep slate for code surfaces; a
+small set of supporting accents for status.
 
 ```
---color-paper          #FBF7F0   /* primary background (warm cream) */
---color-paper-alt      #F2EDE2   /* secondary surface */
---color-paper-lift     #FEFCF7   /* lifted surface, modals */
---color-ink            #0F0F0F   /* primary ink (near-black, warm) */
---color-graphite       #3D3D3D   /* secondary ink */
---color-mute           #8A857C   /* tertiary ink, captions */
+/* Surface — light mode default */
+--color-surface          #FFFFFF   /* primary background (pure white) */
+--color-surface-soft     #F7F7F8   /* subtle alternate surface */
+--color-surface-sunken   #F1F1F3   /* sunken — cards on a background */
+--color-border           #E4E4E7   /* default border / hairline */
+--color-border-strong    #D4D4D8   /* heavier rule (table headers, etc.) */
 
---color-signal         #E63946   /* primary accent (vermillion / editorial red) */
---color-voice          #1E3A8A   /* secondary accent (deep navy / ink-blue) */
---color-margin         #E9B44C   /* highlight / annotation (warm mustard) */
---color-rule           #D6CFC2   /* hairline rule, divider */
+/* Ink */
+--color-ink              #18181B   /* primary ink — near-black, warm-cool neutral (zinc-900) */
+--color-ink-soft         #3F3F46   /* secondary ink (zinc-700) */
+--color-mute             #71717A   /* tertiary ink, captions (zinc-500) */
+--color-mute-soft        #A1A1AA   /* placeholders, disabled (zinc-400) */
 
---color-ink-reverse    #FBF7F0   /* ink on reverse (= paper) */
---color-paper-reverse  #0F0F0F   /* paper on reverse (= ink) */
+/* Brand accent — Lingua blue */
+--color-accent           #3B5BFF   /* electric ultramarine — the brand */
+--color-accent-hover     #2F4AE0   /* hover state */
+--color-accent-soft      #EEF1FF   /* accent tint for backgrounds, highlights */
+--color-accent-ink       #FFFFFF   /* text on accent surfaces */
+
+/* Status accents — used sparingly */
+--color-signal           #FF5630   /* vermillion — warnings, important, danger */
+--color-margin           #FFC83D   /* citrus — highlights, "new", margin annotations */
+--color-success          #14B881   /* emerald — complete, success, "on" states */
+
+/* Code surface (dark, always — even in light mode) */
+--color-code-bg          #0E0F12   /* deep slate code/terminal background */
+--color-code-bg-soft     #1A1B1F   /* secondary code surface */
+--color-code-fg          #E6E7EA   /* code text */
+--color-code-mute        #6C7079   /* code comments */
+--color-code-accent      #79B8FF   /* code accent (function names, keywords) */
+--color-code-string      #B5F4A5   /* code strings */
+--color-code-keyword     #FFA8B4   /* code keywords */
+
+/* Dark mode (full theme — v0.3 deliverable) */
+--color-surface-dark         #0A0A0B
+--color-surface-soft-dark    #131316
+--color-ink-dark             #F4F4F5
+--color-accent-dark          #6B85FF
 ```
 
-Color usage rules:
+**Color rules:**
 
-- **Paper + ink only by default.** Most surfaces are cream and near-
-  black. Color is the exception, not the rule.
-- **Pick one accent per surface.** A page that uses Signal (red) does
-  not also use Voice (blue). The accent is the page's *voice* — one
-  per article.
-- **No gradients.** Color is flat. The contrast between paper and ink
-  is the brand's primary visual energy.
+- **The accent is one color.** Lingua blue (`#3B5BFF`) is the brand. A
+  page that emphasizes blue does not also emphasize signal or margin.
+  The status accents (signal/margin/success) are functional, not
+  decorative.
+- **The dark code surface is the brand's primary contrast move.** Code
+  blocks, terminals, and the occasional hero band sit on
+  `--color-code-bg`. The light-to-dark shift between sections is the
+  brand's compositional energy.
+- **Subtle gradients are allowed** — but only as a slow shift between
+  two neighboring brand colors (e.g. `--color-accent` to
+  `--color-accent-hover`) or as a subtle radial behind a hero. Never
+  rainbow, never frosted glass.
+- **Customer logos render in their native colors** (per the Warpstream
+  convention) — desaturating them flatters the brand at the cost of
+  the partner.
 
-Avoid: pure white (too clinical for a paper-ink brand), pure black
-(too hard against warm cream), tech-startup blue (`#3B82F6`), any
-pastel.
+**Avoid:**
 
-Dark mode treatment: invert paper → ink, but keep the cream-toned
-ivory as the "ink" color, not pure white. The brand should feel like
-*paper at night*, not like a dark-mode dashboard.
+- Warm cream paper, warm beige neutrals, anything that reads as
+  "publication paper." (This was v0.1's primary palette; it's retired.)
+- Pure black (`#000000`) — use `#0E0F12` for the deep slate / code
+  surface, which has slight warmth and reads as ink, not void.
+- Pastel "tech-startup blue" (`#3B82F6` light, `#60A5FA` Tailwind sky)
+  — Lingua's accent is *electric ultramarine*, more saturated and
+  more confident.
+- Any gradient that crosses three or more hues.
+
+**Dark mode treatment:** A full dark mode is a v0.3 deliverable. The
+tokens above include `*-dark` reservations. Dark mode is *not*
+"inverted paper" — it's the same crisp technical aesthetic with deep
+slate surfaces and the accent shifting to a slightly more luminous
+blue.
 
 ### 4.4 Typography
 
-Type is the brand. The system is **one display family doing the
-heavy lifting + one sans for UI + one mono for code**.
+Type is **sans-serif by default**. One grotesque does almost
+everything. A monospace family carries code, labels, and metadata. An
+editorial serif is *available* for the one or two long-form moments
+where the brand wants to demonstrate that it can host editorial
+content (the Theory page, occasional pull quotes) — but it is not the
+brand's voice.
 
-| Role | Recommended | Fallbacks |
-|---|---|---|
-| Display & long-form (headlines, body, marketing) | **GT Alpina**, *Reckless*, *ABC Maxi*, *Migra* | A contemporary editorial serif with multiple weights, true italic with distinctive character, and a roman that reads well at both 12px and 96px. The display face is the brand. |
-| UI sans (product chrome, dense interaction surfaces) | **ABC Diatype**, *Söhne*, *GT America Mono* | A confident contemporary grotesque. Use one weight (usually Regular) for almost everything; Medium for emphasis. |
-| Mono (code, data, tabular) | **Söhne Mono**, *ABC Diatype Mono*, *JetBrains Mono* | Should pair tonally with the sans. Used not only for code but for any tabular numeric surface. |
+| Role | Recommended | Fallback / substitute | Notes |
+|---|---|---|---|
+| **Display & body** (95% of all surfaces) | **Inter Tight** | *Geist Sans*, *General Sans*, *Söhne*, *ABC Diatype* | A confident contemporary grotesque with display weights. Inter Tight is free, on Google Fonts, and has a tightened tracking that reads as deliberate at hero scale. |
+| **Monospace** (code, terminals, KPI numerics, mono labels) | **JetBrains Mono** | *Geist Mono*, *Berkeley Mono*, *Söhne Mono* | Should pair tonally with the primary sans. Used for code, terminal output, KPI values where tabular figures matter, eyebrow labels in small caps tracking. |
+| **Editorial accent** (Theory page, rare pull quotes) | **Fraunces Italic** | *Reckless Italic*, *GT Alpina Italic* | Used sparingly and intentionally. The italic display moment appears at most once or twice per page, on at most two pages in the system. The brand is *not* italic-led. |
 
-Typographic moves the brand should make often:
+**Type scale (more contemporary, more confident at scale than v0.1):**
 
-- **Italic display in long-form.** GT Alpina Italic at 24–32px set in
-  long blocks is the brand's strongest single move. Use it for the
-  Theory page, the about page, and any moment where the brand is
-  speaking in its own voice.
-- **Weight + size contrast, not color.** Hierarchy is built from
-  large/small and bold/regular contrasts, not from accent color.
-- **Pull quotes set as display.** Magazine-style pull quotes in
-  display italic, two columns wide, are a brand signature.
-- **Multilingual treatments.** The brand can render the same idea in
-  multiple scripts (Latin / CJK / Arabic / Cyrillic) — this is
-  visual proof of the "shared language" claim. Reserve for marketing
-  set-pieces; don't burden the product chrome with it.
+```
+display: 96 / 72 / 56 / 40 / 32     (hero / xl / lg / md / sm)
+heading: 24 / 20 / 18                (h2, h3, h4 inside content)
+body:    16 / 14                     (prose, prose-sm)
+small:   13 / 11                     (caption, meta)
+mono:    14 / 12 / 11                (code, code-sm, meta)
+```
+
+Body sets at **16px** (back to the contemporary developer-product
+standard, not the v0.1 17px publication setting). Line-heights:
+1.5 for body, 1.1 for display, 1.55 for mono code blocks.
+
+**Typographic moves the brand should make often:**
+
+- **Tight tracking on display weights.** Inter Tight at 96px with
+  -0.04em tracking is the brand's hero default. The compression
+  signals deliberateness.
+- **Mono labels for everything machine-readable.** Timestamps, IDs,
+  row counts, status badges, breadcrumbs — all in JetBrains Mono with
+  a slight uppercase + tracking treatment for the smallest sizes.
+- **Code blocks as design elements.** A syntax-highlighted code
+  sample on `--color-code-bg`, with a small window-chrome header
+  (filename + copy button), is a recurring brand-signature element.
+  At least one code block per marketing page.
+- **Numeric confidence.** KPI values, hero claims with numbers
+  ("10× cheaper", "60s to first page"), and data-table cells all use
+  the mono family with tabular figures so digits line up perfectly.
+
+**Typographic moves the brand should make rarely:**
+
+- Italic display. Reserve for the Theory page, the occasional pull
+  quote inside long-form prose. Not a default voice.
+- Drop caps. Allowed once, on the Theory page opener. Not on
+  documentation, not on marketing, not on product chrome.
+- Multilingual treatments. The brand can do this once, in the logo
+  lockup or once on a marketing about-page, as visual proof of the
+  "shared language" claim. It is not a recurring decoration.
 
 ### 4.5 Logo concept brief
 
-The mark should *be* a piece of typography — a wordmark that reads as
-a magazine masthead. Three directions worth real exploration:
+The mark is a **wordmark in the brand sans, with the diacritic-over-i
+as the only ornament**. The diacritic is the signature; everything
+else is plain wordmark.
 
-1. **The masthead.** "Lingua" set in the display serif at substantial
-   weight, with no ornament beyond the type itself. Think
-   *Harper's*, *Granta*, *The Drift* mastheads. Highly readable at
-   navbar size; iconic when blown up on a hero.
-2. **The diacritic.** "Lingua" with a single typographic diacritic
-   over the *i* — a macron (Līngua), a grave (Lìngua), a tilde
-   (Lĩngua), or an open quote ('Lingua) — signalling language,
-   pronunciation, and the act of speaking. The diacritic is the
-   visual signature; remove it and the mark loses meaning.
-3. **The bilingual lockup.** "Lingua / 言语 / لغة" or similar — the
-   wordmark paired with one or two translations rendered in the
-   appropriate scripts. The mark IS the multilingual claim.
-   Strongest as a marketing-site treatment; the navbar uses the
-   Latin word alone.
+Three directions worth real exploration:
+
+1. **The diacritic mark.** "Lingua" set in Inter Tight at substantial
+   weight, with a single typographic mark over the *i* — a macron
+   (Līngua), a tilde (Lĩngua), or a dot (Linġua). The mark is
+   `--color-accent` (Lingua blue); everything else is ink. The mark
+   is small, precise, and removable for the wordmark-only treatment.
+2. **The wordmark only.** Same letterforms, no diacritic. For
+   contexts where the diacritic doesn't render (favicon at 16px,
+   small inline references).
+3. **The bracket lockup.** "[lingua]" with the brand wordmark inside
+   square brackets, in mono. A developer-product nod: brackets evoke
+   code, the mono family reinforces the technical voice. Used in
+   developer-facing surfaces (docs, CLI, README badges).
 
 All three should work in monochrome at 16px. The wordmark must hold
-up at favicon-small; the diacritic and bilingual versions are
+up at favicon-small; the diacritic and bracket variants are
 contextual treatments that ride on top of a recognisable base.
+
+**Drop from v0.1:** the "magazine masthead" framing, the bilingual
+"Lingua / 言语 / لغة" lockup as a default treatment. The bilingual
+version still exists for one marketing page but is no longer the
+brand's primary identity.
 
 ### 4.6 Iconography
 
-- **Linear, letterform-influenced.** Icons should feel drawn by
-  someone who designs type — terminals matter, stroke endings
-  matter. Pull from Phosphor (light/regular) or build a custom set
-  on a 24px grid with 1.5px stroke.
-- **Dictionary-mark sensibility.** Icons reference editorial /
-  reference-book conventions where possible: a section mark (§) for
-  sections, a pilcrow (¶) for paragraphs, an asterism (⁂) for
-  separators. The brand can use these typographic marks directly as
-  iconography in some surfaces.
-- **No filled shapes by default.** Lingua uses line, contrast, and
-  type — not weight of fill — to convey meaning.
+- **Geometric, line-based, 1.5px stroke, no fills by default.**
+  Use **Lucide** or **Phosphor** (regular weight) as the working set,
+  or build a custom set on a 24px grid.
+- **Icons are functional, not decorative.** Every icon in the
+  product is paired with a label or stands in for a known action; the
+  brand doesn't use icons as illustrations.
+- **Filled icons allowed for status indicators only** — a filled dot
+  for "live" or "on-air", a filled check for "complete". The rest
+  are line.
+- **Code-related icons matter.** Terminal, brackets, git branch, file
+  tree, code-block, copy, run, format — these should look at home in
+  the icon set, because the brand uses them often.
 
 ### 4.7 Imagery & illustration
 
-- **Photography:** Contemporary editorial portraiture, environmental
-  shots of practitioners (the analyst at her desk, the engineer at a
-  laptop, the civic data person at a public meeting). Warm-toned,
-  natural light. No stock-photo gloss. Black-and-white or duotone
-  paper-and-ink also works for any non-portrait imagery.
-- **Illustration:** Used sparingly. When it appears, it should be
-  *typographic* — large characters from the display face, ligatures
-  blown up to artwork scale, diacritics as compositions. Not
-  characters / blobs / abstract tech-shapes.
-- **Data visualisation:** The brand's *primary* illustration. Charts,
-  maps, and tables are the brand expression in-product; they must be
-  exemplary. Charts use one or two of the accent colors per
-  composition, never the whole accent set at once. Tables use
-  tabular figures and hairline rules.
+- **Product screenshots are the primary imagery.** Marketing pages
+  show the product doing something — the editor canvas, the data
+  view, the page output, a code sample — with realistic data, in
+  full color. Lingua proves its claims by showing them rendered.
+- **Architecture diagrams as visual content.** Boxy, rounded-corner
+  diagrams (8px corner radius matching the brand) with connecting
+  lines, color-coded by role (accent for "Lingua", muted gray for
+  "your stack"). The Warpstream convention.
+- **Customer logos rendered in their native colors.** Don't desaturate
+  partner brands; the variety reinforces "pluralism."
+- **Live activity feeds** (à la Zed) — a small list of recent
+  commits/publishes/edits with mono timestamps. Useful on the
+  homepage and the product overview.
+- **Terminal / CLI visuals** — styled terminal panes with prompt + a
+  command being typed + output. Use the dark code surface treatment.
+- **No abstract tech illustration.** No isometric office scenes, no
+  geometric blobs, no "people connecting nodes," no Memphis-style
+  patterns.
+- **No stock photography.** Editorial portraits allowed (Theory page
+  byline, occasional author photo) but rare.
+- **Data visualization is the brand's signature illustration.**
+  Charts use the brand accent + at most two status accents per
+  composition; never the full palette. Tabular figures, hairline
+  rules, no gradients on bars.
 
 ### 4.8 Motion
 
-- **Reading-paced.** Animations move at the pace of someone turning a
-  page — 200–280ms eases, not 80ms snaps. Lingua is read, not
-  flicked through.
-- **Type-first transitions.** When something appears, it's because
-  type has settled. Headlines fade in 200ms after their letterforms
-  resolve; body copy follows.
-- **Page turns, not slides.** Transitions between major surfaces use
-  a subtle horizontal shift + crossfade reminiscent of turning a
-  page, not the SaaS-default left-slide.
-- **No looping background animation.** A magazine doesn't twitch.
+- **Snappy, not stately.** 120–240ms eases, cubic-bezier(0.2, 0,
+  0.1, 1). Lingua feels *responsive*, not *contemplative*.
+- **Hover states matter.** Every interactive element has a visible
+  hover (border color shift, background tint, accent appears).
+- **Subtle reveal on scroll** — fade + 8px translate on hero
+  elements when they enter viewport. Not parallax, not scroll-
+  jacked.
+- **No looping background animation.** Live activity feeds and
+  terminal demos may animate (typing effect, new row appearing) but
+  background decoration does not.
 
 ---
 
@@ -247,16 +392,23 @@ contextual treatments that ride on top of a recognisable base.
 
 ### 5.1 Voice principles
 
-- **Articulate, not arch.** The brand uses real words used precisely.
-  It does not perform intelligence; it just speaks clearly.
-- **Generous and pluralist.** Lingua's whole point is that unlike
-  parties can communicate without becoming each other. The voice is
-  welcoming to multiple kinds of user without flattening them.
-- **Long sentences are allowed.** Most SaaS brands chop everything
-  into tweet-sized fragments. Lingua's voice can sustain a
-  paragraph — confidently, with rhythm.
-- **Quote others.** The brand is comfortable citing other writers,
-  designers, engineers. This is part of the editorial register.
+- **Precise and concrete.** The brand uses specific words and
+  specific numbers. "10× faster" not "blazingly fast". "60s to
+  first page" not "set up in minutes". When the claim is real, the
+  number is too.
+- **Demonstrative.** Show the code, show the data, show the
+  architecture. Lingua's voice often says "Here's what that looks
+  like:" and then shows it.
+- **Welcoming to both audiences.** Sentences should make sense to a
+  marketing-site author and to an engineer reading the same page. A
+  single line that lands for both is worth more than two parallel
+  lines.
+- **Wry, not arch.** Empty-state copy, error-state copy, footer
+  copy — all chances for the brand to be quietly funny without
+  being memetic.
+- **Long sentences allowed when they're earning it.** The Theory
+  page is allowed paragraphs; the homepage is allowed paragraphs;
+  the empty state gets a sentence. Match the length to the surface.
 
 ### 5.2 Sample copy
 
@@ -264,47 +416,73 @@ contextual treatments that ride on top of a recognisable base.
 
 > Lingua
 >
-> A shared language for the parts of your site that used to need
-> translators. Pages, data, charts, and maps — one vocabulary.
-> Authored by the people who own the work, extended by the people who
-> own the code.
+> One row format. Pages, data, charts, and maps speak it.
+> Authored by the people who own the work, extended by the people
+> who own the code.
 >
 > Open-source. Hosted available.
 >
-> [Read the case for it →]   [Start a site →]
+> [Start a site →]   [Read the case for it]
 
-**Section title (marketing site, "How it works")**
+**Homepage section title ("How it works")**
 
 > One vocabulary. Many speakers.
 >
-> A page is a sentence. A section is a phrase. A dataset is a
-> dictionary. They all share the same grammar — the row — and that
-> shared grammar is the only thing that needs to be learned. Once.
+> A page is a row. A section is a row. A dataset is a row. The same
+> typed shape drives every surface in the product — and because the
+> shape is shared, the parts compose without translation.
+>
+> ```js
+> // every row, everywhere, has the same shape:
+> { app, type, data, attributes, parent, children }
+> ```
+
+**Marketing claim band (Warpstream-style)**
+
+> **10× the editor.** **0× the lock-in.**
+>
+> Open-source core. Self-host on your own metal, or run it hosted in
+> a click. Move between them with one `lingua export` command.
 
 **Product chrome (an empty state)**
 
-> No sections yet. Write the first one.
+> No sections yet.
+>
+> Speak the first one →
 
 **Error state**
 
-> The view at id 2060672 didn't load. The row may have been removed,
-> or your session may have lapsed. Either way: refresh, and try again.
+> The view at id 2060672 didn't load.
+>
+> Status: 504 · 2.4s · v1.3.0
+>
+> The row may have been removed, or your session may have lapsed.
+> Either way: refresh, then retry.
+>
+> [Refresh] [Open in console]
+
+**Code-block caption**
+
+> *Every row has the same shape; the shape is the only thing you
+> need to learn.*
 
 **Voice anti-patterns to avoid**
 
 - ❌ "Unlock your data's potential with Lingua's modern platform!"
 - ❌ "Build stunning sites in minutes."
 - ❌ "Lingua: where data meets design."
-- ✅ "Pages, data, charts, and maps — same vocabulary, different
-  voices."
+- ❌ "Beautifully crafted." "Carefully designed." "Thoughtfully built."
+- ✅ "One row format. Pages, data, charts, and maps speak it."
+- ✅ "Open-source core. Hosted in a click. Move between them with one
+  command."
 
 ### 5.3 Terminology
 
 The product's internal vocabulary becomes part of the brand:
 
-- **Lingua** — the company, the platform. Always capitalised; the
-  word "lingua" lowercase is also fine when used as a noun in a
-  technical sentence ("the lingua is the shared row format").
+- **Lingua** — the company, the platform. Always capitalised in
+  prose. Use the bracketed `[lingua]` mono form for code, CLI
+  examples, and README badges.
 - **Speak, write, set, say, render** — the verbs of authoring. The
   metaphor is communication, not construction.
 - **Vocabulary, grammar, dialect, idiom** — used for technical
@@ -318,107 +496,142 @@ The product's internal vocabulary becomes part of the brand:
 
 ---
 
-## 6. Design system v0.1 — artifacts to produce
+## 6. Design system v0.2 — artifacts to produce
 
-What the design Claude should ship as the first pass.
+What the design Claude should ship.
 
 ### 6.1 Foundation
 
-- [ ] Color tokens (see §4.3) with light + dark variants. Dark mode
-      is paper-at-night, not inverted SaaS UI.
-- [ ] Type scale: display (72 / 48 / 36 / 28), heading (24 / 20 /
-      18), body (17 / 15), small (13), with line-heights tuned for
-      long-form reading (1.5 for body, 1.15 for display). Body sets
-      at 17px, not 16 — the brand reads as a publication.
-- [ ] Space scale (4px base): 4, 8, 12, 16, 24, 32, 48, 64, 96, 128,
-      192. The brand uses generous space — margins matter.
-- [ ] Radius scale: 0, 2, 4. Use 0 by default; rounded corners only
-      on interactive elements.
-- [ ] Elevation: flat by default. One subtle 1px-rule + 4% ink
-      shadow for "lifted" surfaces. The lift is barely visible —
-      paper layered on paper.
-- [ ] Grid: 12-column on desktop, 4-column on mobile, with 32px
-      gutters (generous) and a max content width around 1180px. The
-      reading column for long-form maxes out at ~680px.
+- [ ] Color tokens (see §4.3) with light mode as primary, dark mode
+      tokens reserved for v0.3. Lingua blue (`#3B5BFF`) is the brand
+      accent; status accents (signal/margin/success) are functional
+      only.
+- [ ] Type scale: display (96 / 72 / 56 / 40 / 32), heading (24 / 20
+      / 18), body (16 / 14), small (13 / 11), mono (14 / 12 / 11).
+      Body sets at 16px. Line-heights 1.1 display, 1.5 body, 1.55
+      mono.
+- [ ] Space scale (4px base): 4, 8, 12, 16, 20, 24, 32, 40, 56, 80,
+      120, 160. More granular than v0.1; the product surfaces need
+      finer spacing options.
+- [ ] Radius scale: 4, 6, 8, 12, 999. **No square corners as default.**
+      Cards 8px, buttons 6px, inputs 6px, pills full. Tiles can be
+      8–12px.
+- [ ] Elevation: a small set — `--shadow-sm` (1px hairline), 
+      `--shadow-md` (4px soft, for raised cards), `--shadow-lg`
+      (12px soft, for modals). Subtle shadows are now ALLOWED;
+      v0.1's anti-shadow rule is retired.
+- [ ] Grid: 12-column on desktop, 4-column on mobile, with 24px
+      gutters and a max content width of 1280px. Reading column for
+      long-form maxes out at ~720px.
 
 ### 6.2 Components
 
-- [ ] Wordmark + logo lockups (horizontal, stacked, mark-only,
-      bilingual).
-- [ ] Button (primary ink, secondary outline, tertiary text-link,
-      danger signal). Square corners, generous padding.
-- [ ] Input (single-line, multi-line, select). 1.5px bottom-rule
-      only, no full border — a written-on-paper feel.
-- [ ] Card / surface (the section container in the product). 1px
-      rule frame, paper-lift background, square corners.
-- [ ] Table (the data-grid component). Tabular figures, hairline
-      rules only between rows (no vertical rules), comfortable row
-      heights.
-- [ ] Tab / nav (top-nav, side-nav, breadcrumb). Type-led; tabs are
-      typeset, not boxed.
-- [ ] Modal / drawer.
+- [ ] Wordmark + logo lockups (horizontal with diacritic, wordmark-
+      only, mono-bracket, favicon).
+- [ ] Button (primary blue, secondary outline, tertiary text-link,
+      danger signal, ghost). 6px corner radius. Generous padding.
+      Hover, focus, active, disabled states for each.
+- [ ] Input (single-line, multi-line, select). 6px radius, 1px
+      border, subtle background on focus. Mono input for code/CLI
+      contexts.
+- [ ] Card / surface — 8px radius, 1px border, `--shadow-sm` by
+      default, `--shadow-md` for raised/hover.
+- [ ] Table — clean, dense, tabular figures, hairline rules between
+      rows, no vertical rules, sortable headers with caret. Subtle
+      hover row highlight.
+- [ ] Tab / nav (top-nav, side-nav, breadcrumb). Top-nav is
+      horizontal with accent-color underline on the active tab.
+- [ ] Modal / drawer. 12px corner radius, `--shadow-lg` elevation.
 - [ ] Tooltip / popover.
-- [ ] Empty / loading / error states (all three need explicit
-      treatments — each one a chance for the voice to speak).
+- [ ] Empty / loading / error states (each surface gets a treatment
+      — loading uses skeleton bars, error uses a contained card with
+      diagnostic mono small text).
 - [ ] Toast / inline alert.
 - [ ] Chart components (bar, line, area, scatter, grid). Default
-      palette uses Signal and Voice (red and blue) alone for two-
-      series charts; Margin (mustard) joins for three; the full
-      accent set caps at five.
-- [ ] Map style: a Lingua basemap built on a stripped-down OSM tile
-      style in the paper-and-ink palette. Type-forward — labels are
-      part of the brand; the map is a typeset thing, not a rendered
-      thing.
-- [ ] Pull-quote / blockquote component for marketing and long-form.
-      Display italic, two-column-wide, with a typographic
-      ornament (a single asterism or section mark) above.
+      palette: Lingua blue + ink + (one status accent if needed).
+      Three-series charts add a second accent. The full status set
+      caps at four.
+- [ ] Map style — light-mode basemap on `--color-surface-soft`,
+      hairline coastline rules, labels in Inter Tight, markers in
+      brand colors. Not photo-real.
+- [ ] **Code block** — a brand-signature primitive. Dark surface
+      (`--color-code-bg`), syntax-highlighted, optional window
+      chrome (filename + copy button + language indicator). Mono
+      family throughout. This is a *required* component.
+- [ ] **Terminal pane** — dark surface, prompt + command + output,
+      blinking cursor allowed. Used on marketing and docs surfaces.
+- [ ] **Architecture diagram** — boxy rounded-corner diagrams
+      (8px), brand-color-coded by role, with connecting lines.
+      Required for the comparison page and the homepage.
+- [ ] **Live activity feed** — a vertical list of recent events
+      (commits, publishes, edits) with mono timestamps, optional
+      avatars, optional accent dots. Used on homepage and product
+      overview.
+- [ ] **KPI strip** — a row of large numeric values in the mono
+      family with tabular figures, each with a small label and an
+      optional delta indicator.
+- [ ] **Customer logo strip** — a horizontal row of partner logos in
+      their native colors (don't desaturate). Used on marketing.
 
 ### 6.3 Patterns
 
-- [ ] Marketing site homepage (hero, two-doors block, surfaces
-      table, proof-points carousel, "Theory" link, footer).
-- [ ] Marketing site "Hosted vs. self-host" comparison page (the
-      WordPress.org-vs-.com fork from `positioning-v2.md` §3).
-      Lingua's version should set this up as a pluralist "two ways
-      to speak the same language" comparison, not a feature matrix.
-- [ ] Marketing site "Theory" page — long-form, single column,
-      display italic for the long sentences. This is the page where
-      the brand's voice has the most room.
-- [ ] Marketing site "Read" page — an editorial section. Lingua's
-      brand can sustain occasional essays, interviews with users,
-      case studies in feature-magazine format.
-- [ ] Product "site overview" dashboard.
-- [ ] Product "page editor" canvas chrome.
-- [ ] Product "dataset" view (table + filter chrome).
-- [ ] Documentation page template — narrow column, generous margins,
-      typographic emphasis on code samples (use mono), drop-caps
-      optional for chapter openers.
-- [ ] Plugin / theme marketplace card.
+- [ ] Marketing site **homepage** — hero (sans-serif claim + product
+      mock + CTAs), code-block band ("the row format, in one
+      glance"), three-pillar feature grid, architecture diagram
+      band, live activity / customer logos, two-doors hosted/self-
+      host fork, footer.
+- [ ] Marketing site **hosted vs. self-host comparison page** — the
+      pluralist "two ways to speak the same language" comparison.
+      Side-by-side architecture diagrams (Warpstream-style) + a
+      capability matrix + a pluralism band + an FAQ.
+- [ ] Marketing site **Theory page** — long-form essay. *This is the
+      one page where the editorial serif (Fraunces Italic) is
+      allowed and welcomed.* Single column, drop-cap, pull quotes —
+      Lingua's editorial moment, deliberately distinct from the rest
+      of the brand.
+- [ ] Marketing site **Read page** (deferred to v0.3) — editorial
+      essays / case studies; the brand's slow-burn moat. Worth doing
+      if there's editorial capacity.
+- [ ] Product **site overview** dashboard — admin "all sites / this
+      site overview" with KPI strip, patterns table, live activity.
+- [ ] Product **page editor** canvas chrome — section list (left) +
+      live preview (middle) + edit inspector (right). The densest
+      surface; demonstrates the toolbar / drag-handle / section-
+      type designator pattern.
+- [ ] Product **dataset view** — filterable table + tabs (data /
+      map / chart / schema) + downstream-pattern panel.
+- [ ] Documentation page template — narrow column (720px max) +
+      sidebar + on-this-page rail. Prominent code blocks. Optional
+      drop-cap on chapter openers (the one remaining v0.1 holdover,
+      because docs have chapter openers).
+- [ ] Plugin / theme marketplace card (deferred to v0.3).
 
 ### 6.4 Logo concept exploration
 
-Three directions per §4.5, each rendered:
+Per §4.5, three directions:
 
-- [ ] Full color on paper surface.
-- [ ] Monochrome ink on paper.
-- [ ] Reversed paper on ink.
-- [ ] Favicon (16, 32, 192).
+- [ ] Full color on light surface (ink wordmark + Lingua-blue
+      diacritic).
+- [ ] Reversed on dark surface (light ink wordmark + Lingua-blue
+      diacritic — high contrast).
+- [ ] Favicon (16, 32, 192) — wordmark-only or diacritic-only.
 - [ ] Wordmark-only horizontal lockup for the navbar.
-- [ ] Multilingual lockup variants (Latin + at least one CJK + one
-      RTL script — Arabic or Hebrew).
+- [ ] Bracket-mono lockup for developer-facing surfaces
+      (`[lingua]`).
+- [ ] Bilingual lockup — reserved for one marketing surface; no
+      longer a default treatment.
 
 ### 6.5 Templates the design system must support
 
-- A radio station home page (wcdb.fm-shaped) — Lingua-voiced, the
-  station's *editorial* personality should come through.
-- A civic dashboard (MitigateNY-shaped) — Lingua makes "boring
-  government dashboards" feel like a serious publication.
-- A heavy analytics page (NPMRDS-shaped) — magazine-of-data
-  feeling: charts as illustrations, captions matter, headlines
-  matter.
-- A documentation site (AVAIL-docs-shaped) — this is the Lingua
-  brand's home turf; the docs should feel like a small publisher's
-  catalogue.
+- A radio station home page (wcdb.fm-shaped) — Lingua's voice
+  applied to an editorial-personality use case.
+- A civic dashboard (MitigateNY-shaped) — Lingua applied to data-
+  heavy government surfaces. Should feel like a serious technical
+  product, not a county PowerPoint.
+- A heavy analytics page (NPMRDS-shaped) — modern dashboard density;
+  charts as primary content, captions matter, headlines matter.
+- A documentation site (AVAIL-docs-shaped) — Lingua's home turf;
+  the docs should feel like Vercel's docs, not WordPress's docs.
 
 If a token or component doesn't survive all four templates, it's the
 wrong token. The product's strength is that the same engine drives
@@ -428,25 +641,34 @@ all four; the design system must inherit that property.
 
 ## 7. Anti-patterns ("don't")
 
-- ❌ Gradients of any kind. The brand's energy is paper/ink
-  contrast, not gradient drama.
-- ❌ Glassmorphism, frosted blur, drop-shadowed cards.
-- ❌ Tech-startup blue (`#3B82F6` and its neighbours). The accents
-  are editorial, not digital.
-- ❌ Geometric sans display (Avenir, Futura, Gilroy, Poppins). The
-  display face must be a serif with character.
-- ❌ Friendly tech illustrations (Memphis-style, blob characters,
-  hand-drawn isometric office scenes).
-- ❌ Stock photos of teams collaborating.
-- ❌ Looping background animation, parallax, scroll-triggered
-  drama.
-- ❌ All-caps display headlines as the default. Sentence-case
-  headlines are the rule; small-caps for labels and section
-  designators is allowed.
-- ❌ The metaphor as decoration. If you put speech bubbles all over
-  the homepage, you've misunderstood the brand. The "shared
-  language" claim is expressed by the typography and the editorial
-  layout, not by literal language imagery.
+- ❌ **Warm cream paper, beige neutrals, parchment surfaces.** The
+  v0.1 mistake. Lingua's surfaces are cool whites and grays.
+- ❌ **Square corners as default.** v0.1 ruled out rounded; v0.2
+  embraces them (6px on interactive, 8px on cards, 12px on modals).
+- ❌ **Italic Fraunces as the brand voice.** Reserved for the Theory
+  page only.
+- ❌ **Drop caps as a default chapter convention.** Allowed once on
+  Theory; not on docs, not on marketing, not on product chrome.
+- ❌ **"Editorial magazine" framing in marketing copy.** The brand is
+  a developer-adjacent product; marketing copy talks about the
+  product, not about typography.
+- ❌ **Gradients across three or more hues.** A single-hue gradient
+  (accent → accent-hover) is fine. A rainbow is not.
+- ❌ **Glassmorphism, frosted blur.** No.
+- ❌ **Tech-startup pastel blue** (`#3B82F6`, `#60A5FA`). Lingua's
+  accent is more saturated and more confident.
+- ❌ **Friendly tech illustrations** (Memphis blobs, isometric
+  offices, hand-drawn nodes).
+- ❌ **Stock photos of teams collaborating.**
+- ❌ **Looping background animation, parallax, scroll-jacked
+  drama.** Activity feeds and terminal demos may animate; backgrounds
+  don't.
+- ❌ **All-caps display headlines** as default. Sentence-case is the
+  rule; small-caps for labels and section designators is allowed.
+- ❌ **The metaphor as decoration.** Don't litter pages with speech
+  bubbles, quote marks, translation arrows. The "shared language"
+  claim is expressed by the typography, the code-block evidence, and
+  the dual-audience pages — not by literal language imagery.
 
 ---
 
@@ -456,42 +678,48 @@ The temptation in a "language" brand is to over-illustrate the
 metaphor — speech bubbles, quotation marks, translation arrows,
 multiple alphabets cluttering every page. Don't. The metaphor is
 strongest when it appears once, perfectly placed — a single
-typographic diacritic in the logo, one multilingual treatment on the
-about page, one editorial pull-quote per long-form essay.
+typographic diacritic in the logo, one bilingual treatment on the
+about page.
 
-The reference is *a quietly confident magazine masthead and three
-issues of beautifully typeset feature writing* — not *a wall of
-quotations in twelve scripts*. The brand earns its claim to "shared
-language" by being clear, well-set, and worth reading — not by
-depicting language constantly.
+The reference is **a quietly confident developer-product site that
+respects its audience's intelligence** — not *a wall of quotations
+in twelve scripts*, and not *a literary magazine pretending to be a
+software product*. The brand earns its claim to "shared language" by
+being clear, well-engineered, and worth using — not by depicting
+language constantly.
 
-The ratio: ~95% of any given surface is paper, ink, and well-set
-type. The remaining ~5% is one well-placed accent color, one
-typographic ornament, or one well-placed photograph. That ratio is
-the visual signature of the brand.
+The ratio: ~80% of any given surface is light surface, ink type, and
+well-engineered components. ~15% is dark code/terminal surface that
+provides the brand's contrast move. ~5% is one well-placed accent
+color or status indicator. That ratio is the visual signature of the
+brand.
 
 ---
 
 ## 9. Open brand questions
 
-- **Display face commitment.** GT Alpina is the strongest single
-  candidate but is paid. Reckless (free for non-commercial) or a
-  selected Google Fonts serif could substitute for the OSS-distribution
-  marketing — the typography license matters when the product is OSS
-  and authors may install their own.
-- **The Theory page format.** Long-form essay with display italic
-  pull-quotes is the brand's strongest single set-piece. Worth a real
-  design treatment in the v0.1 mockups even though it isn't a
-  product surface.
-- **Multilingual product chrome.** The brand makes a multilingual
-  claim. Does the product ship i18n from v0.1, or is the multilingual
-  treatment reserved for marketing? Likely the latter for v0.1, but
-  the brand should leave room.
+- **Display face commitment.** Inter Tight is the strongest free
+  candidate (Google Fonts, display weights, contemporary feel). When
+  budget allows, Söhne or GT America are obvious upgrades; the swap
+  is a one-line `@font-face` change.
+- **The Theory page format.** The brand's one editorial moment. Worth
+  a real design treatment in v0.2 mockups — long-form essay with
+  display italic pull-quotes, the brand's exception that proves its
+  rule.
+- **Dark mode parity.** Deferred to v0.3, but tokens are reserved.
+  Dark mode is *not* "inverted paper" — it's the same crisp
+  technical aesthetic with deep slate surfaces, accent shifted to a
+  more luminous blue, code blocks remaining on the same dark
+  surface (so dark mode reads as "code surface everywhere").
 - **Co-branding with the hosted product.** Lingua Cloud? Lingua
   Hosted? A separate name (the wordpress.com to Lingua's
   wordpress.org)? The brand system should leave room without pre-
   committing.
 - **The "Read" section.** If Lingua ships its own magazine /
-  occasional-essays surface, that's a brand commitment. Worth doing
-  if there's editorial capacity — it's the strongest moat against
-  competitors who are just SaaS products.
+  occasional-essays surface, that's a brand commitment. Deferred to
+  v0.3.
+- **CLI as a brand surface.** `lingua` should be a real CLI; its
+  output (colored, formatted, helpful) is a real brand surface and
+  deserves design attention in v0.3. v0.2 ships terminal-pane
+  *visuals* as part of the marketing surface but doesn't design the
+  actual CLI output yet.

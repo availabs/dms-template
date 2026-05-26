@@ -22,18 +22,8 @@
       display: inline-block;
       transform: translateY(2px);
     }
-    .logo-mockup .word {
-      font-family: var(--font-display);
-      font-size: 22px;
-      font-weight: 500;
-      letter-spacing: -0.012em;
-      color: var(--color-slate);
-    }
 
     .marketing-nav-link {
-      font-family: var(--font-sans);
-      font-size: 14px;
-      font-weight: 500;
       color: var(--color-graphite);
       text-decoration: none;
       padding: 4px 0;
@@ -52,33 +42,12 @@
       padding: var(--space-9) var(--space-5) var(--space-9);
     }
 
-    .essay-issue {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--color-graphite);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
     .essay-title {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-weight: 400;
-      font-size: 64px;
-      line-height: 1.05;
-      letter-spacing: -0.018em;
-      color: var(--color-slate);
       margin: var(--space-4) 0 var(--space-6);
       text-wrap: balance;
     }
-    @media (max-width: 720px) { .essay-title { font-size: 44px; } }
 
     .essay-byline {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--color-graphite);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
       margin-bottom: var(--space-7);
     }
 
@@ -88,34 +57,16 @@
       margin: 0 0 var(--space-7);
     }
 
-    .essay-body {
-      font-family: var(--font-specimen);
-      font-size: 20px;
-      line-height: 1.6;
-      color: var(--color-slate);
-    }
     .essay-body p { margin: 0 0 var(--space-5); }
     .essay-body p + p { text-indent: 1.25em; }
     .essay-body p.standfirst {
-      font-family: var(--font-specimen);
-      font-style: italic;
-      font-size: 24px;
-      line-height: 1.45;
-      color: var(--color-slate);
       margin: 0 0 var(--space-7);
       text-indent: 0;
     }
     .essay-body p.standfirst + p { text-indent: 0; }
 
-    /* Section subhead inside the essay (display sans-serif step-down) */
+    /* Section subhead inside the essay */
     .essay-body h2 {
-      font-family: var(--font-display);
-      font-weight: 500;
-      font-style: normal;
-      font-size: 28px;
-      letter-spacing: -0.01em;
-      line-height: 1.2;
-      color: var(--color-slate);
       margin: var(--space-8) 0 var(--space-4);
       text-wrap: balance;
     }
@@ -138,12 +89,6 @@
       padding: var(--space-5) 0;
       border-top: 1px solid var(--color-grout-light);
       border-bottom: 1px solid var(--color-grout-light);
-      font-family: var(--font-display);
-      font-style: italic;
-      font-weight: 400;
-      font-size: 26px;
-      line-height: 1.35;
-      color: var(--color-slate);
       text-indent: 0;
     }
     .pull-quote .mark {
@@ -160,11 +105,6 @@
     .essay-footer {
       display: flex;
       justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--color-graphite);
     }
     .essay-footer a {
       color: inherit;
@@ -202,11 +142,6 @@
     @media (max-width: 900px) { .footer-top { grid-template-columns: 1fr; } }
     .footer-brand { display: flex; flex-direction: column; gap: var(--space-4); max-width: 280px; }
     .footer-tag {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-size: 16px;
-      line-height: 1.5;
-      color: var(--color-graphite);
       margin: 0;
     }
     .footer-links {
@@ -216,20 +151,11 @@
     }
     @media (max-width: 900px) { .footer-links { grid-template-columns: repeat(2, 1fr); } }
     .footer-group .designator-mono {
-      font-family: var(--font-mono);
-      font-weight: 400;
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--color-graphite);
       margin-bottom: var(--space-3);
     }
     .footer-group ul { list-style: none; padding: 0; margin: 0; }
     .footer-group li { margin-bottom: 8px; }
     .footer-group a {
-      font-family: var(--font-sans);
-      font-size: 14px;
-      color: var(--color-slate);
       text-decoration: none;
     }
     .footer-group a:hover { text-decoration: underline; }
@@ -252,10 +178,6 @@
       display: flex;
       justify-content: space-between;
       gap: var(--space-5);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--color-graphite);
-      letter-spacing: 0.04em;
       flex-wrap: wrap;
     }
     .footer-bottom .colophon { max-width: 480px; }
@@ -273,17 +195,17 @@
           <div class="dms-topnav-left">
             <a href="marketing-homepage.html" class="logo-mockup" aria-label="Tessera home">
               <span class="mark-tile"></span>
-              <span class="word">Tessera</span>
+              <span class="word t-displaySM ink-slate">Tessera</span>
             </a>
           </div>
-          <div class="dms-topnav-right" style="gap: var(--space-5); text-transform: none; letter-spacing: 0; font-family: var(--font-sans); font-size: 14px;">
+          <div class="dms-topnav-right t-prose weight-500" style="gap: var(--space-5);">
             <a href="#" class="marketing-nav-link">Product</a>
             <a href="#" class="marketing-nav-link">Patterns</a>
             <a href="marketing-comparison.html" class="marketing-nav-link">Hosted</a>
             <a href="marketing-theory.html" class="marketing-nav-link marketing-nav-link--active">Theory</a>
             <a href="#" class="marketing-nav-link">Docs</a>
             <span style="width:1px;height:18px;background:var(--color-grout-light);"></span>
-            <a href="#" style="font-family: var(--font-sans); font-size: 14px; color: var(--color-slate); text-decoration: none;">Sign in</a>
+            <a href="#" class="t-prose ink-slate" style="text-decoration: none;">Sign in</a>
             <a href="#" class="btn btn-primary btn-sm">Get started</a>
           </div>
         </div>
@@ -297,16 +219,16 @@
             <div class="dms-group-content-inner" style="padding: 0; background: transparent; border: 0; box-shadow: none;">
               <div class="essay-band">
                 <article class="essay">
-                  <div class="essay-issue">Theory &middot; No. 01</div>
+                  <div class="essay-issue t-metaSM ink-graphite">Theory &middot; No. 01</div>
 
-                  <h1 class="essay-title">On placing.</h1>
+                  <h1 class="essay-title t-displayItalicHero ink-slate">On placing.</h1>
 
-                  <div class="essay-byline">An essay on representation primacy &mdash; M. Tessera, 2026</div>
+                  <div class="essay-byline t-metaSM ink-graphite">An essay on representation primacy &mdash; M. Tessera, 2026</div>
 
                   <hr class="essay-rule">
 
-                  <div class="essay-body">
-                    <p class="standfirst">
+                  <div class="essay-body t-proseLG ink-slate">
+                    <p class="standfirst t-displayItalicMD ink-slate">
                       A tessera is a single tile in a mosaic &mdash; the smallest unit of a deliberately composed surface. Each tessera is small and ordinary; the composition is what's beautiful and durable.
                     </p>
 
@@ -322,11 +244,11 @@
                       This is, of course, an old argument. Tufte said it; the relational database said it; the typeface foundry said it about glyph metadata. We are not the first to say it. We are saying it again because the present generation of site-building tools has, in our judgement, drifted from the original idea.
                     </p>
 
-                    <blockquote class="pull-quote">
+                    <blockquote class="pull-quote t-displayItalicMD ink-slate">
                       <span class="mark">&ldquo;</span>The shape of the data <em>is</em> the shape of the site. A page is a row. A chart is a row. A map is a row.
                     </blockquote>
 
-                    <h2>The mosaic, the floor, the room</h2>
+                    <h2 class="t-displayMD ink-slate">The mosaic, the floor, the room</h2>
 
                     <p>
                       The Cosmati pavements of medieval Italy are, in this sense, a productive metaphor. The floor is mostly stone &mdash; quiet and pale and ordinary. The inlaid pattern is the punctuation. The room is not the pattern; the room is the surface that the pattern punctuates.
@@ -343,7 +265,7 @@
 
                   <hr class="essay-footer-rule">
 
-                  <div class="essay-footer">
+                  <div class="essay-footer t-metaSM ink-graphite">
                     <a href="marketing-homepage.html">&larr; Back to home</a>
                     <span>End of essay &middot; 2026</span>
                   </div>
@@ -359,59 +281,59 @@
                 <div class="footer-brand">
                   <span class="logo-mockup">
                     <span class="mark-tile"></span>
-                    <span class="word">Tessera</span>
+                    <span class="word t-displaySM ink-slate">Tessera</span>
                   </span>
-                  <p class="footer-tag">A typed row that can be a page, a section, a dataset, a query, or a theme.</p>
+                  <p class="footer-tag t-prose italic ink-graphite">A typed row that can be a page, a section, a dataset, a query, or a theme.</p>
                 </div>
 
                 <div class="footer-links">
                   <div class="footer-group">
-                    <div class="designator-mono">Product</div>
+                    <div class="designator-mono t-metaSM ink-graphite">Product</div>
                     <ul>
-                      <li><a href="marketing-homepage.html">Overview</a></li>
-                      <li><a href="#">Patterns</a></li>
-                      <li><a href="#">Themes</a></li>
-                      <li><a href="#">Datasets</a></li>
-                      <li><a href="#">Roadmap</a></li>
+                      <li><a href="marketing-homepage.html" class="t-prose ink-slate">Overview</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Patterns</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Themes</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Datasets</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Roadmap</a></li>
                     </ul>
                   </div>
                   <div class="footer-group">
-                    <div class="designator-mono">Hosted</div>
+                    <div class="designator-mono t-metaSM ink-graphite">Hosted</div>
                     <ul>
-                      <li><a href="marketing-comparison.html">Pricing</a></li>
-                      <li><a href="#">Civic plan</a></li>
-                      <li><a href="#">Press plan</a></li>
-                      <li><a href="#">Status</a></li>
-                      <li><a href="#">Security</a></li>
+                      <li><a href="marketing-comparison.html" class="t-prose ink-slate">Pricing</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Civic plan</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Press plan</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Status</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Security</a></li>
                     </ul>
                   </div>
                   <div class="footer-group">
-                    <div class="designator-mono">Open source</div>
+                    <div class="designator-mono t-metaSM ink-graphite">Open source</div>
                     <ul>
-                      <li><a href="#">GitHub</a></li>
-                      <li><a href="#">Releases</a></li>
-                      <li><a href="#">Contributing</a></li>
-                      <li><a href="#">License</a></li>
-                      <li><a href="#">Acknowledgements</a></li>
+                      <li><a href="#" class="t-prose ink-slate">GitHub</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Releases</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Contributing</a></li>
+                      <li><a href="#" class="t-prose ink-slate">License</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Acknowledgements</a></li>
                     </ul>
                   </div>
                   <div class="footer-group">
-                    <div class="designator-mono">Theory</div>
+                    <div class="designator-mono t-metaSM ink-graphite">Theory</div>
                     <ul>
-                      <li><a href="marketing-theory.html">On placing</a></li>
-                      <li><a href="#">Representation primacy</a></li>
-                      <li><a href="#">Durability</a></li>
-                      <li><a href="#">Field notes</a></li>
+                      <li><a href="marketing-theory.html" class="t-prose ink-slate">On placing</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Representation primacy</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Durability</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Field notes</a></li>
                     </ul>
                   </div>
                   <div class="footer-group">
-                    <div class="designator-mono">Community</div>
+                    <div class="designator-mono t-metaSM ink-graphite">Community</div>
                     <ul>
-                      <li><a href="#">Forum</a></li>
-                      <li><a href="#">Office hours</a></li>
-                      <li><a href="#">Showcase</a></li>
-                      <li><a href="#">Letters</a></li>
-                      <li><a href="#">Mastodon</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Forum</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Office hours</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Showcase</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Letters</a></li>
+                      <li><a href="#" class="t-prose ink-slate">Mastodon</a></li>
                     </ul>
                   </div>
                 </div>
@@ -419,7 +341,7 @@
 
               <div class="footer-frieze" aria-hidden="true"></div>
 
-              <div class="footer-bottom">
+              <div class="footer-bottom t-metaSM ink-graphite">
                 <div class="colophon">
                   Tessera is open source, AGPL-3.0. The hosted service is operated by an independent cooperative.
                 </div>
@@ -428,6 +350,14 @@
                   <span>&middot;</span>
                   <span>2026</span>
                 </div>
+              </div>
+              <div class="t-metaXS ink-fog" style="margin-top: var(--space-3); text-align: right;">
+                design system ·
+                <a href="../design-system/theme.html" style="color: inherit;">theme</a> ·
+                <a href="../design-system/layouts.html" style="color: inherit;">layouts</a> ·
+                <a href="../design-system/grid.html" style="color: inherit;">grid</a> ·
+                <a href="../design-system/components.html" style="color: inherit;">components</a> ·
+                <a href="../design-system/patterns.html" style="color: inherit;">patterns</a>
               </div>
             </div>
           </footer>

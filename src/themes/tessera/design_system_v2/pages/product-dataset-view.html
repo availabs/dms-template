@@ -14,9 +14,6 @@
       align-items: center;
       gap: 6px;
       padding: 4px 10px;
-      font-family: var(--font-sans);
-      font-size: 12px;
-      font-weight: 500;
       border-radius: 999px;
     }
     .pill-neutral { background: var(--color-limestone); color: var(--color-graphite); border: 1px solid var(--color-grout-light); }
@@ -46,26 +43,13 @@
       .ds-meta:nth-child(2) { border-right: 0; }
     }
     .ds-meta .label {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       color: var(--color-graphite);
     }
     .ds-meta .value {
-      font-family: var(--font-display);
-      font-weight: 500;
-      font-size: 24px;
-      letter-spacing: -0.008em;
       color: var(--color-slate);
-      font-variant-numeric: tabular-nums slashed-zero;
-      line-height: 1.05;
     }
     .ds-meta .sub {
-      font-family: var(--font-mono);
-      font-size: 11px;
       color: var(--color-fog);
-      font-variant-numeric: tabular-nums slashed-zero;
     }
 
     /* Filter bar */
@@ -87,13 +71,9 @@
       background: var(--color-parchment);
       border-radius: 2px;
       padding: 4px 10px;
-      font-family: var(--font-mono);
-      font-size: 11px;
     }
     .filter-chip .label {
       color: var(--color-graphite);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
     }
     .filter-chip .eq { color: var(--color-fog); }
     .filter-chip .val { color: var(--color-slate); }
@@ -101,19 +81,13 @@
     .filter-chip select {
       border: 0;
       background: transparent;
-      font-family: var(--font-mono);
-      font-size: 11px;
       color: inherit;
       outline: none;
       padding: 0;
     }
     .filter-spacer { flex: 1; }
     .filter-meta {
-      font-family: var(--font-mono);
-      font-size: 11px;
       color: var(--color-graphite);
-      letter-spacing: 0.04em;
-      font-variant-numeric: tabular-nums slashed-zero;
     }
 
     /* Dataset table */
@@ -126,18 +100,11 @@
     .ds-table {
       width: 100%;
       border-collapse: collapse;
-      font-family: var(--font-sans);
-      font-size: 14px;
       color: var(--color-slate);
     }
     .ds-table thead th {
       text-align: left;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       color: var(--color-graphite);
-      font-weight: 400;
       padding: var(--space-3) var(--space-4);
       border-bottom: 1px solid var(--color-grout-light);
       background: var(--color-bone);
@@ -145,7 +112,6 @@
     .ds-table thead th .sort {
       color: var(--color-oxide);
       margin-left: 4px;
-      font-size: 9px;
     }
     .ds-table thead th.num { text-align: right; }
     .ds-table tbody td {
@@ -157,14 +123,9 @@
     .ds-table tbody tr:last-child td { border-bottom: 0; }
     .ds-table tbody td.num {
       text-align: right;
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums slashed-zero;
     }
     .ds-table .mono {
-      font-family: var(--font-mono);
-      font-size: 12px;
       color: var(--color-graphite);
-      font-variant-numeric: tabular-nums slashed-zero;
     }
     .ds-table .em-dash { color: var(--color-fog); }
     .ds-table .check { width: 34px; }
@@ -180,18 +141,12 @@
       border-top: 0;
     }
     .pager-bar .info {
-      font-family: var(--font-mono);
-      font-size: 11px;
       color: var(--color-graphite);
-      font-variant-numeric: tabular-nums slashed-zero;
     }
     .pager {
       display: inline-flex;
       align-items: center;
       gap: var(--space-1);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-variant-numeric: tabular-nums slashed-zero;
     }
     .pager .page {
       padding: 4px 10px;
@@ -222,10 +177,6 @@
       padding: var(--space-4);
     }
     .schema-panel .title {
-      font-family: var(--font-display);
-      font-weight: 500;
-      font-size: 16px;
-      letter-spacing: -0.005em;
       color: var(--color-slate);
       margin: 0 0 var(--space-3);
     }
@@ -235,8 +186,6 @@
       gap: var(--space-2);
       padding: 8px 0;
       border-bottom: 1px solid var(--color-grout-light);
-      font-family: var(--font-mono);
-      font-size: 11px;
       color: var(--color-slate);
     }
     .schema-row:last-of-type { border-bottom: 0; }
@@ -252,10 +201,6 @@
 
     .btn-row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
     .dm {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       color: var(--color-graphite);
     }
   </style>
@@ -276,10 +221,10 @@
             </a>
           </div>
           <div class="dms-topnav-right" style="gap: var(--space-4);">
-            <a href="product-site-overview.html" style="color: var(--color-graphite); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Overview</a>
-            <a href="product-page-editor.html" style="color: var(--color-graphite); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Editor</a>
-            <a href="product-dataset-view.html" style="color: var(--color-slate); text-decoration: none; font-family: var(--font-sans); font-size: 13px; font-weight: 500;">Datasets</a>
-            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog);">am3081@gmail.com</span>
+            <a href="product-site-overview.html" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Overview</a>
+            <a href="product-page-editor.html" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Editor</a>
+            <a href="product-dataset-view.html" class="t-proseSM weight-500 ink-slate" style="text-decoration: none;">Datasets</a>
+            <span class="t-metaSM ink-fog">am3081@gmail.com</span>
           </div>
         </div>
       </nav>
@@ -290,15 +235,15 @@
         <aside class="dms-sidenav">
           <div class="dms-sidenav-section">
             <div class="dms-sidenav-eyebrow">datasets · 9</div>
-            <a class="dms-sidenav-item dms-sidenav-item--active" href="#" style="font-size:13px;font-weight:400;"><span class="dms-sidenav-item-mark"></span>wcdb_schedule<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">84</span></a>
-            <a class="dms-sidenav-item" href="#" style="font-size:13px;font-weight:400;"><span class="dms-sidenav-item-mark"></span>wcdb_shows<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">1,340</span></a>
-            <a class="dms-sidenav-item" href="#" style="font-size:13px;font-weight:400;"><span class="dms-sidenav-item-mark"></span>wcdb_djs<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">38</span></a>
-            <a class="dms-sidenav-item" href="#" style="font-size:13px;font-weight:400;"><span class="dms-sidenav-item-mark"></span>wcdb_demos<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">204</span></a>
-            <a class="dms-sidenav-item" href="#" style="font-size:13px;font-weight:400;"><span class="dms-sidenav-item-mark"></span>practice_recordings<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">512</span></a>
-            <a class="dms-sidenav-item" href="#" style="font-size:13px;font-weight:400;"><span class="dms-sidenav-item-mark"></span>play_log<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">12,481</span></a>
-            <a class="dms-sidenav-item" href="#" style="font-size:13px;font-weight:400;"><span class="dms-sidenav-item-mark"></span>albany_events<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">221</span></a>
-            <a class="dms-sidenav-item" href="#" style="font-size:13px;font-weight:400;"><span class="dms-sidenav-item-mark"></span>underwriters<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">19</span></a>
-            <a class="dms-sidenav-item" href="#" style="font-size:13px;font-weight:400;"><span class="dms-sidenav-item-mark"></span>listeners_geo<span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--color-fog);font-variant-numeric:tabular-nums;">9,118</span></a>
+            <a class="dms-sidenav-item dms-sidenav-item--active t-proseSM" href="#"><span class="dms-sidenav-item-mark"></span>wcdb_schedule<span class="t-metaSM tabular ink-fog" style="margin-left:auto;">84</span></a>
+            <a class="dms-sidenav-item t-proseSM" href="#"><span class="dms-sidenav-item-mark"></span>wcdb_shows<span class="t-metaSM tabular ink-fog" style="margin-left:auto;">1,340</span></a>
+            <a class="dms-sidenav-item t-proseSM" href="#"><span class="dms-sidenav-item-mark"></span>wcdb_djs<span class="t-metaSM tabular ink-fog" style="margin-left:auto;">38</span></a>
+            <a class="dms-sidenav-item t-proseSM" href="#"><span class="dms-sidenav-item-mark"></span>wcdb_demos<span class="t-metaSM tabular ink-fog" style="margin-left:auto;">204</span></a>
+            <a class="dms-sidenav-item t-proseSM" href="#"><span class="dms-sidenav-item-mark"></span>practice_recordings<span class="t-metaSM tabular ink-fog" style="margin-left:auto;">512</span></a>
+            <a class="dms-sidenav-item t-proseSM" href="#"><span class="dms-sidenav-item-mark"></span>play_log<span class="t-metaSM tabular ink-fog" style="margin-left:auto;">12,481</span></a>
+            <a class="dms-sidenav-item t-proseSM" href="#"><span class="dms-sidenav-item-mark"></span>albany_events<span class="t-metaSM tabular ink-fog" style="margin-left:auto;">221</span></a>
+            <a class="dms-sidenav-item t-proseSM" href="#"><span class="dms-sidenav-item-mark"></span>underwriters<span class="t-metaSM tabular ink-fog" style="margin-left:auto;">19</span></a>
+            <a class="dms-sidenav-item t-proseSM" href="#"><span class="dms-sidenav-item-mark"></span>listeners_geo<span class="t-metaSM tabular ink-fog" style="margin-left:auto;">9,118</span></a>
           </div>
 
           <div class="dms-sidenav-section">
@@ -311,7 +256,7 @@
 
           <div class="dms-sidenav-section">
             <div class="dms-sidenav-eyebrow">runtime</div>
-            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog); padding: 0 var(--space-2); line-height: 1.7;">
+            <div class="t-metaSM ink-fog" style="padding: 0 var(--space-2); line-height: 1.7;">
               tessera 0.14.2<br>
               pg 16.1 · idle<br>
               cache · warm
@@ -334,8 +279,8 @@
                 <span class="sep">·</span>
                 <span style="color:var(--color-verdigris);">postgres · public</span>
               </div>
-              <h1 class="dms-page-title">wcdb_schedule</h1>
-              <p class="dms-page-lede">
+              <h1 class="dms-page-title t-displayLG">wcdb_schedule</h1>
+              <p class="dms-page-lede t-proseLG">
                 The week-long programming schedule for wcdb.fm. Eighty-four rows, one per show-slot. Drives both the schedule pattern on station.home and the printable weekly grid in the station office.
               </p>
 
@@ -353,24 +298,24 @@
             <div class="dms-group-content-inner" style="padding: 0; background: transparent; border: 0; box-shadow: none;">
               <div class="ds-meta-strip">
                 <div class="ds-meta">
-                  <div class="label">Storage</div>
-                  <div class="value" style="font-size:18px;">pg.public.wcdb_schedule</div>
-                  <div class="sub">postgres 16.1 · primary</div>
+                  <div class="label t-metaSM upper">Storage</div>
+                  <div class="value t-displaySM tabular">pg.public.wcdb_schedule</div>
+                  <div class="sub t-metaSM tabular">postgres 16.1 · primary</div>
                 </div>
                 <div class="ds-meta">
-                  <div class="label">Rows</div>
-                  <div class="value">84</div>
-                  <div class="sub">7 columns &middot; 1 primary key</div>
+                  <div class="label t-metaSM upper">Rows</div>
+                  <div class="value t-displayMD tabular">84</div>
+                  <div class="sub t-metaSM tabular">7 columns &middot; 1 primary key</div>
                 </div>
                 <div class="ds-meta">
-                  <div class="label">Last edit</div>
-                  <div class="value" style="font-size:18px;">18m ago</div>
-                  <div class="sub">MT &middot; via page editor</div>
+                  <div class="label t-metaSM upper">Last edit</div>
+                  <div class="value t-displaySM tabular">18m ago</div>
+                  <div class="sub t-metaSM tabular">MT &middot; via page editor</div>
                 </div>
                 <div class="ds-meta">
-                  <div class="label">Patterns drawing on it</div>
-                  <div class="value">2</div>
-                  <div class="sub">station.schedule &middot; station.archive</div>
+                  <div class="label t-metaSM upper">Patterns drawing on it</div>
+                  <div class="value t-displayMD tabular">2</div>
+                  <div class="sub t-metaSM tabular">station.schedule &middot; station.archive</div>
                 </div>
               </div>
             </div>
@@ -391,11 +336,11 @@
                   <div>
                     <!-- Filter bar -->
                     <div class="filter-bar">
-                      <span class="filter-chip is-active">
-                        <span class="label">state</span>
+                      <span class="filter-chip is-active t-metaSM">
+                        <span class="label upper">state</span>
                         <span class="eq">=</span>
                         <span class="val">
-                          <select>
+                          <select class="t-metaSM">
                             <option>live</option>
                             <option>all</option>
                             <option>draft</option>
@@ -403,24 +348,24 @@
                           </select>
                         </span>
                       </span>
-                      <span class="filter-chip">
-                        <span class="label">day</span>
+                      <span class="filter-chip t-metaSM">
+                        <span class="label upper">day</span>
                         <span class="eq">=</span>
                         <span class="val" style="color:var(--color-fog);">any</span>
                       </span>
-                      <span class="filter-chip">
-                        <span class="label">dj</span>
+                      <span class="filter-chip t-metaSM">
+                        <span class="label upper">dj</span>
                         <span class="eq">=</span>
                         <span class="val" style="color:var(--color-fog);">any</span>
                       </span>
-                      <span class="filter-chip">
-                        <span class="label">slot</span>
+                      <span class="filter-chip t-metaSM">
+                        <span class="label upper">slot</span>
                         <span class="eq">≥</span>
                         <span class="val">06:00</span>
                       </span>
-                      <span class="filter-chip" style="background:transparent; border-style:dashed; color:var(--color-graphite);">+ add filter</span>
+                      <span class="filter-chip t-metaSM ink-graphite" style="background:transparent; border-style:dashed;">+ add filter</span>
                       <div class="filter-spacer"></div>
-                      <div class="filter-meta">
+                      <div class="filter-meta t-metaSM tabular">
                         14 of 84 rows &middot; sort: day asc, slot asc
                       </div>
                     </div>
@@ -431,155 +376,155 @@
                         <thead>
                           <tr>
                             <th class="check"><input type="checkbox" aria-label="Select all"></th>
-                            <th>ID</th>
-                            <th>Title</th>
-                            <th>DJ</th>
-                            <th>Day <span class="sort">▲</span></th>
-                            <th>Slot <span class="sort">▲</span></th>
-                            <th class="num">Listeners</th>
-                            <th>State</th>
+                            <th class="t-metaSM tabular upper ink-graphite">ID</th>
+                            <th class="t-metaSM tabular upper ink-graphite">Title</th>
+                            <th class="t-metaSM tabular upper ink-graphite">DJ</th>
+                            <th class="t-metaSM tabular upper ink-graphite">Day <span class="sort">▲</span></th>
+                            <th class="t-metaSM tabular upper ink-graphite">Slot <span class="sort">▲</span></th>
+                            <th class="num t-metaSM tabular upper ink-graphite">Listeners</th>
+                            <th class="t-metaSM tabular upper ink-graphite">State</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_001</span></td>
-                            <td>The Morning Set</td>
-                            <td>DJ Wren</td>
-                            <td><span class="mono">Mon</span></td>
-                            <td><span class="mono">06:00</span></td>
-                            <td class="num">4,842</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_001</span></td>
+                            <td class="t-proseSM">The Morning Set</td>
+                            <td class="t-proseSM">DJ Wren</td>
+                            <td><span class="mono t-proseXS tabular">Mon</span></td>
+                            <td><span class="mono t-proseXS tabular">06:00</span></td>
+                            <td class="num t-proseSM tabular">4,842</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_002</span></td>
-                            <td>Open Air</td>
-                            <td>M. Tessera</td>
-                            <td><span class="mono">Mon</span></td>
-                            <td><span class="mono">09:00</span></td>
-                            <td class="num">3,120</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_002</span></td>
+                            <td class="t-proseSM">Open Air</td>
+                            <td class="t-proseSM">M. Tessera</td>
+                            <td><span class="mono t-proseXS tabular">Mon</span></td>
+                            <td><span class="mono t-proseXS tabular">09:00</span></td>
+                            <td class="num t-proseSM tabular">3,120</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_003</span></td>
-                            <td>Albany Calendar</td>
-                            <td><span class="em-dash">—</span></td>
-                            <td><span class="mono">Mon</span></td>
-                            <td><span class="mono">12:00</span></td>
-                            <td class="num">2,218</td>
-                            <td><span class="pill-base pill-neutral">draft</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_003</span></td>
+                            <td class="t-proseSM">Albany Calendar</td>
+                            <td class="t-proseSM"><span class="em-dash">—</span></td>
+                            <td><span class="mono t-proseXS tabular">Mon</span></td>
+                            <td><span class="mono t-proseXS tabular">12:00</span></td>
+                            <td class="num t-proseSM tabular">2,218</td>
+                            <td><span class="pill-base pill-neutral t-proseXS">draft</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_004</span></td>
-                            <td>Static Hour</td>
-                            <td>DJ Calliope</td>
-                            <td><span class="mono">Mon</span></td>
-                            <td><span class="mono">16:00</span></td>
-                            <td class="num">890</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_004</span></td>
+                            <td class="t-proseSM">Static Hour</td>
+                            <td class="t-proseSM">DJ Calliope</td>
+                            <td><span class="mono t-proseXS tabular">Mon</span></td>
+                            <td><span class="mono t-proseXS tabular">16:00</span></td>
+                            <td class="num t-proseSM tabular">890</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_005</span></td>
-                            <td>Late Departures</td>
-                            <td>DJ Calliope</td>
-                            <td><span class="mono">Mon</span></td>
-                            <td><span class="mono">22:00</span></td>
-                            <td class="num">1,408</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_005</span></td>
+                            <td class="t-proseSM">Late Departures</td>
+                            <td class="t-proseSM">DJ Calliope</td>
+                            <td><span class="mono t-proseXS tabular">Mon</span></td>
+                            <td><span class="mono t-proseXS tabular">22:00</span></td>
+                            <td class="num t-proseSM tabular">1,408</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_006</span></td>
-                            <td>Threshold</td>
-                            <td>DJ Wren</td>
-                            <td><span class="mono">Tue</span></td>
-                            <td><span class="mono">06:00</span></td>
-                            <td class="num">3,804</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_006</span></td>
+                            <td class="t-proseSM">Threshold</td>
+                            <td class="t-proseSM">DJ Wren</td>
+                            <td><span class="mono t-proseXS tabular">Tue</span></td>
+                            <td><span class="mono t-proseXS tabular">06:00</span></td>
+                            <td class="num t-proseSM tabular">3,804</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_007</span></td>
-                            <td>Press Room</td>
-                            <td>M. Tessera</td>
-                            <td><span class="mono">Tue</span></td>
-                            <td><span class="mono">09:00</span></td>
-                            <td class="num">2,117</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_007</span></td>
+                            <td class="t-proseSM">Press Room</td>
+                            <td class="t-proseSM">M. Tessera</td>
+                            <td><span class="mono t-proseXS tabular">Tue</span></td>
+                            <td><span class="mono t-proseXS tabular">09:00</span></td>
+                            <td class="num t-proseSM tabular">2,117</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_008</span></td>
-                            <td>Open Air</td>
-                            <td>M. Tessera</td>
-                            <td><span class="mono">Tue</span></td>
-                            <td><span class="mono">12:00</span></td>
-                            <td class="num">2,918</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_008</span></td>
+                            <td class="t-proseSM">Open Air</td>
+                            <td class="t-proseSM">M. Tessera</td>
+                            <td><span class="mono t-proseXS tabular">Tue</span></td>
+                            <td><span class="mono t-proseXS tabular">12:00</span></td>
+                            <td class="num t-proseSM tabular">2,918</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_009</span></td>
-                            <td>Footnotes</td>
-                            <td>DJ Wren</td>
-                            <td><span class="mono">Tue</span></td>
-                            <td><span class="mono">16:00</span></td>
-                            <td class="num">1,240</td>
-                            <td><span class="pill-base pill-verdigris">encore</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_009</span></td>
+                            <td class="t-proseSM">Footnotes</td>
+                            <td class="t-proseSM">DJ Wren</td>
+                            <td><span class="mono t-proseXS tabular">Tue</span></td>
+                            <td><span class="mono t-proseXS tabular">16:00</span></td>
+                            <td class="num t-proseSM tabular">1,240</td>
+                            <td><span class="pill-base pill-verdigris t-proseXS">encore</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_010</span></td>
-                            <td>Late Departures</td>
-                            <td>DJ Calliope</td>
-                            <td><span class="mono">Tue</span></td>
-                            <td><span class="mono">22:00</span></td>
-                            <td class="num">1,521</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_010</span></td>
+                            <td class="t-proseSM">Late Departures</td>
+                            <td class="t-proseSM">DJ Calliope</td>
+                            <td><span class="mono t-proseXS tabular">Tue</span></td>
+                            <td><span class="mono t-proseXS tabular">22:00</span></td>
+                            <td class="num t-proseSM tabular">1,521</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_011</span></td>
-                            <td>Threshold</td>
-                            <td>DJ Wren</td>
-                            <td><span class="mono">Wed</span></td>
-                            <td><span class="mono">06:00</span></td>
-                            <td class="num">3,621</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_011</span></td>
+                            <td class="t-proseSM">Threshold</td>
+                            <td class="t-proseSM">DJ Wren</td>
+                            <td><span class="mono t-proseXS tabular">Wed</span></td>
+                            <td><span class="mono t-proseXS tabular">06:00</span></td>
+                            <td class="num t-proseSM tabular">3,621</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_012</span></td>
-                            <td>Open Air</td>
-                            <td>M. Tessera</td>
-                            <td><span class="mono">Wed</span></td>
-                            <td><span class="mono">09:00</span></td>
-                            <td class="num">2,880</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_012</span></td>
+                            <td class="t-proseSM">Open Air</td>
+                            <td class="t-proseSM">M. Tessera</td>
+                            <td><span class="mono t-proseXS tabular">Wed</span></td>
+                            <td><span class="mono t-proseXS tabular">09:00</span></td>
+                            <td class="num t-proseSM tabular">2,880</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_013</span></td>
-                            <td>Albany Calendar</td>
-                            <td><span class="em-dash">—</span></td>
-                            <td><span class="mono">Wed</span></td>
-                            <td><span class="mono">12:00</span></td>
-                            <td class="num">2,104</td>
-                            <td><span class="pill-base pill-neutral">draft</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_013</span></td>
+                            <td class="t-proseSM">Albany Calendar</td>
+                            <td class="t-proseSM"><span class="em-dash">—</span></td>
+                            <td><span class="mono t-proseXS tabular">Wed</span></td>
+                            <td><span class="mono t-proseXS tabular">12:00</span></td>
+                            <td class="num t-proseSM tabular">2,104</td>
+                            <td><span class="pill-base pill-neutral t-proseXS">draft</span></td>
                           </tr>
                           <tr>
                             <td class="check"><input type="checkbox"></td>
-                            <td><span class="mono">sho_014</span></td>
-                            <td>Static Hour</td>
-                            <td>DJ Calliope</td>
-                            <td><span class="mono">Wed</span></td>
-                            <td><span class="mono">16:00</span></td>
-                            <td class="num">1,020</td>
-                            <td><span class="pill-base pill-oxide">live</span></td>
+                            <td><span class="mono t-proseXS tabular">sho_014</span></td>
+                            <td class="t-proseSM">Static Hour</td>
+                            <td class="t-proseSM">DJ Calliope</td>
+                            <td><span class="mono t-proseXS tabular">Wed</span></td>
+                            <td><span class="mono t-proseXS tabular">16:00</span></td>
+                            <td class="num t-proseSM tabular">1,020</td>
+                            <td><span class="pill-base pill-oxide t-proseXS">live</span></td>
                           </tr>
                         </tbody>
                       </table>
@@ -587,8 +532,8 @@
 
                     <!-- Pager -->
                     <div class="pager-bar">
-                      <div class="info">page 1 of 6 &middot; 14 of 84 rows</div>
-                      <div class="pager">
+                      <div class="info t-metaSM tabular">page 1 of 6 &middot; 14 of 84 rows</div>
+                      <div class="pager t-metaSM tabular">
                         <button class="btn btn-tertiary btn-sm" aria-label="Previous page">←</button>
                         <a class="page current" href="#">01</a>
                         <a class="page" href="#">02</a>
@@ -603,54 +548,54 @@
                   <!-- Schema panel -->
                   <div>
                     <div class="schema-panel">
-                      <h3 class="title">Schema</h3>
-                      <div class="schema-row">
+                      <h3 class="title t-displaySM">Schema</h3>
+                      <div class="schema-row t-metaSM tabular">
                         <span class="col-name">id</span>
                         <span class="col-type pk">text · pk</span>
                       </div>
-                      <div class="schema-row">
+                      <div class="schema-row t-metaSM tabular">
                         <span class="col-name">title</span>
                         <span class="col-type">text</span>
                       </div>
-                      <div class="schema-row">
+                      <div class="schema-row t-metaSM tabular">
                         <span class="col-name">dj</span>
                         <span class="col-type">text · null</span>
                       </div>
-                      <div class="schema-row">
+                      <div class="schema-row t-metaSM tabular">
                         <span class="col-name">day</span>
                         <span class="col-type">enum(7)</span>
                       </div>
-                      <div class="schema-row">
+                      <div class="schema-row t-metaSM tabular">
                         <span class="col-name">slot</span>
                         <span class="col-type">time</span>
                       </div>
-                      <div class="schema-row">
+                      <div class="schema-row t-metaSM tabular">
                         <span class="col-name">listeners</span>
                         <span class="col-type">int</span>
                       </div>
-                      <div class="schema-row">
+                      <div class="schema-row t-metaSM tabular">
                         <span class="col-name">state</span>
                         <span class="col-type">enum(3)</span>
                       </div>
                     </div>
 
                     <div class="schema-panel" style="margin-top: var(--space-3);">
-                      <h3 class="title">Downstream</h3>
-                      <div style="font-family: var(--font-sans); font-size: 13px; color: var(--color-slate); line-height: 1.6;">
+                      <h3 class="title t-displaySM">Downstream</h3>
+                      <div class="t-proseSM" style="color: var(--color-slate);">
                         <div style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--color-grout-light);">
                           <span>station.schedule</span>
-                          <span class="dm" style="text-transform:none; letter-spacing:0; color:var(--color-fog);">calendar</span>
+                          <span class="t-metaSM ink-fog">calendar</span>
                         </div>
                         <div style="display:flex; justify-content:space-between; padding: 6px 0;">
                           <span>station.archive</span>
-                          <span class="dm" style="text-transform:none; letter-spacing:0; color:var(--color-fog);">table</span>
+                          <span class="t-metaSM ink-fog">table</span>
                         </div>
                       </div>
                     </div>
 
                     <div class="schema-panel" style="margin-top: var(--space-3);">
-                      <h3 class="title">Activity</h3>
-                      <div style="display:flex; flex-direction:column; gap: var(--space-2); font-family: var(--font-mono); font-size: 11px; color: var(--color-graphite);">
+                      <h3 class="title t-displaySM">Activity</h3>
+                      <div class="t-metaSM ink-graphite" style="display:flex; flex-direction:column; gap: var(--space-2);">
                         <div>02:18 EST &middot; MT &middot; edited sho_004</div>
                         <div>01:48 EST &middot; MT &middot; edited sho_002</div>
                         <div>00:31 EST &middot; RB &middot; added sho_084</div>
@@ -669,16 +614,20 @@
             <div class="dms-group-footer-inner">
               <div style="display: flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
                 <div>
-                  <div class="dm">Tessera · wcdb.fm datasets</div>
-                  <div style="margin-top: var(--space-2); font-size: 13px; color: var(--color-graphite); max-width: 60ch;">
+                  <div class="dm t-metaSM upper">Tessera · wcdb.fm datasets</div>
+                  <div class="t-proseSM ink-graphite" style="margin-top: var(--space-2); max-width: 60ch;">
                     A worked example of the dataset surface: filter chrome, scannable table, schema panel, downstream awareness.
                   </div>
                 </div>
-                <div style="font-family: var(--font-mono); font-size: 11px; color: var(--color-fog); text-align: right;">
+                <div class="t-metaSM ink-fog" style="text-align: right;">
                   Tessera Design System v0.1 · 2026-05-22<br>
                   <a href="product-site-overview.html" style="color: inherit;">overview</a> ·
-                  <a href="product-page-editor.html" style="color: inherit;">editor</a> ·
-                  <a href="../design-system/components.html" style="color: inherit;">components</a>
+                  <a href="product-page-editor.html" style="color: inherit;">editor</a><br>
+                  <a href="../design-system/theme.html" style="color: inherit;">theme</a> ·
+                  <a href="../design-system/layouts.html" style="color: inherit;">layouts</a> ·
+                  <a href="../design-system/grid.html" style="color: inherit;">grid</a> ·
+                  <a href="../design-system/components.html" style="color: inherit;">components</a> ·
+                  <a href="../design-system/patterns.html" style="color: inherit;">patterns</a>
                 </div>
               </div>
             </div>

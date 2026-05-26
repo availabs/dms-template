@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingua — Design System / Patterns</title>
+  <link rel="stylesheet" href="_dms-page.css">
+  <style>
+    /* Page-specific styling. Most styling comes from _dms-page.css. */
+
+    /* Empty / loading / error state shared scaffolding */
+    .state-card {
+      background: var(--color-surface-soft);
+      border: 1px dashed var(--color-border-strong);
+      border-radius: var(--radius-lg);
+      padding: var(--space-10) var(--space-7);
+      display: flex; flex-direction: column; align-items: center;
+      gap: var(--space-4);
+      text-align: center;
+    }
+    .state-card__icon {
+      width: 64px; height: 64px;
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--color-mute-soft);
+    }
+    .state-card__icon svg { width: 28px; height: 28px; stroke: currentColor; stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .state-card__actions { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-3); }
+
+    .state-card--error {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-left: 4px solid var(--color-signal);
+      text-align: left;
+      align-items: flex-start;
+      padding: var(--space-7);
+    }
+    .state-card--error .state-card__icon {
+      background: var(--color-signal-soft);
+      border-color: rgba(255, 86, 48, 0.30);
+      color: var(--color-signal);
+    }
+
+    .state-card--loading {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: var(--space-7);
+      align-items: stretch;
+      text-align: left;
+    }
+
+    /* Skeleton bars (loading state) */
+    .skel { background: var(--color-surface-sunken); border-radius: var(--radius-sm); height: 12px; }
+    .skel-row { display: flex; align-items: center; gap: var(--space-4); padding: 8px 0; }
+    .skel-row .skel-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--color-surface-sunken); flex-shrink: 0; }
+
+    /* Loading "Reading…" trace */
+    .reading-trace {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--color-mute);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-border-subtle);
+      margin-top: var(--space-4);
+    }
+    .reading-trace .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--color-accent);
+      animation: lingPulse 1s infinite;
+    }
+    @keyframes lingPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* Active filter chips */
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border: 1px solid rgba(59, 91, 255, 0.20);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px 3px 10px;
+      letter-spacing: 0;
+    }
+    .chip .x {
+      color: var(--color-accent);
+      opacity: 0.55;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1;
+      margin-left: 2px;
+    }
+    .chip--clear {
+      background: transparent;
+      border-color: transparent;
+      color: var(--color-mute);
+      cursor: pointer;
+    }
+    .chip--clear:hover { color: var(--color-ink); }
+
+    /* Filter bar */
+    .filter-bar {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+    .filter-bar .search {
+      flex: 1; min-width: 220px;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-md);
+      padding: 7px 10px;
+    }
+    .filter-bar .search svg { width: 14px; height: 14px; color: var(--color-mute); stroke: currentColor; stroke-width: 1.75; fill: none; flex-shrink: 0; }
+    .filter-bar .search input {
+      flex: 1; border: 0; outline: 0; background: transparent;
+      font-family: var(--font-sans); font-size: 13px; color: var(--color-ink);
+    }
+    .filter-bar .search input::placeholder { color: var(--color-mute-soft); }
+
+    .chip-row {
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: 6px;
+      padding: var(--space-4) 0 var(--space-3);
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--color-mute);
+    }
+    .chip-row .label {
+      text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500;
+      margin-right: var(--space-2);
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-4);
+      padding-top: var(--space-5);
+      margin-top: var(--space-3);
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .pagination .meta {
+      font-family: var(--font-mono); font-size: 12px; color: var(--color-mute);
+    }
+    .pagination .controls { display: flex; align-items: center; gap: var(--space-2); }
+    .pgn-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 32px; height: 32px;
+      padding: 0 9px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+      color: var(--color-ink-soft);
+      cursor: pointer;
+      transition: border-color var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+    }
+    .pgn-btn:hover { border-color: var(--color-ink); color: var(--color-ink); }
+    .pgn-btn--active { background: var(--color-accent); color: var(--color-accent-ink); border-color: var(--color-accent); }
+    .pgn-btn--ghost { border-color: transparent; background: transparent; color: var(--color-mute); }
+
+    /* Card-grid section card variant — eyebrow + title + footer pill */
+    .grid-card { display: flex; flex-direction: column; height: 100%; }
+    .grid-card .ling-card__body { flex: 1; }
+
+    /* Form layout */
+    .fieldset-block {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      background: var(--color-surface);
+    }
+    .fieldset-block + .fieldset-block { margin-top: var(--space-5); }
+    .fieldset-block__hd {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: var(--space-3);
+      padding-bottom: var(--space-3);
+      margin-bottom: var(--space-5);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .fieldset-block__title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--color-ink); letter-spacing: -0.008em; }
+    .fieldset-block__sub { font-family: var(--font-mono); font-size: 11px; color: var(--color-mute); text-transform: uppercase; letter-spacing: 0.06em; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-5); }
+    .field-grid .span-2 { grid-column: 1 / -1; }
+    .switch-row {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-3) 0;
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .switch-row:first-child { border-top: 0; padding-top: 0; }
+    .switch-row__copy { display: flex; flex-direction: column; gap: 2px; }
+    .switch-row__title { font-family: var(--font-sans); font-size: 14px; font-weight: 500; color: var(--color-ink); }
+    .switch-row__help { font-family: var(--font-sans); font-size: 12px; color: var(--color-mute); max-width: 56ch; }
+    .form-submit-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border);
+    }
+
+    /* Modal */
+    .modal-stage {
+      position: relative;
+      background: rgba(24, 24, 27, 0.45);
+      padding: var(--space-9) var(--space-7);
+      border-radius: var(--radius-lg);
+      min-height: 540px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(45deg, transparent 0 12px, rgba(255,255,255,0.02) 12px 13px);
+      pointer-events: none;
+      border-radius: var(--radius-lg);
+    }
+    .modal {
+      width: 100%; max-width: 640px;
+      background: var(--color-surface);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--color-border);
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+    .modal__hd {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .modal__hd-title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--color-ink); }
+    .modal__hd-close {
+      width: 28px; height: 28px;
+      border-radius: var(--radius-md);
+      border: 0; background: transparent;
+      color: var(--color-mute); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .modal__hd-close:hover { color: var(--color-ink); background: var(--color-surface-soft); }
+    .modal__hd-close svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
+    .modal__body { padding: var(--space-6); max-height: 460px; overflow-y: auto; }
+
+    /* Dataset overview chrome */
+    .dataset-overview {
+      display: grid;
+      grid-template-columns: 232px 1fr;
+      gap: var(--space-7);
+    }
+    @media (max-width: 900px) { .dataset-overview { grid-template-columns: 1fr; } }
+    .dataset-overview__rail {
+      border-right: 1px solid var(--color-border-subtle);
+      padding-right: var(--space-6);
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .dataset-overview__rail .eyebrow {
+      font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--color-mute); margin-bottom: var(--space-3);
+      font-weight: 500;
+    }
+    .rail-item {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-3);
+      padding: 7px 12px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+    }
+    .rail-item:hover { background: var(--color-surface-soft); color: var(--color-ink); }
+    .rail-item--active { background: var(--color-accent-soft); color: var(--color-accent); }
+    .rail-item .count {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--color-mute); font-weight: 400;
+    }
+    .rail-item--active .count { color: var(--color-accent); opacity: 0.7; }
+
+    /* Dataset card */
+    .ds-card {
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      gap: var(--space-4);
+      align-items: flex-start;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-sm);
+      transition: border-color var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .ds-card:hover { border-color: var(--color-border-strong); box-shadow: var(--shadow-md); }
+    .ds-card__icon {
+      width: 40px; height: 40px;
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--color-ink-soft);
+    }
+    .ds-card__icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .ds-card__main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .ds-card__title { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--color-ink); letter-spacing: -0.008em; line-height: 1.3; }
+    .ds-card__id { font-family: var(--font-mono); font-size: 11px; color: var(--color-mute); }
+    .ds-card__brief { font-family: var(--font-sans); font-size: 13px; color: var(--color-ink-soft); line-height: 1.5; margin-top: 4px; }
+    .ds-card__pill { align-self: flex-start; }
+
+    /* Auth login stage */
+    .auth-stage {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-10) var(--space-7);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .auth-card {
+      width: 100%; max-width: 440px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-9);
+      box-shadow: var(--shadow-md);
+      display: flex; flex-direction: column; gap: var(--space-5);
+    }
+    .auth-card__brand {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 26px; font-weight: 600;
+      letter-spacing: -0.025em; color: var(--color-ink);
+    }
+    .auth-card__brand .diacritic { color: var(--color-accent); }
+    .auth-card__footer {
+      text-align: center;
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-border-subtle);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-mute);
+    }
+    .auth-card__footer a { color: var(--color-accent); text-decoration: none; font-weight: 500; }
+    .auth-card__footer a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    /* Section toolbar (edit-mode chrome) */
+    .edit-section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-left: 4px solid var(--color-accent);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .edit-section__hd {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .edit-section__drag {
+      width: 22px; height: 22px;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--color-mute);
+      cursor: grab;
+    }
+    .edit-section__drag svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.75; fill: none; }
+    .edit-section__title {
+      flex: 1;
+      font-family: var(--font-display); font-size: 18px; font-weight: 600;
+      letter-spacing: -0.008em; color: var(--color-ink);
+      padding: 4px 8px; margin-left: -8px;
+      border-radius: var(--radius-md);
+      border: 1px dashed transparent;
+      cursor: text;
+      outline: none;
+    }
+    .edit-section__title:hover, .edit-section__title:focus {
+      border-color: var(--color-border);
+      background: var(--color-surface-soft);
+    }
+    .edit-section__menu {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      border: 0; background: transparent;
+      color: var(--color-mute); cursor: pointer;
+      border-radius: var(--radius-md);
+    }
+    .edit-section__menu:hover { color: var(--color-ink); background: var(--color-surface-soft); }
+    .edit-section__menu svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.75; fill: none; }
+    .edit-section__toolbar {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: 8px var(--space-5);
+      background: var(--color-surface-soft);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .tb-btn {
+      width: 28px; height: 28px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--color-ink-soft);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+    }
+    .tb-btn:hover { background: var(--color-surface); border-color: var(--color-border); color: var(--color-ink); }
+    .tb-btn--active { background: var(--color-accent-soft); border-color: rgba(59, 91, 255, 0.30); color: var(--color-accent); }
+    .tb-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.75; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .tb-sep { width: 1px; height: 18px; background: var(--color-border); margin: 0 4px; }
+    .edit-section__body { padding: var(--space-6); }
+
+    /* Pattern-editor 3-pane */
+    .pe-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr 280px;
+      gap: 0;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      min-height: 420px;
+    }
+    @media (max-width: 1000px) {
+      .pe-grid { grid-template-columns: 1fr; }
+    }
+    .pe-pane {
+      padding: var(--space-5);
+      border-right: 1px solid var(--color-border-subtle);
+      display: flex; flex-direction: column; gap: var(--space-3);
+    }
+    .pe-pane:last-child { border-right: 0; }
+    .pe-pane--tree { background: var(--color-surface-soft); }
+    .pe-pane__hd {
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--color-mute); font-weight: 500;
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .pe-pane__hd .add {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px;
+      border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+      background: var(--color-surface); color: var(--color-ink-soft);
+      cursor: pointer;
+    }
+    .pe-pane__hd .add svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+    .tree-item {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-sans); font-size: 13px;
+      color: var(--color-ink-soft);
+      cursor: pointer;
+    }
+    .tree-item:hover { background: var(--color-surface); color: var(--color-ink); }
+    .tree-item--active { background: var(--color-accent-soft); color: var(--color-accent); font-weight: 500; }
+    .tree-item--child { padding-left: 24px; font-size: 12px; }
+    .tree-item .drag {
+      width: 12px; color: var(--color-mute-soft);
+      display: inline-flex; align-items: center;
+    }
+    .tree-item .drag svg { width: 10px; height: 10px; stroke: currentColor; stroke-width: 2; fill: none; }
+    .tree-item .ico {
+      width: 14px; color: var(--color-mute);
+      display: inline-flex; align-items: center;
+    }
+    .tree-item .ico svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 1.75; fill: none; }
+    .tree-item--active .ico { color: var(--color-accent); }
+
+    .pe-pane--preview {
+      background: var(--color-surface-tint);
+      align-items: stretch;
+    }
+    .pe-preview-card {
+      flex: 1;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      display: flex; flex-direction: column; gap: var(--space-4);
+      box-shadow: var(--shadow-sm);
+    }
+    .pe-preview-card__hd {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: var(--space-3);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .pe-col-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      font-family: var(--font-sans); font-size: 13px;
+    }
+    .pe-col-row:last-child { border-bottom: 0; }
+    .pe-col-row .drag { color: var(--color-mute-soft); cursor: grab; }
+    .pe-col-row .drag svg { width: 10px; height: 10px; stroke: currentColor; stroke-width: 2; fill: none; }
+    .pe-col-row .name { flex: 1; color: var(--color-ink); font-weight: 500; }
+    .pe-col-row .type {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--color-mute);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .pe-col-row .toggle {
+      width: 26px; height: 14px;
+      background: var(--color-border-strong);
+      border-radius: var(--radius-pill);
+      padding: 2px;
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .pe-col-row .toggle::after {
+      content: ""; display: block;
+      width: 10px; height: 10px;
+      background: var(--color-surface);
+      border-radius: 50%;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--dur-snap) var(--ease-snap);
+    }
+    .pe-col-row .toggle.on { background: var(--color-accent); }
+    .pe-col-row .toggle.on::after { transform: translateX(12px); }
+    .pe-col-row.hidden .name { color: var(--color-mute); text-decoration: line-through; }
+
+    /* Architecture comparison */
+    .arch-cmp {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6);
+    }
+    @media (max-width: 900px) { .arch-cmp { grid-template-columns: 1fr; } }
+    .arch-cmp__col {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      position: relative;
+      display: flex; flex-direction: column; gap: var(--space-3);
+    }
+    .arch-cmp__col--mute .ling-arch__node {
+      color: var(--color-mute); border-color: var(--color-border);
+      background: var(--color-surface);
+      box-shadow: none;
+    }
+    .arch-cmp__col--mute .ling-arch__node .sub { color: var(--color-mute-soft); }
+    .arch-cmp__title {
+      font-family: var(--font-mono); font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--color-mute);
+      font-weight: 500;
+      margin-bottom: var(--space-3);
+    }
+    .arch-cmp__nodes {
+      display: flex; flex-direction: column; gap: var(--space-3);
+      position: relative;
+      padding: var(--space-4) 0;
+    }
+    .arch-cmp__sum {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--color-mute);
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px dashed var(--color-border);
+      text-align: center;
+    }
+    .arch-cmp__col--accent .arch-cmp__sum {
+      color: var(--color-accent); font-weight: 500;
+    }
+    .arch-big-node {
+      background: var(--color-accent-soft) !important;
+      border: 1px solid var(--color-accent) !important;
+      color: var(--color-accent) !important;
+      padding: var(--space-6) !important;
+      font-size: 18px !important;
+      box-shadow: var(--shadow-sm) !important;
+      min-height: 200px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: var(--space-3);
+      border-radius: var(--radius-lg) !important;
+    }
+    .arch-big-node .l-displayMD {
+      font-size: 32px;
+      letter-spacing: -0.02em;
+      color: var(--color-accent);
+    }
+    .arch-big-node .sub-list {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      justify-content: center;
+      font-family: var(--font-mono); font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--color-accent); opacity: 0.7;
+    }
+
+    /* Pattern index card (top of page) */
+    .pattern-index {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+    }
+    @media (max-width: 800px) { .pattern-index { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .pattern-index a {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      transition: background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+    }
+    .pattern-index a:hover { background: var(--color-accent-soft); border-color: rgba(59, 91, 255, 0.30); }
+    .pattern-index a:hover .num, .pattern-index a:hover .label { color: var(--color-accent); }
+    .pattern-index .num {
+      font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+      color: var(--color-mute);
+      letter-spacing: 0.06em;
+      min-width: 22px;
+    }
+    .pattern-index .label {
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+      color: var(--color-ink-soft);
+    }
+
+    /* CLI signature caption */
+    .signature-caption {
+      display: flex; align-items: center; gap: var(--space-2);
+      margin-top: var(--space-4);
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .signature-caption::before {
+      content: ""; width: 24px; height: 1px; background: var(--color-accent);
+    }
+
+    /* Section caption (the lede after a section title) for patterns */
+    .pat-caption {
+      font-family: var(--font-sans); font-size: 14px;
+      color: var(--color-ink-soft);
+      max-width: 64ch;
+      margin: 0 0 var(--space-5);
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required on every page per design system skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="theme.html">theme</a>
+    <a class="lingua-metanav__link" href="layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="grid.html">grid</a>
+    <a class="lingua-metanav__link" href="components.html">components</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="../pages/marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="../pages/marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="../pages/docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="../pages/civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="../pages/product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="../pages/product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="../pages/product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="../" class="dms-topnav-brand">
+              L<span class="diacritic">ī</span>ngua
+              <span class="designator">Design</span>
+            </a>
+            <div class="dms-topnav-links">
+              <a href="theme.html">Theme</a>
+              <a href="layouts.html">Layouts</a>
+              <a href="grid.html">Grid</a>
+              <a href="components.html">Components</a>
+              <a href="patterns.html" class="active">Patterns</a>
+            </div>
+          </div>
+          <div class="dms-topnav-right">
+            <span>v0.2</span>
+            <span style="color:var(--color-border)">·</span>
+            <span>2026-05-24</span>
+            <a href="../pages/marketing-homepage.html" class="ling-btn ling-btn--primary ling-btn--sm" style="margin-left:8px;">Start a site →</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">design system</div>
+            <a class="dms-sidenav-item" href="theme.html">Theme</a>
+            <a class="dms-sidenav-item" href="layouts.html">Layouts</a>
+            <a class="dms-sidenav-item" href="grid.html">Grid</a>
+            <a class="dms-sidenav-item" href="components.html">Components</a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="patterns.html">Patterns</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">example pages</div>
+            <a class="dms-sidenav-item" href="../pages/marketing-homepage.html">Marketing &mdash; home</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-comparison.html">Marketing &mdash; compare</a>
+            <a class="dms-sidenav-item" href="../pages/marketing-theory.html">Marketing &mdash; theory</a>
+            <a class="dms-sidenav-item" href="../pages/docs-page.html">Documentation</a>
+            <a class="dms-sidenav-item" href="../pages/civic-overview.html">Civic overview</a>
+            <a class="dms-sidenav-item" href="../pages/product-site-overview.html">Product &mdash; site</a>
+            <a class="dms-sidenav-item" href="../pages/product-page-editor.html">Product &mdash; editor</a>
+            <a class="dms-sidenav-item" href="../pages/product-dataset-view.html">Product &mdash; dataset</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#empty">Empty state</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#loading">Loading state</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#error">Error state</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#data-section">Data section</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#card-grid">Card grid</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#form">Form layout</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#modal">Modal-with-form</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#datasets">Dataset overview</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#auth">Auth login</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#section-toolbar">Section toolbar</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#pattern-editor">Pattern editor</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#cli">CLI command</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#arch-cmp">Architecture</a>
+          </div>
+        </aside>
+
+        <!-- childWrapper -->
+        <div class="dms-layout-child">
+
+          <!-- ============================================================
+               LayoutGroup "header" — page title + index
+               ============================================================ -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span class="badge">v0.2</span>
+                <span>design system</span>
+                <span class="sep">·</span>
+                <span>patterns</span>
+                <span class="sep">·</span>
+                <span>13 compositions</span>
+              </div>
+              <h1 class="dms-page-title">Patterns &mdash; the moments where <span class="accent">primitives</span> meet.</h1>
+              <p class="dms-page-lede">
+                Empty states, loading skeletons, filter bars, modal-with-form, the dataset list, the auth card &mdash; the recurring multi-primitive compositions every Lingua surface eventually renders. Plus two brand-signature additions for v0.2: the <strong>CLI command pattern</strong> and the <strong>architecture comparison</strong> &mdash; both Warpstream-inspired. Each section below is one composition; the chrome here is the chrome the live product ships.
+              </p>
+
+              <div class="pattern-index">
+                <a href="#empty"><span class="num">01</span><span class="label">Empty state</span></a>
+                <a href="#loading"><span class="num">02</span><span class="label">Loading state</span></a>
+                <a href="#error"><span class="num">03</span><span class="label">Error state</span></a>
+                <a href="#data-section"><span class="num">04</span><span class="label">Data section with filters</span></a>
+                <a href="#card-grid"><span class="num">05</span><span class="label">Card-grid section</span></a>
+                <a href="#form"><span class="num">06</span><span class="label">Form layout</span></a>
+                <a href="#modal"><span class="num">07</span><span class="label">Modal-with-form</span></a>
+                <a href="#datasets"><span class="num">08</span><span class="label">Dataset overview</span></a>
+                <a href="#auth"><span class="num">09</span><span class="label">Auth login</span></a>
+                <a href="#section-toolbar"><span class="num">10</span><span class="label">Section toolbar</span></a>
+                <a href="#pattern-editor"><span class="num">11</span><span class="label">Pattern editor</span></a>
+                <a href="#cli"><span class="num">12</span><span class="label">CLI command</span></a>
+                <a href="#arch-cmp"><span class="num">13</span><span class="label">Architecture comparison</span></a>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               01 — EMPTY STATE
+               ============================================================ -->
+          <section id="empty" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>01 &middot; Empty state</div>
+                <h2 class="dms-section-title">No rows &mdash; the data section that hasn't been written yet.</h2>
+                <p class="pat-caption">
+                  A section whose source returned zero rows. Soft dashed border, sunken surface, mute icon, primary CTA in the brand voice ("Speak the first one"). Authors hit this every time they spin up a fresh dataset; the empty state is the brand's first impression.
+                </p>
+
+                <div class="state-card">
+                  <div class="state-card__icon">
+                    <!-- icon: Database -->
+                    <svg viewBox="0 0 24 24">
+                      <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                      <path d="M3 5v14a9 3 0 0018 0V5"/>
+                      <path d="M3 12a9 3 0 0018 0"/>
+                    </svg>
+                  </div>
+                  <h3 class="l-displayMD" style="margin:0;">No sections yet.</h3>
+                  <p class="l-prose ink-soft measure" style="margin:0;">
+                    A page is a sentence; without sections, it has nothing to say. Pick a row format and Lingua will speak it for you.
+                  </p>
+                  <div class="state-card__actions">
+                    <a href="#" class="ling-btn ling-btn--primary">Speak the first one &rarr;</a>
+                    <a href="#" class="ling-btn ling-btn--ghost">Browse templates</a>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> <code>state-card</code> wrapper (sunken surface, dashed border) + Icon primitive (mute, large) + <code>l-displayMD</code> title + <code>l-prose</code> lede + Button primary + Button ghost. The CTA copy is brand voice (<em>"Speak the first one"</em>); the secondary is plain (<em>"Browse templates"</em>). Centered alignment marks this as a state, not a section body.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               02 — LOADING STATE
+               ============================================================ -->
+          <section id="loading" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>02 &middot; Loading state</div>
+                <h2 class="dms-section-title">Loading &mdash; skeleton bars and a mono trace.</h2>
+                <p class="pat-caption">
+                  Skeleton blocks at the row level (not spinners) so the user sees the shape of what's coming. A small mono trace at the bottom shows what Lingua is doing &mdash; <em>"Reading"</em> on the brand's voice, with a pulsing accent dot.
+                </p>
+
+                <div class="state-card state-card--loading">
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <div class="skel-row">
+                      <div class="skel-avatar"></div>
+                      <div class="skel" style="width: 32%;"></div>
+                      <div class="skel" style="width: 18%; margin-left:auto;"></div>
+                    </div>
+                    <div class="skel-row">
+                      <div class="skel-avatar"></div>
+                      <div class="skel" style="width: 44%;"></div>
+                      <div class="skel" style="width: 14%; margin-left:auto;"></div>
+                    </div>
+                    <div class="skel-row">
+                      <div class="skel-avatar"></div>
+                      <div class="skel" style="width: 28%;"></div>
+                      <div class="skel" style="width: 22%; margin-left:auto;"></div>
+                    </div>
+                    <div class="skel-row">
+                      <div class="skel-avatar"></div>
+                      <div class="skel" style="width: 36%;"></div>
+                      <div class="skel" style="width: 16%; margin-left:auto;"></div>
+                    </div>
+                    <div class="skel-row">
+                      <div class="skel-avatar"></div>
+                      <div class="skel" style="width: 50%;"></div>
+                      <div class="skel" style="width: 20%; margin-left:auto;"></div>
+                    </div>
+                    <div class="skel-row">
+                      <div class="skel-avatar"></div>
+                      <div class="skel" style="width: 26%;"></div>
+                      <div class="skel" style="width: 18%; margin-left:auto;"></div>
+                    </div>
+                  </div>
+
+                  <div class="reading-trace">
+                    <span>Reading <code style="color:var(--color-ink-soft); font-family:inherit;">issues|page</code> &middot; 3 of 38 rows</span>
+                    <span class="dot"></span>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> Surface card + 6 skeleton rows at varying widths (so the eye reads "different rows of different things") + a mono trace at the bottom. The trace tells the user what's actually loading ("issues|page", "3 of 38"). No spinners &mdash; spinners say nothing.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               03 — ERROR STATE
+               ============================================================ -->
+          <section id="error" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>03 &middot; Error state</div>
+                <h2 class="dms-section-title">Error &mdash; the diagnostic in a code block, then the retry.</h2>
+                <p class="pat-caption">
+                  Signal-colored left rule (4px), small signal icon, a title that says what didn't happen, the actual diagnostic in a dark <code>.ling-code</code> block, then a row of actions. The diagnostic is non-negotiable: a user who can read the trace can self-serve; a user who can't can copy it to a colleague.
+                </p>
+
+                <div class="state-card state-card--error">
+                  <div style="display:flex; gap:var(--space-4); align-items:flex-start;">
+                    <div class="state-card__icon">
+                      <!-- icon: AlertTriangle -->
+                      <svg viewBox="0 0 24 24">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                      </svg>
+                    </div>
+                    <div style="flex:1;">
+                      <h3 class="l-displayMD" style="margin: 0 0 var(--space-2);">The view didn't load.</h3>
+                      <p class="l-prose ink-soft" style="margin: 0; max-width: 56ch;">
+                        The view at id <code style="font-family:var(--font-mono);font-size:13px;color:var(--color-ink);background:var(--color-surface-soft);border:1px solid var(--color-border);padding:1px 5px;border-radius:var(--radius-sm);">2060672</code> didn't respond in time. The row may have been removed, or your session may have lapsed.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="ling-code" style="margin-top: var(--space-5);">
+                    <div class="ling-code__chrome">
+                      <span class="filename">trace.diagnostic</span>
+                      <div class="actions">
+                        <button>Copy</button>
+                        <button>Open in console</button>
+                      </div>
+                    </div>
+                    <div class="ling-code__body">
+<pre><span class="tk-com">// captured 2026-05-24T18:21:08Z</span>
+<span class="tk-kw">GET</span> <span class="tk-str">/v1/sources/2060672/view</span>
+  <span class="tk-prop">Status</span><span class="tk-punc">:</span>   <span class="tk-num">504</span> <span class="tk-com">// Gateway timeout</span>
+  <span class="tk-prop">Elapsed</span><span class="tk-punc">:</span>  <span class="tk-num">2.4s</span>
+  <span class="tk-prop">Region</span><span class="tk-punc">:</span>   <span class="tk-str">"us-east-2"</span>
+  <span class="tk-prop">Engine</span><span class="tk-punc">:</span>   <span class="tk-str">"lingua/v1.3.0"</span>
+  <span class="tk-prop">Request</span><span class="tk-punc">:</span>  <span class="tk-str">"req_8c2a1f3e9d"</span>
+<span class="tk-fn">retry</span><span class="tk-punc">()</span> <span class="tk-com">// recommended</span></pre>
+                    </div>
+                  </div>
+
+                  <div class="state-card__actions" style="margin-top: var(--space-5);">
+                    <button class="ling-btn ling-btn--primary">
+                      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                      Refresh
+                    </button>
+                    <button class="ling-btn ling-btn--secondary">Open in console</button>
+                    <a href="#" class="ling-btn ling-btn--link">Report this incident &rarr;</a>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> Surface card with a 4px <code>--color-signal</code> left rule + signal-tinted icon + <code>l-displayMD</code> title + plain prose explanation + <code>.ling-code</code> diagnostic block + 3 action buttons (primary refresh, secondary console, ghost link). The dark code surface inside the error card is the brand's contrast in service of the moment: "here is the technical truth."
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               04 — DATA SECTION WITH FILTERS
+               ============================================================ -->
+          <section id="data-section" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>04 &middot; Data section</div>
+                <h2 class="dms-section-title">Data section with filters &mdash; the workhorse composition.</h2>
+                <p class="pat-caption">
+                  Header, filter bar inside <code>--color-surface-soft</code>, active filter chips, then the table, then pagination + page-size. This is the pattern Lingua renders more often than any other &mdash; every dataset list, every site index, every analytics view passes through this composition.
+                </p>
+
+                <!-- Section header -->
+                <div class="ling-section-hd" style="margin-bottom: var(--space-4);">
+                  <div>
+                    <h3 class="l-h2" style="margin:0;">Issue archive</h3>
+                    <div class="l-monoSM" style="margin-top: 4px;">app=the-drift &middot; type=issues|page &middot; 38 rows</div>
+                  </div>
+                  <div style="display:flex; gap:var(--space-2); align-items:center;">
+                    <button class="ling-btn ling-btn--ghost ling-btn--sm">
+                      <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      Export
+                    </button>
+                    <button class="ling-btn ling-btn--primary ling-btn--sm">+ New issue</button>
+                  </div>
+                </div>
+
+                <!-- Filter bar -->
+                <div class="filter-bar">
+                  <div class="ling-multiselect">
+                    <span>
+                      <span class="ling-multiselect-token">Essay</span>
+                      <span class="ling-multiselect-token">Interview</span>
+                      <span style="color:var(--color-mute); font-size:11px; font-family:var(--font-mono);">+1</span>
+                    </span>
+                    <span class="caret">▾</span>
+                  </div>
+                  <div class="ling-multiselect">
+                    <span style="color:var(--color-mute);">All years</span>
+                    <span class="caret">▾</span>
+                  </div>
+                  <div class="ling-multiselect">
+                    <span>
+                      <span class="ling-multiselect-token">published</span>
+                    </span>
+                    <span class="caret">▾</span>
+                  </div>
+                  <div class="search">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                    <input type="text" placeholder="Search title, author, or tag&hellip;" value="lingua">
+                  </div>
+                  <button class="ling-btn ling-btn--primary ling-btn--sm">Apply</button>
+                </div>
+
+                <!-- Active filter chips -->
+                <div class="chip-row">
+                  <span class="label">Active</span>
+                  <span class="chip">kind: Essay <span class="x">&times;</span></span>
+                  <span class="chip">kind: Interview <span class="x">&times;</span></span>
+                  <span class="chip">kind: Review <span class="x">&times;</span></span>
+                  <span class="chip">status: published <span class="x">&times;</span></span>
+                  <span class="chip">contains: "lingua" <span class="x">&times;</span></span>
+                  <span class="chip chip--clear">Clear all</span>
+                </div>
+
+                <!-- Table -->
+                <div style="border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden;">
+                  <table class="ling-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 30%;">Title</th>
+                        <th style="width: 18%;">Author</th>
+                        <th>Kind</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Words</th>
+                        <th style="text-align: right;">Published</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>On the lingua franca of typed rows</strong></td>
+                        <td>Alex Pireno</td>
+                        <td><span class="ling-pill ling-pill--accent">Essay</span></td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Published</span></td>
+                        <td class="num">4,820</td>
+                        <td class="num">2026-05-12</td>
+                      </tr>
+                      <tr>
+                        <td><strong>A grammar for plural infrastructure</strong></td>
+                        <td>Mira Okafor</td>
+                        <td><span class="ling-pill ling-pill--accent">Essay</span></td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Published</span></td>
+                        <td class="num">3,140</td>
+                        <td class="num">2026-04-28</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Interview &mdash; the WordPress paradox</strong></td>
+                        <td>Sam Devlin</td>
+                        <td><span class="ling-pill">Interview</span></td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Published</span></td>
+                        <td class="num">2,610</td>
+                        <td class="num">2026-04-14</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Civic data, civic vocabulary</strong></td>
+                        <td>Olga Bauer</td>
+                        <td><span class="ling-pill ling-pill--accent">Essay</span></td>
+                        <td><span class="ling-pill ling-pill--margin ling-pill--dot">Draft</span></td>
+                        <td class="num">1,920</td>
+                        <td class="num">&mdash;</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Review &mdash; a year of Lingua deployments</strong></td>
+                        <td>Patrick Wei</td>
+                        <td><span class="ling-pill">Review</span></td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Published</span></td>
+                        <td class="num">2,180</td>
+                        <td class="num">2026-03-30</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Interview &mdash; what makes a row "the same"</strong></td>
+                        <td>Junie Park</td>
+                        <td><span class="ling-pill">Interview</span></td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Published</span></td>
+                        <td class="num">2,750</td>
+                        <td class="num">2026-03-16</td>
+                      </tr>
+                      <tr>
+                        <td><strong>The case against custom components</strong></td>
+                        <td>Alex Pireno</td>
+                        <td><span class="ling-pill ling-pill--accent">Essay</span></td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">Published</span></td>
+                        <td class="num">5,310</td>
+                        <td class="num">2026-03-02</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Self-hosting: a field report</strong></td>
+                        <td>Diego Marsh</td>
+                        <td><span class="ling-pill">Review</span></td>
+                        <td><span class="ling-pill ling-pill--signal ling-pill--dot">Archived</span></td>
+                        <td class="num">3,460</td>
+                        <td class="num">2026-02-20</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                  <div class="meta">Showing 1&mdash;8 of 38 rows</div>
+                  <div class="controls">
+                    <button class="pgn-btn pgn-btn--ghost" disabled style="opacity:0.4; cursor:default;">&larr; Prev</button>
+                    <button class="pgn-btn pgn-btn--active">1</button>
+                    <button class="pgn-btn">2</button>
+                    <button class="pgn-btn">3</button>
+                    <button class="pgn-btn">4</button>
+                    <button class="pgn-btn">5</button>
+                    <button class="pgn-btn">Next &rarr;</button>
+                    <span class="tb-sep"></span>
+                    <div class="ling-multiselect" style="min-width: 120px;">
+                      <span>8 / page</span>
+                      <span class="caret">▾</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> Section header (title + meta + utility buttons) → <code>.filter-bar</code> row (multi-selects + search + Apply) → active chips row → Table primitive in a bordered shell → Pagination row (meta + controls + page-size). Filter chips are <em>removable</em> and read in mono so they read as machine-state. Each pill in the table cell uses the brand's existing pill variants &mdash; no per-table custom colour.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               05 — CARD-GRID SECTION
+               ============================================================ -->
+          <section id="card-grid" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>05 &middot; Card-grid section</div>
+                <h2 class="dms-section-title">Card grid &mdash; the Card section's other shape.</h2>
+                <p class="pat-caption">
+                  The same Card primitive, rendered as a grid instead of a list. Six cards: a mix of essays, datasets, and themes from <em>The Drift</em> magazine site. Each card has an eyebrow, a title, a body paragraph, and a footer with a pill and a small CTA.
+                </p>
+
+                <div class="dms-grid dms-grid-3" style="margin-top: var(--space-3);">
+                  <div class="ling-card grid-card">
+                    <div class="ling-card__eyebrow"><span class="ling-pill ling-pill--accent">Essay</span> &middot; 4,820 words</div>
+                    <h3 class="ling-card__title">On the lingua franca of typed rows.</h3>
+                    <p class="ling-card__body">A long-form case for why one row format &mdash; not "no-code", not "low-code" &mdash; is the right place to invest the next decade of platform work.</p>
+                    <div class="ling-card__footer">
+                      <span class="l-monoSM">Alex Pireno &middot; 2026-05-12</span>
+                      <a href="#" class="ling-btn ling-btn--link ling-btn--sm">Read &rarr;</a>
+                    </div>
+                  </div>
+
+                  <div class="ling-card grid-card">
+                    <div class="ling-card__eyebrow"><span class="ling-pill ling-pill--accent">Essay</span> &middot; 3,140 words</div>
+                    <h3 class="ling-card__title">A grammar for plural infrastructure.</h3>
+                    <p class="ling-card__body">Self-hosting and managed hosting aren't a fork in the road. They're two dialects of the same grammar &mdash; with one export command between them.</p>
+                    <div class="ling-card__footer">
+                      <span class="l-monoSM">Mira Okafor &middot; 2026-04-28</span>
+                      <a href="#" class="ling-btn ling-btn--link ling-btn--sm">Read &rarr;</a>
+                    </div>
+                  </div>
+
+                  <div class="ling-card grid-card">
+                    <div class="ling-card__eyebrow"><span class="ling-pill">Dataset</span> &middot; 2,847 rows</div>
+                    <h3 class="ling-card__title">Subscribers &mdash; The Drift, all-time.</h3>
+                    <p class="ling-card__body">A typed row format for subscribers across all editions of The Drift magazine. Joins to the issues source by email; renders a table or a chart per source-view.</p>
+                    <div class="ling-card__footer">
+                      <span class="l-monoSM">last fetched 04:21 UTC</span>
+                      <a href="#" class="ling-btn ling-btn--link ling-btn--sm">Open &rarr;</a>
+                    </div>
+                  </div>
+
+                  <div class="ling-card grid-card">
+                    <div class="ling-card__eyebrow"><span class="ling-pill">Interview</span> &middot; 2,610 words</div>
+                    <h3 class="ling-card__title">The WordPress paradox.</h3>
+                    <p class="ling-card__body">Why the most-used CMS on the planet is also the one most developers refuse to touch &mdash; and what a typed row format can borrow from that lesson.</p>
+                    <div class="ling-card__footer">
+                      <span class="l-monoSM">Sam Devlin &middot; 2026-04-14</span>
+                      <a href="#" class="ling-btn ling-btn--link ling-btn--sm">Read &rarr;</a>
+                    </div>
+                  </div>
+
+                  <div class="ling-card grid-card">
+                    <div class="ling-card__eyebrow"><span class="ling-pill ling-pill--margin">Theme</span> &middot; v0.2</div>
+                    <h3 class="ling-card__title">Tessera &mdash; the editorial-serif sibling.</h3>
+                    <p class="ling-card__body">When a Lingua site wants to feel like a publication, swap in Tessera. Same row format, different voice &mdash; the dual-author claim made literal.</p>
+                    <div class="ling-card__footer">
+                      <span class="l-monoSM">tessera@0.2.4</span>
+                      <a href="#" class="ling-btn ling-btn--link ling-btn--sm">Install &rarr;</a>
+                    </div>
+                  </div>
+
+                  <div class="ling-card grid-card">
+                    <div class="ling-card__eyebrow"><span class="ling-pill ling-pill--accent">Essay</span> &middot; 5,310 words</div>
+                    <h3 class="ling-card__title">The case against custom components.</h3>
+                    <p class="ling-card__body">Every custom React component is a capability the next author can't touch. A piece on why "configure the Card" is the most pro-author principle in the system.</p>
+                    <div class="ling-card__footer">
+                      <span class="l-monoSM">Alex Pireno &middot; 2026-03-02</span>
+                      <a href="#" class="ling-btn ling-btn--link ling-btn--sm">Read &rarr;</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">composition &rarr;</span> Card primitive in <code>cardsGridSize: 3</code> mode. Each card composes 4 cells: eyebrow (pill + meta), title (<code>displaySM</code>), body (<code>proseSM</code>), footer (<code>monoSM</code> + button-link). The same Card is the workhorse for both list and grid &mdash; one section type, two visual densities, picked at the section level.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               06 — FORM LAYOUT
+               ============================================================ -->
+          <section id="form" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>06 &middot; Form layout</div>
+                <h2 class="dms-section-title">Form layout &mdash; FieldSets, inputs, switches, submit.</h2>
+                <p class="pat-caption">
+                  Three FieldSets ("Identity" / "Voice" / "Privacy"), each grouping related inputs. Two-column input rows, switch rows for booleans, submit row spans full width with ghost Cancel on the left and primary Submit on the right.
+                </p>
+
+                <form>
+                  <!-- FieldSet 1: Identity -->
+                  <div class="fieldset-block">
+                    <div class="fieldset-block__hd">
+                      <div>
+                        <div class="fieldset-block__title">Identity</div>
+                        <div class="l-proseSM ink-mute" style="margin-top:4px;">How this site identifies itself in the URL, in search, and in subscribers' inboxes.</div>
+                      </div>
+                      <div class="fieldset-block__sub">3 fields</div>
+                    </div>
+                    <div class="field-grid">
+                      <div class="ling-field">
+                        <label class="ling-field-label">Site name</label>
+                        <input class="ling-input" type="text" value="The Drift">
+                      </div>
+                      <div class="ling-field">
+                        <label class="ling-field-label">Slug</label>
+                        <input class="ling-input ling-input--mono" type="text" value="the-drift">
+                        <div class="ling-field-help">Used in the URL: <code style="font-family:var(--font-mono);">lingua.run/the-drift</code></div>
+                      </div>
+                      <div class="ling-field span-2">
+                        <label class="ling-field-label">Tagline</label>
+                        <input class="ling-input" type="text" value="A magazine about typed rows and the people who write them.">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- FieldSet 2: Voice -->
+                  <div class="fieldset-block">
+                    <div class="fieldset-block__hd">
+                      <div>
+                        <div class="fieldset-block__title">Voice</div>
+                        <div class="l-proseSM ink-mute" style="margin-top:4px;">Theme, typography, and locale &mdash; the surface decisions that give the site its character.</div>
+                      </div>
+                      <div class="fieldset-block__sub">3 fields</div>
+                    </div>
+                    <div class="field-grid">
+                      <div class="ling-field">
+                        <label class="ling-field-label">Theme</label>
+                        <div class="ling-multiselect" style="width:100%;">
+                          <span>Lingua v0.2</span>
+                          <span class="caret">▾</span>
+                        </div>
+                      </div>
+                      <div class="ling-field">
+                        <label class="ling-field-label">Primary locale</label>
+                        <div class="ling-multiselect" style="width:100%;">
+                          <span>en-US &middot; English (US)</span>
+                          <span class="caret">▾</span>
+                        </div>
+                      </div>
+                      <div class="ling-field span-2">
+                        <label class="ling-field-label">Custom CSS additions <span style="color:var(--color-mute); font-weight:400;">(optional)</span></label>
+                        <textarea class="ling-input ling-input--mono" rows="3" style="width:100%; resize:vertical;">/* override the meta font on the homepage hero */
+.lingua-homepage .hero { letter-spacing: -0.045em; }</textarea>
+                        <div class="ling-field-help">Loaded at the end of the cascade. Lingua's tokens still win specificity.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- FieldSet 3: Privacy -->
+                  <div class="fieldset-block">
+                    <div class="fieldset-block__hd">
+                      <div>
+                        <div class="fieldset-block__title">Privacy</div>
+                        <div class="l-proseSM ink-mute" style="margin-top:4px;">Visibility, analytics, and what the site is allowed to share with the host.</div>
+                      </div>
+                      <div class="fieldset-block__sub">3 toggles</div>
+                    </div>
+                    <div>
+                      <div class="switch-row">
+                        <div class="switch-row__copy">
+                          <div class="switch-row__title">Public site</div>
+                          <div class="switch-row__help">When off, the site is only reachable by signed-in collaborators. Useful for staging.</div>
+                        </div>
+                        <span class="ling-switch ling-switch--on"></span>
+                      </div>
+                      <div class="switch-row">
+                        <div class="switch-row__copy">
+                          <div class="switch-row__title">Allow indexing</div>
+                          <div class="switch-row__help">When off, Lingua emits <code style="font-family:var(--font-mono);">noindex</code> on every page and writes a permissive robots.txt.</div>
+                        </div>
+                        <span class="ling-switch ling-switch--on"></span>
+                      </div>
+                      <div class="switch-row">
+                        <div class="switch-row__copy">
+                          <div class="switch-row__title">Share anonymous analytics with the host</div>
+                          <div class="switch-row__help">Helps Lingua improve the platform. Never includes content, never includes personally-identifying data.</div>
+                        </div>
+                        <span class="ling-switch"></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Submit row -->
+                  <div class="form-submit-row">
+                    <button type="button" class="ling-btn ling-btn--ghost">Cancel</button>
+                    <div style="display:flex; gap:var(--space-3); align-items:center;">
+                      <span class="l-monoSM ink-mute">Last saved 2 minutes ago</span>
+                      <button type="button" class="ling-btn ling-btn--secondary">Save as draft</button>
+                      <button type="submit" class="ling-btn ling-btn--primary">Save changes</button>
+                    </div>
+                  </div>
+                </form>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> FieldSet primitive (bordered surface card with header + grid of fields) × 3, each with its own grouping. <code>.field-grid</code> uses a 2-column grid with <code>span-2</code> for full-width fields. Boolean fields use the <code>.switch-row</code> pattern (title + help + Switch) instead of an inline checkbox. Submit row holds Cancel ghost on the left, Save primary on the right, with a last-saved meta in between.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               07 — MODAL-WITH-FORM
+               ============================================================ -->
+          <section id="modal" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>07 &middot; Modal-with-form</div>
+                <h2 class="dms-section-title">Modal-with-form &mdash; a floating snapshot of the same pattern.</h2>
+                <p class="pat-caption">
+                  The form pattern, captured inside a Modal: <code>--shadow-lg</code> float, 12px corner radius, backdrop tint behind. Modals trim the form to its essentials &mdash; one FieldSet's worth of fields, one primary, one cancel.
+                </p>
+
+                <div class="modal-stage">
+                  <div class="modal">
+                    <div class="modal__hd">
+                      <div>
+                        <div class="modal__hd-title">Create a new page</div>
+                        <div class="l-proseSM ink-mute" style="margin-top:2px;">A page is a row. Pick a slug; the rest can be edited later.</div>
+                      </div>
+                      <button class="modal__hd-close" aria-label="Close">
+                        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                    <div class="modal__body">
+                      <div class="field-grid" style="gap: var(--space-4);">
+                        <div class="ling-field span-2">
+                          <label class="ling-field-label">Page title</label>
+                          <input class="ling-input ling-input--lg" type="text" value="Issue 47 &mdash; on lingering" autofocus>
+                        </div>
+                        <div class="ling-field">
+                          <label class="ling-field-label">Slug</label>
+                          <input class="ling-input ling-input--mono" type="text" value="issue-47">
+                        </div>
+                        <div class="ling-field">
+                          <label class="ling-field-label">Layout</label>
+                          <div class="ling-multiselect" style="width:100%;">
+                            <span>default</span>
+                            <span class="caret">▾</span>
+                          </div>
+                        </div>
+                        <div class="ling-field span-2">
+                          <label class="ling-field-label">Initial section</label>
+                          <div class="ling-multiselect" style="width:100%;">
+                            <span>
+                              <span class="ling-multiselect-token">Header</span>
+                              <span class="ling-multiselect-token">Card &middot; from issues</span>
+                            </span>
+                            <span class="caret">▾</span>
+                          </div>
+                          <div class="ling-field-help">Authors can add, reorder, or remove sections after the page is created.</div>
+                        </div>
+                      </div>
+
+                      <div class="switch-row" style="margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--color-border-subtle);">
+                        <div class="switch-row__copy">
+                          <div class="switch-row__title">Open in editor after create</div>
+                          <div class="switch-row__help">Navigate to the page editor so you can keep working immediately.</div>
+                        </div>
+                        <span class="ling-switch ling-switch--on"></span>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding: var(--space-4) var(--space-6); border-top: 1px solid var(--color-border-subtle); background: var(--color-surface-soft);">
+                      <span class="l-monoSM ink-mute">⌘+S to save · esc to cancel</span>
+                      <div style="display:flex; gap:var(--space-2);">
+                        <button class="ling-btn ling-btn--ghost">Cancel</button>
+                        <button class="ling-btn ling-btn--primary">Create page</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> Modal primitive (12px radius, <code>--shadow-lg</code>) + Modal header (title + close × button) + form body (FieldSet-density grid, trimmed) + footer bar (meta on left, ghost+primary on right). The <code>.modal-stage</code> simulates the dark backdrop tint and a subtle diagonal pattern to mark "this is on top of something."
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               08 — DATASET OVERVIEW
+               ============================================================ -->
+          <section id="datasets" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>08 &middot; Dataset overview</div>
+                <h2 class="dms-section-title">Dataset overview &mdash; <code>datasets.datasetsList</code> chrome.</h2>
+                <p class="pat-caption">
+                  The pattern Lingua ships at the <code>/datasets</code> route: a category rail on the left (All / Stories / Datasets / Themes / Plugins with counts), a header with page title + <em>"+ New"</em> primary, a 2-column grid of dataset cards on the right.
+                </p>
+
+                <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom: var(--space-6); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border-subtle);">
+                  <div>
+                    <h3 class="l-displayMD" style="margin:0 0 4px;">Datasets</h3>
+                    <p class="l-prose ink-soft measure" style="margin:0;">
+                      Everything <em>The Drift</em> reads from. Each dataset is a typed row source &mdash; pages, charts, and maps speak the same shape.
+                    </p>
+                  </div>
+                  <div style="display:flex; gap:var(--space-2); align-items:center;">
+                    <button class="ling-btn ling-btn--ghost ling-btn--sm">
+                      <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                      Import via CLI
+                    </button>
+                    <button class="ling-btn ling-btn--primary">+ New dataset</button>
+                  </div>
+                </div>
+
+                <div class="dataset-overview">
+                  <!-- Left rail -->
+                  <div class="dataset-overview__rail">
+                    <div class="eyebrow">Categories</div>
+                    <a class="rail-item rail-item--active" href="#"><span>All</span><span class="count">14</span></a>
+                    <a class="rail-item" href="#"><span>Stories</span><span class="count">3</span></a>
+                    <a class="rail-item" href="#"><span>Datasets</span><span class="count">7</span></a>
+                    <a class="rail-item" href="#"><span>Themes</span><span class="count">2</span></a>
+                    <a class="rail-item" href="#"><span>Plugins</span><span class="count">2</span></a>
+
+                    <div class="eyebrow" style="margin-top: var(--space-7);">Status</div>
+                    <a class="rail-item" href="#"><span>Active</span><span class="count">12</span></a>
+                    <a class="rail-item" href="#"><span>Archived</span><span class="count">2</span></a>
+
+                    <div class="eyebrow" style="margin-top: var(--space-7);">Saved views</div>
+                    <a class="rail-item" href="#"><span>Recently edited</span></a>
+                    <a class="rail-item" href="#"><span>Subscribed to</span></a>
+                  </div>
+
+                  <!-- Right grid -->
+                  <div>
+                    <div class="dms-grid dms-grid-2">
+                      <a class="ds-card" href="#">
+                        <div class="ds-card__icon">
+                          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/><path d="M3 12a9 3 0 0018 0"/></svg>
+                        </div>
+                        <div class="ds-card__main">
+                          <div class="ds-card__title">Subscribers</div>
+                          <div class="ds-card__id">subscribers:source &middot; 2,847 rows</div>
+                          <div class="ds-card__brief">All-time list of subscribers across editions. Joins to issues by email.</div>
+                        </div>
+                        <span class="ling-pill ling-pill--success ling-pill--dot ds-card__pill">Active</span>
+                      </a>
+
+                      <a class="ds-card" href="#">
+                        <div class="ds-card__icon">
+                          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </div>
+                        <div class="ds-card__main">
+                          <div class="ds-card__title">Issues</div>
+                          <div class="ds-card__id">issues:source &middot; 38 rows</div>
+                          <div class="ds-card__brief">Published essays and interviews. The primary content source for The Drift.</div>
+                        </div>
+                        <span class="ling-pill ling-pill--success ling-pill--dot ds-card__pill">Active</span>
+                      </a>
+
+                      <a class="ds-card" href="#">
+                        <div class="ds-card__icon">
+                          <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="17" cy="11" r="3" stroke-width="1.5"/></svg>
+                        </div>
+                        <div class="ds-card__main">
+                          <div class="ds-card__title">Authors</div>
+                          <div class="ds-card__id">authors:source &middot; 22 rows</div>
+                          <div class="ds-card__brief">Bylines, bios, headshot URLs. Referenced by every issue row.</div>
+                        </div>
+                        <span class="ling-pill ling-pill--success ling-pill--dot ds-card__pill">Active</span>
+                      </a>
+
+                      <a class="ds-card" href="#">
+                        <div class="ds-card__icon">
+                          <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                        </div>
+                        <div class="ds-card__main">
+                          <div class="ds-card__title">Page views</div>
+                          <div class="ds-card__id">page_views:source &middot; 412,308 rows</div>
+                          <div class="ds-card__brief">Anonymous traffic. One row per page render. Powers the analytics page.</div>
+                        </div>
+                        <span class="ling-pill ling-pill--success ling-pill--dot ds-card__pill">Active</span>
+                      </a>
+
+                      <a class="ds-card" href="#">
+                        <div class="ds-card__icon">
+                          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="ds-card__main">
+                          <div class="ds-card__title">Open issues</div>
+                          <div class="ds-card__id">support:source &middot; 18 rows</div>
+                          <div class="ds-card__brief">Open support tickets. Renders the support dashboard. Federated from GitHub.</div>
+                        </div>
+                        <span class="ling-pill ling-pill--margin ling-pill--dot ds-card__pill">Draft</span>
+                      </a>
+
+                      <a class="ds-card" href="#">
+                        <div class="ds-card__icon">
+                          <svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+                        </div>
+                        <div class="ds-card__main">
+                          <div class="ds-card__title">Lingua &mdash; Tessera theme</div>
+                          <div class="ds-card__id">tessera:theme &middot; v0.2.4</div>
+                          <div class="ds-card__brief">An editorial-serif theme. Same row format; different surface treatment.</div>
+                        </div>
+                        <span class="ling-pill ling-pill--accent ds-card__pill">Theme</span>
+                      </a>
+
+                      <a class="ds-card" href="#">
+                        <div class="ds-card__icon">
+                          <svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+                        </div>
+                        <div class="ds-card__main">
+                          <div class="ds-card__title">Tag filter plugin</div>
+                          <div class="ds-card__id">tag_filter:plugin &middot; v1.4.0</div>
+                          <div class="ds-card__brief">Adds a complex-filter primitive backed by the row format's <code style="font-family:var(--font-mono);">attributes.tags</code> field.</div>
+                        </div>
+                        <span class="ling-pill ds-card__pill">Plugin</span>
+                      </a>
+
+                      <a class="ds-card" href="#">
+                        <div class="ds-card__icon">
+                          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                        </div>
+                        <div class="ds-card__main">
+                          <div class="ds-card__title">Lingua &mdash; site themes</div>
+                          <div class="ds-card__id">themes:source &middot; 4 rows</div>
+                          <div class="ds-card__brief">The list of themes installed for this site. Drives the Voice picker in Settings.</div>
+                        </div>
+                        <span class="ling-pill ling-pill--signal ling-pill--dot ds-card__pill">Archived</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">composition &rarr;</span> Top header band (title + lede + utility buttons + primary "+ New") → 2-column grid (rail + content) → rail is a list of <code>.rail-item</code>s grouped under mono eyebrows → content is a Card-grid of <code>.ds-card</code>s (icon + title + mono ID + brief + status pill). The rail acts as a left-side filter; the same chrome composes for stories, themes, plugins, etc.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               09 — AUTH LOGIN
+               ============================================================ -->
+          <section id="auth" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>09 &middot; Auth login</div>
+                <h2 class="dms-section-title">Auth login &mdash; the <code>layoutgroup-auth</code> + form pattern.</h2>
+                <p class="pat-caption">
+                  The shape every Lingua sign-in page takes: a centred card on the auth layout group's sunken background, max-width 440px, brand mark at the top, plain prose lede, email + password inputs, primary continue + ghost Google, footer link to sign up.
+                </p>
+
+                <div class="auth-stage">
+                  <div class="auth-card">
+                    <div class="auth-card__brand">
+                      L<span class="diacritic">ī</span>ngua
+                    </div>
+
+                    <div>
+                      <h3 class="l-displayMD" style="margin:0 0 var(--space-2); text-align:center;">Sign in.</h3>
+                      <p class="l-prose ink-soft" style="margin:0; text-align:center;">
+                        One vocabulary. One identity. Pick your speaker.
+                      </p>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap: var(--space-3);">
+                      <div class="ling-field">
+                        <label class="ling-field-label">Email</label>
+                        <input class="ling-input ling-input--lg" type="email" placeholder="you@example.com" value="alex@thedrift.com">
+                      </div>
+                      <div class="ling-field">
+                        <label class="ling-field-label" style="display:flex; align-items:center; justify-content:space-between;">
+                          <span>Password</span>
+                          <a href="#" class="ling-btn ling-btn--link" style="font-size:12px; padding:0; margin:0;">Forgot?</a>
+                        </label>
+                        <input class="ling-input ling-input--lg" type="password" value="••••••••••">
+                      </div>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap: var(--space-2);">
+                      <button class="ling-btn ling-btn--primary ling-btn--lg" style="width:100%;">Continue with email</button>
+                      <div style="position:relative; text-align:center; margin: 4px 0;">
+                        <hr style="border:0; border-top: 1px solid var(--color-border); margin:0;">
+                        <span style="position:absolute; top:-9px; left:50%; transform:translateX(-50%); background:var(--color-surface); padding: 0 var(--space-3); font-family:var(--font-mono); font-size:11px; color:var(--color-mute); letter-spacing:0.06em;">or</span>
+                      </div>
+                      <button class="ling-btn ling-btn--secondary ling-btn--lg" style="width:100%;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13.5 13.5 0 010 18M12 3a13.5 13.5 0 000 18"/></svg>
+                        Continue with Google
+                      </button>
+                      <button class="ling-btn ling-btn--secondary ling-btn--lg" style="width:100%;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                        Continue with CLI token
+                      </button>
+                    </div>
+
+                    <div class="auth-card__footer">
+                      New here? <a href="#">Create an account &rarr;</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> <code>dms-group-auth</code> LayoutGroup (centered, sunken background) → 440px Card with <code>--shadow-md</code> + 12px radius → brand mark + display title + prose lede + 2 inputs + primary + 2 secondary buttons + footer link. The "Continue with CLI token" button is Lingua's developer-product nod &mdash; only this brand would put a CLI-token sign-in on the same plane as Google.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               10 — SECTION TOOLBAR (edit-mode chrome)
+               ============================================================ -->
+          <section id="section-toolbar" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>10 &middot; Section toolbar</div>
+                <h2 class="dms-section-title">Section toolbar &mdash; the in-edit chrome around any section.</h2>
+                <p class="pat-caption">
+                  What an author sees when they hit <em>Edit</em> on a page. The selected section gains a 4px accent left rule, a header with a drag handle + editable title + a three-dots menu, then a column toolbar strip (icon buttons + a multi-select for <code>valueFontStyle</code>), then the live section body.
+                </p>
+
+                <div class="edit-section">
+                  <div class="edit-section__hd">
+                    <span class="edit-section__drag" title="Drag to reorder">
+                      <!-- icon: GripVertical -->
+                      <svg viewBox="0 0 24 24">
+                        <circle cx="9" cy="5" r="1"/>
+                        <circle cx="9" cy="12" r="1"/>
+                        <circle cx="9" cy="19" r="1"/>
+                        <circle cx="15" cy="5" r="1"/>
+                        <circle cx="15" cy="12" r="1"/>
+                        <circle cx="15" cy="19" r="1"/>
+                      </svg>
+                    </span>
+                    <div class="edit-section__title" contenteditable="true" spellcheck="false">Issue archive</div>
+                    <div style="display:flex; align-items:center; gap:var(--space-2);">
+                      <span class="ling-pill ling-pill--accent">Card</span>
+                      <span class="l-monoSM ink-mute">source: issues</span>
+                      <button class="edit-section__menu" title="More">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="edit-section__toolbar">
+                    <button class="tb-btn tb-btn--active" title="Cells grid">
+                      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    </button>
+                    <button class="tb-btn" title="List">
+                      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+                    </button>
+                    <button class="tb-btn" title="Image cell">
+                      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    </button>
+                    <button class="tb-btn" title="Link cell">
+                      <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>
+                    </button>
+                    <span class="tb-sep"></span>
+                    <div class="ling-multiselect" style="min-width:160px;">
+                      <span style="display:flex; gap:6px; align-items:center;"><span class="l-monoSM" style="text-transform:uppercase; letter-spacing:0.06em;">value style</span> <span>proseLG</span></span>
+                      <span class="caret">▾</span>
+                    </div>
+                    <span class="tb-sep"></span>
+                    <button class="tb-btn" title="Tabular nums">
+                      <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+                    </button>
+                    <button class="tb-btn" title="Italic">
+                      <svg viewBox="0 0 24 24"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>
+                    </button>
+                    <span style="flex:1;"></span>
+                    <button class="tb-btn" title="Duplicate">
+                      <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    </button>
+                    <button class="tb-btn" title="Delete">
+                      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                    </button>
+                  </div>
+
+                  <div class="edit-section__body">
+                    <div class="dms-grid dms-grid-2" style="gap: var(--space-4);">
+                      <div class="ling-card" style="box-shadow:none; border-style:dashed;">
+                        <div class="ling-card__eyebrow"><span class="ling-pill ling-pill--accent">Essay</span></div>
+                        <h4 class="ling-card__title">On the lingua franca of typed rows.</h4>
+                        <p class="ling-card__body">A long-form case for why one row format is the right place to invest the next decade of platform work.</p>
+                        <div class="ling-card__footer">
+                          <span class="l-monoSM">Alex Pireno &middot; 2026-05-12</span>
+                        </div>
+                      </div>
+                      <div class="ling-card" style="box-shadow:none; border-style:dashed;">
+                        <div class="ling-card__eyebrow"><span class="ling-pill ling-pill--accent">Essay</span></div>
+                        <h4 class="ling-card__title">A grammar for plural infrastructure.</h4>
+                        <p class="ling-card__body">Self-hosting and managed hosting aren't a fork; they're two dialects of the same grammar.</p>
+                        <div class="ling-card__footer">
+                          <span class="l-monoSM">Mira Okafor &middot; 2026-04-28</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> Section wrapper with 4px <code>--color-accent</code> left rule (the "selected" affordance) → header row (drag handle + editable title + section-type pill + source meta + three-dots menu) → toolbar strip (cell-mode icons + value-style multi-select + format toggles + duplicate/delete) → live section body inside the same card. Dashed inner cards indicate "this is preview", not chrome.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               11 — PATTERN EDITOR CHROME
+               ============================================================ -->
+          <section id="pattern-editor" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>11 &middot; Pattern editor</div>
+                <h2 class="dms-section-title">Pattern editor &mdash; three panes, one row format.</h2>
+                <p class="pat-caption">
+                  The admin pattern-editor surface in one frame: the page tree on the left (nested drag handles, one selected), the live section preview in the middle, the column-config inspector on the right (reorder handles, type chips, hide toggles). Lingua's densest authoring surface.
+                </p>
+
+                <div class="pe-grid">
+                  <!-- Pane A: tree -->
+                  <div class="pe-pane pe-pane--tree">
+                    <div class="pe-pane__hd">
+                      <span>Page tree</span>
+                      <span class="add" title="New">
+                        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                      </span>
+                    </div>
+
+                    <div class="tree-item">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></span>
+                      Home
+                    </div>
+                    <div class="tree-item">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></span>
+                      Issue archive
+                    </div>
+                    <div class="tree-item tree-item--child">
+                      <span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>
+                      issues/index
+                    </div>
+                    <div class="tree-item tree-item--child tree-item--active">
+                      <span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>
+                      issues/[slug]
+                    </div>
+                    <div class="tree-item tree-item--child">
+                      <span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>
+                      issues/[slug]/archive
+                    </div>
+                    <div class="tree-item">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></span>
+                      Authors
+                    </div>
+                    <div class="tree-item">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></span>
+                      About
+                    </div>
+                    <div class="tree-item">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></span>
+                      Subscribe
+                    </div>
+
+                    <div class="l-monoXS ink-mute" style="margin-top:auto; padding-top: var(--space-4); border-top: 1px dashed var(--color-border); text-transform:none; letter-spacing:0;">
+                      8 pages &middot; 4 components
+                    </div>
+                  </div>
+
+                  <!-- Pane B: preview -->
+                  <div class="pe-pane pe-pane--preview">
+                    <div class="pe-pane__hd">
+                      <span>Selected &middot; issues/[slug]</span>
+                      <div style="display:flex; gap:var(--space-2);">
+                        <span class="ling-pill ling-pill--accent">Card</span>
+                        <span class="ling-pill ling-pill--margin">Unsaved</span>
+                      </div>
+                    </div>
+
+                    <div class="pe-preview-card">
+                      <div class="pe-preview-card__hd">
+                        <div>
+                          <h4 class="l-h3" style="margin:0;">Issue archive</h4>
+                          <div class="l-monoSM" style="margin-top:2px;">source: issues &middot; 38 rows</div>
+                        </div>
+                        <span class="l-monoXS">cards grid &middot; 3</span>
+                      </div>
+
+                      <div class="dms-grid dms-grid-3" style="gap: var(--space-3);">
+                        <div style="background:var(--color-surface-soft); border:1px dashed var(--color-border-strong); border-radius:var(--radius-md); padding: var(--space-3); display:flex; flex-direction:column; gap:4px;">
+                          <span class="l-monoXS" style="color:var(--color-accent);">essay</span>
+                          <span class="l-prose" style="font-size:13px; font-weight:600;">On the lingua franca&hellip;</span>
+                          <span class="l-monoSM" style="font-size:11px;">Alex P. &middot; 04-12</span>
+                        </div>
+                        <div style="background:var(--color-surface-soft); border:1px dashed var(--color-border-strong); border-radius:var(--radius-md); padding: var(--space-3); display:flex; flex-direction:column; gap:4px;">
+                          <span class="l-monoXS" style="color:var(--color-accent);">essay</span>
+                          <span class="l-prose" style="font-size:13px; font-weight:600;">A grammar for plural&hellip;</span>
+                          <span class="l-monoSM" style="font-size:11px;">Mira O. &middot; 04-28</span>
+                        </div>
+                        <div style="background:var(--color-surface-soft); border:1px dashed var(--color-border-strong); border-radius:var(--radius-md); padding: var(--space-3); display:flex; flex-direction:column; gap:4px;">
+                          <span class="l-monoXS" style="color:var(--color-accent);">interview</span>
+                          <span class="l-prose" style="font-size:13px; font-weight:600;">The WordPress paradox</span>
+                          <span class="l-monoSM" style="font-size:11px;">Sam D. &middot; 04-14</span>
+                        </div>
+                        <div style="background:var(--color-surface-soft); border:1px dashed var(--color-border-strong); border-radius:var(--radius-md); padding: var(--space-3); display:flex; flex-direction:column; gap:4px;">
+                          <span class="l-monoXS" style="color:var(--color-accent);">essay</span>
+                          <span class="l-prose" style="font-size:13px; font-weight:600;">Civic data, civic&hellip;</span>
+                          <span class="l-monoSM" style="font-size:11px;">Olga B. &middot; draft</span>
+                        </div>
+                        <div style="background:var(--color-surface-soft); border:1px dashed var(--color-border-strong); border-radius:var(--radius-md); padding: var(--space-3); display:flex; flex-direction:column; gap:4px;">
+                          <span class="l-monoXS" style="color:var(--color-accent);">review</span>
+                          <span class="l-prose" style="font-size:13px; font-weight:600;">A year of Lingua&hellip;</span>
+                          <span class="l-monoSM" style="font-size:11px;">Patrick W. &middot; 03-30</span>
+                        </div>
+                        <div style="background:var(--color-surface-soft); border:1px dashed var(--color-border-strong); border-radius:var(--radius-md); padding: var(--space-3); display:flex; flex-direction:column; gap:4px;">
+                          <span class="l-monoXS" style="color:var(--color-accent);">interview</span>
+                          <span class="l-prose" style="font-size:13px; font-weight:600;">What makes a row&hellip;</span>
+                          <span class="l-monoSM" style="font-size:11px;">Junie P. &middot; 03-16</span>
+                        </div>
+                      </div>
+
+                      <div style="display:flex; justify-content:space-between; align-items:center; padding-top: var(--space-3); border-top: 1px solid var(--color-border-subtle);">
+                        <span class="l-monoSM ink-mute">6 of 38 &middot; viewport: desktop</span>
+                        <div style="display:flex; gap:var(--space-2);">
+                          <button class="ling-btn ling-btn--ghost ling-btn--sm">Preview</button>
+                          <button class="ling-btn ling-btn--primary ling-btn--sm">Save</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Pane C: column inspector -->
+                  <div class="pe-pane">
+                    <div class="pe-pane__hd">
+                      <span>Columns &middot; 6</span>
+                      <span class="add" title="Add column">
+                        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                      </span>
+                    </div>
+
+                    <div class="pe-col-row">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="name">kind</span>
+                      <span class="type">pill</span>
+                      <span class="toggle on"></span>
+                    </div>
+                    <div class="pe-col-row">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="name">title</span>
+                      <span class="type">text</span>
+                      <span class="toggle on"></span>
+                    </div>
+                    <div class="pe-col-row">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="name">author_name</span>
+                      <span class="type">text</span>
+                      <span class="toggle on"></span>
+                    </div>
+                    <div class="pe-col-row">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="name">published_at</span>
+                      <span class="type">date</span>
+                      <span class="toggle on"></span>
+                    </div>
+                    <div class="pe-col-row hidden">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="name">word_count</span>
+                      <span class="type">num</span>
+                      <span class="toggle"></span>
+                    </div>
+                    <div class="pe-col-row hidden">
+                      <span class="drag"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+                      <span class="name">cover_image</span>
+                      <span class="type">img</span>
+                      <span class="toggle"></span>
+                    </div>
+
+                    <div style="margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--color-border);">
+                      <div class="l-monoXS" style="margin-bottom: var(--space-2);">Section settings</div>
+                      <div style="display:flex; flex-direction:column; gap: 6px;">
+                        <div class="ling-field">
+                          <label class="ling-field-label" style="font-size:11px;">Cards grid</label>
+                          <div class="ling-multiselect" style="width:100%; font-size:12px; padding: 5px 8px;">
+                            <span>3 columns</span>
+                            <span class="caret">▾</span>
+                          </div>
+                        </div>
+                        <div class="ling-field">
+                          <label class="ling-field-label" style="font-size:11px;">Sort by</label>
+                          <div class="ling-multiselect" style="width:100%; font-size:12px; padding: 5px 8px;">
+                            <span>published_at &middot; desc</span>
+                            <span class="caret">▾</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> 3-pane grid (<code>240px · 1fr · 280px</code>) inside a single bordered surface. Tree pane uses <code>--color-surface-soft</code> background to mark it as chrome; preview pane uses <code>--color-surface-tint</code> as a workspace floor; inspector pane uses pure surface for active editing. Drag handles, type chips, and hide toggles are the three primitives every row in the inspector composes from.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               12 — CLI COMMAND (v0.2 signature)
+               ============================================================ -->
+          <section id="cli" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>12 &middot; CLI command <span class="ling-pill ling-pill--accent" style="margin-left:var(--space-3);">v0.2 signature</span></div>
+                <h2 class="dms-section-title">CLI command &mdash; the terminal speaks the same row.</h2>
+                <p class="pat-caption">
+                  Lingua ships as both a GUI and a CLI. The two surfaces share the row format, so the CLI's output is just rows rendered to ANSI &mdash; same shape, different surface. This pattern is the brand's developer-product proof: <em>"if you'd rather type, type."</em>
+                </p>
+
+                <div class="ling-terminal">
+                  <div class="ling-terminal__chrome">
+                    <span class="dot" style="background:#FF5F57;"></span>
+                    <span class="dot" style="background:#FEBC2E;"></span>
+                    <span class="dot" style="background:#28C840;"></span>
+                    <span class="title">~/sites/the-drift</span>
+                  </div>
+                  <div class="ling-terminal__body">
+<pre><span class="dim"># scaffold a fresh site</span>
+<span class="prompt">lingua init the-drift --theme lingua</span>
+<span class="dim">  resolving theme: lingua@0.2.4 &middot; ok</span>
+<span class="dim">  writing site:    the-drift:site</span>
+<span class="dim">  writing pattern: the-drift|main:pattern</span>
+<span class="ok">✓ initialized in 1.2s</span> <span class="dim">&middot; cd ./the-drift</span>
+
+<span class="dim"># add a page (a row is a row, whether GUI or CLI)</span>
+<span class="prompt">lingua add page issue-47 --layout default --section Card</span>
+<span class="dim">  parent:  the-drift|main:pattern</span>
+<span class="dim">  type:    main|page</span>
+<span class="dim">  data:    { title: "Issue 47", slug: "issue-47", layout: "default" }</span>
+<span class="ok">✓ added page</span> <span class="dim">&middot; id=row_8c2a1f3e9d</span>
+
+<span class="dim"># list every row of every kind for this site</span>
+<span class="prompt">lingua rows --site the-drift --kind page</span>
+<span class="dim">  id          slug          layout    sections   updated</span>
+<span class="dim">  ────────── ──────────── ──────── ──────── ──────────</span>
+  row_a31f4b  home          default   <span style="color:var(--color-code-fg);">3</span>          2026-05-12
+  row_b40a2d  issues/[slug] default   <span style="color:var(--color-code-fg);">2</span>          2026-05-08
+  row_c8e1f5  about         default   <span style="color:var(--color-code-fg);">1</span>          2026-04-21
+  row_8c2a1f  <span style="color:var(--color-code-accent);">issue-47</span>      default   <span style="color:var(--color-code-fg);">1</span>          <span style="color:var(--color-code-accent);">just now</span>
+
+<span class="dim"># deploy &mdash; same row format, every surface</span>
+<span class="prompt">lingua deploy</span>
+<span class="dim">  reading site config&hellip; ok</span>
+<span class="dim">  bundling 4 pages, 3 datasets&hellip; 0.8s</span>
+<span class="dim">  uploading to thedrift.com&hellip; 380 KB</span>
+<span class="ok">✓ deployed in 1.9s</span> <span class="dim">&middot; view at https://thedrift.com</span>
+
+<span class="prompt">lingua tail</span><span class="cursor"></span></pre>
+                  </div>
+                </div>
+
+                <div class="signature-caption">
+                  the CLI shares the same row format as the GUI
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> <code>.ling-terminal</code> primitive + window chrome (3 stoplight dots + cwd) + body of multi-line shell session. Prompt lines use <code>--color-accent</code>; output uses <code>--color-code-mute</code> for ambient text and <code>--color-success</code> for OK markers; row IDs and slugs get spot color to mark "this is the thing we just made." The session is real: <code>init &rarr; add &rarr; rows &rarr; deploy</code> walks the same lifecycle the GUI does, in 6 commands.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               13 — ARCHITECTURE COMPARISON (v0.2 signature)
+               ============================================================ -->
+          <section id="arch-cmp" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>13 &middot; Architecture comparison <span class="ling-pill ling-pill--accent" style="margin-left:var(--space-3);">v0.2 signature</span></div>
+                <h2 class="dms-section-title">Architecture &mdash; the case for one vocabulary.</h2>
+                <p class="pat-caption">
+                  Warpstream-inspired side-by-side: the traditional stack (CMS, dashboard, SSG, analytics, auth &mdash; 5 separate things, 5 separate vocabularies) versus Lingua (one row format, every surface). The mute column reads as chrome; the accent column reads as the brand.
+                </p>
+
+                <div class="arch-cmp">
+                  <!-- Left: traditional -->
+                  <div class="arch-cmp__col arch-cmp__col--mute">
+                    <div class="arch-cmp__title">Traditional stack</div>
+                    <div class="arch-cmp__nodes">
+                      <div class="ling-arch__node">CMS<span class="sub">WordPress &middot; Contentful</span></div>
+                      <div class="ling-arch__node">Dashboard<span class="sub">Looker &middot; Metabase</span></div>
+                      <div class="ling-arch__node">Static site<span class="sub">Next.js &middot; Hugo</span></div>
+                      <div class="ling-arch__node">Analytics<span class="sub">GA &middot; Plausible</span></div>
+                      <div class="ling-arch__node">Auth &amp; users<span class="sub">Auth0 &middot; Clerk</span></div>
+                    </div>
+                    <div class="arch-cmp__sum">
+                      5 systems &middot; 5 schemas &middot; 5 vocabularies
+                    </div>
+                  </div>
+
+                  <!-- Right: Lingua -->
+                  <div class="arch-cmp__col arch-cmp__col--accent">
+                    <div class="arch-cmp__title">Lingua</div>
+                    <div class="arch-cmp__nodes">
+                      <div class="arch-big-node">
+                        <span class="l-displayMD">One row format.</span>
+                        <span class="sub-list">
+                          <span>cms</span><span>dashboard</span><span>ssg</span><span>analytics</span><span>auth</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="arch-cmp__sum">
+                      1 system &middot; 1 schema &middot; 1 vocabulary
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Connecting lines / labels rendered as an SVG-ish row -->
+                <div style="display:grid; grid-template-columns: 1fr auto 1fr; gap:var(--space-4); align-items:center; margin-top: var(--space-7); padding: var(--space-5); background:var(--color-surface-soft); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
+                  <div style="text-align:right; font-family:var(--font-mono); font-size:12px; color:var(--color-mute);">
+                    5 services &middot; 5 deployments &middot; 5 integrations
+                  </div>
+                  <div style="display:inline-flex; align-items:center; gap:var(--space-2); font-family:var(--font-mono); font-size:11px; color:var(--color-accent); text-transform:uppercase; letter-spacing:0.06em; font-weight:500;">
+                    <svg width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="7" x2="18" y2="7"/><polyline points="13 2 18 7 13 12"/></svg>
+                    collapses to
+                  </div>
+                  <div style="text-align:left; font-family:var(--font-mono); font-size:12px; color:var(--color-accent); font-weight:500;">
+                    1 service &middot; 1 deploy &middot; 0 integrations
+                  </div>
+                </div>
+
+                <div class="signature-caption">
+                  One row format. Every surface speaks it.
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">composition &rarr;</span> 2-column grid; left column uses <code>.arch-cmp__col--mute</code> (light surface, gray nodes) for "what you'd have to assemble"; right column uses <code>.arch-cmp__col--accent</code> with a single large accent-tinted node ("One row format") and a sub-list of all the surfaces it can speak. Below the comparison, a single row spelling the collapse out in mono: "5 services &middot; 5 deployments &middot; 5 integrations &rarr; 1 service &middot; 1 deploy &middot; 0 integrations". The visual asymmetry IS the argument.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================
+               LayoutGroup "footer"
+               ============================================================ -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div class="dms-grid dms-grid-3" style="gap:var(--space-7);">
+                <div>
+                  <div class="ling-logo" style="font-size:20px;">L<span class="diacritic">ī</span>ngua</div>
+                  <div class="l-proseSM ink-soft" style="margin-top: var(--space-3); max-width:32ch;">
+                    v0.2 &middot; 2026-05-24 &middot; modern technical brand. Patterns are how primitives compose.
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">System</div>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <a href="theme.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theme</a>
+                    <a href="layouts.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Layouts</a>
+                    <a href="grid.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Grid</a>
+                    <a href="components.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Components</a>
+                    <a href="patterns.html" class="l-proseSM" style="color:var(--color-accent); text-decoration:none; font-weight:500;">Patterns</a>
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Pages</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px var(--space-4);">
+                    <a href="../pages/marketing-homepage.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Home</a>
+                    <a href="../pages/marketing-comparison.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Compare</a>
+                    <a href="../pages/marketing-theory.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theory</a>
+                    <a href="../pages/docs-page.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Docs</a>
+                    <a href="../pages/civic-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Civic</a>
+                    <a href="../pages/product-site-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Site</a>
+                    <a href="../pages/product-page-editor.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Editor</a>
+                    <a href="../pages/product-dataset-view.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Dataset</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>On placing — Lingua, Theory No. 01</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* =============================================================================
+       PAGE-LOCAL — long-form essay surface
+       -----------------------------------------------------------------------------
+       The Theory page is the ONE place in the v0.2 brand where Fraunces Italic
+       is allowed and welcomed. Everything outside the essay body remains in
+       Inter Tight; Fraunces appears ONLY in:
+         (1) the hero title (`l-editorialLG`)
+         (2) the two pull quotes inside the essay (`l-editorialLG`)
+         (3) one trailing accent phrase in the closing paragraph
+       Drop cap is ONE letter, on the first paragraph of part 1.
+       ============================================================================= */
+
+    /* The essay column — constrained to the 720px reading measure. The whole
+       essay (header band + body band + notes band) reads at this width so the
+       column feels continuous from byline to footnotes. */
+    .essay-col {
+      max-width: 720px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Header band — narrow centered hero, no surface card. The brand's
+       editorial moment opens on the same surface the rest of the brand uses. */
+    .theory-hero {
+      padding: var(--space-11) var(--space-5) var(--space-9);
+    }
+
+    .theory-hero__eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin-bottom: var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .theory-hero__eyebrow .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--color-accent);
+      border-radius: var(--radius-sm);
+      display: inline-block;
+    }
+
+    .theory-hero__title {
+      /* Fraunces Italic at display scale — the editorial accent. */
+      margin: 0 0 var(--space-6);
+      text-wrap: balance;
+      max-width: 14ch;
+    }
+
+    .theory-hero__lede {
+      /* Inter Tight, NOT italic. The essay's argument summary in the brand's
+         default voice. The Fraunces moment is the title only. */
+      margin: 0 0 var(--space-7);
+      max-width: 60ch;
+      color: var(--color-ink-soft);
+      text-wrap: pretty;
+    }
+
+    .theory-hero__byline {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+      letter-spacing: 0.02em;
+    }
+    .theory-hero__byline .sep {
+      color: var(--color-border-strong);
+    }
+    .theory-hero__byline .author {
+      color: var(--color-ink-soft);
+      font-weight: 500;
+    }
+
+    /* Essay body band. Single column, generous vertical rhythm, ample
+       padding above and below so the long-form feels intentional. */
+    .theory-body-band {
+      padding: 0 var(--space-5) var(--space-11);
+    }
+
+    /* Each part of the essay opens with an Inter Tight section heading
+       (`l-displaySM`) — the brand sans, not Fraunces. The Fraunces moments
+       are the title and the pull quotes; the structure stays in the brand
+       voice. */
+    .theory-part-hd {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+      color: var(--color-ink);
+      margin: 0 0 var(--space-3);
+      text-wrap: balance;
+    }
+
+    .theory-part-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-accent);
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .theory-part-meta .num {
+      font-variant-numeric: tabular-nums;
+      color: var(--color-mute);
+    }
+
+    /* Body prose. Inter Tight, 17px (sits between 16 and 20 — easier to read
+       at this measure than the default 16, still clearly the brand sans). */
+    .theory-prose p {
+      font-family: var(--font-sans);
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--color-ink);
+      margin: 0 0 var(--space-5);
+      letter-spacing: -0.003em;
+      text-wrap: pretty;
+    }
+    .theory-prose p + p {
+      text-indent: 0;  /* no magazine indent — the brand reads as a tech essay */
+    }
+
+    /* Inline links pick up the brand accent with a thin underline. */
+    .theory-prose a {
+      color: var(--color-accent);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+      transition: color var(--dur-snap) var(--ease-snap);
+    }
+    .theory-prose a:hover { color: var(--color-accent-hover); }
+
+    /* Inline code stays in the brand mono on a subtle tint. */
+    .theory-prose code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      color: var(--color-ink);
+    }
+
+    /* Emphasis — the very rare Fraunces phrase the closing paragraph is
+       allowed to host. The class is here, not on every <em>, because almost
+       every <em> in the essay is still sans-italic. Use the class explicitly
+       when (and only when) the brand exception is invoked. */
+    .theory-prose em.editorial {
+      font-family: var(--font-editorial);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 1.06em;
+      letter-spacing: -0.005em;
+    }
+
+    /* DROP CAP — one letter, on the first paragraph of part 1, in Fraunces.
+       The drop cap counts as the "drop cap allowed on the chapter opener"
+       v0.2 brief affordance. It does not appear anywhere else on the page. */
+    .theory-prose .dropcap::first-letter {
+      font-family: var(--font-editorial);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 86px;
+      line-height: 0.86;
+      float: left;
+      padding: 8px 14px 0 0;
+      color: var(--color-accent);
+    }
+
+    /* PULL QUOTE — the brand's editorial moment, set in Fraunces Italic
+       (l-editorialLG token). Centered, narrowed to 600px, framed by hairline
+       rules. There are 2-3 of these in the essay; they are the page's
+       visual signature. */
+    .theory-pullquote {
+      max-width: 600px;
+      margin: var(--space-9) auto;
+      padding: var(--space-7) 0 var(--space-6);
+      border-top: 1px solid var(--color-mute);
+      border-bottom: 1px solid var(--color-mute);
+      text-align: center;
+      text-wrap: balance;
+    }
+    .theory-pullquote p {
+      /* l-editorialLG: Fraunces Italic 48 / 1.18 — the brand's display italic. */
+      font-family: var(--font-editorial);
+      font-style: italic;
+      font-size: 44px;
+      font-weight: 400;
+      line-height: 1.18;
+      letter-spacing: -0.022em;
+      color: var(--color-ink);
+      margin: 0;
+    }
+    .theory-pullquote cite {
+      display: block;
+      margin-top: var(--space-4);
+      font-family: var(--font-mono);
+      font-style: normal;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+    }
+
+    /* Section divider between parts (uses the shared `.ling-rule` token but
+       a touch more vertical space for the essay context). */
+    hr.theory-rule {
+      border: 0;
+      border-top: 1px solid var(--color-border);
+      margin: var(--space-10) 0;
+    }
+
+    /* The in-essay code block — a brand-signature primitive shown
+       inside the essay because the essay is about the row, so showing
+       the row is right. */
+    .theory-code-figure {
+      margin: var(--space-8) 0;
+    }
+    .theory-code-figure figcaption {
+      margin-top: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+      text-align: center;
+      letter-spacing: 0.01em;
+    }
+    .theory-code-figure figcaption .marker {
+      color: var(--color-accent);
+      font-weight: 500;
+    }
+
+    /* Footnote-style aside — pulled out from the prose with a left rule. */
+    .theory-aside {
+      margin: var(--space-7) 0;
+      padding: var(--space-3) var(--space-5);
+      border-left: 2px solid var(--color-accent);
+      background: var(--color-accent-soft);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    }
+    .theory-aside .label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-accent);
+      margin-bottom: 4px;
+    }
+    .theory-aside p {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--color-ink-soft);
+    }
+
+    /* Footnote superscripts — small, accent-colored, link to the notes block. */
+    .theory-prose .fn {
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      color: var(--color-accent);
+      text-decoration: none;
+      margin-left: 1px;
+      vertical-align: super;
+      line-height: 0;
+      font-weight: 500;
+    }
+    .theory-prose .fn:hover { color: var(--color-accent-hover); }
+
+    /* NOTES block — narrow, hanging-indent, mono. */
+    .theory-notes-band {
+      padding: 0 var(--space-5) var(--space-10);
+    }
+    .theory-notes-hd {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin: 0 0 var(--space-4);
+    }
+    .theory-notes-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      counter-reset: theory-note;
+    }
+    .theory-notes-list li {
+      counter-increment: theory-note;
+      position: relative;
+      padding-left: 36px;
+      margin-bottom: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--color-ink-soft);
+    }
+    .theory-notes-list li::before {
+      content: "[" counter(theory-note) "]";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--color-accent);
+      font-weight: 500;
+      font-size: 11px;
+    }
+    .theory-notes-list li a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    .theory-notes-list li a:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .theory-notes-list li .meta {
+      color: var(--color-mute);
+    }
+
+    /* READ MORE band — 3-column card grid, full content width (not the 720
+       reading measure). Brings the reader out of the essay and back into
+       the site without bleeding into the marketing-page idiom. */
+    .theory-readmore-band {
+      max-width: var(--grid-max);
+      margin: 0 auto;
+      padding: 0 var(--space-6) var(--space-11);
+    }
+    .theory-readmore-hd {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .theory-readmore-hd .title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+      color: var(--color-ink);
+    }
+    .theory-readmore-hd .meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+    }
+    .theory-readmore-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-5);
+    }
+    @media (max-width: 900px) {
+      .theory-readmore-grid { grid-template-columns: 1fr; }
+    }
+    .theory-readmore-card .card-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--color-accent);
+      stroke-width: 1.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ----- Marketing TopNav (matches sibling marketing pages) ------------- */
+    .lingua-marketing-nav {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .lingua-marketing-nav a {
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      padding: 4px 0;
+      border-bottom: 2px solid transparent;
+      transition: color var(--dur-snap) var(--ease-snap),
+                  border-color var(--dur-snap) var(--ease-snap);
+    }
+    .lingua-marketing-nav a:hover { color: var(--color-ink); }
+    .lingua-marketing-nav a.active {
+      color: var(--color-ink);
+      border-bottom-color: var(--color-accent);
+    }
+
+    /* ----- Marketing footer (matches sibling marketing pages) ------------- */
+    .marketing-footer {
+      background: var(--color-surface-soft);
+      border-top: 1px solid var(--color-border);
+      padding: var(--space-10) 0 var(--space-7);
+      width: 100%;
+    }
+    .marketing-footer-inner {
+      max-width: var(--grid-max);
+      margin: 0 auto;
+      padding: 0 var(--space-6);
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1.2fr 2.5fr;
+      gap: var(--space-9);
+      margin-bottom: var(--space-9);
+    }
+    @media (max-width: 900px) { .footer-top { grid-template-columns: 1fr; } }
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      max-width: 320px;
+    }
+    .footer-brand .ling-logo { font-size: 22px; }
+    .footer-brand .tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .footer-brand p {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--color-ink-soft);
+    }
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-6);
+    }
+    @media (max-width: 900px) { .footer-links { grid-template-columns: repeat(2, 1fr); } }
+    .footer-group-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin-bottom: var(--space-3);
+    }
+    .footer-group ul { list-style: none; padding: 0; margin: 0; }
+    .footer-group li { margin-bottom: 8px; }
+    .footer-group a {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      transition: color var(--dur-snap) var(--ease-snap);
+    }
+    .footer-group a:hover { color: var(--color-accent); }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-5);
+      flex-wrap: wrap;
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      letter-spacing: 0.04em;
+    }
+    .footer-bottom .colophon { max-width: 520px; }
+
+    /* Deliverable link block — appended below the marketing footer per the
+       skill §7.0 requirement that every page navigates to every other. */
+    .deliverable-block {
+      background: var(--color-code-bg);
+      color: var(--color-code-fg);
+      padding: var(--space-7) var(--space-6);
+      width: 100%;
+    }
+    .deliverable-inner {
+      max-width: var(--grid-max);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 2fr;
+      gap: var(--space-7);
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .deliverable-inner { grid-template-columns: 1fr; }
+    }
+    .deliverable-block .label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-code-mute);
+      margin-bottom: var(--space-2);
+    }
+    .deliverable-block .heading {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+      color: var(--color-code-fg);
+      margin: 0 0 6px;
+    }
+    .deliverable-block .desc {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--color-code-mute);
+      margin: 0;
+    }
+    .deliverable-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4) var(--space-6);
+    }
+    .deliverable-group-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-code-mute);
+      margin-bottom: var(--space-2);
+      font-weight: 500;
+    }
+    .deliverable-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 10px;
+    }
+    .deliverable-links a {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-code-fg);
+      text-decoration: none;
+      opacity: 0.78;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      transition: background var(--dur-snap) var(--ease-snap), opacity var(--dur-snap) var(--ease-snap);
+    }
+    .deliverable-links a:hover {
+      opacity: 1;
+      background: var(--color-code-bg-soft);
+    }
+    .deliverable-links a.current {
+      color: var(--color-accent);
+      opacity: 1;
+      background: rgba(59, 91, 255, 0.10);
+    }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required on every page per design system skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="../design-system/theme.html">theme</a>
+    <a class="lingua-metanav__link" href="../design-system/layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="../design-system/grid.html">grid</a>
+    <a class="lingua-metanav__link" href="../design-system/components.html">components</a>
+    <a class="lingua-metanav__link" href="../design-system/patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<!-- LAYOUT — default (no SideNav, long-form reading surface) -->
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav — marketing variant, Theory active -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="marketing-homepage.html" class="dms-topnav-brand">
+              L<span class="diacritic">ī</span>ngua
+            </a>
+            <div class="lingua-marketing-nav">
+              <a href="marketing-homepage.html">Product</a>
+              <a href="marketing-comparison.html">Hosted vs. self-host</a>
+              <a href="marketing-theory.html" class="active">Theory</a>
+              <a href="docs-page.html">Docs</a>
+              <a href="../design-system/theme.html">Design</a>
+            </div>
+          </div>
+          <div class="dms-topnav-right">
+            <a href="#" style="color:var(--color-ink-soft); text-decoration:none; font-family:var(--font-sans); font-size:14px;">Sign in</a>
+            <a href="#" class="ling-btn ling-btn--primary ling-btn--sm" style="margin-left:8px;">Start a site →</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- childWrapper — no SideNav -->
+        <div class="dms-layout-child">
+
+          <!-- ==================================================================
+               LAYOUTGROUP 1 — HEADER (hero, narrow centered measure ~720px)
+               ================================================================== -->
+          <section class="dms-group-header" style="padding-top:0; padding-bottom:0;">
+            <div class="dms-group-header-inner">
+              <div class="essay-col">
+                <div class="theory-hero">
+                  <div class="theory-hero__eyebrow">
+                    <span class="dot"></span>
+                    <span>essay &middot; on representation</span>
+                    <span style="opacity:0.4">·</span>
+                    <span>Theory No. 01</span>
+                  </div>
+
+                  <!-- HERO TITLE — Fraunces Italic at l-editorialLG.
+                       This is the brand's editorial moment. The rest of the
+                       brand is sans-led; the Theory page earns this one
+                       display-italic surface. -->
+                  <h1 class="l-editorialLG theory-hero__title">On placing.</h1>
+
+                  <!-- LEDE — Inter Tight, NOT italic. Single sentence summary
+                       of the essay's argument in the brand's default voice. -->
+                  <p class="l-proseLG theory-hero__lede">
+                    Most stacks for data-driven sites translate the same underlying data into four or five different representations &mdash; one for the CMS, one for the dashboard, one for the static site, one for the analytics &mdash; and pay the cost of that translation forever. Lingua chooses the opposite: one typed row, rendered many ways.
+                  </p>
+
+                  <div class="theory-hero__byline">
+                    <span>By <span class="author">Alex Richter</span></span>
+                    <span class="sep">·</span>
+                    <span>2026-05-24</span>
+                    <span class="sep">·</span>
+                    <span>14 min read</span>
+                    <span class="sep">·</span>
+                    <span style="color:var(--color-accent); font-weight:500;">Theory</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================================================================
+               LAYOUTGROUP 2 — CONTENT (essay body, single 720px column)
+               ================================================================== -->
+          <section class="dms-group-header" style="padding-top:0; padding-bottom:0;">
+            <div class="dms-group-header-inner">
+              <div class="essay-col theory-body-band">
+
+                <hr class="ling-rule" style="margin: 0 0 var(--space-8);">
+
+                <!-- ===================================================
+                     PART 1 — The translation problem
+                     =================================================== -->
+                <article class="theory-prose">
+                  <div class="theory-part-meta">
+                    <span class="num">01</span>
+                    <span>·</span>
+                    <span>The translation problem</span>
+                  </div>
+                  <h2 class="theory-part-hd">The translation problem.</h2>
+
+                  <p class="dropcap">There is a default stack for building data-driven sites, and almost everyone reading this has built one. A CMS holds the pages. A spreadsheet or a Postgres table holds the data. A dashboard tool reads the data and renders charts. A static-site generator builds the public pages and bakes the charts in as images, or iframes them in from the dashboard tool. An analytics tool sits on top of all of it, instrumenting the rest. The result is shipped, and it works, and the team moves on.</p>
+
+                  <p>The cost shows up later, and it is always the same cost. The same underlying datum &mdash; a row about a building, a row about a sensor, a row about a member &mdash; lives in four or five different shapes across the stack. Each tool was built around its own representation, and each integration is a translation layer between those representations. When the row changes, the translation layers change. When the team adds a new view of the data &mdash; a map, say, or a different chart cut &mdash; the translation has to be written again, against a new tool that speaks a sixth shape.</p>
+
+                  <p>This is the situation Tom Macwright is pointing at when he writes that <a href="#note-1">the energy in programming goes into syntax, control flow, and connecting things, but not nearly enough into <em>what those things are</em></a><a href="#note-1" class="fn">[1]</a>. His one good example is Excel: Excel is powerful, he argues, not because formulas are simple, but because it has only sheets, columns, rows, and cells. The leverage is the datatype, not the language. Once you and the spreadsheet agree that a cell is the unit, every formula, every chart, every conditional format, and every external integration composes against that one shape. There is no translation layer because there is nothing to translate to.</p>
+
+                  <p>The same point holds for pandas in the Python data ecosystem. Seaborn, scikit-learn, statsmodels &mdash; none of them sat down and negotiated a shared interface. They all just took the dataframe as given and composed against it. The dataframe is the lingua franca; the ecosystem is the consequence.</p>
+
+                  <!-- PULL QUOTE 1 — Fraunces Italic, l-editorialLG.
+                       The brand's display-italic moment, extracted from the
+                       surrounding prose. -->
+                  <blockquote class="theory-pullquote">
+                    <p>The leverage is the datatype, not the language.</p>
+                    <cite>after Macwright, 2021</cite>
+                  </blockquote>
+
+                  <p>What both examples have in common is the absence of a translation layer between the unit of data and the things that act on it. A chart in Excel does not translate the cell into a different model and then render the model; it queries the cells and draws. A scatter plot in seaborn does not unpack the dataframe into a graph IR and then convert; it iterates the rows and plots them. The work that would otherwise go into translation goes instead into rendering &mdash; into the act of actually showing the data &mdash; and the gap between &ldquo;the data&rdquo; and &ldquo;the picture&rdquo; collapses.</p>
+
+                  <p>Sites for data &mdash; the kind of work Lingua is built for &mdash; have not yet had this collapse. The page is one representation, the chart is another, the table is a third, the map is a fourth, and the analytics about all of them is a fifth. The team that maintains the site keeps the five representations in sync by hand, or with a fragile pipeline, or by paying a vendor whose entire business model is being the glue. None of those answers is wrong, exactly; but all of them concede that the translation is unavoidable. The argument of this essay is that it isn&rsquo;t.</p>
+                </article>
+
+                <hr class="theory-rule">
+
+                <!-- ===================================================
+                     PART 2 — What "one row" means
+                     =================================================== -->
+                <article class="theory-prose">
+                  <div class="theory-part-meta">
+                    <span class="num">02</span>
+                    <span>·</span>
+                    <span>The representation</span>
+                  </div>
+                  <h2 class="theory-part-hd">What &ldquo;one row&rdquo; means.</h2>
+
+                  <p>Lingua has exactly one datatype. It is a typed row in a table called <code>data_items</code>. Every page is a row in this table. Every section on a page is a row. Every dataset is a row. Every view of a dataset is a row. Every column configuration on that view is a row. Every theme, every plugin manifest, every authored fragment of rich text &mdash; rows. The same shape, with the same five-or-six top-level fields, distinguished only by a <code>type</code> string that tells the system how to render this particular instance.</p>
+
+                  <p>The shape is small enough to fit in a paragraph. A row has an <code>app</code> (which site it belongs to), a <code>type</code> (what kind of row it is), a <code>parent</code> (what it nests under), a <code>data</code> blob (the row&rsquo;s actual content), and an optional <code>attributes</code> map for metadata. That&rsquo;s it. There is no &ldquo;page object&rdquo; with a different schema from &ldquo;dataset object&rdquo;; there is no separate &ldquo;theme object&rdquo; with its own table. The same row format describes a marketing homepage, a hundred-thousand-row sensor dataset, the theme that styles them, and the analytics that count them.</p>
+
+                  <!-- CODE FIGURE — the row schema shown literally. The essay
+                       is about the row; showing the row is the right
+                       illustration. Caption frames it. -->
+                  <figure class="theory-code-figure">
+                    <div class="ling-code">
+                      <div class="ling-code__chrome">
+                        <span class="filename">the only schema you need to learn</span>
+                        <div class="actions">
+                          <button>Copy</button>
+                        </div>
+                      </div>
+                      <div class="ling-code__body">
+<pre><span class="tk-com">// every row, everywhere, has the same shape</span>
+<span class="tk-kw">type</span> <span class="tk-fn">Row</span> <span class="tk-punc">=</span> <span class="tk-punc">{</span>
+  <span class="tk-prop">app</span><span class="tk-punc">:</span>        <span class="tk-fn">string</span><span class="tk-punc">,</span>   <span class="tk-com">// which site this belongs to</span>
+  <span class="tk-prop">type</span><span class="tk-punc">:</span>       <span class="tk-fn">string</span><span class="tk-punc">,</span>   <span class="tk-com">// "{parent}|{instance}:{kind}"</span>
+  <span class="tk-prop">parent</span><span class="tk-punc">:</span>     <span class="tk-fn">string</span><span class="tk-punc">,</span>   <span class="tk-com">// the row above this one</span>
+  <span class="tk-prop">data</span><span class="tk-punc">:</span>       <span class="tk-fn">object</span><span class="tk-punc">,</span>   <span class="tk-com">// the actual content</span>
+  <span class="tk-prop">attributes</span><span class="tk-punc">:</span> <span class="tk-fn">object</span><span class="tk-punc">,</span>   <span class="tk-com">// optional metadata</span>
+  <span class="tk-prop">children</span><span class="tk-punc">:</span>   <span class="tk-fn">Row</span><span class="tk-punc">[</span><span class="tk-punc">]</span><span class="tk-punc">,</span>    <span class="tk-com">// rows nested under this one</span>
+<span class="tk-punc">}</span><span class="tk-punc">;</span>
+
+<span class="tk-com">// a marketing page</span>
+<span class="tk-punc">{</span> <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"marketing|home:page"</span><span class="tk-punc">,</span> <span class="tk-prop">data</span><span class="tk-punc">:</span> <span class="tk-punc">{</span> <span class="tk-prop">title</span><span class="tk-punc">:</span> <span class="tk-str">"Lingua"</span><span class="tk-punc">,</span> &hellip; <span class="tk-punc">}</span> <span class="tk-punc">}</span>
+<span class="tk-com">// a dataset</span>
+<span class="tk-punc">{</span> <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"env|sensors:source"</span><span class="tk-punc">,</span> <span class="tk-prop">data</span><span class="tk-punc">:</span> <span class="tk-punc">{</span> <span class="tk-prop">columns</span><span class="tk-punc">:</span> <span class="tk-punc">[</span>&hellip;<span class="tk-punc">]</span> <span class="tk-punc">}</span> <span class="tk-punc">}</span>
+<span class="tk-com">// a single sensor reading</span>
+<span class="tk-punc">{</span> <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"sensors|10:data"</span><span class="tk-punc">,</span>     <span class="tk-prop">data</span><span class="tk-punc">:</span> <span class="tk-punc">{</span> <span class="tk-prop">ts</span><span class="tk-punc">:</span> <span class="tk-num">1716553200</span><span class="tk-punc">,</span> <span class="tk-prop">val</span><span class="tk-punc">:</span> <span class="tk-num">22.4</span> <span class="tk-punc">}</span> <span class="tk-punc">}</span></pre>
+                      </div>
+                    </div>
+                    <figcaption><span class="marker">fig. 01</span> &mdash; the Lingua row, the only schema in the system. The <code>type</code> string is the discriminator; everything else composes against the shape.</figcaption>
+                  </figure>
+
+                  <p>It is reasonable to be suspicious of a system whose first claim is &ldquo;everything is a row.&rdquo; That phrasing is close enough to the phrasing of every &ldquo;infinitely flexible&rdquo; tool of the past decade to make a careful reader stop reading. The right way to hear the claim is comparatively: this is what Excel has always done with cells, and what pandas has always done with dataframes, and what SQL has always done with relations &mdash; it is what made each of those systems durable. The novelty in Lingua is not the row; the row is the conservative move. The novelty is applying representation primacy to the part of the stack &mdash; site, content, page, theme &mdash; that has historically refused it.</p>
+
+                  <p>The pragmatic consequence is that the boundary between &ldquo;CMS&rdquo; and &ldquo;data platform&rdquo; collapses. A page is just a row whose <code>type</code> ends in <code>:page</code>. A section on the page is a child row whose <code>type</code> ends in <code>|component</code>. The dataset that the section reads from is another row whose <code>type</code> ends in <code>:source</code>. A theme is yet another row. A query is a row. You can write a Postgres query against <code>data_items</code> that finds every row of every kind, across the whole site, because there is no other table to look in.<a href="#note-2" class="fn">[2]</a></p>
+
+                  <!-- ASIDE — small footnote-style callout. -->
+                  <aside class="theory-aside">
+                    <div class="label">An implementation note</div>
+                    <p>Rows that grow very large &mdash; a sensor dataset with ten million readings &mdash; are auto-routed to per-type split tables so the index on the main table stays cheap. The split is invisible above the storage layer; the query API still sees one shape. Detection is a string suffix on the row&rsquo;s <code>type</code> field, which is the closest thing in the system to a special case.</p>
+                  </aside>
+
+                  <p>It is worth being precise about what this is not. It is not &ldquo;a metadata layer.&rdquo; It is not &ldquo;a graph database&rdquo; or &ldquo;a triple store.&rdquo; Those are systems where the schema is open and you commit to defining your own. Lingua is the opposite: the schema is closed, the row shape is fixed, and the openness is in how each row is rendered. The constraint is the feature, exactly as it was for Excel and the dataframe; the constraint is what lets pieces of the system that were written separately compose without translation.</p>
+                </article>
+
+                <hr class="theory-rule">
+
+                <!-- ===================================================
+                     PART 3 — On placing
+                     =================================================== -->
+                <article class="theory-prose">
+                  <div class="theory-part-meta">
+                    <span class="num">03</span>
+                    <span>·</span>
+                    <span>The implications</span>
+                  </div>
+                  <h2 class="theory-part-hd">On placing.</h2>
+
+                  <p>Once the row is the unit, several things stop being arguments. The first is the &ldquo;author versus engineer&rdquo; argument. In the default stack, the author works in the CMS UI and the engineer works in the dashboard code, and the two communicate by handing off requirements. In Lingua, both audiences look at the same row store. The author sees the rows through a configured Card section; the engineer sees them through a query, or a CLI command, or a direct table read. There is one underlying surface, addressed in two idioms. A request like &ldquo;add a column to this view&rdquo; is the same operation regardless of who runs it.<a href="#note-3" class="fn">[3]</a></p>
+
+                  <p>The second argument that stops is the &ldquo;static versus dynamic&rdquo; one. Because every chart is a query and every query is a row and every row is materially the same kind of object, a page can include a chart by referencing the dataset row in the same way a static section references a content row. There is no separate &ldquo;data pipeline&rdquo; standing between the page and the data; the page and the data live in the same table. A change to the data is visible to the page on the next render. A change to the page is visible to the data tooling on the next refresh. The synchronization problem &mdash; the thing the typical stack solves with cache-invalidation rituals &mdash; doesn&rsquo;t arise in this form.</p>
+
+                  <!-- PULL QUOTE 2 — Fraunces Italic, l-editorialLG. -->
+                  <blockquote class="theory-pullquote">
+                    <p>Authors and engineers see the same surface, addressed in two idioms.</p>
+                  </blockquote>
+
+                  <p>The third argument is the one about themes. In the default stack, a theme is a set of overrides applied to a CMS render; the dashboard has its own visual conventions; the static site has a third set of conventions; the map widget&rsquo;s embed has a fourth. The brand is approximately consistent because someone has gone to the trouble of producing four parallel style libraries. In Lingua, a theme is a row that contains class-string overrides for every primitive in the system. The same theme styles the marketing homepage, the documentation page, the dataset view, the page editor, the civic dashboard, and the embedded map. Authors don&rsquo;t pick a brand for &ldquo;the site&rdquo; and another for &ldquo;the dashboard&rdquo;; they pick a theme for the row store and every render inherits it.</p>
+
+                  <p>None of this should be read as a pitch for monoculture. A theme is one row; a site can have several. A column type is a plugin; a site can register many. The point is not that there should be one of everything &mdash; the point is that the things that are many should be pluggable against a shape that is one. This is the move that makes the WordPress.org / .com distinction&mdash;an open-source core, plus a managed hosting offering on top&mdash;coherent rather than confusing<a href="#note-4" class="fn">[4]</a>: there is one underlying representation, and the hosted product and the self-host product are two ways of running the same engine. The portability that follows is not a marketing claim; it is an artifact of the shape.</p>
+
+                  <p>What the row buys, in the end, is a particular kind of placing. The page is placed inside the same store as the dataset that fills it; the chart is placed alongside the rows it visualizes; the theme is placed beside the surfaces it styles; the author is placed beside the engineer. Each piece sits next to the others in the same vocabulary, and the work of joining them &mdash; which in the default stack consumes most of the energy &mdash; becomes a small, ordinary lookup. The space that energy used to fill is freed for the things that actually distinguish a site: <em class="editorial">the writing, the data, the argument it is trying to make.</em></p>
+                </article>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================================================================
+               LAYOUTGROUP 3 — NOTES (narrow, 720px, references)
+               ================================================================== -->
+          <section class="dms-group-header" style="padding-top:0; padding-bottom:var(--space-9);">
+            <div class="dms-group-header-inner">
+              <div class="essay-col theory-notes-band">
+                <hr class="ling-rule-soft" style="margin: 0 0 var(--space-6);">
+                <h3 class="theory-notes-hd">Notes</h3>
+                <ol class="theory-notes-list">
+                  <li id="note-1">
+                    Tom Macwright, &ldquo;<a href="https://macwright.com/2021/02/23/one-way-to-represent-things" target="_blank" rel="noopener">One way to represent things</a>,&rdquo; <span class="meta">macwright.com, 23 Feb 2021</span>. The essay&rsquo;s argument about representation primacy &mdash; that powerful systems are powerful because they constrain to one good representation &mdash; is the closest intellectual antecedent for Lingua&rsquo;s row format.
+                  </li>
+                  <li id="note-2">
+                    The actual query is <code>SELECT * FROM data_items WHERE app = $1</code>. Filtering by row kind is a <code>LIKE</code> on the <code>type</code> column &mdash; for example, <code>type LIKE '%:page'</code> for every page in a site. The full type grammar is documented in the <a href="docs-page.html">DMS Library</a> reference, under &ldquo;Data Model.&rdquo;
+                  </li>
+                  <li id="note-3">
+                    The Card section &mdash; the workhorse rendering primitive &mdash; is configured by picking columns from a source, setting cell spans, and choosing styles from the theme&rsquo;s <code>textSettings</code>. The same operations are available through the admin UI and through the row JSON; an engineer editing the JSON and an author editing the UI are writing into the same field.
+                  </li>
+                  <li id="note-4">
+                    The WordPress.org / .com split is the canonical reference for &ldquo;same engine, two distributions.&rdquo; See Matt Mullenweg, &ldquo;<a href="#" >.org / .com: a clarification</a>,&rdquo; <span class="meta">wordpress.org/news, 2014</span> &mdash; though the operative distinction was already present in the founding split a decade earlier.
+                  </li>
+                  <li id="note-5">
+                    The phrase &ldquo;representation primacy&rdquo; is borrowed informally from the type-theory literature, where it has a narrower technical meaning; the usage here is the looser one Macwright introduces. See also Richard O&rsquo;Keefe, &ldquo;<span class="meta">you cannot get a simple system by adding simplicity to a complex system</span>&rdquo; &mdash; quoted by Macwright in &ldquo;A clean start for the web,&rdquo; <span class="meta">Aug 2020</span>.
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================================================================
+               LAYOUTGROUP 4 — READ MORE (3-column card grid, full width)
+               ================================================================== -->
+          <section class="dms-group-header" style="padding-top:0; padding-bottom:var(--space-11);">
+            <div class="dms-group-header-inner">
+              <div class="theory-readmore-band">
+                <div class="theory-readmore-hd">
+                  <span class="title">Read on.</span>
+                  <span class="meta">three doors out of this essay</span>
+                </div>
+                <div class="theory-readmore-grid">
+
+                  <a href="marketing-comparison.html" class="ling-card ling-card--feature theory-readmore-card" style="text-decoration:none; display:block;">
+                    <div class="ling-card__icon card-icon">
+                      <!-- icon: GitBranch -->
+                      <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="9" r="2.5"/><path d="M6 8.5v7"/><path d="M18 11.5v0a4 4 0 0 1-4 4H9"/></svg>
+                    </div>
+                    <div class="ling-card__eyebrow">Pluralism in practice</div>
+                    <h3 class="ling-card__title">Compare hosted vs. self-host.</h3>
+                    <div class="ling-card__body">Same engine, two distributions. A capability matrix and side-by-side architecture diagrams &mdash; the operational form of the argument made here.</div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--accent">Compare</span>
+                      <span style="color:var(--color-accent); font-weight:500; font-size:14px;">Read &rarr;</span>
+                    </div>
+                  </a>
+
+                  <a href="marketing-homepage.html" class="ling-card ling-card--feature theory-readmore-card" style="text-decoration:none; display:block;">
+                    <div class="ling-card__icon card-icon">
+                      <!-- icon: Home -->
+                      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+                    </div>
+                    <div class="ling-card__eyebrow">The product</div>
+                    <h3 class="ling-card__title">See the homepage.</h3>
+                    <div class="ling-card__body">The same row schema shown in this essay, rendered as a marketing page. Live activity, code-block evidence, the architecture diagram.</div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--accent">Product</span>
+                      <span style="color:var(--color-accent); font-weight:500; font-size:14px;">Read &rarr;</span>
+                    </div>
+                  </a>
+
+                  <a href="docs-page.html" class="ling-card ling-card--feature theory-readmore-card" style="text-decoration:none; display:block;">
+                    <div class="ling-card__icon card-icon">
+                      <!-- icon: Book -->
+                      <svg viewBox="0 0 24 24"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H20v17H6a2 2 0 0 0-2 2V4.5z"/><path d="M20 20H6a2 2 0 0 1-2-2"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>
+                    </div>
+                    <div class="ling-card__eyebrow">For the implementer</div>
+                    <h3 class="ling-card__title">Read the documentation.</h3>
+                    <div class="ling-card__body">The reference for the row format: the data model, the type grammar, the rendering primitives, and the CLI. Where the theory becomes an interface.</div>
+                    <div class="ling-card__footer">
+                      <span class="ling-pill ling-pill--accent">Docs</span>
+                      <span style="color:var(--color-accent); font-weight:500; font-size:14px;">Read &rarr;</span>
+                    </div>
+                  </a>
+
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MARKETING FOOTER (matches sibling marketing pages)
+       ===================================================================== -->
+  <footer class="marketing-footer">
+    <div class="marketing-footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="ling-logo">L<span class="diacritic">ī</span>ngua</div>
+          <span class="tag">v0.2 &middot; 2026-05-24</span>
+          <p>One row format. Pages, data, charts, and maps speak it. Authored by the people who own the work, extended by the people who own the code.</p>
+          <div style="display:flex; gap:var(--space-2); margin-top:var(--space-3);">
+            <a href="marketing-homepage.html" class="ling-btn ling-btn--primary ling-btn--sm">Start a site &rarr;</a>
+            <a href="docs-page.html" class="ling-btn ling-btn--ghost ling-btn--sm">Read the docs</a>
+          </div>
+        </div>
+        <div class="footer-links">
+          <div class="footer-group">
+            <div class="footer-group-label">Product</div>
+            <ul>
+              <li><a href="marketing-homepage.html">Home</a></li>
+              <li><a href="marketing-comparison.html">Hosted vs. self-host</a></li>
+              <li><a href="marketing-theory.html">Theory</a></li>
+              <li><a href="product-site-overview.html">Site overview</a></li>
+              <li><a href="product-page-editor.html">Page editor</a></li>
+              <li><a href="product-dataset-view.html">Dataset view</a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <div class="footer-group-label">Docs</div>
+            <ul>
+              <li><a href="docs-page.html">Documentation</a></li>
+              <li><a href="docs-page.html#row-format">The row format</a></li>
+              <li><a href="docs-page.html#cli">The CLI</a></li>
+              <li><a href="docs-page.html#themes">Themes</a></li>
+              <li><a href="docs-page.html#plugins">Plugins</a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <div class="footer-group-label">Examples</div>
+            <ul>
+              <li><a href="civic-overview.html">Civic dashboard</a></li>
+              <li><a href="docs-page.html">Documentation site</a></li>
+              <li><a href="marketing-homepage.html">Marketing site</a></li>
+              <li><a href="product-dataset-view.html">Data app</a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <div class="footer-group-label">Project</div>
+            <ul>
+              <li><a href="#">GitHub</a></li>
+              <li><a href="#">Changelog</a></li>
+              <li><a href="#">Roadmap</a></li>
+              <li><a href="marketing-theory.html">Theory</a></li>
+              <li><a href="../design-system/theme.html">Design system</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="colophon">
+          &copy; 2026 Lingua. Open-source under MIT. Hosted available. Set in Inter Tight &middot; JetBrains Mono &middot; <span style="font-family:var(--font-editorial); font-style:italic;">Fraunces</span> (this page only).
+        </div>
+        <div>
+          <span>Theory No. 01</span>
+          <span style="opacity:0.4; margin:0 6px;">·</span>
+          <span>2026-05-24</span>
+          <span style="opacity:0.4; margin:0 6px;">·</span>
+          <span>v0.2.1</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       DELIVERABLE LINK BLOCK — per skill §7.0 (footer-side meta-nav)
+       ===================================================================== -->
+  <div class="deliverable-block">
+    <div class="deliverable-inner">
+      <div>
+        <div class="label">design system &middot; deliverable</div>
+        <h4 class="heading">Lingua v0.2 &mdash; every page, every primitive.</h4>
+        <p class="desc">
+          You&rsquo;re reading the Theory page &mdash; the brand&rsquo;s one editorial moment, the exception that proves the sans-led rule. The rest of the deliverable lives below.
+        </p>
+      </div>
+      <div class="deliverable-grid">
+        <div>
+          <div class="deliverable-group-label">system</div>
+          <div class="deliverable-links">
+            <a href="../design-system/theme.html">theme</a>
+
+            <a href="../design-system/layouts.html">layouts</a>
+            <a href="../design-system/grid.html">grid</a>
+            <a href="../design-system/components.html">components</a>
+            <a href="../design-system/patterns.html">patterns</a>
+          </div>
+        </div>
+        <div>
+          <div class="deliverable-group-label">pages</div>
+          <div class="deliverable-links">
+            <a href="marketing-homepage.html">home</a>
+            <a href="marketing-comparison.html">compare</a>
+            <a href="marketing-theory.html" class="current">theory</a>
+            <a href="docs-page.html">docs</a>
+            <a href="civic-overview.html">civic</a>
+            <a href="product-site-overview.html">site</a>
+            <a href="product-page-editor.html">editor</a>
+            <a href="product-dataset-view.html">dataset</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
