@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Grid · TransportNY DMS Design System v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane dms-annotated">
+
+<nav class="tny-meta-nav">
+  <span class="tny-meta-nav__label">TransportNY DMS · v0.2</span>
+  <span class="tny-meta-nav__group">design system</span>
+  <a class="tny-meta-nav__link" href="theme.html">theme</a>
+  <a class="tny-meta-nav__link" href="layouts.html">layouts</a>
+  <a class="tny-meta-nav__link is-active" href="grid.html">grid</a>
+  <a class="tny-meta-nav__link" href="components.html">components</a>
+  <a class="tny-meta-nav__link" href="patterns.html">patterns</a>
+  <span class="tny-meta-nav__group">pages</span>
+  <a class="tny-meta-nav__link" href="../pages/landing.html">landing</a>
+  <a class="tny-meta-nav__link" href="../pages/login.html">login</a>
+  <a class="tny-meta-nav__link" href="../pages/getting-started.html">getting-started</a>
+  <a class="tny-meta-nav__link" href="../pages/docs-overview.html">docs</a>
+  <a class="tny-meta-nav__link" href="../pages/map-21.html">map-21</a>
+  <a class="tny-meta-nav__link" href="../pages/map-21-trend.html">map-21-trend</a>
+  <a class="tny-meta-nav__link" href="../pages/floating-car.html">floating-car</a>
+  <a class="tny-meta-nav__link" href="../pages/congestion.html">congestion</a>
+  <a class="tny-meta-nav__link" href="../pages/work-zones.html">work-zones</a>
+</nav>
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30" style="top:32px">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">DESIGN SYSTEM</span>
+            </div>
+            <div class="px-4 py-2 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em] mt-3">SYSTEM</div>
+            <div class="flex-1 py-1">
+              <a href="theme.html"      class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Theme</a>
+              <a href="layouts.html"    class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Layouts</a>
+              <a href="grid.html"       class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]">Grid</a>
+              <a href="components.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Components</a>
+              <a href="patterns.html"   class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Patterns</a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-14 flex flex-col gap-5">
+              <div data-dms-section="page-intro">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03 · structure</span>
+                <h1 class="mt-3 font-display font-semibold text-[52px] leading-[1.02] tracking-tight text-[#0F1722]">Grid<span class="text-[#CA8A04]">.</span></h1>
+                <p class="mt-3 font-proxima text-[15.5px] text-slate-600 max-w-[680px] leading-[1.65]">
+                  The page-content column grid every Section sits on inside a LayoutGroup.
+                  TransportNY ships a 12-column grid (the brand's data container is 1480 px wide).
+                  This page is the column-span vocabulary authors choose from.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-[1fr_240px] gap-8">
+              <div class="min-w-0 flex flex-col gap-6">
+
+              <!-- ── The grid spec (size 12) ── -->
+              <div id="spec" data-dms-section="spec">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">01</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">The grid spec</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-4 max-w-[640px]">
+                    From <code class="tny-mono">theme.pages.sectionArray.styles[0]</code> — the
+                    sectionArray override that every LayoutGroup uses for its inner column grid.
+                    All values are wholesale-replaced (<code class="tny-mono">_replace: ['sizes']</code>)
+                    so legacy 6-col keys from the codebase default don't leak through.
+                  </p>
+                  <table class="w-full text-[13px]">
+                    <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                      <tr>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Key</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Value</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Why</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-proxima text-[13px] text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12.5px]">gridSize</td><td class="px-3 py-2 font-mono text-[12.5px]">12</td><td class="px-3 py-2">Twelve columns gives authors 8.3% increments — fine enough for 5/12, 7/12, 8/12 asymmetric splits.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12.5px]">defaultSize</td><td class="px-3 py-2 font-mono text-[12.5px]">"12"</td><td class="px-3 py-2">A new section dropped via "+ Add" starts full-width. Authors set a narrower span explicitly when needed.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12.5px]">container</td><td class="px-3 py-2 font-mono text-[12.5px]">"w-full grid grid-cols-12 gap-6"</td><td class="px-3 py-2">24 px gutter between sections — matches the handoff's grid system.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12.5px]">layouts.centered</td><td class="px-3 py-2 font-mono text-[12.5px]">"max-w-[1480px] mx-auto"</td><td class="px-3 py-2">The brand "data" container width. Overrides codebase default (1020 px) which would render content narrow.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12.5px]">layouts.fullwidth</td><td class="px-3 py-2 font-mono text-[12.5px]">""</td><td class="px-3 py-2">For the rare full-bleed band — the map workbench.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12.5px]">sectionPadding</td><td class="px-3 py-2 font-mono text-[12.5px]">"p-2"</td><td class="px-3 py-2">Tight padding on the sectionArray wrapper — the LayoutGroup's wrapper2 already owns the outer gutter.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12.5px]">sizes</td><td class="px-3 py-2 font-mono text-[12.5px]">{ "1" … "12" }</td><td class="px-3 py-2">Numeric keys — see vocabulary table below. <em>Replaces</em> codebase's "1" / "1/2" / "1/3" / "2/3".</td></tr>
+                      <tr><td class="px-3 py-2 font-mono text-[12.5px]">rowspans</td><td class="px-3 py-2 font-mono text-[12.5px]">{ "1": "row-span-1", "2": "row-span-2", "3": "row-span-3" }</td><td class="px-3 py-2">Row-spans used sparingly. Most sections sit on a single row.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- ── Column ruler (size 12) ── -->
+              <div id="ruler" data-dms-section="ruler">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Column ruler</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-4">A 12-column grid with 24-px gap. Below: numbered guides so you can sight-read any span on the page.</p>
+                  <div class="grid grid-cols-12 gap-6">
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">1</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">2</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">3</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">4</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">5</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">6</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">7</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">8</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">9</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">10</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">11</div>
+                    <div class="bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-12 flex items-center justify-center font-mono text-[10px] tabular-nums text-slate-500">12</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Span vocabulary (size 12) ── -->
+              <div id="vocabulary" data-dms-section="vocabulary">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Column-span vocabulary — common splits</h3>
+                </div>
+
+                <!-- 12 -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 mb-3">
+                  <div class="grid grid-cols-12 gap-6 mb-2">
+                    <div class="col-span-12 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">size: "12" — full row · page hero · KPI strip · map workbench</div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">The default. A new section starts here.</div>
+                </div>
+
+                <!-- 6/6 -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 mb-3">
+                  <div class="grid grid-cols-12 gap-6 mb-2">
+                    <div class="col-span-12 md:col-span-6 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"6"</div>
+                    <div class="col-span-12 md:col-span-6 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"6"</div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">6 + 6 · classic two-column. Card cluster, KPI pair, before/after chart pairs.</div>
+                </div>
+
+                <!-- 4/4/4 -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 mb-3">
+                  <div class="grid grid-cols-12 gap-6 mb-2">
+                    <div class="col-span-12 md:col-span-4 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"4"</div>
+                    <div class="col-span-12 md:col-span-4 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"4"</div>
+                    <div class="col-span-12 md:col-span-4 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"4"</div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">4 + 4 + 4 · three-up. KPI rows, report cards, regional groups.</div>
+                </div>
+
+                <!-- 3/3/3/3 -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 mb-3">
+                  <div class="grid grid-cols-12 gap-6 mb-2">
+                    <div class="col-span-12 md:col-span-3 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"3"</div>
+                    <div class="col-span-12 md:col-span-3 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"3"</div>
+                    <div class="col-span-12 md:col-span-3 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"3"</div>
+                    <div class="col-span-12 md:col-span-3 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"3"</div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">3 + 3 + 3 + 3 · four-up. KPI strip, dashboard tile rows.</div>
+                </div>
+
+                <!-- 8/4 -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 mb-3">
+                  <div class="grid grid-cols-12 gap-6 mb-2">
+                    <div class="col-span-12 md:col-span-8 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"8" — primary chart</div>
+                    <div class="col-span-12 md:col-span-4 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"4" — TOC / sidebar</div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">8 + 4 · prose + TOC, primary chart + sidebar callout.</div>
+                </div>
+
+                <!-- 3/6/3 -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 mb-3">
+                  <div class="grid grid-cols-12 gap-6 mb-2">
+                    <div class="col-span-12 md:col-span-3 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"3"</div>
+                    <div class="col-span-12 md:col-span-6 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"6" — focus column</div>
+                    <div class="col-span-12 md:col-span-3 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"3"</div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">3 + 6 + 3 · symmetric, focused middle. Form + summary + helper rail.</div>
+                </div>
+
+                <!-- 9/3 -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                  <div class="grid grid-cols-12 gap-6 mb-2">
+                    <div class="col-span-12 md:col-span-9 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"9" — wide table / map</div>
+                    <div class="col-span-12 md:col-span-3 bg-[#1F3F8F]/10 border border-[#1F3F8F]/30 rounded p-3 font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">"3" — inspector</div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">9 + 3 · map + inspector, table + filter rail.</div>
+                </div>
+              </div>
+
+              <!-- ── Row-span vocabulary (size 12) ── -->
+              <div id="rowspans" data-dms-section="rowspans">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Row-span vocabulary</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-4 max-w-[640px]">
+                    Row-spans are used sparingly — most TransportNY pages stack sections horizontally and don't
+                    reach for vertical-span. The common case: a tall sidebar (map / inspector) next to two stacked
+                    sections. <code class="tny-mono">rowspans: { "2": "row-span-2" }</code>.
+                  </p>
+                  <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-12 md:col-span-9 bg-white border border-zinc-950/10 rounded shadow-sm p-3 h-20 flex items-center font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">section A · size 9</div>
+                    <div class="col-span-12 md:col-span-3 row-span-2 bg-white border border-zinc-950/10 rounded shadow-sm p-3 h-[176px] flex items-center font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">section B · size 3 · rowspan 2</div>
+                    <div class="col-span-12 md:col-span-9 bg-white border border-zinc-950/10 rounded shadow-sm p-3 h-20 flex items-center font-display uppercase text-[12px] tracking-wide text-[#0F2D4D]">section C · size 9</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Editor overlay (size 12) ── -->
+              <div id="overlay" data-dms-section="overlay">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">05</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Editor grid overlay (admin)</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-4">
+                    What authors see in the page editor when they toggle "Show grid".
+                    Brand-amber dashed outlines so it doesn't fight the Catalyst default blue.
+                  </p>
+                  <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-12 md:col-span-4 bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-16 flex items-center justify-center font-mono text-[11px] tabular-nums text-slate-600">section · size 4</div>
+                    <div class="col-span-12 md:col-span-8 bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-16 flex items-center justify-center font-mono text-[11px] tabular-nums text-slate-600">section · size 8</div>
+                    <div class="col-span-12 md:col-span-3 bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-16 flex items-center justify-center font-mono text-[11px] tabular-nums text-slate-600">size 3</div>
+                    <div class="col-span-12 md:col-span-3 bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-16 flex items-center justify-center font-mono text-[11px] tabular-nums text-slate-600">size 3</div>
+                    <div class="col-span-12 md:col-span-3 bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-16 flex items-center justify-center font-mono text-[11px] tabular-nums text-slate-600">size 3</div>
+                    <div class="col-span-12 md:col-span-3 bg-[#FACC15]/15 border border-dashed border-[#FACC15]/60 rounded h-16 flex items-center justify-center font-mono text-[11px] tabular-nums text-slate-600">size 3</div>
+                  </div>
+                  <button class="mt-4 inline-flex items-center gap-1.5 px-3 h-8 bg-[#1F3F8F] text-white font-display uppercase text-[11px] tracking-wide rounded-[6px]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" class="size-3.5"><path d="M12 4V20"/><path d="M4 12H20"/></svg>
+                    Add section
+                  </button>
+                </div>
+              </div>
+
+              <!-- ── Picker rules (size 12) ── -->
+              <div id="rules" data-dms-section="rules">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">06</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Picker rules</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                    <div class="font-display uppercase text-[12.5px] tracking-wide text-emerald-700 mb-2">Do</div>
+                    <ul class="list-disc pl-4 space-y-1.5 font-proxima text-[13px] text-slate-700">
+                      <li><strong>Default to full-row.</strong> If the section doesn't need to share space, leave it at 12.</li>
+                      <li><strong>Favor symmetric splits.</strong> 6+6, 4+4+4, 3+3+3+3 are easier to scan than 5+7 or 7+5.</li>
+                      <li><strong>Use 8+4 for "primary content + helper rail"</strong> — the most common asymmetric pattern.</li>
+                      <li><strong>Reserve row-spans for tall companions.</strong> A map next to two stacked panels, an inspector beside a leaderboard.</li>
+                    </ul>
+                  </div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                    <div class="font-display uppercase text-[12.5px] tracking-wide text-rose-700 mb-2">Don't</div>
+                    <ul class="list-disc pl-4 space-y-1.5 font-proxima text-[13px] text-slate-700">
+                      <li><strong>Pin a section to <code class="tny-mono">size: "1"</code></strong> unless you actually want a 1/12 sliver. New sections default to 12 — that's intentional.</li>
+                      <li><strong>Use asymmetric splits like 5+7 without a reason.</strong> If the data justifies it, fine; otherwise pick 6+6 or 4+8.</li>
+                      <li><strong>Nest grids inside a Section</strong>. The Card's <code class="tny-mono">cellsGridSize</code> handles intra-section layout — see <a href="components.html#card" class="tny-link">components.html</a>.</li>
+                      <li><strong>Reach for <code class="tny-mono">layouts.fullwidth</code></strong> outside the map workbench. The 1480-px container is correct for almost every band.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              </div><!-- /min-w-0 inner content flex -->
+
+              <!-- TOC aside · sticky right rail -->
+              <aside class="hidden lg:block sticky top-4 self-start" data-dms-section="toc">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4 shadow-sm">
+                  <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                  <a href="#spec" class="tny-toc-item active">The grid spec</a>
+                  <a href="#ruler" class="tny-toc-item">Column ruler</a>
+                  <a href="#vocabulary" class="tny-toc-item">Span vocabulary</a>
+                  <a href="#rowspans" class="tny-toc-item">Row-span vocabulary</a>
+                  <a href="#overlay" class="tny-toc-item">Editor overlay</a>
+                  <a href="#rules" class="tny-toc-item">Picker rules</a>
+                </div>
+              </aside>
+
+            </div>
+          </div>
+
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="theme.html" class="hover:text-slate-900">theme</a>
+                <a href="layouts.html" class="hover:text-slate-900">layouts</a>
+                <a href="grid.html" class="text-slate-900 font-semibold">grid</a>
+                <a href="components.html" class="hover:text-slate-900">components</a>
+                <a href="patterns.html" class="hover:text-slate-900">patterns</a>
+                <span class="text-slate-300">·</span>
+                <a href="../pages/map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="../pages/getting-started.html" class="hover:text-slate-900">getting-started</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

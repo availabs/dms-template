@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Overview · Documentation · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<nav class="tny-meta-nav">
+  <span class="tny-meta-nav__label">TransportNY DMS · v0.2</span>
+  <span class="tny-meta-nav__group">design system</span>
+  <a class="tny-meta-nav__link" href="../design-system/theme.html">theme</a>
+  <a class="tny-meta-nav__link" href="../design-system/layouts.html">layouts</a>
+  <a class="tny-meta-nav__link" href="../design-system/grid.html">grid</a>
+  <a class="tny-meta-nav__link" href="../design-system/components.html">components</a>
+  <a class="tny-meta-nav__link" href="../design-system/patterns.html">patterns</a>
+  <span class="tny-meta-nav__group">pages</span>
+  <a class="tny-meta-nav__link" href="landing.html">landing</a>
+  <a class="tny-meta-nav__link" href="login.html">login</a>
+  <a class="tny-meta-nav__link" href="getting-started.html">getting-started</a>
+  <a class="tny-meta-nav__link is-active" href="docs-overview.html">docs</a>
+  <a class="tny-meta-nav__link" href="map-21.html">map-21</a>
+  <a class="tny-meta-nav__link" href="map-21-trend.html">map-21-trend</a>
+  <a class="tny-meta-nav__link" href="floating-car.html">floating-car</a>
+  <a class="tny-meta-nav__link" href="congestion.html">congestion</a>
+  <a class="tny-meta-nav__link" href="work-zones.html">work-zones</a>
+</nav>
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30" style="top:32px">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">DOCS</span>
+            </div>
+            <div class="px-4 py-2 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em] mt-3">USING NPMRDS</div>
+            <div class="py-1">
+              <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><span class="text-[13px]">Overview</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">What is NPMRDS?</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Strengths &amp; limits</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Choose a tool</span></a>
+            </div>
+            <div class="px-4 py-2 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em] mt-2">REFERENCE</div>
+            <div class="py-1">
+              <a class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Data dictionary</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">API guide</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Methodology</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Changelog</span></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- HERO -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[720px] px-8 py-14" data-dms-section="page-header">
+              <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// DOCUMENTATION</span>
+              <h1 class="mt-2 font-display font-semibold text-[44px] leading-[1.05] tracking-tight text-[#0F1722]">Overview<span class="text-[#CA8A04]">.</span></h1>
+              <p class="mt-3 font-proxima text-[15.5px] text-slate-600 leading-[1.65]">A plain-language introduction to the National Performance Management Research Data Set and how TransportNY uses it.</p>
+              <button class="mt-5 tny-press inline-flex items-center gap-2 px-4 h-10 bg-[#1F3F8F] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]">Start the tour</button>
+            </div>
+          </div>
+
+          <!-- Content with prose container + sticky TOC -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1280px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- Prose (size 8) -->
+              <article class="col-span-12 md:col-span-8 max-w-[720px] rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-10" data-dms-section="prose">
+
+                <h2 id="overview" class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722] mb-3">What this site is for</h2>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-4">
+                  Welcome to the documentation section of the National Performance Management Research Data Set Platform.
+                  TransportNY is the access layer the New York State Department of Transportation and its MPO partners use
+                  to work with NPMRDS data. The platform is free to use, with public-read access on every dashboard and
+                  a sign-in flow for saving templates and configuring alerts.
+                </p>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-4">
+                  If you're new here, start with <a class="tny-link" href="getting-started.html">getting started</a> to pick
+                  a region and run your first report. If you know what you need, jump to <a class="tny-link" href="map-21.html">MAP-21 PM3</a>
+                  for federal reporting, <a class="tny-link" href="floating-car.html">floating car</a> for route-level speed
+                  analysis, or <a class="tny-link" href="congestion.html">congestion</a> for delay attribution.
+                </p>
+
+                <h2 id="what-is-npmrds" class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722] mt-8 mb-3">What is the NPMRDS?</h2>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-4">
+                  The National Performance Management Research Data Set is a probe-based travel-time feed maintained by the
+                  Federal Highway Administration. It records observed travel times at 5-minute intervals for every TMC
+                  segment on the National Highway System and the Truck Parking Facilities network. The data is anonymized
+                  and aggregated; individual vehicles are never identifiable.
+                </p>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-4">
+                  TransportNY ingests NPMRDS nightly and joins it with NYSDOT's reference data — TMC linework, road class,
+                  jurisdiction, ownership — to produce the regional, county, MPO, and corridor views you see in the
+                  dashboards. <strong class="font-semibold">All travel-time numbers you see on this site originate from
+                  NPMRDS</strong>; congestion-cost dollars are computed using the FHWA cost-of-delay factor.
+                </p>
+
+                <h2 id="strengths" class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722] mt-8 mb-3">Strengths and limits</h2>
+                <ul class="list-disc pl-6 space-y-1.5 text-[14.5px] leading-[1.65] text-slate-700 mb-4">
+                  <li><strong>Strong on the NHS.</strong> Every interstate and most principal arterials are fully covered. Truck Parking Facilities are tracked separately.</li>
+                  <li><strong>Weak on local streets.</strong> Functional class 6-7 segments may have sparse probe coverage. Don't use NPMRDS for residential street analysis.</li>
+                  <li><strong>Probe-based, not count-based.</strong> Travel times reflect the experience of a moving vehicle. NPMRDS doesn't tell you the volume of traffic — pair with <code class="tny-mono">HPMS</code> AADT or NYSDOT continuous-count-station data for volume.</li>
+                  <li><strong>Lagged by 24-72 hours.</strong> Yesterday's data is generally available; today's data is not. For real-time, see <code class="tny-mono">511NY</code>.</li>
+                </ul>
+
+                <h2 id="choose-tool" class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722] mt-8 mb-3">Choosing the right tool</h2>
+                <table class="w-full text-[13px] border-collapse my-4">
+                  <thead><tr class="bg-slate-50 border-b border-zinc-950/10"><th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">If you want…</th><th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Go to…</th></tr></thead>
+                  <tbody class="font-proxima text-slate-700">
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2">Federal MAP-21 PM3 numbers for your region</td><td class="px-3 py-2"><a class="tny-link" href="map-21.html">MAP-21 PM3 (per-year)</a></td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2">Multi-year trend against a target</td><td class="px-3 py-2"><a class="tny-link" href="map-21-trend.html">MAP-21 PM3 (trend)</a></td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2">Speed analysis for a specific corridor</td><td class="px-3 py-2"><a class="tny-link" href="floating-car.html">Floating Car</a></td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2">Total cost of delay broken down by cause</td><td class="px-3 py-2"><a class="tny-link" href="congestion.html">Congestion</a></td></tr>
+                    <tr><td class="px-3 py-2">Active and historical work-zone impact</td><td class="px-3 py-2"><a class="tny-link" href="work-zones.html">Work Zones</a></td></tr>
+                  </tbody>
+                </table>
+
+                <blockquote class="border-l-4 border-[#EAAD43] pl-4 italic text-slate-600 my-6 font-proxima text-[14.5px] leading-[1.65]">
+                  "TransportNY is the access layer a planner uses for an afternoon and an academic uses for a season. Same data, different shapes."
+                  <footer class="not-italic font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mt-2">— Engineering brief, 2026.Q1</footer>
+                </blockquote>
+
+                <h2 id="api" class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722] mt-8 mb-3">Pulling data via API</h2>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-4">
+                  Every report renders against the same Falcor / GraphQL endpoint that powers the dashboards. Sign in to
+                  generate an API key; rate limits are 10,000 requests/day for public users and unlimited for NYSDOT
+                  partner agencies. A minimal speed-pull looks like this:
+                </p>
+                <pre class="font-mono text-[12.5px] leading-[1.55] p-4 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto mb-4"><code>SELECT tmc, AVG(travel_time_sec) AS tt
+FROM npmrds.observations
+WHERE date BETWEEN '2025-01-01' AND '2025-12-31'
+  AND tmc IN ('120N04519', '120N04520')
+  AND epoch BETWEEN 24 AND 40  -- 06:00–10:00 AM peak
+GROUP BY tmc;</code></pre>
+
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700">
+                  See the <a class="tny-link">API guide</a> for full reference, the <a class="tny-link">data dictionary</a>
+                  for column-level docs, and <a class="tny-link">methodology</a> for how reliability indices and cost
+                  calculations are computed.
+                </p>
+              </article>
+
+              <!-- TOC aside (size 4) -->
+              <aside class="col-span-12 md:col-span-4 self-start sticky top-4" data-dms-section="toc">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                  <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                  <a href="#overview" class="tny-toc-item active">Overview</a>
+                  <a href="#what-is-npmrds" class="tny-toc-item">What is the NPMRDS?</a>
+                  <a href="#strengths" class="tny-toc-item">Strengths and limits</a>
+                  <a href="#choose-tool" class="tny-toc-item">Choosing the right tool</a>
+                  <a href="#api" class="tny-toc-item">Pulling data via API</a>
+                </div>
+                <div class="mt-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                  <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">related</div>
+                  <a class="block py-1 font-proxima text-[13px] text-[#1F3F8F] hover:text-[#16307A]" href="getting-started.html">→ Getting started</a>
+                  <a class="block py-1 font-proxima text-[13px] text-[#1F3F8F] hover:text-[#16307A]">→ Data dictionary</a>
+                  <a class="block py-1 font-proxima text-[13px] text-[#1F3F8F] hover:text-[#16307A]">→ Methodology</a>
+                  <a class="block py-1 font-proxima text-[13px] text-[#1F3F8F] hover:text-[#16307A]">→ Changelog</a>
+                </div>
+              </aside>
+            </div>
+          </div>
+
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="landing.html" class="hover:text-slate-900">landing</a>
+                <a href="getting-started.html" class="hover:text-slate-900">getting-started</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

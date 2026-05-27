@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Getting started · NPMRDS · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  TRANSCRIPTION NOTES (getting-started.html)
+  ──────────────────────────────────────────
+  Faithful transcription of design_handoff/pages/getting-started.html — same hero, same
+  Region selector in actions, same 2 sections, same subgroups (Floating Car / Reliability /
+  Congestion · 3 / 2 / 3 reports), same primitives (ReportCard with kicker + output tags +
+  arrow; TemplateCard with icon block + numbered steps + Start CTA; SubgroupLabel with
+  separator + count). Text classes map to textSettings tokens:
+    • displayHero  → hero h1 "Getting started."
+    • displaySM    → section h2 ("Pre-defined reports" / "Build from a template")
+    • displayXS    → card titles (handoff was 17px, displayXS is 18px — same role)
+    • kicker       → "// NPMRDS · start here", "// 01", "// 02"
+    • metaSM       → eyebrow labels ("v2.1", "Regional analysis", "Route analysis")
+    • metaXS       → tag pills (map/table/PM3), card kickers (// p50), steps numbering
+    • prose / proseSM → hero desc / section sub / card descriptions
+  TOC style preserved from v2 (card chrome + indented subgroup items) per user feedback —
+  it's better than the borderless handoff version. Continue links added from handoff.
+-->
+
+<nav class="tny-meta-nav">
+  <span class="tny-meta-nav__label">TransportNY DMS · v0.2</span>
+  <span class="tny-meta-nav__group">design system</span>
+  <a class="tny-meta-nav__link" href="../design-system/theme.html">theme</a>
+  <a class="tny-meta-nav__link" href="../design-system/layouts.html">layouts</a>
+  <a class="tny-meta-nav__link" href="../design-system/grid.html">grid</a>
+  <a class="tny-meta-nav__link" href="../design-system/components.html">components</a>
+  <a class="tny-meta-nav__link" href="../design-system/patterns.html">patterns</a>
+  <span class="tny-meta-nav__group">pages</span>
+  <a class="tny-meta-nav__link" href="landing.html">landing</a>
+  <a class="tny-meta-nav__link" href="login.html">login</a>
+  <a class="tny-meta-nav__link is-active" href="getting-started.html">getting-started</a>
+  <a class="tny-meta-nav__link" href="docs-overview.html">docs</a>
+  <a class="tny-meta-nav__link" href="map-21.html">map-21</a>
+  <a class="tny-meta-nav__link" href="map-21-trend.html">map-21-trend</a>
+  <a class="tny-meta-nav__link" href="floating-car.html">floating-car</a>
+  <a class="tny-meta-nav__link" href="congestion.html">congestion</a>
+  <a class="tny-meta-nav__link" href="work-zones.html">work-zones</a>
+</nav>
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- SIDENAV -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30" style="top:32px">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">NPMRDS</span>
+            </div>
+            <div class="px-3 pt-3"><button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] flex items-center gap-2 text-slate-400"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-proxima text-[13px]">Search</span></button></div>
+            <div class="flex-1 py-2">
+              <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><svg class="size-[18px] text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25"/></svg><span class="text-[13px]">Getting started</span></a>
+              <a href="map-21.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="text-[13px]">MAP-21 PM3</span></a>
+              <a href="floating-car.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25"/></svg><span class="text-[13px]">Floating Car</span></a>
+              <a href="congestion.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="text-[13px]">Congestion</span></a>
+              <a href="work-zones.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span class="text-[13px]">Work zones</span></a>
+              <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25"/></svg><span class="text-[13px]">Docs</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white text-[11px] font-medium ring-1 ring-[#FACC15]/20">AM</div>
+              <div class="flex-1"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Alex Muro</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">Capital Dist.</div></div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ HERO LayoutGroup ═════════ -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-14" data-dms-section="page-header">
+              <div class="flex items-end justify-between gap-8">
+                <div class="max-w-[760px]">
+                  <!-- Kicker + meta · kicker token + metaSM token -->
+                  <div class="flex items-center gap-3 mb-3">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// NPMRDS · start here</span>
+                    <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">v2.1</span>
+                  </div>
+                  <!-- h1 · displayHero token -->
+                  <h1 class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight text-[#0F1722]">Getting started<span class="text-[#CA8A04]">.</span></h1>
+                  <!-- Desc · prose token -->
+                  <p class="mt-3 font-proxima text-[14.5px] leading-[1.65] text-slate-700 max-w-[680px]">Pick a region, then run a pre-defined regional report — or start fresh with a Route Analysis template.</p>
+                </div>
+                <!-- RegionSelect · MultiSelect.compact equivalent (h-8 chip) -->
+                <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 hover:border-zinc-950/30 pl-2.5 pr-1.5 flex-shrink-0">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Region</span>
+                  <span class="font-proxima text-[12.5px] text-[#0f1722] font-medium">Capital District</span>
+                  <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ CONTENT LayoutGroup · 2-col grid (content + TOC) ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-[1fr_240px] gap-8">
+              <div class="min-w-0 flex flex-col gap-12">
+
+                <!-- ─── § 01 · Regional Analysis ─── -->
+                <section id="regional" data-dms-section="regional">
+                  <!-- SectionHead · "// 01" + "Regional analysis" eyebrow + h2 + sub -->
+                  <div class="flex items-end justify-between gap-8 mb-5">
+                    <div>
+                      <div class="flex items-center gap-3 mb-1.5">
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Regional analysis</span>
+                        <span class="font-mono text-[10.5px] tabular-nums text-slate-400">· 8 reports</span>
+                      </div>
+                      <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Pre-defined reports</h2>
+                      <p class="mt-2 font-proxima text-[13.5px] leading-[1.65] text-slate-600 max-w-[680px]">Each report runs against the entire selected region and rolls up to a standard set of charts and tables. Pick a category, then a measure.</p>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col gap-7">
+
+                    <!-- Subgroup · Floating Car (3) -->
+                    <div id="group-fc">
+                      <div class="flex items-center gap-3 mb-3">
+                        <span class="font-display uppercase font-semibold text-[12px] tracking-[0.18em] text-[#0F1722]">Floating Car</span>
+                        <span class="h-px flex-1 bg-zinc-950/10"></span>
+                        <span class="font-mono text-[9.5px] tabular-nums uppercase tracking-[0.18em] text-slate-400">3 reports</span>
+                      </div>
+                      <div class="grid grid-cols-3 gap-4">
+                        <!-- Report · 50th Percentile Speed -->
+                        <a href="floating-car.html" class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F]/40 hover:-translate-y-0.5 hover:shadow-lg transition-all">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">// p50 speed</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] group-hover:text-[#1F3F8F] transition-colors">50th Percentile Speed</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">The median speed across all times of day and days of the week, by TMC.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">map</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">table</span>
+                            </div>
+                            <span class="text-slate-400 group-hover:text-[#1F3F8F] group-hover:translate-x-0.5 transition-all"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></span>
+                          </div>
+                        </a>
+                        <!-- Report · 80th Percentile Speed -->
+                        <a class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F]/40 hover:-translate-y-0.5 hover:shadow-lg transition-all">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">// p80 speed</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] group-hover:text-[#1F3F8F] transition-colors">80th Percentile Speed</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">The 80th-percentile (faster) speed across all times of day and days of the week.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">map</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">table</span>
+                            </div>
+                            <span class="text-slate-400 group-hover:text-[#1F3F8F] group-hover:translate-x-0.5 transition-all"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></span>
+                          </div>
+                        </a>
+                        <!-- Report · Freeflow Speed -->
+                        <a class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F]/40 hover:-translate-y-0.5 hover:shadow-lg transition-all">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">// freeflow</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] group-hover:text-[#1F3F8F] transition-colors">Freeflow Speed</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">The theoretical speed when density and flow rate on a study segment are both zero.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">map</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">table</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">time-series</span>
+                            </div>
+                            <span class="text-slate-400 group-hover:text-[#1F3F8F] group-hover:translate-x-0.5 transition-all"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></span>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+
+                    <!-- Subgroup · Reliability (2) -->
+                    <div id="group-reliability">
+                      <div class="flex items-center gap-3 mb-3">
+                        <span class="font-display uppercase font-semibold text-[12px] tracking-[0.18em] text-[#0F1722]">Reliability</span>
+                        <span class="h-px flex-1 bg-zinc-950/10"></span>
+                        <span class="font-mono text-[9.5px] tabular-nums uppercase tracking-[0.18em] text-slate-400">2 reports</span>
+                      </div>
+                      <div class="grid grid-cols-3 gap-4">
+                        <a href="map-21.html" class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F]/40 hover:-translate-y-0.5 hover:shadow-lg transition-all">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">// LOTTR</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] group-hover:text-[#1F3F8F] transition-colors">Car (LOTTR)</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">Level of Travel Time Reliability — 80th / 50th percentile, by AM peak, midday, PM peak, weekend.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">map</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">table</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">PM3</span>
+                            </div>
+                            <span class="text-slate-400 group-hover:text-[#1F3F8F] group-hover:translate-x-0.5 transition-all"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></span>
+                          </div>
+                        </a>
+                        <a class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F]/40 hover:-translate-y-0.5 hover:shadow-lg transition-all">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">// TTTR</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] group-hover:text-[#1F3F8F] transition-colors">Truck (TTTR)</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">Truck Travel Time Reliability — 95th / 50th across five time periods. Interstate-only.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">map</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">table</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">PM3</span>
+                            </div>
+                            <span class="text-slate-400 group-hover:text-[#1F3F8F] group-hover:translate-x-0.5 transition-all"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></span>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+
+                    <!-- Subgroup · Congestion (3) -->
+                    <div id="group-congestion">
+                      <div class="flex items-center gap-3 mb-3">
+                        <span class="font-display uppercase font-semibold text-[12px] tracking-[0.18em] text-[#0F1722]">Congestion</span>
+                        <span class="h-px flex-1 bg-zinc-950/10"></span>
+                        <span class="font-mono text-[9.5px] tabular-nums uppercase tracking-[0.18em] text-slate-400">3 reports</span>
+                      </div>
+                      <div class="grid grid-cols-3 gap-4">
+                        <a href="congestion.html" class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F]/40 hover:-translate-y-0.5 hover:shadow-lg transition-all">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">// VHD</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] group-hover:text-[#1F3F8F] transition-colors">Vehicle Hours of Delay</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">Total VHD on the regional network, indexed against the freeflow baseline.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">summary</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">time-series</span>
+                            </div>
+                            <span class="text-slate-400 group-hover:text-[#1F3F8F] group-hover:translate-x-0.5 transition-all"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></span>
+                          </div>
+                        </a>
+                        <a class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F]/40 hover:-translate-y-0.5 hover:shadow-lg transition-all">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">// $ delay</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] group-hover:text-[#1F3F8F] transition-colors">Cost of Delay</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">Monetized regional delay using FHWA value-of-time tables and FAF freight values.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">summary</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">table</span>
+                            </div>
+                            <span class="text-slate-400 group-hover:text-[#1F3F8F] group-hover:translate-x-0.5 transition-all"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></span>
+                          </div>
+                        </a>
+                        <a class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F]/40 hover:-translate-y-0.5 hover:shadow-lg transition-all">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-2">// top N</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] group-hover:text-[#1F3F8F] transition-colors">Top Bottlenecks</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">Ranked TMC segments by recurrent and non-recurrent congestion. Drillable to segment view.</p>
+                          <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">map</span>
+                              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 bg-slate-50 border border-zinc-950/05 px-1.5 py-0.5 rounded">ranked-table</span>
+                            </div>
+                            <span class="text-slate-400 group-hover:text-[#1F3F8F] group-hover:translate-x-0.5 transition-all"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></span>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- ─── § 02 · Route Analysis Templates ─── -->
+                <section id="templates" data-dms-section="templates">
+                  <div class="flex items-end justify-between gap-8 mb-5">
+                    <div>
+                      <div class="flex items-center gap-3 mb-1.5">
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Route analysis</span>
+                        <span class="font-mono text-[10.5px] tabular-nums text-slate-400">· 4 templates</span>
+                      </div>
+                      <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Build from a template</h2>
+                      <p class="mt-2 font-proxima text-[13.5px] leading-[1.65] text-slate-600 max-w-[680px]">Templates pre-wire a route, a time window, and a measure set. Edit any of them after launch — they're just a starting point.</p>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <!-- Blank route · primary -->
+                    <a class="group block rounded-[8px] border border-[#1F3F8F]/30 bg-gradient-to-br from-[#F7FAFC] to-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F] transition-colors">
+                      <div class="flex items-start gap-3">
+                        <div class="size-9 rounded flex-shrink-0 flex items-center justify-center bg-[#1F3F8F] text-white"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4V20"/><path d="M4 12H20"/></svg></div>
+                        <div class="min-w-0 flex-1">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">// blank</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722]">Blank route</div>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3">Draw a corridor on the map, then pick your own measures and time periods. Best when you know exactly what you want.</p>
+                      <ol class="mt-3 space-y-1">
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">01</span><span class="font-proxima text-[11.5px] text-slate-600">Draw route on map</span></li>
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">02</span><span class="font-proxima text-[11.5px] text-slate-600">Pick measures</span></li>
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">03</span><span class="font-proxima text-[11.5px] text-slate-600">Set time window</span></li>
+                      </ol>
+                      <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                        <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Customizable</span>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-[0.16em] font-semibold text-[#37576B] border border-zinc-950/10 rounded px-2 py-1 group-hover:bg-[#1F3F8F] group-hover:text-white group-hover:border-[#1F3F8F] transition-colors">
+                          Start <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                        </span>
+                      </div>
+                    </a>
+
+                    <!-- Trip analysis -->
+                    <a class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F] hover:bg-[#F7FAFC] transition-colors">
+                      <div class="flex items-start gap-3">
+                        <div class="size-9 rounded flex-shrink-0 flex items-center justify-center bg-slate-100 text-slate-500"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4V20"/><path d="M4 12H20"/></svg></div>
+                        <div class="min-w-0 flex-1">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">// AM vs PM</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722]">Trip analysis</div>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3">Compare AM-peak and PM-peak travel time over the same corridor, by day-of-week. Stacked bars + heatmap.</p>
+                      <ol class="mt-3 space-y-1">
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">01</span><span class="font-proxima text-[11.5px] text-slate-600">Pick a corridor</span></li>
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">02</span><span class="font-proxima text-[11.5px] text-slate-600">Compare AM ↔ PM</span></li>
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">03</span><span class="font-proxima text-[11.5px] text-slate-600">Drill into worst hours</span></li>
+                      </ol>
+                      <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                        <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Customizable</span>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-[0.16em] font-semibold text-[#37576B] border border-zinc-950/10 rounded px-2 py-1 group-hover:bg-[#1F3F8F] group-hover:text-white group-hover:border-[#1F3F8F] transition-colors">
+                          Start <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                        </span>
+                      </div>
+                    </a>
+
+                    <!-- Bottleneck inventory -->
+                    <a class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F] hover:bg-[#F7FAFC] transition-colors">
+                      <div class="flex items-start gap-3">
+                        <div class="size-9 rounded flex-shrink-0 flex items-center justify-center bg-slate-100 text-slate-500"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4V20"/><path d="M4 12H20"/></svg></div>
+                        <div class="min-w-0 flex-1">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">// rank</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722]">Bottleneck inventory</div>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3">Auto-rank the worst TMC segments along your route by recurrent delay, with a scoreboard ready to export.</p>
+                      <ol class="mt-3 space-y-1">
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">01</span><span class="font-proxima text-[11.5px] text-slate-600">Pick a corridor</span></li>
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">02</span><span class="font-proxima text-[11.5px] text-slate-600">Set delay threshold</span></li>
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">03</span><span class="font-proxima text-[11.5px] text-slate-600">Export scoreboard</span></li>
+                      </ol>
+                      <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                        <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Customizable</span>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-[0.16em] font-semibold text-[#37576B] border border-zinc-950/10 rounded px-2 py-1 group-hover:bg-[#1F3F8F] group-hover:text-white group-hover:border-[#1F3F8F] transition-colors">
+                          Start <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                        </span>
+                      </div>
+                    </a>
+
+                    <!-- Year-over-year comparison -->
+                    <a class="group block rounded-[8px] border border-zinc-950/10 bg-white p-5 cursor-pointer h-full flex flex-col hover:border-[#1F3F8F] hover:bg-[#F7FAFC] transition-colors">
+                      <div class="flex items-start gap-3">
+                        <div class="size-9 rounded flex-shrink-0 flex items-center justify-center bg-slate-100 text-slate-500"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4V20"/><path d="M4 12H20"/></svg></div>
+                        <div class="min-w-0 flex-1">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">// YoY</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722]">Year-over-year comparison</div>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3">Hold a route fixed and compare any two calendar years on speed, reliability, and delay side-by-side.</p>
+                      <ol class="mt-3 space-y-1">
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">01</span><span class="font-proxima text-[11.5px] text-slate-600">Pick a corridor</span></li>
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">02</span><span class="font-proxima text-[11.5px] text-slate-600">Pick two years</span></li>
+                        <li class="flex items-baseline gap-2"><span class="font-mono text-[10px] tabular-nums text-slate-400">03</span><span class="font-proxima text-[11.5px] text-slate-600">Compare measures</span></li>
+                      </ol>
+                      <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                        <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Customizable</span>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-[0.16em] font-semibold text-[#37576B] border border-zinc-950/10 rounded px-2 py-1 group-hover:bg-[#1F3F8F] group-hover:text-white group-hover:border-[#1F3F8F] transition-colors">
+                          Start <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                        </span>
+                      </div>
+                    </a>
+                  </div>
+                </section>
+
+              </div>
+
+              <!-- ═════ TOC aside · v2 card-chrome style preserved per user feedback ═════ -->
+              <aside class="hidden lg:block sticky top-4 self-start" data-dms-section="toc">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4 shadow-sm">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-2">on this page</div>
+                  <a href="#regional" class="tny-toc-item active">Regional analysis</a>
+                  <a href="#group-fc" class="tny-toc-item">— Floating Car</a>
+                  <a href="#group-reliability" class="tny-toc-item">— Reliability</a>
+                  <a href="#group-congestion" class="tny-toc-item">— Congestion</a>
+                  <a href="#templates" class="tny-toc-item">Route templates</a>
+                </div>
+                <!-- Continue · transcribed from handoff aside -->
+                <div class="mt-4 rounded-[8px] border border-zinc-950/10 bg-white p-4 shadow-sm">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-2">continue</div>
+                  <a href="docs-overview.html" class="block py-1 font-proxima text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ NPMRDS docs</a>
+                  <a href="map-21.html" class="block py-1 font-proxima text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ MAP-21 PM3 page</a>
+                  <a href="../design-system/components.html" class="block py-1 font-proxima text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ Design system</a>
+                </div>
+              </aside>
+
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="landing.html" class="hover:text-slate-900">landing</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
