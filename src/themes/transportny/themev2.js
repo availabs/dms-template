@@ -63,8 +63,12 @@ const textSettings = {
     name: "default",
 
     // ── Heading roles — Lexical backfill, Header section ──
-    h1: `${F_DISP} font-semibold text-[52px] leading-[1.02] tracking-tight ${INK} scroll-mt-36`,
-    h2: `${F_DISP} font-semibold text-[38px] leading-[1.05] tracking-tight uppercase ${INK} scroll-mt-36`,
+    // h1 is set to the displayLG style (38px uppercase) rather than
+    // the 52px displayHero, because this site is product-page-heavy
+    // and h1 → page title in most contexts. Reach displayHero
+    // explicitly via styled-paragraph for marketing/landing heroes.
+    h1: `${F_DISP} font-semibold text-[38px] leading-[1.05] tracking-tight uppercase ${INK} scroll-mt-36`,
+    h2: `${F_DISP} font-semibold text-[28px] leading-[1.1] ${INK} scroll-mt-36`,
     h3: `${F_DISP} font-semibold text-[28px] leading-[1.1] ${INK} scroll-mt-36`,
     h4: `${F_DISP} font-medium text-[20px] leading-[1.2] ${INK} scroll-mt-36`,
     h5: `${F_DISP} font-medium text-[16px] leading-[1.3] uppercase tracking-wide ${INK} scroll-mt-36`,
@@ -89,12 +93,19 @@ const textSettings = {
     proseXS: `${F_SANS} text-[11.5px] leading-[1.5] text-slate-500`,
 
     // ── Meta ladder (mono) — kickers, metadata, codes ──
-    metaMD: `${F_MONO} text-[12px] leading-[1.45] tabular-nums text-slate-600`,
-    metaSM: `${F_MONO} text-[10.5px] leading-[1.4] uppercase tracking-[0.18em] text-slate-500`,
-    metaXS: `${F_MONO} text-[9.5px] leading-[1.4] uppercase tracking-[0.18em] text-slate-400`,
+    // The `!` (important) suffix on font/size/color overrides the
+    // lexical.paragraph defaults that StyledParagraphNode appends
+    // rather than replaces — without `!`, the paragraph's
+    // text-[14.5px] font-sans text-slate-700 win over these tokens
+    // (Tailwind compile order is non-deterministic for arbitrary
+    // values). Leading/tracking/uppercase don't conflict so they
+    // need no override.
+    metaMD: `font-mono! text-[12px]! leading-[1.45] tabular-nums text-slate-600!`,
+    metaSM: `font-mono! text-[11px]! leading-[1.4] uppercase tracking-[0.18em] text-slate-500!`,
+    metaXS: `font-mono! text-[10px]! leading-[1.4] uppercase tracking-[0.18em] text-slate-400!`,
 
     // Editorial kicker — the "// 01" amber labels that head sections
-    kicker: `${F_MONO} text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]`,
+    kicker: `font-mono! text-[11px]! uppercase tracking-[0.2em] text-[#CA8A04]!`,
     nav:    `${F_DISP} font-medium text-[13.5px] uppercase tracking-wide`,
 
     // ── Legacy generic size scale ──
@@ -972,14 +983,23 @@ const lexical = {
   options: { activeStyle: 0 },
   styles: [{
     name: "default",
-    heading_h1: `${F_DISP} font-semibold text-[52px] leading-[1.02] tracking-tight ${INK} mt-8 mb-4 scroll-mt-36`,
-    heading_h2: `${F_DISP} font-semibold text-[38px] leading-[1.05] tracking-tight uppercase ${INK} mt-7 mb-3 scroll-mt-36`,
-    heading_h3: `${F_DISP} font-semibold text-[28px] leading-[1.1] ${INK} mt-6 mb-2 scroll-mt-36`,
-    heading_h4: `${F_DISP} font-medium text-[20px] leading-[1.2] ${INK} mt-4 mb-2 scroll-mt-36`,
-    heading_h5: `${F_DISP} font-medium text-[16px] leading-[1.3] uppercase tracking-wide ${INK} mt-3 mb-1 scroll-mt-36`,
-    heading_h6: `${F_DISP} font-medium text-[14px] leading-[1.4] uppercase tracking-[0.16em] text-slate-700 mt-3 mb-1 scroll-mt-36`,
+    // h1 maps to displayLG (38 px uppercase, product-page title).
+    // Reach displayHero (52 px) explicitly via styled-paragraph for
+    // landing/marketing heroes. h2-h6 cascade. Margins tightened so
+    // consecutive heading + paragraph blocks pack close together —
+    // the codebase default mt-8 was creating a 32 px gap above every
+    // h1 that read as "huge whitespace" on product page headers.
+    heading_h1: `${F_DISP} font-semibold text-[38px] leading-[1.05] tracking-tight uppercase ${INK} mt-1 mb-2 scroll-mt-36`,
+    heading_h2: `${F_DISP} font-semibold text-[28px] leading-[1.1] ${INK} mt-4 mb-2 scroll-mt-36`,
+    heading_h3: `${F_DISP} font-semibold text-[22px] leading-[1.2] ${INK} mt-3 mb-2 scroll-mt-36`,
+    heading_h4: `${F_DISP} font-medium text-[18px] leading-[1.25] ${INK} mt-2 mb-1 scroll-mt-36`,
+    heading_h5: `${F_DISP} font-medium text-[16px] leading-[1.3] uppercase tracking-wide ${INK} mt-2 mb-1 scroll-mt-36`,
+    heading_h6: `${F_DISP} font-medium text-[14px] leading-[1.4] uppercase tracking-[0.16em] text-slate-700 mt-2 mb-1 scroll-mt-36`,
 
-    paragraph:    `${F_SANS} text-[14.5px] leading-[1.65] text-slate-700 mb-3`,
+    // Tight paragraph spacing — mb-1 (4 px) instead of mb-3 (12 px) —
+    // so styled-paragraph + paragraph blocks (breadcrumb → kicker →
+    // title → description) sit close together.
+    paragraph:    `${F_SANS} text-[14.5px] leading-[1.55] text-slate-700 mb-1`,
 
     text_bold:    "font-semibold",
     text_italic:  "italic",
@@ -1110,7 +1130,10 @@ const pages = {
     styles: [{
       name: "default",
       _replace: ["sizes"],
+
+      // ── Grid container ──
       wrapper:        "relative",
+      gridOverlay:    "absolute inset-0 pointer-events-none",
       container:      "w-full grid grid-cols-12 gap-6",
       gridSize:       12,
       defaultSize:    "12",
@@ -1119,6 +1142,66 @@ const pages = {
         centered:  "max-w-[1480px] mr-auto",
         fullwidth: "",
       },
+
+      // ── Section wrappers ──
+      // The `group` class is LOAD-BEARING: every group-hover:* utility
+      // on overlays + the add-section button below depends on it. The
+      // codebase default ships `relative group` and we keep that.
+      //
+      // `hover:bg-…` here gives the section a subtle blue wash on
+      // hover that sits UNDER content (since the wrapper paints first,
+      // then children paint on top). This is the right place for the
+      // hover tint because sectionEditWrapper is applied to every
+      // section regardless of its `border` setting — `border.full` is
+      // only applied when v.border === 'full', so putting the hover
+      // tint there would silently no-op on the (default) 'none'
+      // sections.
+      sectionEditWrapper: "relative group hover:bg-[#1F3F8F]/6 transition-colors rounded-[8px]",
+      sectionViewWrapper: "relative group",
+
+      // ── Edit-mode overlays ──
+      // These three are sibling divs INSIDE sectionEditWrapper and need
+      // `absolute inset-0` to render as full-bleed overlays. Without
+      // absolute positioning the div has zero size and the styling
+      // never paints anywhere. (Previous v2 used `outline …` here,
+      // which is why hover/highlight didn't appear.)
+      //   • sectionEditHover  — visible only on group-hover (transparent
+      //     border until parent is hovered, then brand amber).
+      //   • sectionEditing    — always visible on the section currently
+      //     being edited.
+      //   • sectionHighlight  — always visible on URL-hash deeplink
+      //     (clicked TOC link → section flashes amber).
+      // Edit/hover/highlight overlays — outline only, no bg tint.
+      // The bg tint lives on `border.full` below (via group-hover for
+      // hover, and the wrapper's own classes can't differentiate
+      // editing vs highlight without JS, so those states rely on the
+      // outline alone to differentiate). Overlay still sits on top
+      // (z-10) but it's transparent except for the dashed line at
+      // the edge — content paints undisturbed.
+      sectionEditHover: "absolute inset-0 outline-1 outline-dashed outline-transparent group-hover:outline-[#1F3F8F]/70 pointer-events-none z-10 rounded-[8px] transition-colors",
+      sectionEditing:   "absolute inset-0 outline-1 outline-dashed outline-[#1F3F8F] pointer-events-none z-10 rounded-[8px]",
+      sectionHighlight: "absolute inset-0 outline-1 outline-dashed outline-[#EAAD43] pointer-events-none z-10 rounded-[8px]",
+
+      // ── Add-section button ──
+      // Sits ABOVE each section (`absolute -top-5`), hidden until the
+      // parent's group-hover fires. The icon→text expansion uses a
+      // nested `group/icon` so the "+" pill grows into an "Add" label
+      // when the user hovers the pill itself (a small but nice tell).
+      // The Icon name "Plus" is hardcoded in the JSX — `addSectionIcon`
+      // is the class string on that <Icon>, NOT a name string.
+      addSectionButton:      "cursor-pointer flex items-center w-full -ml-4 my-2 hidden group-hover:flex absolute -top-5 z-20",
+      spacer:                "flex-1",
+      addSectionIconWrapper: "flex items-center group/icon cursor-pointer",
+      addSectionIcon:        "size-6 p-1.5 text-white bg-[#1F3F8F] rounded-full group-hover/icon:hidden",
+      addSectionTextWrapper: "hidden group-hover/icon:flex items-center",
+      addSectionText:        "px-2.5 py-1 text-white text-[12px] font-display uppercase tracking-wide bg-[#1F3F8F] rounded-full",
+
+      // ── Grid view (overlay mode) ──
+      gridviewGrid: "z-0 bg-slate-50 h-full",
+      gridviewItem: "border-x bg-white border-slate-100/75 border-dashed h-full p-[6px]",
+      defaultOffset: 16,
+
+      // ── Sizes (12-col, _replace'd above) ──
       sizes: {
         "1":  { className: "col-span-12 md:col-span-1",  iconSize: 8.3 },
         "2":  { className: "col-span-12 md:col-span-2",  iconSize: 16.7 },
@@ -1133,11 +1216,26 @@ const pages = {
         "11": { className: "col-span-12 md:col-span-11", iconSize: 91.7 },
         "12": { className: "col-span-12 md:col-span-12", iconSize: 100 },
       },
+
+      // ── Rowspans ──
+      // Codebase reads `theme?.rowspans?.["1"]?.className` — must be
+      // {className} objects, NOT flat strings. Previous v2 shipped
+      // flat strings which silently broke row spans.
       rowspans: {
-        "1": "row-span-1",
-        "2": "row-span-2",
-        "3": "row-span-3",
+        "1": { className: "" },
+        "2": { className: "md:row-span-2" },
+        "3": { className: "md:row-span-3" },
+        "4": { className: "md:row-span-4" },
+        "5": { className: "md:row-span-5" },
+        "6": { className: "md:row-span-6" },
+        "7": { className: "md:row-span-7" },
+        "8": { className: "md:row-span-8" },
       },
+
+      // ── Section borders (per-section frame variants) ──
+      // Applied only when `v.border` is set on a section (default is
+      // 'none'). The hover tint is on sectionEditWrapper above, not
+      // here, so it fires for every section regardless of border.
       border: {
         none:       "",
         full:       "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm",
@@ -1145,14 +1243,8 @@ const pages = {
         openRight:  "rounded-l-[8px] border border-zinc-950/10 border-r-transparent bg-white shadow-sm",
         openTop:    "rounded-b-[8px] border border-zinc-950/10 border-t-transparent bg-white shadow-sm",
         openBottom: "rounded-t-[8px] border border-zinc-950/10 border-b-transparent bg-white shadow-sm",
+        borderX:    "border border-zinc-950/10 border-y-transparent",
       },
-      sectionEditHover:    "outline outline-2 outline-[#FACC15]/60",
-      sectionEditing:      "outline outline-2 outline-[#FACC15]",
-      addSectionIcon:      "Plus",
-      addSectionIconClass: "size-3.5 text-white",
-      addSectionText:      "bg-[#1F3F8F] text-white px-3 h-8 inline-flex items-center gap-1.5 rounded-[6px] font-display uppercase text-[11px] tracking-wide",
-      gridviewGrid:        "grid grid-cols-12 gap-6 [&>*]:bg-[#FACC15]/15 [&>*]:border [&>*]:border-dashed [&>*]:border-[#FACC15]/40 [&>*]:rounded-[6px] [&>*]:min-h-12",
-      gridviewItem:        "bg-[#FACC15]/15 border border-dashed border-[#FACC15]/40 rounded-[6px]",
     }],
   },
 
@@ -1210,19 +1302,35 @@ const pages = {
     handle:     "text-slate-300 hover:text-slate-500 cursor-grab",
   },
 
+  // userMenu — reverted to v1 (transportny-responsive). The v1 block
+  // has full `@container` + `@[120px]:` responsive behavior tuned for
+  // both the compact (64px) and full (256px) sidenav widths — collapses
+  // the email/group block when narrow and expands it when wide. The v2
+  // design system version was a simpler always-shown card.
   userMenu: {
     options: { activeStyle: 0 },
     styles: [{
-      name: "default",
-      userMenuContainer: "flex items-center gap-3 px-4 py-2",
-      avatar:            "w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white text-[11px] font-medium ring-1 ring-[#FACC15]/20",
-      avatarIcon:        "User",
-      infoWrapper:       "flex-1 min-w-0",
-      emailText:         "font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate",
-      groupText:         "font-display uppercase text-white text-[12px] tracking-wide truncate",
-      loginWrapper:      "flex items-center gap-3 px-4 py-2 hover:bg-[#1e2530] cursor-pointer",
-      loginIcon:         "size-4 text-slate-400",
-      loginText:         "font-display uppercase text-white text-[12px] tracking-wide",
+      name: "transportny-responsive",
+      userMenuContainer: "@container flex flex-1 flex-row w-full items-center justify-center @[120px]:justify-start rounded-lg bg-transparent @[120px]:bg-[#1a2029] @[120px]:mx-2 @[120px]:mb-2 p-1 @[120px]:p-2",
+      avatarWrapper:     "flex justify-center items-center",
+      avatar:            "size-10 border-2 border-[#3a4555] rounded-full flex items-center justify-center bg-[#2a3545] hover:bg-[#3a4555] cursor-pointer",
+      avatarIcon:        "size-5 @[120px]:size-6 fill-slate-400",
+      infoWrapper:       "hidden @[120px]:flex flex-col flex-1 px-2",
+      emailText:         "text-xs font-normal text-slate-400 tracking-tight text-left truncate",
+      groupText:         "text-sm font-medium text-white tracking-wide text-left",
+      editControlWrapper:"flex justify-center items-center mt-2 @[120px]:mt-0",
+      iconWrapper:       "size-10 @[120px]:size-8 flex items-center justify-center rounded-full @[120px]:rounded-md hover:bg-[#2a3545] cursor-pointer",
+      icon:              "text-slate-400 hover:text-white size-5",
+      viewIcon:          "ViewPage",
+      editIcon:          "EditPage",
+      loginWrapper:      "flex items-center transition-all cursor-pointer border-l-[3px] border-transparent text-slate-300 hover:text-white hover:bg-[#1e2530] justify-center py-3 @[120px]:justify-start @[120px]:px-4 @[120px]:py-2.5 @[120px]:gap-3",
+      loginLink:         "",
+      loginIconWrapper:  "",
+      loginIcon:         "size-6 @[120px]:size-5 flex-shrink-0 text-slate-400",
+      loginText:         "hidden @[120px]:inline font-['Proxima_Nova'] font-[400] text-[15px]",
+      authContainer:     "@container w-full",
+      authWrapper:       "flex flex-col-reverse @[120px]:flex-row p-1 @[120px]:p-2 items-center gap-2",
+      userMenuWrapper:   "flex flex-col @[120px]:flex-row items-center @[120px]:flex-1 w-full",
     }],
   },
 };
