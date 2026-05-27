@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Congestion · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<nav class="tny-meta-nav">
+  <span class="tny-meta-nav__label">TransportNY DMS · v0.2</span>
+  <span class="tny-meta-nav__group">design system</span>
+  <a class="tny-meta-nav__link" href="../design-system/theme.html">theme</a>
+  <a class="tny-meta-nav__link" href="../design-system/layouts.html">layouts</a>
+  <a class="tny-meta-nav__link" href="../design-system/grid.html">grid</a>
+  <a class="tny-meta-nav__link" href="../design-system/components.html">components</a>
+  <a class="tny-meta-nav__link" href="../design-system/patterns.html">patterns</a>
+  <span class="tny-meta-nav__group">pages</span>
+  <a class="tny-meta-nav__link" href="landing.html">landing</a>
+  <a class="tny-meta-nav__link" href="login.html">login</a>
+  <a class="tny-meta-nav__link" href="getting-started.html">getting-started</a>
+  <a class="tny-meta-nav__link" href="docs-overview.html">docs</a>
+  <a class="tny-meta-nav__link" href="map-21.html">map-21</a>
+  <a class="tny-meta-nav__link" href="map-21-trend.html">map-21-trend</a>
+  <a class="tny-meta-nav__link" href="floating-car.html">floating-car</a>
+  <a class="tny-meta-nav__link is-active" href="congestion.html">congestion</a>
+  <a class="tny-meta-nav__link" href="work-zones.html">work-zones</a>
+</nav>
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30" style="top:32px">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">NPMRDS</span>
+            </div>
+            <div class="flex-1 py-3">
+              <a href="getting-started.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Getting started</span></a>
+              <a href="map-21.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">MAP-21 PM3</span></a>
+              <a href="floating-car.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Floating Car</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><span class="text-[13px]">Congestion</span></a>
+              <a href="work-zones.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Work zones</span></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- HEADER -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10 flex items-end justify-between gap-8" data-dms-section="page-header">
+              <div>
+                <nav class="flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mb-3"><a href="getting-started.html" class="text-slate-500 hover:text-[#0f1722]">NPMRDS</a><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Congestion</span></nav>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// delay attribution</span>
+                <h1 class="mt-2 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Congestion summary<span class="text-[#CA8A04]">.</span></h1>
+                <p class="mt-2 font-proxima text-[14.5px] text-slate-600 leading-[1.6] max-w-[680px]">Total cost of delay broken down by recurrent vs incident-driven causes. Cost dollars use FHWA's per-person-hour value-of-time factor.</p>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <div class="flex items-center gap-2">
+                  <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 pl-2.5 pr-1.5"><span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">Month</span><span class="font-mono tabular-nums text-[12px] text-[#0F1722] font-medium">Oct '25</span><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></div>
+                  <button class="h-8 inline-flex items-center gap-1.5 px-3 rounded border border-zinc-950/15 bg-white text-slate-700 text-[12.5px]"><svg class="size-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/></svg>Export</button>
+                </div>
+                <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">refresh · daily · 04:12 EST</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TONE_BAR filters -->
+          <div class="w-full bg-[#1F3F8F] text-white border-b border-black/10" data-dms-group="tone_bar">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 h-12 flex items-center gap-8" data-dms-section="filter-bar">
+              <div class="text-[12px]"><div class="text-white/70">Region:</div><button class="flex items-center gap-1.5 font-semibold">Region 3 <svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px]"><div class="text-white/70">Month:</div><button class="flex items-center gap-1.5 font-semibold">October '25 <svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px]"><div class="text-white/70">Road class:</div><button class="flex items-center gap-1.5 font-semibold">All <svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+            </div>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- Total cost (size 4) -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="kpi-cost">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-2 h-full">
+                  <span class="font-display font-medium text-[15px] text-[#0F1722]">Total congestion cost</span>
+                  <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">$1,265</div>
+                  <div class="font-mono text-[11px] uppercase tracking-wider text-slate-500">million · 40.8 / day · vs prev month <span class="text-emerald-700">↓ 0.8%</span></div>
+                  <div class="mt-3 grid grid-cols-2 gap-3 pt-3 border-t border-zinc-950/05">
+                    <div><div class="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-wider text-rose-700"><span class="size-1.5 rounded-full bg-rose-400"></span>Recurrent</div><div class="font-mono text-[18px] tabular-nums text-[#0F1722]">$912M</div></div>
+                    <div><div class="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-wider text-amber-700"><span class="size-1.5 rounded-full bg-amber-400"></span>Event-driven</div><div class="font-mono text-[18px] tabular-nums text-[#0F1722]">$353M</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- By type (size 4) - stacked bars -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="by-type">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 font-display font-medium text-[14px] text-[#2D3E4C]">By event type</div>
+                  <div class="p-4 space-y-3 text-[12.5px] text-slate-700">
+                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#D6453B"></span>Construction</span><span class="font-mono tabular-nums">$382M</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:55%;background:#D6453B"></div></div></div>
+                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#E8843F"></span>Incidents</span><span class="font-mono tabular-nums">$298M</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:43%;background:#E8843F"></div></div></div>
+                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#F2CB3D"></span>Weather</span><span class="font-mono tabular-nums">$210M</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:30%;background:#F2CB3D"></div></div></div>
+                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#94C24E"></span>Events</span><span class="font-mono tabular-nums">$148M</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:21%;background:#94C24E"></div></div></div>
+                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#6F6F6F"></span>Recurrent (residual)</span><span class="font-mono tabular-nums">$227M</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:33%;background:#6F6F6F"></div></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- By month (size 4) - small bar chart -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="by-month">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 font-display font-medium text-[14px] text-[#2D3E4C]">By month · 2025</div>
+                  <div class="p-4">
+                    <svg viewBox="0 0 400 160" class="w-full">
+                      <g stroke="#e2e8f0" stroke-width="1"><line x1="30" x2="390" y1="20" y2="20"/><line x1="30" x2="390" y1="60" y2="60"/><line x1="30" x2="390" y1="100" y2="100"/></g>
+                      <g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="end"><text x="25" y="23">$120M</text><text x="25" y="63">$80M</text><text x="25" y="103">$40M</text></g>
+                      <g><rect x="40" y="60" width="22" height="60" fill="#F2CB3D"/><rect x="70" y="50" width="22" height="70" fill="#F2CB3D"/><rect x="100" y="40" width="22" height="80" fill="#F2CB3D"/><rect x="130" y="32" width="22" height="88" fill="#F2CB3D"/><rect x="160" y="40" width="22" height="80" fill="#F2CB3D"/><rect x="190" y="36" width="22" height="84" fill="#F2CB3D"/><rect x="220" y="34" width="22" height="86" fill="#F2CB3D"/><rect x="250" y="38" width="22" height="82" fill="#F2CB3D"/><rect x="280" y="32" width="22" height="88" fill="#F2CB3D"/><rect x="310" y="28" width="22" height="92" fill="#1F3F8F"/><rect x="340" y="60" width="22" height="60" fill="#E2E8F0"/><rect x="370" y="60" width="20" height="60" fill="#E2E8F0"/></g>
+                      <g font-family="ui-monospace" font-size="8" fill="#94a3b8" text-anchor="middle"><text x="51" y="138">J</text><text x="81" y="138">F</text><text x="111" y="138">M</text><text x="141" y="138">A</text><text x="171" y="138">M</text><text x="201" y="138">J</text><text x="231" y="138">J</text><text x="261" y="138">A</text><text x="291" y="138">S</text><text x="321" y="138">O</text><text x="351" y="138">N</text><text x="380" y="138">D</text></g>
+                      <text x="321" y="22" font-family="ui-monospace" font-size="9" fill="#0F1722" text-anchor="middle">$98M</text>
+                    </svg>
+                    <div class="mt-2 font-mono text-[10.5px] uppercase tracking-wider text-slate-500">selected · october · $98M</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Worst-10 corridors table (size 8) -->
+              <div class="col-span-12 md:col-span-8" data-dms-section="corridor-table">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Worst 10 corridors · October '25 · Region 3</span>
+                    <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded border border-zinc-950/10 bg-white text-slate-700 text-[12px]">Display <svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                  </div>
+                  <table class="w-full text-[13px] text-slate-700">
+                    <thead class="bg-white border-b border-zinc-950/10">
+                      <tr>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Corridor</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Length</th>
+                        <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Cost</th>
+                        <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Per mi</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Primary cause</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">I-81 N · Syracuse</td><td class="px-3 py-2 font-mono tabular-nums">14.2 mi</td><td class="px-3 py-2 text-right font-mono tabular-nums">$24.4M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$1.72M</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-rose-700"><span class="size-1.5 rounded-full bg-rose-400"></span>Recurrent</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">I-87 SB · Albany</td><td class="px-3 py-2 font-mono tabular-nums">9.8 mi</td><td class="px-3 py-2 text-right font-mono tabular-nums">$18.1M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$1.85M</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-amber-700"><span class="size-1.5 rounded-full bg-amber-400"></span>Construction</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">I-90 EB · Buffalo–Cheektowaga</td><td class="px-3 py-2 font-mono tabular-nums">12.1 mi</td><td class="px-3 py-2 text-right font-mono tabular-nums">$16.7M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$1.38M</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-rose-700"><span class="size-1.5 rounded-full bg-rose-400"></span>Recurrent</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">I-690 EB · Syracuse</td><td class="px-3 py-2 font-mono tabular-nums">6.4 mi</td><td class="px-3 py-2 text-right font-mono tabular-nums">$12.8M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$2.00M</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-rose-700"><span class="size-1.5 rounded-full bg-rose-400"></span>Recurrent</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">I-481 N · East Syracuse</td><td class="px-3 py-2 font-mono tabular-nums">8.2 mi</td><td class="px-3 py-2 text-right font-mono tabular-nums">$11.4M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$1.39M</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-amber-700"><span class="size-1.5 rounded-full bg-amber-400"></span>Construction</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">US-11 N · Cortland</td><td class="px-3 py-2 font-mono tabular-nums">11.3 mi</td><td class="px-3 py-2 text-right font-mono tabular-nums">$8.6M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$0.76M</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>Event-driven · weather</span></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2">I-490 WB · Rochester</td><td class="px-3 py-2 font-mono tabular-nums">7.8 mi</td><td class="px-3 py-2 text-right font-mono tabular-nums">$7.9M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$1.01M</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-rose-700"><span class="size-1.5 rounded-full bg-rose-400"></span>Recurrent</span></td></tr>
+                      <tr class="hover:bg-[#FFFBEB]"><td class="px-3 py-2">NY-17 W · Binghamton</td><td class="px-3 py-2 font-mono tabular-nums">5.1 mi</td><td class="px-3 py-2 text-right font-mono tabular-nums">$5.4M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$1.06M</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-amber-700"><span class="size-1.5 rounded-full bg-amber-400"></span>Incident · crash</span></td></tr>
+                    </tbody>
+                  </table>
+                  <div class="flex items-center justify-between px-3 h-10 border-t border-zinc-950/05 bg-slate-50/40">
+                    <span class="font-mono text-[11px] uppercase tracking-wider text-slate-500">1-8 of 124 corridors with measurable congestion</span>
+                    <div class="flex items-center gap-1">
+                      <button class="h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-[#0F1722] bg-white border border-zinc-950/10 rounded font-medium">1</button>
+                      <button class="h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-slate-600 hover:bg-slate-100 rounded">2</button>
+                      <button class="h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-slate-600 hover:bg-slate-100 rounded">3</button>
+                      <span class="text-[12px] text-slate-400">…</span>
+                      <button class="h-7 w-7 inline-flex items-center justify-center rounded text-slate-500 hover:bg-slate-100"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Map of worst corridors (size 4) -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="corridor-map">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 font-display font-medium text-[14px] text-[#2D3E4C]">Where it costs</div>
+                  <div class="relative tny-map h-96">
+                    <svg viewBox="0 0 400 384" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                      <path d="M 60 80 L 160 100 L 220 120 L 280 140 L 340 180" stroke="#D6453B" stroke-width="4" fill="none"/>
+                      <path d="M 100 200 L 180 230 L 240 250" stroke="#E8843F" stroke-width="3" fill="none"/>
+                      <path d="M 80 280 L 200 300" stroke="#F2CB3D" stroke-width="3" fill="none"/>
+                    </svg>
+                    <div class="absolute bottom-2 left-2 rounded-[6px] bg-white shadow-md p-2 border border-zinc-950/10">
+                      <div class="font-display uppercase text-[10.5px] tracking-wide text-slate-600 mb-1">Per-mi cost</div>
+                      <div class="space-y-0.5 font-mono text-[10px]">
+                        <div class="flex items-center gap-2"><span class="h-1 w-4" style="background:#D6453B"></span>&gt; $1.5M</div>
+                        <div class="flex items-center gap-2"><span class="h-1 w-4" style="background:#E8843F"></span>$1-1.5M</div>
+                        <div class="flex items-center gap-2"><span class="h-1 w-4" style="background:#F2CB3D"></span>&lt; $1M</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="floating-car.html" class="hover:text-slate-900">floating-car</a>
+                <a href="work-zones.html" class="hover:text-slate-900">work-zones</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

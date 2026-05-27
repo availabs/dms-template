@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MAP-21 PM3 · 2025 · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  TRANSCRIPTION NOTES (map-21.html)
+  ─────────────────────────────────
+  Faithful transcription of design_handoff_transportny_design_system/pages/map-21.html — same 4 sections,
+  same eyebrows + h2 titles, same primitives (KpiCardCompliance, MeasureTabs, FilterChips, MPO
+  small-multiples, Methodology). Every text class string maps to a textSettings token:
+    • `displayLG`  → page h1 (data tone)              · `${F_DISP} font-semibold text-[38px] uppercase`
+    • `displaySM`  → section h2                        · `${F_DISP} font-medium text-[22px]`
+    • `kicker`     → "// 01" amber eyebrows            · `${F_MONO} text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]`
+    • `metaSM`     → section meta · refresh · breadcrumb · `${F_MONO} text-[10.5px] uppercase tracking-[0.18em] text-slate-500`
+    • `metaMD`     → deltas, inline metadata           · `${F_MONO} text-[12px] tabular-nums`
+    • `displayHero`+ tabular-nums modifier → big KPI values (Oswald, not mono — handoff wins over brief)
+    • `displayMD`  + tabular-nums modifier → 7-digit values that won't fit at displayHero
+    • `displayXS`  → card titles ("Interstate reliable")
+    • `prose` / `proseSM` → body / hint text
+    • pill `green` / `red` variants → status pills with colored bg + border + dot (handoff's CardStatus shape)
+-->
+
+<nav class="tny-meta-nav">
+  <span class="tny-meta-nav__label">TransportNY DMS · v0.2</span>
+  <span class="tny-meta-nav__group">design system</span>
+  <a class="tny-meta-nav__link" href="../design-system/theme.html">theme</a>
+  <a class="tny-meta-nav__link" href="../design-system/layouts.html">layouts</a>
+  <a class="tny-meta-nav__link" href="../design-system/grid.html">grid</a>
+  <a class="tny-meta-nav__link" href="../design-system/components.html">components</a>
+  <a class="tny-meta-nav__link" href="../design-system/patterns.html">patterns</a>
+  <span class="tny-meta-nav__group">pages</span>
+  <a class="tny-meta-nav__link" href="landing.html">landing</a>
+  <a class="tny-meta-nav__link" href="login.html">login</a>
+  <a class="tny-meta-nav__link" href="getting-started.html">getting-started</a>
+  <a class="tny-meta-nav__link" href="docs-overview.html">docs</a>
+  <a class="tny-meta-nav__link is-active" href="map-21.html">map-21</a>
+  <a class="tny-meta-nav__link" href="map-21-trend.html">map-21-trend</a>
+  <a class="tny-meta-nav__link" href="floating-car.html">floating-car</a>
+  <a class="tny-meta-nav__link" href="congestion.html">congestion</a>
+  <a class="tny-meta-nav__link" href="work-zones.html">work-zones</a>
+</nav>
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- SIDENAV -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30" style="top:32px">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">NPMRDS</span>
+            </div>
+            <div class="px-3 pt-3"><button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] flex items-center gap-2 text-slate-400"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-proxima text-[13px]">Search</span></button></div>
+            <div class="flex-1 py-2">
+              <a href="getting-started.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25"/></svg><span class="text-[13px]">Getting started</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><svg class="size-[18px] text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="text-[13px] flex-1">MAP-21 PM3</span><svg class="size-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></a>
+              <div class="pl-4 bg-[#0d1117]">
+                <a class="pl-5 py-1.5 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><span class="text-[12px]">Per-year</span></a>
+                <a href="map-21-trend.html" class="pl-5 py-1.5 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[12px]">Multi-year trend</span></a>
+              </div>
+              <a href="floating-car.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25"/></svg><span class="text-[13px]">Floating Car</span></a>
+              <a href="congestion.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="text-[13px]">Congestion</span></a>
+              <a href="work-zones.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span class="text-[13px]">Work zones</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white text-[11px] font-medium ring-1 ring-[#FACC15]/20">AM</div>
+              <div class="flex-1"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Alex Muro</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">Region 3</div></div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10" data-dms-section="page-header">
+              <!-- Breadcrumb · metaSM token -->
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 mb-4">
+                <a href="getting-started.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">MAP-21 PM3</span>
+              </nav>
+              <!-- Kicker + meta line · kicker + metaSM tokens -->
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// federal reporting</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">23 CFR 490 · subparts e–g</span>
+              </div>
+              <!-- Title + actions row -->
+              <div class="flex items-end justify-between gap-8">
+                <div class="max-w-[760px]">
+                  <!-- h1 · displayLG token (38px uppercase font-semibold) · "data" tone -->
+                  <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">MAP-21 PM3 performance<span class="text-[#CA8A04]">.</span></h1>
+                  <!-- Desc · prose token -->
+                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[680px]">Travel-time reliability, freight reliability, and peak-hour excessive delay for the New York State NHS. Scores are computed from NPMRDS probe data and reported annually to FHWA against agency-set targets.</p>
+                </div>
+                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                  <!-- YearScrubber: MultiSelect.compact style · h-8 chip -->
+                  <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 pl-2.5 pr-1.5">
+                    <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">Year</span>
+                    <span class="font-mono tabular-nums text-[12px] text-[#0F1722] font-medium">2025</span>
+                    <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                  </div>
+                  <!-- Refresh meta · metaSM token + status-good dot -->
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-2">
+                    <span>last refresh</span><span class="text-[#0f1722]">2026-05-08 04:12 EST</span>
+                    <span class="text-slate-300">·</span>
+                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>data current</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · COMPLIANCE · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="compliance">
+              <!-- Section title row -->
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Compliance summary · CY 2025</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Are we meeting our 4-yr FHWA targets?</h2>
+                </div>
+                <a class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">methodology <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+              </div>
+
+              <!-- 4 KpiCardCompliance · grid grid-cols-12 gap-6 · col-span-3 each -->
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- Card 01 · Interstate reliable (meets target) -->
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-interstate">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <!-- Status pill: pill.green variant + dot · "meets target" -->
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]">
+                      <span class="size-1.5 rounded-full bg-[#10B981]"></span>meets target
+                    </span>
+                    <!-- Card title · displayXS-ish (18 → 15 here matching handoff CardTitle scale) -->
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Interstate reliable</div>
+                    <!-- KPI value · displayHero + tabular-nums modifier -->
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">84.2<span class="text-[28px] font-medium tracking-normal text-slate-500 ml-0.5">%</span></div>
+                    <!-- Target line · metaSM + inline value -->
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">target <span class="font-proxima normal-case tracking-normal text-[#0f1722] font-medium">80%</span></div>
+                    <!-- CardTargetBar · CSS-only -->
+                    <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:84.2%"></div>
+                      <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                      <div class="absolute -top-1 size-3 rounded-full bg-white border-2 border-[#0f1722]" style="left:calc(80% - 6px)"></div>
+                    </div>
+                    <!-- Delta · metaMD tabular + emerald -->
+                    <div class="inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-emerald-700">↑ +4.2</div>
+                    <!-- Hint · proseSM -->
+                    <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">On track</div>
+                    <!-- CardTrend sparkline · full-width SVG -->
+                    <div class="mt-auto pt-3 border-t border-zinc-950/05">
+                      <svg width="100%" height="32" viewBox="0 0 200 32" preserveAspectRatio="none" class="block">
+                        <path d="M 0 28 L 33 22 L 66 18 L 99 14 L 132 10 L 165 7 L 200 5 L 200 32 L 0 32 Z" fill="rgba(16,185,129,0.13)"/>
+                        <path d="M 0 28 L 33 22 L 66 18 L 99 14 L 132 10 L 165 7 L 200 5" fill="none" stroke="#10B981" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 02 · Non-Interstate NHS reliable (below target) -->
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-nonint">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B]">
+                      <span class="size-1.5 rounded-full bg-[#EF4444]"></span>below target
+                    </span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Non-Interstate NHS reliable</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">73.8<span class="text-[28px] font-medium tracking-normal text-slate-500 ml-0.5">%</span></div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">target <span class="font-proxima normal-case tracking-normal text-[#0f1722] font-medium">76%</span></div>
+                    <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div class="absolute inset-y-0 left-0 bg-red-500" style="width:73.8%"></div>
+                      <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:76%"></div>
+                      <div class="absolute -top-1 size-3 rounded-full bg-white border-2 border-[#0f1722]" style="left:calc(76% - 6px)"></div>
+                    </div>
+                    <div class="inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-red-700">↓ -2.2</div>
+                    <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">Slowing — flag for action</div>
+                    <div class="mt-auto pt-3 border-t border-zinc-950/05">
+                      <svg width="100%" height="32" viewBox="0 0 200 32" preserveAspectRatio="none" class="block">
+                        <path d="M 0 12 L 33 13 L 66 14 L 99 17 L 132 19 L 165 21 L 200 23 L 200 32 L 0 32 Z" fill="rgba(239,68,68,0.13)"/>
+                        <path d="M 0 12 L 33 13 L 66 14 L 99 17 L 132 19 L 165 21 L 200 23" fill="none" stroke="#EF4444" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 03 · Truck TT reliability index (meets target · lower-is-better) -->
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-truck">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]">
+                      <span class="size-1.5 rounded-full bg-[#10B981]"></span>meets target
+                    </span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Truck TT reliability index</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">1.42</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">target <span class="font-proxima normal-case tracking-normal text-[#0f1722] font-medium">≤ 1.55</span></div>
+                    <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <!-- lower-is-better: 1.42 vs max ~2.0; target 1.55 sits at 77.5% -->
+                      <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:71%"></div>
+                      <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:77.5%"></div>
+                      <div class="absolute -top-1 size-3 rounded-full bg-white border-2 border-[#0f1722]" style="left:calc(77.5% - 6px)"></div>
+                    </div>
+                    <div class="inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-emerald-700">↓ -0.13</div>
+                    <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">Improving y/y</div>
+                    <div class="mt-auto pt-3 border-t border-zinc-950/05">
+                      <svg width="100%" height="32" viewBox="0 0 200 32" preserveAspectRatio="none" class="block">
+                        <path d="M 0 6 L 33 10 L 66 13 L 99 16 L 132 19 L 165 23 L 200 26" fill="none" stroke="#10B981" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 04 · Peak-hour excessive delay (below · 7-digit number → displayMD, not displayHero) -->
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-phed">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B]">
+                      <span class="size-1.5 rounded-full bg-[#EF4444]"></span>below target
+                    </span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Peak-hour excessive delay</div>
+                    <!-- displayMD · 28px Oswald, fits 9 chars + unit -->
+                    <div class="font-display font-semibold text-[28px] leading-[1.1] tracking-tight tabular-nums text-[#0F1722]">4,424,124<span class="text-[14px] font-medium tracking-normal text-slate-500 ml-1">hr/yr</span></div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">target <span class="font-proxima normal-case tracking-normal text-[#0f1722] font-medium">4,000,000</span></div>
+                    <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div class="absolute inset-y-0 left-0 bg-red-500" style="width:85%"></div>
+                      <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:77%"></div>
+                      <div class="absolute -top-1 size-3 rounded-full bg-white border-2 border-[#0f1722]" style="left:calc(77% - 6px)"></div>
+                    </div>
+                    <div class="inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-red-700">↑ +10.6%</div>
+                    <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">Urban pressure — see MPOs</div>
+                    <div class="mt-auto pt-3 border-t border-zinc-950/05">
+                      <svg width="100%" height="32" viewBox="0 0 200 32" preserveAspectRatio="none" class="block">
+                        <path d="M 0 18 L 33 16 L 66 19 L 99 14 L 132 10 L 165 8 L 200 6" fill="none" stroke="#EF4444" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 02 · MAP WORKBENCH · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="workbench">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Map workbench · CY 2025</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Drill down by segment, route, or MPO.</h2>
+                </div>
+              </div>
+
+              <!-- MeasureTabs · tabs.segmented base with brand display labels -->
+              <div class="flex items-stretch border border-zinc-950/10 rounded-[8px] bg-slate-50/60 p-1 gap-1">
+                <button class="flex-1 relative rounded-md px-3 py-2 text-left border border-zinc-950/10 bg-white shadow-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">LOTTR · INT</span>
+                    <span class="ml-auto font-mono text-[9.5px] uppercase tracking-wider text-[#CA8A04]">viewing</span>
+                  </div>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] mt-0.5 leading-tight">Interstate</div>
+                  <div class="absolute left-0 right-0 -bottom-px h-[3px] rounded-b bg-[#FACC15]"></div>
+                </button>
+                <button class="flex-1 relative rounded-md px-3 py-2 text-left border border-transparent hover:bg-white/50">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">LOTTR · N-INT</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] mt-0.5 leading-tight">Non-Interstate</div>
+                </button>
+                <button class="flex-1 relative rounded-md px-3 py-2 text-left border border-transparent hover:bg-white/50">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">TTTR</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] mt-0.5 leading-tight">Truck</div>
+                </button>
+                <button class="flex-1 relative rounded-md px-3 py-2 text-left border border-transparent hover:bg-white/50">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">PHED</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] mt-0.5 leading-tight">Excessive Delay</div>
+                </button>
+              </div>
+
+              <!-- FilterChips · h-8 compact · metaSM labels + prose value -->
+              <div class="mt-3 flex flex-wrap items-center gap-2">
+                <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 pl-2.5 pr-1.5">
+                  <svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22C6.477 22 2 17.523 2 12C2 6.477 6.477 2 12 2C16.478 2 20.226 4.943 21.5 9H19"/><path d="M12 8V12L14 14"/></svg>
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">period</span>
+                  <span class="font-proxima text-[12.5px] text-[#0f1722] font-medium">AM peak (6–10)</span>
+                  <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-1"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                </div>
+                <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 pl-2.5 pr-1.5">
+                  <svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25m0-4.5 5.57 3 5.57-3m-11.14 0L2.25 7.5 12 2.25l9.75 5.25-4.18 2.25"/></svg>
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">vehicle</span>
+                  <span class="font-proxima text-[12.5px] text-[#0f1722] font-medium">All vehicles</span>
+                  <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-1"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                </div>
+                <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 pl-2.5 pr-1.5">
+                  <svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25m0-4.5 5.57 3 5.57-3m-11.14 0L2.25 7.5 12 2.25l9.75 5.25-4.18 2.25"/></svg>
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">region</span>
+                  <span class="font-proxima text-[12.5px] text-[#0f1722] font-medium">All NYS</span>
+                  <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-1"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                </div>
+                <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 pl-2.5 pr-1.5">
+                  <svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6.878V6a2.25 2.25 0 0 1 2.25-2.25h7.5A2.25 2.25 0 0 1 18 6v.878M6 6.878A2.25 2.25 0 0 0 4.5 9v9a2.25 2.25 0 0 0 2.25 2.25h10.5A2.25 2.25 0 0 0 19.5 18V9A2.25 2.25 0 0 0 18 6.878"/></svg>
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">f-class</span>
+                  <span class="font-proxima text-[12.5px] text-[#0f1722] font-medium">Interstate</span>
+                  <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-1"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                </div>
+                <button class="h-8 ml-auto inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/10 bg-white hover:bg-slate-50 text-slate-700 font-mono text-[10.5px] uppercase tracking-[0.18em]"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg>Reset</button>
+              </div>
+
+              <!-- Map (col-span-8) + Inspector (col-span-4) -->
+              <div class="mt-6 grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-8">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">NYS · TMC segments · LOTTR · Interstate</span>
+                      <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">
+                        <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-emerald-500"></span>reliable</span>
+                        <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-amber-500"></span>borderline</span>
+                        <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-red-500"></span>unreliable</span>
+                        <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-slate-400"></span>n/a</span>
+                      </div>
+                    </div>
+                    <div class="relative tny-map h-[480px]">
+                      <svg viewBox="0 0 800 480" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                        <path d="M 480 380 L 460 290 L 440 200" stroke="#10B981" stroke-width="5" fill="none"/>
+                        <path d="M 440 200 L 470 100 L 510 60"  stroke="#10B981" stroke-width="5" fill="none"/>
+                        <path d="M 80 360 L 200 340 L 290 330"  stroke="#F59E0B" stroke-width="5" fill="none"/>
+                        <path d="M 290 330 L 380 335 L 460 340" stroke="#10B981" stroke-width="5" fill="none"/>
+                        <path d="M 460 340 L 530 365 L 590 380" stroke="#10B981" stroke-width="5" fill="none"/>
+                        <path d="M 420 130 L 450 230 L 470 310" stroke="#EF4444" stroke-width="5" fill="none"/>
+                        <path d="M 470 310 L 460 410 L 450 510" stroke="#F59E0B" stroke-width="5" fill="none"/>
+                        <path d="M 270 520 L 360 515 L 450 510" stroke="#F59E0B" stroke-width="5" fill="none"/>
+                        <path d="M 450 510 L 520 520 L 580 530" stroke="#10B981" stroke-width="5" fill="none"/>
+                        <path d="M 660 600 L 680 575 L 700 550" stroke="#EF4444" stroke-width="6" fill="none"/>
+                        <path d="M 700 550 L 720 530" stroke="#F59E0B" stroke-width="6" fill="none"/>
+                        <path d="M 620 600 L 640 615" stroke="#EF4444" stroke-width="6" fill="none"/>
+                        <path d="M 660 480 L 670 540 L 670 595" stroke="#F59E0B" stroke-width="5" fill="none"/>
+                        <path d="M 670 595 L 640 600" stroke="#F59E0B" stroke-width="5" fill="none"/>
+                        <path d="M 80 360 L 60 290 L 50 230"  stroke="#10B981" stroke-width="5" fill="none"/>
+                        <path d="M 290 330 L 280 430 L 270 520" stroke="#10B981" stroke-width="5" fill="none"/>
+                        <path d="M 590 380 L 620 470 L 640 530" stroke="#F59E0B" stroke-width="6" fill="none"/>
+                        <path d="M 640 530 L 650 580 L 640 600" stroke="#EF4444" stroke-width="6" fill="none"/>
+                        <path d="M 720 615 L 770 620 L 820 625" stroke="#EF4444" stroke-width="6" fill="none"/>
+                        <circle cx="200" cy="340" r="7" fill="#fff" stroke="#FACC15" stroke-width="3"/>
+                      </svg>
+                      <div class="absolute top-3 right-3 flex flex-col gap-1 rounded-[6px] bg-white shadow-md p-1">
+                        <button class="size-7 inline-flex items-center justify-center text-slate-600"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4V20"/><path d="M4 12H20"/></svg></button>
+                        <button class="size-7 inline-flex items-center justify-center text-slate-600"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14"/></svg></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Inspector · selected TMC -->
+                <div class="col-span-12 lg:col-span-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Inspector</span>
+                      <button class="size-6 inline-flex items-center justify-center rounded hover:bg-white text-slate-500"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">TMC · 120P04569</div>
+                      <div class="font-display font-semibold text-[22px] leading-[1.2] text-[#0f1722] mt-0.5">I-90 East</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Buffalo → Rochester · 72.1 mi</div>
+
+                      <div class="mt-4 grid grid-cols-3 gap-3 text-center">
+                        <div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">LOTTR</div>
+                          <div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722]">0.78</div>
+                        </div>
+                        <div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">AADT</div>
+                          <div class="font-display font-semibold text-[18px] tabular-nums text-[#0f1722]">52,108</div>
+                        </div>
+                        <div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">Truck</div>
+                          <div class="font-display font-semibold text-[18px] tabular-nums text-[#0f1722]">17.8%</div>
+                        </div>
+                      </div>
+
+                      <div class="mt-4 pt-4 border-t border-zinc-950/05">
+                        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Bucket · Borderline</div>
+                        <div class="flex items-center gap-2">
+                          <span class="size-3 rounded-full bg-amber-500"></span>
+                          <span class="font-proxima text-[12.5px] text-slate-700">0.50–0.79 — review for project programming</span>
+                        </div>
+                      </div>
+
+                      <div class="mt-4 flex gap-2">
+                        <button class="tny-press flex-1 px-3 h-9 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[11.5px] tracking-[0.12em] rounded-[6px]">Open segment</button>
+                        <button class="flex-1 px-3 h-9 bg-white border border-zinc-950/15 text-slate-700 font-proxima text-[12.5px] rounded-[6px]">Export</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · BY REGION (MPO small-multiples) · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="by-region">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">By region</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Compliance by MPO, at a glance.</h2>
+                </div>
+                <!-- Legend · metaSM tokens -->
+                <div class="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">
+                  <span class="flex items-center gap-1.5"><span class="size-2 bg-emerald-500 rounded-full"></span>meets target</span>
+                  <span class="flex items-center gap-1.5"><span class="size-2 bg-red-500 rounded-full"></span>below target</span>
+                </div>
+              </div>
+
+              <!-- 10 small-multiple MPO tiles + trailing CTA card -->
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- NYMTC · below -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">NYMTC</div>
+                    <span class="size-2 rounded-full bg-red-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">71.8<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 76</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-red-500" style="width:71.8%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:76%"></div>
+                  </div>
+                </div>
+                <!-- CDTC · meets -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">CDTC</div>
+                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">88.2<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 80</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:88.2%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                  </div>
+                </div>
+                <!-- GBNRTC · meets -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">GBNRTC</div>
+                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">84.4<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 80</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:84.4%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                  </div>
+                </div>
+                <!-- GTC · meets -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">GTC</div>
+                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">81.1<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 80</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:81.1%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                  </div>
+                </div>
+                <!-- SMTC · below -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">SMTC</div>
+                    <span class="size-2 rounded-full bg-red-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">79.6<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 80</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-red-500" style="width:79.6%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                  </div>
+                </div>
+                <!-- BMTS · below -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">BMTS</div>
+                    <span class="size-2 rounded-full bg-red-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">76.0<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 80</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-red-500" style="width:76%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                  </div>
+                </div>
+                <!-- A/GFTC · meets -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">A/GFTC</div>
+                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">91.4<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 80</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:91.4%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                  </div>
+                </div>
+                <!-- ITCTC · meets -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">ITCTC</div>
+                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">83.5<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 80</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:83.5%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                  </div>
+                </div>
+                <!-- OCTC · below -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">OCTC</div>
+                    <span class="size-2 rounded-full bg-red-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">70.2<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 76</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-red-500" style="width:70.2%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:76%"></div>
+                  </div>
+                </div>
+                <!-- PDCTC · meets -->
+                <div class="col-span-12 sm:col-span-6 md:col-span-3 bg-white border border-zinc-950/10 rounded-[8px] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">PDCTC</div>
+                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                  </div>
+                  <div class="flex items-end justify-between mb-1.5">
+                    <span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0f1722]">82.1<span class="font-proxima font-normal text-[11px] text-slate-500 ml-0.5">%</span></span>
+                    <span class="font-mono text-[10px] text-slate-500">tgt 80</span>
+                  </div>
+                  <div class="relative h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:82.1%"></div>
+                    <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:80%"></div>
+                  </div>
+                </div>
+
+                <!-- CTA tile · col-span-6, fills the trailing row -->
+                <a class="col-span-12 md:col-span-6 bg-white border border-dashed border-zinc-950/15 rounded-[8px] p-3 flex items-center justify-between hover:bg-amber-50/40 hover:border-[#CA8A04]/40 cursor-pointer transition-colors">
+                  <div>
+                    <div class="font-display uppercase text-[12px] tracking-[0.12em] text-[#0f1722]">Open MPO ranking</div>
+                    <div class="font-mono text-[10.5px] text-slate-500 uppercase tracking-[0.18em] mt-1">all 10 MPOs · sortable · with 7-yr trends</div>
+                  </div>
+                  <svg class="size-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 04 · METHODOLOGY · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="methodology">
+              <div class="bg-[#FAFBFC] border border-zinc-950/10 rounded-[8px] p-6 grid grid-cols-12 gap-6">
+                <!-- Header col -->
+                <div class="col-span-12 md:col-span-3">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] mb-2">// methodology</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">How these scores are computed.</div>
+                </div>
+                <!-- Body col · prose -->
+                <div class="col-span-12 md:col-span-6 font-proxima text-[13px] leading-[1.65] text-slate-700">
+                  <p>
+                    LOTTR is computed for AM peak (6–10), midday (10–16), PM peak (16–20), and weekend (8–20).
+                    A segment is <strong>reliable</strong> if the 80th-percentile travel time divided by the
+                    50th-percentile travel time is below 1.5 across all four periods. Person-miles are weighted
+                    by AADT × occupancy factor per the FHWA PM3 final rule.
+                  </p>
+                  <p class="mt-2">
+                    TTTR uses truck-only NPMRDS travel times across five periods. PHED uses the FHWA HPMS profile
+                    factors with NYSDOT 2023 urbanized-area population for the per-capita conversion.
+                  </p>
+                </div>
+                <!-- Data lineage col -->
+                <div class="col-span-12 md:col-span-3 flex flex-col gap-2">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-1">Data lineage</div>
+                  <div class="flex items-center justify-between border-b border-zinc-950/05 pb-1">
+                    <span class="font-display uppercase text-[11px] tracking-[0.12em] text-slate-500">NPMRDS</span>
+                    <span class="font-mono text-[11px] text-[#0f1722]">INRIX · 2017–</span>
+                  </div>
+                  <div class="flex items-center justify-between border-b border-zinc-950/05 pb-1">
+                    <span class="font-display uppercase text-[11px] tracking-[0.12em] text-slate-500">HPMS</span>
+                    <span class="font-mono text-[11px] text-[#0f1722]">NYSDOT 2023 submission</span>
+                  </div>
+                  <div class="flex items-center justify-between border-b border-zinc-950/05 pb-1">
+                    <span class="font-display uppercase text-[11px] tracking-[0.12em] text-slate-500">Pop.</span>
+                    <span class="font-mono text-[11px] text-[#0f1722]">ACS 2023 5-year urb. area</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="map-21-trend.html" class="hover:text-slate-900">map-21-trend</a>
+                <a href="floating-car.html" class="hover:text-slate-900">floating-car</a>
+                <a href="congestion.html" class="hover:text-slate-900">congestion</a>
+                <a href="work-zones.html" class="hover:text-slate-900">work-zones</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

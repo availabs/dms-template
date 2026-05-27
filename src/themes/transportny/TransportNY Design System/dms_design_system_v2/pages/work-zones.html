@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Work Zones · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<nav class="tny-meta-nav">
+  <span class="tny-meta-nav__label">TransportNY DMS · v0.2</span>
+  <span class="tny-meta-nav__group">design system</span>
+  <a class="tny-meta-nav__link" href="../design-system/theme.html">theme</a>
+  <a class="tny-meta-nav__link" href="../design-system/layouts.html">layouts</a>
+  <a class="tny-meta-nav__link" href="../design-system/grid.html">grid</a>
+  <a class="tny-meta-nav__link" href="../design-system/components.html">components</a>
+  <a class="tny-meta-nav__link" href="../design-system/patterns.html">patterns</a>
+  <span class="tny-meta-nav__group">pages</span>
+  <a class="tny-meta-nav__link" href="landing.html">landing</a>
+  <a class="tny-meta-nav__link" href="login.html">login</a>
+  <a class="tny-meta-nav__link" href="getting-started.html">getting-started</a>
+  <a class="tny-meta-nav__link" href="docs-overview.html">docs</a>
+  <a class="tny-meta-nav__link" href="map-21.html">map-21</a>
+  <a class="tny-meta-nav__link" href="map-21-trend.html">map-21-trend</a>
+  <a class="tny-meta-nav__link" href="floating-car.html">floating-car</a>
+  <a class="tny-meta-nav__link" href="congestion.html">congestion</a>
+  <a class="tny-meta-nav__link is-active" href="work-zones.html">work-zones</a>
+</nav>
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30" style="top:32px">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">NPMRDS</span>
+            </div>
+            <div class="flex-1 py-3">
+              <a href="getting-started.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Getting started</span></a>
+              <a href="map-21.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">MAP-21 PM3</span></a>
+              <a href="floating-car.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Floating Car</span></a>
+              <a href="congestion.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Congestion</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><span class="text-[13px]">Work zones</span></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10 flex items-end justify-between gap-8" data-dms-section="page-header">
+              <div>
+                <nav class="flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mb-3"><a href="getting-started.html" class="text-slate-500 hover:text-[#0f1722]">NPMRDS</a><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Work zones</span></nav>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// active + historical</span>
+                <h1 class="mt-2 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Work zones<span class="text-[#CA8A04]">.</span></h1>
+                <p class="mt-2 font-proxima text-[14.5px] text-slate-600 leading-[1.6] max-w-[680px]">Construction-driven delay. Active zones on the left; historical zone library on the right. Per-zone cost, before/after speed change, and observed duration.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="tny-press px-4 h-10 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]">Schedule report</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full bg-[#1F3F8F] text-white border-b border-black/10" data-dms-group="tone_bar">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 h-12 flex items-center gap-8" data-dms-section="filter-bar">
+              <div class="text-[12px]"><div class="text-white/70">Region:</div><button class="flex items-center gap-1.5 font-semibold">All regions <svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px]"><div class="text-white/70">Status:</div><button class="flex items-center gap-1.5 font-semibold">Active <svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px]"><div class="text-white/70">Type:</div><button class="flex items-center gap-1.5 font-semibold">All <svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="flex-1"></div>
+              <div class="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-wider text-white/80"><span class="size-1.5 rounded-full bg-emerald-400 dot-pulse"></span>live · 511NY feed</div>
+            </div>
+          </div>
+
+          <!-- KPI strip -->
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <div class="col-span-12 md:col-span-3" data-dms-section="kpi-active">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-2 h-full">
+                  <span class="font-display uppercase text-[10.5px] tracking-[0.18em] text-slate-500">Active zones</span>
+                  <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">28</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">currently live · statewide</div>
+                </div>
+              </div>
+              <div class="col-span-12 md:col-span-3" data-dms-section="kpi-cost-mtd">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-2 h-full">
+                  <span class="font-display uppercase text-[10.5px] tracking-[0.18em] text-slate-500">Month-to-date cost</span>
+                  <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">$148M</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-rose-700">↑ $24M vs Sep</div>
+                </div>
+              </div>
+              <div class="col-span-12 md:col-span-3" data-dms-section="kpi-delay">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-2 h-full">
+                  <span class="font-display uppercase text-[10.5px] tracking-[0.18em] text-slate-500">Delay person-hours</span>
+                  <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">412K</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">attributed to wz · oct '25</div>
+                </div>
+              </div>
+              <div class="col-span-12 md:col-span-3" data-dms-section="kpi-speed-drop">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-2 h-full">
+                  <span class="font-display uppercase text-[10.5px] tracking-[0.18em] text-slate-500">Avg speed drop</span>
+                  <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">14.2</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">mph · within active zones</div>
+                </div>
+              </div>
+
+              <!-- Active zones map (size 8) -->
+              <div class="col-span-12 md:col-span-8" data-dms-section="map-active">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 font-display font-medium text-[14px] text-[#2D3E4C]">Active zones · live</div>
+                  <div class="relative tny-map h-80">
+                    <svg viewBox="0 0 800 320" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                      <circle cx="120" cy="80" r="6" fill="#D6453B"/>
+                      <circle cx="280" cy="120" r="6" fill="#D6453B"/>
+                      <circle cx="380" cy="60" r="6" fill="#E8843F"/>
+                      <circle cx="460" cy="160" r="6" fill="#D6453B"/>
+                      <circle cx="540" cy="100" r="6" fill="#E8843F"/>
+                      <circle cx="620" cy="180" r="6" fill="#F2CB3D"/>
+                      <circle cx="200" cy="220" r="6" fill="#E8843F"/>
+                      <circle cx="340" cy="260" r="6" fill="#F2CB3D"/>
+                      <circle cx="500" cy="240" r="6" fill="#D6453B"/>
+                      <circle cx="660" cy="280" r="6" fill="#F2CB3D"/>
+                    </svg>
+                    <div class="absolute bottom-2 left-2 rounded-[6px] bg-white shadow-md p-3 border border-zinc-950/10">
+                      <div class="font-display uppercase text-[11px] tracking-wide text-slate-600 mb-1">Impact</div>
+                      <div class="space-y-1 font-mono text-[11px]">
+                        <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#D6453B"></span>severe</div>
+                        <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#E8843F"></span>moderate</div>
+                        <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#F2CB3D"></span>minor</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Active zones list (size 4) -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="active-list">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 font-display font-medium text-[14px] text-[#2D3E4C]">Top 5 by daily cost</div>
+                  <div class="divide-y divide-zinc-950/05">
+                    <div class="px-3 py-3 hover:bg-slate-50/60">
+                      <div class="flex items-start justify-between gap-2"><div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">I-81 N · Syracuse</div><div class="font-proxima text-[12px] text-slate-600">MM 14.0–17.5 · 2 lanes closed</div></div><div class="text-right"><div class="font-mono text-[15px] tabular-nums text-[#0F1722]">$1.82M</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">/ day</div></div></div>
+                      <div class="mt-2 inline-flex items-center gap-1.5 text-[11.5px] text-rose-700"><span class="size-1.5 rounded-full bg-rose-500"></span>severe · 18.4 mph drop</div>
+                    </div>
+                    <div class="px-3 py-3 hover:bg-slate-50/60">
+                      <div class="flex items-start justify-between gap-2"><div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">I-87 SB · Albany</div><div class="font-proxima text-[12px] text-slate-600">MM 22–24 · shoulder repair</div></div><div class="text-right"><div class="font-mono text-[15px] tabular-nums text-[#0F1722]">$1.21M</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">/ day</div></div></div>
+                      <div class="mt-2 inline-flex items-center gap-1.5 text-[11.5px] text-rose-700"><span class="size-1.5 rounded-full bg-rose-500"></span>severe · 14.8 mph drop</div>
+                    </div>
+                    <div class="px-3 py-3 hover:bg-slate-50/60">
+                      <div class="flex items-start justify-between gap-2"><div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">I-481 N · East Syracuse</div><div class="font-proxima text-[12px] text-slate-600">MM 4–7 · paving</div></div><div class="text-right"><div class="font-mono text-[15px] tabular-nums text-[#0F1722]">$0.84M</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">/ day</div></div></div>
+                      <div class="mt-2 inline-flex items-center gap-1.5 text-[11.5px] text-amber-700"><span class="size-1.5 rounded-full bg-amber-400"></span>moderate · 9.6 mph drop</div>
+                    </div>
+                    <div class="px-3 py-3 hover:bg-slate-50/60">
+                      <div class="flex items-start justify-between gap-2"><div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">I-90 EB · Cheektowaga</div><div class="font-proxima text-[12px] text-slate-600">MM 49–52 · bridge work</div></div><div class="text-right"><div class="font-mono text-[15px] tabular-nums text-[#0F1722]">$0.62M</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">/ day</div></div></div>
+                      <div class="mt-2 inline-flex items-center gap-1.5 text-[11.5px] text-amber-700"><span class="size-1.5 rounded-full bg-amber-400"></span>moderate · 8.4 mph drop</div>
+                    </div>
+                    <div class="px-3 py-3 hover:bg-slate-50/60">
+                      <div class="flex items-start justify-between gap-2"><div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">NY-17 W · Binghamton</div><div class="font-proxima text-[12px] text-slate-600">MM 70–72 · resurfacing</div></div><div class="text-right"><div class="font-mono text-[15px] tabular-nums text-[#0F1722]">$0.31M</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">/ day</div></div></div>
+                      <div class="mt-2 inline-flex items-center gap-1.5 text-[11.5px] text-amber-700"><span class="size-1.5 rounded-full bg-amber-400"></span>moderate · 6.2 mph drop</div>
+                    </div>
+                  </div>
+                  <div class="px-3 py-2 bg-slate-50/40 border-t border-zinc-950/05 text-center"><a class="font-mono text-[11px] uppercase tracking-wider text-[#1F3F8F]">View all 28 active zones →</a></div>
+                </div>
+              </div>
+
+              <!-- Before/after chart (size 8) -->
+              <div class="col-span-12 md:col-span-8" data-dms-section="before-after">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 font-display font-medium text-[14px] text-[#2D3E4C]">Speed · before vs during · I-81 N · MM 14–17.5</div>
+                  <div class="p-4">
+                    <svg viewBox="0 0 800 220" class="w-full">
+                      <g stroke="#e2e8f0" stroke-width="1"><line x1="40" x2="790" y1="30" y2="30"/><line x1="40" x2="790" y1="80" y2="80"/><line x1="40" x2="790" y1="130" y2="130"/><line x1="40" x2="790" y1="180" y2="180"/></g>
+                      <g font-family="ui-monospace" font-size="10" fill="#94a3b8" text-anchor="end"><text x="35" y="34">70</text><text x="35" y="84">55</text><text x="35" y="134">40</text><text x="35" y="184">25</text></g>
+                      <!-- before -->
+                      <path d="M 40 80 L 100 78 L 160 75 L 220 80 L 280 100 L 340 95 L 400 78 L 460 75 L 520 70 L 580 72 L 640 70 L 700 75 L 790 78" fill="none" stroke="#94A3B8" stroke-width="2"/>
+                      <!-- during -->
+                      <path d="M 40 100 L 100 105 L 160 130 L 220 160 L 280 175 L 340 170 L 400 140 L 460 125 L 520 105 L 580 110 L 640 105 L 700 110 L 790 115" fill="none" stroke="#D6453B" stroke-width="2.5"/>
+                      <!-- delta arrow -->
+                      <line x1="280" x2="280" y1="100" y2="175" stroke="#0F1722" stroke-width="1" stroke-dasharray="2 3" opacity="0.4"/>
+                      <text x="290" y="140" font-family="ui-monospace" font-size="11" fill="#EF4444" font-weight="600">-22 mph</text>
+                    </svg>
+                    <div class="mt-3 flex items-center gap-4 font-mono text-[10.5px] uppercase tracking-wider text-slate-500">
+                      <span class="inline-flex items-center gap-1.5"><span class="h-0.5 w-4 bg-[#94A3B8]"></span>before (Sep '25)</span>
+                      <span class="inline-flex items-center gap-1.5"><span class="h-0.5 w-4 bg-[#D6453B]"></span>during (Oct '25)</span>
+                      <span class="ml-auto text-[#0F1722]">avg drop: -14.2 mph · cost so far: $24M</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Historical library (size 4) -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="library">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Historical zone library</span><button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded border border-zinc-950/10 bg-white text-slate-700 text-[12px]"><svg class="size-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.86 12.5C6.37 10.65 4.6 8.6 3.63 7.45"/></svg>Filter</button></div>
+                  <div class="p-3 text-[12.5px] text-slate-700">
+                    <p class="font-proxima leading-[1.5] mb-3">Browse closed and completed zones from 2018–present. Use for before/after analysis on project boundaries.</p>
+                    <input type="text" placeholder="Search by route or zone ID…" class="w-full h-9 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-[12.5px] mb-3"/>
+                    <div class="space-y-2 max-h-[260px] overflow-y-auto">
+                      <a class="block py-2 px-3 rounded hover:bg-slate-50 cursor-pointer"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">2025-09-12 → 2025-10-08</div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">I-87 N · Mile 65–68</div><div class="font-proxima text-[12px] text-slate-500">Total cost: $14.2M · −9 mph drop</div></a>
+                      <a class="block py-2 px-3 rounded hover:bg-slate-50 cursor-pointer"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">2025-07-22 → 2025-09-04</div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">I-690 EB · Mile 7–11</div><div class="font-proxima text-[12px] text-slate-500">Total cost: $28.6M · −12 mph drop</div></a>
+                      <a class="block py-2 px-3 rounded hover:bg-slate-50 cursor-pointer"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">2025-06-04 → 2025-08-14</div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">I-90 EB · Mile 280–286</div><div class="font-proxima text-[12px] text-slate-500">Total cost: $36.4M · −15 mph drop</div></a>
+                      <a class="block py-2 px-3 rounded hover:bg-slate-50 cursor-pointer"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">2024-09-22 → 2025-05-18</div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">I-81 N · Mile 14–17 · phase 1</div><div class="font-proxima text-[12px] text-slate-500">Total cost: $124.0M · −18 mph drop</div></a>
+                      <a class="block py-2 px-3 rounded hover:bg-slate-50 cursor-pointer"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">2024-05-04 → 2024-09-12</div><div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">NY-17 W · Mile 70–74</div><div class="font-proxima text-[12px] text-slate-500">Total cost: $18.2M · −7 mph drop</div></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="floating-car.html" class="hover:text-slate-900">floating-car</a>
+                <a href="congestion.html" class="hover:text-slate-900">congestion</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
