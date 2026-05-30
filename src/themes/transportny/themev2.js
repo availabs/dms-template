@@ -1071,6 +1071,24 @@ const graph = {
     targetLabel:    "font-mono text-[10.5px] uppercase tracking-wider text-amber-700",
     focusLine:      "stroke-[#0F1722] [stroke-dasharray:2_3]",
     peakDot:        "fill-white stroke-[#1F3F8F]",
+    // Brand chart defaults consumed by the avlGraph component (merged under a section's
+    // own display settings). Drives line/series colours, margins and axes for every
+    // graph without per-section config. (See graph_new/theme.js ChartDefaults.)
+    chartDefaults: {
+      colors: { type: "palette", value: ["#10B981", "#1F3F8F", "#EAAD43", "#37576B", "#EF4444"] },
+      margin: { top: 16, right: 24, bottom: 40, left: 56 },
+      height: 280,
+      // Brand line look: a slightly bolder emerald line, smooth curve, faint
+      // gridlines. `area`/`areaOpacity` stay opt-in (a section or yColumn turns the
+      // gradient fill on) so non-trend graphs aren't forced into area mode.
+      interpolation: "catmullrom",
+      strokeWidth: 2,
+      area: false,
+      areaOpacity: 0.14,
+      xAxis: { show: true, showGridLines: false, rotateLabels: false, tickDensity: 2, gridLineOpacity: 0.18, axisColor: "#0f172a26" },
+      yAxis: { show: true, showGridLines: true, format: "Integer", gridLineOpacity: 0.14, axisColor: "#0f172a26" },
+      legend: { show: false },
+    },
   }],
 };
 
