@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Employment estimates · MPO + block detail · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  TRANSCRIPTION NOTES (employment-estimates-mpo.html · MPO + block drilldown)
+  ─────────────────────────────────────────────────────────────────────────
+  Audience: NY transportation planner doing travel-demand work for ONE region —
+  needs to drill from "8.47M jobs in NY" down to the blocks and block groups
+  they put in their model.
+
+  Sibling page: employment-estimates.html (statewide overview).
+
+  Pattern: MPO chip switches the entire page. Default selection NYMTC.
+  Numbers below are illustrative-but-plausible — keyed off the v4 county totals
+  rolled up by the MPO crosswalk in references/employment_estimates/out/county_mpo_crosswalk.csv.
+-->
+
+<nav class="tny-meta-nav">
+  <span class="tny-meta-nav__label">TransportNY DMS · v0.2</span>
+  <span class="tny-meta-nav__group">design system</span>
+  <a class="tny-meta-nav__link" href="../design-system/theme.html">theme</a>
+  <a class="tny-meta-nav__link" href="../design-system/layouts.html">layouts</a>
+  <a class="tny-meta-nav__link" href="../design-system/grid.html">grid</a>
+  <a class="tny-meta-nav__link" href="../design-system/components.html">components</a>
+  <a class="tny-meta-nav__link" href="../design-system/patterns.html">patterns</a>
+  <span class="tny-meta-nav__group">pages</span>
+  <a class="tny-meta-nav__link" href="landing.html">landing</a>
+  <a class="tny-meta-nav__link" href="login.html">login</a>
+  <a class="tny-meta-nav__link" href="getting-started.html">getting-started</a>
+  <a class="tny-meta-nav__link" href="docs-overview.html">docs</a>
+  <a class="tny-meta-nav__link" href="map-21.html">map-21</a>
+  <a class="tny-meta-nav__link" href="map-21-trend.html">map-21-trend</a>
+  <a class="tny-meta-nav__link" href="floating-car.html">floating-car</a>
+  <a class="tny-meta-nav__link" href="congestion.html">congestion</a>
+  <a class="tny-meta-nav__link" href="work-zones.html">work-zones</a>
+  <a class="tny-meta-nav__link" href="employment-estimates.html">employment</a>
+  <a class="tny-meta-nav__link is-active" href="employment-estimates-mpo.html">employment-mpo</a>
+</nav>
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ═════════ SIDENAV ═════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30" style="top:32px">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">NPMRDS</span>
+            </div>
+            <div class="px-3 pt-3">
+              <button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] flex items-center gap-2 text-slate-400">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+                <span class="font-proxima text-[13px]">Search</span>
+              </button>
+            </div>
+            <div class="flex-1 py-2">
+              <a href="getting-started.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25"/></svg>
+                <span class="text-[13px]">Getting started</span>
+              </a>
+              <a href="map-21-system-performance.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+                <span class="text-[13px]">MAP-21 PM3</span>
+              </a>
+              <a href="floating-car.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25"/></svg>
+                <span class="text-[13px]">Floating Car</span>
+              </a>
+              <a href="congestion.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+                <span class="text-[13px]">Congestion</span>
+              </a>
+              <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]">
+                <svg class="size-[18px] text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 14h6M9 18h6"/></svg>
+                <span class="text-[13px] flex-1">Employment</span>
+                <svg class="size-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+              </a>
+              <div class="pl-4 bg-[#0d1117]">
+                <a href="employment-estimates.html" class="pl-5 py-1.5 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[12px]">Overview</span></a>
+                <a class="pl-5 py-1.5 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><span class="text-[12px]">MPO + block detail</span></a>
+              </div>
+              <a href="work-zones.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                <span class="text-[13px]">Work zones</span>
+              </a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white text-[11px] font-medium ring-1 ring-[#FACC15]/20">AM</div>
+              <div class="flex-1"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Alex Muro</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">Region 3</div></div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10" data-dms-section="page-header">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 mb-4">
+                <a href="getting-started.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a class="hover:text-[#0f1722]">Business &amp; employment</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a href="employment-estimates.html" class="hover:text-[#0f1722]">Estimates</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">MPO + block detail</span>
+              </nav>
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// regional planning</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">block · block-group · tract · CY 2022</span>
+              </div>
+              <div class="flex items-end justify-between gap-8">
+                <div class="max-w-[760px]">
+                  <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">MPO + block-level detail<span class="text-[#CA8A04]">.</span></h1>
+                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[680px]">Employment estimates rolled up by Metropolitan Planning Organization with drill-down to the block and block-group. Tuned for travel-demand modeling, transit network planning, and origin-destination work at TAZ resolution.</p>
+                </div>
+                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                  <div class="flex items-center gap-2">
+                    <!-- MPO chip · the selected MPO for the whole page -->
+                    <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 pl-2.5 pr-1.5">
+                      <svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">MPO</span>
+                      <span class="font-proxima text-[12px] text-[#0f1722] font-medium">NYMTC</span>
+                      <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                    </div>
+                    <!-- Geography level chip -->
+                    <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 hover:border-zinc-950/20 pl-2.5 pr-1.5">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">geo</span>
+                      <span class="font-proxima text-[12px] text-[#0f1722] font-medium">Block group</span>
+                      <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                    </div>
+                    <a href="employment-estimates.html" class="h-8 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 text-slate-700 font-mono text-[10.5px] uppercase tracking-[0.18em]">
+                      Statewide overview <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                    </a>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-2">
+                    <span>v4 build</span><span class="text-[#0f1722]">2026-05-21</span>
+                    <span class="text-slate-300">·</span>
+                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>research grade</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ MPO TONE-BAR · LayoutGroup `tone_bar_dark` ═════════ -->
+          <div class="w-full bg-[#16307A] text-white border-b border-black/20" data-dms-group="tone_bar_dark">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 h-14 flex items-center gap-2 overflow-x-auto" data-dms-section="mpo-chips">
+              <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-white/60 flex-shrink-0 mr-2">MPO ·</span>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full bg-white text-[#0F1722] shadow-sm border border-zinc-950/5 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-[#FACC15]"></span>NYMTC</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-emerald-400"></span>GBNRTC</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-sky-400"></span>CDTC (Capital)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-rose-400"></span>SMTC (Syracuse)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-orange-400"></span>GTC (Rochester)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-fuchsia-400"></span>BMTS (Binghamton)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-teal-400"></span>HOCTS (Herkimer)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-yellow-400"></span>UCTC (Ulster)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-violet-400"></span>OCTC (Orange)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-cyan-400"></span>PDCTC (Poughkeepsie)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-lime-400"></span>ECTC (Elmira)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-slate-400"></span>ITCTC (Ithaca)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-pink-400"></span>A/GFTC (Adirondack)</a>
+              <a class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima italic">+ outside-MPO rural</a>
+            </div>
+          </div>
+
+          <!-- ═════════ MPO SUMMARY BAND · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="mpo-summary">
+              <div class="grid grid-cols-12 gap-6 items-center">
+                <div class="col-span-12 md:col-span-4">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] mb-1">// NYMTC · CY 2022</div>
+                  <div class="flex items-baseline gap-3">
+                    <span class="font-display font-semibold text-[52px] leading-none tabular-nums text-[#0F1722]">4.32M</span>
+                    <span class="font-display uppercase text-[14px] tracking-wide text-slate-600">workplace jobs</span>
+                  </div>
+                  <div class="font-mono text-[11px] text-slate-500 mt-1.5">51% of NY State employment · 12 counties · NYC + Long Island + Lower Hudson</div>
+                </div>
+                <div class="col-span-6 md:col-span-2">
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">01</div>
+                  <div class="font-display uppercase text-[11px] tracking-[0.06em] text-[#0F1722] font-semibold leading-tight mb-2">Geography</div>
+                  <div class="font-display font-semibold text-[20px] tabular-nums leading-none text-[#0F1722]">67,890</div>
+                  <div class="font-mono text-[10px] tabular-nums mt-1 text-slate-500">blocks · 8,450 BG · 2,180 tracts</div>
+                </div>
+                <div class="col-span-6 md:col-span-2">
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">02</div>
+                  <div class="font-display uppercase text-[11px] tracking-[0.06em] text-[#0F1722] font-semibold leading-tight mb-2">Top sector</div>
+                  <div class="font-display font-semibold text-[20px] tabular-nums leading-none text-[#0F1722]">688k</div>
+                  <div class="font-mono text-[10px] tabular-nums mt-1 text-slate-500">NAICS 62 healthcare · 16%</div>
+                </div>
+                <div class="col-span-6 md:col-span-2">
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">03</div>
+                  <div class="font-display uppercase text-[11px] tracking-[0.06em] text-[#0F1722] font-semibold leading-tight mb-2">Anchor blocks</div>
+                  <div class="font-display font-semibold text-[20px] tabular-nums leading-none text-[#0F1722]">7</div>
+                  <div class="font-mono text-[10px] tabular-nums mt-1 text-slate-500">of 9 statewide · JFK + 5 hospitals + Columbia</div>
+                </div>
+                <div class="col-span-6 md:col-span-2">
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">04</div>
+                  <div class="font-display uppercase text-[11px] tracking-[0.06em] text-[#0F1722] font-semibold leading-tight mb-2">High-conf cells</div>
+                  <div class="flex items-baseline gap-1.5">
+                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                    <span class="font-display font-semibold text-[20px] tabular-nums leading-none text-[#0F1722]">14.2%</span>
+                  </div>
+                  <div class="font-mono text-[10px] tabular-nums mt-1 text-emerald-700">above NY avg 7.7%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · MPO MAP · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="mpo-map">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">spatial distribution · NYMTC blocks</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Where employment concentrates in your MPO.</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/10 font-mono text-[10.5px] uppercase tracking-wider text-slate-700">density</button>
+                  <button class="h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] bg-[#1F3F8F] border border-[#1F3F8F] font-display uppercase text-[10.5px] tracking-wider text-white">density · NAICS 62</button>
+                  <button class="h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/10 font-mono text-[10.5px] uppercase tracking-wider text-slate-700">confidence</button>
+                  <button class="h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/10 font-mono text-[10.5px] uppercase tracking-wider text-slate-700">anchors</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <!-- Map placeholder -->
+                <div class="col-span-12 lg:col-span-9 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="relative h-[560px] tny-map" style="background: linear-gradient(135deg, #E8E4D2 0%, #DDD5BC 100%);">
+                    <!-- Simplified SVG of NYMTC blocks with employment heat -->
+                    <svg viewBox="0 0 800 560" class="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
+                      <!-- Water -->
+                      <rect x="0" y="0" width="800" height="560" fill="#cfe2f3" opacity="0.4"/>
+                      <!-- NY State outline (very rough) -->
+                      <path d="M 50 420 L 220 380 L 280 360 L 360 380 L 440 340 L 540 360 L 620 380 L 700 380 L 720 440 L 600 460 L 480 480 L 360 500 L 240 480 L 120 460 Z" fill="#F4F1EA" stroke="#0F2D4D" stroke-width="0.5"/>
+                      <!-- NYC area (Manhattan, Brooklyn, Queens, Bronx, SI) with heat dots -->
+                      <g transform="translate(330,380)">
+                        <!-- Manhattan -->
+                        <ellipse cx="20" cy="40" rx="8" ry="35" fill="#0F2D4D" opacity="0.75"/>
+                        <!-- High-emp cells (orange/red dots) -->
+                        <circle cx="18" cy="20" r="6" fill="#EF4444" opacity="0.9"/>
+                        <circle cx="22" cy="35" r="7" fill="#EF4444" opacity="0.9"/>
+                        <circle cx="20" cy="50" r="5" fill="#F97316" opacity="0.85"/>
+                        <circle cx="22" cy="65" r="4" fill="#EAB308" opacity="0.85"/>
+                        <!-- Brooklyn -->
+                        <ellipse cx="40" cy="85" rx="22" ry="14" fill="#0F2D4D" opacity="0.6"/>
+                        <circle cx="38" cy="83" r="3" fill="#F97316" opacity="0.85"/>
+                        <circle cx="44" cy="87" r="3" fill="#EAB308" opacity="0.85"/>
+                        <circle cx="34" cy="89" r="2.5" fill="#EAB308" opacity="0.85"/>
+                        <!-- Queens (with JFK star) -->
+                        <ellipse cx="65" cy="65" rx="22" ry="15" fill="#0F2D4D" opacity="0.6"/>
+                        <circle cx="60" cy="62" r="3" fill="#EAB308" opacity="0.85"/>
+                        <polygon points="78,72 80,77 85,77 81,80 83,85 78,82 73,85 75,80 71,77 76,77" fill="#FACC15" stroke="#0F1722" stroke-width="1"/>
+                        <text x="78" y="95" text-anchor="middle" font-family="ui-monospace" font-size="6" fill="#0F1722">JFK</text>
+                        <!-- Bronx -->
+                        <ellipse cx="30" cy="10" rx="18" ry="10" fill="#0F2D4D" opacity="0.55"/>
+                        <circle cx="28" cy="8" r="3" fill="#EAB308" opacity="0.85"/>
+                        <!-- Staten Island -->
+                        <ellipse cx="0" cy="100" rx="12" ry="8" fill="#0F2D4D" opacity="0.5"/>
+                      </g>
+                      <!-- Long Island -->
+                      <ellipse cx="540" cy="430" rx="100" ry="14" fill="#0F2D4D" opacity="0.5"/>
+                      <circle cx="490" cy="430" r="3" fill="#EAB308" opacity="0.85"/>
+                      <circle cx="540" cy="430" r="3" fill="#EAB308" opacity="0.85"/>
+                      <circle cx="590" cy="430" r="2.5" fill="#fbbf24" opacity="0.85"/>
+                      <!-- Lower Hudson counties -->
+                      <ellipse cx="340" cy="335" rx="40" ry="22" fill="#0F2D4D" opacity="0.45"/>
+                      <circle cx="320" cy="335" r="2.5" fill="#fbbf24" opacity="0.85"/>
+                      <circle cx="350" cy="335" r="3" fill="#EAB308" opacity="0.85"/>
+
+                      <!-- MPO boundary highlight (NYMTC) -->
+                      <path d="M 280 320 L 380 320 L 420 340 L 540 360 L 650 410 L 660 460 L 580 460 L 480 480 L 360 500 L 280 460 L 270 410 Z" fill="none" stroke="#FACC15" stroke-width="1.5" stroke-dasharray="3,2"/>
+                    </svg>
+                    <!-- Legend (overlay on map) -->
+                    <div class="absolute bottom-3 left-3 bg-white rounded-[6px] shadow-md p-3 border border-zinc-950/10 max-w-[220px]">
+                      <div class="font-display uppercase text-[11px] tracking-wide text-slate-600 mb-1.5">NAICS 62 · est_emp / block</div>
+                      <div class="flex h-2 rounded overflow-hidden">
+                        <div class="flex-1 bg-[#0F2D4D]"></div>
+                        <div class="flex-1 bg-[#EAB308]"></div>
+                        <div class="flex-1 bg-[#F97316]"></div>
+                        <div class="flex-1 bg-[#EF4444]"></div>
+                      </div>
+                      <div class="flex justify-between font-mono text-[9.5px] text-slate-500 mt-0.5 tabular-nums">
+                        <span>1</span><span>50</span><span>500</span><span>5k+</span>
+                      </div>
+                      <div class="mt-2 pt-2 border-t border-zinc-950/05 flex items-center gap-2 font-mono text-[10px] text-slate-600">
+                        <span class="size-2.5" style="background:#FACC15;clip-path:polygon(50% 0%, 60% 35%, 100% 35%, 70% 55%, 80% 90%, 50% 70%, 20% 90%, 30% 55%, 0% 35%, 40% 35%)"></span>
+                        anchor institution
+                      </div>
+                      <div class="mt-1 flex items-center gap-2 font-mono text-[10px] text-slate-600">
+                        <span class="inline-block w-4 h-px border-t border-dashed border-[#FACC15]"></span>
+                        MPO boundary
+                      </div>
+                    </div>
+                    <!-- North arrow / scale -->
+                    <div class="absolute top-3 right-3 bg-white rounded-[6px] shadow-md p-2 border border-zinc-950/10 flex items-center gap-2 font-mono text-[10px] text-slate-600">
+                      <svg viewBox="0 0 24 24" class="size-4 text-[#1F3F8F]" fill="currentColor"><path d="M12 2L8 14h3v8h2v-8h3z"/></svg>
+                      <span>N · 10 mi</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Side panel · inspector / map controls -->
+                <div class="col-span-12 lg:col-span-3 flex flex-col gap-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">selected block</div>
+                    <div class="font-mono text-[12px] tabular-nums text-[#0F1722] font-medium">360610142091016</div>
+                    <div class="font-proxima text-[13px] text-slate-700 mt-2">Upper East Side · Mount Sinai Hospital campus</div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 grid grid-cols-2 gap-2 font-mono text-[11px]">
+                      <div><div class="text-slate-400 uppercase tracking-wider text-[9.5px]">est_emp</div><div class="text-[#0F1722] font-medium tabular-nums">18,500</div></div>
+                      <div><div class="text-slate-400 uppercase tracking-wider text-[9.5px]">anchor</div><div class="text-emerald-700">✓ NAICS 62</div></div>
+                      <div><div class="text-slate-400 uppercase tracking-wider text-[9.5px]">data_conf</div><div class="text-[#0F1722]">high</div></div>
+                      <div><div class="text-slate-400 uppercase tracking-wider text-[9.5px]">bp_trust</div><div class="text-[#0F1722]">medium</div></div>
+                    </div>
+                  </div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">map display</div>
+                    <div class="space-y-2 font-proxima text-[12.5px]">
+                      <label class="flex items-center gap-2"><input type="checkbox" checked class="rounded text-[#1F3F8F]"/>Anchor markers</label>
+                      <label class="flex items-center gap-2"><input type="checkbox" checked class="rounded text-[#1F3F8F]"/>MPO boundary</label>
+                      <label class="flex items-center gap-2"><input type="checkbox" class="rounded text-[#1F3F8F]"/>County borders</label>
+                      <label class="flex items-center gap-2"><input type="checkbox" class="rounded text-[#1F3F8F]"/>Block-group borders</label>
+                      <label class="flex items-center gap-2"><input type="checkbox" class="rounded text-[#1F3F8F]"/>LEHD OD flows (top 20)</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 02 · NAICS BREAKDOWN · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="naics-breakdown">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">industry mix · NYMTC vs NY State</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Sector composition: where NYMTC tilts vs the state.</h2>
+                  <p class="font-proxima text-[14.5px] leading-[1.55] text-slate-600 mt-2 max-w-[760px]">NYMTC over-indexes in healthcare, finance, professional services, and accommodation. Manufacturing and agriculture are far below the state share. These tilts drive different trip purpose splits — finance/professional jobs are 9-to-5 office, healthcare runs 24/7 with shift starts at 7am / 3pm / 11pm.</p>
+                </div>
+              </div>
+
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                <div class="grid grid-cols-12 gap-3 font-mono text-[11px]">
+                  <div class="col-span-12 grid grid-cols-12 gap-3 text-[10px] uppercase tracking-[0.18em] text-slate-400 pb-2 border-b border-zinc-950/05">
+                    <div class="col-span-1">naics</div>
+                    <div class="col-span-3">sector</div>
+                    <div class="col-span-3">NYMTC share</div>
+                    <div class="col-span-3">NY State share</div>
+                    <div class="col-span-1 text-right">est_emp</div>
+                    <div class="col-span-1 text-right">tilt</div>
+                  </div>
+                  <!-- 62 - healthcare - overrep -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5">
+                    <div class="col-span-1 tabular-nums">62</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Health Care</div>
+                    <div class="col-span-3"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:88%"></div></div>
+                    <div class="col-span-3"><div class="h-3 bg-slate-300 rounded-[2px]" style="width:62%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">688k</div>
+                    <div class="col-span-1 text-right tabular-nums text-emerald-700">+4.1</div>
+                  </div>
+                  <!-- 54 - professional - overrep -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">54</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Professional services</div>
+                    <div class="col-span-3"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:72%"></div></div>
+                    <div class="col-span-3"><div class="h-3 bg-slate-300 rounded-[2px]" style="width:42%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">562k</div>
+                    <div class="col-span-1 text-right tabular-nums text-emerald-700">+4.4</div>
+                  </div>
+                  <!-- 52 - finance - overrep -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">52</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Finance &amp; insurance</div>
+                    <div class="col-span-3"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:55%"></div></div>
+                    <div class="col-span-3"><div class="h-3 bg-slate-300 rounded-[2px]" style="width:24%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">430k</div>
+                    <div class="col-span-1 text-right tabular-nums text-emerald-700">+4.7</div>
+                  </div>
+                  <!-- 44-45 retail roughly equal -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">44-45</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Retail trade</div>
+                    <div class="col-span-3"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:38%"></div></div>
+                    <div class="col-span-3"><div class="h-3 bg-slate-300 rounded-[2px]" style="width:38%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">301k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">0.0</div>
+                  </div>
+                  <!-- 72 accommodation overrep -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">72</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Accommodation &amp; food</div>
+                    <div class="col-span-3"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:36%"></div></div>
+                    <div class="col-span-3"><div class="h-3 bg-slate-300 rounded-[2px]" style="width:28%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">281k</div>
+                    <div class="col-span-1 text-right tabular-nums text-emerald-700">+1.2</div>
+                  </div>
+                  <!-- 61 education slight underrep -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">61</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Education</div>
+                    <div class="col-span-3"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:30%"></div></div>
+                    <div class="col-span-3"><div class="h-3 bg-slate-300 rounded-[2px]" style="width:38%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">237k</div>
+                    <div class="col-span-1 text-right tabular-nums text-rose-600">-1.4</div>
+                  </div>
+                  <!-- 92 public admin -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">92</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Public administration</div>
+                    <div class="col-span-3"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:28%"></div></div>
+                    <div class="col-span-3"><div class="h-3 bg-slate-300 rounded-[2px]" style="width:30%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">219k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">-0.5</div>
+                  </div>
+                  <!-- 31-33 manufacturing strong underrep -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">31-33</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Manufacturing</div>
+                    <div class="col-span-3"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:10%"></div></div>
+                    <div class="col-span-3"><div class="h-3 bg-slate-300 rounded-[2px]" style="width:24%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">78k</div>
+                    <div class="col-span-1 text-right tabular-nums text-rose-600">-3.9</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · TOP EMPLOYMENT BLOCKS · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="top-blocks">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">top 10 employment blocks · NYMTC</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The trip-attraction giants in your network.</h2>
+                  <p class="font-proxima text-[14.5px] leading-[1.55] text-slate-600 mt-2 max-w-[760px]">If your model isn't reproducing AM peak congestion at these blocks, the attraction side is mis-specified. Treat anchors as fixed; review the unanchored block totals against site-level audit.</p>
+                </div>
+                <a class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">CSV export <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg></a>
+              </div>
+
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <table class="w-full text-[13px] text-slate-700">
+                  <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                    <tr>
+                      <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Rank</th>
+                      <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Block GEOID</th>
+                      <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Location</th>
+                      <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">est_emp</th>
+                      <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">NAICS mix</th>
+                      <th class="px-3 py-2 text-center font-display uppercase text-[11px] tracking-wide text-slate-600">⚓</th>
+                      <th class="px-3 py-2 text-center font-display uppercase text-[11px] tracking-wide text-slate-600">conf</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-zinc-950/05 bg-emerald-50/30">
+                      <td class="px-3 py-2 font-mono tabular-nums">01</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360810999001000</td>
+                      <td class="px-3 py-2 font-proxima">JFK Airport · Jamaica</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">40,242</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#1F3F8F]" style="width:65px" title="48-49 transport"></span><span class="h-2 bg-[#37576B]" style="width:10px" title="72 food"></span><span class="h-2 bg-slate-300" style="width:5px" title="other"></span></div></td>
+                      <td class="px-3 py-2 text-center text-emerald-600">✓</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-emerald-50 text-emerald-700 border border-emerald-200">high</span></td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-3 py-2 font-mono tabular-nums">02</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610096001000</td>
+                      <td class="px-3 py-2 font-proxima">Midtown · 6th Ave / 50th</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">18,500</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#1F3F8F]" style="width:35px"></span><span class="h-2 bg-[#37576B]" style="width:20px"></span><span class="h-2 bg-slate-400" style="width:15px"></span><span class="h-2 bg-slate-300" style="width:10px"></span></div></td>
+                      <td class="px-3 py-2 text-center text-slate-300">—</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-amber-100 text-amber-800 border border-amber-200">medium</span></td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05 bg-emerald-50/30">
+                      <td class="px-3 py-2 font-mono tabular-nums">03</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610142091016</td>
+                      <td class="px-3 py-2 font-proxima">Mt. Sinai Hospital · UES</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">18,500</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#1F3F8F]" style="width:70px" title="62 healthcare"></span></div></td>
+                      <td class="px-3 py-2 text-center text-emerald-600">✓</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-emerald-50 text-emerald-700 border border-emerald-200">high</span></td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-3 py-2 font-mono tabular-nums">04</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610101001006</td>
+                      <td class="px-3 py-2 font-proxima">FiDi · Information / Finance</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">18,059</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#1F3F8F]" style="width:40px"></span><span class="h-2 bg-[#37576B]" style="width:25px"></span><span class="h-2 bg-slate-400" style="width:10px"></span></div></td>
+                      <td class="px-3 py-2 text-center text-slate-300">—</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-amber-100 text-amber-800 border border-amber-200">medium</span></td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-3 py-2 font-mono tabular-nums">05</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610062001000</td>
+                      <td class="px-3 py-2 font-proxima">Bellevue Hospital · Kips Bay</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">17,894</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#1F3F8F]" style="width:62px"></span></div></td>
+                      <td class="px-3 py-2 text-center text-slate-300">—</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-amber-100 text-amber-800 border border-amber-200">medium</span></td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05 bg-emerald-50/30">
+                      <td class="px-3 py-2 font-mono tabular-nums">06</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610118005000</td>
+                      <td class="px-3 py-2 font-proxima">NYU Langone · Tisch</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">17,074</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#1F3F8F]" style="width:60px"></span></div></td>
+                      <td class="px-3 py-2 text-center text-emerald-600">✓</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-emerald-50 text-emerald-700 border border-emerald-200">high</span></td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-3 py-2 font-mono tabular-nums">07</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610096002001</td>
+                      <td class="px-3 py-2 font-proxima">Midtown · 5th Ave / 53rd</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">16,824</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#37576B]" style="width:50px"></span><span class="h-2 bg-[#1F3F8F]" style="width:15px"></span></div></td>
+                      <td class="px-3 py-2 text-center text-slate-300">—</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-rose-50 text-rose-700 border border-rose-200">low</span></td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05 bg-emerald-50/30">
+                      <td class="px-3 py-2 font-mono tabular-nums">08</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610203002000</td>
+                      <td class="px-3 py-2 font-proxima">Columbia · Morningside Heights</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">16,166</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#1F3F8F]" style="width:55px"></span><span class="h-2 bg-[#37576B]" style="width:8px"></span></div></td>
+                      <td class="px-3 py-2 text-center text-emerald-600">✓</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-emerald-50 text-emerald-700 border border-emerald-200">high</span></td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05 bg-emerald-50/30">
+                      <td class="px-3 py-2 font-mono tabular-nums">09</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610251001002</td>
+                      <td class="px-3 py-2 font-proxima">Presbyterian Hosp · Wash. Hts.</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">16,139</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#1F3F8F]" style="width:58px"></span></div></td>
+                      <td class="px-3 py-2 text-center text-emerald-600">✓</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-emerald-50 text-emerald-700 border border-emerald-200">high</span></td>
+                    </tr>
+                    <tr>
+                      <td class="px-3 py-2 font-mono tabular-nums">10</td>
+                      <td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610082002001</td>
+                      <td class="px-3 py-2 font-proxima">Midtown East · Park Ave</td>
+                      <td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">14,202</td>
+                      <td class="px-3 py-2"><div class="flex gap-0.5"><span class="h-2 bg-[#37576B]" style="width:45px"></span><span class="h-2 bg-[#1F3F8F]" style="width:15px"></span></div></td>
+                      <td class="px-3 py-2 text-center text-slate-300">—</td>
+                      <td class="px-3 py-2 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-amber-100 text-amber-800 border border-amber-200">medium</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-3 italic">NAICS mix bar legend: <span class="inline-block size-2.5 align-middle bg-[#1F3F8F]"></span> dominant sector · <span class="inline-block size-2.5 align-middle bg-[#37576B]"></span> 2nd · <span class="inline-block size-2.5 align-middle bg-slate-400"></span> 3rd · width is proportional to share of block_total.</p>
+            </div>
+          </div>
+
+          <!-- ═════════ § 04 · GEOGRAPHY CHOICE · LayoutGroup `content_tint` ═════════ -->
+          <div class="w-full bg-[#E4E8EE] border-b border-zinc-950/05 py-12" data-dms-group="content_tint">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="geo-comparison">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">stability vs detail · block · block-group · tract</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Which geography level should you model on?</h2>
+                  <p class="font-proxima text-[14.5px] leading-[1.55] text-slate-600 mt-2 max-w-[760px]">All three levels are deterministic aggregations of the same block-level estimate, so they're mutually consistent — pick the level that matches your TAZ granularity and tolerance for noise.</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <!-- Block card -->
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                  <div class="flex items-baseline gap-3">
+                    <div class="font-display uppercase text-[14px] tracking-wide text-[#0F1722]">Block</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">finest</div>
+                  </div>
+                  <div class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight tabular-nums text-[#0F1722]">67,890</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">cells · NYMTC</div>
+                  <div class="flex h-2 rounded overflow-hidden mt-2">
+                    <div style="width:14%" class="bg-emerald-500" title="high"></div>
+                    <div style="width:18%" class="bg-amber-400" title="medium"></div>
+                    <div style="width:68%" class="bg-rose-300" title="low"></div>
+                  </div>
+                  <div class="flex justify-between font-mono text-[10px] tabular-nums">
+                    <span class="text-emerald-700">14% high</span>
+                    <span class="text-amber-700">18% medium</span>
+                    <span class="text-rose-700">68% low</span>
+                  </div>
+                  <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-700 mt-2">Use for: <strong>TAZ assignment</strong> when your zones are sub-block-group sized, parcel-level land-use comparisons, anchor verification.</div>
+                  <div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 italic mt-auto">Trade-off: tiny cells have wide low/high bands. Don't read individual block × NAICS as a point estimate without checking <code class="font-mono text-[11px] bg-slate-100 px-1 rounded">data_confidence</code>.</div>
+                </div>
+
+                <!-- Block group card -->
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border-2 border-[#1F3F8F] bg-white shadow-sm p-5 flex flex-col gap-3 h-full relative">
+                  <span class="absolute -top-2.5 left-4 inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-[#1F3F8F] text-white">recommended</span>
+                  <div class="flex items-baseline gap-3">
+                    <div class="font-display uppercase text-[14px] tracking-wide text-[#0F1722]">Block group</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">balanced</div>
+                  </div>
+                  <div class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight tabular-nums text-[#0F1722]">8,450</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">cells · NYMTC</div>
+                  <div class="flex h-2 rounded overflow-hidden mt-2">
+                    <div style="width:28%" class="bg-emerald-500"></div>
+                    <div style="width:31%" class="bg-amber-400"></div>
+                    <div style="width:41%" class="bg-rose-300"></div>
+                  </div>
+                  <div class="flex justify-between font-mono text-[10px] tabular-nums">
+                    <span class="text-emerald-700">28% high</span>
+                    <span class="text-amber-700">31% medium</span>
+                    <span class="text-rose-700">41% low</span>
+                  </div>
+                  <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-700 mt-2">Use for: <strong>trip generation regressions</strong>, intermediate-scale modeling, NYMTC's traditional TAZ system, transit catchment analysis.</div>
+                  <div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 italic mt-auto">Trade-off: averages over ~17 blocks per BG smooth most of the low-conf noise; still finer than tract for transit walk-shed work.</div>
+                </div>
+
+                <!-- Tract card -->
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                  <div class="flex items-baseline gap-3">
+                    <div class="font-display uppercase text-[14px] tracking-wide text-[#0F1722]">Tract</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">most stable</div>
+                  </div>
+                  <div class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight tabular-nums text-[#0F1722]">2,180</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">cells · NYMTC</div>
+                  <div class="flex h-2 rounded overflow-hidden mt-2">
+                    <div style="width:52%" class="bg-emerald-500"></div>
+                    <div style="width:30%" class="bg-amber-400"></div>
+                    <div style="width:18%" class="bg-rose-300"></div>
+                  </div>
+                  <div class="flex justify-between font-mono text-[10px] tabular-nums">
+                    <span class="text-emerald-700">52% high</span>
+                    <span class="text-amber-700">30% medium</span>
+                    <span class="text-rose-700">18% low</span>
+                  </div>
+                  <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-700 mt-2">Use for: <strong>aggregate validation</strong>, regional reporting, longitudinal comparisons against ACS, NYS DOL totals.</div>
+                  <div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 italic mt-auto">Trade-off: ~31 blocks per tract — too coarse for any sub-TAZ work, but the most stable input for sanity checks.</div>
+                </div>
+              </div>
+
+              <div class="mt-6 rounded-[8px] bg-white border border-zinc-950/10 p-4 flex items-start gap-3">
+                <svg class="size-5 text-[#1F3F8F] flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+                <p class="font-proxima text-[13px] leading-[1.55] text-slate-700"><strong>Mutual consistency.</strong> The block-group totals are deterministic sums of constituent block estimates; tract totals are deterministic sums of block-group totals. IPF runs once at the block level — coarser geographies are pure aggregation. So you can mix-and-match levels in one model without double-counting.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 05 · SOURCE AGREEMENT · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="source-agreement">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">source agreement · NYMTC totals</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Where does the estimate sit relative to its inputs?</h2>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-2">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Business Points</div>
+                  <div class="font-display font-semibold text-[40px] leading-[1.05] tabular-nums text-[#0F1722]">3.91M</div>
+                  <div class="font-mono text-[11px] text-rose-600 tabular-nums">-410k vs estimate</div>
+                  <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">Listing-based count. Under-counts large institutions where chain HQ collapses branch employment, and the long tail of small employers carries imputed counts.</div>
+                </div>
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-2">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">LEHD WAC</div>
+                  <div class="font-display font-semibold text-[40px] leading-[1.05] tabular-nums text-[#0F1722]">4.19M</div>
+                  <div class="font-mono text-[11px] text-rose-600 tabular-nums">-130k vs estimate</div>
+                  <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">UI-derived workplace count with partial-synthesis noise. Misses self-employed; includes federal civilian post-2012.</div>
+                </div>
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border-2 border-[#1F3F8F] bg-white shadow-sm p-5 flex flex-col gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] bg-[#1F3F8F]/10 text-[#0F2D4D] border border-[#1F3F8F]/20">est_emp</span>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Fused estimate</div>
+                  <div class="font-display font-semibold text-[40px] leading-[1.05] tabular-nums text-[#0F1722]">4.32M</div>
+                  <div class="font-mono text-[11px] text-emerald-700 tabular-nums">= QCEW NYMTC counties + nonemployer</div>
+                  <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">Mass-anchored to QCEW county totals; spatial distribution blended from BP+WAC with per-cell α; ZBP marginal pulls sub-county shape.</div>
+                </div>
+
+                <!-- Per-NAICS BP vs WAC vs estimate -->
+                <div class="col-span-12 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-5 py-3 border-b border-zinc-950/05 bg-slate-50/40">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">per-NAICS source disagreement · NYMTC</div>
+                    <div class="font-display font-medium text-[14px] text-[#0F1722] mt-0.5">Bigger gaps = more redistribution work for IPF</div>
+                  </div>
+                  <div class="p-5 grid grid-cols-12 gap-3 font-mono text-[11px]">
+                    <div class="col-span-12 grid grid-cols-12 gap-3 text-[10px] uppercase tracking-[0.18em] text-slate-400 pb-2 border-b border-zinc-950/05">
+                      <div class="col-span-1">naics</div>
+                      <div class="col-span-3">sector</div>
+                      <div class="col-span-1 text-right">BP</div>
+                      <div class="col-span-1 text-right">WAC</div>
+                      <div class="col-span-1 text-right">est_emp</div>
+                      <div class="col-span-3">est_emp distribution vs BP/WAC</div>
+                      <div class="col-span-2 text-right">notes</div>
+                    </div>
+                    <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5">
+                      <div class="col-span-1 tabular-nums">62</div>
+                      <div class="col-span-3 font-proxima text-slate-700">Health Care</div>
+                      <div class="col-span-1 text-right tabular-nums">512k</div>
+                      <div class="col-span-1 text-right tabular-nums">704k</div>
+                      <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">688k</div>
+                      <div class="col-span-3"><div class="relative h-3 bg-slate-100"><div class="absolute h-3 bg-[#1F3F8F]/30" style="left:25%;width:50%"></div><div class="absolute h-3 w-px bg-[#1F3F8F]" style="left:73%"></div></div></div>
+                      <div class="col-span-2 text-right font-proxima text-slate-500">WAC-pulled · BP HQ rollup</div>
+                    </div>
+                    <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                      <div class="col-span-1 tabular-nums">54</div>
+                      <div class="col-span-3 font-proxima text-slate-700">Professional</div>
+                      <div class="col-span-1 text-right tabular-nums">541k</div>
+                      <div class="col-span-1 text-right tabular-nums">578k</div>
+                      <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">562k</div>
+                      <div class="col-span-3"><div class="relative h-3 bg-slate-100"><div class="absolute h-3 bg-[#1F3F8F]/30" style="left:40%;width:18%"></div><div class="absolute h-3 w-px bg-[#1F3F8F]" style="left:51%"></div></div></div>
+                      <div class="col-span-2 text-right font-proxima text-slate-500">near-balanced · α ≈ 0.50</div>
+                    </div>
+                    <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                      <div class="col-span-1 tabular-nums">52</div>
+                      <div class="col-span-3 font-proxima text-slate-700">Finance</div>
+                      <div class="col-span-1 text-right tabular-nums">429k</div>
+                      <div class="col-span-1 text-right tabular-nums">418k</div>
+                      <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">430k</div>
+                      <div class="col-span-3"><div class="relative h-3 bg-slate-100"><div class="absolute h-3 bg-[#1F3F8F]/30" style="left:45%;width:8%"></div><div class="absolute h-3 w-px bg-[#1F3F8F]" style="left:52%"></div></div></div>
+                      <div class="col-span-2 text-right font-proxima text-slate-500">close agreement</div>
+                    </div>
+                    <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                      <div class="col-span-1 tabular-nums">44-45</div>
+                      <div class="col-span-3 font-proxima text-slate-700">Retail</div>
+                      <div class="col-span-1 text-right tabular-nums">310k</div>
+                      <div class="col-span-1 text-right tabular-nums">295k</div>
+                      <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">301k</div>
+                      <div class="col-span-3"><div class="relative h-3 bg-slate-100"><div class="absolute h-3 bg-[#1F3F8F]/30" style="left:38%;width:8%"></div><div class="absolute h-3 w-px bg-[#1F3F8F]" style="left:44%"></div></div></div>
+                      <div class="col-span-2 text-right font-proxima text-slate-500">BP slightly wins · α ≈ 0.60</div>
+                    </div>
+                    <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                      <div class="col-span-1 tabular-nums">61</div>
+                      <div class="col-span-3 font-proxima text-slate-700">Education</div>
+                      <div class="col-span-1 text-right tabular-nums">160k</div>
+                      <div class="col-span-1 text-right tabular-nums">242k</div>
+                      <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">237k</div>
+                      <div class="col-span-3"><div class="relative h-3 bg-slate-100"><div class="absolute h-3 bg-[#1F3F8F]/30" style="left:25%;width:35%"></div><div class="absolute h-3 w-px bg-[#1F3F8F]" style="left:58%"></div></div></div>
+                      <div class="col-span-2 text-right font-proxima text-slate-500">WAC-pulled · campus rollup</div>
+                    </div>
+                  </div>
+                  <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 px-5 pb-4 italic">Distribution column shows the BP→WAC range and where <code class="font-mono text-[11px] bg-slate-100 px-1 rounded">est_emp</code> lands. NAICS with wide WAC-BP gaps (62 healthcare, 61 education) lean on the row-α plus anchor catalog to settle.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 06 · MODELING RECIPE · LayoutGroup `content_tint` ═════════ -->
+          <div class="w-full bg-[#E4E8EE] border-b border-zinc-950/05 py-12" data-dms-group="content_tint">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="modeling-recipe">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">travel-demand modeling recipe</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Plugging this into your 4-step / activity-based model.</h2>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <!-- Recipe step 1: Trip generation -->
+                <div class="col-span-12 lg:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
+                  <span class="inline-flex items-center justify-center size-7 rounded-full bg-[#1F3F8F] text-white font-display text-[13px] font-medium">1</span>
+                  <div class="font-display font-medium text-[16px] text-[#0F1722] leading-tight">Attractions by purpose</div>
+                  <p class="font-proxima text-[13px] leading-[1.55] text-slate-700">Multiply <code class="font-mono text-[11.5px] bg-slate-100 px-1 rounded">est_emp_naics</code> at block-group by NCHRP 716 / your local trip rates per industry.</p>
+                  <div class="font-mono text-[11px] text-slate-500 bg-slate-50 rounded p-2 leading-relaxed">
+                    A_HBW(BG) = Σ_NAICS est_emp · t_HBW_NAICS<br>
+                    A_HBO(BG) = total_emp · 0.35<br>
+                    A_NHB(BG) = retail_emp · 1.8 + svc_emp · 1.1
+                  </div>
+                </div>
+
+                <!-- Step 2: HBW productions -->
+                <div class="col-span-12 lg:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
+                  <span class="inline-flex items-center justify-center size-7 rounded-full bg-[#1F3F8F] text-white font-display text-[13px] font-medium">2</span>
+                  <div class="font-display font-medium text-[16px] text-[#0F1722] leading-tight">Cross-check with LEHD RAC</div>
+                  <p class="font-proxima text-[13px] leading-[1.55] text-slate-700">LEHD RAC is workers' residence side. Use it for HBW productions; the estimate is HBW attractions. Both are anchored to the same QCEW universe → home↔work flows balance after gravity step.</p>
+                  <div class="font-mono text-[11px] text-slate-500 bg-slate-50 rounded p-2 leading-relaxed">
+                    P_HBW(BG_home) = LEHD RAC<br>
+                    A_HBW(BG_work) = est_emp · rate
+                  </div>
+                </div>
+
+                <!-- Step 3: Mode choice & transit -->
+                <div class="col-span-12 lg:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
+                  <span class="inline-flex items-center justify-center size-7 rounded-full bg-[#1F3F8F] text-white font-display text-[13px] font-medium">3</span>
+                  <div class="font-display font-medium text-[16px] text-[#0F1722] leading-tight">Mode choice / transit catchment</div>
+                  <p class="font-proxima text-[13px] leading-[1.55] text-slate-700">Block-level <code class="font-mono text-[11.5px] bg-slate-100 px-1 rounded">est_emp</code> within a ½-mile walk shed of each transit stop is the catchment denominator. Anchor blocks (hospitals, schools) usually dominate — verify your stop placement covers them.</p>
+                  <div class="font-mono text-[11px] text-slate-500 bg-slate-50 rounded p-2 leading-relaxed">
+                    catchment(stop) = Σ est_emp · walk_distance ≤ 0.5 mi
+                  </div>
+                </div>
+
+                <!-- Step 4: Land use feedback -->
+                <div class="col-span-12 lg:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
+                  <span class="inline-flex items-center justify-center size-7 rounded-full bg-[#1F3F8F] text-white font-display text-[13px] font-medium">4</span>
+                  <div class="font-display font-medium text-[16px] text-[#0F1722] leading-tight">Sensitivity test</div>
+                  <p class="font-proxima text-[13px] leading-[1.55] text-slate-700">Filter <code class="font-mono text-[11.5px] bg-slate-100 px-1 rounded">data_confidence ≥ medium</code> and re-run. If your AM peak hour assignment moves &gt; 5% on key screenlines, the low-conf tail matters for your network. File anchor-catalog candidates for the affected blocks.</p>
+                  <div class="font-mono text-[11px] text-slate-500 bg-slate-50 rounded p-2 leading-relaxed">
+                    ∆v/c at screenline &lt; 5% → trust full<br>
+                    ∆ &gt; 5% → escalate to research team
+                  </div>
+                </div>
+
+                <!-- Trip rates table -->
+                <div class="col-span-12 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-5 py-3 border-b border-zinc-950/05 bg-slate-50/40">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">starter HBW trip rates by NAICS · NYMTC region average</div>
+                    <div class="font-display font-medium text-[14px] text-[#0F1722] mt-0.5">Replace with your local survey if available — these are NCHRP defaults.</div>
+                  </div>
+                  <table class="w-full text-[13px]">
+                    <thead class="border-b border-zinc-950/05"><tr>
+                      <th class="px-3 py-2 text-left font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">NAICS</th>
+                      <th class="px-3 py-2 text-left font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Sector</th>
+                      <th class="px-3 py-2 text-right font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">HBW per emp</th>
+                      <th class="px-3 py-2 text-right font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">peak hour share</th>
+                      <th class="px-3 py-2 text-right font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">transit mode share (NYMTC)</th>
+                      <th class="px-3 py-2 text-left font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">notes</th>
+                    </tr></thead>
+                    <tbody>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono">62</td><td class="px-3 py-2 font-proxima">Health Care</td><td class="px-3 py-2 text-right font-mono tabular-nums">1.95</td><td class="px-3 py-2 text-right font-mono tabular-nums">23% AM · 18% PM</td><td class="px-3 py-2 text-right font-mono tabular-nums">42%</td><td class="px-3 py-2 font-proxima text-slate-500 text-[12px]">24/7 shifts spread the peak</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono">54</td><td class="px-3 py-2 font-proxima">Professional</td><td class="px-3 py-2 text-right font-mono tabular-nums">2.10</td><td class="px-3 py-2 text-right font-mono tabular-nums">38% AM · 35% PM</td><td class="px-3 py-2 text-right font-mono tabular-nums">66%</td><td class="px-3 py-2 font-proxima text-slate-500 text-[12px]">tight 9-to-5 + WFH erosion</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono">52</td><td class="px-3 py-2 font-proxima">Finance</td><td class="px-3 py-2 text-right font-mono tabular-nums">2.05</td><td class="px-3 py-2 text-right font-mono tabular-nums">40% AM · 33% PM</td><td class="px-3 py-2 text-right font-mono tabular-nums">71%</td><td class="px-3 py-2 font-proxima text-slate-500 text-[12px]">heavy FiDi + Midtown clustering</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono">44-45</td><td class="px-3 py-2 font-proxima">Retail</td><td class="px-3 py-2 text-right font-mono tabular-nums">1.80</td><td class="px-3 py-2 text-right font-mono tabular-nums">18% AM · 22% PM</td><td class="px-3 py-2 text-right font-mono tabular-nums">31%</td><td class="px-3 py-2 font-proxima text-slate-500 text-[12px]">evening peak skew</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono">61</td><td class="px-3 py-2 font-proxima">Education</td><td class="px-3 py-2 text-right font-mono tabular-nums">1.50</td><td class="px-3 py-2 text-right font-mono tabular-nums">35% AM · 25% PM</td><td class="px-3 py-2 text-right font-mono tabular-nums">45%</td><td class="px-3 py-2 font-proxima text-slate-500 text-[12px]">school-cal-dependent</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono">72</td><td class="px-3 py-2 font-proxima">Accommodation &amp; food</td><td class="px-3 py-2 text-right font-mono tabular-nums">1.75</td><td class="px-3 py-2 text-right font-mono tabular-nums">15% AM · 28% PM</td><td class="px-3 py-2 text-right font-mono tabular-nums">38%</td><td class="px-3 py-2 font-proxima text-slate-500 text-[12px]">dinner peak</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono">48-49</td><td class="px-3 py-2 font-proxima">Transportation &amp; warehousing</td><td class="px-3 py-2 text-right font-mono tabular-nums">1.90</td><td class="px-3 py-2 text-right font-mono tabular-nums">28% AM · 22% PM</td><td class="px-3 py-2 text-right font-mono tabular-nums">35%</td><td class="px-3 py-2 font-proxima text-slate-500 text-[12px]">JFK shift starts dominate</td></tr>
+                      <tr><td class="px-3 py-2 font-mono">92</td><td class="px-3 py-2 font-proxima">Public administration</td><td class="px-3 py-2 text-right font-mono tabular-nums">2.00</td><td class="px-3 py-2 text-right font-mono tabular-nums">38% AM · 30% PM</td><td class="px-3 py-2 text-right font-mono tabular-nums">52%</td><td class="px-3 py-2 font-proxima text-slate-500 text-[12px]">9-to-5 office pattern</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 07 · DATA EXPORTS · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="exports">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 07</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">data exports · GIS-ready</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Take the data to your model.</h2>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <a class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 hover:border-[#1F3F8F]/40 hover:shadow-md transition group">
+                  <div class="flex items-center gap-3">
+                    <svg class="size-8 text-[#1F3F8F] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25"/><path d="M9 12l1.5 1.5L13.5 10.5"/></svg>
+                    <div>
+                      <div class="font-display font-medium text-[15px] text-[#0F1722]">GeoPackage · block-group</div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">employment_by_industry_blockgroup_2022.gpkg</div>
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">Wide format: one feature per BG, 60+ employment columns (bp/est/wac × NAICS-2 + totals), confidence + bp_trust per NAICS. <em>Filtered to NYMTC · 8,450 features.</em></div>
+                  <div class="mt-auto flex items-center justify-between font-mono text-[11px] text-slate-500">
+                    <span class="tabular-nums">~24 MB · GPKG · EPSG:4326</span>
+                    <span class="text-[#1F3F8F] group-hover:translate-x-1 transition">download →</span>
+                  </div>
+                </a>
+                <a class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 hover:border-[#1F3F8F]/40 hover:shadow-md transition group">
+                  <div class="flex items-center gap-3">
+                    <svg class="size-8 text-[#1F3F8F] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 17v-6h13"/><circle cx="6" cy="12" r="3"/><path d="M3 18l3-3"/></svg>
+                    <div>
+                      <div class="font-display font-medium text-[15px] text-[#0F1722]">GeoPackage · block</div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">employment_by_industry_block_2022.gpkg</div>
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">Finest geography. Use only if your TAZs are sub-BG. <em>Filtered to NYMTC · 67,890 features.</em></div>
+                  <div class="mt-auto flex items-center justify-between font-mono text-[11px] text-slate-500">
+                    <span class="tabular-nums">~180 MB · GPKG</span>
+                    <span class="text-[#1F3F8F] group-hover:translate-x-1 transition">download →</span>
+                  </div>
+                </a>
+                <a class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 hover:border-[#1F3F8F]/40 hover:shadow-md transition group">
+                  <div class="flex items-center gap-3">
+                    <svg class="size-8 text-[#1F3F8F] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+                    <div>
+                      <div class="font-display font-medium text-[15px] text-[#0F1722]">Long-format CSV · block</div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">employment_block_2022.csv</div>
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">One row per (block, NAICS). 19 columns including the raw inputs (bp_emp, wac_emp, lodes_emp, qcew_county_anchor) so you can rebuild any subset universe.</div>
+                  <div class="mt-auto flex items-center justify-between font-mono text-[11px] text-slate-500">
+                    <span class="tabular-nums">~85 MB · CSV</span>
+                    <span class="text-[#1F3F8F] group-hover:translate-x-1 transition">download →</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER · LayoutGroup `footer` ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-3">
+                <span>research/employment_estimates · v4 · NYMTC slice</span>
+                <span class="text-slate-300">·</span>
+                <span>last refresh 2026-05-21</span>
+              </div>
+              <div class="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.18em]">
+                <a href="employment-estimates.html" class="text-[#37576B] hover:text-[#1f3450]">← statewide overview</a>
+                <span class="text-slate-300">·</span>
+                <a class="text-[#37576B] hover:text-[#1f3450]">county_mpo_crosswalk.csv</a>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

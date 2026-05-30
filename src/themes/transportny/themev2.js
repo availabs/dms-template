@@ -558,6 +558,19 @@ const multiselect = {
       menuItem:     "px-3 py-1.5 text-[12.5px] text-slate-700 hover:bg-slate-50 cursor-pointer",
     },
     {
+      // Borderless variant for use INSIDE a filter-row chip — the chip's border
+      // lives on theme.filters.conditionRowInline, so the control itself is bare.
+      name: "filter_chip",
+      inputWrapper: "flex items-center gap-1 bg-transparent cursor-pointer",
+      caretWrapper: "ml-0.5 text-slate-500",
+      caretIcon:    "CaretDown",
+      singleValue:  "text-[12px] text-[#0F1722] font-medium tabular-nums",
+      singlePlaceholder: "text-[12px] text-slate-400",
+      menuWrapper:  "absolute z-40 mt-1 min-w-[160px] rounded-[6px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden",
+      menuItem:         "px-3 py-1.5 text-[12.5px] text-slate-700 hover:bg-slate-50 cursor-pointer",
+      menuItemSelected: "px-3 py-1.5 text-[12.5px] text-[#0F1722] bg-[#1F3F8F]/5 font-medium cursor-pointer",
+    },
+    {
       name: "tone_bar",
       inputWrapper: "flex items-center gap-1.5 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
       singleValue:  "font-semibold text-[13px] text-white",
@@ -632,6 +645,7 @@ const labelTheme = {
   labelWrapper: "px-2.5 pt-2 pb-1.5 rounded-md",
   label:        "inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[12.5px] font-medium",
 };
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // dialog / modal / drawer / deleteModal / popup
@@ -774,7 +788,7 @@ const dataCard = {
       cellsGrid:                     "grid",
       subWrapper:                    "flex flex-col w-full",
       subWrapperCompactView:         "rounded-[8px] bg-white",
-      header:                        "font-display uppercase text-[12.5px] tracking-[0.04em] text-slate-500 px-3 pt-3 pb-1",
+      header:                        "font-display text-[12.5px] tracking-[0.04em] text-slate-500 px-3 pt-3 pb-1",
       headerValueWrapper:            "flex flex-col w-full",
       headerValueWrapperFullBleed:   "w-full relative overflow-hidden",
       headerValueWrapperBorderBelow: "border-b border-zinc-950/05 rounded-none",
@@ -911,10 +925,11 @@ const pill = {
     { name: "ink",     wrapper: "inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium bg-[#0a0e13] text-white font-display uppercase tracking-wide" },
     { name: "beta",    wrapper: "inline-flex items-center px-2 h-6 rounded-[4px] text-[11px] font-medium bg-amber-100 text-amber-900 font-display uppercase tracking-wide" },
     { name: "admin",   wrapper: "inline-flex items-center px-2 h-6 rounded-[4px] text-[11px] font-medium bg-slate-900 text-white font-display uppercase tracking-wide" },
-    { name: "status_good", wrapper: "inline-flex items-center gap-1.5 text-[12px] text-emerald-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-emerald-500" },
-    { name: "status_warn", wrapper: "inline-flex items-center gap-1.5 text-[12px] text-amber-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-amber-400" },
-    { name: "status_bad",  wrapper: "inline-flex items-center gap-1.5 text-[12px] text-rose-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-rose-500" },
-    { name: "status_na",   wrapper: "inline-flex items-center gap-1.5 text-[12px] text-slate-500 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-slate-400" },
+    // status_* — the card-design status pill: bordered tint + leading dot (::before) + uppercase mono, color-coded. Selected by the status_pill column type.
+    { name: "status_good", wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46] [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-[#10B981]" },
+    { name: "status_warn", wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EAAD43]/30 bg-[#EAAD43]/15 font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12] [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-[#EAAD43]" },
+    { name: "status_bad",  wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B] [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-[#EF4444]" },
+    { name: "status_na",   wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/10 bg-slate-100 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-slate-400" },
     { name: "route", wrapper: "inline-flex items-center gap-2 h-8 pl-2.5 pr-2 rounded-full bg-white text-slate-700 shadow-sm border border-zinc-950/5 text-[12.5px] font-proxima" },
   ],
 };
@@ -1093,18 +1108,63 @@ const attribution = {
   link:    "text-[#1F3F8F] hover:text-[#16307A]",
 };
 
+// filters — named filter DESIGNS (whole-filter styles). Each style bundles the
+// wrapper + label + row layout + `placement` + `controlStyle` (the multiselect
+// style its value control renders with). A Filter section picks one via
+// display.filterStyle; ExternalFilters/RenderFilters resolve it with
+// getComponentTheme(theme,'filters',style) and pass controlStyle → the control.
+// Non-default styles inherit missing keys from styles[0] (panel).
 const filters = {
-  filterLabel:                 "font-display uppercase text-[11px] tracking-wide text-slate-500 mb-1",
-  loadingText:                 "text-[12px] text-slate-400",
-  filterSettingsWrapperInline: "w-2/3",
-  filterSettingsWrapperStacked:"w-full",
-  labelWrapperInline:          "w-1/3 text-[12px]",
-  labelWrapperStacked:         "w-full text-[12px]",
-  input:                       "w-full max-h-[150px] flex text-[12px] overflow-auto border border-zinc-950/10 rounded-[6px] bg-white p-2",
-  settingPillsWrapper:         "flex flex-row flex-wrap gap-1",
-  settingPill:                 "px-1.5 py-0.5 bg-[#EAAD43]/15 text-amber-800 hover:bg-[#EAAD43]/25 rounded-[4px] text-[11.5px]",
-  settingLabel:                "text-slate-700 font-medium",
-  filtersWrapper:              "w-full p-3 flex flex-col gap-2 rounded-[6px] bg-slate-50/60",
+  options: { activeStyle: 0 },
+  styles: [
+    { // 0 · panel — boxed multi-filter (default; label above, h-11 control)
+      name: "panel",
+      placement: "stacked",
+      controlStyle: "default",
+      filterLabel:                 "font-display uppercase text-[11px] tracking-wide text-slate-500 mb-1",
+      loadingText:                 "text-[12px] text-slate-400",
+      filterSettingsWrapperInline: "w-2/3",
+      filterSettingsWrapperStacked:"w-full",
+      labelWrapperInline:          "w-1/3 text-[12px]",
+      labelWrapperStacked:         "w-full text-[12px]",
+      conditionRowInline:          "w-full flex flex-row items-center gap-2",
+      conditionRowStacked:         "w-full flex flex-col gap-1",
+      conditionsGrid:              "grid",
+      input:                       "w-full max-h-[150px] flex text-[12px] overflow-auto border border-zinc-950/10 rounded-[6px] bg-white p-2",
+      settingPillsWrapper:         "flex flex-row flex-wrap gap-1",
+      settingPill:                 "px-1.5 py-0.5 bg-[#EAAD43]/15 text-amber-800 hover:bg-[#EAAD43]/25 rounded-[4px] text-[11.5px]",
+      settingLabel:                "text-slate-700 font-medium",
+      filtersWrapper:              "w-full p-3 flex flex-col gap-2 rounded-[6px] bg-slate-50/60",
+      toggleButton:                "hidden",
+      toggleIcon:                  "hidden",
+    },
+    { // 1 · chip — compact inline; label sits INSIDE the bordered chip; borderless control
+      name: "chip",
+      placement: "inline",
+      controlStyle: "filter_chip",
+      filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
+      filterSettingsWrapperInline: "min-w-0",
+      labelWrapperInline:          "shrink-0 inline-flex items-center gap-1",
+      conditionRowInline:          "inline-flex items-center gap-1.5 h-8 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white w-fit transition-colors",
+      filtersWrapper:              "w-full flex flex-wrap items-start gap-2",
+    },
+    { // 2 · labeled — stacked label above a compact control, no panel box
+      name: "labeled",
+      placement: "stacked",
+      controlStyle: "compact",
+      filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-1",
+      filtersWrapper:              "w-full flex flex-col gap-2",
+    },
+    { // 3 · tone_bar — inline on a dark band (white label, transparent control)
+      name: "tone_bar",
+      placement: "inline",
+      controlStyle: "tone_bar",
+      filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-white/60",
+      labelWrapperInline:          "shrink-0 inline-flex items-center gap-1",
+      conditionRowInline:          "inline-flex items-center gap-1.5 w-fit",
+      filtersWrapper:              "w-full flex flex-wrap items-center gap-2",
+    },
+  ],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
