@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Late Modernism</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body>
+
+<!-- META-NAV — documentation chrome only -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="../design-system/theme.html">theme</a>
+    <a href="../design-system/layouts.html">layouts</a>
+    <a href="../design-system/grid.html">grid</a>
+    <a href="../design-system/components.html">components</a>
+    <a href="../design-system/patterns.html">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="./home.html">home</a>
+    <a href="./listen.html">listen</a>
+    <a href="./schedule.html">schedule</a>
+    <a href="./show.html" data-active="true">show</a>
+    <a href="./djs.html">djs</a>
+    <a href="./spins.html">spins</a>
+    <a href="./blog.html">blog</a>
+    <a href="./events.html">events</a>
+    <a href="./login.html">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default — single-column variant.
+     childWrapper is `flex-1 flex flex-col md:grid md:grid-cols-2`
+     but with only a `content` LayoutGroup, the grid collapses
+     to a single column (1 cell on a 2-col grid stretches full
+     width when wrapped this way).
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <!-- TOPNAV · wcdb style — top of page, sans cutaway curve -->
+      <header class="w-full h-14 flex items-center bg-[var(--page-bg)] border-b border-[var(--line-1)] sticky top-[34px] z-30">
+        <div class="flex items-center h-14 pl-4">
+          <div class="font-[family-name:var(--font-display)] italic text-[20px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</div>
+          <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                       font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
+        </div>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto px-4 gap-1">
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Listen</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Schedule</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-1)]" data-active="true">Shows</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">DJs</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Spins</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Blog</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Events</a>
+        </div>
+        <div class="hidden md:flex h-full items-center pr-4 gap-2">
+          <button aria-label="Toggle theme" class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>
+          </button>
+          <button aria-label="Account" class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-3 0-8 1.5-8 5v1h16v-1c0-3.5-5-5-8-5z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="flex flex-1 items-start">
+        <div class="flex-1 flex flex-col">
+
+          <!-- ============================================================
+               LAYOUTGROUP · content — single column scrolling feed
+               ============================================================ -->
+          <div data-dms-group="content"
+               class="w-full flex-1 flex flex-row p-2">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-[1100px] mx-auto">
+
+              <!-- ============================================================
+                   SECTION · breadcrumb (bare lexical)
+                   ============================================================ -->
+              <section data-dms-section="lexical:breadcrumb" class="pt-6 pb-4">
+                <nav class="flex items-center gap-2">
+                  <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] hover:text-[color:var(--ink-1)]">Shows</a>
+                  <span class="font-[family-name:var(--font-mono)] text-[11px] uppercase text-[color:var(--ink-4)]">/</span>
+                  <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Late Modernism</span>
+                </nav>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · show-hero (CARDED · 2-col: artwork + sidebar)
+                   ============================================================ -->
+              <section data-dms-section="card:show-hero" class="mb-10">
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
+                  <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-8 items-stretch">
+
+                    <!-- Left · 16:10 hero artwork -->
+                    <div class="wcdb-art wcdb-art--ember rounded-[14px] aspect-[16/10] relative flex items-end pl-6 pb-4 overflow-hidden">
+                      <div class="wcdb-initials" aria-hidden="true">L.M.</div>
+                    </div>
+
+                    <!-- Right · metadata sidebar -->
+                    <div class="flex flex-col justify-between">
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">
+                          Show · Weekly · 1h
+                        </div>
+                        <h1 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-3">
+                          Late Modernism
+                        </h1>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-2)] mb-5">
+                          w/ DJ Halftone
+                        </div>
+                        <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] max-w-[420px]">
+                          A weekly hour given over to mid-1970s German
+                          experimentation and its long shadow — Cluster,
+                          Harmonia, Eno-Moebius-Roedelius, the Berlin
+                          school, and the labels that kept it in print.
+                        </p>
+                      </div>
+
+                      <div class="mt-6">
+                        <div class="flex flex-wrap gap-x-5 gap-y-2 py-4 border-t border-[var(--line-1)]">
+                          <div>
+                            <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] tabular-nums">47</div>
+                            <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Episodes</div>
+                          </div>
+                          <div>
+                            <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] tabular-nums">1,124</div>
+                            <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Spins</div>
+                          </div>
+                          <div>
+                            <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] tabular-nums">184</div>
+                            <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Listeners avg</div>
+                          </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3 mt-5">
+                          <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+                                         bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                         font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                            Subscribe
+                          </button>
+                          <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+                                         border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
+                                         font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                            Recent spins
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · About + host (TWO CARDED PANELS side by side)
+                   ============================================================ -->
+              <section data-dms-section="card:about-host" class="mb-10">
+                <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-3">
+
+                  <!-- About card -->
+                  <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">
+                      About the show
+                    </div>
+                    <h2 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-5">
+                      An hour, weekly, for the long winters.
+                    </h2>
+                    <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-2)] space-y-4 max-w-[560px]">
+                      <p class="m-0">
+                        Late Modernism started in spring 2019 as a one-off
+                        tribute to Dieter Moebius. It became a regular
+                        Thursday slot the following autumn and has been
+                        on air every week since — with the occasional
+                        substitute, the occasional pledge drive, and one
+                        unplanned hiatus.
+                      </p>
+                      <p class="m-0">
+                        The show is unscripted and album-led. Most weeks
+                        DJ Halftone picks a thread — a label, a year, a
+                        producer, a city — and plays through it in long
+                        sequences with brief between-track context. Tape
+                        loops, drone, kosmische, post-rock that owes
+                        anything to Cluster.
+                      </p>
+                      <p class="m-0">
+                        Listener requests come in through the studio
+                        phone (ext. 4090) and almost always get played.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Host card -->
+                  <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">
+                      Host
+                    </div>
+                    <div class="flex items-center gap-4 mb-5">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--cool shrink-0"></div>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)]">
+                          DJ Halftone
+                        </div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">
+                          @halftone
+                        </div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-5 m-0">
+                      A reference librarian by day. Came to college radio
+                      in 2018 after years of writing about minimal
+                      synth on a now-defunct blog. Believes the album
+                      side is the unit of measurement.
+                    </p>
+
+                    <div class="border-t border-[var(--line-1)] pt-4 grid grid-cols-3 gap-2">
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] tabular-nums">24</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Spins / show</div>
+                      </div>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] tabular-nums">6</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Years on air</div>
+                      </div>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em]">Sky Records</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Fav. label</div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · Episodes (BARE list — borderless rows)
+                   ============================================================ -->
+              <section data-dms-section="card:episodes" class="mb-12">
+                <div class="flex items-baseline justify-between mb-6">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                      Episodes · season 3
+                    </div>
+                    <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">
+                      The last six Thursdays.
+                    </h2>
+                  </div>
+                  <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] inline-flex items-center gap-2">
+                    All 47 episodes
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                  </a>
+                </div>
+
+                <div>
+                  <a class="grid grid-cols-[140px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-2 -mx-2 rounded-[8px]">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">S03E22</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-0.5">Mar 05</div>
+                    </div>
+                    <div class="size-16 rounded-[6px] wcdb-art wcdb-art--ember"></div>
+                    <div class="min-w-0">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Tape music &amp; tape loops</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.4] text-[color:var(--ink-3)] mt-1 truncate">An hour with Eliane Radigue, Pauline Oliveros, and the long-tape practice that fed kosmische.</div>
+                    </div>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">58:14</span>
+                  </a>
+
+                  <a class="grid grid-cols-[140px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-2 -mx-2 rounded-[8px]">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">S03E21</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-0.5">Feb 26</div>
+                    </div>
+                    <div class="size-16 rounded-[6px] wcdb-art wcdb-art--cool"></div>
+                    <div class="min-w-0">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Albums-on-albums</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.4] text-[color:var(--ink-3)] mt-1 truncate">Stereolab, Broadcast, Pram — three groups that wore their record collections on the sleeve.</div>
+                    </div>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">59:02</span>
+                  </a>
+
+                  <a class="grid grid-cols-[140px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-2 -mx-2 rounded-[8px]">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">S03E20</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-0.5">Feb 19</div>
+                    </div>
+                    <div class="size-16 rounded-[6px] wcdb-art wcdb-art--violet"></div>
+                    <div class="min-w-0">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">The Berlin school after Tangerine Dream</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.4] text-[color:var(--ink-3)] mt-1 truncate">Klaus Schulze, Manuel Göttsching, and the long-form synth practice that survived the band.</div>
+                    </div>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">58:47</span>
+                  </a>
+
+                  <a class="grid grid-cols-[140px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-2 -mx-2 rounded-[8px]">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">S03E19</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-0.5">Feb 12</div>
+                    </div>
+                    <div class="size-16 rounded-[6px] wcdb-art wcdb-art--mono"></div>
+                    <div class="min-w-0">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Early Eno: An hour with Brian</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.4] text-[color:var(--ink-3)] mt-1 truncate">From Here Come the Warm Jets through Another Green World — the rock years, end-to-end.</div>
+                    </div>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">59:31</span>
+                  </a>
+
+                  <a class="grid grid-cols-[140px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-2 -mx-2 rounded-[8px]">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">S03E18</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-0.5">Feb 05</div>
+                    </div>
+                    <div class="size-16 rounded-[6px] wcdb-art"></div>
+                    <div class="min-w-0">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Conrad Schnitzler, in memoriam</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.4] text-[color:var(--ink-3)] mt-1 truncate">A full hour of Con on the anniversary of his passing — Rot, Blau, and the cassette years.</div>
+                    </div>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">60:00</span>
+                  </a>
+
+                  <a class="grid grid-cols-[140px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)] border-b hover:bg-[var(--bg-2)] transition-colors px-2 -mx-2 rounded-[8px]">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">S03E17</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-0.5">Jan 29</div>
+                    </div>
+                    <div class="size-16 rounded-[6px] wcdb-art wcdb-art--ember"></div>
+                    <div class="min-w-0">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Krautrock for sceptics</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.4] text-[color:var(--ink-3)] mt-1 truncate">A primer for the not-yet-convinced — Can, Neu!, Faust, Cluster, in their most accessible hours.</div>
+                    </div>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">58:09</span>
+                  </a>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · Related shows (CARDED · 3-col)
+                   ============================================================ -->
+              <section data-dms-section="card:related-shows" class="mb-12">
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                    Other dim hours
+                  </div>
+                  <h2 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-6">
+                    If you like Late Modernism.
+                  </h2>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <a class="rounded-[14px] bg-[var(--card-bg-soft)] p-5 hover:bg-[var(--bg-3)] transition-colors block">
+                      <div class="aspect-[4/3] rounded-[10px] wcdb-art wcdb-art--violet mb-4"></div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Insomnia Hour</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1 mb-3">w/ Glass &amp; Smith</div>
+                      <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.4] text-[color:var(--ink-2)] m-0">
+                        Three hours of drone, ambient, and tape loops. Thursdays after midnight.
+                      </p>
+                    </a>
+                    <a class="rounded-[14px] bg-[var(--card-bg-soft)] p-5 hover:bg-[var(--bg-3)] transition-colors block">
+                      <div class="aspect-[4/3] rounded-[10px] wcdb-art wcdb-art--cool mb-4"></div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Off-Year Pop</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1 mb-3">w/ Jada R.</div>
+                      <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.4] text-[color:var(--ink-2)] m-0">
+                        Pop records that flopped on release, reconsidered. Fridays at 1 a.m.
+                      </p>
+                    </a>
+                    <a class="rounded-[14px] bg-[var(--card-bg-soft)] p-5 hover:bg-[var(--bg-3)] transition-colors block">
+                      <div class="aspect-[4/3] rounded-[10px] wcdb-art wcdb-art--ember mb-4"></div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Free Form Friday</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1 mb-3">w/ Lo Carrasco</div>
+                      <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.4] text-[color:var(--ink-2)] m-0">
+                        Open-format late slot. No genre rules, no playlist — whatever lands on the turntable.
+                      </p>
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · Footer (INVERTED CARD)
+                   ============================================================ -->
+              <section data-dms-section="card:footer" class="pb-4">
+                <div class="wcdb-card-inv p-10">
+                  <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-10">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-4">Stay tuned</div>
+                      <h2 class="font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--inv-ink)] m-0 mb-3">
+                        Drop us your email.
+                      </h2>
+                      <p class="text-[15px] leading-[1.5] max-w-[440px] text-[#4a4a4a]">
+                        Once-a-month dispatch from the studio — new shows,
+                        upcoming events, the occasional pledge drive. No
+                        spam, no algorithms.
+                      </p>
+
+                      <form class="mt-6 flex flex-col sm:flex-row gap-2 max-w-[520px]">
+                        <input type="email" placeholder="you@somewhere.edu"
+                               class="flex-1 px-4 py-3 rounded-full bg-transparent border border-[rgba(10,10,10,0.15)]
+                                      font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--inv-ink)]
+                                      placeholder:text-[#a0a0a0] focus:outline-none focus:border-[color:var(--inv-ink)]">
+                        <button class="px-6 py-3 rounded-full bg-[color:var(--inv-ink)] text-[color:var(--inv-bg)]
+                                       font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                          Subscribe
+                        </button>
+                      </form>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Listen</div>
+                        <ul class="space-y-2 text-[13px] text-[color:var(--inv-ink)]">
+                          <li>Live stream</li><li>Schedule</li><li>Recent spins</li><li>Shows</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Station</div>
+                        <ul class="space-y-2 text-[13px] text-[color:var(--inv-ink)]">
+                          <li>About</li><li>Pledge</li><li>Volunteer</li><li>Contact</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr class="wcdb-hairline my-8" style="background:rgba(10,10,10,0.10)"/>
+
+                  <div class="flex flex-wrap items-center justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a]">
+                    <span>WCDB · 90.9 FM · SUNY Albany</span>
+                    <span>© 1977–2026 · A student broadcast</span>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="../design-system/theme.html">theme</a></li>
+      <li><a href="../design-system/layouts.html">layouts</a></li>
+      <li><a href="../design-system/grid.html">grid</a></li>
+      <li><a href="../design-system/components.html">components</a></li>
+      <li><a href="../design-system/patterns.html">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · editorial</h3>
+    <ul>
+      <li><a href="./home.html">home</a></li>
+      <li><a href="./listen.html">listen</a></li>
+      <li><a href="./blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · catalogue</h3>
+    <ul>
+      <li><a href="./schedule.html">schedule</a></li>
+      <li><a href="./show.html" data-active="true">show</a></li>
+      <li><a href="./djs.html">djs</a></li>
+      <li><a href="./spins.html">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · misc</h3>
+    <ul>
+      <li><a href="./events.html">events</a></li>
+      <li><a href="./login.html">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

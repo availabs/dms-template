@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Grid — The column grid sections sit on</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body class="dms-annotated">
+
+<!-- ============================================================
+     META-NAV — documentation chrome, NOT part of the DMS theme
+     ============================================================ -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="./theme.html">theme</a>
+    <a href="./layouts.html">layouts</a>
+    <a href="./grid.html" data-active="true">grid</a>
+    <a href="./components.html">components</a>
+    <a href="./patterns.html">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="../pages/home.html">home</a>
+    <a href="../pages/listen.html">listen</a>
+    <a href="../pages/schedule.html">schedule</a>
+    <a href="../pages/show.html">show</a>
+    <a href="../pages/djs.html">djs</a>
+    <a href="../pages/spins.html">spins</a>
+    <a href="../pages/blog.html">blog</a>
+    <a href="../pages/events.html">events</a>
+    <a href="../pages/login.html">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default (theme.js layout.styles[0])
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)] min-h-svh">
+
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <!-- TOPNAV -->
+      <header class="w-full h-14 flex items-center bg-[var(--page-bg)]">
+        <div class="flex items-center h-14 px-4">
+          <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
+            WCDB
+          </div>
+          <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                       font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase
+                       text-[color:var(--ink-3)]">
+            90.9 FM
+          </span>
+        </div>
+        <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Theme</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Layouts</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Grid</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Components</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Patterns</a>
+        </div>
+        <div class="hidden md:flex h-full items-center pr-4 gap-2">
+          <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center
+                         text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]"
+                  title="Toggle theme mode">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="flex flex-1 items-start">
+        <div data-dms-layout-childwrapper class="flex-1 flex flex-col">
+
+          <!-- ============================================================
+               LAYOUTGROUP · content
+               ============================================================ -->
+          <div data-dms-group="content"
+               class="w-full flex-1 flex flex-row p-2">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-[1280px] mr-auto">
+
+              <!-- ============================================================
+                   SECTION · Page header (Lexical)
+                   ============================================================ -->
+              <section data-dms-section="lexical:page-header" class="pt-10 pb-6">
+                <div class="wcdb-eyebrow mb-4">Foundations &middot; grid &middot; v0.1</div>
+                <h1 class="font-[family-name:var(--font-display)] italic
+                           text-[clamp(56px,6vw,88px)] leading-[0.95] tracking-[-0.03em]
+                           text-[color:var(--ink-1)] m-0">
+                  Twelve columns inside two.
+                </h1>
+                <p class="mt-6 max-w-[680px] font-[family-name:var(--font-sans)] text-[18px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)]">
+                  This page documents both grids on a WCDB page: the
+                  <em class="italic">cutaway layout grid</em> &mdash; the
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:grid-cols-2</code>
+                  split on <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">childWrapper</code> &mdash; and the
+                  <em class="italic">sectionArray column grid</em> that lays Sections out inside each
+                  LayoutGroup. The two nest. Page chrome lives on the outer grid; editorial
+                  content lives on the inner one.
+                </p>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · The grid spec (Lexical)
+                   ============================================================ -->
+              <section data-dms-section="lexical:grid-spec" class="py-8">
+                <div class="wcdb-eyebrow mb-3">01 — The grid spec</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Twelve columns, 1280-cap, p-2.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  The sectionArray's settings apply inside every LayoutGroup on every page.
+                  WCDB recommends the modern 12-column grid; the codebase ships a 6-column
+                  default and both are shown for portability.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7 overflow-x-auto">
+                  <table class="w-full border-collapse">
+                    <thead>
+                      <tr>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Setting</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">WCDB</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">DMS default</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">gridSize</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">12</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">6</td></tr>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">defaultSize</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">"12"</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">"1"</td></tr>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">sizes</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">12, 8, 6, 4, 3 &middot; 1, 1/2, 1/3, 2/3</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">1, 1/2, 1/3, 2/3</td></tr>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">layouts.centered</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">max-w-[1280px] mr-auto</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">max-w-[1020px] mx-auto</td></tr>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">layouts.fullwidth</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">'' (no cap)</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">'' (no cap)</td></tr>
+                      <tr><td class="py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">sectionPadding</td><td class="py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">p-2</td><td class="py-3 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">p-4</td></tr>
+                    </tbody>
+                  </table>
+
+                  <p class="mt-6 font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-3)] max-w-[680px]">
+                    Tighter <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">sectionPadding</code> (<code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">p-2</code> vs the DMS default
+                    <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">p-4</code>) gives the LayoutGroup's own
+                    <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">p-4</code> wrapper2 room to breathe without
+                    compounding padding inside narrow columns. The <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">1280</code>px cap is wider than the
+                    DMS default <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">1020</code>px because at md+ each column of the cutaway only
+                    gets half the viewport &mdash; the cap has to allow for wide displays.
+                  </p>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Column-span vocabulary (Card)
+                   ============================================================ -->
+              <section data-dms-section="card:column-vocab" class="py-8">
+                <div class="wcdb-eyebrow mb-3">02 — Column-span vocabulary</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Twelve cells, four idioms.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  Every Section picks a <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">size</code> from the 12-column grid. Below: the
+                  ruler, then the four span idioms WCDB pages use in practice. All content is
+                  real &mdash; show names, slot times, DJs &mdash; no lorem.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+
+                  <!-- Ruler -->
+                  <div class="wcdb-eyebrow mb-3">Ruler &middot; gridSize: 12</div>
+                  <div class="grid grid-cols-12 gap-2 mb-8">
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">1</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">2</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">3</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">4</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">5</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">6</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">7</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">8</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">9</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">10</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">11</div>
+                    <div class="h-9 rounded-[6px] border border-dashed border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] text-[color:var(--ink-3)]">12</div>
+                  </div>
+
+                  <!-- 12: full-row hero -->
+                  <div class="wcdb-eyebrow mb-3">size: 12 &middot; full-row hero</div>
+                  <div class="grid grid-cols-12 gap-2 mb-8">
+                    <div class="col-span-12 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">On air now</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mt-1">Late Modernism on 90.9, with DJ Halftone</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">A six-track survey of mid-1970s German experimentation &mdash; Cluster, Harmonia, Conrad Schnitzler, and the long-form Eno-Moebius-Roedelius collaborations.</div>
+                    </div>
+                  </div>
+
+                  <!-- 6 + 6 -->
+                  <div class="wcdb-eyebrow mb-3">size: 6 &middot; 6 &middot; split intro</div>
+                  <div class="grid grid-cols-12 gap-2 mb-8">
+                    <div class="col-span-12 md:col-span-6 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Tonight &middot; 8 pm</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] mt-1">Free-form Wednesday</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">DJ Conduit picks records on the fly, two turntables, no setlist.</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-6 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Tomorrow &middot; 11 pm</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] mt-1">Country Karaoke</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">Listener calls, vintage hits, one hosted hour with DJ Trough.</div>
+                    </div>
+                  </div>
+
+                  <!-- 4 + 4 + 4 -->
+                  <div class="wcdb-eyebrow mb-3">size: 4 &middot; 4 &middot; 4 &middot; three-up feature</div>
+                  <div class="grid grid-cols-12 gap-2 mb-8">
+                    <div class="col-span-12 md:col-span-4 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">DJ &middot; Halftone</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] mt-1">Late Modernism</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">Wed 8 pm</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-4 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">DJ &middot; Trough</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] mt-1">Country Karaoke</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">Thu 11 pm</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-4 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">DJ &middot; Conduit</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] mt-1">Free-form Wed</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">Wed 11 pm</div>
+                    </div>
+                  </div>
+
+                  <!-- 3 + 6 + 3 -->
+                  <div class="wcdb-eyebrow mb-3">size: 3 &middot; 6 &middot; 3 &middot; asymmetric</div>
+                  <div class="grid grid-cols-12 gap-2">
+                    <div class="col-span-12 md:col-span-3 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Prev</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[16px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] mt-1">Krautrock Hour</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-6 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">On air now</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] mt-1">Late Modernism</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">DJ Halftone &middot; 8&ndash;10 pm</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-3 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Next</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[16px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] mt-1">Country Karaoke</div>
+                    </div>
+                  </div>
+
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Per-section span examples (Card)
+                   ============================================================ -->
+              <section data-dms-section="card:span-examples" class="py-8">
+                <div class="wcdb-eyebrow mb-3">03 — Per-section spans</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  The size keys, individually.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  Each tile shows one of WCDB's four common span values labelled with its
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">size</code> key. Authors set this per-Section from the size dropdown in the
+                  section menu.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <div class="grid grid-cols-12 gap-2">
+                    <div class="col-span-12 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-2)] p-4 flex items-center justify-between">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">size: 12</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)]">Full row &middot; the WCDB default for every editorial Section</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-8 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-2)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">size: 8</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)] mt-1">Two-thirds &middot; lead story + sidebar pair</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-4 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-2)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">size: 4</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)] mt-1">One-third &middot; on-air pill, contact card</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-6 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-2)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">size: 6</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)] mt-1">Half &middot; symmetric two-up</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-3 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-2)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">size: 3</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)] mt-1">Quarter &middot; prev/next chevrons, asymmetric</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-3 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-2)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">size: 3</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)] mt-1">Quarter</div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Row-span vocabulary (Card)
+                   ============================================================ -->
+              <section data-dms-section="card:row-spans" class="py-8">
+                <div class="wcdb-eyebrow mb-3">04 — Row-spans</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Rare, but documented.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  WCDB's home and listen pages don't use <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">rowspan</code> on Sections &mdash; the
+                  now-playing card uses <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">heights: fill</code> + flex on the
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> LayoutGroup to occupy the sticky column. <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">rowspan</code> is
+                  available to authors and interacts with the section's
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">heights</code> preset as follows.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <div class="grid grid-cols-12 grid-rows-2 gap-2 h-[320px]">
+                    <div class="col-span-12 md:col-span-4 row-span-2 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-2)] p-4 flex flex-col justify-between">
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">size: 4 &middot; rowspan: 2</div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] mt-3">Feature spotlight</div>
+                      </div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)]">Hero card &middot; full height of two rows</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-8 row-span-1 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-2)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">size: 8 &middot; rowspan: 1</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] mt-2">Tonight's schedule</div>
+                    </div>
+                    <div class="col-span-12 md:col-span-8 row-span-1 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-2)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">size: 8 &middot; rowspan: 1</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] mt-2">Recent spins</div>
+                    </div>
+                  </div>
+
+                  <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="rounded-[10px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">rowspan: 1</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">Default. One row in the implicit row track. Combine with <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">heights: auto</code>.</div>
+                    </div>
+                    <div class="rounded-[10px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">rowspan: 2</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">Section occupies two rows. Combine with a fixed height preset (<code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">tall</code> / <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">hero</code>) so the row track has measurable height.</div>
+                    </div>
+                    <div class="rounded-[10px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-4">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">rowspan: 3</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-2">Edge case &mdash; visual hierarchy moment only. Don't use as a default.</div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Layout-level grid (Card)
+                   §7.4 advanced — WCDB cutaway split
+                   ============================================================ -->
+              <section data-dms-section="card:layout-grid" class="py-8">
+                <div class="wcdb-eyebrow mb-3">05 — Layout-level grid &middot; advanced</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Two grids, nested.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  WCDB's signature is a <em class="italic">higher-level layout grid</em> on the Layout's
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">childWrapper</code> &mdash; <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:grid md:grid-cols-2</code>. It splits the page
+                  into two equal columns at md+, one per LayoutGroup. Inside each column the
+                  ordinary sectionArray 12-col grid still applies. The home page therefore
+                  has <em class="italic">two</em> nested grids: the layout-level split, and a per-column
+                  sectionArray.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <!-- Diagram A: the cutaway split -->
+                    <div>
+                      <div class="wcdb-eyebrow mb-3">A &middot; Layout-level grid (childWrapper)</div>
+                      <div class="rounded-[12px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">md:grid md:grid-cols-2</div>
+                        <div class="grid grid-cols-2 gap-3">
+                          <div class="rounded-[8px] bg-[var(--card-bg)] border border-[var(--line-2)] p-4 h-[200px] flex flex-col">
+                            <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">header</div>
+                            <div class="flex-1 mt-2 rounded-[6px] bg-[linear-gradient(180deg,#1a1c1d_0%,#0e1011_100%)]"></div>
+                          </div>
+                          <div class="rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] p-3 h-[200px] flex flex-col gap-2">
+                            <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">content</div>
+                            <div class="rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] p-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section</div>
+                            <div class="rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] p-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section</div>
+                            <div class="rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] p-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section</div>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="mt-4 font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)]">
+                        Two columns, one LayoutGroup each. Below <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md</code> the grid collapses to a single
+                        column and the LayoutGroups stack vertically.
+                      </p>
+                    </div>
+
+                    <!-- Diagram B: the sectionArray grid inside each column -->
+                    <div>
+                      <div class="wcdb-eyebrow mb-3">B &middot; sectionArray inside each column</div>
+                      <div class="rounded-[12px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">grid grid-cols-12 &middot; per LayoutGroup</div>
+                        <div class="grid grid-cols-12 gap-1">
+                          <div class="col-span-12 h-9 rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">size: 12 &middot; full-row Section</div>
+                          <div class="col-span-12 h-9 rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">size: 12</div>
+                          <div class="col-span-6 h-9 rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">size: 6</div>
+                          <div class="col-span-6 h-9 rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">size: 6</div>
+                          <div class="col-span-12 h-9 rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] flex items-center justify-center font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">size: 12</div>
+                        </div>
+                      </div>
+                      <p class="mt-4 font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)]">
+                        Each LayoutGroup hosts its own sectionArray. The <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> group
+                        typically hosts a single Section spanning all 12 columns of its narrow
+                        half-viewport column; the <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">content</code> group hosts many.
+                      </p>
+                    </div>
+
+                  </div>
+
+                  <div class="mt-7 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                    <div class="wcdb-eyebrow mb-3">Why nest grids</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                      A single 12-col grid across the whole page couldn't produce the sticky-vs-scrolling
+                      behaviour the cutaway requires &mdash; sticky positioning needs a flex/grid
+                      <em class="italic">parent</em> with a defined block axis, and that parent has to be one of the
+                      two grid columns, not a sub-span inside a unified grid. The layout-level grid is
+                      where sticky lives; the sectionArray grid is where Section size keys live. Authors
+                      pick spans inside their column without thinking about the outer split.
+                    </p>
+                    <p class="mt-3 font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                      The home page is the worked example &mdash; see
+                      <a href="../pages/home.html" class="underline">pages/home.html</a> for the rendered output.
+                    </p>
+                  </div>
+
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · In-editor grid view (Lexical)
+                   ============================================================ -->
+              <section data-dms-section="lexical:editor-grid" class="py-8">
+                <div class="wcdb-eyebrow mb-3">06 — In-editor grid view</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  What "show grid" looks like.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  In edit mode the sectionArray draws a <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">gridviewGrid</code> overlay when the author
+                  toggles "show grid" on the section pane. The overlay is twelve dashed column
+                  lines drawn on top of the content area at the same gutter as the
+                  sectionArray itself, so an author can see whether a Section's
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">size</code> key snaps to the intended column.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <div class="wcdb-eyebrow mb-3">Faux screenshot &middot; overlay in edit mode</div>
+                  <div class="relative rounded-[12px] bg-[var(--bg-1)] p-3 overflow-hidden h-[280px]">
+                    <!-- content underneath -->
+                    <div class="absolute inset-3 grid grid-cols-12 gap-2">
+                      <div class="col-span-12 h-12 rounded-[8px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] flex items-center px-3">
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">On air now &middot; Late Modernism</span>
+                      </div>
+                      <div class="col-span-6 h-24 rounded-[8px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] flex items-center px-3">
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Tonight</span>
+                      </div>
+                      <div class="col-span-6 h-24 rounded-[8px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] flex items-center px-3">
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Tomorrow</span>
+                      </div>
+                      <div class="col-span-12 h-24 rounded-[8px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] flex items-center px-3">
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Recent spins</span>
+                      </div>
+                    </div>
+                    <!-- overlay: dashed column lines -->
+                    <div class="absolute inset-3 grid grid-cols-12 gap-2 pointer-events-none">
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                      <div class="border border-dashed border-[var(--line-2)] rounded-[6px]"></div>
+                    </div>
+                  </div>
+
+                  <p class="mt-6 font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-3)] max-w-[680px]">
+                    The overlay uses dashed <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">var(--line-2)</code> borders so it reads as scaffolding
+                    rather than chrome. The author sees the same column gutters the runtime renders &mdash;
+                    a Section that doesn't snap to the grid is visibly misaligned. View mode never
+                    shows the overlay.
+                  </p>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Rules for picking spans (Lexical)
+                   ============================================================ -->
+              <section data-dms-section="lexical:span-rules" class="py-8">
+                <div class="wcdb-eyebrow mb-3">07 — Rules for picking spans</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Default to twelve.
+                </h2>
+
+                <ul class="mt-6 max-w-[680px] space-y-3 font-[family-name:var(--font-sans)] text-[15px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-1)]">
+                  <li>
+                    <strong class="font-medium">Default to <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">size: 12</code></strong> for every Section inside either column
+                    of the cutaway. The Layout has already constrained horizontal width to one
+                    half-viewport column at md+ &mdash; sub-12 spans are usually too narrow to be
+                    legible.
+                  </li>
+                  <li>
+                    <strong class="font-medium">Reserve <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">6 + 6</code> and <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">4 + 4 + 4</code></strong> for the rare case where two
+                    or three short Sections share a row inside the right column &mdash; a tonight/
+                    tomorrow pair, a three-DJ feature strip. Asymmetric splits
+                    (<code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">3 + 6 + 3</code>, <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">8 + 4</code>) should be data-driven &mdash; only when the data
+                    justifies the asymmetry, not as a stylistic flourish.
+                  </li>
+                  <li>
+                    <strong class="font-medium">Row-spans only on the home <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> group.</strong> Use
+                    <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">heights: fill</code> on the now-playing Section so it occupies the sticky panel;
+                    other pages should leave <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">rowspan</code> at its default of <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">1</code>.
+                  </li>
+                  <li>
+                    <strong class="font-medium">If you reach for an arbitrary <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">width</code> declaration</strong> on a
+                    Section, stop &mdash; that's a layout decision that belongs in the grid's vocabulary.
+                    Either pick a documented size key, or surface the missing primitive back to the
+                    theme so every future author can express the same thing.
+                  </li>
+                </ul>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="./theme.html">theme</a></li>
+      <li><a href="./layouts.html">layouts</a></li>
+      <li><a href="./grid.html" data-active="true">grid</a></li>
+      <li><a href="./components.html">components</a></li>
+      <li><a href="./patterns.html">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages &middot; editorial</h3>
+    <ul>
+      <li><a href="../pages/home.html">home</a></li>
+      <li><a href="../pages/listen.html">listen</a></li>
+      <li><a href="../pages/blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages &middot; catalogue</h3>
+    <ul>
+      <li><a href="../pages/schedule.html">schedule</a></li>
+      <li><a href="../pages/show.html">show</a></li>
+      <li><a href="../pages/djs.html">djs</a></li>
+      <li><a href="../pages/spins.html">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages &middot; misc</h3>
+    <ul>
+      <li><a href="../pages/events.html">events</a></li>
+      <li><a href="../pages/login.html">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

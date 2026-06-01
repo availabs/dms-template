@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · DJs</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body>
+
+<!-- META-NAV — documentation chrome only -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="../design-system/theme.html">theme</a>
+    <a href="../design-system/layouts.html">layouts</a>
+    <a href="../design-system/grid.html">grid</a>
+    <a href="../design-system/components.html">components</a>
+    <a href="../design-system/patterns.html">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="./home.html">home</a>
+    <a href="./listen.html">listen</a>
+    <a href="./schedule.html">schedule</a>
+    <a href="./show.html">show</a>
+    <a href="./djs.html" data-active="true">djs</a>
+    <a href="./spins.html">spins</a>
+    <a href="./blog.html">blog</a>
+    <a href="./events.html">events</a>
+    <a href="./login.html">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default — single-column variant for the directory.
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <!-- TOPNAV · wcdb style — top of page, sans cutaway curve -->
+      <header class="w-full h-14 flex items-center bg-[var(--page-bg)] border-b border-[var(--line-1)] sticky top-[34px] z-30">
+        <div class="flex items-center h-14 pl-4">
+          <div class="font-[family-name:var(--font-display)] italic text-[20px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</div>
+          <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                       font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
+        </div>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto px-4 gap-1">
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Listen</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Schedule</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Shows</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-1)]" data-active="true">DJs</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Spins</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Blog</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Events</a>
+        </div>
+        <div class="hidden md:flex h-full items-center pr-4 gap-2">
+          <button aria-label="Toggle theme" class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>
+          </button>
+          <button aria-label="Account" class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-3 0-8 1.5-8 5v1h16v-1c0-3.5-5-5-8-5z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="flex flex-1 items-start">
+        <div class="flex-1 flex flex-col">
+
+          <!-- ============================================================
+               LAYOUTGROUP · content — single column scrolling feed
+               ============================================================ -->
+          <div data-dms-group="content"
+               class="w-full flex-1 flex flex-row p-2">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-[1200px] mx-auto">
+
+              <!-- ============================================================
+                   SECTION · page-header (BARE · hero)
+                   ============================================================ -->
+              <section data-dms-section="lexical:page-header" class="pt-8 pb-10">
+                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-5">
+                  Roster · Spring 2026
+                </div>
+                <h1 class="font-[family-name:var(--font-display)] italic
+                           text-[clamp(56px,7vw,96px)] leading-[0.95] tracking-[-0.03em]
+                           text-[color:var(--ink-1)] m-0">
+                  The voices.
+                </h1>
+                <p class="mt-6 max-w-[640px] font-[family-name:var(--font-display)] italic
+                          text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-2)] m-0">
+                  Fifty-two DJs, give or take.
+                </p>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · filter-bar (CARDED · toolbar)
+                   ============================================================ -->
+              <section data-dms-section="card:filter-bar" class="mb-8">
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-4 flex flex-col md:flex-row md:items-center gap-3">
+                  <!-- Search input -->
+                  <div class="relative flex-1">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-4)]"
+                         viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/>
+                    </svg>
+                    <input type="text" placeholder="Search DJs by name, show, or genre…"
+                           class="w-full pl-9 pr-3 py-2.5 rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                  font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)]
+                                  placeholder:text-[color:var(--ink-4)] outline-none
+                                  focus:border-[color:var(--ink-3)]">
+                  </div>
+
+                  <!-- Segmented control -->
+                  <div class="inline-flex items-center gap-0.5 rounded-full border border-[var(--line-2)] bg-[var(--bg-2)] p-1">
+                    <button class="px-3 py-1.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                   font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase font-medium">All</button>
+                    <button class="px-3 py-1.5 rounded-full text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]
+                                   font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase font-medium">Music</button>
+                    <button class="px-3 py-1.5 rounded-full text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]
+                                   font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase font-medium">Talk</button>
+                    <button class="px-3 py-1.5 rounded-full text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]
+                                   font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase font-medium">Sports</button>
+                    <button class="px-3 py-1.5 rounded-full text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]
+                                   font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase font-medium">Alumni</button>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · DJ grid (BARE · 3-column responsive)
+                   ============================================================ -->
+              <section data-dms-section="card:dj-grid" class="mb-12">
+                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-5">
+                  Active roster · 11 of 52
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+
+                  <!-- DJ card · Halftone -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--cool shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">DJ Halftone</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@halftone</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Cluster, Harmonia, and the long shadow of 1970s German experiment.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2018 · Late Modernism (Thurs 11pm)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Jada R. -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--ember shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">Jada R.</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@jada_r</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Off-Year Pop: records that flopped on release, reconsidered.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2021 · Off-Year Pop (Fri 1am)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Glass & Smith (duo, spans 2 cols at lg) -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)] lg:col-span-2">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="flex shrink-0 -space-x-3">
+                        <div class="size-[96px] rounded-full wcdb-art wcdb-art--violet ring-2 ring-[var(--card-bg)]"></div>
+                        <div class="size-[96px] rounded-full wcdb-art wcdb-art--mono ring-2 ring-[var(--card-bg)]"></div>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)]">Glass &amp; Smith</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@glass · @smith</div>
+                        <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mt-3">
+                          A drone-and-ambient duo who haven't agreed on a definition of either since 2017. Insomnia Hour, six years and counting.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2019 · Insomnia Hour (Fri 3am)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Lo Carrasco -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">Lo Carrasco</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@lo.c</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Open-format late night. Whatever lands on the turntable.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2022 · Free Form Friday (Fri 11pm)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Ezra V. -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--violet shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">Ezra V.</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@ezv</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Free jazz, fire music, and the AACM. Two hours, every Sunday.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2020 · Sound Unit (Sun 9pm)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Maya Trupin -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--cool shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">Maya Trupin</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@trupin</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Capital Region politics, weekly. Interviews and call-in.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2023 · Albany Now (Wed 6pm)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Mateo Cordero -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--ember shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">Mateo Cordero</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@mat_c</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Cumbia, salsa, Latin alt. Three hours of dance music in Spanish.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2019 · Calor (Sat 7pm)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Wren Vu -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--mono shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">Wren Vu</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@wren</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Modern composition — Reich, Andriessen, the post-spectralists.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2024 · Score (Mon 8pm)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Briana Hsu -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--violet shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">Briana Hsu</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@brihsu</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Indie, post-punk, dream pop. New-release Wednesdays.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2022 · Static (Wed 10pm)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Tomás Reyes -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--cool shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">Tomás Reyes</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@treyes</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Great Danes basketball, hockey, and the SUNYAC at large.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2023 · Press Row (Sat 1pm)
+                    </div>
+                  </article>
+
+                  <!-- DJ card · Sage Levin -->
+                  <article class="rounded-[18px] bg-[var(--card-bg)] p-6 transition-colors hover:bg-[var(--card-bg-soft)]">
+                    <div class="flex items-center gap-4 mb-4">
+                      <div class="size-[96px] rounded-full wcdb-art wcdb-art--ember shrink-0"></div>
+                      <div class="min-w-0">
+                        <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] truncate">Sage Levin</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-1">@sagelevin</div>
+                      </div>
+                    </div>
+                    <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-2)] m-0 mb-4">
+                      Folk, country, Americana. Two hours, no commercial radio.
+                    </p>
+                    <div class="border-t border-[var(--line-1)] pt-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                      Joined 2021 · Back Porch (Sun 4pm)
+                    </div>
+                  </article>
+
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · Alumni (BARE · darker tile grid)
+                   ============================================================ -->
+              <section data-dms-section="card:alumni" class="mb-12">
+                <div class="flex items-baseline justify-between mb-5">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                      From the archives
+                    </div>
+                    <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">
+                      Voices that used to be on this dial.
+                    </h2>
+                  </div>
+                  <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] inline-flex items-center gap-2">
+                    All alumni
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                  </a>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <article class="rounded-[14px] bg-[var(--card-bg-soft)] p-5">
+                    <div class="size-[64px] rounded-full wcdb-art wcdb-art--mono mb-4"></div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em]">P. Madsen</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">1989 – 1994</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--ink-3)] m-0 mt-2">Hardcore and 7-inches.</p>
+                  </article>
+
+                  <article class="rounded-[14px] bg-[var(--card-bg-soft)] p-5">
+                    <div class="size-[64px] rounded-full wcdb-art mb-4"></div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em]">DJ Crate Mole</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">1996 – 2002</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--ink-3)] m-0 mt-2">Hip-hop graveyard shift.</p>
+                  </article>
+
+                  <article class="rounded-[14px] bg-[var(--card-bg-soft)] p-5">
+                    <div class="size-[64px] rounded-full wcdb-art wcdb-art--violet mb-4"></div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em]">Anonymous</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">2003 – 2007</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--ink-3)] m-0 mt-2">Late-90s electronica revival.</p>
+                  </article>
+
+                  <article class="rounded-[14px] bg-[var(--card-bg-soft)] p-5">
+                    <div class="size-[64px] rounded-full wcdb-art wcdb-art--ember mb-4"></div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em]">Rae Ó Floinn</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">2010 – 2015</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--ink-3)] m-0 mt-2">Trad Irish, every Sunday.</p>
+                  </article>
+
+                  <article class="rounded-[14px] bg-[var(--card-bg-soft)] p-5">
+                    <div class="size-[64px] rounded-full wcdb-art wcdb-art--cool mb-4"></div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em]">J. Verma</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">2014 – 2018</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--ink-3)] m-0 mt-2">South Asian classical &amp; raga.</p>
+                  </article>
+
+                  <article class="rounded-[14px] bg-[var(--card-bg-soft)] p-5">
+                    <div class="size-[64px] rounded-full wcdb-art wcdb-art--mono mb-4"></div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em]">Old Sport</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">2016 – 2021</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] text-[color:var(--ink-3)] m-0 mt-2">Baseball, weekly, all season.</p>
+                  </article>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · Apply (CARDED · CTA)
+                   ============================================================ -->
+              <section data-dms-section="card:apply" class="mb-12">
+                <div class="rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-2)] p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">
+                      Open applications · close Mar 31
+                    </div>
+                    <h2 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                      Want a slot?
+                    </h2>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] text-[color:var(--ink-2)] m-0 max-w-[520px]">
+                      We open the schedule twice a year. SUNY Albany
+                      students get priority, but community DJs are
+                      welcome — bring a one-page pitch and a 30-minute
+                      demo mix.
+                    </p>
+                  </div>
+                  <button class="inline-flex items-center gap-2 px-6 py-3 rounded-full
+                                 bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                 font-[family-name:var(--font-sans)] text-[13px] font-medium shrink-0">
+                    Apply for spring / summer 2026
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                  </button>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · Footer (INVERTED CARD)
+                   ============================================================ -->
+              <section data-dms-section="card:footer" class="pb-4">
+                <div class="wcdb-card-inv p-10">
+                  <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-10">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-4">Stay tuned</div>
+                      <h2 class="font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--inv-ink)] m-0 mb-3">
+                        Drop us your email.
+                      </h2>
+                      <p class="text-[15px] leading-[1.5] max-w-[440px] text-[#4a4a4a]">
+                        Once-a-month dispatch from the studio — new shows,
+                        upcoming events, the occasional pledge drive. No
+                        spam, no algorithms.
+                      </p>
+
+                      <form class="mt-6 flex flex-col sm:flex-row gap-2 max-w-[520px]">
+                        <input type="email" placeholder="you@somewhere.edu"
+                               class="flex-1 px-4 py-3 rounded-full bg-transparent border border-[rgba(10,10,10,0.15)]
+                                      font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--inv-ink)]
+                                      placeholder:text-[#a0a0a0] focus:outline-none focus:border-[color:var(--inv-ink)]">
+                        <button class="px-6 py-3 rounded-full bg-[color:var(--inv-ink)] text-[color:var(--inv-bg)]
+                                       font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                          Subscribe
+                        </button>
+                      </form>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Listen</div>
+                        <ul class="space-y-2 text-[13px] text-[color:var(--inv-ink)]">
+                          <li>Live stream</li><li>Schedule</li><li>Recent spins</li><li>Shows</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Station</div>
+                        <ul class="space-y-2 text-[13px] text-[color:var(--inv-ink)]">
+                          <li>About</li><li>Pledge</li><li>Volunteer</li><li>Contact</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr class="wcdb-hairline my-8" style="background:rgba(10,10,10,0.10)"/>
+
+                  <div class="flex flex-wrap items-center justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a]">
+                    <span>WCDB · 90.9 FM · SUNY Albany</span>
+                    <span>© 1977–2026 · A student broadcast</span>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="../design-system/theme.html">theme</a></li>
+      <li><a href="../design-system/layouts.html">layouts</a></li>
+      <li><a href="../design-system/grid.html">grid</a></li>
+      <li><a href="../design-system/components.html">components</a></li>
+      <li><a href="../design-system/patterns.html">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · editorial</h3>
+    <ul>
+      <li><a href="./home.html">home</a></li>
+      <li><a href="./listen.html">listen</a></li>
+      <li><a href="./blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · catalogue</h3>
+    <ul>
+      <li><a href="./schedule.html">schedule</a></li>
+      <li><a href="./show.html">show</a></li>
+      <li><a href="./djs.html" data-active="true">djs</a></li>
+      <li><a href="./spins.html">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · misc</h3>
+    <ul>
+      <li><a href="./events.html">events</a></li>
+      <li><a href="./login.html">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -635,7 +635,7 @@
               <div class="col-span-12" data-dms-section="datacard">
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                   <div class="px-6 pt-5 pb-3 border-b border-zinc-950/05">
-                    <div class="font-display font-medium text-[16px] text-[#0F1722]">dataCard · all 7 named styles</div>
+                    <div class="font-display font-medium text-[16px] text-[#0F1722]">dataCard · all 8 named styles</div>
                     <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">theme.dataCard.styles · card.theme.jsx · the workhorse Card section</div>
                     <p class="font-proxima text-[12.5px] text-slate-600 mt-2 max-w-[680px]">Every dataCard variant ships with the single-column "every section of a card on its own row" rule. The composed KpiCard / KpiCardCompliance / StatTile / MetricCard variants from the handoff <em>are</em> these styles + a specific column configuration (see <a href="patterns.html" class="tny-link">patterns.html</a>).</p>
                   </div>
@@ -718,6 +718,15 @@
                       <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">dashboard · styles[6]</div>
                     </div>
 
+                    <!-- context — diagnostic / explainer (no verdict) -->
+                    <div data-dms-section="datacard-context" class="rounded-[8px] border border-dashed border-zinc-950/15 bg-slate-50/60 p-5 flex flex-col gap-3 h-full">
+                      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-slate-300 bg-white self-start font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500"><span class="size-1.5 rounded-full bg-slate-400"></span>UZA measure</span>
+                      <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Peak-hour excessive delay</div>
+                      <div class="font-display font-semibold text-[28px] leading-[1.1] tracking-tight tabular-nums text-[#0F1722]">366,000,000<span class="text-[14px] font-medium tracking-normal text-slate-500 ml-1">hr/yr</span></div>
+                      <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">PHED targets are <span class="text-[#0f1722] font-medium">per-capita, per UZA</span> — set only for New York-Newark and Poughkeepsie-Newburgh.</div>
+                      <div class="mt-auto pt-2 font-mono text-[10px] uppercase tracking-wider text-slate-400">context · styles[7]</div>
+                    </div>
+
                   </div>
                   <div class="p-6 border-t border-zinc-950/05 bg-slate-50/40">
                     <div class="font-display uppercase text-[12px] tracking-wide text-[#CA8A04] mb-2">// Card cell knobs</div>
@@ -752,10 +761,11 @@
                     <span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#EF4444]/30 bg-[#EF4444]/10 text-[#991B1B]">red</span>
                     <span class="inline-flex items-center px-2 h-6 rounded-[4px] text-[11px] font-medium bg-[#0a0e13] text-white font-display uppercase tracking-wide">ink · admin</span>
                     <span class="inline-flex items-center px-2 h-6 rounded-[4px] text-[11px] font-medium bg-amber-100 text-amber-900 font-display uppercase tracking-wide">beta</span>
-                    <span class="inline-flex items-center gap-1.5 text-[12px] text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span>status_good</span>
-                    <span class="inline-flex items-center gap-1.5 text-[12px] text-amber-700"><span class="size-1.5 rounded-full bg-amber-400"></span>status_warn</span>
-                    <span class="inline-flex items-center gap-1.5 text-[12px] text-rose-700"><span class="size-1.5 rounded-full bg-rose-500"></span>status_bad</span>
-                    <span class="inline-flex items-center gap-1.5 text-[12px] text-slate-500"><span class="size-1.5 rounded-full bg-slate-400"></span>status_na</span>
+                    <!-- status pills: the card-design treatment — bordered tint + leading dot + uppercase mono. This is what theme.pill renders (UI.Pill / status_pill column type). -->
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>status_good</span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EAAD43]/30 bg-[#EAAD43]/15 font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12]"><span class="size-1.5 rounded-full bg-[#EAAD43]"></span>status_warn</span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B]"><span class="size-1.5 rounded-full bg-[#EF4444]"></span>status_bad</span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/10 bg-slate-100 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600"><span class="size-1.5 rounded-full bg-slate-400"></span>status_na</span>
                     <span class="inline-flex items-center gap-2 h-8 pl-2.5 pr-2 rounded-full bg-white text-slate-700 shadow-sm border border-zinc-950/5 text-[12.5px] font-proxima"><span class="size-2 rounded-full bg-[#E5A646]"></span>route · I-87 NB <svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
                   </div>
                 </div>
@@ -796,17 +806,17 @@
                 </div>
               </div>
 
-              <!-- Table (default + editorial + compact) -->
+              <!-- Table (default + editorial + report) -->
               <div class="col-span-12" data-dms-section="table">
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                   <div class="px-6 pt-5 pb-3 border-b border-zinc-950/05">
-                    <div class="font-display font-medium text-[16px] text-[#0F1722]">Table · default · editorial · compact</div>
-                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">theme.table.styles · table/table.theme.js</div>
+                    <div class="font-display font-medium text-[16px] text-[#0F1722]">Table · default · editorial · report</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">theme.table.styles · pick per section via `display.tableStyle`</div>
                   </div>
-                  <div class="bg-slate-50/40 p-6 grid grid-cols-2 gap-6">
+                  <div class="bg-slate-50/40 p-6 grid grid-cols-3 gap-6">
 
                     <!-- default · dashboard -->
-                    <div>
+                    <div data-dms-section="table-default">
                       <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// default · dashboard · amber-hover</div>
                       <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                         <table class="w-full text-[13px] text-slate-700">
@@ -828,7 +838,7 @@
                     </div>
 
                     <!-- editorial -->
-                    <div>
+                    <div data-dms-section="table-editorial">
                       <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// editorial · deep-navy header · printable</div>
                       <table class="w-full border-collapse text-[12.5px]">
                         <thead>
@@ -848,6 +858,43 @@
                           <tr><td class="px-3 py-1.5 border border-slate-200">Lumberland (T)</td><td class="px-3 py-1.5 border border-slate-200 text-right font-mono tabular-nums">38,114.9</td><td class="px-3 py-1.5 border border-slate-200 text-right font-mono tabular-nums">59.6</td></tr>
                         </tbody>
                       </table>
+                    </div>
+
+                    <!-- report — MAP-21 system performance treatment -->
+                    <div data-dms-section="table-report">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// report · mono header · dense reports</div>
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <table class="w-full text-left">
+                          <thead>
+                            <tr class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 border-b border-zinc-950/10 bg-slate-50/60">
+                              <th class="px-4 py-2.5 font-normal w-10">#</th>
+                              <th class="px-4 py-2.5 font-normal">MPO</th>
+                              <th class="px-4 py-2.5 font-normal text-right">Interstate <span class="text-slate-400 normal-case">≥75%</span></th>
+                              <th class="px-4 py-2.5 font-normal text-center w-14">Met</th>
+                            </tr>
+                          </thead>
+                          <tbody class="font-proxima text-[13px] text-slate-700">
+                            <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]">
+                              <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">01</td>
+                              <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">CDTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Capital District</span></td>
+                              <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>88.2</span></td>
+                              <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums text-emerald-700">3/3</td>
+                            </tr>
+                            <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]">
+                              <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">02</td>
+                              <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">GBNRTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Buffalo-Niagara</span></td>
+                              <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>84.4</span></td>
+                              <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums text-emerald-700">3/3</td>
+                            </tr>
+                            <tr class="hover:bg-[#FFFBEB]">
+                              <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">03</td>
+                              <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">PDCTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Poughkeepsie</span></td>
+                              <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums font-semibold text-[#991B1B]"><span class="size-1.5 rounded-full bg-red-500"></span>74.2</span></td>
+                              <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums text-amber-700">2/3</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
 
                   </div>
