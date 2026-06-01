@@ -1,0 +1,406 @@
+/* WCDB DMS Design System — shared CSS.
+ *
+ * This file is the *mockup-only* mirror of `src/themes/wcdb/tokens.css`
+ * — the canonical token file that `src/themes/wcdb/wcdb_theme.js`
+ * actually consumes at runtime. The mockups in `design-system/` and
+ * `pages/` link this file directly because there is no toolchain
+ * here: a designer opens `home.html` in a browser and the styles
+ * just resolve.
+ *
+ * If you change a value in `src/themes/wcdb/tokens.css`, mirror the
+ * change here. The trade-off is intentional — see
+ * `src/dms/skills/designing-a-dms-design-system.md` §8.
+ *
+ * Mode: <html data-mode="dark"> (default) | <html data-mode="light">
+ * Density: <html data-density="cozy"> (default) | compact | comfortable
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
+
+/* ─────────────────────────────────────────────────────────────
+ * TOKENS — mirror of src/themes/wcdb/tokens.css
+ * ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* Color — Dark (primary) ───────────────────────────────── */
+  --page-bg: #0e1011;
+  --bg-0: #0a0a0a;
+  --bg-1: #0e1011;
+  --bg-2: #141618;
+  --bg-3: #1c1e20;
+  --bg-4: #1f2122;
+  --bg-5: #2a2c2e;
+
+  --card-bg: #1f2122;
+  --card-bg-soft: #1a1c1d;
+  --inv-bg: #f5f5f5;
+  --inv-ink: #0a0a0a;
+  --inv-ink-2: #4a4a4a;
+  --inv-line: rgba(10, 10, 10, 0.10);
+
+  --line-1: rgba(255, 255, 255, 0.06);
+  --line-2: rgba(255, 255, 255, 0.10);
+  --line-3: rgba(255, 255, 255, 0.18);
+
+  --ink-1: #f5f5f5;
+  --ink-2: #c8c8c8;
+  --ink-3: #8a8a8a;
+  --ink-4: #5a5a5a;
+  --ink-inv: #0a0a0a;
+
+  --accent: #f5f5f5;
+  --accent-ink: #0a0a0a;
+  --accent-soft: rgba(245, 245, 245, 0.08);
+
+  --on-air: #ff3b2f;
+  --on-air-soft: rgba(255, 59, 47, 0.12);
+
+  /* Type ─────────────────────────────────────────────────── */
+  --font-display: "Instrument Serif", "GT Sectra", "Times New Roman", serif;
+  --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  --tx-9xl: clamp(72px, 12vw, 200px);
+  --tx-8xl: clamp(56px, 8vw, 128px);
+  --tx-hero: clamp(56px, 6vw, 88px);
+  --tx-7xl: 80px;
+  --tx-6xl: 64px;
+  --tx-5xl: 48px;
+  --tx-4xl: 36px;
+  --tx-3xl: 28px;
+  --tx-2xl: 22px;
+  --tx-xl: 18px;
+  --tx-lg: 16px;
+  --tx-md: 14px;
+  --tx-sm: 12px;
+  --tx-xs: 11px;
+
+  /* Radii ───────────────────────────────────────────────── */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+  --r-pill: 999px;
+
+  /* Density ─────────────────────────────────────────────── */
+  --density-y: 12px;
+  --density-x: 16px;
+}
+
+:root[data-mode="light"] {
+  --page-bg: #fafaf9;
+  --bg-0: #fafaf9;
+  --bg-1: #ffffff;
+  --bg-2: #f5f5f4;
+  --bg-3: #ececea;
+  --bg-4: #ffffff;
+  --bg-5: #e5e5e3;
+
+  --card-bg: #ffffff;
+  --card-bg-soft: #f5f5f4;
+  --inv-bg: #0e1011;
+  --inv-ink: #f5f5f5;
+  --inv-ink-2: #c8c8c8;
+  --inv-line: rgba(255, 255, 255, 0.10);
+
+  --line-1: rgba(10, 10, 10, 0.06);
+  --line-2: rgba(10, 10, 10, 0.12);
+  --line-3: rgba(10, 10, 10, 0.20);
+
+  --ink-1: #0a0a0a;
+  --ink-2: #2a2a2a;
+  --ink-3: #6a6a6a;
+  --ink-4: #a0a0a0;
+  --ink-inv: #fafaf9;
+
+  --accent: #0a0a0a;
+  --accent-ink: #fafaf9;
+  --accent-soft: rgba(10, 10, 10, 0.06);
+}
+
+:root[data-density="compact"]     { --density-y: 8px;  --density-x: 12px; }
+:root[data-density="cozy"]        { --density-y: 12px; --density-x: 16px; }
+:root[data-density="comfortable"] { --density-y: 16px; --density-x: 22px; }
+
+/* ─────────────────────────────────────────────────────────────
+ * BASE — page resets so mockups feel like real product pages
+ * ───────────────────────────────────────────────────────────── */
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--page-bg);
+  color: var(--ink-1);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--ink-1); color: var(--page-bg); }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+
+/* Brand font-family helpers — must be plain CSS rules (not Tailwind
+ * config) so every mockup picks them up by linking this file.
+ * Per skill §8 MUST list. */
+.font-display { font-family: var(--font-display); }
+.font-sans    { font-family: var(--font-sans); }
+.font-mono    { font-family: var(--font-mono); }
+
+/* Webkit scrollbar — minimal, matches the editorial restraint */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--line-3); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ─────────────────────────────────────────────────────────────
+ * BRAND SURFACE UTILITIES — things Tailwind can't express
+ * ───────────────────────────────────────────────────────────── */
+
+/* Inverted footer card — the Hanssen footer move. Dark mode: white card,
+ * black text. Light mode: dark card, white text. */
+.wcdb-card-inv {
+  background: var(--inv-bg);
+  color: var(--inv-ink);
+  border-radius: 18px;
+}
+.wcdb-card-inv .wcdb-meta { color: var(--inv-ink-2); }
+.wcdb-card-inv hr, .wcdb-card-inv .wcdb-hairline { background: var(--inv-line); }
+
+/* Decorative gradient placeholder for hero / show / album art.
+ * Real photography should replace these in production. */
+.wcdb-art {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg,
+    oklch(0.32 0.06 200) 0%,
+    oklch(0.40 0.10 240) 35%,
+    oklch(0.55 0.14 290) 70%,
+    oklch(0.62 0.10 30) 100%);
+}
+.wcdb-art::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.18), transparent 55%),
+              radial-gradient(ellipse at 80% 90%, rgba(0,0,0,0.35), transparent 60%);
+  mix-blend-mode: overlay;
+}
+.wcdb-art--ember { background: linear-gradient(135deg, oklch(0.30 0.05 30) 0%, oklch(0.42 0.14 35) 40%, oklch(0.62 0.18 50) 75%, oklch(0.78 0.12 80) 100%); }
+.wcdb-art--cool  { background: linear-gradient(135deg, oklch(0.20 0.04 240) 0%, oklch(0.32 0.08 250) 40%, oklch(0.52 0.12 280) 75%, oklch(0.70 0.08 320) 100%); }
+.wcdb-art--mono  { background: linear-gradient(160deg, oklch(0.22 0 0) 0%, oklch(0.36 0 0) 50%, oklch(0.50 0 0) 100%); }
+.wcdb-art--violet{ background: linear-gradient(135deg, oklch(0.18 0.04 290) 0%, oklch(0.34 0.10 285) 50%, oklch(0.58 0.16 320) 100%); }
+
+/* Scan-line texture overlay — adds the editorial print feel to hero art. */
+.wcdb-scanlines::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0 1px, transparent 1px 3px);
+}
+
+/* Hairline — a single-pixel divider that takes the line-1 token. */
+.wcdb-hairline { height: 1px; background: var(--line-1); width: 100%; }
+.wcdb-hairline--v { width: 1px; background: var(--line-1); align-self: stretch; }
+
+/* Eyebrow — mono uppercase tracked, the second-most-distinctive WCDB voice
+ * after italic display. Authors get this on h5/h6 in textSettings. */
+.wcdb-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Top-nav animated underline. Tailwind can't express ::after with a
+ * 500ms cubic-bezier scaleX transition, so it lives here. Mirrors
+ * tokens.css's .wcdb-navitem rules exactly. */
+.wcdb-navitem { position: relative; }
+.wcdb-navitem::after {
+  content: ""; position: absolute;
+  left: 4px; right: 4px; bottom: 4px;
+  height: 2px;
+  background: linear-gradient(to right, var(--ink-1), var(--ink-3));
+  transform: scaleX(0); transform-origin: left center;
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.wcdb-navitem:hover::after,
+.wcdb-navitem[data-active="true"]::after { transform: scaleX(1); }
+
+/* On-air pulse — keyframe lives in tokens.css as `wcdb-pulse-dot`.
+ * Re-declared here so mockups don't need to import tokens.css. */
+@keyframes wcdb-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
+.wcdb-on-air-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--on-air);
+  border-radius: 50%;
+  animation: wcdb-pulse-dot 1.4s ease-in-out infinite;
+}
+
+/* Equalizer bars — the now-playing live indicator. */
+@keyframes wcdb-equalizer {
+  0%, 100% { transform: scaleY(0.3); }
+  50%      { transform: scaleY(1); }
+}
+.wcdb-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.wcdb-eq > span {
+  display: block; width: 2px; height: 100%;
+  background: currentColor;
+  transform-origin: bottom;
+  animation: wcdb-equalizer 0.9s ease-in-out infinite;
+}
+.wcdb-eq > span:nth-child(2) { animation-delay: 0.15s; }
+.wcdb-eq > span:nth-child(3) { animation-delay: 0.30s; }
+.wcdb-eq > span:nth-child(4) { animation-delay: 0.45s; }
+
+/* Initials glyph that floats over hero art (e.g. "L.M." on home).
+ * Sized by clamp so it scales with viewport — matches the
+ * portraitBanner theme's initialsFontSize. */
+.wcdb-initials {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(140px, 18vw, 280px);
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  color: rgba(255, 255, 255, 0.14);
+  user-select: none;
+}
+
+/* Light-mode logo flip — the SVG ships white, invert in light mode.
+ * Matches tokens.css so previewers see the same behaviour. */
+[data-mode="light"] .wcdb-logo-img { filter: invert(1); }
+
+/* ─────────────────────────────────────────────────────────────
+ * META-NAV — documentation chrome, NOT part of the DMS theme
+ * (per skill §7.0). Single class so it doesn't leak into theme.js.
+ * ───────────────────────────────────────────────────────────── */
+.wcdb-meta-nav {
+  position: sticky; top: 0; z-index: 100;
+  width: 100%;
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px 14px;
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--line-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.wcdb-meta-nav__brand {
+  color: var(--ink-1);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: -0.02em;
+  padding-right: 14px;
+  border-right: 1px solid var(--line-1);
+}
+.wcdb-meta-nav__group {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding-right: 14px;
+}
+.wcdb-meta-nav__group + .wcdb-meta-nav__group { border-left: 1px solid var(--line-1); padding-left: 14px; }
+.wcdb-meta-nav__group-label {
+  color: var(--ink-4);
+  font-size: 9px;
+}
+.wcdb-meta-nav a {
+  color: var(--ink-3);
+  padding: 4px 0;
+  border-bottom: 1px solid transparent;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.wcdb-meta-nav a:hover { color: var(--ink-1); }
+.wcdb-meta-nav a[data-active="true"] {
+  color: var(--ink-1);
+  border-bottom-color: var(--ink-1);
+}
+
+/* Footer link block — same content as the meta-nav, repeated at the
+ * bottom for long-scroll pages. Documentation chrome, not theme. */
+.wcdb-meta-footer {
+  margin-top: 48px;
+  padding: 24px 14px;
+  border-top: 1px solid var(--line-1);
+  background: var(--bg-0);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+@media (min-width: 768px) {
+  .wcdb-meta-footer { grid-template-columns: repeat(4, 1fr); }
+}
+.wcdb-meta-footer h3 {
+  margin: 0 0 12px;
+  font-size: 10px;
+  color: var(--ink-4);
+}
+.wcdb-meta-footer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.wcdb-meta-footer a { color: var(--ink-2); }
+.wcdb-meta-footer a:hover { color: var(--ink-1); }
+
+/* ─────────────────────────────────────────────────────────────
+ * DMS ANNOTATION OVERLAY — opt-in by adding class="dms-annotated"
+ * to <body>. Used on the design-system/ pages so a reviewer can
+ * see Layout / LayoutGroup / Section badges. Off by default on
+ * pages/ so they look like real product surfaces.
+ * ───────────────────────────────────────────────────────────── */
+.dms-annotated [data-dms-layout],
+.dms-annotated [data-dms-group],
+.dms-annotated [data-dms-section] {
+  position: relative;
+}
+.dms-annotated [data-dms-layout]::before,
+.dms-annotated [data-dms-group]::before,
+.dms-annotated [data-dms-section]::before {
+  position: absolute;
+  top: 4px; left: 4px;
+  z-index: 60;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+.dms-annotated [data-dms-layout]::before {
+  content: "LAYOUT · " attr(data-dms-layout);
+  background: rgba(245, 245, 245, 0.06);
+  color: var(--ink-2);
+  border: 1px dashed var(--line-2);
+}
+.dms-annotated [data-dms-group]::before {
+  content: "GROUP · " attr(data-dms-group);
+  background: var(--on-air-soft);
+  color: var(--on-air);
+  border: 1px dashed rgba(255, 59, 47, 0.35);
+}
+.dms-annotated [data-dms-section]::before {
+  content: "SECTION · " attr(data-dms-section);
+  background: var(--accent-soft);
+  color: var(--ink-1);
+  border: 1px dashed var(--line-2);
+  top: -8px;
+}
+.dms-annotated [data-dms-layout],
+.dms-annotated [data-dms-group],
+.dms-annotated [data-dms-section] {
+  outline: 1px dashed var(--line-2);
+  outline-offset: -1px;
+}
