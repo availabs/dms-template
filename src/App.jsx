@@ -23,6 +23,7 @@ const AUTH_PATH = import.meta.env.VITE_DMS_AUTH_PATH || "/auth";
 const PG_ENVS = (import.meta.env.VITE_DMS_PG_ENVS || "")
   .split(",")
   .filter(Boolean);
+const IS_MULTI_TENANT = import.meta.env.VITE_DMS_MULTI_TENANT === "1";
 
 function App({ defaultData, hydrationData } = {}) {
   //console.log('pgEnvs', PG_ENVS)
@@ -43,6 +44,7 @@ function App({ defaultData, hydrationData } = {}) {
       DAMA_HOST={DAMA_HOST}
       themes={themes}
       damaDataTypes={getDataTypes(DMS_APP)}
+      isMultiTenant={IS_MULTI_TENANT}
     />
   );
 }
