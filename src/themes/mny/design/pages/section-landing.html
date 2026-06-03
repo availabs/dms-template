@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Assess Risk (Section Landing)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================
+     LAYOUT WRAPPER 1 — outerWrapper (topo bg on body)
+     The first child is the header LayoutGroup, which lives OUTSIDE
+     the max-w wrapper so the dark panel can bleed to the right edge.
+     ================================================================ -->
+
+<!-- LayoutGroup: header (mnyHeader — overlay variant) -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+
+          <!-- mnyHeader component: overlay variant -->
+          <div class="relative w-full lg:h-[743px] lg:-mb-[85px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <!-- Right: dark illustration panel with rounded-bl corner -->
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-[#1A2732] bg-gradient-to-r from-[#213440] to-[#213440] via-[#213440]/70">
+              <img class="relative top-[70px] w-[758px]"
+                   src="../assets/mny/illustrations/mny-whats-at-risk.webp"
+                   alt="Isometric city diorama — communities at risk">
+            </div>
+            <!-- Left: breadcrumbs + title + note -->
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-12 lg:pt-0">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Assess Risk
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Assess Risk
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2">
+                    Understand the natural hazards, climate shifts, and disaster patterns that shape risk across New York State.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     LAYOUT WRAPPER 2 — max-w-[1440px] mx-auto
+     Contains: TopNav, SideNav + content LayoutGroups
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+
+    <!-- TopNav: fixed, floating -->
+    <div class="print:hidden">
+      <div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+        <nav>
+          <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+            <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+              <a href="#">
+                <div class="h-12 pl-3 pr-2 flex items-center">
+                  <img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY">
+                </div>
+              </a>
+              <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+                <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+                <div class="w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+                <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+                <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Explore Progress</div>
+              </div>
+              <div class="hidden md:flex h-full items-center justify-end min-w-[110px]">
+                <button class="bg-white flex justify-between items-center h-[48px] w-[217px] py-[8px] pr-[8px] pl-[24px] border border-mny-100 rounded-[1000px] shadow-sm">
+                  <span class="uppercase text-mny-900 font-medium text-[12px] tracking-normal">Search</span>
+                  <div class="bg-mny-700 p-[10px] rounded-full">
+                    <!-- icon: Search -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="text-white" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M15,14.3L10.7,10c1.9-2.3,1.6-5.8-0.7-7.7S4.2,0.7,2.3,3S0.7,8.8,3,10.7c2,1.7,5,1.7,7,0l4.3,4.3L15,14.3z M2,6.5 C2,4,4,2,6.5,2S11,4,11,6.5S9,11,6.5,11S2,9,2,6.5z"/></svg>
+                  </div>
+                </button>
+                <div class="flex p-1 items-center">
+                  <div class="flex p-2 justify-center items-center">
+                    <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+                      <!-- icon: User -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16" fill="currentColor"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5 S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <!-- SideNav + Content area -->
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+
+      <!-- SideNav: 302px sticky -->
+      <div class="pr-2 hidden lg:block min-w-[302px] max-w-[302px] pt-[88px] print:hidden">
+        <div class="hidden lg:block sticky top-[120px] h-[calc(100vh-125px)] bg-white rounded-lg shadow-md w-full overflow-y-auto overflow-x-hidden mt-8">
+          <div class="hidden md:flex bg-white w-full h-full z-20 flex-col pr-5">
+            <nav class="border-slate-200 py-6 flex-1">
+              <!-- Section title -->
+              <div class="flex w-full">
+                <div class="w-full flex flex-col cursor-pointer">
+                  <div class="pl-8">
+                    <a class="flex-1 font-display text-[16px] font-[500] leading-[16px] text-mny-900 py-3 uppercase" href="#">Assess Risk</a>
+                  </div>
+                </div>
+              </div>
+              <!-- Sub-items -->
+              <div class="flex w-full">
+                <div class="w-full flex flex-col cursor-pointer">
+                  <div class="pl-8">
+                    <div class="flex-1 flex items-center justify-between">
+                      <a class="flex-1 font-display text-[16px] font-[500] leading-[16px] text-mny-900 py-3 uppercase" href="#">Natural Hazards</a>
+                      <div class="pr-2">
+                        <!-- icon: ArrowRight -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="text-mny-700 size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M11 8 6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex w-full">
+                <div class="w-full flex flex-col cursor-pointer">
+                  <div class="pl-8">
+                    <div class="flex-1 flex items-center justify-between">
+                      <a class="flex-1 font-display text-[16px] font-[500] leading-[16px] text-mny-900 py-3 uppercase" href="#">Climate Change</a>
+                      <div class="pr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="text-mny-700 size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M11 8 6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex w-full">
+                <div class="w-full flex flex-col cursor-pointer">
+                  <div class="pl-8">
+                    <div class="flex-1 flex items-center justify-between">
+                      <a class="flex-1 font-display text-[16px] font-[500] leading-[16px] text-mny-900 py-3 uppercase" href="#">Presidentially Declared Disasters</a>
+                      <div class="pr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="text-mny-700 size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M11 8 6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content column (childWrapper) -->
+      <div class="h-full flex-1">
+
+        <!-- LayoutGroup: content (main overview) -->
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row lg:pt-[118px] pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative text-md font-light leading-7 p-4 h-full min-h-[calc(100vh-102px)]">
+              <div class="w-full grid grid-cols-6 md:grid-cols-12 max-w-[1020px] mx-auto px-0 lg:px-[56px]">
+
+                <!-- Section: Overview heading + text (span 9) -->
+                <div class="col-span-6 md:col-span-9 p-4">
+                  <div class="flex w-full min-h-[50px] items-center pb-2">
+                    <h2 class="flex-1 font-display font-medium uppercase scroll-mt-36">
+                      <span class="font-[500] text-mny-900 text-[36px] leading-[140%] tracking-[-.02em] underline-offset-8 underline decoration-4 decoration-mny-y700 font-display">Overview</span>
+                    </h2>
+                  </div>
+                  <div class="font-proxima font-[400] text-[16px] text-mny-700 leading-[22.4px] p-4">
+                    New York State faces a diverse array of hazards, from natural events like floods and hurricanes to the accelerating impacts of climate change, followed by the aftermath of these disasters. Effective hazard mitigation requires understanding and assessing these risks and their potential impacts to develop strategies to reduce vulnerability.
+                  </div>
+                </div>
+
+                <!-- Section: Natural Hazards card (span 4) -->
+                <div class="col-span-6 md:col-span-4 p-4">
+                  <div class="font-proxima font-[400] text-[16px] text-mny-700 leading-[22.4px] pt-[120px]">
+                    <div class="relative block rounded-[12px] p-[12px] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)] overflow-hidden" style="background-color: #F3F8F9;">
+                      <img class="mx-[-12px] mt-[-120px] w-[calc(100%+24px)] block" src="../assets/mny/illustrations/mny-hazards.webp" alt="Natural Hazards">
+                      <h3 class="pl-[16px] pt-[8px] font-[500] text-[16px] text-mny-900 font-display uppercase">Natural Hazards</h3>
+                      <hr class="my-2 border-mny-100">
+                      <p class="pl-[16px] pt-[8px] font-display font-medium text-mny-900 text-[14px]">From Avalanche to Wind, explore the many hazards that pose a risk to New York.</p>
+                      <div class="p-4 pt-8">
+                        <button class="cursor-pointer inline-flex items-center gap-2 bg-gray-700 py-1.5 text-sm font-semibold text-white rounded-lg px-3 py-1.5">learn more</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section: Climate Change card (span 4) -->
+                <div class="col-span-6 md:col-span-4 p-4">
+                  <div class="font-proxima font-[400] text-[16px] text-mny-700 leading-[22.4px] pt-[120px]">
+                    <div class="relative block rounded-[12px] p-[12px] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)] overflow-hidden" style="background-color: #F3F8F9;">
+                      <img class="mx-[-12px] mt-[-120px] w-[calc(100%+24px)] block" src="../assets/mny/illustrations/mny-climate-change.webp" alt="Climate Change">
+                      <h3 class="pl-[16px] pt-[8px] font-[500] text-[16px] text-mny-900 font-display uppercase">Climate Change</h3>
+                      <hr class="my-2 border-mny-100">
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">Climate Change Basics</a>
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">Climate Change Risk</a>
+                      <div class="p-4 pt-8">
+                        <button class="cursor-pointer inline-flex items-center gap-2 bg-gray-700 py-1.5 text-sm font-semibold text-white rounded-lg px-3 py-1.5">learn more</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section: Presidentially Declared card (span 4) -->
+                <div class="col-span-6 md:col-span-4 p-4">
+                  <div class="font-proxima font-[400] text-[16px] text-mny-700 leading-[22.4px] pt-[120px]">
+                    <div class="relative block rounded-[12px] p-[12px] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)] overflow-hidden" style="background-color: #F3F8F9;">
+                      <img class="mx-[-12px] mt-[-120px] w-[calc(100%+24px)] block" src="../assets/mny/illustrations/mny-hazards.webp" alt="Presidentially Declared Disasters">
+                      <h3 class="pl-[16px] pt-[8px] font-[500] text-[16px] text-mny-900 font-display uppercase">Presidentially Declared Disasters</h3>
+                      <hr class="my-2 border-mny-100">
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">DR-4397 August 2018</a>
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">DR-4472 October 2019</a>
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">DR-4480 2020-2023</a>
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">DR-4567 August 2020</a>
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">DR-4615 September 2021</a>
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">DR-4625 August 2021</a>
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">DR-4694 December 2022</a>
+                      <a href="#" class="block pl-[16px] pt-[8px] font-display font-medium text-mny-700 font-[500] text-[14px] hover:underline">DR-4723 July 2023</a>
+                      <div class="p-4 pt-4">
+                        <button class="cursor-pointer inline-flex items-center gap-2 bg-gray-700 py-1.5 text-sm font-semibold text-white rounded-lg px-3 py-1.5 uppercase">Learn More</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LayoutGroup: default (related to section) -->
+        <div data-dms="layoutGroup" data-name="default">
+          <div class="w-full h-full flex-1 flex flex-row pt-2">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative text-md font-light leading-7 p-4 h-full min-h-[200px]">
+              <div class="w-full grid grid-cols-6 md:grid-cols-12 max-w-[1020px] mx-auto px-0 lg:px-[56px]">
+
+                <!-- Heading row -->
+                <div class="col-span-6 md:col-span-6 p-4">
+                  <h2 class="font-[500] text-mny-900 text-[24px] leading-[24px] scroll-mt-36 font-display uppercase">Related to Assess Risk</h2>
+                </div>
+                <div class="col-span-6 md:col-span-6 p-4 text-right">
+                  <button class="cursor-pointer inline-flex items-center gap-2 bg-gray-700 py-1.5 text-sm font-semibold text-white rounded-lg px-3 py-1.5">Back To Home</button>
+                </div>
+
+                <!-- Climate Change card -->
+                <div class="col-span-6 md:col-span-4 p-4">
+                  <div class="relative block rounded-[12px] px-[12px] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)] overflow-hidden" style="background-color: #FCF6EC;">
+                    <h3 class="pt-[8px] font-[500] text-[16px] text-mny-900 font-display uppercase">
+                      <!-- icon: Globe -->
+                      <svg class="w-[1.5em] h-[1.5em] -mt-[5px] inline-block align-middle mr-1" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.2325 1.92247C16.0701 2.12205 12.0621 3.6785 8.84107 6.34601C8.19 6.88524 6.95515 8.12263 6.39225 8.79991C3.85181 11.8566 2.36515 15.4303 1.9859 19.3921C1.8912 20.3811 1.91827 22.5634 2.0364 23.4606C2.57712 27.569 4.19333 31.0805 6.95985 34.1577C9.01838 36.4475 11.8921 38.3284 14.911 39.3618C18.0973 40.4525 21.537 40.691 24.8368 40.0499C26.4328 39.7398 27.9685 39.2311 29.4546 38.5202L28.4959 36.2983L27.9083 35.7052C27.438 35.2304 27.3144 35.0773 27.2883 34.9374C27.2437 34.6979 27.8413 31.7203 27.9699 31.5412L29.6247 30.6241C30.4855 30.1885 31.2784 29.77 31.3866 29.6939C31.5156 29.6033 31.6291 29.4628 31.7159 29.2859C32.1368 28.4286 31.4926 27.4841 30.5406 27.5631L28.5366 28.4542C26.943 29.2522 26.7738 29.3488 26.4606 29.6388C26.1046 29.9684 25.7918 30.412 25.6352 30.8092C25.4802 31.2025 24.8645 34.3983 24.8645 34.8097C24.8645 35.5637 25.1744 36.3289 25.7173 36.9153L26.0044 37.2761C25.9596 37.321 24.6601 37.6336 24.1229 37.7287C22.7757 37.9674 20.8559 38.0485 19.5845 37.9204C17.4796 37.7083 15.4332 37.1198 13.5996 36.1992L12.2464 35.4447L13.4283 33.926C14.0883 33.1 14.6943 32.3161 14.7749 32.1841C15.0436 31.7441 15.1807 31.2403 15.1866 30.6721C15.1967 29.6889 15.0575 29.3896 13.8266 27.747L12.8707 26.4713L12.8553 24.2637L12.8399 22.0561L12.7045 21.6721C12.4064 20.8259 11.8233 20.1694 11.0591 19.8195L7.70779 18.9193L4.62096 18.1246C4.55673 18.0604 5.03448 16.1342 5.19763 15.7997L8.85648 14.8782C10.8365 14.4377 12.5537 14.0513 12.6725 14.0196C13.4737 13.8055 14.1495 13.4284 14.7681 12.85C15.1423 12.5 16.4136 10.8286 16.674 10.3441C17.0283 9.68484 17.2805 8.71577 17.2805 8.01329C17.2805 7.51644 17.1998 7.03586 16.9408 5.99023L16.7045 4.96989C16.7045 4.83252 18.5496 4.47377 19.8245 4.36327C20.6402 4.29257 22.4739 4.33289 23.2565 4.43873C24.4998 4.60692 25.7792 4.91455 26.8516 5.30325L30.0485 6.83589C30.2746 6.96271 30.3607 6.98378 30.6485 6.98263C31.0308 6.98109 31.2676 6.88178 31.522 6.61634C31.7388 6.39021 31.8395 6.12381 31.838 5.78023C31.8356 5.24508 31.6401 4.98813 30.8984 4.54567C28.7737 3.27813 26.3 2.42762 23.6885 2.06685L21.3845 1.90183C21.1733 1.8929 20.6549 1.90221 20.2325 1.92247Z" fill="#2D3E4C"/></svg>
+                      Climate Change
+                    </h3>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.5] py-3">Anthropogenic climate change is already impacting New York and will continue to do so in the future. Hazard mitigation plans must account for climate change in order to effectively reduce the loss of life and property to natural hazards.</p>
+                    <div class="pb-3">
+                      <button class="cursor-pointer inline-flex items-center gap-2 bg-gray-700 py-1.5 text-sm font-semibold text-white rounded-lg px-3 py-1.5">Read More</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- People and Communities card -->
+                <div class="col-span-6 md:col-span-4 p-4">
+                  <div class="relative block rounded-[12px] px-[12px] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)] overflow-hidden" style="background-color: #F3F8F9;">
+                    <h3 class="pt-[8px] font-[500] text-[16px] text-mny-900 font-display uppercase">
+                      <!-- icon: People -->
+                      <svg class="w-[1.5em] h-[1.5em] -mt-[5px] inline-block align-middle mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor"><path d="M26,14H24v2h2a3.0033,3.0033,0,0,1,3,3v4h2V19A5.0058,5.0058,0,0,0,26,14Z"/><path d="M24,4a3,3,0,1,1-3,3,3,3,0,0,1,3-3m0-2a5,5,0,1,0,5,5A5,5,0,0,0,24,2Z"/><path d="M23,30H21V28a3.0033,3.0033,0,0,0-3-3H14a3.0033,3.0033,0,0,0-3,3v2H9V28a5.0059,5.0059,0,0,1,5-5h4a5.0059,5.0059,0,0,1,5,5Z"/><path d="M16,13a3,3,0,1,1-3,3,3,3,0,0,1,3-3m0-2a5,5,0,1,0,5,5A5,5,0,0,0,16,11Z"/><path d="M8,14H6a5.0059,5.0059,0,0,0-5,5v4H3V19a3.0033,3.0033,0,0,1,3-3H8Z"/><path d="M8,4A3,3,0,1,1,5,7,3,3,0,0,1,8,4M8,2a5,5,0,1,0,5,5A5,5,0,0,0,8,2Z"/></svg>
+                      People and Communities
+                    </h3>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.5] py-3">According to the Census Bureau, in 2022, more than 3.3M adults in the U.S. were forced to evacuate their homes because of hurricanes, floods, and other disasters.</p>
+                    <div class="pb-3">
+                      <button class="cursor-pointer inline-flex items-center gap-2 bg-gray-700 py-1.5 text-sm font-semibold text-white rounded-lg px-3 py-1.5">Read More</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Plan to Act card -->
+                <div class="col-span-6 md:col-span-4 p-4">
+                  <div class="relative block rounded-[12px] px-[12px] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)] overflow-hidden" style="background-color: #F3F8F9;">
+                    <h3 class="pt-[8px] font-[500] text-[16px] text-mny-900 font-display uppercase">
+                      <svg class="w-[1.5em] h-[1.5em] -mt-[5px] inline-block align-middle mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor"><path d="M26,14H24v2h2a3.0033,3.0033,0,0,1,3,3v4h2V19A5.0058,5.0058,0,0,0,26,14Z"/><path d="M24,4a3,3,0,1,1-3,3,3,3,0,0,1,3-3m0-2a5,5,0,1,0,5,5A5,5,0,0,0,24,2Z"/><path d="M23,30H21V28a3.0033,3.0033,0,0,0-3-3H14a3.0033,3.0033,0,0,0-3,3v2H9V28a5.0059,5.0059,0,0,1,5-5h4a5.0059,5.0059,0,0,1,5,5Z"/><path d="M16,13a3,3,0,1,1-3,3,3,3,0,0,1,3-3m0-2a5,5,0,1,0,5,5A5,5,0,0,0,16,11Z"/><path d="M8,14H6a5.0059,5.0059,0,0,0-5,5v4H3V19a3.0033,3.0033,0,0,1,3-3H8Z"/><path d="M8,4A3,3,0,1,1,5,7,3,3,0,0,1,8,4M8,2a5,5,0,1,0,5,5A5,5,0,0,0,8,2Z"/></svg>
+                      Plan to Act
+                    </h3>
+                    <p class="font-proxima text-[14px] text-mny-700 leading-[1.5] py-3">As climate change continues to put New York's people, property, and ecosystems at risk, the 2023 State Hazard Mitigation Plan (SHMP), 58 Local Hazard Mitigation Plans (LHMPs) and the MitigateNY 2.0 project are working together.</p>
+                    <div class="pb-3">
+                      <button class="cursor-pointer inline-flex items-center gap-2 bg-gray-700 py-1.5 text-sm font-semibold text-white rounded-lg px-3 py-1.5">Read More</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /Content column -->
+    </div><!-- /SideNav + Content -->
+
+    <!-- LayoutGroup: clearCentered (footer component) -->
+    <div data-dms="layoutGroup" data-name="clearCentered">
+      <div class="w-full h-full flex-1 flex flex-row -mt-3">
+        <div class="max-w-[1440px] w-full xl:px-[48px] mx-auto">
+          <div class="flex flex-1 w-full flex-col relative h-full min-h-[200px]">
+            <div class="w-full grid grid-cols-6 md:grid-cols-12">
+              <div class="col-span-6 md:col-span-12 p-4">
+
+                <!-- Footer component -->
+                <div class="my-2 flex flex-col gap-[8px] max-w-[1362px] mx-auto text-mny-700 overflow-hidden print:hidden">
+                  <!-- Link grid card -->
+                  <div class="p-[56px] md:h-[386px] md:max-h-[386px] md:min-h-[386px] bg-white flex flex-col md:flex-row flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md divide-x divide-mny-100 justify-center">
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase tracking-normal" href="#">Know the Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Built Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">People and Communities</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Environment</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase tracking-normal" href="#">Assess Risk</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Hazards</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Climate Change</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Presidentially Declared Disasters</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase tracking-normal" href="#">Plan to Act</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">State Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Local Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Evaluate Capacity &amp; Discover Resources</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Develop Strategies</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase tracking-normal" href="#">Explore Progress</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Action Tracking</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Mitigation Matters</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Resources</a>
+                    </div>
+                  </div>
+                  <!-- Copyright bar -->
+                  <div class="p-[16px] md:px-[56px] flex flex-col md:flex-row items-center justify-between md:h-[70px] md:max-h-[70px] md:min-h-[70px] bg-white flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md">
+                    <div class="font-proxima text-[14px]">&copy; 2024 MitigateNY, All Rights Reserved.</div>
+                    <div class="flex gap-[24px]">
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Privacy Policy</a>
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Terms and Conditions</a>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Floating design-system nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
