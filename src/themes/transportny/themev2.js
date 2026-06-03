@@ -1728,6 +1728,7 @@ const transportnyTheme = {
   icon: iconTheme,
 
   // Rich content
+  richtext: { contentPadding: 'p-4' },
   lexical,
   graph,
   avlGraph,
