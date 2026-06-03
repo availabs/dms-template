@@ -35,7 +35,8 @@
     .mini-sidenav { background: white; border-right: 1px solid #E0EBF0; width: 40px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 8px; gap: 4px; }
     .mini-nav-dot { width: 16px; height: 4px; background: #C5D7E0; border-radius: 2px; }
     .mini-nav-dot.active { background: #37576B; }
-    .mini-content { flex: 1; background: #F4F4F4; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .mini-content { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 4px;
+      background-image: linear-gradient(0deg,rgba(244,244,244,0.92),rgba(244,244,244,0.92)),url('../assets/mny/topolines.png'); background-size: 200px; }
     .mini-group { background: white; border-radius: 4px; padding: 4px 6px; }
     .mini-group.header { background: transparent; border: 1px dashed #E0EBF0; }
     .mini-group.dark { background: #2D3E4C; }
@@ -60,7 +61,8 @@
     .ref-table .align-note { color: #6D96AE; font-style: italic; font-size: 11px; }
   </style>
 </head>
-<body class="mny-page-bg min-h-screen">
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
 
 <!-- DMS Layout: default -->
 <div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto">
@@ -109,7 +111,7 @@
         </div>
 
         <!-- Page Canvas — topo background surface -->
-        <div data-dms="group" data-name="content" class="w-full mb-4">
+        <div data-dms="group" data-name="content" class="w-full mb-6">
           <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
             <div data-dms="section" data-name="page-canvas">
               <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-2">Page Canvas</h2>
@@ -206,7 +208,7 @@
         </div>
 
         <!-- DMS Hierarchy diagram -->
-        <div data-dms="group" data-name="content" class="w-full mb-4">
+        <div data-dms="group" data-name="content" class="w-full mb-6">
           <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
             <div data-dms="section" data-name="hierarchy-diagram">
               <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">DMS Hierarchy</h2>
@@ -225,7 +227,7 @@
         </div>
 
         <!-- Layout Variants -->
-        <div data-dms="group" data-name="content" class="w-full mb-4">
+        <div data-dms="group" data-name="content" class="w-full mb-6">
           <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
             <div data-dms="section" data-name="layout-variants">
               <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">Layout Variants</h2>
@@ -331,7 +333,7 @@
         </div>
 
         <!-- LayoutGroup Variants -->
-        <div data-dms="group" data-name="content" class="w-full mb-4">
+        <div data-dms="group" data-name="content" class="w-full mb-6">
           <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
             <div data-dms="section" data-name="layoutgroup-variants">
               <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">LayoutGroup Variants</h2>
@@ -444,7 +446,7 @@
         </div>
 
         <!-- Wrapper class reference table -->
-        <div data-dms="group" data-name="content" class="w-full mb-4">
+        <div data-dms="group" data-name="content" class="w-full mb-6">
           <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
             <div data-dms="section" data-name="wrapper-class-reference">
               <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-2">LayoutGroup Wrapper Class Reference</h2>
@@ -517,7 +519,7 @@
         </div>
 
         <!-- Section width: centered vs fullwidth -->
-        <div data-dms="group" data-name="content" class="w-full mb-4">
+        <div data-dms="group" data-name="content" class="w-full mb-6">
           <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
             <div data-dms="section" data-name="section-width">
               <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-2">Section Width — centered vs. full-width</h2>
