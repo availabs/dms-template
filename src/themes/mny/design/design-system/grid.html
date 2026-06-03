@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Design System — Grid</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    /* Column ruler */
+    .col-ruler { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0; margin-bottom: 8px; }
+    .col-ruler-cell { height: 20px; background: #E0EBF0; display: flex; align-items: center; justify-content: center;
+      font-family: "Oswald", sans-serif; font-size: 9px; font-weight: 500; text-transform: uppercase; color: #37576B;
+      border-right: 1px solid #C5D7E0; }
+    .col-ruler-cell:last-child { border-right: 0; }
+
+    /* Section grid demo */
+    .section-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0; }
+    .section-block { padding: 3px; }
+    .section-inner { background: #F3F8F9; border: 1px solid #E0EBF0; border-radius: 6px; padding: 8px 6px;
+      font-family: "Source Sans 3", sans-serif; font-size: 11px; color: #37576B; }
+    .section-inner.accent { background: #FCF6EC; border-color: #F1CA87; }
+    .section-inner.dark { background: #2D3E4C; border-color: #37576B; color: white; }
+    .section-label { font-family: "Oswald", sans-serif; font-size: 10px; font-weight: 500; text-transform: uppercase; color: #6D96AE; margin-bottom: 3px; }
+
+    /* Span tile */
+    .span-tile { display: flex; align-items: center; justify-content: center; height: 48px; background: #E0EBF0;
+      border-radius: 4px; font-family: "Oswald", sans-serif; font-size: 12px; font-weight: 500;
+      text-transform: uppercase; color: #2D3E4C; letter-spacing: 0.04em; }
+    .span-tile.active { background: #2D3E4C; color: white; }
+    .span-tile.accent { background: #EAAD43; color: #2D3E4C; }
+
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .ref-table th { background: #F3F8F9; padding: 8px 10px; text-align: left; font-family: "Oswald", sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; color: #37576B; border-bottom: 2px solid #E0EBF0; letter-spacing: 0.04em; }
+    .ref-table td { padding: 8px 10px; border-bottom: 1px solid #F3F8F9; font-family: "Source Sans 3", sans-serif; color: #37576B; vertical-align: top; line-height: 1.5; }
+    .ref-table tr:last-child td { border-bottom: 0; }
+    .ref-table code { font-family: monospace; font-size: 11px; background: #F3F8F9; padding: 1px 4px; border-radius: 3px; color: #2D3E4C; }
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- DMS Layout: default -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto">
+  <div class="flex flex-col">
+
+    <!-- TopNav -->
+    <div class="sticky top-0 z-20 px-4 pt-8 xl:px-[64px] pointer-events-none">
+      <nav class="px-6 py-4 w-full bg-white h-20 flex items-center rounded-lg pointer-events-auto"
+           style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06)">
+        <div class="flex items-center w-full">
+          <div class="h-12 pl-3 pr-2 flex items-center flex-shrink-0">
+            <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-10">
+          </div>
+          <span class="hidden md:block font-display text-[13px] font-[500] text-[#6D96AE] uppercase tracking-wider ml-3 mr-5 border-l border-[#E0EBF0] pl-5">Design System</span>
+          <div class="hidden md:flex items-center flex-1 h-full gap-1">
+            <a href="theme.html" class="dms-ds-toplink">Theme</a>
+            <a href="layouts.html" class="dms-ds-toplink">Layouts</a>
+            <a href="grid.html" class="dms-ds-toplink active">Grid</a>
+            <a href="components.html" class="dms-ds-toplink">Components</a>
+            <a href="patterns.html" class="dms-ds-toplink">Patterns</a>
+          </div>
+          <span class="hidden md:block font-proxima text-[11px] text-[#C5D7E0] tracking-wider ml-auto">3 / 5</span>
+        </div>
+      </nav>
+    </div>
+
+    <div class="flex flex-1 md:px-4 xl:px-[64px] pb-8">
+      <div class="flex-1 pt-8">
+
+        <!-- Header group -->
+        <div data-dms="group" data-name="header" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col py-6">
+            <div data-dms="section" data-name="lexical-header">
+              <p class="font-proxima text-[14px] font-[500] text-[#37576B] uppercase tracking-wider mb-2">3.0 Structure</p>
+              <h1 class="font-display text-[48px] font-[500] text-[#2D3E4C] uppercase leading-none mb-3"
+                  style="text-decoration: underline; text-decoration-color: #EAAD43; text-decoration-thickness: 4px; text-underline-offset: 8px;">
+                Column Grid
+              </h1>
+              <p class="font-proxima text-[16px] text-[#37576B] leading-[1.6] max-w-[640px]">
+                The <strong>sectionArray</strong> grid that every Section sits on inside any LayoutGroup.
+                This is the inner layout — not the page chrome (see Layouts). Every Section picks a span
+                from this vocabulary; no freehand widths.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid Spec -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="grid-spec">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">Grid Specification</h2>
+              <div class="overflow-x-auto">
+                <table class="ref-table">
+                  <thead><tr><th>Property</th><th>Value</th><th>Notes</th></tr></thead>
+                  <tbody>
+                    <tr><td class="font-[600] text-[#2D3E4C]">gridSize</td><td><code>12</code></td><td>12-column grid; mobile collapses to 6 columns (<code>grid-cols-6 md:grid-cols-12</code>)</td></tr>
+                    <tr><td class="font-[600] text-[#2D3E4C]">defaultSize</td><td><code>2</code> (full-row span)</td><td>New sections default to col-span-12</td></tr>
+                    <tr><td class="font-[600] text-[#2D3E4C]">container</td><td><code>w-full grid grid-cols-6 md:grid-cols-12</code></td><td>gap-0 — gutter is section padding</td></tr>
+                    <tr><td class="font-[600] text-[#2D3E4C]">layouts.centered</td><td><code>max-w-[1020px] mx-auto px-0 lg:px-[56px]</code></td><td>cap for content sections</td></tr>
+                    <tr><td class="font-[600] text-[#2D3E4C]">layouts.fullwidth</td><td><code>""</code> (empty)</td><td>sections fill parent LayoutGroup</td></tr>
+                    <tr><td class="font-[600] text-[#2D3E4C]">sectionPadding</td><td><code>p-2</code> or <code>p-3</code></td><td>per-section gutter; border/bg rendered on inner box</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-4 bg-[#F3F8F9] rounded-[8px] p-4">
+                <p class="font-proxima text-[13px] text-[#37576B] leading-[1.7]">
+                  <strong>gap-0 / padding-gutter / inner-box model:</strong>
+                  The section grid is <code class="bg-white px-1 rounded text-[11px]">gap-0</code>.
+                  Gutter between sections is per-section padding (e.g. <code class="bg-white px-1 rounded text-[11px]">p-3</code>).
+                  A visible card border / rounded corners / background render on an <em>inner</em> element inside that padding.
+                  This lets adjacent sections either sit apart (normal) or fuse visually (compound card: shared-edge padding zeroed + coordinated border corners).
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column ruler + span vocabulary -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="span-vocabulary">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-2">Column-Span Vocabulary</h2>
+              <p class="font-proxima text-[13px] text-[#37576B] mb-4">Named size keys and their column-span classes. Authors pick from this list in the section toolbar.</p>
+
+              <!-- Column ruler -->
+              <div class="col-ruler mb-1">
+                <div class="col-ruler-cell">1</div><div class="col-ruler-cell">2</div><div class="col-ruler-cell">3</div>
+                <div class="col-ruler-cell">4</div><div class="col-ruler-cell">5</div><div class="col-ruler-cell">6</div>
+                <div class="col-ruler-cell">7</div><div class="col-ruler-cell">8</div><div class="col-ruler-cell">9</div>
+                <div class="col-ruler-cell">10</div><div class="col-ruler-cell">11</div><div class="col-ruler-cell">12</div>
+              </div>
+
+              <!-- Size key demos -->
+              <div class="space-y-2 mt-4">
+
+                <!-- 2 = full row (col-span-12) -->
+                <div>
+                  <div class="section-grid">
+                    <div class="section-block col-span-12">
+                      <div class="section-inner dark">
+                        <div class="section-label" style="color:#C5D7E0">size: 2 (full row) — col-span-12</div>
+                        New York State's Hazard Mitigation Planning Platform — hero band, stat callout
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 1 = 9/12 (col-span-9) -->
+                <div>
+                  <div class="section-grid">
+                    <div class="section-block col-span-9">
+                      <div class="section-inner accent">
+                        <div class="section-label" style="color:#6D96AE">size: 1 — col-span-9</div>
+                        Main content area (wide) — article body, hazard profile detail
+                      </div>
+                    </div>
+                    <div class="section-block col-span-3">
+                      <div class="section-inner">
+                        <div class="section-label">sidebar or stat</div>
+                        col-span-3
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2/3 = col-span-8 -->
+                <div>
+                  <div class="section-grid">
+                    <div class="section-block col-span-8">
+                      <div class="section-inner">
+                        <div class="section-label">size: 2/3 — col-span-8</div>
+                        Two-thirds width — map + rail, featured card
+                      </div>
+                    </div>
+                    <div class="section-block col-span-4">
+                      <div class="section-inner">
+                        <div class="section-label">size: 1/3 — col-span-4</div>
+                        One-third width
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 1/2 = col-span-6 pairs -->
+                <div>
+                  <div class="section-grid">
+                    <div class="section-block col-span-6">
+                      <div class="section-inner">
+                        <div class="section-label">size: 1/2 — col-span-6</div>
+                        Half width — stat card, feature card
+                      </div>
+                    </div>
+                    <div class="section-block col-span-6">
+                      <div class="section-inner">
+                        <div class="section-label">size: 1/2 — col-span-6</div>
+                        Half width — complementary card
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 1/3 triple = col-span-4 each -->
+                <div>
+                  <div class="section-grid">
+                    <div class="section-block col-span-4">
+                      <div class="section-inner">
+                        <div class="section-label">size: 1/3 — col-span-4</div>
+                        Hazard card
+                      </div>
+                    </div>
+                    <div class="section-block col-span-4">
+                      <div class="section-inner">
+                        <div class="section-label">size: 1/3 — col-span-4</div>
+                        Hazard card
+                      </div>
+                    </div>
+                    <div class="section-block col-span-4">
+                      <div class="section-inner">
+                        <div class="section-label">size: 1/3 — col-span-4</div>
+                        Hazard card
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 1/4 quads = col-span-3 each -->
+                <div>
+                  <div class="section-grid">
+                    <div class="section-block col-span-3">
+                      <div class="section-inner"><div class="section-label">1/4 · col-span-3</div>KPI</div>
+                    </div>
+                    <div class="section-block col-span-3">
+                      <div class="section-inner"><div class="section-label">1/4 · col-span-3</div>KPI</div>
+                    </div>
+                    <div class="section-block col-span-3">
+                      <div class="section-inner"><div class="section-label">1/4 · col-span-3</div>KPI</div>
+                    </div>
+                    <div class="section-block col-span-3">
+                      <div class="section-inner"><div class="section-label">1/4 · col-span-3</div>KPI</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Size key reference table -->
+              <div class="mt-6 overflow-x-auto">
+                <table class="ref-table">
+                  <thead><tr><th>Size key</th><th>Desktop class</th><th>Mobile class</th><th>% width</th><th>Use</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>"1/4"</code></td><td><code>col-span-3</code></td><td><code>col-span-6</code></td><td>25%</td><td>KPI stat cards (4-up)</td></tr>
+                    <tr><td><code>"1/3"</code></td><td><code>col-span-4</code></td><td><code>col-span-6</code></td><td>33%</td><td>Hazard cards (3-up), sidebar</td></tr>
+                    <tr><td><code>"1/2"</code></td><td><code>col-span-6</code></td><td><code>col-span-6</code></td><td>50%</td><td>Feature pairs, half-width charts</td></tr>
+                    <tr><td><code>"2/3"</code></td><td><code>col-span-8</code></td><td><code>col-span-6</code></td><td>66%</td><td>Map + narrow rail</td></tr>
+                    <tr><td><code>1</code></td><td><code>col-span-9</code></td><td><code>col-span-6</code></td><td>75%</td><td>Main body with sidebar</td></tr>
+                    <tr><td><code>2</code></td><td><code>col-span-12</code></td><td><code>col-span-6</code></td><td>100%</td><td>Full-row hero, full table</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compound card model -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="compound-card">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-2">Compound Card Pattern</h2>
+              <p class="font-proxima text-[13px] text-[#37576B] mb-4">Two adjacent sections fused into one visual card (e.g. a stat header above a chart). Achieved by zeroing the shared-edge padding and coordinating border corners — not a single section.</p>
+
+              <div class="section-grid gap-0">
+                <!-- Top card: header -->
+                <div class="col-span-12 p-3 pb-0">
+                  <div class="bg-[#F3F8F9] border border-[#E0EBF0] border-b-0 rounded-t-[12px] p-4">
+                    <div class="font-display text-[12px] font-[500] text-[#6D96AE] uppercase tracking-wider mb-1">Section A — top piece (rounded-t, border top+sides, no border-bottom)</div>
+                    <div class="flex items-end gap-6">
+                      <div>
+                        <div class="font-proxima text-[12px] text-[#6D96AE] uppercase mb-1">Hurricane</div>
+                        <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:36px">$604M</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Expected Annual Loss</div>
+                      </div>
+                      <div>
+                        <div class="font-proxima text-[12px] text-[#6D96AE] uppercase mb-1">Flood</div>
+                        <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:36px">$242M</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Expected Annual Loss</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Bottom card: chart placeholder -->
+                <div class="col-span-12 p-3 pt-0">
+                  <div class="bg-white border border-[#E0EBF0] border-t-0 rounded-b-[12px] p-4 min-h-[80px] flex items-center">
+                    <div class="font-proxima text-[12px] text-[#6D96AE]">Section B — bottom piece (rounded-b, border sides+bottom, no border-top) · chart renders here</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3 bg-[#F3F8F9] rounded-[8px] p-4 font-proxima text-[12px] text-[#37576B] leading-[1.7]">
+                Compound card = two DMS sections: top section padding <code class="bg-white px-1 rounded">p-3 pb-0</code> + inner <code class="bg-white px-1 rounded">rounded-t-[12px] border-b-0</code>;
+                bottom section padding <code class="bg-white px-1 rounded">p-3 pt-0</code> + inner <code class="bg-white px-1 rounded">rounded-b-[12px] border-t-0</code>.
+                Maintains 1:1 mapping with DMS sections — no single-section hacks.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rules for picking spans -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="authoring-rules">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-3">Authoring Rules</h2>
+              <ul class="space-y-2 font-proxima text-[14px] text-[#37576B] leading-[1.6]">
+                <li class="flex gap-2"><span class="text-[#EAAD43] font-[700]">→</span><span><strong>Default to full-row (size: 2).</strong> Almost every section starts as full-width; narrow as needed.</span></li>
+                <li class="flex gap-2"><span class="text-[#EAAD43] font-[700]">→</span><span><strong>Favour symmetric splits (1/2+1/2, 1/3+1/3+1/3, 1/4×4)</strong> over asymmetric splits unless the data justifies asymmetry.</span></li>
+                <li class="flex gap-2"><span class="text-[#EAAD43] font-[700]">→</span><span><strong>mobile behaviour:</strong> all sizes except 2 collapse to col-span-6 (half-mobile) — verify stacking order makes sense at 375px.</span></li>
+                <li class="flex gap-2"><span class="text-[#EAAD43] font-[700]">→</span><span><strong>Map / workbench sections</strong> should use <code class="bg-[#F3F8F9] px-1 rounded text-[11px]">group.full_width: 'show'</code> on the wrapping LayoutGroup and size: 2 on the section.</span></li>
+                <li class="flex gap-2"><span class="text-[#EAAD43] font-[700]">→</span><span><strong>Compound cards</strong> must be two separate sections with zeroed shared-edge padding — never one section with multiple components hard-coded in.</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="py-6 flex flex-wrap gap-4 justify-center">
+          <a href="theme.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Theme</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="layouts.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Layouts</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="grid.html" class="font-proxima text-[12px] font-[600] text-[#EAAD43] uppercase tracking-wider">Grid</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="components.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Components</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="patterns.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Patterns</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="../pages/section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

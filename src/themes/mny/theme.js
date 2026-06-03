@@ -319,6 +319,9 @@ const theme = {
   // ----------------------- End Layout ------------------------
   // Pages Pattern
   // ------------------
+  richtext: {
+    contentPadding: 'p-0',
+  },
   pages: {
     sectionArray: {
       "options": {
@@ -328,6 +331,7 @@ const theme = {
         {
           container: "w-full grid grid-cols-6 md:grid-cols-12 ",
           gridSize: 12,
+          sectionPadding: 'p-0',
           sectionEditHover: 'absolute inset-0 border border-transparent group-hover:border-[#37576b] border border-2 pointer-events-none z-10 rounded-md',
           addSectionIcon: 'size-6 p-1.5 text-white bg-[#37576b] rounded-full group-hover/icon:hidden',
           addSectionText: 'px-1.5 py-1 text-white text-sm font-semibold bg-[#37576b] rounded-full',
@@ -428,6 +432,31 @@ const theme = {
     3: `font-[500]  text-[#2D3E4C] text-[16px] leading-[16px] scroll-mt-36 font-['Oswald'] pb-[12x]`,
     4: `text-[36px] sm:text-[48px] tracking-[-2px] items-center font-medium font-['Oswald'] text-[#2D3E4C] sm:leading-[100%] uppercase`,
     default: "",
+  },
+  button: {
+    options: { activeStyle: 0 },
+    styles: [
+      {
+        name: 'default Buttons',
+        button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[14px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-6 py-4`,
+      },
+      {
+        name: 'plain',
+        button: `cursor-pointer inline-flex items-center gap-2 border border-[#E0EBF0] bg-white hover:bg-[#E0EBF0] hover:border-[#C5D7E0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[14px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-6 py-4`,
+      },
+      {
+        name: 'active',
+        button: `cursor-pointer inline-flex items-center gap-2 border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F3F8F9] disabled:border-[#E0EBF0] disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-3 py-[6px]`,
+      },
+      {
+        name: 'secondarySmall',
+        button: `cursor-pointer inline-flex items-center gap-2 border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F3F8F9] disabled:border-[#E0EBF0] disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-3 py-[6px]`,
+      },
+      {
+        name: 'primarySmall',
+        button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-3 py-[6px]`,
+      },
+    ],
   },
   levelClasses: {
     1: " pt-2 pb-1 uppercase text-sm text-blue-400 hover:underline cursor-pointer border-r-2 mr-4",
