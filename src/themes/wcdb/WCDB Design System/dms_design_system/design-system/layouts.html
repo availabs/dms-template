@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Layouts — Page chrome shapes</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body class="dms-annotated">
+
+<!-- ============================================================
+     META-NAV — documentation chrome, NOT part of the DMS theme
+     ============================================================ -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="./theme.html">theme</a>
+    <a href="./layouts.html" data-active="true">layouts</a>
+    <a href="./grid.html">grid</a>
+    <a href="./components.html">components</a>
+    <a href="./patterns.html">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="../pages/home.html">home</a>
+    <a href="../pages/listen.html">listen</a>
+    <a href="../pages/schedule.html">schedule</a>
+    <a href="../pages/show.html">show</a>
+    <a href="../pages/djs.html">djs</a>
+    <a href="../pages/spins.html">spins</a>
+    <a href="../pages/blog.html">blog</a>
+    <a href="../pages/events.html">events</a>
+    <a href="../pages/login.html">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default (theme.js layout.styles[0])
+     The doc page itself uses the same Layout shipped in theme.js.
+     childWrapper collapses to single-column flow when only one
+     LayoutGroup is present (no `header` group here).
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)] min-h-svh">
+
+  <!-- LAYOUT.wrapper -->
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+
+    <!-- LAYOUT.wrapper2 — TopNav lives here -->
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <!-- ============================================================
+           TOPNAV — theme.topnav.styles[0] "wcdb"
+           ============================================================ -->
+      <header class="w-full h-14 flex items-center bg-[var(--page-bg)]">
+        <div class="flex items-center h-14 px-4">
+          <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
+            WCDB
+          </div>
+          <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                       font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase
+                       text-[color:var(--ink-3)]">
+            90.9 FM
+          </span>
+        </div>
+        <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Theme</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Layouts</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Grid</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Components</a>
+          <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Patterns</a>
+        </div>
+        <div class="hidden md:flex h-full items-center pr-4 gap-2">
+          <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center
+                         text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]"
+                  title="Toggle theme mode">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- LAYOUT.wrapper3 -->
+      <div class="flex flex-1 items-start">
+        <!-- LAYOUT.childWrapper — collapsed (single LayoutGroup) -->
+        <div data-dms-layout-childwrapper class="flex-1 flex flex-col">
+
+          <!-- ============================================================
+               LAYOUTGROUP · content
+               theme.js layoutGroup.styles[0]. Doc page is a single
+               scrolling column; no `header` cutaway panel needed here.
+               ============================================================ -->
+          <div data-dms-group="content"
+               class="w-full flex-1 flex flex-row p-2">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-[1280px] mr-auto">
+
+              <!-- ============================================================
+                   SECTION · Page header
+                   Lexical: brand title + summary.
+                   ============================================================ -->
+              <section data-dms-section="lexical:page-header" class="pt-10 pb-6">
+                <div class="wcdb-eyebrow mb-4">Foundations · layouts · v0.1</div>
+                <h1 class="font-[family-name:var(--font-display)] italic
+                           text-[clamp(56px,6vw,88px)] leading-[0.95] tracking-[-0.03em]
+                           text-[color:var(--ink-1)] m-0">
+                  The cutaway, and its grammar.
+                </h1>
+                <p class="mt-6 max-w-[640px] font-[family-name:var(--font-sans)] text-[18px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)]">
+                  WCDB ships <em class="italic">one</em> Layout — the two-column cutaway split where a sticky
+                  hero panel on the left sits next to a scrolling editorial column on the right.
+                  The Layout exposes two named LayoutGroup variants —
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">content</code> and
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> —
+                  that the cutaway requires. This page is the literal reference for both.
+                </p>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Hierarchy diagram (Lexical)
+                   ============================================================ -->
+              <section data-dms-section="lexical:hierarchy" class="py-8">
+                <div class="wcdb-eyebrow mb-3">01 — Hierarchy</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Site &rarr; Layout &rarr; LayoutGroup &rarr; Section &rarr; Component.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  Every WCDB page renders as a stack of these five primitives. Layouts and
+                  LayoutGroups are invisible chrome — they don't render until a Section asks
+                  for space inside them. The hierarchy below is what the runtime mounts when
+                  a reviewer visits <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">/home</code>.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+<pre class="font-[family-name:var(--font-mono)] text-[12px] leading-[1.6] tracking-[0] text-[color:var(--ink-2)] whitespace-pre overflow-x-auto">
+Site                              app="wcdb"  type="prod:site"
+└── Theme                         wcdb_theme.js
+    └── Layout                    default · the cutaway split
+        ├── TopNav                wcdb · compact · floats over header panel
+        │
+        ├── LayoutGroup           header   (left column · sticky cutaway)
+        │   └── Section           card · now-playing strip · height="fill"
+        │       └── Component     Card · cells: portrait_banner, stream_player,
+        │                                       now_indicator, title, dj
+        │
+        └── LayoutGroup           content  (right column · scrolling feed)
+            ├── Section           lexical · "Tonight on 90.9"
+            ├── Section           card · upcoming shows · size="12"
+            ├── Section           card · recent spins · size="12"
+            └── Section           lexical · footer disclaimer
+</pre>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Layout variants (Card)
+                   ============================================================ -->
+              <section data-dms-section="card:layout-variants" class="py-8">
+                <div class="wcdb-eyebrow mb-3">02 — Layout variants</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  One Layout, five wrapper keys.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  WCDB's only Layout is <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">layout.styles[0]</code>.
+                  Its five wrapper keys (<code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">outerWrapper</code>,
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">wrapper</code>,
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">wrapper2</code>,
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">wrapper3</code>,
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">childWrapper</code>) nest as shown below.
+                  The cutaway lives entirely inside <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">childWrapper</code> —
+                  the <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:grid md:grid-cols-2</code> declaration is what creates the two columns.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
+                  <!-- Mini-mockup: the actual div tree, not absolute art -->
+                  <div class="rounded-[12px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">outerWrapper &middot; bg-[var(--page-bg)]</div>
+                    <div class="rounded-[10px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">wrapper &middot; relative isolate flex min-h-svh</div>
+                      <div class="rounded-[10px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">wrapper2 &middot; flex-1 flex flex-col items-stretch</div>
+
+                        <!-- TopNav placeholder -->
+                        <div class="h-10 rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] flex items-center px-3 mb-3">
+                          <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">TopNav &middot; theme.topnav.styles[0]</span>
+                        </div>
+
+                        <div class="rounded-[10px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                          <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">wrapper3 &middot; flex flex-1 items-start</div>
+
+                          <div class="rounded-[10px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                            <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-3">childWrapper &middot; flex-1 flex flex-col md:grid md:grid-cols-2</div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                              <!-- LayoutGroup: header -->
+                              <div class="rounded-[8px] bg-[var(--card-bg)] p-4 min-h-[180px] flex flex-col">
+                                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">LayoutGroup &middot; header</div>
+                                <div class="flex-1 rounded-[6px] bg-[var(--bg-2)] border border-[var(--line-2)] flex items-center justify-center">
+                                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">sticky &middot; md:h-screen</span>
+                                </div>
+                              </div>
+                              <!-- LayoutGroup: content -->
+                              <div class="rounded-[8px] bg-[var(--bg-2)] p-4 min-h-[180px] flex flex-col gap-2">
+                                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">LayoutGroup &middot; content</div>
+                                <div class="rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] p-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section &middot; tonight on 90.9</div>
+                                <div class="rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] p-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section &middot; upcoming shows</div>
+                                <div class="rounded-[6px] bg-[var(--card-bg)] border border-[var(--line-2)] p-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section &middot; recent spins</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p class="mt-6 font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)] max-w-[640px]">
+                    The cutaway requires both LayoutGroups. A page that ships only a
+                    <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">content</code>
+                    group (the design-system documentation pages, for instance) renders as a single
+                    scrolling column because the <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:grid-cols-2</code>
+                    grid only has one child. The class string is the same; the geometry follows the row count.
+                  </p>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · LayoutGroup variants (Card)
+                   ============================================================ -->
+              <section data-dms-section="card:layoutgroup-variants" class="py-8">
+                <div class="wcdb-eyebrow mb-3">03 — LayoutGroup variants</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Two surface recipes.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  WCDB ships two LayoutGroup styles. Each owns its column in the cutaway.
+                  The <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> recipe
+                  produces the sticky, rounded, card-bg panel that holds the hero artwork
+                  and the now-playing strip. The <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">content</code>
+                  recipe produces the unboxed scrolling column that hosts the editorial feed.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                  <!-- content card -->
+                  <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                    <div class="wcdb-eyebrow mb-3">content</div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-4">
+                      Right column &middot; scrolling feed.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-5">
+                      Sits on <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">var(--page-bg)</code>. No card chrome on the group itself —
+                      individual Sections inside it carry their own rounded surfaces. Padding is
+                      <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">p-2</code> on the outer
+                      ring and <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">p-4</code> on the
+                      inner so Sections breathe inside the column.
+                    </p>
+
+                    <!-- preview -->
+                    <div class="rounded-[12px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)] h-[240px] flex flex-col gap-3 overflow-hidden">
+                      <div class="rounded-[8px] bg-[var(--card-bg)] border border-[var(--line-2)] p-3">
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Tonight on 90.9</div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] mt-1">Late Modernism, w/ DJ Halftone</div>
+                      </div>
+                      <div class="rounded-[8px] bg-[var(--card-bg)] border border-[var(--line-2)] p-3">
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Upcoming &middot; this week</div>
+                        <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mt-1">Free-form Wednesday &middot; Country Karaoke &middot; The Krautrock Hour</div>
+                      </div>
+                      <div class="rounded-[8px] bg-[var(--card-bg)] border border-[var(--line-2)] p-3">
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Recent spins</div>
+                      </div>
+                    </div>
+
+                    <div class="mt-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Recipe</div>
+                    <ul class="mt-2 space-y-1 font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                      <li>&middot; unboxed surface (no card chrome on the group)</li>
+                      <li>&middot; scrolls with the page</li>
+                      <li>&middot; <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">p-2</code> &rarr; <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">p-4</code> nested padding</li>
+                      <li>&middot; hosts many Sections, one column</li>
+                    </ul>
+                  </div>
+
+                  <!-- header card -->
+                  <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                    <div class="wcdb-eyebrow mb-3">header</div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-4">
+                      Left column &middot; sticky cutaway.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-5">
+                      Boxed, rounded-<code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">[18px]</code>,
+                      sticky at <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:top-0</code> with
+                      <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:h-screen</code>. The TopNav floats absolutely over its top edge
+                      on a solid <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">var(--page-bg)</code> strip so the hero panel reads as if it
+                      "cuts up" under the navigation. Below <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md</code>
+                      the panel drops its sticky behaviour and scrolls inline.
+                    </p>
+
+                    <!-- preview -->
+                    <div class="rounded-[12px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)] h-[240px] relative">
+                      <div class="rounded-[12px] bg-[var(--card-bg)] h-full relative overflow-hidden">
+                        <!-- nav strip -->
+                        <div class="absolute top-0 left-0 right-0 h-7 bg-[var(--page-bg)] border-b border-[var(--line-1)] flex items-center px-3">
+                          <span class="font-[family-name:var(--font-display)] italic text-[14px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</span>
+                          <span class="ml-2 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.14em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
+                        </div>
+                        <!-- hero panel cutaway -->
+                        <div class="absolute inset-0 pt-7 flex flex-col">
+                          <div class="flex-1 bg-[linear-gradient(180deg,#1a1c1d_0%,#0e1011_100%)]"></div>
+                          <div class="px-3 py-2 border-t border-[var(--line-1)]">
+                            <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Now playing</div>
+                            <div class="font-[family-name:var(--font-display)] italic text-[16px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)]">Cluster &mdash; Sowiesoso</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Recipe</div>
+                    <ul class="mt-2 space-y-1 font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                      <li>&middot; boxed surface (<code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">bg-[var(--card-bg)]</code> &middot; <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">rounded-[18px]</code>)</li>
+                      <li>&middot; sticky at <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:top-0</code>, <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:h-screen</code></li>
+                      <li>&middot; TopNav floats over the top edge</li>
+                      <li>&middot; hosts one Section, typically <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">heights: fill</code></li>
+                    </ul>
+                  </div>
+
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · LayoutGroup wrapper class reference (Card)
+                   §7.3.1 — REQUIRED
+                   ============================================================ -->
+              <section data-dms-section="card:wrapper-class-reference" class="py-8">
+                <div class="wcdb-eyebrow mb-3">04 — Wrapper class reference</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  The literal strings, verbatim.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  Variant cards above show shape; this table is the source of truth for the
+                  class strings on each LayoutGroup style. Pulled verbatim from
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">wcdb_theme.js</code>
+                  &middot; <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">layoutGroup.styles[0..1]</code>. If these strings drift from theme.js this
+                  table is wrong.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7 overflow-x-auto">
+                  <table class="w-full border-collapse">
+                    <thead>
+                      <tr>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Variant</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">wrapper1</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">wrapper2</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">wrapper3</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Alignment</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="align-top">
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">content</td>
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5"><code class="font-[family-name:var(--font-mono)] text-[12px] leading-[1.45] text-[color:var(--ink-2)] bg-[var(--bg-2)] px-2 py-1 rounded-sm whitespace-pre-wrap break-words inline-block">w-full flex-1 flex flex-row p-2</code></td>
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5"><code class="font-[family-name:var(--font-mono)] text-[12px] leading-[1.45] text-[color:var(--ink-2)] bg-[var(--bg-2)] px-2 py-1 rounded-sm whitespace-pre-wrap break-words inline-block">flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px]</code></td>
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]"><em class="italic">(empty)</em></td>
+                        <td class="border-b border-[var(--line-1)] py-4 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)]">column-aligned &middot; no cap</td>
+                      </tr>
+                      <tr class="align-top">
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">header</td>
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5"><code class="font-[family-name:var(--font-mono)] text-[12px] leading-[1.45] text-[color:var(--ink-2)] bg-[var(--bg-2)] px-2 py-1 rounded-sm whitespace-pre-wrap break-words inline-block">w-full p-2 md:sticky md:top-0 md:h-screen</code></td>
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5"><code class="font-[family-name:var(--font-mono)] text-[12px] leading-[1.45] text-[color:var(--ink-2)] bg-[var(--bg-2)] px-2 py-1 rounded-sm whitespace-pre-wrap break-words inline-block">overflow-hidden rounded-[18px] bg-[var(--card-bg)] text-[color:var(--ink-1)] md:h-full</code></td>
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5"><code class="font-[family-name:var(--font-mono)] text-[12px] leading-[1.45] text-[color:var(--ink-2)] bg-[var(--bg-2)] px-2 py-1 rounded-sm whitespace-pre-wrap break-words inline-block">md:h-full</code></td>
+                        <td class="border-b border-[var(--line-1)] py-4 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)]">column-aligned &middot; sticky &middot; boxed</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div class="mt-7 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                    <div class="wcdb-eyebrow mb-3">Callout &middot; why no mr-auto / mx-auto</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                      The skill's wrapper-class reference table normally documents an
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">mr-auto</code> vs
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">mx-auto</code> alignment decision
+                      on each variant's <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">wrapper2</code> &mdash; brands that ship product
+                      surfaces with a SideNav use <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">max-w-[&hellip;] mr-auto</code> so bands hug
+                      the sidebar.
+                    </p>
+                    <p class="mt-3 font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                      WCDB's <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">content</code> group uses
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">flex flex-1 w-full flex-col</code> &mdash; <em class="italic">no</em>
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">mr-auto</code>, <em class="italic">no</em>
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">max-w-*</code> cap on the group. The cutaway Layout already constrains
+                      horizontal width to one of the two grid columns at <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md+</code> &mdash; there
+                      is no excess viewport width to consume, so the auto-margin discussion does
+                      not apply. The sectionArray inside applies its own
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">max-w-[1280px] mr-auto</code> cap to its grid &mdash; see <a href="./grid.html" class="underline">grid.html</a>.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Section width (Card)
+                   §7.3.2 — REQUIRED
+                   ============================================================ -->
+              <section data-dms-section="card:section-width" class="py-8">
+                <div class="wcdb-eyebrow mb-3">05 — Section width</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Regular vs full-width groups.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  Inside any LayoutGroup, the sectionArray applies one of two layout classes to
+                  its grid container, picked by the editor flag
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">group.full_width</code>.
+                  Authors flip this from the Sections pane in edit mode.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <table class="w-full border-collapse">
+                    <thead>
+                      <tr>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">group.full_width</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Class applied</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Result on WCDB</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="align-top">
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">'off' (default)</td>
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5"><code class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)] bg-[var(--bg-2)] px-2 py-1 rounded-sm whitespace-pre-wrap break-words inline-block">layouts.centered &middot; max-w-[1280px] mr-auto</code></td>
+                        <td class="border-b border-[var(--line-1)] py-4 font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-2)]">Sections capped at 1280px, left-aligned within their LayoutGroup column. The default for every editorial Section.</td>
+                      </tr>
+                      <tr class="align-top">
+                        <td class="py-4 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">'show'</td>
+                        <td class="py-4 pr-5"><code class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)] bg-[var(--bg-2)] px-2 py-1 rounded-sm whitespace-pre-wrap break-words inline-block">layouts.fullwidth &middot; '' (no cap)</code></td>
+                        <td class="py-4 font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-2)]">Sections fill the parent. On WCDB this means filling one column of the cutaway split &mdash; <em class="italic">not</em> the full page width. Used by the now-playing card in the <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> group so the panel reaches the rounded corners.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div class="mt-7 rounded-[12px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5">
+                    <div class="wcdb-eyebrow mb-3">WCDB constraint</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                      "Full width" on WCDB always means <em class="italic">full column width</em>, not full
+                      <em class="italic">page</em> width. The Layout's
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">childWrapper</code> declares
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:grid-cols-2</code>, so each LayoutGroup occupies exactly half the
+                      viewport at <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md+</code>. A
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">full_width: 'show'</code> Section in the right column fills its column &mdash; it does
+                      not punch through into the left column. There is no
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">workbench</code> variant; a page that needs an edge-to-edge canvas should
+                      be authored on a different brand.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Nesting example (Lexical)
+                   ============================================================ -->
+              <section data-dms-section="lexical:nesting" class="py-8">
+                <div class="wcdb-eyebrow mb-3">06 — Nesting</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Two groups, side by side.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  The home and listen pages compose the cutaway by placing <em class="italic">both</em>
+                  LayoutGroups inside a single Layout. The
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:grid-cols-2</code>
+                  on <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">childWrapper</code> places the
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> group on the left and the
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">content</code> group on the right.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <div class="rounded-[12px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-3">childWrapper &middot; flex-1 flex flex-col md:grid md:grid-cols-2</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+                      <!-- header -->
+                      <div class="rounded-[10px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">wrapper1 &middot; header &middot; w-full p-2 md:sticky md:top-0 md:h-screen</div>
+                        <div class="rounded-[10px] bg-[var(--card-bg)] p-3 min-h-[200px]">
+                          <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">wrapper2 &middot; rounded-[18px] bg-[var(--card-bg)] md:h-full</div>
+                          <div class="rounded-[8px] bg-[var(--bg-2)] border border-[var(--line-2)] h-[160px] flex items-center justify-center">
+                            <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section &middot; now-playing &middot; heights: fill</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- content -->
+                      <div class="rounded-[10px] border border-dashed border-[var(--line-2)] p-3 bg-[var(--bg-1)]">
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">wrapper1 &middot; content &middot; w-full flex-1 flex flex-row p-2</div>
+                        <div class="rounded-[10px] bg-[var(--bg-1)] border border-[var(--line-2)] p-3">
+                          <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">wrapper2 &middot; flex flex-1 w-full flex-col p-4</div>
+                          <div class="space-y-2">
+                            <div class="rounded-[8px] bg-[var(--card-bg)] border border-[var(--line-2)] p-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section &middot; tonight on 90.9</div>
+                            <div class="rounded-[8px] bg-[var(--card-bg)] border border-[var(--line-2)] p-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section &middot; upcoming shows</div>
+                            <div class="rounded-[8px] bg-[var(--card-bg)] border border-[var(--line-2)] p-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Section &middot; recent spins</div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Naming reference (Lexical)
+                   §3.3 naming conventions
+                   ============================================================ -->
+              <section data-dms-section="lexical:naming" class="py-8">
+                <div class="wcdb-eyebrow mb-3">07 — Naming reference</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Default, app, bare &mdash; mapped honestly.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  The DMS skill's conventional Layout names (<code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">default</code>,
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">app</code>,
+                  <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">bare</code>) describe the shape of a brand's chrome surfaces. WCDB collapses
+                  the three into one because the brand <em class="italic">is</em> the cutaway &mdash; there is no
+                  app-style SideNav surface, and there is no minimum-chrome login or marketing
+                  shell that does anything different.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7 overflow-x-auto">
+                  <table class="w-full border-collapse">
+                    <thead>
+                      <tr>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Convention name</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Typical role</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">WCDB mapping</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="align-top">
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">default</td>
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5 font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-2)]">Editorial / content pages. TopNav, no SideNav.</td>
+                        <td class="border-b border-[var(--line-1)] py-4 font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-2)]">layout.styles[0] &mdash; the cutaway split. Every page renders here.</td>
+                      </tr>
+                      <tr class="align-top">
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">app</td>
+                        <td class="border-b border-[var(--line-1)] py-4 pr-5 font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-2)]">Product / workbench pages. Persistent SideNav.</td>
+                        <td class="border-b border-[var(--line-1)] py-4 font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-3)]"><em class="italic">Not shipped.</em> WCDB has no SideNav-bearing product surface &mdash; the brand is entirely editorial.</td>
+                      </tr>
+                      <tr class="align-top">
+                        <td class="py-4 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">bare</td>
+                        <td class="py-4 pr-5 font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-2)]">Minimum-chrome pages. Login, marketing, errors.</td>
+                        <td class="py-4 font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-3)]"><em class="italic">Not shipped.</em> The login page uses the same cutaway Layout &mdash; the brand's identity is the chrome.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <p class="mt-6 font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-3)]">
+                    The honesty matters. A theme that ships three nearly-identical Layouts to
+                    satisfy the naming convention adds maintenance surface without adding
+                    expressive power. WCDB ships one, names it
+                    <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">default</code>, and uses it everywhere.
+                  </p>
+                </div>
+              </section>
+
+              <hr class="wcdb-hairline my-6"/>
+
+              <!-- ============================================================
+                   SECTION · Section heights (Lexical)
+                   ============================================================ -->
+              <section data-dms-section="lexical:heights" class="py-8">
+                <div class="wcdb-eyebrow mb-3">08 — Section heights</div>
+                <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                  Six presets, one sentinel.
+                </h2>
+                <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mb-8">
+                  WCDB overrides the DMS default <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">pages.section</code> theme to ship a
+                  brand-specific <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">heights</code> preset map. Authors pick a height per-section
+                  from the Layout &rarr; Height control in the section menu.
+                </p>
+
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7 overflow-x-auto">
+                  <table class="w-full border-collapse">
+                    <thead>
+                      <tr>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Preset</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 pr-5 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Value</th>
+                        <th class="text-left align-bottom border-b border-[var(--line-2)] pb-3 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">When</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">auto</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">auto</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)]">Default. Content sizes the Section.</td></tr>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">fill</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">fill (sentinel)</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)]">Triggers <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">flex: 1 1 auto</code>. Used by the now-playing card so it expands to fill the sticky <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> panel.</td></tr>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">hero</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">calc(100vh - 160px)</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)]">Single-viewport hero band. Tuned to the topnav so no overflow.</td></tr>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">tall</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">640px</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)]">Long card grids &mdash; full-week schedule, blog index.</td></tr>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">medium</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">400px</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)]">Standard editorial Section.</td></tr>
+                      <tr><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">small</td><td class="border-b border-[var(--line-1)] py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">240px</td><td class="border-b border-[var(--line-1)] py-3 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)]">Compact strips &mdash; on-air pill, contact band.</td></tr>
+                      <tr><td class="py-3 pr-5 font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)]">editMinHeight</td><td class="py-3 pr-5 font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-2)]">40px</td><td class="py-3 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)]">Edit-mode floor so empty sections expose their settings handle. View mode unaffected.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <p class="mt-6 font-[family-name:var(--font-sans)] text-[13px] leading-[1.5] tracking-[-0.01em] text-[color:var(--ink-3)] max-w-[680px]">
+                  The <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">fill</code> sentinel is what makes the cutaway work. The
+                  <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">header</code> LayoutGroup gives its child Sections a flex/grid context with
+                  <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">md:h-screen</code>; setting the now-playing card to
+                  <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">fill</code> lets it occupy the entire sticky panel from the top of the
+                  hero image down to the player strip without hard-coding a pixel height that would
+                  drift on every viewport.
+                </p>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="./theme.html">theme</a></li>
+      <li><a href="./layouts.html" data-active="true">layouts</a></li>
+      <li><a href="./grid.html">grid</a></li>
+      <li><a href="./components.html">components</a></li>
+      <li><a href="./patterns.html">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages &middot; editorial</h3>
+    <ul>
+      <li><a href="../pages/home.html">home</a></li>
+      <li><a href="../pages/listen.html">listen</a></li>
+      <li><a href="../pages/blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages &middot; catalogue</h3>
+    <ul>
+      <li><a href="../pages/schedule.html">schedule</a></li>
+      <li><a href="../pages/show.html">show</a></li>
+      <li><a href="../pages/djs.html">djs</a></li>
+      <li><a href="../pages/spins.html">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages &middot; misc</h3>
+    <ul>
+      <li><a href="../pages/events.html">events</a></li>
+      <li><a href="../pages/login.html">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

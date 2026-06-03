@@ -154,6 +154,14 @@ const textSettings = {
     numLG:   `${F_MONO} text-[22px] font-medium tabular-nums`,
     numXL:   `${F_MONO} text-[28px] font-medium tabular-nums`,
     num2XL:  `${F_MONO} text-[40px] font-medium tabular-nums`,
+    // "Diagnostic" — a value that's shown but isn't scored against a target.
+    // Compliance matrices use this on rows like PHED total (informational, no
+    // pass/fail). Only the color/weight is declared so it stacks with the
+    // table's `cellInner text-[13px]` without conflicting on font-size.
+    numDiag: `${F_MONO} tabular-nums text-slate-500`,
+    // Micro-mono numeric — for compliance-matrix row numbers ("01", "02"…).
+    // `!` overrides the table's `cellInner text-[13px] text-slate-700`.
+    numMicro: `${F_MONO}! text-[11px]! tabular-nums text-slate-400!`,
 
     // ── Semantic aliases ──
     body:       `${F_SANS} text-[14.5px] font-normal leading-[1.65] text-slate-700`,
@@ -420,7 +428,7 @@ const topnav = {
     subMenuWrapper_level_2:   "px-3 py-1.5 hover:bg-slate-50",
     subMenuWrapper2_level_2:  "flex flex-col",
     subMenuItemsWrapper:        "flex flex-col py-1",
-    subMenuItemsWrapperParent:  "px-3 py-2 border-b border-zinc-950/05",
+    subMenuItemsWrapperParent:  "px-3 py-2 border-b border-zinc-950/5",
     subMenuParentWrapper:       "flex items-start gap-3 px-3 py-2",
     subMenuParentContent:       "flex flex-col",
     subMenuParentName:          "font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]",
@@ -545,7 +553,7 @@ const multiselect = {
       optionsWrapper: "max-h-72 overflow-y-auto py-1",
       menuItem:         "px-3 py-2 text-[13.5px] text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center gap-2",
       menuItemSelected: "px-3 py-2 text-[13.5px] text-[#0F1722] bg-[#1F3F8F]/5 cursor-pointer flex items-center gap-2 font-medium",
-      smartMenuWrapper: "px-3 py-2 border-b border-zinc-950/05 bg-slate-50/60",
+      smartMenuWrapper: "px-3 py-2 border-b border-zinc-950/5 bg-slate-50/60",
       smartMenuItem:    "text-[12px] text-slate-500",
       error:            "mt-1 text-[12px] text-[#EF4444]",
     },
@@ -556,6 +564,19 @@ const multiselect = {
       singleValue:  "text-[12px] text-slate-700 font-medium",
       menuWrapper:  "absolute z-40 mt-1 min-w-[180px] rounded-[6px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden",
       menuItem:     "px-3 py-1.5 text-[12.5px] text-slate-700 hover:bg-slate-50 cursor-pointer",
+    },
+    {
+      // Borderless variant for use INSIDE a filter-row chip — the chip's border
+      // lives on theme.filters.conditionRowInline, so the control itself is bare.
+      name: "filter_chip",
+      inputWrapper: "flex items-center gap-1 bg-transparent cursor-pointer",
+      caretWrapper: "ml-0.5 text-slate-500",
+      caretIcon:    "CaretDown",
+      singleValue:  "text-[12px] text-[#0F1722] font-medium tabular-nums",
+      singlePlaceholder: "text-[12px] text-slate-400",
+      menuWrapper:  "absolute z-40 mt-1 min-w-[160px] rounded-[6px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden",
+      menuItem:         "px-3 py-1.5 text-[12.5px] text-slate-700 hover:bg-slate-50 cursor-pointer",
+      menuItemSelected: "px-3 py-1.5 text-[12.5px] text-[#0F1722] bg-[#1F3F8F]/5 font-medium cursor-pointer",
     },
     {
       name: "tone_bar",
@@ -632,6 +653,7 @@ const labelTheme = {
   labelWrapper: "px-2.5 pt-2 pb-1.5 rounded-md",
   label:        "inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[12.5px] font-medium",
 };
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // dialog / modal / drawer / deleteModal / popup
@@ -712,7 +734,7 @@ const navigableMenu = {
       buttonHidden:  "hidden group-hover:flex",
       icon:          "More",
       iconWrapper:   "size-4",
-      menuWrapper:       "bg-white border border-zinc-950/10 w-60 p-1 min-h-[60px] rounded-[8px] shadow-lg",
+      menuWrapper:       "bg-white border border-zinc-950/10 w-80 p-1 min-h-[60px] rounded-[8px] shadow-lg",
       menuHeaderWrapper: "flex px-2 py-1 justify-between items-center",
       menuTitle:         "font-display uppercase text-[11px] tracking-wide text-slate-500",
       menuItemsWrapper:  "max-h-[60vh] overflow-y-auto",
@@ -724,7 +746,7 @@ const navigableMenu = {
       subMenuIcon:        "ChevronRight",
       subMenuIconWrapper: "size-3.5 text-slate-400",
       valueWrapper:       "px-1.5 rounded bg-slate-100 text-slate-700 text-[12px]",
-      separator:          "w-full border-b border-zinc-950/05 my-1",
+      separator:          "w-full border-b border-zinc-950/5 my-1",
     },
     {
       name: "dark",
@@ -774,16 +796,16 @@ const dataCard = {
       cellsGrid:                     "grid",
       subWrapper:                    "flex flex-col w-full",
       subWrapperCompactView:         "rounded-[8px] bg-white",
-      header:                        "font-display uppercase text-[12.5px] tracking-[0.04em] text-slate-500 px-3 pt-3 pb-1",
+      header:                        "font-display text-[12.5px] tracking-[0.04em] text-slate-500 px-3 pt-3 pb-1",
       headerValueWrapper:            "flex flex-col w-full",
       headerValueWrapperFullBleed:   "w-full relative overflow-hidden",
-      headerValueWrapperBorderBelow: "border-b border-zinc-950/05 rounded-none",
+      headerValueWrapperBorderBelow: "border-b border-zinc-950/5 rounded-none",
       value:                         "px-3 pb-3 text-[14px] text-[#0F1722]",
       valueWrapper:                  "min-h-[20px]",
       description:                   "font-proxima text-[12px] font-light text-slate-500 px-3 pb-2",
-      itemBorder:                    "border border-zinc-950/05",
+      itemBorder:                    "border border-zinc-950/5",
       cardBorder:                    "border border-zinc-950/10",
-      cellBorderBelow:               "border-b border-zinc-950/05",
+      cellBorderBelow:               "border-b border-zinc-950/5",
       imgXS:      "max-w-16 max-h-16",
       imgSM:      "max-w-24 max-h-24",
       imgMD:      "max-w-32 max-h-32",
@@ -874,9 +896,31 @@ const dataCard = {
     },
     {
       name: "dashboard",
-      wrapper:     "rounded-[6px] border border-zinc-950/05 bg-white p-3 flex items-center gap-3",
+      wrapper:     "rounded-[6px] border border-zinc-950/5 bg-white p-3 flex items-center gap-3",
       header:      "font-display uppercase text-[10.5px] tracking-[0.18em] text-slate-500",
       value:       `${F_MONO} text-[18px] font-medium tabular-nums text-[#0F1722]`,
+    },
+    {
+      // "context" — diagnostic / explainer card, no value-vs-target verdict.
+      // Source: MAP-21 page §01 PHED card (`[data-dms-section="kpi-phed"]`).
+      // Distinguished from `kpi` by a dashed slate shell + slate-50/60 tint
+      // (vs solid white shadow). Pairs with a slate-tone pill ("UZA measure").
+      //
+      // Card.jsx UI primitive reads `subWrapperCompactView` + (cardBorder?
+      // `cardBorder` : '') for the visible per-card chrome — NOT `wrapper`.
+      // `wrapper` is the outer container around the cards grid; the per-card
+      // shell is `subWrapperCompactView`, so the design tokens live there.
+      //
+      // `value` is intentionally empty so the column's `valueFontStyle` is
+      // the sole font-size driver — declaring `text-[28px]` here would
+      // collide with column-level `text-[12.5px]` (proseSM) since both
+      // compile to the same Tailwind utility, and arbitrary-value ordering
+      // picks the wrong winner.
+      name: "context",
+      subWrapperCompactView: "rounded-[8px] bg-slate-50/60 p-5",
+      cardBorder:            "border border-dashed border-zinc-950/15",
+      header:                "font-display font-medium text-[15px] text-[#0f1722] leading-tight",
+      value:                 "",
     },
   ],
 };
@@ -889,9 +933,9 @@ const card = {
   styles: [{
     name: "default",
     wrapper: "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm",
-    header:  "px-4 py-3 border-b border-zinc-950/05 font-display uppercase text-[12.5px] tracking-wide text-slate-700",
+    header:  "px-4 py-3 border-b border-zinc-950/5 font-display uppercase text-[12.5px] tracking-wide text-slate-700",
     body:    "p-4 text-[14px] text-slate-700",
-    footer:  "px-4 py-3 border-t border-zinc-950/05 text-[12px] text-slate-500",
+    footer:  "px-4 py-3 border-t border-zinc-950/5 text-[12px] text-slate-500",
   }],
 };
 
@@ -911,10 +955,11 @@ const pill = {
     { name: "ink",     wrapper: "inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium bg-[#0a0e13] text-white font-display uppercase tracking-wide" },
     { name: "beta",    wrapper: "inline-flex items-center px-2 h-6 rounded-[4px] text-[11px] font-medium bg-amber-100 text-amber-900 font-display uppercase tracking-wide" },
     { name: "admin",   wrapper: "inline-flex items-center px-2 h-6 rounded-[4px] text-[11px] font-medium bg-slate-900 text-white font-display uppercase tracking-wide" },
-    { name: "status_good", wrapper: "inline-flex items-center gap-1.5 text-[12px] text-emerald-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-emerald-500" },
-    { name: "status_warn", wrapper: "inline-flex items-center gap-1.5 text-[12px] text-amber-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-amber-400" },
-    { name: "status_bad",  wrapper: "inline-flex items-center gap-1.5 text-[12px] text-rose-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-rose-500" },
-    { name: "status_na",   wrapper: "inline-flex items-center gap-1.5 text-[12px] text-slate-500 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-slate-400" },
+    // status_* — the card-design status pill: bordered tint + leading dot (::before) + uppercase mono, color-coded. Selected by the status_pill column type.
+    { name: "status_good", wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46] [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-[#10B981]" },
+    { name: "status_warn", wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EAAD43]/30 bg-[#EAAD43]/15 font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12] [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-[#EAAD43]" },
+    { name: "status_bad",  wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B] [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-[#EF4444]" },
+    { name: "status_na",   wrapper: "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/10 bg-slate-100 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:bg-slate-400" },
     { name: "route", wrapper: "inline-flex items-center gap-2 h-8 pl-2.5 pr-2 rounded-full bg-white text-slate-700 shadow-sm border border-zinc-950/5 text-[12.5px] font-proxima" },
   ],
 };
@@ -923,7 +968,7 @@ const pagination = {
   options: { activeStyle: 0 },
   styles: [{
     name: "default",
-    wrapper:     "flex items-center gap-1 justify-between px-3 h-10 border-t border-zinc-950/05 bg-slate-50/40",
+    wrapper:     "flex items-center gap-1 justify-between px-3 h-10 border-t border-zinc-950/5 bg-slate-50/40",
     info:        "font-mono text-[11px] uppercase tracking-wider text-slate-500",
     pageButton:  "h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-slate-600 hover:bg-slate-100 rounded cursor-pointer",
     pageButtonActive: "h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-[#0F1722] bg-white border border-zinc-950/10 rounded font-medium cursor-pointer",
@@ -933,45 +978,146 @@ const pagination = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // table
+// The Table component (dms/src/ui/components/table/index.jsx) renders a CSS
+// grid of <div>s, NOT an HTML <table>, so the design tokens here use the
+// component's actual class keys (tableContainer / headerCellContainer / cell /
+// cellInner / cellBg / …). The earlier HTML-element keys (wrapper/thead/th/tr/
+// td) were never read by anything.
+//
+// Three styles, sourced from the design system:
+//   - default   — dms_design_system_v2/design-system/components.html "default ·
+//                 dashboard · amber-hover" (font-display header, px-3 py-2)
+//   - editorial — same components page "editorial" example (deep-navy header,
+//                 printable, all-sides border on body)
+//   - report    — the MAP-21 system performance page treatment (font-mono
+//                 header, px-4 py-2.5, slate-50/60 header bg) — tighter,
+//                 report-document look; used by §04/§05/§06 here
+//
+// Non-default styles inherit missing keys from styles[0] (see getComponentTheme).
+// `default` therefore declares the full key set; `editorial` and `report`
+// override only what differs.
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Header / popup / menu chrome shared by every named style — admin-side only,
+// invisible in the printed table but required by the component.
+const tableHeaderChrome = {
+  headerCellWrapper:              "relative w-full",
+  headerCellBtn:                  "group inline-flex items-center w-full justify-between gap-x-1.5 rounded-md cursor-pointer",
+  headerCellBtnActive:            "bg-slate-200",
+  headerCellFnIconClass:          "text-slate-400",
+  headerCellCountIcon:            "TallyMark",
+  headerCellListIcon:             "LeftToRightListBullet",
+  headerCellSumIcon:              "Sum",
+  headerCellAvgIcon:              "Avg",
+  headerCellGroupIcon:            "Group",
+  headerCellSortAscIcon:          "SortAsc",
+  headerCellSortDescIcon:         "SortDesc",
+  headerCellMenuIcon:             "ArrowDown",
+  headerCellMenuIconClass:        "text-slate-400 group-hover:text-slate-600 transition ease-in-out duration-200 print:hidden",
+  headerCellIconWrapper:          "flex items-center",
+  headerCellMenu:                 "py-0.5 flex flex-col gap-0.5 items-center px-1 text-xs text-slate-600 max-h-[500px] min-w-[180px] z-[10] overflow-auto scrollbar-sm bg-white divide-y divide-slate-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5",
+  headerCellControlWrapper:       "w-full group px-2 py-1 flex justify-between items-center rounded-md hover:bg-slate-100",
+  headerCellControlLabel:         "w-fit text-slate-500 cursor-default",
+  headerCellControl:              "p-0.5 w-full rounded-md bg-white group-hover:bg-slate-100 cursor-pointer",
+};
+
+const tableOpenOutChrome = {
+  openOutContainer:               "w-[330px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
+  openOutContainerWrapper:        "fixed inset-0 right-0 h-full w-full z-[100]",
+  openOutHeader:                  "font-semibold text-slate-600",
+  openOutCloseIconContainer:      "w-full flex justify-end",
+  openOutCloseIconWrapper:        "w-fit h-fit p-[8px] text-[#37576B] border border-[#E0EBF0] rounded-full cursor-pointer",
+  openOutCloseIcon:               "XMark",
+  openOutContainerWrapperBgColor: "#00000066",
+  openOutIconWrapper:             "px-2 cursor-pointer bg-transparent text-slate-500 hover:text-slate-700",
+};
+
 const table = {
-  options: { activeStyle: 0 },
+  // `report` is the brand default for now because §04/§05/§06 of the MAP-21
+  // page are the active Spreadsheets on the site. When per-section style
+  // picking lands (mirror of `display.filterStyle`), this can flip back to
+  // `default` and authors will pick per-section.
+  options: { activeStyle: "report" },
   styles: [
     {
+      // dms_design_system_v2/design-system/components.html : "default ·
+      // dashboard · amber-hover"
       name: "default",
-      wrapper:                "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden",
-      table:                  "w-full text-[13px] text-slate-700",
-      thead:                  "bg-slate-50/80 border-b border-zinc-950/10",
-      th:                     "px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600",
-      tr:                     "border-b border-zinc-950/05 hover:bg-[#FFFBEB]",
-      trAlt:                  "border-b border-zinc-950/05 bg-slate-50/50 hover:bg-[#FFFBEB]",
-      td:                     "px-3 py-2 text-[13px] text-slate-700",
-      tdEdit:                 "px-3 py-2",
-      headerCell:             "px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600",
-      headerCellSortable:     "px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600 cursor-pointer hover:text-[#0F1722]",
-      pagination:             "px-3 h-10 flex items-center justify-between border-t border-zinc-950/05 bg-slate-50/40",
-      pageRangeItem:          "px-2 py-0.5 text-[12px] text-slate-600 hover:bg-slate-100 rounded cursor-pointer",
-      pageRangeItemActive:    "px-2 py-0.5 text-[12px] text-[#0F1722] bg-slate-200 rounded font-medium",
-      sortIcon:               "SortAsc",
-      sortIconClass:          "size-3.5 text-slate-400 ml-1",
+
+      // Outer shell — rounded white card.
+      tableContainer:                 "flex flex-col rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-x-auto overflow-y-auto max-h-[calc(78vh_-_10px)]",
+      tableContainerNoPagination:     "",
+
+      // Header row — font-display uppercase 11px, slate-50/80 bg.
+      headerContainer:                "sticky top-0 grid z-[2]",
+      headerLeftGutter:               "flex justify-between sticky left-0 z-[1]",
+      headerWrapper:                  "flex justify-between",
+      headerCellContainer:            "w-full px-3 py-2 content-center font-display uppercase text-[11px] tracking-wide",
+      headerCellContainerBg:          "bg-slate-50/80 text-slate-600 border-b border-zinc-950/10",
+      headerCellContainerBgSelected:  "bg-blue-100 text-[#0F1722]",
+      colResizer:                     "z-5 -ml-2 w-[1px] hover:w-[2px] bg-zinc-950/5 hover:bg-zinc-950/15",
+      headerCellLabel:                "truncate select-none",
+      ...tableHeaderChrome,
+
+      // Data cell — bottom hairline, 13px slate-700, px-3 py-2.
+      wrapText:                       "whitespace-pre-wrap",
+      cell:                           "relative flex items-center min-h-[36px] border-b border-zinc-950/5",
+      cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2 px-3 font-[400] text-[13px] leading-[18px] text-slate-700",
+      cellBg:                         "bg-white hover:bg-[#FFFBEB]",
+      cellBgOdd:                      "bg-white hover:bg-[#FFFBEB]",
+      cellBgEven:                     "bg-white hover:bg-[#FFFBEB]",
+      cellBgSelected:                 "bg-blue-50 hover:bg-blue-100",
+      cellInvalid:                    "bg-red-50 hover:bg-red-100",
+      cellEditableTextBox:            "absolute border focus:outline-none min-w-[180px] min-h-[50px] z-[10] whitespace-pre-wrap",
+      cellFrozenCol:                  "",
+
+      // Total / striped / gutter.
+      totalRow:                       "bg-slate-50 sticky bottom-0 z-[3] border-t border-zinc-950/10",
+      totalCell:                      "hover:bg-slate-100 font-medium",
+      stripedRow:                     "",
+      gutterCellWrapper:              "flex items-center justify-center cursor-pointer sticky left-0 z-[1] font-mono text-[11px]",
+      gutterCellWrapperNotSelected:   "bg-slate-50/60 text-slate-400",
+      gutterCellWrapperSelected:      "bg-blue-100 text-[#0F1722]",
+
+      pivotGroupHeader:               "bg-slate-100 text-slate-700 text-center border-b border-r border-zinc-950/5",
+
+      // Pagination strip.
+      paginationContainer:            "w-full px-3 py-2 flex items-center justify-between border-t border-zinc-950/5 bg-slate-50/40",
+      paginationInfoContainer:        "",
+      paginationPagesInfo:            "font-mono text-[11px] uppercase tracking-wider text-slate-500",
+      paginationRowsInfo:             "font-mono text-[10px] text-slate-500",
+      paginationControlsContainer:    "flex flex-row items-center overflow-hidden gap-0.5",
+      pageRangeItem:                  "cursor-pointer px-2 py-1 text-[12px] text-slate-600 hover:bg-slate-100 rounded",
+      pageRangeItemInactive:          "",
+      pageRangeItemActive:            "bg-white border border-zinc-950/10 text-[#0F1722] font-medium",
+
+      ...tableOpenOutChrome,
     },
+
     {
+      // dms_design_system_v2/design-system/components.html : "editorial ·
+      // deep-navy header · printable". Body has all-sides slate-200 hairlines.
       name: "editorial",
-      wrapper:    "rounded-[8px] border border-zinc-950/10 bg-[#F5F1E8] shadow-sm overflow-hidden",
-      table:      "w-full text-[12.5px] text-[#0F1722] border-collapse",
-      thead:      "bg-[#0F2D4D]",
-      th:         "px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-white border border-white",
-      tr:         "border-b border-amber-900/10",
-      td:         "px-3 py-1.5 text-[12.5px] text-[#0F1722] border border-slate-200",
+      tableContainer:                 "flex flex-col rounded-[8px] border border-zinc-950/10 bg-[#F5F1E8] shadow-sm overflow-x-auto overflow-y-auto max-h-[calc(78vh_-_10px)]",
+      headerCellContainer:            "w-full px-3 py-2 content-center font-display font-semibold uppercase text-[11px] tracking-wide border border-white",
+      headerCellContainerBg:          "bg-[#0F2D4D] text-white",
+      cell:                           "relative flex items-center min-h-[34px] border border-slate-200",
+      cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-1.5 px-3 font-[400] text-[12.5px] leading-[18px] text-[#0F1722]",
+      cellBg:                         "bg-[#F5F1E8] hover:bg-amber-50",
+      cellBgOdd:                      "bg-[#F5F1E8] hover:bg-amber-50",
+      cellBgEven:                     "bg-[#F5F1E8] hover:bg-amber-50",
     },
+
     {
-      name: "compact",
-      wrapper: "rounded-[6px] border border-zinc-950/05 bg-white overflow-hidden",
-      table:   "w-full text-[12px] text-slate-700",
-      thead:   "bg-white border-b border-zinc-950/05",
-      th:      "px-2 py-1.5 text-left font-display uppercase text-[10px] tracking-wide text-slate-500",
-      tr:      "border-b border-zinc-950/05",
-      td:      "px-2 py-1.5 text-[12px] text-slate-700",
+      // MAP-21 system-performance page treatment — font-mono 10px header,
+      // slate-50/60 bg, px-4 py-2.5 cells, Proxima 13px body. The "report"
+      // style: tighter labels, more breathing room in the body, denser
+      // information than the dashboard default.
+      name: "report",
+      headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
+      headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
+      cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
+      cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2.5 px-4 font-[400] text-[13px] leading-[18px] text-slate-700",
     },
   ],
 };
@@ -1004,7 +1150,7 @@ const lexical = {
     text_bold:    "font-semibold",
     text_italic:  "italic",
     text_underline: "underline underline-offset-2",
-    text_code:    `${F_MONO} text-[0.92em] px-1.5 py-0.5 rounded bg-zinc-950/05 border border-zinc-950/06 text-[#37576B]`,
+    text_code:    `${F_MONO} text-[0.92em] px-1.5 py-0.5 rounded bg-zinc-950/5 border border-zinc-950/6 text-[#37576B]`,
     text_strikethrough: "line-through",
 
     list_ol:                 "list-decimal pl-6 space-y-1 text-[14.5px] text-slate-700",
@@ -1044,7 +1190,7 @@ const graph = {
     title:        "font-display uppercase text-[12.5px] tracking-wide text-slate-700",
     subtitle:     "font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
     axis:         "stroke-zinc-950/15",
-    grid:         "stroke-zinc-950/05",
+    grid:         "stroke-zinc-950/5",
     tooltip:      "rounded-[6px] bg-[#0F1722] text-white text-[12px] px-2.5 py-1.5 shadow-lg font-proxima",
     legend:       "flex items-center gap-4 font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
     legendSwatch: "h-0.5 w-4",
@@ -1056,6 +1202,24 @@ const graph = {
     targetLabel:    "font-mono text-[10.5px] uppercase tracking-wider text-amber-700",
     focusLine:      "stroke-[#0F1722] [stroke-dasharray:2_3]",
     peakDot:        "fill-white stroke-[#1F3F8F]",
+    // Brand chart defaults consumed by the avlGraph component (merged under a section's
+    // own display settings). Drives line/series colours, margins and axes for every
+    // graph without per-section config. (See graph_new/theme.js ChartDefaults.)
+    chartDefaults: {
+      colors: { type: "palette", value: ["#10B981", "#1F3F8F", "#EAAD43", "#37576B", "#EF4444"] },
+      margin: { top: 16, right: 24, bottom: 40, left: 56 },
+      height: 280,
+      // Brand line look: a slightly bolder emerald line, smooth curve, faint
+      // gridlines. `area`/`areaOpacity` stay opt-in (a section or yColumn turns the
+      // gradient fill on) so non-trend graphs aren't forced into area mode.
+      interpolation: "catmullrom",
+      strokeWidth: 2,
+      area: false,
+      areaOpacity: 0.14,
+      xAxis: { show: true, showGridLines: false, rotateLabels: false, tickDensity: 2, gridLineOpacity: 0.18, axisColor: "#0f172a26" },
+      yAxis: { show: true, showGridLines: true, format: "Integer", gridLineOpacity: 0.14, axisColor: "#0f172a26" },
+      legend: { show: false },
+    },
   }],
 };
 
@@ -1088,23 +1252,68 @@ const iconTheme = {
 // attribution / filters
 // ─────────────────────────────────────────────────────────────────────────────
 const attribution = {
-  wrapper: "w-full px-3 py-1.5 flex gap-2 text-[11px] text-slate-500 font-mono uppercase tracking-wide border-t border-zinc-950/05 bg-slate-50/40",
+  wrapper: "w-full px-3 py-1.5 flex gap-2 text-[11px] text-slate-500 font-mono uppercase tracking-wide border-t border-zinc-950/5 bg-slate-50/40",
   label:   "",
   link:    "text-[#1F3F8F] hover:text-[#16307A]",
 };
 
+// filters — named filter DESIGNS (whole-filter styles). Each style bundles the
+// wrapper + label + row layout + `placement` + `controlStyle` (the multiselect
+// style its value control renders with). A Filter section picks one via
+// display.filterStyle; ExternalFilters/RenderFilters resolve it with
+// getComponentTheme(theme,'filters',style) and pass controlStyle → the control.
+// Non-default styles inherit missing keys from styles[0] (panel).
 const filters = {
-  filterLabel:                 "font-display uppercase text-[11px] tracking-wide text-slate-500 mb-1",
-  loadingText:                 "text-[12px] text-slate-400",
-  filterSettingsWrapperInline: "w-2/3",
-  filterSettingsWrapperStacked:"w-full",
-  labelWrapperInline:          "w-1/3 text-[12px]",
-  labelWrapperStacked:         "w-full text-[12px]",
-  input:                       "w-full max-h-[150px] flex text-[12px] overflow-auto border border-zinc-950/10 rounded-[6px] bg-white p-2",
-  settingPillsWrapper:         "flex flex-row flex-wrap gap-1",
-  settingPill:                 "px-1.5 py-0.5 bg-[#EAAD43]/15 text-amber-800 hover:bg-[#EAAD43]/25 rounded-[4px] text-[11.5px]",
-  settingLabel:                "text-slate-700 font-medium",
-  filtersWrapper:              "w-full p-3 flex flex-col gap-2 rounded-[6px] bg-slate-50/60",
+  options: { activeStyle: 0 },
+  styles: [
+    { // 0 · panel — boxed multi-filter (default; label above, h-11 control)
+      name: "panel",
+      placement: "stacked",
+      controlStyle: "default",
+      filterLabel:                 "font-display uppercase text-[11px] tracking-wide text-slate-500 mb-1",
+      loadingText:                 "text-[12px] text-slate-400",
+      filterSettingsWrapperInline: "w-2/3",
+      filterSettingsWrapperStacked:"w-full",
+      labelWrapperInline:          "w-1/3 text-[12px]",
+      labelWrapperStacked:         "w-full text-[12px]",
+      conditionRowInline:          "w-full flex flex-row items-center gap-2",
+      conditionRowStacked:         "w-full flex flex-col gap-1",
+      conditionsGrid:              "grid",
+      input:                       "w-full max-h-[150px] flex text-[12px] overflow-auto border border-zinc-950/10 rounded-[6px] bg-white p-2",
+      settingPillsWrapper:         "flex flex-row flex-wrap gap-1",
+      settingPill:                 "px-1.5 py-0.5 bg-[#EAAD43]/15 text-amber-800 hover:bg-[#EAAD43]/25 rounded-[4px] text-[11.5px]",
+      settingLabel:                "text-slate-700 font-medium",
+      filtersWrapper:              "w-full p-3 flex flex-col gap-2 rounded-[6px] bg-slate-50/60",
+      toggleButton:                "hidden",
+      toggleIcon:                  "hidden",
+    },
+    { // 1 · chip — compact inline; label sits INSIDE the bordered chip; borderless control
+      name: "chip",
+      placement: "inline",
+      controlStyle: "filter_chip",
+      filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
+      filterSettingsWrapperInline: "min-w-0",
+      labelWrapperInline:          "shrink-0 inline-flex items-center gap-1",
+      conditionRowInline:          "inline-flex items-center gap-1.5 h-8 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white w-fit transition-colors",
+      filtersWrapper:              "w-full flex flex-wrap items-start gap-2",
+    },
+    { // 2 · labeled — stacked label above a compact control, no panel box
+      name: "labeled",
+      placement: "stacked",
+      controlStyle: "compact",
+      filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-1",
+      filtersWrapper:              "w-full flex flex-col gap-2",
+    },
+    { // 3 · tone_bar — inline on a dark band (white label, transparent control)
+      name: "tone_bar",
+      placement: "inline",
+      controlStyle: "tone_bar",
+      filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-white/60",
+      labelWrapperInline:          "shrink-0 inline-flex items-center gap-1",
+      conditionRowInline:          "inline-flex items-center gap-1.5 w-fit",
+      filtersWrapper:              "w-full flex flex-wrap items-center gap-2",
+    },
+  ],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1134,10 +1343,14 @@ const pages = {
       // ── Grid container ──
       wrapper:        "relative",
       gridOverlay:    "absolute inset-0 pointer-events-none",
-      container:      "w-full grid grid-cols-12 gap-6",
+      // Compound-card model: the band grid is gap-0; spacing is per-section PADDING
+      // (no margins — they fight grid/flex). The section wrapper's padding is the
+      // gutter; removing it on a shared edge lets a section sit flush with a neighbor.
+      container:      "w-full grid grid-cols-12 gap-0",
       gridSize:       12,
       defaultSize:    "12",
-      sectionPadding: "p-2",
+      sectionPadding: "p-3",        // fallback gutter (un-migrated path)
+      defaultPaddingStep: "3",      // per-side gutter default → 24px between sections
       layouts: {
         centered:  "max-w-[1480px] mr-auto",
         fullwidth: "",
@@ -1245,6 +1458,29 @@ const pages = {
         openBottom: "rounded-t-[8px] border border-zinc-950/10 border-b-transparent bg-white shadow-sm",
         borderX:    "border border-zinc-950/10 border-y-transparent",
       },
+      // ── Compound-card per-edge controls (the author tools; literal classes so
+      // Tailwind generates them). Border line = the brand hairline; radius = 8px. ──
+      borderSides: {
+        top:    "border-t border-zinc-950/10",
+        right:  "border-r border-zinc-950/10",
+        bottom: "border-b border-zinc-950/10",
+        left:   "border-l border-zinc-950/10",
+      },
+      radiusCorners: {
+        tl: "rounded-tl-[8px]", tr: "rounded-tr-[8px]", bl: "rounded-bl-[8px]", br: "rounded-br-[8px]",
+      },
+      // Inner-card background options (per-side border carries no bg of its own).
+      backgrounds: {
+        none: "", white: "bg-white", tint: "bg-slate-50/60",
+      },
+      // Curated gutter steps (fewer = wider, more usable buttons): flush / tight /
+      // default(3) / comfortable / loose / wide.
+      paddings: {
+        top:    { "0":"pt-0","2":"pt-2","3":"pt-3","4":"pt-4","6":"pt-6","8":"pt-8" },
+        right:  { "0":"pr-0","2":"pr-2","3":"pr-3","4":"pr-4","6":"pr-6","8":"pr-8" },
+        bottom: { "0":"pb-0","2":"pb-2","3":"pb-3","4":"pb-4","6":"pb-6","8":"pb-8" },
+        left:   { "0":"pl-0","2":"pl-2","3":"pl-3","4":"pl-4","6":"pl-6","8":"pl-8" },
+      },
     }],
   },
 
@@ -1289,7 +1525,7 @@ const pages = {
     headerRow:   "flex items-center gap-2 mb-2",
     headerLabel: "font-display uppercase text-[11px] tracking-wide text-slate-600",
     addButton:   "ml-auto text-[12px] text-[#1F3F8F] hover:text-[#16307A] cursor-pointer",
-    filterRow:   "flex items-center gap-2 px-2 py-1.5 bg-white rounded-[4px] border border-zinc-950/05 text-[13px] text-slate-700",
+    filterRow:   "flex items-center gap-2 px-2 py-1.5 bg-white rounded-[4px] border border-zinc-950/5 text-[13px] text-slate-700",
     operator:    "font-mono text-[11px] uppercase tracking-wide text-slate-500 px-2",
   },
 
@@ -1358,7 +1594,7 @@ const datasets = {
   },
   metadataComp: {
     wrapper:    "rounded-[8px] border border-zinc-950/10 bg-white p-6 shadow-sm",
-    fieldRow:   "grid grid-cols-[200px_1fr] gap-6 py-3 border-b border-zinc-950/05",
+    fieldRow:   "grid grid-cols-[200px_1fr] gap-6 py-3 border-b border-zinc-950/5",
     fieldLabel: "font-display uppercase text-[11px] tracking-wide text-slate-500",
     fieldValue: "font-proxima text-[13.5px] text-slate-700",
   },

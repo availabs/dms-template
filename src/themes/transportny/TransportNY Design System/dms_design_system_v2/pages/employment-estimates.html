@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Employment estimates · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  TRANSCRIPTION NOTES (employment-estimates.html · overall analysis)
+  ──────────────────────────────────────────────────────────────────
+  Audience: NY transportation planners — what's in this dataset, how trustworthy is it
+  by row, and what should I plug into my travel-demand model.
+
+  Pipeline ground truth lives in references/employment_estimates/{README.md, RESEARCH.md, PHASE_4_PLAN.md}
+  and out/v4/. Every number in this page comes from those files; nothing is invented.
+
+  Page structure follows the v2 conventions used by map-21.html:
+    • header band (white, hairline-bottom)
+    • 8 content bands, each with `// NN` kicker + h2 + supporting content
+    • footer band
+
+  Tokens reached for here:
+    • displayLG  → page h1
+    • displaySM  → section h2 (22 px)
+    • displayHero+ tabular-nums → top-line stat numbers
+    • displayMD  → mid-size numbers that don't fit at hero
+    • displayXS  → KpiCard titles
+    • kicker     → "// 01" amber eyebrows
+    • metaSM     → breadcrumb, meta strips, refresh meta
+    • metaXS     → labels inside small cells
+    • prose / proseSM / proseXS → body / hint / footnote
+    • pill green/red/amber/slate → status pills
+-->
+
+<nav class="tny-meta-nav">
+  <span class="tny-meta-nav__label">TransportNY DMS · v0.2</span>
+  <span class="tny-meta-nav__group">design system</span>
+  <a class="tny-meta-nav__link" href="../design-system/theme.html">theme</a>
+  <a class="tny-meta-nav__link" href="../design-system/layouts.html">layouts</a>
+  <a class="tny-meta-nav__link" href="../design-system/grid.html">grid</a>
+  <a class="tny-meta-nav__link" href="../design-system/components.html">components</a>
+  <a class="tny-meta-nav__link" href="../design-system/patterns.html">patterns</a>
+  <span class="tny-meta-nav__group">pages</span>
+  <a class="tny-meta-nav__link" href="landing.html">landing</a>
+  <a class="tny-meta-nav__link" href="login.html">login</a>
+  <a class="tny-meta-nav__link" href="getting-started.html">getting-started</a>
+  <a class="tny-meta-nav__link" href="docs-overview.html">docs</a>
+  <a class="tny-meta-nav__link" href="map-21.html">map-21</a>
+  <a class="tny-meta-nav__link" href="map-21-trend.html">map-21-trend</a>
+  <a class="tny-meta-nav__link" href="floating-car.html">floating-car</a>
+  <a class="tny-meta-nav__link" href="congestion.html">congestion</a>
+  <a class="tny-meta-nav__link" href="work-zones.html">work-zones</a>
+  <a class="tny-meta-nav__link is-active" href="employment-estimates.html">employment</a>
+  <a class="tny-meta-nav__link" href="employment-estimates-mpo.html">employment-mpo</a>
+</nav>
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ═════════ SIDENAV ═════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30" style="top:32px">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">NPMRDS</span>
+            </div>
+            <div class="px-3 pt-3">
+              <button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] flex items-center gap-2 text-slate-400">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+                <span class="font-proxima text-[13px]">Search</span>
+              </button>
+            </div>
+            <div class="flex-1 py-2">
+              <a href="getting-started.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25"/></svg>
+                <span class="text-[13px]">Getting started</span>
+              </a>
+              <a href="map-21-system-performance.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+                <span class="text-[13px]">MAP-21 PM3</span>
+              </a>
+              <a href="floating-car.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25"/></svg>
+                <span class="text-[13px]">Floating Car</span>
+              </a>
+              <a href="congestion.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+                <span class="text-[13px]">Congestion</span>
+              </a>
+              <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]">
+                <svg class="size-[18px] text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 14h6M9 18h6"/></svg>
+                <span class="text-[13px] flex-1">Employment</span>
+                <svg class="size-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+              </a>
+              <div class="pl-4 bg-[#0d1117]">
+                <a class="pl-5 py-1.5 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><span class="text-[12px]">Overview</span></a>
+                <a href="employment-estimates-mpo.html" class="pl-5 py-1.5 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[12px]">MPO + block detail</span></a>
+              </div>
+              <a href="work-zones.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent">
+                <svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                <span class="text-[13px]">Work zones</span>
+              </a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white text-[11px] font-medium ring-1 ring-[#FACC15]/20">AM</div>
+              <div class="flex-1"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Alex Muro</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">Region 3</div></div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10" data-dms-section="page-header">
+              <!-- Breadcrumb · metaSM token -->
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 mb-4">
+                <a href="getting-started.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a class="hover:text-[#0f1722]">Business &amp; employment</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">Estimates · 2022</span>
+              </nav>
+              <!-- Kicker + meta line · kicker + metaSM tokens -->
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// research output</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">CY 2022 · NAICS 2017 · v4 build</span>
+              </div>
+              <!-- Title + actions row -->
+              <div class="flex items-end justify-between gap-8">
+                <div class="max-w-[760px]">
+                  <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Employment estimates<span class="text-[#CA8A04]">.</span></h1>
+                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[680px]">A fused best-estimate of workplace employment by NAICS-2 industry across every NY census block, block group, and tract. Five public sources reconciled into one published value with per-cell confidence — built so transportation planners don't have to choose between QCEW, CBP, WAC, and Business Points for their model inputs.</p>
+                </div>
+                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                  <div class="flex items-center gap-2">
+                    <!-- Vintage chip -->
+                    <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 hover:border-zinc-950/20 pl-2.5 pr-1.5">
+                      <svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22C6.477 22 2 17.523 2 12C2 6.477 6.477 2 12 2C16.478 2 20.226 4.943 21.5 9H19"/><path d="M12 8V12L14 14"/></svg>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Year</span>
+                      <span class="font-mono tabular-nums text-[12px] text-[#0f1722] font-medium">2022</span>
+                      <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                    </div>
+                    <!-- NAICS revision chip -->
+                    <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 hover:border-zinc-950/20 pl-2.5 pr-1.5">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">NAICS</span>
+                      <span class="font-mono text-[12px] text-[#0f1722] font-medium">2017</span>
+                      <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                    </div>
+                    <a href="employment-estimates-mpo.html" class="h-8 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 text-slate-700 font-mono text-[10.5px] uppercase tracking-[0.18em]">
+                      MPO + block view <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                    </a>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-2">
+                    <span>v4 build</span><span class="text-[#0f1722]">2026-05-21</span>
+                    <span class="text-slate-300">·</span>
+                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>research grade</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ SUMMARY BAND · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="summary-band">
+              <div class="grid grid-cols-12 gap-6 items-center">
+                <div class="col-span-12 md:col-span-4">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] mb-1">// statewide · CY 2022</div>
+                  <div class="flex items-baseline gap-3">
+                    <span class="font-display font-semibold text-[52px] leading-none tabular-nums text-[#0F1722]">8.47M</span>
+                    <span class="font-display uppercase text-[14px] tracking-wide text-slate-600">workplace jobs · NY State</span>
+                  </div>
+                  <div class="font-mono text-[11px] text-slate-500 mt-1.5">anchored exactly to QCEW · UI-covered universe + nonemployer overlay</div>
+                </div>
+                <div class="col-span-6 md:col-span-2">
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">01</div>
+                  <div class="font-display uppercase text-[11px] tracking-[0.06em] text-[#0F1722] font-semibold leading-tight mb-2">Geography coverage</div>
+                  <div class="font-display font-semibold text-[20px] tabular-nums leading-none text-[#0F1722]">140,225</div>
+                  <div class="font-mono text-[10px] tabular-nums mt-1 text-slate-500">blocks · 15.8k block groups · 5.4k tracts</div>
+                </div>
+                <div class="col-span-6 md:col-span-2">
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">02</div>
+                  <div class="font-display uppercase text-[11px] tracking-[0.06em] text-[#0F1722] font-semibold leading-tight mb-2">Industry sectors</div>
+                  <div class="font-display font-semibold text-[20px] tabular-nums leading-none text-[#0F1722]">20</div>
+                  <div class="font-mono text-[10px] tabular-nums mt-1 text-slate-500">NAICS-2 sectors · 2017 rev</div>
+                </div>
+                <div class="col-span-6 md:col-span-2">
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">03</div>
+                  <div class="font-display uppercase text-[11px] tracking-[0.06em] text-[#0F1722] font-semibold leading-tight mb-2">Anchor institutions</div>
+                  <div class="font-display font-semibold text-[20px] tabular-nums leading-none text-[#0F1722]">9</div>
+                  <div class="font-mono text-[10px] tabular-nums mt-1 text-slate-500">universities · hospitals · airports</div>
+                </div>
+                <div class="col-span-6 md:col-span-2">
+                  <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">04</div>
+                  <div class="font-display uppercase text-[11px] tracking-[0.06em] text-[#0F1722] font-semibold leading-tight mb-2">Mass preservation</div>
+                  <div class="flex items-baseline gap-1.5">
+                    <span class="size-2 rounded-full bg-emerald-500"></span>
+                    <span class="font-display font-semibold text-[20px] tabular-nums leading-none text-[#0F1722]">exact</span>
+                  </div>
+                  <div class="font-mono text-[10px] tabular-nums mt-1 text-emerald-700">0.00% drift vs QCEW</div>
+                </div>
+              </div>
+              <!-- data_confidence (Phase 3) distribution micro-bar -->
+              <div class="mt-6 pt-6 border-t border-zinc-950/05">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">data_confidence · block × NAICS · all sectors</div>
+                  <div class="font-mono text-[10.5px] text-slate-500 tabular-nums">385,221 cells</div>
+                </div>
+                <div class="flex h-3 rounded-[2px] overflow-hidden bg-slate-100">
+                  <div style="width:25.0%" class="bg-emerald-600"></div>
+                  <div style="width:29.8%" class="bg-emerald-400"></div>
+                  <div style="width:18.1%" class="bg-amber-400"></div>
+                  <div style="width:10.7%" class="bg-rose-300"></div>
+                  <div style="width:16.3%" class="bg-rose-400"></div>
+                </div>
+                <div class="flex items-center gap-4 mt-2 font-mono text-[10.5px] tabular-nums flex-wrap">
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-emerald-600"></span><span class="text-emerald-700">25.0% very_high</span></span>
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-emerald-400"></span><span class="text-emerald-700">29.8% high</span></span>
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-amber-400"></span><span class="text-amber-700">18.1% medium</span></span>
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-rose-300"></span><span class="text-rose-700">10.7% low</span></span>
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-rose-400"></span><span class="text-rose-700">16.3% very_low</span></span>
+                </div>
+                <div class="mt-2 font-proxima text-[12px] text-slate-600 italic">~55% of cells are high+, and the very_low tail concentrates in tiny-emp cells — by employment captured the picture is much stronger (see §04).</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · METHODOLOGY · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="methodology">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">methodology · 5-source IPF fusion</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How we reconcile 5 conflicting sources into one estimate.</h2>
+                </div>
+                <a class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">RESEARCH.md <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+              </div>
+
+              <!-- 5 source role cards -->
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 flex flex-col gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#0F2D4D] bg-[#1F3F8F]/10 border border-[#1F3F8F]/20">anchor</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">QCEW</div>
+                  <div class="font-mono text-[10.5px] text-slate-500 uppercase tracking-[0.18em]">county × NAICS-6</div>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">Authoritative county totals (97% NY nonfarm UI-covered). Treated as a hard mass constraint at every iteration.</p>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 flex flex-col gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12] bg-[#EAAD43]/15 border border-[#EAAD43]/30">QA cross-check</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">CBP</div>
+                  <div class="font-mono text-[10.5px] text-slate-500 uppercase tracking-[0.18em]">county × NAICS-2</div>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">Federal payroll-tax universe. Used to reconcile UI-covered total and surface nonemployer reservoir. Suppressed cells flagged for future LP imputation.</p>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 flex flex-col gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12] bg-[#EAAD43]/15 border border-[#EAAD43]/30">marginal</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">ZBP</div>
+                  <div class="font-mono text-[10.5px] text-slate-500 uppercase tracking-[0.18em]">ZCTA × NAICS-2</div>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">ZIP-level establishment counts plus size-class midpoints. Provides sub-county structure that pure county→block allocation lacks.</p>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 flex flex-col gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#0F2D4D] bg-[#37576B]/15 border border-[#37576B]/20">spatial weight</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">LEHD WAC</div>
+                  <div class="font-mono text-[10.5px] text-slate-500 uppercase tracking-[0.18em]">block · CNS-bin</div>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">Block-level workplace job counts. Partially synthetic by design — used as a soft spatial prior, not a point estimate.</p>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 flex flex-col gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#0F2D4D] bg-[#37576B]/15 border border-[#37576B]/20">spatial weight</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Business Points</div>
+                  <div class="font-mono text-[10.5px] text-slate-500 uppercase tracking-[0.18em]">establishment-level</div>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">Infogroup-derived establishment list. Strong location signal; weak count signal in the long tail. Anomaly + trust scores feed α.</p>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-2 rounded-[8px] border-2 border-dashed border-[#EAAD43] bg-[#F5F1E8] p-4 flex flex-col gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12] bg-amber-100">planned</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Nonemployer Stats</div>
+                  <div class="font-mono text-[10.5px] text-slate-500 uppercase tracking-[0.18em]">county · self-employed</div>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">Closes the self-employed-without-payroll gap. Not yet in v4; landing in v5 to round out the universe.</p>
+                </div>
+              </div>
+
+              <!-- Compact pipeline flow -->
+              <div class="mt-8 rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-3">pipeline · stage A → stage E</div>
+                <div class="flex items-center gap-2 overflow-x-auto font-mono text-[11px]">
+                  <div class="inline-flex items-center gap-2 px-3 py-2 rounded-[6px] bg-[#1F3F8F]/10 border border-[#1F3F8F]/20 text-[#0F2D4D] flex-shrink-0">
+                    <span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>
+                    <span class="uppercase tracking-wide">QCEW county anchor</span>
+                  </div>
+                  <span class="text-slate-400">→</span>
+                  <div class="inline-flex items-center gap-2 px-3 py-2 rounded-[6px] bg-[#EAAD43]/15 border border-[#EAAD43]/30 text-[#7C5A12] flex-shrink-0">
+                    <span class="size-1.5 rounded-full bg-[#EAAD43]"></span>
+                    <span class="uppercase tracking-wide">ZBP ZCTA marginal</span>
+                  </div>
+                  <span class="text-slate-400">→</span>
+                  <div class="inline-flex items-center gap-2 px-3 py-2 rounded-[6px] bg-[#37576B]/10 border border-[#37576B]/20 text-[#0F2D4D] flex-shrink-0">
+                    <span class="size-1.5 rounded-full bg-[#37576B]"></span>
+                    <span class="uppercase tracking-wide">WAC + BP blended weight (α)</span>
+                  </div>
+                  <span class="text-slate-400">→</span>
+                  <div class="inline-flex items-center gap-2 px-3 py-2 rounded-[6px] bg-slate-100 border border-zinc-950/10 text-slate-700 flex-shrink-0">
+                    <span class="size-1.5 rounded-full bg-slate-500"></span>
+                    <span class="uppercase tracking-wide">IPF reconcile (+ damping)</span>
+                  </div>
+                  <span class="text-slate-400">→</span>
+                  <div class="inline-flex items-center gap-2 px-3 py-2 rounded-[6px] bg-emerald-50 border border-emerald-200 text-emerald-800 flex-shrink-0">
+                    <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                    <span class="uppercase tracking-wide">cell cap + anchor catalog</span>
+                  </div>
+                  <span class="text-slate-400">→</span>
+                  <div class="inline-flex items-center gap-2 px-3 py-2 rounded-[6px] bg-[#0a0e13] text-white flex-shrink-0">
+                    <span class="size-1.5 rounded-full bg-[#FACC15]"></span>
+                    <span class="uppercase tracking-wide">est_emp + low/high + confidence</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 02 · UNIVERSE COVERAGE · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="universe">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">universe coverage · who's counted where</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Each source covers a different slice of "employment".</h2>
+                  <p class="font-proxima text-[14.5px] leading-[1.55] text-slate-600 mt-2 max-w-[760px]">A BP-minus-QCEW gap doesn't mean BP is wrong — it might mean BP is correctly counting self-employed, religious, ag, or railroad jobs that QCEW excludes. The estimate's universe is "workplace jobs incl. nonemployer", and we record provenance so you can rebuild any subset.</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-8 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <table class="w-full text-[13px] text-slate-700">
+                    <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                      <tr>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Population segment</th>
+                        <th class="px-3 py-2 text-center font-display uppercase text-[11px] tracking-wide text-slate-600">QCEW</th>
+                        <th class="px-3 py-2 text-center font-display uppercase text-[11px] tracking-wide text-slate-600">CBP</th>
+                        <th class="px-3 py-2 text-center font-display uppercase text-[11px] tracking-wide text-slate-600">ZBP</th>
+                        <th class="px-3 py-2 text-center font-display uppercase text-[11px] tracking-wide text-slate-600">WAC</th>
+                        <th class="px-3 py-2 text-center font-display uppercase text-[11px] tracking-wide text-slate-600">BP</th>
+                        <th class="px-3 py-2 text-center font-display uppercase text-[11px] tracking-wide text-slate-600">est_emp</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-mono text-[12px]">
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Private wage &amp; salary</td><td class="text-center">✓</td><td class="text-center">✓</td><td class="text-center">✓</td><td class="text-center">✓</td><td class="text-center text-slate-400">partial</td><td class="text-center text-emerald-700">✓</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Federal civilian</td><td class="text-center">own=1</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center">✓ post-2012</td><td class="text-center text-slate-400">partial</td><td class="text-center text-emerald-700">✓</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">State / local government</td><td class="text-center">own=2,3</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center">✓</td><td class="text-center text-slate-400">partial</td><td class="text-center text-emerald-700">✓</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Self-employed / nonemployer</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center">✓ listed</td><td class="text-center text-amber-600">v5</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Railroad employment</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-slate-400">partial</td><td class="text-center text-amber-600">v5</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Religious organisations</td><td class="text-center text-slate-400">mostly ✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-slate-400">partial</td><td class="text-center">✓</td><td class="text-center text-amber-600">v5</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Agriculture (crop/animal)</td><td class="text-center text-slate-400">partial</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-slate-400">partial</td><td class="text-center">✓</td><td class="text-center text-slate-400">partial</td></tr>
+                      <tr><td class="px-3 py-2 font-proxima">Military</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">✗</td><td class="text-center text-rose-500">out of scope</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">target universe</div>
+                    <p class="font-display font-medium text-[15px] text-[#0f1722] leading-tight mb-2">workplace jobs with nonemployer overlay</p>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">v4 covers the UI-covered + government segments. v5 adds the nonemployer reservoir from Census Nonemployer Statistics.</p>
+                  </div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">provenance preserved</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">Every published row carries the raw <code class="font-mono text-[11.5px] bg-slate-100 px-1 rounded text-[#0F1722]">bp_emp</code>, <code class="font-mono text-[11.5px] bg-slate-100 px-1 rounded text-[#0F1722]">wac_emp</code>, <code class="font-mono text-[11.5px] bg-slate-100 px-1 rounded text-[#0F1722]">lodes_emp</code>, <code class="font-mono text-[11.5px] bg-slate-100 px-1 rounded text-[#0F1722]">qcew_county_anchor</code> alongside <code class="font-mono text-[11.5px] bg-slate-100 px-1 rounded text-[#0F1722]">est_emp</code>, so you can rebuild any subset universe if v5 doesn't match your assumptions.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · SECTOR MIX · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="sectors">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">sector mix · top 10 NAICS-2 statewide</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Where the 8.47M jobs sit by industry.</h2>
+                  <p class="font-proxima text-[14.5px] leading-[1.55] text-slate-600 mt-2 max-w-[760px]">Same five sectors drive both NY's job base and the block-level cross-source gaps. Healthcare (62), Education (61), and Retail (44-45) together are 35% of NY employment — and 36% of the absolute BP↔WAC block-level disagreement, because they cluster at large institutional sites that BP and WAC place differently.</p>
+                </div>
+              </div>
+
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                <!-- Top-10 NAICS bar list (compact, mockup values consistent with research notes) -->
+                <div class="grid grid-cols-12 gap-3 font-mono text-[11px]">
+                  <!-- Header -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 text-[10px] uppercase tracking-[0.18em] text-slate-400 pb-2 border-b border-zinc-950/05">
+                    <div class="col-span-1">naics</div>
+                    <div class="col-span-3">sector</div>
+                    <div class="col-span-5">share of NY employment</div>
+                    <div class="col-span-1 text-right">est_emp</div>
+                    <div class="col-span-1 text-right">% NY</div>
+                    <div class="col-span-1 text-right">block-gap rank</div>
+                  </div>
+                  <!-- 62 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5">
+                    <div class="col-span-1 tabular-nums">62</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Health Care</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:90%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">1,488k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">17.6%</div>
+                    <div class="col-span-1 text-right tabular-nums text-rose-600">#1</div>
+                  </div>
+                  <!-- 61 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">61</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Education</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:62%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">923k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">10.9%</div>
+                    <div class="col-span-1 text-right tabular-nums text-rose-600">#2</div>
+                  </div>
+                  <!-- 54 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">54</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Professional services</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:48%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">726k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">8.6%</div>
+                    <div class="col-span-1 text-right tabular-nums text-rose-600">#5</div>
+                  </div>
+                  <!-- 44-45 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">44-45</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Retail trade</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:44%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">644k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">7.6%</div>
+                    <div class="col-span-1 text-right tabular-nums text-rose-600">#3</div>
+                  </div>
+                  <!-- 92 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">92</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Public administration</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:42%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">635k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">7.5%</div>
+                    <div class="col-span-1 text-right tabular-nums text-rose-600">#4</div>
+                  </div>
+                  <!-- 81 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">81</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Other services</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:36%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">508k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">6.0%</div>
+                    <div class="col-span-1 text-right tabular-nums text-amber-600">#6</div>
+                  </div>
+                  <!-- 56 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">56</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Admin / waste support</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:35%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">491k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">5.8%</div>
+                    <div class="col-span-1 text-right tabular-nums text-amber-600">#7</div>
+                  </div>
+                  <!-- 31-33 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">31-33</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Manufacturing</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:32%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">482k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">5.7%</div>
+                    <div class="col-span-1 text-right tabular-nums text-amber-600">#8</div>
+                  </div>
+                  <!-- 52 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">52</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Finance &amp; insurance</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:30%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">449k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">5.3%</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">#11</div>
+                  </div>
+                  <!-- 72 -->
+                  <div class="col-span-12 grid grid-cols-12 gap-3 items-center py-1.5 border-t border-zinc-950/05">
+                    <div class="col-span-1 tabular-nums">72</div>
+                    <div class="col-span-3 font-proxima text-slate-700">Accommodation &amp; food</div>
+                    <div class="col-span-5"><div class="h-3 bg-[#1F3F8F] rounded-[2px]" style="width:28%"></div></div>
+                    <div class="col-span-1 text-right tabular-nums text-[#0F1722] font-medium">432k</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">5.1%</div>
+                    <div class="col-span-1 text-right tabular-nums text-slate-500">#9</div>
+                  </div>
+                </div>
+                <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-4 italic">"Block-gap rank" is the sector's contribution to NY's absolute BP↔WAC block-level disagreement (sign-cancelled). High rank with high share = institutional cluster sector (hospitals, schools, gov) where one address often hosts thousands of jobs.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 04 · CONFIDENCE · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#E4E8EE] border-b border-zinc-950/05 py-12" data-dms-group="content_tint">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="confidence">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">cell confidence · two-axis labelling</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Knowing which (block, NAICS) cells to trust as model inputs.</h2>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <!-- data_confidence axis card · Phase 3 rework, primary v4 measure -->
+                <div class="col-span-12 lg:col-span-6 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">data_confidence · 5 tiers · Phase 3 rework</div>
+                  <h3 class="font-display font-medium text-[18px] text-[#0F1722] mb-1">How well do the sources agree at this cell?</h3>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mb-4">Binned product of three axes: <em>agreement</em> (BP × WAC × LODES sign + magnitude), <em>support</em> (count of sources reporting ≥1 job), and a <em>magnitude</em> modifier (tiny cells get a penalty so noise doesn't masquerade as high confidence).</p>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-2 text-[12px]"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-emerald-100 text-emerald-800 border border-emerald-200 min-w-[80px] justify-center">very_high</span><span class="font-proxima text-slate-700">All 3 sources align ± 20%, cell ≥ 50 jobs</span><span class="ml-auto font-mono tabular-nums text-slate-500">25.0%</span></div>
+                    <div class="flex items-center gap-2 text-[12px]"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-emerald-50 text-emerald-700 border border-emerald-200 min-w-[80px] justify-center">high</span><span class="font-proxima text-slate-700">2 of 3 sources align ± 30%</span><span class="ml-auto font-mono tabular-nums text-slate-500">29.8%</span></div>
+                    <div class="flex items-center gap-2 text-[12px]"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-amber-100 text-amber-800 border border-amber-200 min-w-[80px] justify-center">medium</span><span class="font-proxima text-slate-700">Two sources nonzero, modest gap</span><span class="ml-auto font-mono tabular-nums text-slate-500">18.1%</span></div>
+                    <div class="flex items-center gap-2 text-[12px]"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-rose-50 text-rose-700 border border-rose-200 min-w-[80px] justify-center">low</span><span class="font-proxima text-slate-700">Only 1 source reporting, or large disagreement</span><span class="ml-auto font-mono tabular-nums text-slate-500">10.7%</span></div>
+                    <div class="flex items-center gap-2 text-[12px]"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-rose-100 text-rose-800 border border-rose-200 min-w-[80px] justify-center">very_low</span><span class="font-proxima text-slate-700">Tiny cell (≤ 5 jobs) + sparse signal</span><span class="ml-auto font-mono tabular-nums text-slate-500">16.3%</span></div>
+                  </div>
+                  <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-3 italic"><strong>~55% of cells are high+</strong>, and the small low tail concentrates in tiny-employment cells — see the employment-weighted reframe below.</p>
+                </div>
+
+                <!-- bp_trust axis card -->
+                <div class="col-span-12 lg:col-span-6 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">bp_trust · 4 tiers · Phase 3</div>
+                  <h3 class="font-display font-medium text-[18px] text-[#0F1722] mb-1">Is the Business Points signal trustworthy here?</h3>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mb-4">Per (block, NAICS): anomaly rate + geocode quality + ZBP cross-match + sample size. Feeds the row-α blend — high bp_trust → BP gets more weight, low bp_trust → WAC gets more weight.</p>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-2 text-[12px]"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-emerald-50 text-emerald-700 border border-emerald-200 min-w-[80px] justify-center">high</span><span class="font-proxima text-slate-700">Rooftop geocode, clean anomaly, ZBP confirms</span><span class="ml-auto font-mono tabular-nums text-slate-500">41.0%</span></div>
+                    <div class="flex items-center gap-2 text-[12px]"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-amber-100 text-amber-800 border border-amber-200 min-w-[80px] justify-center">medium</span><span class="font-proxima text-slate-700">Most signals positive, mild anomaly flag</span><span class="ml-auto font-mono tabular-nums text-slate-500">24.2%</span></div>
+                    <div class="flex items-center gap-2 text-[12px]"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-rose-50 text-rose-700 border border-rose-200 min-w-[80px] justify-center">low</span><span class="font-proxima text-slate-700">Anomaly, small N, or geocode quality below threshold</span><span class="ml-auto font-mono tabular-nums text-slate-500">21.7%</span></div>
+                    <div class="flex items-center gap-2 text-[12px]"><span class="inline-flex items-center px-2 py-0.5 rounded-[4px] font-mono text-[10px] uppercase tracking-[0.16em] bg-slate-200 text-slate-700 border border-slate-300 min-w-[80px] justify-center">none</span><span class="font-proxima text-slate-700">No BP record at this cell — WAC-only signal</span><span class="ml-auto font-mono tabular-nums text-slate-500">13.1%</span></div>
+                  </div>
+                  <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-3 italic">For modeling: filter <code class="font-mono text-[11px] bg-slate-100 px-1 rounded">data_confidence ≥ medium</code> for primary inputs (covers <strong>72.9% of cells, 94.3% of employment</strong>); review <code class="font-mono text-[11px] bg-slate-100 px-1 rounded">low / very_low</code> cells in your TAZs by hand.</p>
+                </div>
+
+                <!-- Joint distribution panel — by cell vs by employment -->
+                <div class="col-span-12 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-3">cell count vs employment-weighted</div>
+                  <div class="grid grid-cols-12 gap-4 items-center">
+                    <div class="col-span-12 md:col-span-7">
+                      <p class="font-proxima text-[14px] leading-[1.6] text-slate-700">Both views matter, and they tell the same story from different angles. <strong>54.8% of cells</strong> are high+. Re-weight those same cells by the employment they carry and the picture sharpens — <strong>90.3% of NY employment lives in high+ cells</strong>:</p>
+                      <ul class="mt-3 space-y-1.5 font-proxima text-[13px] text-slate-700">
+                        <li>• <strong>By cell count</strong> (385k cells): 25% very_high · 30% high · 18% medium · 11% low · 16% very_low</li>
+                        <li>• <strong>By employment captured</strong> (8.47M jobs): <strong>40% very_high · 50% high</strong> · 4% medium · 2% low · 4% very_low</li>
+                      </ul>
+                      <p class="font-proxima text-[13px] leading-[1.55] text-slate-600 mt-3">The very_low tier is 16% of cells but only ~4% of jobs — tiny-employer blocks where source disagreement is statistical noise. For TAZ trip generation in your model, the high+ majority is what matters.</p>
+                    </div>
+                    <div class="col-span-12 md:col-span-5">
+                      <div class="space-y-4">
+                        <div>
+                          <div class="flex items-center justify-between mb-1 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500"><span>by cell count</span><span class="tabular-nums">385,221 cells</span></div>
+                          <div class="flex h-3 rounded-[2px] overflow-hidden bg-slate-100">
+                            <div style="width:25.0%" class="bg-emerald-600"></div>
+                            <div style="width:29.8%" class="bg-emerald-400"></div>
+                            <div style="width:18.1%" class="bg-amber-400"></div>
+                            <div style="width:10.7%" class="bg-rose-300"></div>
+                            <div style="width:16.3%" class="bg-rose-400"></div>
+                          </div>
+                          <div class="flex justify-between mt-1 font-mono text-[9.5px] tabular-nums text-slate-500">
+                            <span class="text-emerald-700">very_high 25%</span>
+                            <span class="text-amber-700">med 18%</span>
+                            <span class="text-rose-700">very_low 16%</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div class="flex items-center justify-between mb-1 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500"><span>by employment captured</span><span class="tabular-nums">8,465,327 jobs</span></div>
+                          <div class="flex h-3 rounded-[2px] overflow-hidden bg-slate-100">
+                            <div style="width:39.9%" class="bg-emerald-600"></div>
+                            <div style="width:50.4%" class="bg-emerald-400"></div>
+                            <div style="width:4.0%" class="bg-amber-400"></div>
+                            <div style="width:1.7%" class="bg-rose-300"></div>
+                            <div style="width:3.8%" class="bg-rose-400"></div>
+                          </div>
+                          <div class="flex justify-between mt-1 font-mono text-[9.5px] tabular-nums text-slate-500">
+                            <span class="text-emerald-700">very_high 40%</span>
+                            <span class="text-emerald-700">high 50%</span>
+                            <span class="text-rose-700">very_low 4%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Legacy est_confidence callout -->
+                <div class="col-span-12 rounded-[8px] border-2 border-dashed border-amber-300 bg-[#F5F1E8] p-4 flex items-start gap-3">
+                  <svg class="size-5 text-amber-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v3.75m0 3.5v.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg>
+                  <div>
+                    <p class="font-display font-medium text-[14px] text-[#0F1722]">Legacy column: <code class="font-mono text-[13px] bg-white px-1 rounded">est_confidence</code></p>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-700 mt-1">The published rows also carry a v0-era <code class="font-mono text-[11.5px] bg-white px-1 rounded">est_confidence</code> column (3-tier: high · medium · low) emitted for back-compat. Its distribution is the much-less-flattering <strong>9.2% high · 8.8% medium · 81.5% low</strong> because it doesn't carry the magnitude penalty or the agreement decomposition. <strong>For new modeling work, prefer <code class="font-mono text-[11.5px] bg-white px-1 rounded">data_confidence</code> above</strong> — it's the Phase 3 rework and the column the QA pipeline actually drives off.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 05 · ANCHOR INSTITUTIONS · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="anchors">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">anchor catalog · curated overrides</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Manually-curated anchors keep institutional employment realistic.</h2>
+                  <p class="font-proxima text-[14.5px] leading-[1.55] text-slate-600 mt-2 max-w-[760px]">Without a hand list, IPF amplification could pile six-digit employment onto a single Manhattan healthcare block. Each anchor is a (block, NAICS, employment) triple that the allocator treats as fixed and other blocks redistribute around. Today's seed is 9 entries — the long tail (every SUNY campus, every hospital &gt;500, every prison, every large factory) is the next curation phase.</p>
+                </div>
+              </div>
+
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <table class="w-full text-[13px] text-slate-700">
+                  <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                    <tr>
+                      <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Institution</th>
+                      <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Block geoid</th>
+                      <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">NAICS</th>
+                      <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">est_emp</th>
+                      <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">MPO</th>
+                      <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">JFK International Airport</td><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360810999001000</td><td class="px-3 py-2 font-mono text-[12px]">48-49</td><td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">40,242</td><td class="px-3 py-2 font-proxima text-slate-600">NYMTC</td><td class="px-3 py-2 font-mono text-[11px] text-slate-500">Port Authority HR</td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">SUNY Buffalo (North Campus)</td><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360290091…</td><td class="px-3 py-2 font-mono text-[12px]">61</td><td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">14,800</td><td class="px-3 py-2 font-proxima text-slate-600">GBNRTC</td><td class="px-3 py-2 font-mono text-[11px] text-slate-500">IPEDS staff</td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Mount Sinai Hospital</td><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610142…</td><td class="px-3 py-2 font-mono text-[12px]">62</td><td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">18,500</td><td class="px-3 py-2 font-proxima text-slate-600">NYMTC</td><td class="px-3 py-2 font-mono text-[11px] text-slate-500">CMS Provider</td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">NYU Langone (Manhattan)</td><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610082…</td><td class="px-3 py-2 font-mono text-[12px]">62</td><td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">13,400</td><td class="px-3 py-2 font-proxima text-slate-600">NYMTC</td><td class="px-3 py-2 font-mono text-[11px] text-slate-500">CMS Provider</td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Columbia University (Morningside)</td><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610203…</td><td class="px-3 py-2 font-mono text-[12px]">61</td><td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">16,166</td><td class="px-3 py-2 font-proxima text-slate-600">NYMTC</td><td class="px-3 py-2 font-mono text-[11px] text-slate-500">IPEDS staff</td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Albany Medical Center</td><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360010140…</td><td class="px-3 py-2 font-mono text-[12px]">62</td><td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">9,800</td><td class="px-3 py-2 font-proxima text-slate-600">CDTC</td><td class="px-3 py-2 font-mono text-[11px] text-slate-500">CMS Provider</td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">Strong Memorial Hospital (Rochester)</td><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360551701…</td><td class="px-3 py-2 font-mono text-[12px]">62</td><td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">11,200</td><td class="px-3 py-2 font-proxima text-slate-600">GTC</td><td class="px-3 py-2 font-mono text-[11px] text-slate-500">CMS Provider</td></tr>
+                    <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-proxima">U.S. Military Academy (West Point)</td><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360710401…</td><td class="px-3 py-2 font-mono text-[12px]">61</td><td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">6,500</td><td class="px-3 py-2 font-proxima text-slate-600">OCTC</td><td class="px-3 py-2 font-mono text-[11px] text-slate-500">FedScope</td></tr>
+                    <tr><td class="px-3 py-2 font-proxima italic text-slate-500">+ 1 disclosure-suppressed Cornell entry (see Phase 4 plan)</td><td class="px-3 py-2 font-mono tabular-nums text-[12px] text-slate-400">36109…</td><td class="px-3 py-2 font-mono text-[12px] text-slate-400">61</td><td class="px-3 py-2 text-right font-mono tabular-nums text-slate-400">—</td><td class="px-3 py-2 font-proxima text-slate-400">ITCTC</td><td class="px-3 py-2 font-mono text-[11px] text-slate-400">flagged</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 06 · QA · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="qa">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">QA · mass balance, overshoot gate, top blocks</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">v4's reasonableness checks.</h2>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <!-- KPI tiles -->
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>passes</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight mt-2">Mass preservation vs QCEW</div>
+                  <div class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight tabular-nums text-[#0F1722] mt-1">exact</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">8,465,327 jobs · 0.00% drift</div>
+                </div>
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>passes</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight mt-2">P1 overshoot gate flagged</div>
+                  <div class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight tabular-nums text-[#0F1722] mt-1">4</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">of 123,582 employing blocks · 0.003%</div>
+                </div>
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EAAD43]/30 bg-[#EAAD43]/15 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12]"><span class="size-1.5 rounded-full bg-[#EAAD43]"></span>roadmap</span>
+                  <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight mt-2">IPF convergence</div>
+                  <div class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight tabular-nums text-[#0F1722] mt-1">60 / 60</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">all NAICS hit max-iter · county marginals exact, ZCTA wider in v4</div>
+                </div>
+
+                <!-- Top overshoots -->
+                <div class="col-span-12 lg:col-span-6 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-5 py-3 border-b border-zinc-950/05 bg-slate-50/40">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">top P1 overshoots</div>
+                    <div class="font-display font-medium text-[14px] text-[#0F1722] mt-0.5">4 blocks flagged · all below 50K · max ratio 3.0×</div>
+                  </div>
+                  <table class="w-full text-[13px]">
+                    <thead class="border-b border-zinc-950/05"><tr>
+                      <th class="px-3 py-2 text-left font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">block</th>
+                      <th class="px-3 py-2 text-right font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">est_total</th>
+                      <th class="px-3 py-2 text-right font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">ratio</th>
+                      <th class="px-3 py-2 text-left font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">dominant</th>
+                    </tr></thead>
+                    <tbody>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360290028021018</td><td class="px-3 py-2 text-right font-mono tabular-nums">6,013</td><td class="px-3 py-2 text-right font-mono tabular-nums text-rose-600">3.01×</td><td class="px-3 py-2 font-mono text-[12px]">52 finance</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610145001000</td><td class="px-3 py-2 text-right font-mono tabular-nums">5,021</td><td class="px-3 py-2 text-right font-mono tabular-nums text-rose-600">2.20×</td><td class="px-3 py-2 font-mono text-[12px]">61 education</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610096002000</td><td class="px-3 py-2 text-right font-mono tabular-nums">11,437</td><td class="px-3 py-2 text-right font-mono tabular-nums text-amber-600">1.83×</td><td class="px-3 py-2 font-mono text-[12px]">51 information</td></tr>
+                      <tr><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360594107006014</td><td class="px-3 py-2 text-right font-mono tabular-nums">9,655</td><td class="px-3 py-2 text-right font-mono tabular-nums text-amber-600">1.70×</td><td class="px-3 py-2 font-mono text-[12px]">62 healthcare</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Top employer blocks -->
+                <div class="col-span-12 lg:col-span-6 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-5 py-3 border-b border-zinc-950/05 bg-slate-50/40">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">top 10 employer blocks · v4</div>
+                    <div class="font-display font-medium text-[14px] text-[#0F1722] mt-0.5">Anchors top the list; the unanchored remainder is institutional clustering captured by IPF.</div>
+                  </div>
+                  <table class="w-full text-[13px]">
+                    <thead class="border-b border-zinc-950/05"><tr>
+                      <th class="px-3 py-2 text-left font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">block</th>
+                      <th class="px-3 py-2 text-right font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">est_total</th>
+                      <th class="px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">⚓</th>
+                      <th class="px-3 py-2 text-left font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">dominant</th>
+                    </tr></thead>
+                    <tbody>
+                      <tr class="border-b border-zinc-950/05 bg-emerald-50/30"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360810999001000</td><td class="px-3 py-2 text-right font-mono tabular-nums text-[#0F1722] font-medium">40,242</td><td class="px-3 py-2 text-center text-emerald-600">✓</td><td class="px-3 py-2 font-mono text-[12px]">48-49 JFK</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360550038065001</td><td class="px-3 py-2 text-right font-mono tabular-nums">26,890</td><td class="px-3 py-2 text-center text-slate-300">—</td><td class="px-3 py-2 font-mono text-[12px]">62</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610096001000</td><td class="px-3 py-2 text-right font-mono tabular-nums">18,500</td><td class="px-3 py-2 text-center text-slate-300">—</td><td class="px-3 py-2 font-mono text-[12px]">56</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610101001006</td><td class="px-3 py-2 text-right font-mono tabular-nums">18,059</td><td class="px-3 py-2 text-center text-slate-300">—</td><td class="px-3 py-2 font-mono text-[12px]">51</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610062001000</td><td class="px-3 py-2 text-right font-mono tabular-nums">17,894</td><td class="px-3 py-2 text-center text-slate-300">—</td><td class="px-3 py-2 font-mono text-[12px]">62</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-emerald-50/30"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610118005000</td><td class="px-3 py-2 text-right font-mono tabular-nums">17,074</td><td class="px-3 py-2 text-center text-emerald-600">✓</td><td class="px-3 py-2 font-mono text-[12px]">62 hospital</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610096002001</td><td class="px-3 py-2 text-right font-mono tabular-nums">16,824</td><td class="px-3 py-2 text-center text-slate-300">—</td><td class="px-3 py-2 font-mono text-[12px]">52</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610203002000</td><td class="px-3 py-2 text-right font-mono tabular-nums">16,166</td><td class="px-3 py-2 text-center text-slate-300">—</td><td class="px-3 py-2 font-mono text-[12px]">61</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-emerald-50/30"><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610251001002</td><td class="px-3 py-2 text-right font-mono tabular-nums">16,139</td><td class="px-3 py-2 text-center text-emerald-600">✓</td><td class="px-3 py-2 font-mono text-[12px]">62 hospital</td></tr>
+                      <tr><td class="px-3 py-2 font-mono tabular-nums text-[12px]">360610082002001</td><td class="px-3 py-2 text-right font-mono tabular-nums">14,202</td><td class="px-3 py-2 text-center text-slate-300">—</td><td class="px-3 py-2 font-mono text-[12px]">54</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 07 · TRANSPORTATION USE · LayoutGroup `content_tint` ═════════ -->
+          <div class="w-full bg-[#E4E8EE] border-b border-zinc-950/05 py-12" data-dms-group="content_tint">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="modeling-use">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 07</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">for transportation planners</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How to plug these into your travel-demand model.</h2>
+                  <p class="font-proxima text-[14.5px] leading-[1.55] text-slate-600 mt-2 max-w-[760px]">Trip-generation rates need stable, industry-resolved employment at modeling geography. These three recipes give you a starting point; the MPO+block page drills further.</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+                <!-- Trip generation card -->
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12] bg-[#EAAD43]/15 border border-[#EAAD43]/30">step 1</span>
+                  <div class="font-display font-medium text-[16px] text-[#0F1722]">Trip generation</div>
+                  <p class="font-proxima text-[13px] leading-[1.55] text-slate-700">Use <strong>block_group × NAICS</strong> as the unit for industry-specific trip rates. Block-level is finer than most TAZ systems need and amplifies the 84.9% low-conf tail.</p>
+                  <div class="mt-auto pt-3 border-t border-zinc-950/05 font-mono text-[11px] text-slate-500 leading-relaxed">
+                    employment_by_industry_blockgroup_2022.gpkg<br>
+                    → keep <code class="text-[#0F1722]">est_emp</code>, weight by NAICS-specific trip rate
+                  </div>
+                </div>
+
+                <!-- HBW productions card -->
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12] bg-[#EAAD43]/15 border border-[#EAAD43]/30">step 2</span>
+                  <div class="font-display font-medium text-[16px] text-[#0F1722]">HBW productions / attractions</div>
+                  <p class="font-proxima text-[13px] leading-[1.55] text-slate-700">Pair with <strong>LEHD RAC</strong> (workers' residence side) for the production end. The estimates are the attraction end. Both are reconciled to the same QCEW universe so the home↔work flows balance.</p>
+                  <div class="mt-auto pt-3 border-t border-zinc-950/05 font-mono text-[11px] text-slate-500 leading-relaxed">
+                    attractions = Σ(est_emp × HBW_rate_NAICS)<br>
+                    productions = LEHD RAC by workers
+                  </div>
+                </div>
+
+                <!-- Confidence filter card -->
+                <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-[4px] self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#7C5A12] bg-[#EAAD43]/15 border border-[#EAAD43]/30">step 3</span>
+                  <div class="font-display font-medium text-[16px] text-[#0F1722]">Sensitivity test the low tail</div>
+                  <p class="font-proxima text-[13px] leading-[1.55] text-slate-700">Run your model twice: once with the full estimate, once filtering <code class="font-mono text-[11.5px] bg-slate-100 px-1 rounded text-[#0F1722]">data_confidence ≥ medium</code>. If your output trip distribution moves &gt; 5%, the low-conf tail matters and you need anchor catalog expansion.</p>
+                  <div class="mt-auto pt-3 border-t border-zinc-950/05 font-mono text-[11px] text-slate-500 leading-relaxed">
+                    diff &lt; 5% → trust full estimate<br>
+                    diff &gt; 5% → flag NAICS, file expansion ticket
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 08 · PIPELINE HISTORY · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="versions">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">pipeline history · v0 → v5 roadmap</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Five iterations, each fixing what the last got wrong.</h2>
+                </div>
+              </div>
+
+              <ol class="relative border-l border-zinc-950/15 ml-3 space-y-6">
+                <li class="ml-6">
+                  <span class="absolute -left-2 size-4 rounded-full bg-slate-300 ring-4 ring-[#ECEEF2]"></span>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">v0 · single-pass baseline</div>
+                  <p class="font-display font-medium text-[15px] text-[#0F1722]">QCEW county anchor × within-county BP/WAC blend (heuristic α). No sub-county marginal.</p>
+                </li>
+                <li class="ml-6">
+                  <span class="absolute -left-2 size-4 rounded-full bg-slate-300 ring-4 ring-[#ECEEF2]"></span>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">v1 · IPF + ZBP marginal</div>
+                  <p class="font-display font-medium text-[15px] text-[#0F1722]">Added ZBP × NAICS-2 ZCTA marginal. IPF with heuristic α(NAICS).</p>
+                </li>
+                <li class="ml-6">
+                  <span class="absolute -left-2 size-4 rounded-full bg-slate-300 ring-4 ring-[#ECEEF2]"></span>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">v2 · data-driven α</div>
+                  <p class="font-display font-medium text-[15px] text-[#0F1722]">α(county, NAICS) derived from ZBP shape-match instead of a hand-coded table.</p>
+                </li>
+                <li class="ml-6">
+                  <span class="absolute -left-2 size-4 rounded-full bg-slate-300 ring-4 ring-[#ECEEF2]"></span>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">v3 · confidence labels</div>
+                  <p class="font-display font-medium text-[15px] text-[#0F1722]">data_confidence (5-tier) and bp_trust (4-tier) added as side tables. v2 allocation untouched.</p>
+                </li>
+                <li class="ml-6">
+                  <span class="absolute -left-2 size-4 rounded-full bg-[#FACC15] ring-4 ring-[#ECEEF2]"></span>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">v4 · runaway control · shipped 2026-05-21</div>
+                  <p class="font-display font-medium text-[15px] text-[#0F1722]">7 fixes for block runaway: P1 overshoot gate · P2 per-cell cap · P3 anchor catalog · P4 ZCTA-targeted IPF damping · P5 row-level α · P6 BP establishment prior · P7 LODES soft constraint.</p>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">Fixed: Manhattan block 360610007001001 (NAICS 62) <span class="font-mono tabular-nums">103,448 → 6,721</span> jobs · within 25% of analysis_2's 8,314.</p>
+                </li>
+                <li class="ml-6">
+                  <span class="absolute -left-2 size-4 rounded-full bg-white border-2 border-[#EAAD43] ring-4 ring-[#ECEEF2]"></span>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-amber-700">v5 · planned</div>
+                  <p class="font-display font-medium text-[15px] text-[#0F1722]">Nonemployer Statistics + railroad supplements · pct_q two-sided fix · anchor catalog expansion (SUNY, hospitals, prisons, airports) · CBP LP-imputation · promotion to dms-server dataType.</p>
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER · LayoutGroup `footer` ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-3">
+                <span>research/employment_estimates · v4</span>
+                <span class="text-slate-300">·</span>
+                <span>last refresh 2026-05-21</span>
+                <span class="text-slate-300">·</span>
+                <span>research-grade · not a production DaMa source</span>
+              </div>
+              <div class="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.18em]">
+                <a class="text-[#37576B] hover:text-[#1f3450]">README.md</a>
+                <span class="text-slate-300">·</span>
+                <a class="text-[#37576B] hover:text-[#1f3450]">RESEARCH.md</a>
+                <span class="text-slate-300">·</span>
+                <a class="text-[#37576B] hover:text-[#1f3450]">PHASE_4_PLAN.md</a>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

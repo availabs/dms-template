@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Events</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body>
+
+<!-- META-NAV — documentation chrome only -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="../design-system/theme.html">theme</a>
+    <a href="../design-system/layouts.html">layouts</a>
+    <a href="../design-system/grid.html">grid</a>
+    <a href="../design-system/components.html">components</a>
+    <a href="../design-system/patterns.html">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="./home.html">home</a>
+    <a href="./listen.html">listen</a>
+    <a href="./schedule.html">schedule</a>
+    <a href="./show.html">show</a>
+    <a href="./djs.html">djs</a>
+    <a href="./spins.html">spins</a>
+    <a href="./blog.html">blog</a>
+    <a href="./events.html" data-active="true">events</a>
+    <a href="./login.html">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default — single-column treatment.
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <!-- TOPNAV — wcdb style -->
+      <header class="w-full h-14 flex items-center bg-[var(--page-bg)] border-b border-[var(--line-1)]">
+        <div class="flex items-center h-14 pl-4">
+          <div class="font-[family-name:var(--font-display)] italic text-[20px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</div>
+          <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                       font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
+        </div>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto px-2 gap-1 scrollbar-none">
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Listen</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Schedule</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Shows</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">DJs</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Spins</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Blog</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-1)]" data-active="true">Events</a>
+        </div>
+        <div class="hidden md:flex h-full items-center pr-4 gap-3 bg-[var(--page-bg)]">
+          <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Dark</span>
+          <div class="size-8 border border-[var(--line-2)] rounded-full"></div>
+        </div>
+      </header>
+
+      <div class="flex flex-1 items-start">
+        <div class="flex-1 flex flex-col">
+
+          <!-- ============================================================
+               LAYOUTGROUP · content (single column)
+               ============================================================ -->
+          <div data-dms-group="content"
+               class="w-full flex-1 flex flex-row p-2">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] p-4 min-h-[200px] max-w-[1080px] mx-auto">
+
+              <!-- ============================================================
+                   SECTION · page header (bare)
+                   ============================================================ -->
+              <section data-dms-section="lexical:page-header" class="pt-8 pb-10">
+                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-5">
+                  Off the air · 2026
+                </div>
+                <h1 class="font-[family-name:var(--font-display)] italic
+                           text-[clamp(56px,6vw,88px)] leading-[0.95] tracking-[-0.03em]
+                           text-[color:var(--ink-1)] m-0">
+                  Where we'll be.
+                </h1>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · filter bar (CARDED soft)
+                   ============================================================ -->
+              <section data-dms-section="card:filter-bar" class="mb-8">
+                <div class="rounded-[18px] bg-[var(--card-bg-soft)] p-4 flex flex-wrap items-center gap-3">
+                  <!-- Segmented control -->
+                  <div class="inline-flex rounded-full border border-[var(--line-2)] bg-[var(--bg-2)] p-0.5">
+                    <button class="px-3 py-1.5 rounded-full bg-[var(--accent-soft)] font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Upcoming</button>
+                    <button class="px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">Past</button>
+                    <button class="px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">All months</button>
+                  </div>
+
+                  <!-- Search input -->
+                  <div class="relative flex-1 min-w-[200px] max-w-[320px] ml-auto">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"
+                         class="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]">
+                      <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+                    </svg>
+                    <input type="text" placeholder="Search events…"
+                           class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                  pl-9 pr-3 py-2.5 font-[family-name:var(--font-sans)] text-[14px]
+                                  text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none
+                                  transition-colors duration-150 focus:border-[color:var(--ink-3)]">
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · events list (BARE — top-rule rows)
+                   ============================================================ -->
+              <section data-dms-section="card:events-list" class="mb-12">
+
+                <!-- Event 1 -->
+                <a class="grid grid-cols-[120px_1fr_180px] gap-6 items-start py-8 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-3 -mx-3 rounded-[12px]">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">Mar</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,7vw,88px)] leading-[1.0] tracking-[-0.04em] text-[color:var(--ink-1)] mt-1 tabular-nums">12</div>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">
+                      Sat · 8 pm · Page Hall basement
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-3">
+                      Vinyl swap meet.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] m-0 mb-3 max-w-[520px]">
+                      Buy, sell, trade — open to all students and locals.
+                      Bring a crate, leave with a crate.
+                    </p>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                      Free · Monthly
+                    </div>
+                  </div>
+                  <div class="text-right flex flex-col items-end gap-3">
+                    <span class="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">Free</span>
+                    <span class="inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5">
+                      RSVP
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </span>
+                  </div>
+                </a>
+
+                <!-- Event 2 -->
+                <a class="grid grid-cols-[120px_1fr_180px] gap-6 items-start py-8 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-3 -mx-3 rounded-[12px]">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">Mar</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,7vw,88px)] leading-[1.0] tracking-[-0.04em] text-[color:var(--ink-1)] mt-1 tabular-nums">19</div>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">
+                      Sat · 9 pm · No Fun Club, Albany
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-3">
+                      DJ Halftone, live.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] m-0 mb-3 max-w-[520px]">
+                      Late Modernism's host plays a 90-minute set IRL.
+                      Krautrock, slowcore, and the long tail of 4AD.
+                    </p>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                      18+ · Doors at 8:30
+                    </div>
+                  </div>
+                  <div class="text-right flex flex-col items-end gap-3">
+                    <span class="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)] tabular-nums">$10</span>
+                    <span class="inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5">
+                      RSVP
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </span>
+                  </div>
+                </a>
+
+                <!-- Event 3 -->
+                <a class="grid grid-cols-[120px_1fr_180px] gap-6 items-start py-8 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-3 -mx-3 rounded-[12px]">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">Mar</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,7vw,88px)] leading-[1.0] tracking-[-0.04em] text-[color:var(--ink-1)] mt-1 tabular-nums">26</div>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">
+                      Sat · 7 pm · Studio
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-3">
+                      Open studio night.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] m-0 mb-3 max-w-[520px]">
+                      Tour the broadcast booth, meet the DJs, see the
+                      production library. Bring a record to play.
+                    </p>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                      Free · Families welcome
+                    </div>
+                  </div>
+                  <div class="text-right flex flex-col items-end gap-3">
+                    <span class="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">Free</span>
+                    <span class="inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5">
+                      RSVP
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </span>
+                  </div>
+                </a>
+
+                <!-- Event 4 -->
+                <a class="grid grid-cols-[120px_1fr_180px] gap-6 items-start py-8 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-3 -mx-3 rounded-[12px]">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">Apr</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,7vw,88px)] leading-[1.0] tracking-[-0.04em] text-[color:var(--ink-1)] mt-1 tabular-nums">02</div>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">
+                      Sat · all day · Studio
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-3">
+                      Spring pledge drive.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] m-0 mb-3 max-w-[520px]">
+                      12-hour broadcast marathon. Guest hosts, archive
+                      recordings, and our best case for the next 48 years.
+                    </p>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                      Listen-only · 90.9 FM
+                    </div>
+                  </div>
+                  <div class="text-right flex flex-col items-end gap-3">
+                    <span class="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">Free</span>
+                    <span class="inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5">
+                      Tune in
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </span>
+                  </div>
+                </a>
+
+                <!-- Event 5 -->
+                <a class="grid grid-cols-[120px_1fr_180px] gap-6 items-start py-8 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-3 -mx-3 rounded-[12px]">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">Apr</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,7vw,88px)] leading-[1.0] tracking-[-0.04em] text-[color:var(--ink-1)] mt-1 tabular-nums">09</div>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">
+                      Sat · 6 pm · Albany Riverfront
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-3">
+                      Sunset broadcast.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] m-0 mb-3 max-w-[520px]">
+                      Live 2-hour outdoor broadcast from the Corning Preserve
+                      pavilion. Picnic blankets and bug spray encouraged.
+                    </p>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                      Free · Weather permitting
+                    </div>
+                  </div>
+                  <div class="text-right flex flex-col items-end gap-3">
+                    <span class="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">Free</span>
+                    <span class="inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5">
+                      RSVP
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </span>
+                  </div>
+                </a>
+
+                <!-- Event 6 -->
+                <a class="grid grid-cols-[120px_1fr_180px] gap-6 items-start py-8 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-3 -mx-3 rounded-[12px]">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">Apr</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,7vw,88px)] leading-[1.0] tracking-[-0.04em] text-[color:var(--ink-1)] mt-1 tabular-nums">16</div>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">
+                      Sat · 8 pm · Page Hall
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-3">
+                      Glass &amp; Smith, live in studio.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] m-0 mb-3 max-w-[520px]">
+                      The pair will record their next Insomnia Hour episode
+                      in front of an audience. Q&amp;A after the broadcast.
+                    </p>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                      Free w/ student ID · $5 GA
+                    </div>
+                  </div>
+                  <div class="text-right flex flex-col items-end gap-3">
+                    <span class="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)] tabular-nums">$5 GA</span>
+                    <span class="inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5">
+                      RSVP
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </span>
+                  </div>
+                </a>
+
+                <!-- Event 7 -->
+                <a class="grid grid-cols-[120px_1fr_180px] gap-6 items-start py-8 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-3 -mx-3 rounded-[12px]">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">May</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,7vw,88px)] leading-[1.0] tracking-[-0.04em] text-[color:var(--ink-1)] mt-1 tabular-nums">03</div>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">
+                      Sat · 9 pm · No Fun Club
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-3">
+                      WCDB anniversary: 49 years.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] m-0 mb-3 max-w-[520px]">
+                      Five-DJ rotating set. Jada, Halftone, Wren, Ezra, and a
+                      mystery guest from the original 1977 broadcast roster.
+                    </p>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                      21+ · Doors at 8
+                    </div>
+                  </div>
+                  <div class="text-right flex flex-col items-end gap-3">
+                    <span class="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)] tabular-nums">$15 GA</span>
+                    <span class="inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5">
+                      RSVP
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </span>
+                  </div>
+                </a>
+
+                <!-- Event 8 -->
+                <a class="grid grid-cols-[120px_1fr_180px] gap-6 items-start py-8 border-t border-b border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors px-3 -mx-3 rounded-[12px]">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">May</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,7vw,88px)] leading-[1.0] tracking-[-0.04em] text-[color:var(--ink-1)] mt-1 tabular-nums">10</div>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">
+                      Sun · 2 pm · Studio
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-3">
+                      Alumni day.
+                    </h3>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] m-0 mb-3 max-w-[520px]">
+                      Open house for past DJs going back to 1977. Photo
+                      board, oral-history recordings, and the airing of
+                      grievances about how we ran the place in 1989.
+                    </p>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                      Free · All eras welcome
+                    </div>
+                  </div>
+                  <div class="text-right flex flex-col items-end gap-3">
+                    <span class="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-3 py-1 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-1)]">Free</span>
+                    <span class="inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5">
+                      RSVP
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </span>
+                  </div>
+                </a>
+
+              </section>
+
+              <!-- ============================================================
+                   SECTION · past events (CARDED soft, 3-up)
+                   ============================================================ -->
+              <section data-dms-section="card:past-events" class="mb-12">
+                <div class="rounded-[18px] bg-[var(--card-bg-soft)] p-7">
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-6">
+                    Past events
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="rounded-[14px] bg-[var(--card-bg)] p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-2">Feb 14 · Sat</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-3)]">Winter pledge dinner.</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-4)] mt-2">Studio · 38 attended</div>
+                    </div>
+                    <div class="rounded-[14px] bg-[var(--card-bg)] p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-2">Jan 28 · Sat</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-3)]">Ezra V., live.</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-4)] mt-2">No Fun Club · sold out</div>
+                    </div>
+                    <div class="rounded-[14px] bg-[var(--card-bg)] p-5">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] mb-2">Jan 14 · Sat</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-3)]">Vinyl swap meet.</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-4)] mt-2">Page Hall · 60+ attended</div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · footer (INVERTED CARD)
+                   ============================================================ -->
+              <section data-dms-section="card:footer" class="pb-4">
+                <div class="wcdb-card-inv p-10">
+                  <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-10">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-4">Stay tuned</div>
+                      <h2 class="font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--inv-ink)] m-0 mb-3">
+                        Drop us your email.
+                      </h2>
+                      <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.5] max-w-[440px] text-[#4a4a4a]">
+                        Once-a-month dispatch from the studio — new shows,
+                        upcoming events, the occasional pledge drive.
+                      </p>
+                      <form class="mt-6 flex flex-col sm:flex-row gap-2 max-w-[520px]">
+                        <input type="email" placeholder="you@somewhere.edu"
+                               class="flex-1 px-4 py-3 rounded-full bg-transparent border border-[rgba(10,10,10,0.15)]
+                                      font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--inv-ink)]
+                                      placeholder:text-[#a0a0a0] focus:outline-none focus:border-[color:var(--inv-ink)]">
+                        <button class="px-6 py-3 rounded-full bg-[color:var(--inv-ink)] text-[color:var(--inv-bg)]
+                                       font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                          Subscribe
+                        </button>
+                      </form>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Listen</div>
+                        <ul class="space-y-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)]">
+                          <li>Live stream</li><li>Schedule</li><li>Recent spins</li><li>Shows</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Station</div>
+                        <ul class="space-y-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)]">
+                          <li>About</li><li>Pledge</li><li>Volunteer</li><li>Contact</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr class="wcdb-hairline my-8" style="background:rgba(10,10,10,0.10)"/>
+
+                  <div class="flex flex-wrap items-center justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a]">
+                    <span>WCDB · 90.9 FM · SUNY Albany</span>
+                    <span>© 1977–2026 · A student broadcast</span>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- META-FOOTER -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="../design-system/theme.html">theme</a></li>
+      <li><a href="../design-system/layouts.html">layouts</a></li>
+      <li><a href="../design-system/grid.html">grid</a></li>
+      <li><a href="../design-system/components.html">components</a></li>
+      <li><a href="../design-system/patterns.html">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · editorial</h3>
+    <ul>
+      <li><a href="./home.html">home</a></li>
+      <li><a href="./listen.html">listen</a></li>
+      <li><a href="./blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · catalogue</h3>
+    <ul>
+      <li><a href="./schedule.html">schedule</a></li>
+      <li><a href="./show.html">show</a></li>
+      <li><a href="./djs.html">djs</a></li>
+      <li><a href="./spins.html">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · misc</h3>
+    <ul>
+      <li><a href="./events.html" data-active="true">events</a></li>
+      <li><a href="./login.html">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

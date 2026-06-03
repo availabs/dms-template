@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Theme — Foundational tokens</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body class="dms-annotated">
+
+<!-- ============================================================
+     META-NAV — documentation chrome, NOT part of the DMS theme
+     ============================================================ -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="./theme.html" data-active="true">theme</a>
+    <a href="./layouts.html">layouts</a>
+    <a href="./grid.html">grid</a>
+    <a href="./components.html">components</a>
+    <a href="./patterns.html">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="../pages/home.html">home</a>
+    <a href="../pages/listen.html">listen</a>
+    <a href="../pages/schedule.html">schedule</a>
+    <a href="../pages/show.html">show</a>
+    <a href="../pages/djs.html">djs</a>
+    <a href="../pages/spins.html">spins</a>
+    <a href="../pages/blog.html">blog</a>
+    <a href="../pages/events.html">events</a>
+    <a href="../pages/login.html">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default (theme.js layout.styles[0])
+     The same Layout used at runtime: outerWrapper + wrapper + wrapper2
+     + (optional TopNav) + wrapper3 + childWrapper.
+     The cutaway grid (md:grid-cols-2) is only meaningful when a page
+     ships both a `header` and a `content` LayoutGroup; the doc pages
+     ship a single column so the grid collapses to a single child.
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)] min-h-svh">
+
+  <!-- LAYOUT.wrapper2 — TopNav lives here -->
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+
+    <!-- ============================================================
+         TOPNAV — theme.topnav.styles[0] "wcdb"
+         (Compact, leftMenu: Logo, centerMenu: nav, rightMenu: utility)
+         ============================================================ -->
+    <header class="w-full h-14 flex items-center bg-[var(--page-bg)]">
+      <div class="flex items-center h-14 px-4">
+        <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
+          WCDB
+        </div>
+        <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                     font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase
+                     text-[color:var(--ink-3)]">
+          90.9 FM
+        </span>
+      </div>
+      <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Theme</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Layouts</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Grid</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Components</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Patterns</a>
+      </div>
+      <div class="hidden md:flex h-full items-center pr-4 gap-2">
+        <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center
+                       text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]"
+                title="Toggle theme mode">
+          <!-- icon: Sun (decorative — see theme.js widgets.ThemeModeToggle) -->
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="flex flex-1 items-start">
+      <div data-dms-layout-childwrapper class="flex-1 flex flex-col">
+
+        <!-- ============================================================
+             LAYOUTGROUP · content
+             The `content` style from theme.js. Sits on the page bg with
+             padding; suitable as the *single* group on this doc page.
+             ============================================================ -->
+        <div data-dms-group="content"
+             class="w-full flex-1 flex flex-row p-2">
+          <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-[1280px] mr-auto">
+
+            <!-- ============================================================
+                 SECTION · Page header
+                 Lexical: brand title + one-line summary. The Hanssen
+                 italic-display H1 + mono-uppercase eyebrow pairing.
+                 ============================================================ -->
+            <section data-dms-section="lexical:page-header" class="pt-10 pb-6">
+              <div class="wcdb-eyebrow mb-4">Foundations · theme · v0.1</div>
+              <h1 class="font-[family-name:var(--font-display)] italic
+                         text-[clamp(56px,8vw,108px)] leading-[0.95] tracking-[-0.03em]
+                         text-[color:var(--ink-1)] m-0">
+                Tokens.
+              </h1>
+              <p class="mt-6 max-w-[640px] text-[18px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                The foundational vocabulary every other page in this design
+                system inherits from — colour, type, icons, spacing, radius.
+                Read this page first; everything in
+                <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">components.html</code>
+                and <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">pages/*.html</code>
+                composes these tokens.
+              </p>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Colour
+                 Card: colour-token swatches grouped by role. Two columns:
+                 dark mode and light mode at parity. Each swatch labelled
+                 with its CSS var name and its in-product role.
+                 ============================================================ -->
+            <section data-dms-section="card:colour-tokens" class="py-8">
+              <div class="wcdb-eyebrow mb-3">01 — Colour</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                Near-monochrome.
+              </h2>
+              <p class="max-w-[640px] text-[15px] leading-[1.45] text-[color:var(--ink-2)] mb-8">
+                The system is intentionally chromatic-free except for one
+                functional red used only on live-broadcast signals.
+                Greyscale tokens carry every other role — surface, ink,
+                hairline, accent.
+              </p>
+
+              <!-- Surface tokens -->
+              <div class="wcdb-eyebrow mb-3">Surface</div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                <!-- Each tile shows the swatch, the CSS var, and the role -->
+                <div class="rounded-[14px] overflow-hidden bg-[var(--card-bg)] border border-[var(--line-1)]">
+                  <div class="h-20" style="background:#0a0a0a"></div>
+                  <div class="p-3">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--bg-0</div>
+                    <div class="text-[13px] mt-1">Deepest · #0a0a0a</div>
+                  </div>
+                </div>
+                <div class="rounded-[14px] overflow-hidden bg-[var(--card-bg)] border border-[var(--line-1)]">
+                  <div class="h-20" style="background:#0e1011"></div>
+                  <div class="p-3">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--page-bg / --bg-1</div>
+                    <div class="text-[13px] mt-1">Page · #0e1011</div>
+                  </div>
+                </div>
+                <div class="rounded-[14px] overflow-hidden bg-[var(--card-bg)] border border-[var(--line-1)]">
+                  <div class="h-20" style="background:#141618"></div>
+                  <div class="p-3">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--bg-2</div>
+                    <div class="text-[13px] mt-1">Elevated · #141618</div>
+                  </div>
+                </div>
+                <div class="rounded-[14px] overflow-hidden bg-[var(--card-bg)] border border-[var(--line-1)]">
+                  <div class="h-20" style="background:#1c1e20"></div>
+                  <div class="p-3">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--bg-3</div>
+                    <div class="text-[13px] mt-1">Hover · #1c1e20</div>
+                  </div>
+                </div>
+                <div class="rounded-[14px] overflow-hidden bg-[var(--card-bg)] border border-[var(--line-1)]">
+                  <div class="h-20" style="background:#1f2122"></div>
+                  <div class="p-3">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--card-bg / --bg-4</div>
+                    <div class="text-[13px] mt-1">Card · #1f2122</div>
+                  </div>
+                </div>
+                <div class="rounded-[14px] overflow-hidden bg-[var(--card-bg)] border border-[var(--line-1)]">
+                  <div class="h-20" style="background:#1a1c1d"></div>
+                  <div class="p-3">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--card-bg-soft</div>
+                    <div class="text-[13px] mt-1">Card · soft · #1a1c1d</div>
+                  </div>
+                </div>
+                <div class="rounded-[14px] overflow-hidden bg-[var(--card-bg)] border border-[var(--line-1)]">
+                  <div class="h-20" style="background:#2a2c2e"></div>
+                  <div class="p-3">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--bg-5</div>
+                    <div class="text-[13px] mt-1">Pressed · #2a2c2e</div>
+                  </div>
+                </div>
+                <div class="rounded-[14px] overflow-hidden bg-[var(--card-bg)] border border-[var(--line-1)]">
+                  <div class="h-20" style="background:#f5f5f5"></div>
+                  <div class="p-3">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--inv-bg</div>
+                    <div class="text-[13px] mt-1">Inverted (footer) · #f5f5f5</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ink tokens -->
+              <div class="wcdb-eyebrow mb-3">Ink</div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div style="color:#f5f5f5" class="font-[family-name:var(--font-display)] italic text-[32px] leading-none">Aa</div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-3">--ink-1</div>
+                  <div class="text-[12px] mt-1">Primary · #f5f5f5</div>
+                </div>
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div style="color:#c8c8c8" class="font-[family-name:var(--font-display)] italic text-[32px] leading-none">Aa</div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-3">--ink-2</div>
+                  <div class="text-[12px] mt-1">Secondary · #c8c8c8</div>
+                </div>
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div style="color:#8a8a8a" class="font-[family-name:var(--font-display)] italic text-[32px] leading-none">Aa</div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-3">--ink-3</div>
+                  <div class="text-[12px] mt-1">Tertiary / meta · #8a8a8a</div>
+                </div>
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div style="color:#5a5a5a" class="font-[family-name:var(--font-display)] italic text-[32px] leading-none">Aa</div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-3">--ink-4</div>
+                  <div class="text-[12px] mt-1">Disabled · #5a5a5a</div>
+                </div>
+              </div>
+
+              <!-- Accent + functional -->
+              <div class="wcdb-eyebrow mb-3">Accent &amp; functional</div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div class="h-12 rounded-full" style="background:#f5f5f5"></div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-3">--accent</div>
+                  <div class="text-[12px] mt-1">Monochrome accent · #f5f5f5</div>
+                  <div class="text-[11px] text-[color:var(--ink-3)] mt-1">Pure light in dark mode; pure dark in light mode.</div>
+                </div>
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div class="h-12 rounded-full" style="background:rgba(245,245,245,0.08); border:1px solid var(--line-1)"></div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-3">--accent-soft</div>
+                  <div class="text-[12px] mt-1">Subtle accent fill · rgba(245,245,245,0.08)</div>
+                  <div class="text-[11px] text-[color:var(--ink-3)] mt-1">Hover background on ghost buttons, active nav items.</div>
+                </div>
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div class="h-12 rounded-full flex items-center justify-center gap-2"
+                       style="background:rgba(255,59,47,0.12); color:#ff3b2f">
+                    <span class="wcdb-on-air-dot"></span>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.14em]">On Air</span>
+                  </div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-3">--on-air · --on-air-soft</div>
+                  <div class="text-[12px] mt-1">The ONE warning red · #ff3b2f</div>
+                  <div class="text-[11px] text-[color:var(--ink-3)] mt-1">Used <em>only</em> for live-broadcast signals. Never errors or links.</div>
+                </div>
+              </div>
+
+              <!-- Hairlines -->
+              <div class="wcdb-eyebrow mb-3">Hairlines &amp; dividers</div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div class="h-1 mb-3" style="background:rgba(255,255,255,0.06)"></div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--line-1</div>
+                  <div class="text-[12px] mt-1">Subtlest · rgba(255,255,255,0.06)</div>
+                </div>
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div class="h-1 mb-3" style="background:rgba(255,255,255,0.10)"></div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--line-2</div>
+                  <div class="text-[12px] mt-1">Default · rgba(255,255,255,0.10)</div>
+                </div>
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4">
+                  <div class="h-1 mb-3" style="background:rgba(255,255,255,0.18)"></div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">--line-3</div>
+                  <div class="text-[12px] mt-1">Strongest · rgba(255,255,255,0.18)</div>
+                </div>
+              </div>
+
+              <p class="mt-6 text-[12px] text-[color:var(--ink-3)] max-w-[640px]">
+                <strong class="text-[color:var(--ink-2)] font-normal">Light-mode parity</strong> · every token above flips to a
+                light-mode value in <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">_shared.css</code>
+                under <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">[data-mode="light"]</code>.
+                The token <em>names</em> never change; only their values do.
+              </p>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Type
+                 The hard rule (skill §7.2.1) — every text variation used
+                 anywhere in this design system references one of the
+                 tokens declared here. 14 tokens, balanced via the
+                 earn-a-token rule. Tokens map 1:1 to keys on
+                 textSettings.styles[0] in theme.js.
+                 ============================================================ -->
+            <section data-dms-section="card:type-tokens" class="py-8">
+              <div class="wcdb-eyebrow mb-3">02 — Type</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                Italic display, mono chrome, sans body.
+              </h2>
+              <p class="max-w-[640px] text-[15px] leading-[1.45] text-[color:var(--ink-2)] mb-8">
+                Instrument Serif italic for every headline; Geist Mono
+                uppercase for eyebrows and chrome; Geist for body and
+                form fields. The discipline is the brand — substitute
+                another italic serif at your peril.
+              </p>
+
+              <!-- ── displayHero · displayXL · displayLG · displayMD · displaySM ── -->
+              <div class="wcdb-eyebrow mb-4">Role · display (Instrument Serif italic)</div>
+              <div class="space-y-8 mb-10">
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">displayHero</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Instrument Serif italic<br/>
+                        clamp(56, 6vw, 88) / 0.95 · 400 · −0.03em
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.h1 · textSettings.text8XL<br/>
+                        lexical.heading_h1
+                      </div>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(56px,6vw,88px)] leading-[0.95] tracking-[-0.03em] text-[color:var(--ink-1)]">
+                      Stereolab, somewhere in Albany
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">displayXL</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Instrument Serif italic<br/>
+                        48 / 1.0 · 400 · −0.03em
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.h2 · textSettings.text5XL<br/>
+                        lexical.heading_h2
+                      </div>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)]">
+                      Late modernism on 90.9
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">displayLG</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Instrument Serif italic<br/>
+                        36 / 1.0 · 400 · −0.03em
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.text4XL
+                      </div>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)]">
+                      Forty-eight years on a hairline
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">displayMD</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Instrument Serif italic<br/>
+                        28 / 1.05 · 400 · −0.03em
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.h3 · textSettings.text3XL<br/>
+                        lexical.heading_h3 · dataCard title default
+                      </div>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)]">
+                      The midnight slot is open this week
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">displaySM</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Instrument Serif italic<br/>
+                        22 / 1.1 · 400 · −0.03em
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.h4 · textSettings.text2XL<br/>
+                        lexical.heading_h4
+                      </div>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">
+                      "Records are the only honest format we have left."
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">displayXS</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Instrument Serif italic<br/>
+                        18 / 1.1 · 400 · −0.02em
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.textXL · Card row title (compact)
+                      </div>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)]">
+                      Cluster — Sowiesoso (1976)
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <p class="text-[12px] text-[color:var(--ink-3)] max-w-[680px] mb-10">
+                <strong class="text-[color:var(--ink-2)] font-normal">Folded in as modifiers, not new tokens:</strong>
+                bold weights (700) appear in `textSettings.text*Bold` for occasional emphasis but
+                share the same size + family as their roman parent; size variants between two
+                steps (e.g. a 32px headline) snap to the nearer token rather than creating a new
+                one. The earn-a-token rule (≥ 2px, weight step, family change, role change) is
+                strictly enforced.
+              </p>
+
+              <!-- ── proseLG · prose · proseSM ── -->
+              <div class="wcdb-eyebrow mb-4">Role · prose (Geist sans)</div>
+              <div class="space-y-8 mb-10">
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">proseLG</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Geist · 18 / 1.4 · 400 · −0.01em
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.textLG · lead paragraphs
+                      </div>
+                    </div>
+                    <div class="font-[family-name:var(--font-sans)] text-[18px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] max-w-[640px]">
+                      Tonight's late-night slot is given over to a six-track survey of
+                      mid-1970s German experimentation — Cluster, Harmonia, Conrad Schnitzler,
+                      and the long-form Eno-Moebius-Roedelius collaborations.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">prose</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Geist · 15 / 1.4 · 400 · −0.01em
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.body · lexical.editorShell · dataCard subWrapper
+                      </div>
+                    </div>
+                    <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] max-w-[640px]">
+                      The body baseline. Every paragraph, every Lexical body cell, every
+                      Card cell that doesn't override its <code class="font-[family-name:var(--font-mono)] text-[13px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">valueFontStyle</code>
+                      lands here. Geist at 15 / 1.4 / −0.01em is the rhythm authors
+                      get for free.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">proseSM</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Geist · 12 / 1.45 · 400 · −0.01em
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.textSM · table cell · form helper text
+                      </div>
+                    </div>
+                    <div class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] max-w-[640px]">
+                      Captions, table cells, helper text under form fields, secondary metadata
+                      in the now-playing strip. Sits a half-step quieter than body via
+                      <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">--ink-2</code>.
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <p class="text-[12px] text-[color:var(--ink-3)] max-w-[680px] mb-10">
+                <strong class="text-[color:var(--ink-2)] font-normal">Folded in as modifiers:</strong>
+                colour (<code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">text-[color:var(--ink-2)]</code>
+                or <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">var(--ink-3)</code>)
+                and weight (medium/semibold/bold variants pinned to the same size+family) are call-site axes,
+                not new tokens. Italic-on-prose (a single italic pull quote inside body
+                copy) is a call-site axis too — apply <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">italic</code>
+                to <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">prose</code>, don't
+                ship <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">prose-italic</code>.
+              </p>
+
+              <!-- ── metaSM · metaXS · metaCode ── -->
+              <div class="wcdb-eyebrow mb-4">Role · meta (Geist Mono, uppercase tracked)</div>
+              <div class="space-y-8 mb-10">
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">metaSM</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Geist Mono · 12 / 1.45 · 500 · 0.10em<br/>
+                        text-transform: uppercase
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.textSM (mono variant) · table header (selected)
+                      </div>
+                    </div>
+                    <div>
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-2)]">
+                        Tonight · 8 pm · KW. 23
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">metaXS</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Geist Mono · 11 / 1.4 · 500 · 0.12em<br/>
+                        text-transform: uppercase
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        textSettings.h5 · textSettings.caption · table header · `.wcdb-eyebrow`
+                      </div>
+                    </div>
+                    <div>
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                        Late Modernism · w/ DJ Halftone · Mar 05
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-[var(--line-1)] pt-6">
+                  <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">metaCode</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                        Geist Mono · 13 / 1.4 · 400 · 0<br/>
+                        text-transform: none
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                        lexical.text_code · inline code samples · tabular numerals
+                      </div>
+                    </div>
+                    <div>
+                      <code class="font-[family-name:var(--font-mono)] text-[13px] text-[color:var(--ink-1)] bg-[var(--bg-2)] px-1.5 py-0.5 rounded-sm">
+                        theme.columnTypes.portrait_banner
+                      </code>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <p class="text-[12px] text-[color:var(--ink-3)] max-w-[680px] mb-10">
+                <strong class="text-[color:var(--ink-2)] font-normal">Folded in as modifiers:</strong>
+                tracking variants (0.08em on segmented controls, 0.16em on the WCDB call-sign)
+                are call-site adjustments to the same <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">metaXS</code>
+                token. Tabular-nums for KPI values is <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">font-variant-numeric: tabular-nums</code>
+                applied at the cell — not a separate <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">metaSMNum</code>.
+              </p>
+
+              <!-- ── Two h6 / chrome variants ── -->
+              <div class="wcdb-eyebrow mb-4">Chrome (lowest-emphasis label)</div>
+              <div class="border-t border-[var(--line-1)] pt-6 mb-10">
+                <div class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-3 md:gap-6">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">metaXSChrome</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)] mt-1">
+                      Geist Mono · 11 / 1.4 · 400 · 0.10em<br/>
+                      colour: --ink-4
+                    </div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-4)] mt-2">
+                      textSettings.h6 · lexical.heading_h6 · footer disclaimer
+                    </div>
+                  </div>
+                  <div>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                      © WCDB 1977–2026 · A SUNY Albany student broadcast
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Total count callout ── -->
+              <div class="rounded-[14px] bg-[var(--card-bg-soft)] border border-[var(--line-1)] p-5 max-w-[680px]">
+                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">
+                  Token count
+                </div>
+                <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mb-3">
+                  14 tokens · 3 roles
+                </div>
+                <p class="text-[13px] leading-[1.5] text-[color:var(--ink-2)]">
+                  <strong class="font-medium text-[color:var(--ink-1)]">display</strong> (6) ·
+                  <strong class="font-medium text-[color:var(--ink-1)]">prose</strong> (3) ·
+                  <strong class="font-medium text-[color:var(--ink-1)]">meta</strong> (4) +
+                  <strong class="font-medium text-[color:var(--ink-1)]">metaXSChrome</strong>.
+                  Within the skill's 12–18 target band. Every text node in
+                  <code class="font-[family-name:var(--font-mono)] text-[12px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">pages/*.html</code>
+                  resolves to one of these.
+                </p>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Icons
+                 Card: the icon registry. Names are the API — Card
+                 columns and menu entries reference them by string,
+                 never via import. The brand's icon set is geometric,
+                 stroke-1.6, lucide-aligned.
+                 ============================================================ -->
+            <section data-dms-section="card:icons" class="py-8">
+              <div class="wcdb-eyebrow mb-3">03 — Icons</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-2">
+                Stroke 1.6.
+              </h2>
+              <p class="max-w-[640px] text-[15px] leading-[1.45] text-[color:var(--ink-2)] mb-8">
+                Geometric, near-monospaced glyphs. Stroke weight 1.6 reads
+                clearly at 16px on dark backgrounds without becoming heavy
+                at 32px. Names are the API; Card columns and menu entries
+                reference them by string, never via import.
+              </p>
+
+              <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                <!-- 18 icons covering navigation, action, status, content -->
+                <!-- Menu -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Menu</div>
+                </div>
+                <!-- XMark -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">XMark</div>
+                </div>
+                <!-- ChevronDown -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M6 9l6 6 6-6"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ChevronDown</div>
+                </div>
+                <!-- ChevronRight -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M9 6l6 6-6 6"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ChevronRight</div>
+                </div>
+                <!-- ArrowRight -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ArrowRight</div>
+                </div>
+                <!-- Plus -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M12 5v14M5 12h14"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Plus</div>
+                </div>
+                <!-- Play -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5v14l12-7z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Play</div>
+                </div>
+                <!-- Pause -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Pause</div>
+                </div>
+                <!-- Search -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Search</div>
+                </div>
+                <!-- Filter -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Filter</div>
+                </div>
+                <!-- Calendar -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Calendar</div>
+                </div>
+                <!-- Clock -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Clock</div>
+                </div>
+                <!-- ViewPage -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">ViewPage</div>
+                </div>
+                <!-- EditPage -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 20h4l11-11-4-4L4 16zM14 6l4 4"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">EditPage</div>
+                </div>
+                <!-- Trash -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Trash</div>
+                </div>
+                <!-- Check -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M5 12l5 5 9-11"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Check</div>
+                </div>
+                <!-- Download -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><path d="M12 3v13M6 11l6 6 6-6M4 21h16"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Download</div>
+                </div>
+                <!-- User -->
+                <div class="rounded-[10px] bg-[var(--card-bg)] border border-[var(--line-1)] p-4 flex flex-col items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-[color:var(--ink-1)]"><circle cx="12" cy="9" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+                  <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">User</div>
+                </div>
+              </div>
+
+              <!-- Three sizes -->
+              <div class="mt-8">
+                <div class="wcdb-eyebrow mb-3">Sizes — 16 · 24 · 32 px</div>
+                <div class="rounded-[14px] bg-[var(--card-bg)] border border-[var(--line-1)] p-5 flex items-end gap-8">
+                  <div class="flex flex-col items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5v14l12-7z"/></svg>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">16</div>
+                  </div>
+                  <div class="flex flex-col items-center gap-2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5v14l12-7z"/></svg>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">24</div>
+                  </div>
+                  <div class="flex flex-col items-center gap-2">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="text-[color:var(--ink-1)]"><path d="M7 5v14l12-7z"/></svg>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">32</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Spacing & radius
+                 Lexical: visual swatches of the spacing + radius scale.
+                 ============================================================ -->
+            <section data-dms-section="lexical:spacing-radius" class="py-8">
+              <div class="wcdb-eyebrow mb-3">04 — Spacing &amp; radius</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-8">
+                Eight-step scales.
+              </h2>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Spacing -->
+                <div>
+                  <div class="wcdb-eyebrow mb-3">Spacing (4px base)</div>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:4px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-1 · 4 px</span></div>
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:8px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-2 · 8 px</span></div>
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:12px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-3 · 12 px</span></div>
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:16px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-4 · 16 px</span></div>
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:24px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-5 · 24 px</span></div>
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:32px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-6 · 32 px</span></div>
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:48px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-7 · 48 px</span></div>
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:64px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-8 · 64 px</span></div>
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:96px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-9 · 96 px</span></div>
+                    <div class="flex items-center gap-3"><div class="h-2 bg-[color:var(--ink-1)]" style="width:128px"></div><span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--sp-10 · 128 px</span></div>
+                  </div>
+                </div>
+                <!-- Radius -->
+                <div>
+                  <div class="wcdb-eyebrow mb-3">Radius</div>
+                  <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                      <div class="size-12 bg-[var(--bg-2)] border border-[var(--line-2)]" style="border-radius:4px"></div>
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--r-sm · 4 px · code chips</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <div class="size-12 bg-[var(--bg-2)] border border-[var(--line-2)]" style="border-radius:8px"></div>
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--r-md · 8 px · form fields</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <div class="size-12 bg-[var(--bg-2)] border border-[var(--line-2)]" style="border-radius:14px"></div>
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--r-lg · 14 px · small cards · pop-overs</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <div class="size-12 bg-[var(--bg-2)] border border-[var(--line-2)]" style="border-radius:18px"></div>
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--r-xl · 18 px · <strong class="text-[color:var(--ink-1)] font-normal">canonical large-card radius</strong></span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <div class="size-12 bg-[var(--bg-2)] border border-[var(--line-2)]" style="border-radius:999px"></div>
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-3)]">--r-pill · 999 px · pills · buttons</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="mt-8 text-[12px] text-[color:var(--ink-3)] max-w-[680px]">
+                <strong class="text-[color:var(--ink-2)] font-normal">Density</strong> — the
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">--density-y</code>
+                and <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">--density-x</code>
+                tokens drive table row padding and button vertical insets.
+                Three presets via <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">[data-density="compact|cozy|comfortable"]</code>:
+                8/12 · 12/16 · 16/22.
+              </p>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Typography pairings
+                 Lexical: the three families called out by name with a
+                 sample paragraph each.
+                 ============================================================ -->
+            <section data-dms-section="lexical:type-pairings" class="py-8">
+              <div class="wcdb-eyebrow mb-3">05 — Families</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0 mb-8">
+                Three voices.
+              </h2>
+
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+                <div class="rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-1)] p-6">
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">--font-display</div>
+                  <div class="font-[family-name:var(--font-display)] italic text-[64px] leading-[0.95] tracking-[-0.03em] text-[color:var(--ink-1)] mb-4">Aa</div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-2)] mb-4">Instrument Serif · italic 400</div>
+                  <p class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-2)]">
+                    For every headline. The brand's distinctive editorial voice.
+                  </p>
+                </div>
+                <div class="rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-1)] p-6">
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">--font-sans</div>
+                  <div class="font-[family-name:var(--font-sans)] text-[64px] leading-[0.95] tracking-[-0.03em] text-[color:var(--ink-1)] mb-4 font-medium">Aa</div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-2)] mb-4">Geist · 300 / 400 / 500 / 600 / 700</div>
+                  <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                    For body, captions, form fields, metadata. The default voice for everything that isn't headline or chrome.
+                  </p>
+                </div>
+                <div class="rounded-[18px] bg-[var(--card-bg)] border border-[var(--line-1)] p-6">
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">--font-mono</div>
+                  <div class="font-[family-name:var(--font-mono)] text-[64px] leading-[0.95] text-[color:var(--ink-1)] mb-4">Aa</div>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-2)] mb-4">Geist Mono · 400 / 500</div>
+                  <p class="font-[family-name:var(--font-mono)] text-[13px] leading-[1.4] text-[color:var(--ink-2)]">
+                    For eyebrows, labels, table headers, on-air pills, chrome. The second-most-distinctive voice after italic display.
+                  </p>
+                </div>
+              </div>
+
+              <p class="text-[12px] text-[color:var(--ink-3)] max-w-[680px]">
+                Loaded via Google Fonts CDN — see <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">_shared.css</code>'s
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">@import</code> at the top.
+                Production should self-host these via the theme's
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">fonts</code> array.
+              </p>
+            </section>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     META-FOOTER — documentation chrome, repeating meta-nav links
+     for long-scroll navigation per skill §7.0.
+     ============================================================ -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="./theme.html" data-active="true">theme</a></li>
+      <li><a href="./layouts.html">layouts</a></li>
+      <li><a href="./grid.html">grid</a></li>
+      <li><a href="./components.html">components</a></li>
+      <li><a href="./patterns.html">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · editorial</h3>
+    <ul>
+      <li><a href="../pages/home.html">home</a></li>
+      <li><a href="../pages/listen.html">listen</a></li>
+      <li><a href="../pages/blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · catalogue</h3>
+    <ul>
+      <li><a href="../pages/schedule.html">schedule</a></li>
+      <li><a href="../pages/show.html">show</a></li>
+      <li><a href="../pages/djs.html">djs</a></li>
+      <li><a href="../pages/spins.html">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · misc</h3>
+    <ul>
+      <li><a href="../pages/events.html">events</a></li>
+      <li><a href="../pages/login.html">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

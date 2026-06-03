@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Spins</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body>
+
+<!-- META-NAV — documentation chrome only -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="../design-system/theme.html">theme</a>
+    <a href="../design-system/layouts.html">layouts</a>
+    <a href="../design-system/grid.html">grid</a>
+    <a href="../design-system/components.html">components</a>
+    <a href="../design-system/patterns.html">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="./home.html">home</a>
+    <a href="./listen.html">listen</a>
+    <a href="./schedule.html">schedule</a>
+    <a href="./show.html">show</a>
+    <a href="./djs.html">djs</a>
+    <a href="./spins.html" data-active="true">spins</a>
+    <a href="./blog.html">blog</a>
+    <a href="./events.html">events</a>
+    <a href="./login.html">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default — single-column treatment.
+     childWrapper drops the md:grid here so content sits centred
+     in one column. The header LayoutGroup is omitted; only the
+     content group is rendered.
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <!-- TOPNAV — wcdb style. Sits at top of the page on single-column pages. -->
+      <header class="w-full h-14 flex items-center bg-[var(--page-bg)] border-b border-[var(--line-1)]">
+        <div class="flex items-center h-14 pl-4">
+          <div class="font-[family-name:var(--font-display)] italic text-[20px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</div>
+          <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                       font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
+        </div>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto px-2 gap-1 scrollbar-none">
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Listen</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Schedule</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Shows</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">DJs</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-1)]" data-active="true">Spins</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Blog</a>
+          <a class="wcdb-navitem px-2 py-1.5 text-[12px] font-medium text-[color:var(--ink-2)]">Events</a>
+        </div>
+        <div class="hidden md:flex h-full items-center pr-4 gap-3 bg-[var(--page-bg)]">
+          <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Dark</span>
+          <div class="size-8 border border-[var(--line-2)] rounded-full"></div>
+        </div>
+      </header>
+
+      <div class="flex flex-1 items-start">
+        <div class="flex-1 flex flex-col">
+
+          <!-- ============================================================
+               LAYOUTGROUP · content (single column)
+               ============================================================ -->
+          <div data-dms-group="content"
+               class="w-full flex-1 flex flex-row p-2">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] p-4 min-h-[200px] max-w-[1080px] mx-auto">
+
+              <!-- ============================================================
+                   SECTION · page header (bare)
+                   ============================================================ -->
+              <section data-dms-section="lexical:page-header" class="pt-8 pb-10">
+                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-5">
+                  Spin log · 90.9 FM
+                </div>
+                <h1 class="font-[family-name:var(--font-display)] italic
+                           text-[clamp(56px,6vw,88px)] leading-[0.95] tracking-[-0.03em]
+                           text-[color:var(--ink-1)] m-0">
+                  Every play, going back.
+                </h1>
+                <p class="mt-6 max-w-[620px] font-[family-name:var(--font-sans)] text-[18px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                  Forty-eight years of broadcast catalogued. Search by artist,
+                  track, show, or DJ.
+                </p>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · filter bar (CARDED — soft toolbar)
+                   ============================================================ -->
+              <section data-dms-section="card:filter-bar" class="mb-6">
+                <div class="rounded-[18px] bg-[var(--card-bg-soft)] p-4 flex flex-wrap items-center gap-3">
+
+                  <!-- Search input -->
+                  <div class="relative flex-1 min-w-[240px] max-w-[420px]">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"
+                         class="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]">
+                      <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+                    </svg>
+                    <input type="text" placeholder="Filter by artist, track, album, or show…"
+                           class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                  pl-9 pr-3 py-2.5 font-[family-name:var(--font-sans)] text-[14px]
+                                  text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none
+                                  transition-colors duration-150 focus:border-[color:var(--ink-3)]">
+                  </div>
+
+                  <!-- Segmented control -->
+                  <div class="inline-flex rounded-full border border-[var(--line-2)] bg-[var(--bg-2)] p-0.5">
+                    <button class="px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">Today</button>
+                    <button class="px-3 py-1.5 rounded-full bg-[var(--accent-soft)] font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Week</button>
+                    <button class="px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">Month</button>
+                    <button class="px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">All time</button>
+                  </div>
+
+                  <!-- Export CSV -->
+                  <button class="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-full
+                                 border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
+                                 font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6">
+                      <path d="M12 4v12M6 10l6 6 6-6M4 20h16"/>
+                    </svg>
+                    Export CSV
+                  </button>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · spins table (CARDED)
+                   ============================================================ -->
+              <section data-dms-section="card:spins-table" class="mb-8">
+                <div class="bg-[var(--card-bg)] rounded-[18px] overflow-hidden">
+
+                  <!-- Header row -->
+                  <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 border-b border-[var(--line-2)] bg-transparent px-3">
+                    <div class="font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[11px] py-3 text-[color:var(--ink-3)]">Time</div>
+                    <div class="font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[11px] py-3 text-[color:var(--ink-3)]">Artist</div>
+                    <div class="font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[11px] py-3 text-[color:var(--ink-3)]">Track</div>
+                    <div class="font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[11px] py-3 text-[color:var(--ink-3)]">Album</div>
+                    <div class="font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[11px] py-3 text-[color:var(--ink-3)]">Show</div>
+                    <div class="font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[11px] py-3 text-[color:var(--ink-3)] text-right">Plays</div>
+                  </div>
+
+                  <!-- Body rows -->
+                  <div>
+                    <!-- Row 1 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">11:47 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Cluster</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Sowiesoso</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Sowiesoso · 1976</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Late Modernism</div>
+                      <div class="self-center text-right">
+                        <span class="inline-flex items-center justify-center rounded-full border border-[var(--line-2)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] text-[color:var(--ink-2)]">×3</span>
+                      </div>
+                    </div>
+                    <!-- Row 2 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">11:39 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Harmonia</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Sehr Kosmisch</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Musik von Harmonia · 1974</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Late Modernism</div>
+                      <div class="self-center text-right">
+                        <span class="inline-flex items-center justify-center rounded-full border border-[var(--line-2)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] text-[color:var(--ink-2)]">×2</span>
+                      </div>
+                    </div>
+                    <!-- Row 3 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">11:24 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Eno · Moebius · Roedelius</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Silver Morning</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">After the Heat · 1978</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Late Modernism</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 4 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">11:12 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Cluster</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Zuckerzeit</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Zuckerzeit · 1974</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Late Modernism</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 5 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">10:59 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Stereolab</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Wow and Flutter</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Transient Random-Noise Bursts · 1993</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Off-Year Pop</div>
+                      <div class="self-center text-right">
+                        <span class="inline-flex items-center justify-center rounded-full border border-[var(--line-2)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] text-[color:var(--ink-2)]">×2</span>
+                      </div>
+                    </div>
+                    <!-- Row 6 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">10:51 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Broadcast</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Long Was the Year</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Haha Sound · 2003</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Off-Year Pop</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 7 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">10:44 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Pram</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Sirocco</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">North Pole Radio Station · 1998</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Off-Year Pop</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 8 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">10:36 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Cocteau Twins</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Cherry-Coloured Funk</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Heaven or Las Vegas · 1990</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Off-Year Pop</div>
+                      <div class="self-center text-right">
+                        <span class="inline-flex items-center justify-center rounded-full border border-[var(--line-2)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] text-[color:var(--ink-2)]">×4</span>
+                      </div>
+                    </div>
+                    <!-- Row 9 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">10:21 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Slowdive</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Star Roving</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Slowdive · 2017</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Off-Year Pop</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 10 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">10:14 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">My Bloody Valentine</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Soon</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Loveless · 1991</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Insomnia Hour</div>
+                      <div class="self-center text-right">
+                        <span class="inline-flex items-center justify-center rounded-full border border-[var(--line-2)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] text-[color:var(--ink-2)]">×6</span>
+                      </div>
+                    </div>
+                    <!-- Row 11 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">9:58 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Slint</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Good Morning, Captain</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Spiderland · 1991</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Insomnia Hour</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 12 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">9:43 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Galaxie 500</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Tugboat</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Today · 1988</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Insomnia Hour</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 13 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">9:31 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Yo La Tengo</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Sugarcube</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">I Can Hear the Heart Beating as One · 1997</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Free Form Friday</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 14 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">9:20 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">The Durutti Column</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Sketch for Summer</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">The Return of the Durutti Column · 1980</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Free Form Friday</div>
+                      <div class="self-center text-right">
+                        <span class="inline-flex items-center justify-center rounded-full border border-[var(--line-2)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] text-[color:var(--ink-2)]">×2</span>
+                      </div>
+                    </div>
+                    <!-- Row 15 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">9:08 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Beach House</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Walk in the Park</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Teen Dream · 2010</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Free Form Friday</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 16 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">8:54 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Conrad Schnitzler</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Auf dem schwarzen Kanal</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Rot · 1973</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Free Form Friday</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                    <!-- Row 17 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">8:42 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Cluster</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Hollywood</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Zuckerzeit · 1974</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Free Form Friday</div>
+                      <div class="self-center text-right">
+                        <span class="inline-flex items-center justify-center rounded-full border border-[var(--line-2)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] text-[color:var(--ink-2)]">×3</span>
+                      </div>
+                    </div>
+                    <!-- Row 18 -->
+                    <div class="grid grid-cols-[72px_1.4fr_1.4fr_1.6fr_1fr_80px] gap-3 px-3 py-4 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)] transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] self-center tabular-nums">8:28 PM</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] self-center">Stereolab</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)] self-center">Lo Boob Oscillator</div>
+                      <div class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] self-center">Refried Ectoplasm · 1995</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] self-center">Free Form Friday</div>
+                      <div class="self-center text-right font-[family-name:var(--font-mono)] text-[12px] text-[color:var(--ink-4)] tabular-nums">1</div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · pagination (CARDED soft)
+                   ============================================================ -->
+              <section data-dms-section="card:pagination" class="mb-12">
+                <div class="rounded-[18px] bg-[var(--card-bg-soft)] p-4 flex items-center justify-center gap-2">
+                  <a class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12H4M10 6l-6 6 6 6"/></svg>
+                    Older
+                  </a>
+                  <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">·</span>
+                  <a class="px-3 py-1.5 rounded-full bg-[var(--accent-soft)] font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-1)] tabular-nums">1</a>
+                  <a class="px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] tabular-nums">2</a>
+                  <a class="px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] tabular-nums">3</a>
+                  <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] px-1">…</span>
+                  <a class="px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] tabular-nums">412</a>
+                  <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">·</span>
+                  <a class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                    Newer
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                  </a>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · footer (INVERTED CARD)
+                   ============================================================ -->
+              <section data-dms-section="card:footer" class="pb-4">
+                <div class="wcdb-card-inv p-10">
+                  <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-10">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-4">Stay tuned</div>
+                      <h2 class="font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--inv-ink)] m-0 mb-3">
+                        Drop us your email.
+                      </h2>
+                      <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.5] max-w-[440px] text-[#4a4a4a]">
+                        Once-a-month dispatch from the studio — new shows,
+                        upcoming events, the occasional pledge drive.
+                      </p>
+                      <form class="mt-6 flex flex-col sm:flex-row gap-2 max-w-[520px]">
+                        <input type="email" placeholder="you@somewhere.edu"
+                               class="flex-1 px-4 py-3 rounded-full bg-transparent border border-[rgba(10,10,10,0.15)]
+                                      font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--inv-ink)]
+                                      placeholder:text-[#a0a0a0] focus:outline-none focus:border-[color:var(--inv-ink)]">
+                        <button class="px-6 py-3 rounded-full bg-[color:var(--inv-ink)] text-[color:var(--inv-bg)]
+                                       font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                          Subscribe
+                        </button>
+                      </form>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Listen</div>
+                        <ul class="space-y-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)]">
+                          <li>Live stream</li><li>Schedule</li><li>Recent spins</li><li>Shows</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Station</div>
+                        <ul class="space-y-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)]">
+                          <li>About</li><li>Pledge</li><li>Volunteer</li><li>Contact</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr class="wcdb-hairline my-8" style="background:rgba(10,10,10,0.10)"/>
+
+                  <div class="flex flex-wrap items-center justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a]">
+                    <span>WCDB · 90.9 FM · SUNY Albany</span>
+                    <span>© 1977–2026 · A student broadcast</span>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="../design-system/theme.html">theme</a></li>
+      <li><a href="../design-system/layouts.html">layouts</a></li>
+      <li><a href="../design-system/grid.html">grid</a></li>
+      <li><a href="../design-system/components.html">components</a></li>
+      <li><a href="../design-system/patterns.html">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · editorial</h3>
+    <ul>
+      <li><a href="./home.html">home</a></li>
+      <li><a href="./listen.html">listen</a></li>
+      <li><a href="./blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · catalogue</h3>
+    <ul>
+      <li><a href="./schedule.html">schedule</a></li>
+      <li><a href="./show.html">show</a></li>
+      <li><a href="./djs.html">djs</a></li>
+      <li><a href="./spins.html" data-active="true">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · misc</h3>
+    <ul>
+      <li><a href="./events.html">events</a></li>
+      <li><a href="./login.html">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>
