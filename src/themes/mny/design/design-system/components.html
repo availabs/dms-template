@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Design System — Components</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-grn': '#54B99B', 'mny-ora': '#EA8954',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    .component-group-title { font-family: "Oswald", sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; color: #6D96AE; letter-spacing: 0.1em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid #E0EBF0; }
+    .state-label { font-family: "Source Sans 3", sans-serif; font-size: 11px; color: #6D96AE; margin-bottom: 4px; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .ref-table th { background: #F3F8F9; padding: 6px 8px; text-align: left; font-family: "Oswald", sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; color: #37576B; border-bottom: 2px solid #E0EBF0; }
+    .ref-table td { padding: 6px 8px; border-bottom: 1px solid #F3F8F9; font-family: "Source Sans 3", sans-serif; color: #37576B; vertical-align: top; }
+    .ref-table tr:last-child td { border-bottom: 0; }
+    .ref-table code { font-family: monospace; font-size: 11px; background: #F3F8F9; padding: 1px 3px; border-radius: 3px; color: #2D3E4C; }
+  </style>
+</head>
+<body class="mny-page-bg min-h-screen">
+
+<!-- META-NAV -->
+<nav class="mny-meta-nav">
+  <span class="mny-meta-brand">MNY Design System</span>
+  <div class="mny-meta-links">
+    <a href="theme.html">Theme</a>
+    <a href="layouts.html">Layouts</a>
+    <a href="grid.html">Grid</a>
+    <a href="components.html" class="active">Components</a>
+    <a href="patterns.html">Patterns</a>
+  </div>
+  <span class="mny-meta-section">4 / 5 — Primitives</span>
+</nav>
+
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto">
+  <div class="flex flex-col">
+
+    <!-- TopNav -->
+    <div class="sticky top-9 z-20 px-4 pt-8 xl:px-[64px] pointer-events-none">
+      <nav class="px-6 py-4 w-full bg-white h-20 flex items-center rounded-lg pointer-events-auto"
+           style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06)">
+        <div class="flex items-center w-full gap-4">
+          <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-10 pl-3">
+          <div class="hidden md:flex items-center flex-1 gap-1">
+            <span class="px-2 font-proxima text-[16px] font-[500] text-[#37576B]">Risk Environment</span>
+            <span class="px-2 font-proxima text-[16px] font-[500] text-[#37576B] flex items-center gap-1">
+              Hazards &amp; Disasters
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#37576B]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+            </span>
+            <span class="px-2 font-proxima text-[16px] font-[500] text-[#37576B]">Mitigation</span>
+          </div>
+          <div class="hidden md:flex items-center gap-3 ml-auto">
+            <span class="font-proxima text-[12px] font-[500] text-[#37576B] uppercase">Search</span>
+            <div class="w-8 h-8 rounded-full bg-[#2D3E4C] flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.31 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd"/></svg>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <div class="flex flex-1 md:px-4 xl:px-[64px] pb-8">
+      <div class="flex-1 pt-8">
+
+        <!-- Header -->
+        <div data-dms="group" data-name="header" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col py-6">
+            <p class="font-proxima text-[14px] font-[500] text-[#37576B] uppercase tracking-wider mb-2">4.0 Primitives</p>
+            <h1 class="font-display text-[48px] font-[500] text-[#2D3E4C] uppercase leading-none mb-3"
+                style="text-decoration: underline; text-decoration-color: #EAAD43; text-decoration-thickness: 4px; text-underline-offset: 8px;">
+              Components
+            </h1>
+            <p class="font-proxima text-[16px] text-[#37576B] leading-[1.6] max-w-[640px]">
+              Every DMS UI primitive skinned in the MitigateNY brand. An engineer comparing live renders against
+              this page should see an exact match.
+            </p>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             NAVIGATION PRIMITIVES
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-6">Navigation</h2>
+
+            <!-- TopNav states -->
+            <div data-dms="section" data-name="topnav" class="mb-8">
+              <div class="component-group-title">TopNav — desktop (compact, floating, rounded)</div>
+
+              <!-- Default state -->
+              <div class="state-label">Default</div>
+              <div class="rounded-[12px] overflow-hidden mb-4 border border-[#E0EBF0]"
+                   style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06)">
+                <div class="px-6 py-4 bg-white h-20 flex items-center">
+                  <div class="flex items-center w-full">
+                    <div class="h-10 flex items-center pr-4">
+                      <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" style="height:40px">
+                    </div>
+                    <div class="flex items-center flex-1 gap-1 overflow-hidden">
+                      <span class="px-2 py-1 font-proxima text-[16px] font-[500] text-[#37576B] whitespace-nowrap">Risk Environment</span>
+                      <span class="px-2 py-1 font-proxima text-[16px] font-[500] text-[#37576B] whitespace-nowrap flex items-center gap-1">
+                        Hazards &amp; Disasters
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="#37576B"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                      </span>
+                      <span class="px-2 py-1 font-proxima text-[16px] font-[500] text-[#37576B] whitespace-nowrap flex items-center gap-1">
+                        Mitigation
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="#37576B"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-3 ml-auto">
+                      <span class="font-proxima text-[12px] font-[500] text-[#37576B] uppercase tracking-wider">SEARCH</span>
+                      <div class="w-8 h-8 rounded-full bg-[#2D3E4C] flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.31 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- With open submenu (Hazards dropdown) -->
+              <div class="state-label">With open submenu — Hazards &amp; Disasters flyout (level 2)</div>
+              <div class="rounded-[12px] overflow-visible mb-4 border border-[#E0EBF0] relative"
+                   style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06)">
+                <div class="px-6 py-4 bg-white h-20 flex items-center rounded-[12px]">
+                  <div class="flex items-center w-full">
+                    <div class="h-10 flex items-center pr-4">
+                      <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" style="height:40px">
+                    </div>
+                    <div class="flex items-center flex-1 gap-1">
+                      <span class="px-2 font-proxima text-[16px] font-[500] text-[#37576B]">Risk Environment</span>
+                      <span class="px-2 font-proxima text-[16px] font-[500] text-[#37576B] bg-[#F3F8F9] rounded flex items-center gap-1">
+                        Hazards &amp; Disasters
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="#37576B"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                      </span>
+                    </div>
+                    <div class="hidden md:flex items-center gap-3 ml-auto">
+                      <span class="font-proxima text-[12px] font-[500] text-[#37576B] uppercase tracking-wider">SEARCH</span>
+                      <div class="w-8 h-8 rounded-full bg-[#2D3E4C] flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.31 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd"/></svg></div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Submenu flyout -->
+                <div class="absolute left-0 right-0 top-full z-10 px-4 pt-2 -mx-4">
+                  <div class="bg-white rounded-[12px] p-4 flex gap-6" style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 8px 16px rgba(0,0,0,0.08)">
+                    <!-- Parent description -->
+                    <div class="basis-1/3 pr-8">
+                      <div class="font-display text-[36px] font-[500] text-[#2D3E4C] uppercase leading-none pb-2">Hazards &amp; Disasters</div>
+                      <div class="font-proxima text-[16px] font-[400] text-[#37576B] mb-4">Discover the natural hazards that pose risks to New York State.</div>
+                      <button class="uppercase border border-[#E0EBF0] bg-white hover:bg-[#E0EBF0] text-[#37576B] font-proxima font-[700] rounded-full text-[12px] py-3 px-6">Explore All</button>
+                    </div>
+                    <!-- Grid of sub-items -->
+                    <div class="grid grid-cols-4 flex-1 gap-1">
+                      <div class="bg-[#F3F8F9] rounded-[12px] p-3">
+                        <div class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase mb-1">Avalanche</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Alpine terrain</div>
+                      </div>
+                      <div class="bg-[#F3F8F9] rounded-[12px] p-3">
+                        <div class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase mb-1">Coastal Hazards</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Storm surge, erosion</div>
+                      </div>
+                      <div class="bg-[#F3F8F9] rounded-[12px] p-3">
+                        <div class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase mb-1">Drought</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Water supply risk</div>
+                      </div>
+                      <div class="bg-[#F3F8F9] rounded-[12px] p-3">
+                        <div class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase mb-1">Earthquake</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Seismic zones</div>
+                      </div>
+                      <div class="bg-[#F3F8F9] rounded-[12px] p-3">
+                        <div class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase mb-1">Extreme Heat</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Climate change</div>
+                      </div>
+                      <div class="bg-[#F3F8F9] rounded-[12px] p-3">
+                        <div class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase mb-1">Flooding</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Riverine &amp; urban</div>
+                      </div>
+                      <div class="bg-[#F3F8F9] rounded-[12px] p-3">
+                        <div class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase mb-1">Hurricane</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Tropical storms</div>
+                      </div>
+                      <div class="bg-[#F3F8F9] rounded-[12px] p-3">
+                        <div class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase mb-1">Wildfire</div>
+                        <div class="font-proxima text-[12px] text-[#37576B]">Growing threat</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SideNav -->
+            <div data-dms="section" data-name="sidenav" class="mb-8 mt-8">
+              <div class="component-group-title">SideNav — expanded (302px) with 3-level nesting</div>
+              <div class="flex gap-4">
+                <!-- Full SideNav -->
+                <div class="w-[302px] flex-shrink-0 bg-white rounded-[12px] mny-shadow-sm overflow-hidden border border-[#E0EBF0]">
+                  <div class="p-6 flex flex-col h-full">
+                    <!-- Section title -->
+                    <div class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase py-3 px-4">NYS Risk Environment</div>
+                    <!-- Level 1 items -->
+                    <div class="flex-1 py-6 space-y-1">
+                      <!-- L1 inactive -->
+                      <div class="w-full flex flex-col cursor-pointer">
+                        <div class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase py-3 px-1">Risk Overview</div>
+                      </div>
+                      <!-- L1 inactive with chevron -->
+                      <div class="w-full flex flex-col cursor-pointer">
+                        <div class="flex items-center justify-between">
+                          <div class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase py-3 px-1">Climate Change</div>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#37576B]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                        </div>
+                      </div>
+                      <!-- L1 expanded with L2 items visible -->
+                      <div class="w-full flex flex-col cursor-pointer">
+                        <div class="flex items-center justify-between border-l-2 border-[#37576B]">
+                          <div class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase py-3 px-1">Buildings &amp; Infrastructure</div>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#37576B] rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                        </div>
+                        <!-- L2 items in bg-[#F3F8F9] rounded panel -->
+                        <div class="w-full bg-[#F3F8F9] rounded-[12px] py-3">
+                          <!-- L2 active (current page) — border-l-2 -->
+                          <div class="border-l-2 border-[#37576B]">
+                            <div class="font-proxima text-[16px] font-[600] text-[#37576B] pl-4 py-3">Overview</div>
+                          </div>
+                          <!-- L2 with L3 sub -->
+                          <div>
+                            <div class="flex items-center justify-between">
+                              <div class="font-proxima text-[16px] font-[600] text-[#37576B] pl-4 py-3">Land Use Regulations</div>
+                              <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#37576B] mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <!-- L3 items in deeper bg -->
+                            <div class="w-full bg-[#E0EBF0] py-2">
+                              <div class="font-proxima text-[14px] font-[400] text-[#37576B] pl-6 py-2">Overview</div>
+                              <div class="font-proxima text-[14px] font-[400] text-[#37576B] pl-6 py-2 bg-[#C5D7E0]/40">Regulations (active)</div>
+                            </div>
+                          </div>
+                          <div class="font-proxima text-[16px] font-[600] text-[#37576B] pl-4 py-3">Planning Boards</div>
+                          <div class="font-proxima text-[16px] font-[600] text-[#37576B] pl-4 py-3">Building Codes</div>
+                        </div>
+                      </div>
+                      <!-- L1 with chevron collapsed -->
+                      <div class="w-full flex flex-col cursor-pointer">
+                        <div class="flex items-center justify-between">
+                          <div class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase py-3 px-1">Natural Environment</div>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#37576B]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Key reference -->
+                <div class="flex-1 bg-[#F3F8F9] rounded-[8px] p-4">
+                  <div class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase mb-3">SideNav Theme Keys</div>
+                  <table class="ref-table text-[11px]">
+                    <tbody>
+                      <tr><td class="font-[600]">layoutContainer1</td><td><code>pr-2 hidden lg:block min-w-[302px] max-w-[302px] pt-[88px]</code></td></tr>
+                      <tr><td class="font-[600]">navItemContent_level_1</td><td><code>font-display text-[16px] font-[500] text-[#2D3E4C] uppercase py-3 px-1</code></td></tr>
+                      <tr><td class="font-[600]">navItemContent_level_2</td><td><code>font-proxima text-[16px] font-[600] text-[#37576B] pl-4 py-3</code></td></tr>
+                      <tr><td class="font-[600]">navItemContent_level_3</td><td><code>font-proxima text-[14px] font-[400] text-[#37576B] pl-4 py-2</code></td></tr>
+                      <tr><td class="font-[600]">subMenuWrapper_1</td><td><code>w-full bg-[#F3F8F9] rounded-[12px] py-3</code></td></tr>
+                      <tr><td class="font-[600]">subMenuWrapper_2</td><td><code>w-full bg-[#E0EBF0]</code></td></tr>
+                      <tr><td class="font-[600]">navitemSideActive</td><td>left border <code>border-l-2 border-[#37576B]</code></td></tr>
+                      <tr><td class="font-[600]">indicatorIcon</td><td><code>"ArrowRight"</code> / <code>"ArrowDown"</code></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             BUTTONS
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-6">Buttons</h2>
+
+            <div data-dms="section" data-name="buttons">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Large buttons -->
+                <div>
+                  <div class="component-group-title">Large Buttons</div>
+                  <div class="space-y-4">
+                    <!-- Primary -->
+                    <div>
+                      <div class="state-label">Primary</div>
+                      <div class="flex items-center gap-3 flex-wrap">
+                        <button class="px-6 py-4 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full">Label</button>
+                        <button class="px-6 py-4 bg-[#D49B35] text-[#2D3E4C] font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full">Hover</button>
+                        <button class="px-6 py-4 bg-[#F1CA87] text-[#2D3E4C]/40 font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full cursor-not-allowed">Disabled</button>
+                      </div>
+                    </div>
+                    <!-- Secondary -->
+                    <div>
+                      <div class="state-label">Secondary</div>
+                      <div class="flex items-center gap-3 flex-wrap">
+                        <button class="px-6 py-4 border border-[#E0EBF0] bg-white text-[#37576B] font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full">Label</button>
+                        <button class="px-6 py-4 border border-[#C5D7E0] bg-[#E0EBF0] text-[#37576B] font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full">Hover</button>
+                        <button class="px-6 py-4 border border-[#E0EBF0] bg-white text-[#C5D7E0] font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full cursor-not-allowed">Disabled</button>
+                      </div>
+                    </div>
+                    <!-- Dark context -->
+                    <div class="bg-[#2D3E4C] rounded-[8px] p-4">
+                      <div class="state-label" style="color:#6D96AE">Dark context</div>
+                      <div class="flex items-center gap-3 flex-wrap">
+                        <button class="px-6 py-4 border border-white bg-transparent text-white font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full">Label</button>
+                        <button class="px-6 py-4 border border-white bg-white/20 text-white font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full">Hover</button>
+                        <button class="px-6 py-4 border border-white/30 bg-transparent text-white/30 font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full cursor-not-allowed">Disabled</button>
+                      </div>
+                    </div>
+                    <!-- Icon buttons -->
+                    <div>
+                      <div class="state-label">Icon Buttons — Primary / Secondary</div>
+                      <div class="flex items-center gap-3">
+                        <button class="size-10 rounded-full bg-[#2D3E4C] flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                        <button class="size-10 rounded-full bg-[#37576B] flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                        <button class="size-10 rounded-full border border-[#C5D7E0] bg-white flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                        <button class="size-10 rounded-full border border-[#E0EBF0] bg-[#F3F8F9] flex items-center justify-center cursor-not-allowed">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-[#C5D7E0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Small buttons + tags + arrow -->
+                <div>
+                  <div class="component-group-title">Small Buttons</div>
+                  <div class="space-y-4">
+                    <div>
+                      <div class="state-label">Primary Small</div>
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <button class="px-3 pt-[9px] pb-[7px] bg-[#EAAD43] text-[#2D3E4C] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Label</button>
+                        <button class="px-3 pt-[9px] pb-[7px] bg-[#D49B35] text-[#2D3E4C] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Hover</button>
+                        <button class="px-3 pt-[9px] pb-[7px] bg-[#F1CA87] text-[#2D3E4C]/40 font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full cursor-not-allowed">Disabled</button>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="state-label">Secondary Small</div>
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <button class="px-3 pt-[9px] pb-[7px] border border-[#C5D7E0] bg-[#C5D7E0] text-[#37576B] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Label</button>
+                        <button class="px-3 pt-[9px] pb-[7px] border border-[#C5D7E0] bg-[#E0EBF0] text-[#37576B] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Hover</button>
+                        <button class="px-3 pt-[9px] pb-[7px] border border-[#E0EBF0] bg-[#F3F8F9] text-[#C5D7E0] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full cursor-not-allowed">Disabled</button>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="state-label">Pagination Arrow Buttons</div>
+                      <div class="flex items-center gap-1">
+                        <button class="size-8 rounded-full border border-[#E0EBF0] bg-white flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#C5D7E0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                        <button class="size-8 rounded-full border border-[#C5D7E0] bg-white flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                        <button class="size-8 rounded-full border border-[#C5D7E0] bg-[#C5D7E0] flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                        <button class="size-8 rounded-full border border-[#E0EBF0] bg-white flex items-center justify-center cursor-not-allowed">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#C5D7E0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             INPUTS, MULTISELECT, TABS, SWITCH
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-6">Form &amp; Interaction</h2>
+
+            <div data-dms="section" data-name="forms" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Inputs -->
+              <div>
+                <div class="component-group-title">Input — Navigation Search (rounded-full)</div>
+                <div class="space-y-3 mb-6">
+                  <div>
+                    <div class="state-label">Resting</div>
+                    <div class="flex items-center rounded-full border border-[#E0EBF0] bg-white px-4 py-2 gap-2">
+                      <span class="font-proxima text-[14px] font-[500] text-[#C5D7E0] uppercase tracking-wider flex-1">SEARCH</span>
+                      <div class="size-8 rounded-full bg-[#2D3E4C] flex items-center justify-center flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="state-label">Active / Focus</div>
+                    <div class="flex items-center rounded-full border-2 border-[#37576B] bg-white px-4 py-2 gap-2">
+                      <input type="text" value="Flood" class="font-proxima text-[14px] text-[#37576B] flex-1 outline-none bg-transparent">
+                      <div class="size-8 rounded-full bg-[#37576B] flex items-center justify-center flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="state-label">Error</div>
+                    <div class="flex items-center rounded-full border-2 border-[#DD524C] bg-white px-4 py-2 gap-2">
+                      <span class="font-proxima text-[14px] text-[#DD524C] flex-1">SEARCH</span>
+                      <div class="size-8 rounded-full bg-[#2D3E4C] flex items-center justify-center flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="component-group-title">Input — Form Input (rounded-[12px])</div>
+                <div class="space-y-3">
+                  <div>
+                    <div class="state-label">Resting</div>
+                    <input type="text" placeholder="Label" class="w-full rounded-[12px] border border-[#E0EBF0] px-4 py-3 font-proxima text-[14px] text-[#37576B] placeholder-[#C5D7E0] outline-none">
+                  </div>
+                  <div>
+                    <div class="state-label">Active</div>
+                    <input type="text" value="County Plan Status" class="w-full rounded-[12px] border-2 border-[#37576B] px-4 py-3 font-proxima text-[14px] text-[#37576B] outline-none">
+                  </div>
+                  <div>
+                    <div class="state-label">Error</div>
+                    <input type="text" value="Required field" class="w-full rounded-[12px] border-2 border-[#DD524C] px-4 py-3 font-proxima text-[14px] text-[#37576B] outline-none">
+                    <p class="font-proxima text-[12px] text-[#DD524C] mt-1">Error message</p>
+                  </div>
+                  <div>
+                    <div class="state-label">Disabled</div>
+                    <input type="text" placeholder="Search for anything…" disabled class="w-full rounded-[12px] border border-[#E0EBF0] bg-[#F3F8F9] px-4 py-3 font-proxima text-[14px] text-[#C5D7E0] cursor-not-allowed">
+                  </div>
+                </div>
+              </div>
+
+              <!-- MultiSelect + Tabs + Switch -->
+              <div>
+                <div class="component-group-title">MultiSelect (closed trigger)</div>
+                <div class="space-y-2 mb-6">
+                  <div class="w-full max-h-[150px] flex rounded-[12px] px-3 py-2 gap-2 text-[14px] text-[#37576B] border border-[#E0EBF0] bg-white items-center cursor-pointer">
+                    <span class="flex-1 font-proxima text-[14px] text-[#C5D7E0]">Select hazard type…</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </div>
+                  <div class="state-label">With selected tokens (multi-select)</div>
+                  <div class="w-full rounded-[12px] px-3 py-2 gap-2 text-[14px] text-[#37576B] border-2 border-[#37576B] bg-white flex flex-wrap items-center cursor-pointer">
+                    <span class="px-3 py-1 bg-[#C5D7E0] hover:bg-[#E0EBF0] rounded-full font-proxima text-[12px] font-[700] text-[#37576B] uppercase tracking-wider">Flooding</span>
+                    <span class="px-3 py-1 bg-[#C5D7E0] hover:bg-[#E0EBF0] rounded-full font-proxima text-[12px] font-[700] text-[#37576B] uppercase tracking-wider">Hurricane</span>
+                    <span class="flex-1"></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </div>
+                </div>
+
+                <div class="component-group-title">Tabs</div>
+                <div class="space-y-4 mb-6">
+                  <div>
+                    <div class="flex gap-4 border-b border-[#E0EBF0] pb-0">
+                      <button class="py-2 px-3 font-proxima font-[600] text-[12px] text-[#2D3E4C] border-b-2 border-[#37576B] uppercase tracking-wide -mb-px">Overview</button>
+                      <button class="py-2 px-3 font-proxima font-[600] text-[12px] text-[#37576B] border-b-2 border-transparent uppercase tracking-wide hover:text-[#2D3E4C]">Statistics</button>
+                      <button class="py-2 px-3 font-proxima font-[600] text-[12px] text-[#37576B] border-b-2 border-transparent uppercase tracking-wide hover:text-[#2D3E4C]">Map</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="component-group-title">Switch (Boolean Toggle)</div>
+                <div class="flex items-center gap-6">
+                  <div class="flex items-center gap-2">
+                    <div class="w-10 h-5 bg-[#C5D7E0] rounded-full flex items-center px-0.5 cursor-pointer">
+                      <div class="size-4 bg-white rounded-full shadow-sm"></div>
+                    </div>
+                    <span class="font-proxima text-[13px] text-[#37576B]">Off</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-10 h-5 bg-[#37576B] rounded-full flex items-center justify-end px-0.5 cursor-pointer">
+                      <div class="size-4 bg-white rounded-full shadow-sm"></div>
+                    </div>
+                    <span class="font-proxima text-[13px] text-[#37576B]">On</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-10 h-5 bg-[#E0EBF0] rounded-full flex items-center px-0.5 cursor-not-allowed">
+                      <div class="size-4 bg-white/70 rounded-full"></div>
+                    </div>
+                    <span class="font-proxima text-[13px] text-[#C5D7E0]">Disabled</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             PILLS / TAGS / LABELS
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-6">Pills, Tags &amp; Risk Labels</h2>
+            <div data-dms="section" data-name="pills-tags" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Tags -->
+              <div>
+                <div class="component-group-title">Tags (Featured Searches)</div>
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <button class="px-3 pt-[9px] pb-[7px] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Climate Change</button>
+                  <button class="px-3 pt-[9px] pb-[7px] bg-[#E0EBF0] text-[#37576B] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Coastal Hazards</button>
+                  <button class="px-3 pt-[9px] pb-[7px] bg-[#E0EBF0] text-[#37576B] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full cursor-not-allowed opacity-50">Disabled</button>
+                </div>
+                <!-- Pill (status / datacard) -->
+                <div class="component-group-title">Pill (status badges)</div>
+                <div class="flex flex-wrap gap-2">
+                  <span class="px-3 py-1 bg-[#E0EBF0] text-[#37576B] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Active</span>
+                  <span class="px-3 py-1 bg-[#FCF6EC] text-[#EAAD43] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Pending</span>
+                  <span class="px-3 py-1 bg-[#DD524C]/10 text-[#DD524C] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Error</span>
+                  <span class="px-3 py-1 bg-[#54B99B]/15 text-[#54B99B] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Complete</span>
+                  <span class="px-3 py-1 bg-[#F3F8F9] text-[#6D96AE] font-proxima font-[700] text-[12px] uppercase tracking-wider rounded-full">Draft</span>
+                </div>
+              </div>
+              <!-- Risk Labels -->
+              <div>
+                <div class="component-group-title">Risk Labels — light background</div>
+                <div class="flex flex-wrap gap-4 mb-4">
+                  <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#54B99B]"></div><span class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wider">Very Low Risk</span></div>
+                  <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#EAAD43]"></div><span class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wider">Low Risk</span></div>
+                  <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#EA8954]"></div><span class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wider">Moderate Risk</span></div>
+                  <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#DD524C]"></div><span class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wider">High Risk</span></div>
+                  <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#AA2E26]"></div><span class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wider">Very High Risk</span></div>
+                </div>
+                <div class="bg-[#2D3E4C] rounded-[8px] p-4">
+                  <div class="component-group-title" style="color:#6D96AE; border-color:#37576B">Risk Labels — dark background</div>
+                  <div class="flex flex-wrap gap-4">
+                    <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#54B99B]"></div><span class="font-display text-[12px] font-[500] text-white uppercase tracking-wider">Very Low Risk</span></div>
+                    <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#EAAD43]"></div><span class="font-display text-[12px] font-[500] text-white uppercase tracking-wider">Low Risk</span></div>
+                    <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#EA8954]"></div><span class="font-display text-[12px] font-[500] text-white uppercase tracking-wider">Moderate Risk</span></div>
+                    <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#DD524C]"></div><span class="font-display text-[12px] font-[500] text-white uppercase tracking-wider">High Risk</span></div>
+                    <div class="flex items-center gap-1.5"><div class="size-2.5 rounded-full bg-[#AA2E26]"></div><span class="font-display text-[12px] font-[500] text-white uppercase tracking-wider">Very High Risk</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             DATA CARD (workhorse)
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-2">DataCard — the workhorse</h2>
+            <p class="font-proxima text-[13px] text-[#37576B] mb-6">The Card section rendered in multiple configurations: stats view, demographics, link card, hazard summary.</p>
+            <div data-dms="section" data-name="datacard" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+              <!-- Statistics card -->
+              <div class="rounded-[12px] border border-[#E0EBF0] overflow-hidden mny-shadow-sm">
+                <div class="bg-[#F3F8F9] px-4 py-2 border-b border-[#E0EBF0] flex items-center justify-between">
+                  <span class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wider">Statistics</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#6D96AE]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5"/></svg>
+                </div>
+                <div class="p-4 space-y-3">
+                  <div>
+                    <div class="font-proxima text-[12px] text-[#37576B] uppercase tracking-wider mb-1">FEMA Gross Value</div>
+                    <div class="font-display text-[36px] font-[500] text-[#2D3E4C] uppercase leading-none">$91.52M</div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <div><div class="font-proxima text-[11px] text-[#6D96AE]">Disasters</div><div class="font-display text-[20px] font-[500] text-[#2D3E4C] uppercase">53</div></div>
+                    <div><div class="font-proxima text-[11px] text-[#6D96AE]">Events/YR</div><div class="font-display text-[20px] font-[500] text-[#2D3E4C] uppercase">44</div></div>
+                  </div>
+                  <div class="border-t border-[#E0EBF0] pt-3">
+                    <div class="font-proxima text-[11px] text-[#6D96AE]">Attribution</div>
+                    <div class="font-proxima text-[11px] text-[#37576B] underline cursor-pointer">National Oceanic and Atmospheric Administration (NOAA)</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Link card -->
+              <div class="rounded-[12px] border border-[#E0EBF0] overflow-hidden mny-shadow-sm flex flex-col">
+                <div class="p-4 flex-1">
+                  <div class="font-display text-[20px] font-[500] text-[#2D3E4C] uppercase leading-tight mb-2">Risk Profile</div>
+                  <p class="font-proxima text-[14px] text-[#37576B] leading-[1.5]">Participate in community workshops to learn about flood hazards, your neighbours, and share your insights and concerns.</p>
+                </div>
+                <div class="p-4 pt-0">
+                  <button class="flex-1 w-full flex justify-center bg-[#C5D7E0] rounded-full px-4 py-2 font-proxima font-[700] text-[12px] text-[#37576B] uppercase tracking-wider">
+                    Learn More
+                  </button>
+                </div>
+              </div>
+
+              <!-- Hazard summary card -->
+              <div class="rounded-[12px] border border-[#E0EBF0] overflow-hidden mny-shadow-sm">
+                <div class="bg-[#F3F8F9] px-4 py-2 border-b border-[#E0EBF0]">
+                  <span class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wider">Hazard Summary</span>
+                </div>
+                <div class="p-4">
+                  <div class="flex items-center gap-2 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8Z"/></svg>
+                    <span class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase">Avalanche</span>
+                    <span class="ml-auto flex items-center gap-1"><div class="size-2 rounded-full bg-[#54B99B]"></div><span class="font-proxima text-[11px] text-[#6D96AE] uppercase">Very Low Risk</span></span>
+                  </div>
+                  <div class="font-display text-[30px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">$17.4M</div>
+                  <div class="font-proxima text-[12px] text-[#6D96AE] mb-3">Expected Annual Loss</div>
+                  <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div><div class="font-proxima text-[11px] text-[#6D96AE]">Events/YR</div><div class="font-proxima text-[13px] text-[#37576B]">0.02</div></div>
+                    <div><div class="font-proxima text-[11px] text-[#6D96AE]"># of Events</div><div class="font-proxima text-[13px] text-[#37576B]">2</div></div>
+                  </div>
+                  <button class="mt-3 w-full flex justify-center bg-[#C5D7E0] rounded-full px-4 py-2 font-proxima font-[700] text-[12px] text-[#37576B] uppercase tracking-wider">Explore Full Profile</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             TABLE
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">Table</h2>
+            <div data-dms="section" data-name="table">
+              <div class="relative flex flex-col w-full overflow-x-auto border rounded-t-[12px]" style="border-color: #E0EBF0">
+                <!-- Header -->
+                <div class="sticky top-0 grid grid-cols-5 bg-[#F3F8F9] border-b border-[#E0EBF0]">
+                  <div class="w-full font-display font-[500] py-4 pl-4 pr-0 text-[12px] uppercase text-[#2D3E4C] border-r border-[#E0EBF0]">Hazard</div>
+                  <div class="w-full font-display font-[500] py-4 pl-4 pr-0 text-[12px] uppercase text-[#2D3E4C] border-r border-[#E0EBF0]">EAL</div>
+                  <div class="w-full font-display font-[500] py-4 pl-4 pr-0 text-[12px] uppercase text-[#2D3E4C] border-r border-[#E0EBF0]">Events/YR</div>
+                  <div class="w-full font-display font-[500] py-4 pl-4 pr-0 text-[12px] uppercase text-[#2D3E4C] border-r border-[#E0EBF0]">Risk Level</div>
+                  <div class="w-full font-display font-[500] py-4 pl-4 pr-0 text-[12px] uppercase text-[#2D3E4C]">Profile</div>
+                </div>
+                <!-- Rows -->
+                <div class="divide-y divide-[#F3F8F9]">
+                  <div class="grid grid-cols-5 bg-white">
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2 font-proxima text-[14px] text-[#37576B]">Hurricane</div>
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2 font-proxima text-[14px] text-[#37576B]">$604M</div>
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2 font-proxima text-[14px] text-[#37576B]">53.32</div>
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2"><div class="size-2 rounded-full bg-[#AA2E26] mr-1.5"></div><span class="font-proxima text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wide">Very High</span></div>
+                    <div class="flex items-center min-h-[36px] py-1 px-2"><button class="bg-[#C5D7E0] rounded-full px-3 py-1 font-proxima text-[11px] font-[700] text-[#37576B] uppercase">View</button></div>
+                  </div>
+                  <div class="grid grid-cols-5 bg-white">
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2 font-proxima text-[14px] text-[#37576B]">Flooding</div>
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2 font-proxima text-[14px] text-[#37576B]">$242M</div>
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2 font-proxima text-[14px] text-[#37576B]">46.1</div>
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2"><div class="size-2 rounded-full bg-[#DD524C] mr-1.5"></div><span class="font-proxima text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wide">High</span></div>
+                    <div class="flex items-center min-h-[36px] py-1 px-2"><button class="bg-[#C5D7E0] rounded-full px-3 py-1 font-proxima text-[11px] font-[700] text-[#37576B] uppercase">View</button></div>
+                  </div>
+                  <div class="grid grid-cols-5 bg-[#F3F8F9]">
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2 font-proxima text-[14px] text-[#37576B]">Drought</div>
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2 font-proxima text-[14px] text-[#37576B]">$50.2M</div>
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2 font-proxima text-[14px] text-[#37576B]">329</div>
+                    <div class="flex items-center min-h-[36px] border-r border-[#E0EBF0] py-1 px-2"><div class="size-2 rounded-full bg-[#EAAD43] mr-1.5"></div><span class="font-proxima text-[12px] font-[500] text-[#2D3E4C] uppercase tracking-wide">Low</span></div>
+                    <div class="flex items-center min-h-[36px] py-1 px-2"><button class="bg-[#C5D7E0] rounded-full px-3 py-1 font-proxima text-[11px] font-[700] text-[#37576B] uppercase">View</button></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Pagination -->
+              <div class="w-full p-3 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between border border-t-0 border-[#E0EBF0]">
+                <div>
+                  <span class="font-display font-[500] text-[12px] uppercase text-[#2D3E4C] tracking-wider">Page 1 of 3</span>
+                  <span class="font-proxima text-[12px] text-[#6D96AE] ml-2">18 records</span>
+                </div>
+                <div class="flex flex-row items-center border rounded-[8px] overflow-hidden border-[#E0EBF0]">
+                  <button class="px-3 py-2 font-display font-[500] text-[12px] border-r border-[#E0EBF0] uppercase tracking-wider bg-white text-[#2D3E4C]">←</button>
+                  <button class="px-3 py-2 font-display font-[500] text-[12px] border-r border-[#E0EBF0] uppercase tracking-wider bg-[#2D3E4C] text-white">1</button>
+                  <button class="px-3 py-2 font-display font-[500] text-[12px] border-r border-[#E0EBF0] uppercase tracking-wider bg-white text-[#2D3E4C]">2</button>
+                  <button class="px-3 py-2 font-display font-[500] text-[12px] uppercase tracking-wider bg-white text-[#2D3E4C]">→</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             OVERLAYS (static snapshots)
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">Overlays (static snapshots)</h2>
+            <div data-dms="section" data-name="overlays" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <!-- Dialog -->
+              <div>
+                <div class="component-group-title">Dialog (sm)</div>
+                <div class="rounded-[12px] border border-[#E0EBF0] bg-white overflow-hidden mny-shadow-md">
+                  <div class="px-5 py-4 border-b border-[#E0EBF0] flex justify-between items-center">
+                    <span class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase">Confirm Action</span>
+                    <button class="size-6 rounded-full border border-[#E0EBF0] flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                  <div class="px-5 py-4">
+                    <p class="font-proxima text-[14px] text-[#37576B] leading-[1.5]">Are you sure you want to publish this section? This action cannot be undone.</p>
+                  </div>
+                  <div class="px-5 py-3 border-t border-[#F3F8F9] flex justify-end gap-2">
+                    <button class="px-4 py-2 border border-[#E0EBF0] rounded-full font-proxima text-[12px] font-[700] text-[#37576B] uppercase">Cancel</button>
+                    <button class="px-4 py-2 bg-[#EAAD43] rounded-full font-proxima text-[12px] font-[700] text-[#2D3E4C] uppercase">Confirm</button>
+                  </div>
+                </div>
+              </div>
+              <!-- DeleteModal -->
+              <div>
+                <div class="component-group-title">DeleteModal</div>
+                <div class="rounded-[12px] border border-[#E0EBF0] bg-white overflow-hidden mny-shadow-md">
+                  <div class="px-5 py-4 border-b border-[#E0EBF0] flex justify-between items-center">
+                    <span class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase">Delete Section</span>
+                    <button class="size-6 rounded-full border border-[#E0EBF0] flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                  </div>
+                  <div class="px-5 py-4">
+                    <p class="font-proxima text-[14px] text-[#37576B] leading-[1.5]">This will permanently delete <strong>"Hazard Summary"</strong>. This action cannot be undone.</p>
+                  </div>
+                  <div class="px-5 py-3 border-t border-[#F3F8F9] flex justify-end gap-2">
+                    <button class="px-4 py-2 border border-[#E0EBF0] rounded-full font-proxima text-[12px] font-[700] text-[#37576B] uppercase">Cancel</button>
+                    <button class="px-4 py-2 bg-[#DD524C] rounded-full font-proxima text-[12px] font-[700] text-white uppercase">Delete</button>
+                  </div>
+                </div>
+              </div>
+              <!-- Drawer -->
+              <div>
+                <div class="component-group-title">Drawer (slide-in, right edge)</div>
+                <div class="rounded-[12px] border border-[#E0EBF0] bg-white overflow-hidden mny-shadow-md">
+                  <div class="px-5 py-4 border-b border-[#E0EBF0] flex justify-between items-center">
+                    <span class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase">Edit Section</span>
+                    <button class="size-6 rounded-full border border-[#E0EBF0] flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                  </div>
+                  <div class="px-5 py-4 space-y-3">
+                    <div>
+                      <label class="font-display text-[11px] font-[500] text-[#6D96AE] uppercase block mb-1">Title</label>
+                      <input type="text" value="Hazard Overview" class="w-full rounded-[12px] border border-[#E0EBF0] px-3 py-2 font-proxima text-[13px] text-[#37576B] outline-none">
+                    </div>
+                    <div>
+                      <label class="font-display text-[11px] font-[500] text-[#6D96AE] uppercase block mb-1">Type</label>
+                      <div class="w-full rounded-[12px] border border-[#E0EBF0] px-3 py-2 font-proxima text-[13px] text-[#37576B] flex items-center justify-between cursor-pointer">
+                        <span>Card</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="px-5 py-3 border-t border-[#F3F8F9] flex justify-end gap-2">
+                    <button class="px-4 py-2 border border-[#E0EBF0] rounded-full font-proxima text-[12px] font-[700] text-[#37576B] uppercase">Cancel</button>
+                    <button class="px-4 py-2 bg-[#F1CA87] rounded-full font-proxima text-[12px] font-[700] text-[#2D3E4C] uppercase">Save</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             LEXICAL RICH TEXT
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">Lexical Rich Text</h2>
+            <div data-dms="section" data-name="lexical" class="font-proxima text-[16px] text-[#37576B] leading-[1.4] space-y-3">
+              <h1 class="font-display font-[500] text-[#2D3E4C] text-[36px] leading-[140%] tracking-[-0.02em] uppercase pb-3"
+                  style="text-decoration: underline; text-decoration-color: #EAAD43; text-decoration-thickness: 4px; text-underline-offset: 8px;">
+                H1 — NYS Risk Environment
+              </h1>
+              <h2 class="font-display font-[500] text-[#2D3E4C] text-[24px] leading-[24px]">H2 — Hazard Profile: Avalanche</h2>
+              <h3 class="font-display font-[500] text-[#2D3E4C] text-[16px] leading-[16px]">H3 — Planning Resources</h3>
+              <p>Paragraph text. MitigateNY showcases New York State's diverse environments and <a href="#" class="text-[#37576B] font-[500] no-underline hover:underline">assesses risks from natural hazards</a>. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+              <blockquote class="m-0 py-6 font-display text-[30px] leading-[36px] text-[#2D3E4C] border-l-4 border-[#37576B] pl-4">
+                "New York State could lose the use of 212 miles of roads due to flooding."
+              </blockquote>
+              <p><strong class="font-[700]">Bold text</strong> and <em class="italic">italic text</em> and <code class="bg-gray-200 px-1 py-0.5 font-mono text-[94%]">inline code</code>.</p>
+              <ul class="list-disc pl-5 space-y-1 text-[14px]">
+                <li>Climate change is accelerating the frequency of extreme weather</li>
+                <li>Local governments play a key role in resilience planning</li>
+                <li>SHMP outlines strategies for reducing risk statewide</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="py-6 flex flex-wrap gap-4 justify-center">
+          <a href="theme.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Theme</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="layouts.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Layouts</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="grid.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Grid</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="components.html" class="font-proxima text-[12px] font-[600] text-[#EAAD43] uppercase tracking-wider">Components</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="patterns.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Patterns</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

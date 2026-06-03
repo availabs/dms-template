@@ -1,0 +1,177 @@
+/* ============================================================
+   MitigateNY (mny) — brand surface utilities
+   Canonical source for:
+     · design-system/*.html  →  <link rel="stylesheet" href="../theme/index.css.additions"/>
+     · pages/*.html          →  <link rel="stylesheet" href="../theme/index.css.additions"/>
+     · production build      →  theme.js  fonts[] array entry
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   Brand font-family classes
+   Google Fonts loaded in each page <head> via CDN link.
+   These class rules make font-display / font-proxima available
+   as plain CSS utility classes throughout every mockup.
+   ---------------------------------------------------------- */
+.font-display,
+.font-oswald {
+  font-family: "Oswald", "Bebas Neue", sans-serif;
+}
+
+.font-proxima,
+.font-body {
+  font-family: "Source Sans 3", "Proxima Nova", system-ui, sans-serif;
+}
+
+/* ----------------------------------------------------------
+   Page backgrounds — topo-texture overlays
+   Each variant uses the brand's topographic line art masked
+   behind a translucent color wash.
+   ---------------------------------------------------------- */
+.mny-page-bg {
+  background-color: #F4F4F4;
+  background-image:
+    linear-gradient(0deg, rgba(244,244,244,0.96), rgba(244,244,244,0.96)),
+    url('../assets/mny/topolines.png');
+  background-size: 500px;
+}
+
+.mny-page-bg-dark {
+  background-image:
+    linear-gradient(0deg, rgba(33,52,64,0.96), rgba(55,87,107,0.96)),
+    url('../assets/mny/topolines.png');
+  background-size: 500px;
+}
+
+.mny-page-bg-yellow {
+  background-image:
+    linear-gradient(0deg, rgba(252,246,236,0.96), rgba(252,246,236,0.96)),
+    url('../assets/mny/topolines.png');
+  background-size: 500px;
+}
+
+/* ----------------------------------------------------------
+   Shadows — two brand-defined levels
+   shadow-sm: form elements, cards (subtle)
+   shadow-md: content wrapper panels
+   ---------------------------------------------------------- */
+.mny-shadow-sm {
+  box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.02), 0px 2px 4px 0px rgba(0,0,0,0.08);
+}
+
+.mny-shadow-md {
+  box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.04), 0px 4px 8px 0px rgba(0,0,0,0.06);
+}
+
+/* ----------------------------------------------------------
+   Meta-nav strip — documentation scaffolding ONLY
+   Never appears in a live DMS site; lives in mockup CSS only.
+   ---------------------------------------------------------- */
+.mny-meta-nav {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  background: #2D3E4C;
+  color: #C5D7E0;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.mny-meta-nav .mny-meta-brand {
+  font-family: "Oswald", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  color: #EAAD43;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.mny-meta-nav .mny-meta-links {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 0;
+}
+
+.mny-meta-nav .mny-meta-links a {
+  color: #C5D7E0;
+  text-decoration: none;
+  padding: 0 14px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  transition: color 0.12s, background 0.12s;
+}
+
+.mny-meta-nav .mny-meta-links a:first-child {
+  border-left: 1px solid rgba(255,255,255,0.07);
+}
+
+.mny-meta-nav .mny-meta-links a:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.05);
+}
+
+.mny-meta-nav .mny-meta-links a.active {
+  color: #EAAD43;
+  background: rgba(234,173,67,0.1);
+}
+
+.mny-meta-nav .mny-meta-section {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: rgba(197,215,224,0.4);
+  flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------
+   DMS structural annotation overlay
+   Activate with <body class="mny-annotated"> on any page.
+   Used on layouts.html, grid.html for visual explanation.
+   Default-off on pages/ so example pages look like product.
+   ---------------------------------------------------------- */
+.mny-annotated [data-dms="layout"]::before,
+.mny-annotated [data-dms="group"]::before,
+.mny-annotated [data-dms="section"]::before {
+  display: block;
+  font-family: "Source Sans 3", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  margin-bottom: 4px;
+  border-radius: 2px;
+  pointer-events: none;
+  line-height: 1.4;
+}
+
+.mny-annotated [data-dms="layout"]::before {
+  content: "LAYOUT · " attr(data-name);
+  background: #EAAD43;
+  color: #2D3E4C;
+}
+
+.mny-annotated [data-dms="group"]::before {
+  content: "GROUP · " attr(data-name);
+  background: #6D96AE;
+  color: #fff;
+}
+
+.mny-annotated [data-dms="section"]::before {
+  content: "SECTION · " attr(data-name);
+  background: #E0EBF0;
+  color: #37576B;
+}
