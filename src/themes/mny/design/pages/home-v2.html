@@ -240,119 +240,150 @@
 
 <!-- ================================================================
      HAZARD SPOTLIGHT — full-bleed dark section
-     Three large hazard cards with escaping isometric illustrations,
-     stat rows, and risk-level pills.
+     Four hazard cards with escaping isometric illustrations,
+     contextual stats, and risk-level pills.
      ================================================================ -->
 <div data-dms="layoutGroup" data-name="darkSection">
   <div class="w-full h-full flex-1 flex flex-row -my-8 py-12 pb-6"
        style="background:linear-gradient(0deg,rgba(33,52,64,.96),rgba(55,87,107,.96)),url('../assets/mny/topolines.png');background-size:500px;">
     <div class="max-w-[1440px] xl:px-[64px] md:px-4 mx-auto w-full">
       <div class="flex flex-1 w-full flex-col relative p-4 min-h-[200px]">
-          <div class="flex items-end justify-between mb-8">
+
+          <div class="flex items-end justify-between mb-6">
             <div>
               <p class="font-display text-[14px] font-[500] text-mny-y700 uppercase tracking-[0.2em] mb-1">Highest Risk</p>
               <h2 class="font-display font-[500] text-[36px] text-white uppercase leading-none">Natural Hazard Profiles</h2>
+              <p class="font-proxima text-[16px] text-mny-200 leading-[1.5] pt-2 max-w-[560px]">New York ranks 5th nationally in expected annual loss. These four hazards account for over 90% of the state's total risk exposure.</p>
             </div>
-            <button class="px-6 py-4 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full cursor-pointer">Browse All 16</button>
+            <button class="px-5 py-2.5 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full cursor-pointer flex-shrink-0">Browse All 16</button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
             <!-- Hurricane -->
-            <div class="pt-[110px]">
-              <div class="bg-white rounded-[12px] shadow-md overflow-visible">
+            <div class="pt-[120px]">
+              <div class="rounded-[12px] p-[12px] bg-white shadow-md">
                 <img src="../assets/mny/illustrations/mny-hurricane.webp" alt="Hurricane"
-                     class="w-[calc(100%-24px)] mx-[12px] mt-[-110px] block">
-                <div class="p-5 pt-3">
-                  <div class="flex items-center justify-between mb-2">
-                    <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">Hurricane</h3>
-                    <span class="px-2 py-[2px] bg-mny-redk text-white font-proxima font-[700] text-[10px] uppercase tracking-wider rounded-full">Very High</span>
+                     class="mx-[-12px] mt-[-120px] w-[calc(100%+24px)] block">
+                <div class="flex items-center justify-between pt-2 pb-1 px-1">
+                  <h3 class="font-display font-[500] text-[18px] text-mny-900 uppercase">Hurricane</h3>
+                  <span class="px-2 py-[2px] bg-mny-redk text-white font-proxima font-[700] text-[10px] uppercase tracking-wider rounded-full flex-shrink-0">Very High</span>
+                </div>
+                <hr class="border-mny-100 my-2">
+                <div class="px-1 space-y-3 pb-2">
+                  <div>
+                    <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Total Fusion Damage (with Population)</p>
+                    <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">$31.5B</p>
                   </div>
-                  <div class="border-t border-mny-100 pt-3 grid grid-cols-3 gap-2">
+                  <div class="flex gap-4">
                     <div>
-                      <p class="font-display text-[11px] text-mny-400 uppercase tracking-wider leading-tight">Damage</p>
-                      <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">$31.5B</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]"># of Declared Disasters</p>
+                      <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">35</p>
                     </div>
                     <div>
-                      <p class="font-display text-[11px] text-mny-400 uppercase tracking-wider leading-tight">Declared</p>
-                      <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">35</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]"># of Events</p>
+                      <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">75</p>
                     </div>
-                    <div>
-                      <p class="font-display text-[11px] text-mny-400 uppercase tracking-wider leading-tight">Events</p>
-                      <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">75</p>
-                    </div>
-                  </div>
-                  <div class="pt-3">
-                    <a href="#" class="font-display text-[14px] text-mny-y700 font-[500] uppercase tracking-wider hover:underline">Full Profile &rarr;</a>
                   </div>
                 </div>
+                <a href="#" class="block px-1 pt-2 border-t border-mny-100 font-proxima text-[14px] text-mny-700 font-[600] hover:underline hover:text-mny-900">Explore Full Profile &rarr;</a>
               </div>
             </div>
 
             <!-- Flooding -->
-            <div class="pt-[110px]">
-              <div class="bg-white rounded-[12px] shadow-md overflow-visible">
+            <div class="pt-[120px]">
+              <div class="rounded-[12px] p-[12px] bg-white shadow-md">
                 <img src="../assets/mny/illustrations/mny-flood.webp" alt="Flooding"
-                     class="w-[calc(100%-24px)] mx-[12px] mt-[-110px] block">
-                <div class="p-5 pt-3">
-                  <div class="flex items-center justify-between mb-2">
-                    <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">Flooding</h3>
-                    <span class="px-2 py-[2px] bg-mny-redk text-white font-proxima font-[700] text-[10px] uppercase tracking-wider rounded-full">Very High</span>
+                     class="mx-[-12px] mt-[-120px] w-[calc(100%+24px)] block">
+                <div class="flex items-center justify-between pt-2 pb-1 px-1">
+                  <h3 class="font-display font-[500] text-[18px] text-mny-900 uppercase">Flooding</h3>
+                  <span class="px-2 py-[2px] bg-mny-redk text-white font-proxima font-[700] text-[10px] uppercase tracking-wider rounded-full flex-shrink-0">Very High</span>
+                </div>
+                <hr class="border-mny-100 my-2">
+                <div class="px-1 space-y-3 pb-2">
+                  <div>
+                    <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Total Fusion Damage (with Population)</p>
+                    <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">$1.3B</p>
                   </div>
-                  <div class="border-t border-mny-100 pt-3 grid grid-cols-3 gap-2">
+                  <div class="flex gap-4">
                     <div>
-                      <p class="font-display text-[11px] text-mny-400 uppercase tracking-wider leading-tight">Damage</p>
-                      <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">$1.3B</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]"># of Declared Disasters</p>
+                      <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">10</p>
                     </div>
                     <div>
-                      <p class="font-display text-[11px] text-mny-400 uppercase tracking-wider leading-tight">Declared</p>
-                      <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">10</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]"># of Events</p>
+                      <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">4.6K</p>
                     </div>
-                    <div>
-                      <p class="font-display text-[11px] text-mny-400 uppercase tracking-wider leading-tight">Events</p>
-                      <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">4.6K</p>
-                    </div>
-                  </div>
-                  <div class="pt-3">
-                    <a href="#" class="font-display text-[14px] text-mny-y700 font-[500] uppercase tracking-wider hover:underline">Full Profile &rarr;</a>
                   </div>
                 </div>
+                <a href="#" class="block px-1 pt-2 border-t border-mny-100 font-proxima text-[14px] text-mny-700 font-[600] hover:underline hover:text-mny-900">Explore Full Profile &rarr;</a>
               </div>
             </div>
 
             <!-- Snowstorm -->
-            <div class="pt-[110px]">
-              <div class="bg-white rounded-[12px] shadow-md overflow-visible">
+            <div class="pt-[120px]">
+              <div class="rounded-[12px] p-[12px] bg-white shadow-md">
                 <img src="../assets/mny/illustrations/mny-snowstorm.webp" alt="Snowstorm"
-                     class="w-[calc(100%-24px)] mx-[12px] mt-[-110px] block">
-                <div class="p-5 pt-3">
-                  <div class="flex items-center justify-between mb-2">
-                    <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">Snowstorm</h3>
-                    <span class="px-2 py-[2px] bg-mny-red text-white font-proxima font-[700] text-[10px] uppercase tracking-wider rounded-full">High</span>
+                     class="mx-[-12px] mt-[-120px] w-[calc(100%+24px)] block">
+                <div class="flex items-center justify-between pt-2 pb-1 px-1">
+                  <h3 class="font-display font-[500] text-[18px] text-mny-900 uppercase">Snowstorm</h3>
+                  <span class="px-2 py-[2px] bg-mny-red text-white font-proxima font-[700] text-[10px] uppercase tracking-wider rounded-full flex-shrink-0">High</span>
+                </div>
+                <hr class="border-mny-100 my-2">
+                <div class="px-1 space-y-3 pb-2">
+                  <div>
+                    <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Total Fusion Damage (with Population)</p>
+                    <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">$2.2B</p>
                   </div>
-                  <div class="border-t border-mny-100 pt-3 grid grid-cols-3 gap-2">
+                  <div class="flex gap-4">
                     <div>
-                      <p class="font-display text-[11px] text-mny-400 uppercase tracking-wider leading-tight">Damage</p>
-                      <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">$2.2B</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]"># of Declared Disasters</p>
+                      <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">6</p>
                     </div>
                     <div>
-                      <p class="font-display text-[11px] text-mny-400 uppercase tracking-wider leading-tight">Declared</p>
-                      <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">6</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]"># of Events</p>
+                      <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">11.5K</p>
                     </div>
-                    <div>
-                      <p class="font-display text-[11px] text-mny-400 uppercase tracking-wider leading-tight">Events</p>
-                      <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">11.5K</p>
-                    </div>
-                  </div>
-                  <div class="pt-3">
-                    <a href="#" class="font-display text-[14px] text-mny-y700 font-[500] uppercase tracking-wider hover:underline">Full Profile &rarr;</a>
                   </div>
                 </div>
+                <a href="#" class="block px-1 pt-2 border-t border-mny-100 font-proxima text-[14px] text-mny-700 font-[600] hover:underline hover:text-mny-900">Explore Full Profile &rarr;</a>
+              </div>
+            </div>
+
+            <!-- Ice Storm -->
+            <div class="pt-[120px]">
+              <div class="rounded-[12px] p-[12px] bg-white shadow-md">
+                <img src="../assets/mny/illustrations/mny-ice-strom.webp" alt="Ice Storm"
+                     class="mx-[-12px] mt-[-120px] w-[calc(100%+24px)] block">
+                <div class="flex items-center justify-between pt-2 pb-1 px-1">
+                  <h3 class="font-display font-[500] text-[18px] text-mny-900 uppercase">Ice Storm</h3>
+                  <span class="px-2 py-[2px] bg-[#F1CA87] text-mny-900 font-proxima font-[700] text-[10px] uppercase tracking-wider rounded-full flex-shrink-0">Low</span>
+                </div>
+                <hr class="border-mny-100 my-2">
+                <div class="px-1 space-y-3 pb-2">
+                  <div>
+                    <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Total Fusion Damage (with Population)</p>
+                    <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">$180M</p>
+                  </div>
+                  <div class="flex gap-4">
+                    <div>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]"># of Declared Disasters</p>
+                      <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">1</p>
+                    </div>
+                    <div>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]"># of Events</p>
+                      <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em]">288</p>
+                    </div>
+                  </div>
+                </div>
+                <a href="#" class="block px-1 pt-2 border-t border-mny-100 font-proxima text-[14px] text-mny-700 font-[600] hover:underline hover:text-mny-900">Explore Full Profile &rarr;</a>
               </div>
             </div>
 
           </div>
-        </div>
+
+          <p class="font-proxima text-[13px] text-mny-200/60 pt-5 text-right">Data: AVAIL Fusion Events V2 &middot; Updated March 2025</p>
+
       </div>
     </div>
   </div>
