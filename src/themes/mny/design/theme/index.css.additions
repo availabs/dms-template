@@ -63,77 +63,118 @@
 }
 
 /* ----------------------------------------------------------
-   Meta-nav strip — documentation scaffolding ONLY
-   Never appears in a live DMS site; lives in mockup CSS only.
+   TopNav — design-system page links
    ---------------------------------------------------------- */
-.mny-meta-nav {
-  position: sticky;
-  top: 0;
-  z-index: 9999;
-  background: #2D3E4C;
-  color: #C5D7E0;
+.dms-ds-toplink {
   font-family: "Source Sans 3", system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  height: 36px;
-  padding: 0 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  white-space: nowrap;
-  overflow-x: auto;
-}
-
-.mny-meta-nav .mny-meta-brand {
-  font-family: "Oswald", sans-serif;
-  font-weight: 500;
   font-size: 14px;
-  letter-spacing: 0.03em;
-  color: #EAAD43;
-  margin-right: 20px;
-  flex-shrink: 0;
-}
-
-.mny-meta-nav .mny-meta-links {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  gap: 0;
-}
-
-.mny-meta-nav .mny-meta-links a {
-  color: #C5D7E0;
+  font-weight: 600;
+  color: #37576B;
   text-decoration: none;
-  padding: 0 14px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  border-right: 1px solid rgba(255,255,255,0.07);
+  padding: 4px 12px;
+  border-radius: 6px;
   transition: color 0.12s, background 0.12s;
 }
-
-.mny-meta-nav .mny-meta-links a:first-child {
-  border-left: 1px solid rgba(255,255,255,0.07);
+.dms-ds-toplink:hover {
+  color: #2D3E4C;
+  background: #F3F8F9;
 }
-
-.mny-meta-nav .mny-meta-links a:hover {
-  color: #fff;
-  background: rgba(255,255,255,0.05);
-}
-
-.mny-meta-nav .mny-meta-links a.active {
+.dms-ds-toplink.active {
   color: #EAAD43;
-  background: rgba(234,173,67,0.1);
+  background: rgba(234,173,67,0.08);
 }
 
-.mny-meta-nav .mny-meta-section {
-  margin-left: auto;
+/* ----------------------------------------------------------
+   Floating design-system nav widget
+   Collapsed: small icon button.  Expanded: page list panel.
+   Intended as a reusable pattern across all DMS design systems.
+   ---------------------------------------------------------- */
+.dms-ds-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+}
+
+.dms-ds-widget-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #2D3E4C;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.dms-ds-widget-toggle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.dms-ds-widget-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dms-ds-widget-panel {
+  position: absolute;
+  bottom: 52px;
+  right: 0;
+  background: white;
+  border-radius: 10px;
+  padding: 12px 0;
+  min-width: 190px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.dms-ds-widget-panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.dms-ds-widget-title {
+  font-family: "Oswald", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6D96AE;
+  padding: 0 16px 8px;
+  border-bottom: 1px solid #E0EBF0;
+  margin-bottom: 4px;
+}
+
+.dms-ds-widget-panel a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #37576B;
+  text-decoration: none;
+  transition: color 0.12s, background 0.12s;
+}
+.dms-ds-widget-panel a:hover {
+  color: #2D3E4C;
+  background: #F3F8F9;
+}
+.dms-ds-widget-panel a.active {
+  color: #EAAD43;
+}
+.dms-ds-widget-panel a .ds-page-num {
   font-size: 10px;
-  letter-spacing: 0.12em;
-  color: rgba(197,215,224,0.4);
-  flex-shrink: 0;
+  font-weight: 500;
+  color: #C5D7E0;
+  min-width: 14px;
 }
 
 /* ----------------------------------------------------------
