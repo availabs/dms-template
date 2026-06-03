@@ -1216,8 +1216,16 @@ const graph = {
       strokeWidth: 2,
       area: false,
       areaOpacity: 0.14,
-      xAxis: { show: true, showGridLines: false, rotateLabels: false, tickDensity: 2, gridLineOpacity: 0.18, axisColor: "#0f172a26" },
-      yAxis: { show: true, showGridLines: true, format: "Integer", gridLineOpacity: 0.14, axisColor: "#0f172a26" },
+      // Brand axis typography (CSS values, applied inline by the axis renderers). Ticks
+      // use the mono numeric ladder (matches the report's metaSM/num treatment) — 11px
+      // slate-500 monospace; axis labels use the Proxima sans, 13px medium slate-700.
+      // Full set so the brand defines every new axis-font key (not just the visible tick).
+      xAxis: { show: true, showGridLines: false, rotateLabels: false, tickDensity: 2, gridLineOpacity: 0.18, axisColor: "#0f172a26",
+        tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", tickFontSize: "11px", tickFontWeight: "400", tickColor: "#64748b",
+        labelFontFamily: "Proxima Nova, 'Source Sans 3', system-ui, sans-serif", labelFontSize: "13px", labelFontWeight: "600", labelColor: "#334155" },
+      yAxis: { show: true, showGridLines: true, format: "Integer", gridLineOpacity: 0.14, axisColor: "#0f172a26",
+        tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", tickFontSize: "11px", tickFontWeight: "400", tickColor: "#64748b",
+        labelFontFamily: "Proxima Nova, 'Source Sans 3', system-ui, sans-serif", labelFontSize: "13px", labelFontWeight: "600", labelColor: "#334155" },
       legend: { show: false },
     },
   }],
