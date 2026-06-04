@@ -12,25 +12,7 @@
 </head>
 <body class="tny-pane">
 
-<nav class="tny-meta-nav">
-  <span class="tny-meta-nav__label">TransportNY DMS · v0.2</span>
-  <span class="tny-meta-nav__group">design system</span>
-  <a class="tny-meta-nav__link" href="../design-system/theme.html">theme</a>
-  <a class="tny-meta-nav__link" href="../design-system/layouts.html">layouts</a>
-  <a class="tny-meta-nav__link" href="../design-system/grid.html">grid</a>
-  <a class="tny-meta-nav__link" href="../design-system/components.html">components</a>
-  <a class="tny-meta-nav__link" href="../design-system/patterns.html">patterns</a>
-  <span class="tny-meta-nav__group">pages</span>
-  <a class="tny-meta-nav__link" href="landing.html">landing</a>
-  <a class="tny-meta-nav__link is-active" href="login.html">login</a>
-  <a class="tny-meta-nav__link" href="getting-started.html">getting-started</a>
-  <a class="tny-meta-nav__link" href="docs-overview.html">docs</a>
-  <a class="tny-meta-nav__link" href="map-21.html">map-21</a>
-  <a class="tny-meta-nav__link" href="map-21-trend.html">map-21-trend</a>
-  <a class="tny-meta-nav__link" href="floating-car.html">floating-car</a>
-  <a class="tny-meta-nav__link" href="congestion.html">congestion</a>
-  <a class="tny-meta-nav__link" href="work-zones.html">work-zones</a>
-</nav>
+
 
 <!-- LAYOUT · app · compact sidenav variant
      The "minimal sidenav" of the design system — 64-px icon-only rail
@@ -40,7 +22,7 @@
   <div class="relative isolate flex min-h-svh w-full">
 
     <!-- COMPACT SIDENAV · 64-px icon rail, signed-out variant -->
-    <aside class="fixed inset-y-0 left-0 w-16 z-30 max-lg:hidden" style="top:32px">
+    <aside class="fixed inset-y-0 left-0 w-16 z-30 max-lg:hidden">
       <div class="flex flex-col w-16 h-full bg-[#12181F] border-r border-[#2a3545] items-center">
         <!-- logo block -->
         <div class="w-full h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center justify-center">
@@ -131,5 +113,41 @@
   </div>
 </div>
 
+<!-- Floating design-system navigation widget (docs scaffolding per skill §7.0.2 — not Layout chrome; never on a live DMS site) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Proxima Nova',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:220px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;padding:0 16px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:4px;">TransportNY DMS · v0.2</div>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">design system</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">1</span> theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">2</span> layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">3</span> grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">4</span> components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">5</span> patterns</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">pages</div>
+    <a href="landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">6</span> landing</a>
+    <a href="login.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#CA8A04;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">7</span> login</a>
+    <a href="getting-started.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">8</span> getting-started</a>
+    <a href="docs-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">9</span> docs-overview</a>
+    <a href="map-21.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">10</span> map-21</a>
+    <a href="map-21-system-performance.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">11</span> map-21-system-performance</a>
+    <a href="map-21-trend.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">12</span> map-21-trend</a>
+    <a href="employment-estimates.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">13</span> employment-estimates</a>
+    <a href="employment-estimates-mpo.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">14</span> employment-estimates-mpo</a>
+    <a href="floating-car.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">15</span> floating-car</a>
+    <a href="congestion.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">16</span> congestion</a>
+    <a href="work-zones.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">17</span> work-zones</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">freight atlas</div>
+    <a href="freight-atlas-home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">18</span> freight-atlas-home</a>
+    <a href="freight-atlas-map.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">19</span> freight-atlas-map</a>
+    <a href="freight-atlas-gallery.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">20</span> freight-atlas-gallery</a>
+    <a href="freight-atlas-insights.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">21</span> freight-atlas-insights</a>
+    <a href="freight-atlas-data.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">22</span> freight-atlas-data</a>
+    <a href="freight-atlas-dataset.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">23</span> freight-atlas-dataset</a>
+    <a href="freight-atlas-about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">24</span> freight-atlas-about</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';" style="width:40px;height:40px;border-radius:10px;background:#12181F;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);" aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
 </body>
 </html>

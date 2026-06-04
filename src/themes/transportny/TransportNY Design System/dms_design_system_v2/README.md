@@ -97,8 +97,27 @@ dms_design_system_v2/
     ├── map-21-trend.html          · MAP-21 PM3 multi-year trend
     ├── floating-car.html          · 50p speed report
     ├── congestion.html            · congestion report
-    └── work-zones.html            · work-zone report
+    ├── work-zones.html            · work-zone report
+    │   ── Freight Atlas (the 6 sitemap surfaces + per-dataset page) ──
+    ├── freight-atlas-home.html    · public front door (Layout default: hero + audience doorways)
+    ├── freight-atlas-map.html     · flagship interactive map (3-pane GIS workbench, vintage toggle)
+    ├── freight-atlas-gallery.html · curated thematic presets → deep-link into the Atlas
+    ├── freight-atlas-insights.html· six-goal dashboards + data stories (level-2 goal sub-nav)
+    ├── freight-atlas-data.html    · data catalog (datasets pattern over npmrds2, category rail)
+    ├── freight-atlas-dataset.html · single Source page (Overview/Table/Map/Metadata + downloads)
+    └── freight-atlas-about.html   · About & The Plan (six goals, report library, what-changed)
 ```
+
+The seven `freight-atlas-*.html` pages are a fully-realized mockup of the
+**redesigned NYS Freight Atlas** (the 2024 State Freight Plan tasks AVAIL
+with modernizing it). They transcribe the agreed sitemap in
+`references/freight atlas/02_SITEMAP_redesign.md` and use real plan data
+(936.5M tons / $1,293.7B 2021; 37 bottlenecks; 1,145 mi PHFS; 216+47 truck
+parking; NHFP $304M) and real `npmrds2` source names (`primary_freight_network`,
+`truck_parking`, `major_ports`, `intermodal_facility`, `mpo_boundaries`, …).
+They add no new primitives — every element appears in `components.html` /
+`patterns.html`. Home uses Layout `default`; the six working surfaces share
+one Freight Atlas SideNav on Layout `app`.
 
 Every HTML file is **plain HTML5 + Tailwind via CDN + the brand's
 `_shared.css`**. No JSX. No React. No build step. Open any file
@@ -124,7 +143,7 @@ so they read like real product surfaces.
 
 | Spec section                  | This folder                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
-| §7 deliverable structure      | `theme/` + `design-system/` (5 pages) + `pages/` (9 examples) ✓             |
+| §7 deliverable structure      | `theme/` + `design-system/` (5 pages) + `pages/` (9 handoff examples + 7 Freight Atlas) ✓ |
 | §7.2 design-system/theme      | `design-system/theme.html` — brand, palette, data viz, surface, type, icons, elevation ✓ |
 | §7.3 design-system/layouts    | `design-system/layouts.html` — hierarchy diagram + 3 Layout variants + 8 LayoutGroup variants + nesting + naming reference ✓ |
 | §7.4 design-system/grid       | `design-system/grid.html` — `gridSize`, `defaultSize`, the `sizes` vocabulary, span examples, row-span examples, in-editor overlay, picker rules ✓ |
@@ -170,6 +189,11 @@ TransportNY is a dense-data product theme. Its example pages exercise:
   multi-line trend chart + leaderboard (`map-21.html`,
   `map-21-trend.html`, `floating-car.html`, `congestion.html`,
   `work-zones.html`).
+- A complete public **data-platform site** — the NYS Freight Atlas:
+  marketing front door, a multi-layer GIS map workbench, a curated
+  map gallery, six-goal insight dashboards, a multi-format data
+  catalog (datasets pattern over `npmrds2`), a single dataset page
+  with downloads, and an About/the-plan surface (`freight-atlas-*.html`).
 
 The brand does **not** ship example pages for radio rotations,
 podcast catalogs, or marketing-CMS. The platform supports them; this

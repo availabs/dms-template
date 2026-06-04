@@ -134,30 +134,6 @@ body {
 @keyframes tnyPulse  { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .dot-pulse           { animation: tnyPulse 2.4s ease-in-out infinite; }
 
-/* ── Meta-nav strip (documentation chrome) ────────────────────────────
- * Used only on design-system/ and pages/ mockup pages — NOT on real
- * DMS sites. Provides one-click navigation across the deliverable per
- * skill §7.0. Kept distinct from the in-product chrome (mono font,
- * hairline separators, ink background).
- */
-.tny-meta-nav {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: #94a3b8;
-  background: #0F1722;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-.tny-meta-nav__label  { padding: 7px 14px; color: #FACC15; border-right: 1px solid rgba(255, 255, 255, 0.08); }
-.tny-meta-nav__group  { padding: 0 10px; color: #64748b; border-right: 1px solid rgba(255, 255, 255, 0.05); }
-.tny-meta-nav__link   { padding: 7px 10px; color: #cbd5e1; text-decoration: none; }
-.tny-meta-nav__link:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
-.tny-meta-nav__link.is-active { color: #fff; background: rgba(250, 204, 21, 0.10); border-bottom: 2px solid #FACC15; }
-
 /* ── DMS structural annotations (toggle via <body class="dms-annotated">) ──
  * Reveals LAYOUT / GROUP / SECTION badges on data-dms-* wrappers so
  * a reader can see the structural shape. Default off on pages/ so the
