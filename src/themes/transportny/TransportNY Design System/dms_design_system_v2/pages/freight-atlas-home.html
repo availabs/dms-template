@@ -3,330 +3,300 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>NYS Freight Atlas · The living map of New York's freight system</title>
+  <title>NYS Freight Atlas · Home</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="_shared.css"/>
 </head>
-<body class="bg-white">
+<body class="tny-pane">
 
 <!--
-  freight-atlas-home.html · SURFACE 1 of 6 (NYS Freight Atlas sitemap)
-  ────────────────────────────────────────────────────────────────────
-  Layout: `default` (marketing front door — TopNav, no SideNav) — same chrome as landing.html.
-  The public doorway; the six working surfaces (Atlas/Gallery/Insights/Data/About) use Layout `app`.
-  Content + numbers transcribed from the 2024 NYS Freight Plan (936.5M tons / $1,293.7B 2021;
-  mode shares; 1,145 mi PHFS; +4,497 mi FCHN; 216+47 truck-parking; NHFP $304M; six goals).
-  Every text class resolves to a theme.html Type token (displayHero/XL/LG/MD/SM/XS · proseLG/prose/SM ·
-  metaMD/SM/XS · kicker). Sections sit on grid-cols-12. -->
+  freight-atlas-home.html · SURFACE 1 of 6 — the Atlas home, as an IN-APP dashboard.
+  Layout `app` · shared Freight Atlas SideNav (Home active) — matches the About page chrome.
+  Standout statistics + graphs from the 2024 plan; "what's in the Atlas" by mode; and a
+  prominent set of surface cards directing users into Atlas / Gallery / Insights / Data / About.
+  All text classes resolve to theme.html Type tokens; sections sit on grid-cols-12; no new primitives. -->
 
-<!-- LAYOUT · default · marketing (TopNav only) -->
-<div class="bg-white" data-dms-layout="default">
-  <div class="relative isolate flex min-h-svh w-full flex-col">
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
 
-    <!-- ═════════ TopNav LayoutGroup ═════════ -->
-    <header class="w-full z-20 bg-white border-b border-zinc-950/10" data-dms-group="topnav">
-      <div class="w-full h-[60px] flex items-center">
-        <div class="mx-auto max-w-[1280px] w-full flex items-center justify-between px-8">
-          <div class="flex items-center gap-6">
-            <a href="freight-atlas-home.html" class="flex items-center gap-2 cursor-pointer">
-              <div class="size-9 bg-[#1F3F8F] rounded flex items-center justify-center text-white font-display font-bold text-[14px]">FA</div>
-              <span class="font-display uppercase text-[#0F1722] text-[15px] tracking-wide">Freight Atlas</span>
-              <span class="hidden sm:inline font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 ml-1">NYSDOT</span>
+        <!-- ════════ SIDENAV · Freight Atlas (Home active) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <a href="freight-atlas-home.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">FA</div>
+              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">Freight Atlas</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · 2024</div></div>
             </a>
+            <div class="px-3 pt-3"><button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] hover:border-[#3a4555] flex items-center gap-2 text-slate-400 hover:text-slate-300"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-proxima text-[13px] flex-1 text-left">Search layers &amp; places</span></button></div>
+            <div class="px-4 pt-3 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Atlas</div>
+            <div class="flex-1 py-1 overflow-y-auto">
+              <a href="freight-atlas-home.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="freight-atlas-map.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg><span class="flex-1">Freight Atlas</span></a>
+              <a href="freight-atlas-gallery.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg><span class="flex-1">Maps Gallery</span></a>
+              <a href="freight-atlas-insights.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg><span class="flex-1">Freight Insights</span><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+              <a href="freight-atlas-data.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data &amp; Downloads</span><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+              <a href="freight-atlas-about.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg><span class="flex-1">About &amp; The Plan</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Public access</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">no login required</div></div>
+              <a href="login.html" class="font-mono text-[9.5px] uppercase tracking-wider text-[#FACC15] hover:text-[#EAAD43]">Sign in</a>
+            </div>
           </div>
-          <div class="hidden lg:flex items-center gap-7">
-            <a href="freight-atlas-map.html" class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Atlas</a>
-            <a href="freight-atlas-gallery.html" class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Maps Gallery</a>
-            <a href="freight-atlas-insights.html" class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Insights</a>
-            <a href="freight-atlas-data.html" class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Data &amp; Downloads</a>
-            <a href="freight-atlas-about.html" class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">About</a>
-          </div>
-          <div class="flex items-center gap-3">
-            <a href="login.html" class="cursor-pointer inline-flex items-center gap-2 px-3 h-9 text-slate-700 hover:text-[#0F1722] hover:bg-slate-100 font-proxima text-[13px] rounded-[6px]">Sign in</a>
-            <a href="freight-atlas-map.html" class="tny-press cursor-pointer inline-flex items-center gap-2 px-4 h-10 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]">Explore the map</a>
-          </div>
-        </div>
-      </div>
-    </header>
+        </aside>
 
-    <!-- ═════════ HERO LayoutGroup ═════════ -->
-    <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
-      <div class="mx-auto max-w-[1280px] w-full px-8 py-24 grid grid-cols-12 gap-6">
-        <div class="col-span-12 md:col-span-8" data-dms-section="hero-copy">
-          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// nysdot · 2024 state freight plan · public atlas</span>
-          <h1 class="mt-3 font-display font-semibold text-[64px] leading-[1.02] tracking-tight text-[#0F1722] max-w-[860px]">
-            New York moves 936 million tons of freight a year. See where it goes<span class="text-[#CA8A04]">.</span>
-          </h1>
-          <p class="mt-5 font-proxima text-[16px] text-slate-700 leading-[1.65] max-w-[680px]">
-            The NYS Freight Atlas is the living, interactive companion to the 2024 New York State Freight
-            Plan — every road, rail, port, airport, pipeline, and truck-parking layer the plan analyzes,
-            on one map, refreshed to a 2021 base year and a 2050 forecast. Explore it, read the insights,
-            and download the underlying data — free, no account required.
-          </p>
-          <div class="mt-7 flex items-center gap-3">
-            <a href="freight-atlas-map.html" class="tny-press cursor-pointer inline-flex items-center gap-2 px-5 h-12 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[14px] tracking-wide rounded-[6px]">Explore the map</a>
-            <a href="freight-atlas-data.html" class="cursor-pointer inline-flex items-center gap-2 px-5 h-12 bg-white hover:bg-slate-50 border border-[#1F3F8F] text-[#1F3F8F] font-proxima text-[14px] font-semibold rounded-[6px]">Browse &amp; download the data</a>
-          </div>
-          <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">
-            <span class="inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>data current</span>
-            <span>base year · 2021 (TRANSEARCH)</span>
-            <span>· forecast · 2050</span>
-            <span>· source · npmrds2 catalog</span>
-          </div>
-        </div>
-        <div class="col-span-12 md:col-span-4 self-end" data-dms-section="hero-stat">
-          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
-            <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500">TOTAL FREIGHT · 2021</div>
-            <div class="font-display font-semibold text-[44px] leading-none tabular-nums text-[#0F1722] mt-1">936.5<span class="text-[20px] font-medium text-slate-500 ml-1">M tons</span></div>
-            <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mt-1">value · $1,293.7B · all modes</div>
-            <div class="mt-4 pt-3 border-t border-zinc-950/05">
-              <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">tons by mode</div>
-              <div class="flex h-2.5 w-full overflow-hidden rounded-full">
-                <div class="bg-[#1F3F8F]" style="width:68.6%" title="Truck 68.6%"></div>
-                <div class="bg-[#37576B]" style="width:17.0%" title="Water 17.0%"></div>
-                <div class="bg-[#E5A646]" style="width:10.7%" title="Rail 10.7%"></div>
-                <div class="bg-[#94C24E]" style="width:3.2%" title="Pipeline 3.2%"></div>
-                <div class="bg-[#E160A4]" style="width:0.3%" title="Air 0.3%"></div>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ HERO HEADER · LayoutGroup hero ═════════ -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-12" data-dms-section="page-header">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// nysdot · 2024 state freight plan · public atlas</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>data current · base 2021</span>
               </div>
-              <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-[10.5px] text-slate-600">
-                <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-sm bg-[#1F3F8F]"></span>Truck 68.6%</span>
-                <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-sm bg-[#37576B]"></span>Water 17.0%</span>
-                <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-sm bg-[#E5A646]"></span>Rail 10.7%</span>
-                <span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-sm bg-[#94C24E]"></span>Pipe 3.2%</span>
+              <h1 class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight text-[#0F1722]">NYS Freight Atlas<span class="text-[#CA8A04]">.</span></h1>
+              <p class="font-proxima text-[15px] leading-[1.65] text-slate-700 mt-3 max-w-[720px]">The living, interactive companion to the 2024 New York State Freight Plan — every road, rail, port, airport, pipeline, and truck-parking layer the plan analyzes, the performance metrics behind them, and the underlying data to download. Start with the numbers below, then dive into the map, the insights, or the catalog.</p>
+              <div class="mt-6 flex flex-wrap gap-3">
+                <a href="freight-atlas-map.html" class="tny-press inline-flex items-center gap-2 px-5 h-11 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4"/></svg>Explore the map</a>
+                <a href="freight-atlas-data.html" class="inline-flex items-center gap-2 px-5 h-11 bg-white hover:bg-slate-50 border border-[#1F3F8F] text-[#1F3F8F] font-proxima text-[13.5px] font-semibold rounded-[6px]">Browse &amp; download the data</a>
               </div>
             </div>
-            <div class="mt-3 pt-3 border-t border-zinc-950/05 font-proxima text-[12px] text-slate-500">Forecast to 2050: <span class="text-[#0f1722] font-medium">+34% volume · +57–67% value.</span></div>
           </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- ═════════ § 01 · WHAT'S NEW (2024 refresh) · LayoutGroup content ═════════ -->
-    <div class="w-full bg-[#ECEEF2] py-24" data-dms-group="content">
-      <div class="mx-auto max-w-[1280px] w-full px-8 grid grid-cols-12 gap-6">
-        <div class="col-span-12" data-dms-section="whatsnew-intro">
-          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01 · what's new in the 2024 atlas</span>
-          <h2 class="mt-3 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">The plan refreshed the data. The Atlas shows it.</h2>
-          <p class="mt-3 font-proxima text-[15.5px] text-slate-600 max-w-[720px] leading-[1.65]">The 2024 plan tasks AVAIL with turning the Freight Web Atlas into a centralized, interactive, metadata-rich platform. Four headline changes drove this rebuild.</p>
-        </div>
+          <!-- ═════════ § 01 · WHAT'S IN THE ATLAS ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="whats-in">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">56 layers · 5 modes</span></div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What's in the Atlas.</h2>
+                </div>
+                <a href="freight-atlas-map.html" class="hidden sm:inline-flex font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] items-center gap-1">open the map <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+              </div>
 
-        <div class="col-span-12 md:col-span-3" data-dms-section="new-vintage">
-          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
-            <div class="size-12 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.81 1.04 6.45 2.71"/><path d="M21 3v5h-5"/></svg></div>
-            <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722]">2021 / 2050 refresh</div>
-            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">Baseline data, formerly "2015 or earlier," moves to a post-COVID 2021 TRANSEARCH base year with a 2050 forecast across every mode.</p>
-          </div>
-        </div>
-        <div class="col-span-12 md:col-span-3" data-dms-section="new-parking">
-          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
-            <div class="size-12 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg></div>
-            <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722]">Truck parking</div>
-            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">Appendix E's brand-new study — 216 in-state sites + 47 in a 15-mi buffer, hourly utilization, and ~55,000 undesignated ATRI stops — now a live layer.</p>
-          </div>
-        </div>
-        <div class="col-span-12 md:col-span-3" data-dms-section="new-fcn">
-          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
-            <div class="size-12 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
-            <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722]">FCN performance</div>
-            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">TTTR, Total Excessive Delay, pavement IRI, bridge condition, and truck-crash overlays now ride on the Freight Core Network.</p>
-          </div>
-        </div>
-        <div class="col-span-12 md:col-span-3" data-dms-section="new-equity">
-          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
-            <div class="size-12 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>
-            <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722]">Equity &amp; climate</div>
-            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">USDOT Equitable Transportation Community (ETC) Index and CLCPA disadvantaged-community overlays become first-class map layers.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+              <!-- 5 mode cards -->
+              <div class="grid grid-cols-12 gap-6">
+                <a href="freight-atlas-map.html" class="col-span-6 md:col-span-4 lg:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors">
+                  <div class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h18M6 12V7m12 5V7M9 12v5m6-5v5"/></svg></div>
+                  <div class="font-display uppercase text-[15px] tracking-tight text-[#0f1722]">Road</div>
+                  <div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722] mt-1">8<span class="font-proxima font-normal text-[11px] text-slate-500 ml-1">layers</span></div>
+                  <p class="font-proxima text-[11.5px] text-slate-500 mt-1 leading-snug">FCHN · PHFS · CUFC/CRFC · 37 bottlenecks</p>
+                </a>
+                <a href="freight-atlas-map.html" class="col-span-6 md:col-span-4 lg:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors">
+                  <div class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="12" rx="2"/><path d="M4 11h16M8 20l2-4m6 4-2-4"/></svg></div>
+                  <div class="font-display uppercase text-[15px] tracking-tight text-[#0f1722]">Rail</div>
+                  <div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722] mt-1">5<span class="font-proxima font-normal text-[11px] text-slate-500 ml-1">layers</span></div>
+                  <p class="font-proxima text-[11.5px] text-slate-500 mt-1 leading-snug">Class I/II/III · 78 facilities · crossings</p>
+                </a>
+                <a href="freight-atlas-map.html" class="col-span-6 md:col-span-4 lg:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors">
+                  <div class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 14h18l-2 5H5l-2-5ZM12 3v11M7 9h10"/></svg></div>
+                  <div class="font-display uppercase text-[15px] tracking-tight text-[#0f1722]">Maritime</div>
+                  <div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722] mt-1">8<span class="font-proxima font-normal text-[11px] text-slate-500 ml-1">ports</span></div>
+                  <p class="font-proxima text-[11.5px] text-slate-500 mt-1 leading-snug">Core Maritime · marine highways · canal</p>
+                </a>
+                <a href="freight-atlas-map.html" class="col-span-6 md:col-span-4 lg:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors">
+                  <div class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 16l20-7-9 13-2-5-9-1Z"/></svg></div>
+                  <div class="font-display uppercase text-[15px] tracking-tight text-[#0f1722]">Air</div>
+                  <div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722] mt-1">6<span class="font-proxima font-normal text-[11px] text-slate-500 ml-1">airports</span></div>
+                  <p class="font-proxima text-[11.5px] text-slate-500 mt-1 leading-snug">Core Air Cargo · JFK facilities</p>
+                </a>
+                <a href="freight-atlas-map.html" class="col-span-6 md:col-span-4 lg:col-span-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors">
+                  <div class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h12v10H4zM16 10h3l2 3v4h-5M6.5 17a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Zm10 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z"/></svg></div>
+                  <div class="font-display uppercase text-[15px] tracking-tight text-[#0f1722]">Pipeline</div>
+                  <div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722] mt-1">3<span class="font-proxima font-normal text-[11px] text-slate-500 ml-1">layers</span></div>
+                  <p class="font-proxima text-[11.5px] text-slate-500 mt-1 leading-snug">Hazardous-liquid · natural-gas · terminals</p>
+                </a>
+                <a href="freight-atlas-map.html" class="col-span-6 md:col-span-4 lg:col-span-2 rounded-[8px] border border-dashed border-[#1F3F8F]/40 bg-white shadow-sm p-4 hover:border-[#1F3F8F] transition-colors flex flex-col justify-center">
+                  <div class="font-display uppercase text-[14px] tracking-tight text-[#1F3F8F]">+ all modes</div>
+                  <p class="font-proxima text-[11.5px] text-slate-500 mt-1 leading-snug">Toggle every layer on one map</p>
+                </a>
+              </div>
 
-    <!-- ═════════ § 02 · THREE DOORWAYS · LayoutGroup content_tint ═════════ -->
-    <div class="w-full bg-[#E4E8EE] py-24" data-dms-group="content_tint">
-      <div class="mx-auto max-w-[1280px] w-full px-8 grid grid-cols-12 gap-6">
-        <div class="col-span-12" data-dms-section="doorways-intro">
-          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02 · find your way in</span>
-          <h2 class="mt-3 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Three doorways, one dataset.</h2>
-          <p class="mt-3 font-proxima text-[15.5px] text-slate-600 max-w-[720px] leading-[1.65]">The Atlas serves the public, planners, and researchers from the same source of truth. Start where you fit.</p>
-        </div>
-
-        <div class="col-span-12 md:col-span-4" data-dms-section="door-public">
-          <a href="freight-atlas-gallery.html" class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 hover:border-[#37576B] transition-colors h-full">
-            <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">for the public</div>
-            <div class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Understand NY freight</div>
-            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">Start in the Maps Gallery, then read the data stories in Insights. No jargon, no login — just the picture of how goods move through the state.</p>
-            <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F]">Open Maps Gallery →</div>
-          </a>
-        </div>
-        <div class="col-span-12 md:col-span-4" data-dms-section="door-mpo">
-          <a href="freight-atlas-map.html" class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 hover:border-[#37576B] transition-colors h-full">
-            <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">for MPOs &amp; planners</div>
-            <div class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Analyze across layers</div>
-            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">Cross-reference networks, performance metrics, project investment, and regional rollups in one interactive map — the substrate for TIP/UPWP and corridor studies.</p>
-            <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F]">Open the Atlas →</div>
-          </a>
-        </div>
-        <div class="col-span-12 md:col-span-4" data-dms-section="door-researcher">
-          <a href="freight-atlas-data.html" class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 hover:border-[#37576B] transition-colors h-full">
-            <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">for researchers &amp; developers</div>
-            <div class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Download &amp; build</div>
-            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">Bulk export in CSV, GeoJSON, Shapefile, or GeoPackage; read the data dictionary and vintages; or hit the Falcor graph API and vector tiles directly.</p>
-            <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F]">Open Data &amp; Downloads →</div>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═════════ § 03 · AT A GLANCE (six goals + facts) · LayoutGroup content ═════════ -->
-    <div class="w-full bg-[#ECEEF2] py-24" data-dms-group="content">
-      <div class="mx-auto max-w-[1280px] w-full px-8 grid grid-cols-12 gap-6">
-        <div class="col-span-12 md:col-span-5" data-dms-section="glance-copy">
-          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03 · at a glance</span>
-          <h2 class="mt-3 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">The plan's six goals, on the map.</h2>
-          <p class="mt-3 font-proxima text-[15.5px] text-slate-600 leading-[1.65] max-w-[560px]">
-            Every layer and insight is tagged to the 2024 plan's six goal areas. Freight-reliant industries
-            are over 18% of state GDP and a quarter of all employment — the Atlas is how New York keeps that
-            system safe, reliable, and competitive.
-          </p>
-          <div class="mt-6 grid grid-cols-2 gap-3">
-            <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-3"><div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722]">1,145<span class="text-[12px] text-slate-500 ml-1">mi</span></div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">PHFS routes</div></div>
-            <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-3"><div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722]">+4,497<span class="text-[12px] text-slate-500 ml-1">mi</span></div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">FCHN beyond PHFS</div></div>
-            <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-3"><div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722]">37</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">truck bottlenecks</div></div>
-            <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-3"><div class="font-display font-semibold text-[22px] tabular-nums text-[#0f1722]">$304<span class="text-[12px] text-slate-500 ml-1">M</span></div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">NHFP · 2024–2028</div></div>
-          </div>
-        </div>
-        <div class="col-span-12 md:col-span-7" data-dms-section="glance-goals">
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 h-full">
-            <a href="freight-atlas-insights.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors flex flex-col">
-              <span class="size-2.5 rounded-full bg-rose-500 mb-2"></span>
-              <div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Safety</div>
-              <div class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Truck crashes, rail crossings, blocked-crossing hotspots</div>
-            </a>
-            <a href="freight-atlas-insights.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors flex flex-col">
-              <span class="size-2.5 rounded-full bg-[#1F3F8F] mb-2"></span>
-              <div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Mobility</div>
-              <div class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">TTTR, excessive delay, bottlenecks, truck parking</div>
-            </a>
-            <a href="freight-atlas-insights.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors flex flex-col">
-              <span class="size-2.5 rounded-full bg-amber-500 mb-2"></span>
-              <div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Condition</div>
-              <div class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Pavement IRI, bridge condition &amp; clearance &lt;16 ft</div>
-            </a>
-            <a href="freight-atlas-insights.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors flex flex-col">
-              <span class="size-2.5 rounded-full bg-emerald-500 mb-2"></span>
-              <div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Environment</div>
-              <div class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">GHG/VMT, CLCPA, resilience, clean ports</div>
-            </a>
-            <a href="freight-atlas-insights.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors flex flex-col">
-              <span class="size-2.5 rounded-full bg-[#37576B] mb-2"></span>
-              <div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Economy</div>
-              <div class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Commodity flows, high-value facilities, jobs</div>
-            </a>
-            <a href="freight-atlas-insights.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors flex flex-col">
-              <span class="size-2.5 rounded-full bg-[#E5A646] mb-2"></span>
-              <div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Stewardship</div>
-              <div class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Investment program, project evaluation, data access</div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═════════ § 04 · FEATURED STORIES · LayoutGroup content_tint ═════════ -->
-    <div class="w-full bg-[#E4E8EE] py-24" data-dms-group="content_tint">
-      <div class="mx-auto max-w-[1280px] w-full px-8 grid grid-cols-12 gap-6">
-        <div class="col-span-12 flex items-end justify-between" data-dms-section="stories-intro">
-          <div>
-            <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04 · freight insights</span>
-            <h2 class="mt-3 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Featured data stories</h2>
-          </div>
-          <a href="freight-atlas-insights.html" class="hidden sm:inline-flex font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] items-center gap-1">all insights <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
-        </div>
-
-        <div class="col-span-12 md:col-span-6" data-dms-section="story-parking">
-          <a href="freight-atlas-insights.html" class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden hover:border-[#37576B] transition-colors h-full">
-            <div class="h-40 tny-map-dark relative">
-              <div class="absolute inset-0 flex items-center justify-center font-mono text-[10.5px] uppercase tracking-[0.18em] text-white/70">utilization heatmap · overnight</div>
+              <!-- overlay themes -->
+              <div class="mt-5 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">cross-cutting overlays</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-[#1F3F8F]"></span>Performance (TTTR · TED · IRI · crashes)</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-[#37576B]"></span>Commodity flows (2021 + 2050)</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-emerald-500"></span>Truck parking (216+47)</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-[#E5A646]"></span>Investment (NHFP · PFRAP)</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-rose-500"></span>Equity &amp; climate (ETC · CLCPA)</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-amber-500"></span>Geographies (REDC · MPO · county)</span>
+              </div>
             </div>
-            <div class="p-6">
-              <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">mobility · safety</div>
-              <div class="mt-1 font-display font-medium text-[22px] leading-[1.2] text-[#0f1722]">The truck-parking crisis, hour by hour</div>
-              <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">NYC runs roughly one truck-parking space for every 25 trucks. Overnight utilization across in-state sites runs 90–100%. Where do drivers end up? ~55,000 undesignated stops, mapped from 265M ATRI GPS waypoints.</p>
+          </div>
+
+          <!-- ═════════ § 02 · STANDOUT STATISTICS ═════════ -->
+          <div class="w-full bg-[#E4E8EE] border-b border-zinc-950/05 py-12" data-dms-group="content_tint">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="by-the-numbers">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">New York freight · 2021 base year</span></div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The system, by the numbers.</h2>
+                </div>
+                <a href="freight-atlas-insights.html" class="hidden sm:inline-flex font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] items-center gap-1">see all metrics <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+              </div>
+
+              <!-- 3 standout hero KPIs -->
+              <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 md:col-span-4" data-dms-section="kpi-tons">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Total freight moved</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">936.5<span class="text-[22px] font-medium text-slate-500 ml-1">M tons</span></div>
+                    <div class="mt-1 font-proxima text-[12.5px] text-slate-500">across all five modes · S&amp;P TRANSEARCH 2023</div>
+                    <div class="mt-4 pt-3 border-t border-zinc-950/05 inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-emerald-700">↑ +34% forecast to 2050</div>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-4" data-dms-section="kpi-value">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Goods value</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">$1.29<span class="text-[22px] font-medium text-slate-500 ml-1">trillion</span></div>
+                    <div class="mt-1 font-proxima text-[12.5px] text-slate-500">$1,293.7B · freight-reliant = &gt;18% of state GDP</div>
+                    <div class="mt-4 pt-3 border-t border-zinc-950/05 inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-emerald-700">↑ +57–67% forecast to 2050</div>
+                  </div>
+                </div>
+                <div class="col-span-12 md:col-span-4" data-dms-section="kpi-economy">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Of all NY jobs</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">25<span class="text-[22px] font-medium text-slate-500 ml-0.5">%</span></div>
+                    <div class="mt-1 font-proxima text-[12.5px] text-slate-500">are in freight-reliant industries · 3rd-largest state economy ($2.1T GDP)</div>
+                    <div class="mt-4 pt-3 border-t border-zinc-950/05 inline-flex items-center gap-1 font-mono text-[12px] uppercase tracking-wider text-slate-500">Economy goal</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mode split graph · tons vs value -->
+              <div class="mt-6 grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-8" data-dms-section="mode-split">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Mode share · tons vs value · 2021</span>
+                      <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500"><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-2 rounded-sm bg-[#1F3F8F]"></span>tons</span><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-2 rounded-sm bg-[#E5A646]"></span>value</span></div>
+                    </div>
+                    <div class="p-5 space-y-4">
+                      <!-- Truck -->
+                      <div class="grid grid-cols-[88px_1fr] items-center gap-3"><span class="font-proxima text-[13px] text-[#0f1722]">Truck</span>
+                        <div class="space-y-1"><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#1F3F8F]" style="width:68.6%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">68.6%</span></div><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#E5A646]" style="width:75.9%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">75.9%</span></div></div>
+                      </div>
+                      <!-- Water -->
+                      <div class="grid grid-cols-[88px_1fr] items-center gap-3"><span class="font-proxima text-[13px] text-[#0f1722]">Water</span>
+                        <div class="space-y-1"><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#1F3F8F]" style="width:17%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">17.0%</span></div><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#E5A646]" style="width:5.6%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">5.6%</span></div></div>
+                      </div>
+                      <!-- Rail -->
+                      <div class="grid grid-cols-[88px_1fr] items-center gap-3"><span class="font-proxima text-[13px] text-[#0f1722]">Rail</span>
+                        <div class="space-y-1"><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#1F3F8F]" style="width:10.7%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">10.7%</span></div><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#E5A646]" style="width:14.7%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">14.7%</span></div></div>
+                      </div>
+                      <!-- Pipeline -->
+                      <div class="grid grid-cols-[88px_1fr] items-center gap-3"><span class="font-proxima text-[13px] text-[#0f1722]">Pipeline</span>
+                        <div class="space-y-1"><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#1F3F8F]" style="width:3.2%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">3.2%</span></div><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#E5A646]" style="width:0.5%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">0.5%</span></div></div>
+                      </div>
+                      <!-- Air -->
+                      <div class="grid grid-cols-[88px_1fr] items-center gap-3"><span class="font-proxima text-[13px] text-[#0f1722]">Air</span>
+                        <div class="space-y-1"><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#1F3F8F]" style="width:1.2%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">0.3%</span></div><div class="flex items-center gap-2"><div class="h-3 rounded-sm bg-[#E5A646]" style="width:3%"></div><span class="font-mono text-[10.5px] tabular-nums text-slate-500">3.0%</span></div></div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-slate-500 leading-[1.55] pt-1">Truck dominates both tonnage and value. Air carries just 0.3% of tons but 3.0% of value — and is the fastest-growing mode, projected above 68% growth by 2050.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Growth to 2050 mini -->
+                <div class="col-span-12 lg:col-span-4" data-dms-section="growth-2050">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                    <div class="font-display font-medium text-[15px] text-[#0f1722]">Growth to 2050</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-4">2021 base → 2050 forecast</div>
+                    <svg viewBox="0 0 260 150" class="w-full h-[150px]">
+                      <line x1="30" y1="120" x2="250" y2="120" stroke="#e2e8f0"/>
+                      <!-- volume -->
+                      <rect x="60" y="60" width="34" height="60" rx="2" fill="#cbd5e1"/>
+                      <rect x="98" y="30" width="34" height="90" rx="2" fill="#1F3F8F"/>
+                      <!-- value -->
+                      <rect x="160" y="78" width="34" height="42" rx="2" fill="#cbd5e1"/>
+                      <rect x="198" y="20" width="34" height="100" rx="2" fill="#E5A646"/>
+                      <g font-family="ui-monospace,monospace" font-size="9" fill="#64748b">
+                        <text x="63" y="134">'21</text><text x="101" y="134">'50</text>
+                        <text x="163" y="134">'21</text><text x="201" y="134">'50</text>
+                        <text x="60" y="22" fill="#1F3F8F">+34%</text>
+                        <text x="158" y="12" fill="#CA8A04">+62%</text>
+                      </g>
+                    </svg>
+                    <div class="mt-2 flex items-center justify-between font-mono text-[10.5px] uppercase tracking-wider text-slate-500"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-sm bg-[#1F3F8F]"></span>volume</span><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-sm bg-[#E5A646]"></span>value</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- secondary stat strip -->
+              <div class="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-dms-section="stat-strip">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><div class="font-display font-semibold text-[28px] tabular-nums text-[#0f1722] leading-none">56</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">map layers</div></div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><div class="font-display font-semibold text-[28px] tabular-nums text-[#0f1722] leading-none">24</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">datasets</div></div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><div class="font-display font-semibold text-[28px] tabular-nums text-[#0f1722] leading-none">1,145<span class="text-[13px] text-slate-500 ml-0.5">mi</span></div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">PHFS routes</div></div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><div class="font-display font-semibold text-[28px] tabular-nums text-[#0f1722] leading-none">263</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">parking sites</div></div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><div class="font-display font-semibold text-[28px] tabular-nums text-[#0f1722] leading-none">37</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">bottlenecks</div></div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><div class="font-display font-semibold text-[28px] tabular-nums text-[#0f1722] leading-none">$304<span class="text-[13px] text-slate-500 ml-0.5">M</span></div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500 mt-1">NHFP 24–28</div></div>
+              </div>
             </div>
-          </a>
-        </div>
-        <div class="col-span-12 md:col-span-6" data-dms-section="story-flows">
-          <a href="freight-atlas-insights.html" class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden hover:border-[#37576B] transition-colors h-full">
-            <div class="h-40 tny-map relative">
-              <div class="absolute inset-0 flex items-center justify-center font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-600/70">commodity desire-lines · 2021 → 2050</div>
+          </div>
+
+          <!-- ═════════ § 03 · EXPLORE THE ATLAS (direct users) ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="explore">
+              <div class="flex items-center gap-2 mb-6"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Explore the Atlas.</h2></div>
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- Freight Atlas (map) — feature card -->
+                <a href="freight-atlas-map.html" class="col-span-12 lg:col-span-6 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden hover:border-[#37576B] transition-colors flex flex-col sm:flex-row">
+                  <div class="sm:w-40 h-28 sm:h-auto tny-map flex-shrink-0"></div>
+                  <div class="p-5 flex-1">
+                    <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">interactive map</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">· 56 layers</span></div>
+                    <div class="font-display font-medium text-[20px] leading-[1.2] text-[#0f1722]">Freight Atlas</div>
+                    <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The flagship map — every mode and overlay on one canvas, with the 2021↔2050 vintage toggle, feature popups, and per-layer download.</p>
+                    <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open the map →</div>
+                  </div>
+                </a>
+
+                <!-- Data & Downloads — feature card -->
+                <a href="freight-atlas-data.html" class="col-span-12 lg:col-span-6 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden hover:border-[#37576B] transition-colors flex flex-col sm:flex-row">
+                  <div class="sm:w-40 h-28 sm:h-auto bg-[#0F2D4D] flex-shrink-0 flex items-center justify-center"><svg class="size-10 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg></div>
+                  <div class="p-5 flex-1">
+                    <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">data &amp; downloads</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">· 24 datasets</span></div>
+                    <div class="font-display font-medium text-[20px] leading-[1.2] text-[#0f1722]">Data &amp; Downloads</div>
+                    <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The catalog — every layer to download in CSV, GeoJSON, Shapefile, or GeoPackage, with data dictionaries, vintages, and a Falcor API. No login.</p>
+                    <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">browse the catalog →</div>
+                  </div>
+                </a>
+
+                <!-- Three smaller surface cards -->
+                <a href="freight-atlas-gallery.html" class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                  <div class="size-10 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg></div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">Maps Gallery</div>
+                  <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Eight curated presets — Freight Network, Truck Parking, Flows, Bottlenecks, Equity — that open the map ready-made.</p>
+                  <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">8 presets →</div>
+                </a>
+                <a href="freight-atlas-insights.html" class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                  <div class="size-10 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">Freight Insights</div>
+                  <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Dashboards and data stories organized by the plan's six goals — reliability, the parking crisis, flows to 2050, climate &amp; equity.</p>
+                  <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">6 goals →</div>
+                </a>
+                <a href="freight-atlas-about.html" class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                  <div class="size-10 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">About &amp; The Plan</div>
+                  <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The six goals and 20 strategies, the full report library, what changed since 2019, and how to get involved.</p>
+                  <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">read the plan →</div>
+                </a>
+              </div>
             </div>
-            <div class="p-6">
-              <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04]">economy</div>
-              <div class="mt-1 font-display font-medium text-[22px] leading-[1.2] text-[#0f1722]">Post-COVID flows, and where 2050 takes them</div>
-              <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">Truck still carries 68.6% of tons; air freight value is the fastest-growing mode (&gt;68% by 2050). Trace origin–destination pairs by commodity and mode against the 2050 forecast.</p>
-            </div>
-          </a>
+          </div>
+
         </div>
       </div>
     </div>
-
-    <!-- ═════════ § 05 · EXPLORE CTA · LayoutGroup content ═════════ -->
-    <div class="w-full bg-[#0F2D4D] py-20" data-dms-group="feature">
-      <div class="mx-auto max-w-[1280px] w-full px-8 grid grid-cols-12 gap-6 items-center">
-        <div class="col-span-12 md:col-span-8" data-dms-section="cta-copy">
-          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#FACC15]">// the data is public</span>
-          <h2 class="mt-3 font-display font-semibold text-[36px] leading-[1.08] tracking-tight text-white">Open the map, or take the data with you.</h2>
-          <p class="mt-3 font-proxima text-[15px] text-slate-200 leading-[1.65] max-w-[640px]">All freight layers are public-domain and downloadable in standard GIS formats with full metadata. MPOs, researchers, and the public use the same catalog.</p>
-        </div>
-        <div class="col-span-12 md:col-span-4 flex md:justify-end gap-3" data-dms-section="cta-actions">
-          <a href="freight-atlas-map.html" class="tny-press cursor-pointer inline-flex items-center gap-2 px-5 h-12 bg-[#FACC15] hover:bg-[#EAAD43] border-b-4 border-[#a17a09] text-[#0F2D4D] font-display uppercase text-[14px] tracking-wide rounded-[6px]">Explore the map</a>
-          <a href="freight-atlas-data.html" class="cursor-pointer inline-flex items-center gap-2 px-5 h-12 bg-transparent hover:bg-white/10 border border-white/40 text-white font-proxima text-[14px] font-semibold rounded-[6px]">Data catalog</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═════════ FOOTER LayoutGroup ═════════ -->
-    <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
-      <div class="mx-auto max-w-[1280px] w-full px-8 py-8 grid grid-cols-12 gap-6">
-        <div class="col-span-12 md:col-span-4" data-dms-section="footer-brand">
-          <div class="flex items-center gap-2"><div class="size-7 bg-[#1F3F8F] rounded flex items-center justify-center text-white font-display font-bold text-[11px]">FA</div><span class="font-display uppercase text-[#0F1722] text-[13px] tracking-wide">NYS Freight Atlas</span></div>
-          <p class="mt-3 font-proxima text-[12.5px] text-slate-500 leading-[1.55]">The interactive companion to the 2024 New York State Freight Plan · NYSDOT in partnership with AVAIL.</p>
-        </div>
-        <div class="col-span-6 md:col-span-2" data-dms-section="footer-explore">
-          <div class="font-display uppercase text-[11px] tracking-wide text-slate-700 mb-2">Explore</div>
-          <ul class="space-y-1 font-proxima text-[12.5px] text-slate-600">
-            <li><a class="hover:text-[#1F3F8F]" href="freight-atlas-map.html">Freight Atlas</a></li>
-            <li><a class="hover:text-[#1F3F8F]" href="freight-atlas-gallery.html">Maps Gallery</a></li>
-            <li><a class="hover:text-[#1F3F8F]" href="freight-atlas-insights.html">Insights</a></li>
-          </ul>
-        </div>
-        <div class="col-span-6 md:col-span-2" data-dms-section="footer-data">
-          <div class="font-display uppercase text-[11px] tracking-wide text-slate-700 mb-2">Data</div>
-          <ul class="space-y-1 font-proxima text-[12.5px] text-slate-600">
-            <li><a class="hover:text-[#1F3F8F]" href="freight-atlas-data.html">Data Catalog</a></li>
-            <li><a class="hover:text-[#1F3F8F]" href="freight-atlas-dataset.html">Dataset page</a></li>
-            <li><a class="hover:text-[#1F3F8F]" href="freight-atlas-about.html">About &amp; The Plan</a></li>
-          </ul>
-        </div>
-        <div class="col-span-12 md:col-span-4" data-dms-section="footer-status">
-          <div class="font-display uppercase text-[11px] tracking-wide text-slate-700 mb-2">Status</div>
-          <div class="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-wider text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>Atlas online · catalog bound to npmrds2</div>
-          <div class="mt-3 font-proxima text-[12px] text-slate-500">Data is public domain. Sources: TRANSEARCH, FAF5, NPMRDS, ATRI, USACE, FRA, PHMSA, NYSDOT.</div>
-        </div>
-      </div>
-      <div class="border-t border-zinc-950/10">
-        <div class="mx-auto max-w-[1280px] w-full px-8 py-4 flex items-center justify-between font-mono text-[11px] text-slate-500">
-          <span>© 2026 NYSDOT · NYS Freight Atlas · A program of the New York State Department of Transportation</span>
-          <span>2024 State Freight Plan · public release</span>
-        </div>
-      </div>
-    </footer>
-
   </div>
 </div>
+
 <!-- Floating design-system navigation widget (docs scaffolding per skill §7.0.2 — not Layout chrome; never on a live DMS site) -->
 <div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Proxima Nova',system-ui,sans-serif;">
   <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:220px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
