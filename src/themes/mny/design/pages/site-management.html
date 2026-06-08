@@ -63,6 +63,8 @@
     .badge-map         { background: #CCFBF1; color: #0F766E; }
     .badge-header      { background: #FEF3C7; color: #B45309; }
     .badge-filters     { background: #FFE4E6; color: #BE123C; }
+    /* page_is_root badge */
+    .badge-root        { background: #E0EBF0; color: #37576B; border-radius: 9999px; padding: 1px 8px; font-family: 'Source Sans 3', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
 
     /* Status dot */
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
@@ -108,9 +110,12 @@
     .filter-wrap { position: relative; display: inline-block; }
     .filter-wrap::after { content: "▾"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 10px; color: #6D96AE; pointer-events: none; }
 
-    /* Action icon */
+    /* Action icon + hover-reveal buttons */
     .action-icon { opacity: 0; transition: opacity 0.15s; color: #6D96AE; }
     tr:hover .action-icon { opacity: 1; }
+    .hover-show { opacity: 0; transition: opacity 0.15s; }
+    tr:hover .hover-show { opacity: 1; }
+    .row-actions { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 
     /* Link cells */
     .link-title { color: #2D3E4C; font-weight: 600; text-decoration: none; }
@@ -294,15 +299,18 @@
       </div>
 
       <!-- Pages table -->
-      <div class="border border-mny-200 rounded-xl overflow-hidden">
-        <table class="mgmt-table">
+      <div class="border border-mny-200 rounded-xl overflow-hidden overflow-x-auto">
+        <table class="mgmt-table" style="min-width: 920px;">
           <thead>
             <tr>
               <th style="width:28px"></th>
               <th>Title</th>
-              <th style="width:140px">Parent</th>
-              <th style="width:175px">Status</th>
-              <th style="width:180px">URL Slug</th>
+              <th style="width:130px">Parent</th>
+              <th style="width:52px" class="text-center" title="page_is_root column type">Root?</th>
+              <th style="width:68px" class="text-center" title="page_children — total direct children">Children</th>
+              <th style="width:90px">Published</th>
+              <th style="width:90px">Changes</th>
+              <th style="width:165px">URL Slug</th>
               <th style="width:60px" class="text-center">Sects.</th>
               <th style="width:100px">Auth</th>
               <th style="width:32px"></th>
@@ -310,146 +318,167 @@
           </thead>
           <tbody>
 
-            <!-- Row: root page, draft -->
+            <!-- Home — root, draft, 2 children (1 pub / 1 draft) -->
             <tr>
               <td><span class="dot dot-amber"></span></td>
               <td><a class="link-title" href="#">Home</a></td>
               <td><span class="text-mny-400 text-xs">—</span></td>
-              <td>
-                <div class="pub-status">
-                  <span class="pill pill-amber">Draft</span>
-                  <button class="pub-btn pub-btn-publish">Publish</button>
-                </div>
-              </td>
+              <td class="text-center"><span class="badge badge-root">Root</span></td>
+              <td class="text-center"><span class="text-sm font-semibold text-mny-700">2</span></td>
+              <td><span class="pill pill-amber">Draft</span></td>
+              <td><span class="text-mny-200 text-xs">—</span></td>
               <td><a class="link-slug" href="#">/</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">5</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
-              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></td>
+              <td>
+                <div class="row-actions">
+                  <button class="pub-btn pub-btn-publish hover-show">Publish</button>
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </td>
             </tr>
 
-            <!-- Row: published, has changes -->
+            <!-- Assess Risk — root, published, has unsaved changes, 5 children -->
             <tr>
               <td><span class="dot dot-green"></span></td>
               <td><a class="link-title" href="#">Assess Risk</a></td>
               <td><span class="text-mny-400 text-xs">—</span></td>
-              <td>
-                <div class="pub-status">
-                  <span class="pill pill-green">Published</span>
-                  <span class="pill pill-amber">Changes</span>
-                  <button class="pub-btn pub-btn-publish">Publish</button>
-                  <button class="pub-btn pub-btn-discard">Discard</button>
-                </div>
-              </td>
+              <td class="text-center"><span class="badge badge-root">Root</span></td>
+              <td class="text-center"><span class="text-sm font-semibold text-mny-700">5</span></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td><span class="pill pill-amber">Unsaved</span></td>
               <td><a class="link-slug" href="#">/assess-risk</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">3</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
-              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></td>
+              <td>
+                <div class="row-actions">
+                  <button class="pub-btn pub-btn-publish hover-show">Publish</button>
+                  <button class="pub-btn pub-btn-discard hover-show">Discard</button>
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </td>
             </tr>
 
-            <!-- Row: published, clean -->
+            <!-- Natural Hazards — non-root, published, 3 children -->
             <tr>
               <td><span class="dot dot-green"></span></td>
               <td><a class="link-title" href="#">Natural Hazards</a></td>
               <td><a class="link-page" href="#">Assess Risk</a></td>
-              <td>
-                <div class="pub-status">
-                  <span class="pill pill-green">Published</span>
-                </div>
-              </td>
+              <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
+              <td class="text-center"><span class="text-sm font-semibold text-mny-700">3</span></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td><span class="text-mny-200 text-xs">—</span></td>
               <td><a class="link-slug" href="#">/assess-risk/natural-hazards</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">8</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
-              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></td>
+              <td>
+                <div class="row-actions">
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </td>
             </tr>
 
-            <!-- Row: published, clean, nested 2 deep -->
+            <!-- Flooding — leaf, published, no children -->
             <tr>
               <td><span class="dot dot-green"></span></td>
               <td><a class="link-title" href="#">Flooding &amp; Stormwater</a></td>
               <td><a class="link-page" href="#">Natural Hazards</a></td>
-              <td>
-                <div class="pub-status">
-                  <span class="pill pill-green">Published</span>
-                </div>
-              </td>
+              <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
+              <td class="text-center"><span class="text-mny-200 text-sm">—</span></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td><span class="text-mny-200 text-xs">—</span></td>
               <td><a class="link-slug" href="#">/assess-risk/flooding</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">11</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
-              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></td>
+              <td>
+                <div class="row-actions">
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </td>
             </tr>
 
-            <!-- Row: draft, auth-gated -->
+            <!-- Vulnerability — leaf, draft, auth-gated -->
             <tr>
               <td><span class="dot dot-amber"></span></td>
               <td><a class="link-title" href="#">Vulnerability Assessment</a></td>
               <td><a class="link-page" href="#">Plan</a></td>
-              <td>
-                <div class="pub-status">
-                  <span class="pill pill-amber">Draft</span>
-                  <button class="pub-btn pub-btn-publish">Publish</button>
-                </div>
-              </td>
+              <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
+              <td class="text-center"><span class="text-mny-200 text-sm">—</span></td>
+              <td><span class="pill pill-amber">Draft</span></td>
+              <td><span class="text-mny-200 text-xs">—</span></td>
               <td><a class="link-slug" href="#">/plan/vulnerability</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">6</span></td>
               <td><span class="text-xs font-semibold text-mny-700">Contributors</span></td>
-              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></td>
+              <td>
+                <div class="row-actions">
+                  <button class="pub-btn pub-btn-publish hover-show">Publish</button>
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </td>
             </tr>
 
-            <!-- Row: published, has changes -->
+            <!-- Implement — root, published, unsaved, 2 children (all published) -->
             <tr>
               <td><span class="dot dot-green"></span></td>
               <td><a class="link-title" href="#">Implement</a></td>
               <td><span class="text-mny-400 text-xs">—</span></td>
-              <td>
-                <div class="pub-status">
-                  <span class="pill pill-green">Published</span>
-                  <span class="pill pill-amber">Changes</span>
-                  <button class="pub-btn pub-btn-publish">Publish</button>
-                  <button class="pub-btn pub-btn-discard">Discard</button>
-                </div>
-              </td>
+              <td class="text-center"><span class="badge badge-root">Root</span></td>
+              <td class="text-center"><span class="text-sm font-semibold text-mny-700">2</span></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td><span class="pill pill-amber">Unsaved</span></td>
               <td><a class="link-slug" href="#">/implement</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">4</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
-              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></td>
-            </tr>
-
-            <!-- Row: hidden in nav, published -->
-            <tr style="opacity: 0.55;">
-              <td><span class="dot dot-gray"></span></td>
-              <td><a class="link-title" href="#" style="color:#6D96AE; font-style:italic;">Deprecated: Old Maps</a></td>
-              <td><a class="link-page" href="#">Assess Risk</a></td>
               <td>
-                <div class="pub-status">
-                  <span class="pill pill-gray">Hidden</span>
+                <div class="row-actions">
+                  <button class="pub-btn pub-btn-publish hover-show">Publish</button>
+                  <button class="pub-btn pub-btn-discard hover-show">Discard</button>
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
               </td>
+            </tr>
+
+            <!-- Deprecated — hidden in nav, published, leaf -->
+            <tr style="opacity:0.55;">
+              <td><span class="dot dot-gray"></span></td>
+              <td><a class="link-title" href="#" style="color:#6D96AE;font-style:italic;">Deprecated: Old Maps</a></td>
+              <td><a class="link-page" href="#">Assess Risk</a></td>
+              <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
+              <td class="text-center"><span class="text-mny-200 text-sm">—</span></td>
+              <td><span class="pill pill-gray">Hidden</span></td>
+              <td><span class="text-mny-200 text-xs">—</span></td>
               <td><a class="link-slug" href="#">/assess-risk/maps-v1</a></td>
               <td class="text-center"><span class="text-mny-400 text-xs">2</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
-              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></td>
+              <td>
+                <div class="row-actions">
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </td>
             </tr>
 
-            <!-- Row: draft -->
+            <!-- Extreme Heat — leaf, draft -->
             <tr>
               <td><span class="dot dot-amber"></span></td>
               <td><a class="link-title" href="#">Extreme Heat</a></td>
               <td><a class="link-page" href="#">Natural Hazards</a></td>
-              <td>
-                <div class="pub-status">
-                  <span class="pill pill-amber">Draft</span>
-                  <button class="pub-btn pub-btn-publish">Publish</button>
-                </div>
-              </td>
+              <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
+              <td class="text-center"><span class="text-mny-200 text-sm">—</span></td>
+              <td><span class="pill pill-amber">Draft</span></td>
+              <td><span class="text-mny-200 text-xs">—</span></td>
               <td><a class="link-slug" href="#">/assess-risk/extreme-heat</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">4</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
-              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></td>
+              <td>
+                <div class="row-actions">
+                  <button class="pub-btn pub-btn-publish hover-show">Publish</button>
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </td>
             </tr>
 
           </tbody>
         </table>
-        <!-- Pagination footer -->
         <div class="table-footer">
           <span class="font-display text-[10px] text-mny-400 tracking-widest">SHOWING 1–20 OF 47</span>
           <div class="flex gap-1">
@@ -460,10 +489,16 @@
             <button class="pg-btn pg-btn-inactive">›</button>
           </div>
         </div>
-      </div><!-- /table border -->
+      </div>
 
       <div class="annotation-strip mt-3">
-        <p><strong>page_publish</strong> column type — renders Draft/Published/Changes pill + Publish/Discard buttons inline. Calls <code>publish()</code> / <code>discardChanges()</code> from editFunctions. · <strong>page_link</strong> formatFn on url_slug — wraps value in a React Router &lt;Link&gt;. · <strong>parent</strong> column uses <code>serverFn: "recurse_extract_data"</code> to resolve ID → title.</p>
+        <p>
+          <strong>page_is_root</strong>: checks <code>row.parent</code> (null/empty = Root badge). Zero SQL. ·
+          <strong>page_children</strong>: reads <code>ComponentContext.state.data</code>, matches <code>child.parent === row.title</code>. Requires full data load (pagination off). ·
+          Published/draft child counts live in the <strong>Site Tree</strong> tab. ·
+          <strong>Published</strong> and <strong>Changes</strong> are separate columns — <code>row.published</code> pill + <code>row.has_changes</code> pill. Publish/Discard appear on row hover. ·
+          Task: <code>planning/tasks/current/page-hierarchy-columns.md</code>
+        </p>
       </div>
     </div><!-- /tab-pages -->
 
@@ -529,7 +564,6 @@
               <th style="width:120px">Type</th>
               <th style="width:140px">Source</th>
               <th style="width:80px">View</th>
-              <th style="width:60px" class="text-center">Draft</th>
               <th style="width:70px">Level</th>
               <th style="width:80px">Preview</th>
             </tr>
@@ -543,7 +577,6 @@
               <td><span class="badge badge-header">Header</span></td>
               <td><span class="text-mny-400 text-xs">—</span></td>
               <td><span class="text-mny-400 text-xs">—</span></td>
-              <td class="text-center"><span class="text-mny-400 text-xs">No</span></td>
               <td><span class="pill pill-blue text-[10px]">H1</span></td>
               <td><button class="preview-btn" onclick="openPreview('header')">Preview</button></td>
             </tr>
@@ -555,7 +588,6 @@
               <td><span class="badge badge-card">Card</span></td>
               <td><span class="src-label">hazards_v2</span></td>
               <td><span class="src-label">14</span></td>
-              <td class="text-center"><span class="text-mny-400 text-xs">No</span></td>
               <td><span class="pill pill-blue text-[10px]">H2</span></td>
               <td><button class="preview-btn" onclick="openPreview('card')">Preview</button></td>
             </tr>
@@ -567,7 +599,6 @@
               <td><span class="badge badge-map">Map</span></td>
               <td><span class="src-label">risk_geojson</span></td>
               <td><span class="src-label">3</span></td>
-              <td class="text-center"><span class="text-mny-400 text-xs">No</span></td>
               <td><span class="pill pill-blue text-[10px]">H2</span></td>
               <td><button class="preview-btn" onclick="openPreview('map')">Preview</button></td>
             </tr>
@@ -579,7 +610,6 @@
               <td><span class="badge badge-spreadsheet">Spreadsheet</span></td>
               <td><span class="src-label">flood_claims</span></td>
               <td><span class="src-label">22</span></td>
-              <td class="text-center"><span class="text-mny-400 text-xs">No</span></td>
               <td><span class="pill pill-blue text-[10px]">H3</span></td>
               <td><button class="preview-btn" onclick="openPreview('spreadsheet')">Preview</button></td>
             </tr>
@@ -591,7 +621,6 @@
               <td><span class="badge badge-lexical">Lexical</span></td>
               <td><span class="text-mny-400 text-xs">—</span></td>
               <td><span class="text-mny-400 text-xs">—</span></td>
-              <td class="text-center"><span class="text-mny-400 text-xs">No</span></td>
               <td><span class="pill pill-blue text-[10px]">H2</span></td>
               <td><button class="preview-btn" onclick="openPreview('lexical')">Preview</button></td>
             </tr>
@@ -603,7 +632,6 @@
               <td><span class="badge badge-spreadsheet">Spreadsheet</span></td>
               <td><span class="src-label">hvi_data</span></td>
               <td><span class="src-label">8</span></td>
-              <td class="text-center"><span class="font-semibold text-mny-y700 text-xs">Yes</span></td>
               <td><span class="pill pill-blue text-[10px]">H2</span></td>
               <td><button class="preview-btn" onclick="openPreview('spreadsheet')">Preview</button></td>
             </tr>
@@ -615,7 +643,6 @@
               <td><span class="badge badge-map">Map</span></td>
               <td><span class="src-label">vuln_geo</span></td>
               <td><span class="src-label">5</span></td>
-              <td class="text-center"><span class="font-semibold text-mny-y700 text-xs">Yes</span></td>
               <td><span class="pill pill-blue text-[10px]">H2</span></td>
               <td><button class="preview-btn" onclick="openPreview('map')">Preview</button></td>
             </tr>
@@ -627,7 +654,6 @@
               <td><span class="badge badge-card">Card</span></td>
               <td><span class="src-label">strategies_db</span></td>
               <td><span class="src-label">11</span></td>
-              <td class="text-center"><span class="text-mny-400 text-xs">No</span></td>
               <td><span class="pill pill-blue text-[10px]">H2</span></td>
               <td><button class="preview-btn" onclick="openPreview('card')">Preview</button></td>
             </tr>
@@ -639,7 +665,6 @@
               <td><span class="badge badge-spreadsheet">Spreadsheet</span></td>
               <td><span class="src-label">funding_db</span></td>
               <td><span class="src-label">19</span></td>
-              <td class="text-center"><span class="text-mny-400 text-xs">No</span></td>
               <td><span class="pill pill-blue text-[10px]">H3</span></td>
               <td><button class="preview-btn" onclick="openPreview('spreadsheet')">Preview</button></td>
             </tr>
@@ -651,7 +676,6 @@
               <td><span class="badge badge-filters">Filters</span></td>
               <td><span class="src-label">flood_claims</span></td>
               <td><span class="src-label">22</span></td>
-              <td class="text-center"><span class="text-mny-400 text-xs">No</span></td>
               <td><span class="pill pill-gray text-[10px]">hidden</span></td>
               <td><button class="preview-btn" onclick="openPreview('lexical')">Preview</button></td>
             </tr>
@@ -830,7 +854,10 @@
             <span class="tree-title font-semibold">Assess Risk</span>
             <span class="tree-subtitle mr-4">/assess-risk</span>
             <span class="pill pill-green" style="font-size:10px;">Published</span>
-            <span class="ml-3 text-xs text-mny-400">3 sections</span>
+            <span class="ml-2 text-[10px] text-mny-grn font-semibold">4 pub</span>
+            <span class="text-mny-200 text-[10px] mx-0.5">/</span>
+            <span class="text-[10px] text-mny-y700 font-semibold mr-3">1 draft</span>
+            <span class="text-xs text-mny-400">3 sections</span>
             <div class="tree-actions ml-3">
               <button class="preview-btn text-[10px] px-2 py-0.5">Edit</button>
               <button class="preview-btn text-[10px] px-2 py-0.5">+Child</button>
@@ -844,7 +871,10 @@
             <span class="tree-title">Natural Hazards</span>
             <span class="tree-subtitle mr-4">/assess-risk/natural-hazards</span>
             <span class="pill pill-green" style="font-size:10px;">Published</span>
-            <span class="ml-3 text-xs text-mny-400">8 sections</span>
+            <span class="ml-2 text-[10px] text-mny-grn font-semibold">2 pub</span>
+            <span class="text-mny-200 text-[10px] mx-0.5">/</span>
+            <span class="text-[10px] text-mny-y700 font-semibold mr-3">1 draft</span>
+            <span class="text-xs text-mny-400">8 sections</span>
             <div class="tree-actions ml-3">
               <button class="preview-btn text-[10px] px-2 py-0.5">Edit</button>
               <button class="preview-btn text-[10px] px-2 py-0.5">+Child</button>
@@ -900,7 +930,10 @@
             <span class="tree-title font-semibold">Plan</span>
             <span class="tree-subtitle mr-4">/plan</span>
             <span class="pill pill-green" style="font-size:10px;">Published</span>
-            <span class="ml-3 text-xs text-mny-400">4 sections</span>
+            <span class="ml-2 text-[10px] text-mny-grn font-semibold">1 pub</span>
+            <span class="text-mny-200 text-[10px] mx-0.5">/</span>
+            <span class="text-[10px] text-mny-y700 font-semibold mr-3">1 draft</span>
+            <span class="text-xs text-mny-400">4 sections</span>
             <div class="tree-actions ml-3">
               <button class="preview-btn text-[10px] px-2 py-0.5">Edit</button>
               <button class="preview-btn text-[10px] px-2 py-0.5">+Child</button>
@@ -941,7 +974,10 @@
             <span class="tree-subtitle mr-4">/implement</span>
             <span class="pill pill-green" style="font-size:10px;">Published</span>
             <span class="pill pill-amber ml-1" style="font-size:10px;">Changes</span>
-            <span class="ml-3 text-xs text-mny-400">4 sections</span>
+            <span class="ml-2 text-[10px] text-mny-grn font-semibold">2 pub</span>
+            <span class="text-mny-200 text-[10px] mx-0.5">/</span>
+            <span class="text-[10px] text-mny-grn font-semibold mr-3">0 draft</span>
+            <span class="text-xs text-mny-400">4 sections</span>
             <div class="tree-actions ml-3">
               <button class="preview-btn text-[10px] px-2 py-0.5">Edit</button>
               <button class="preview-btn text-[10px] px-2 py-0.5">+Child</button>
@@ -992,7 +1028,7 @@
       </div><!-- /tree border -->
 
       <div class="annotation-strip mt-3">
-        <p>Site Tree tab — not a standard DMS Spreadsheet. Requires either a custom section component (reads pages data recursively via <code>recurse_extract_data</code>) or a Card section with <code>cardsGridSize</code> + indentation via virtual columns. Drag-to-reorder of index is a future enhancement.</p>
+        <p>Site Tree tab — not a standard DMS Spreadsheet. Requires a custom section component reading pages via <code>recurse_extract_data</code>. · <strong>pub / draft child counts</strong> use <code>page_children_published</code> and <code>page_children_draft</code> column types — reads <code>ComponentContext.state.data</code>, matches <code>child.parent === row.title</code>. Requires full data load. Task: <code>planning/tasks/current/page-hierarchy-columns.md</code>. · Drag-to-reorder is a future enhancement.</p>
       </div>
     </div><!-- /tab-tree -->
 
