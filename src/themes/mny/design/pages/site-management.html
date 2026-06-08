@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Site Management (Design Draft)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; }
+    .font-display { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+    .card { background: white; border-radius: 12px; box-shadow: 0px 0px 6px 0px rgba(0,0,0,.02), 0px 2px 4px 0px rgba(0,0,0,.08); }
+    .pill { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; }
+    .pill-green  { background: #E8F7F2; color: #54B99B; }
+    .pill-amber  { background: #FCF6EC; color: #EAAD43; }
+    .pill-gray   { background: #E0EBF0; color: #37576B; }
+    .pill-red    { background: #FAEAEA; color: #DD524C; }
+    .pill-blue   { background: #E0EBF0; color: #37576B; }
+    .table-row { display: grid; align-items: center; border-bottom: 1px solid #E0EBF0; padding: 8px 12px; }
+    .table-row:hover { background: #F3F8F9; cursor: pointer; }
+    .table-header { background: #F3F8F9; padding: 8px 12px; border-bottom: 2px solid #C5D7E0; }
+    .link-cell { color: #37576B; text-decoration: underline; text-decoration-color: #6D96AE; font-size: 13px; }
+    .link-cell:hover { color: #2D3E4C; }
+    .edit-icon { opacity: 0; transition: opacity 0.15s; }
+    .table-row:hover .edit-icon { opacity: 1; }
+    /* Status dot */
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .dot-green { background: #54B99B; }
+    .dot-amber { background: #EAAD43; }
+    .dot-gray  { background: #C5D7E0; }
+    /* Tab styles */
+    .tab-active { border-bottom: 2px solid #EAAD43; color: #2D3E4C; font-weight: 600; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #6D96AE; }
+    .tab-inactive:hover { color: #37576B; border-color: #C5D7E0; }
+    /* Annotation callouts */
+    .annotation {
+      position: absolute; background: #FFFDE7; border: 1px dashed #EAAD43;
+      border-radius: 4px; padding: 4px 8px; font-size: 11px; color: #8B6914;
+      font-family: monospace; pointer-events: none; z-index: 10;
+    }
+  </style>
+</head>
+<body style="background-color:#F4F4F4; background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ============================================================
+     DESIGN DRAFT — Site Management
+     Status: First-pass mockup. Needs CLI data from mitigat-ny-prod
+             to verify real column values, hierarchy depth, page counts.
+     Author: design session 2026-06-04
+     ============================================================ -->
+
+<!-- Top navigation placeholder -->
+<div class="sticky top-0 z-50 w-full h-[64px] bg-white shadow-sm flex items-center px-6 gap-4">
+  <div class="font-display text-[20px] tracking-wide text-mny-900" style="letter-spacing:0.08em">MITIGATE<span class="text-mny-y700">NY</span></div>
+  <div class="flex-1"></div>
+  <div class="text-mny-400 text-sm font-proxima">Admin ↗</div>
+  <div class="w-8 h-8 rounded-full bg-mny-200 flex items-center justify-center text-mny-700 text-sm font-semibold">SG</div>
+</div>
+
+<!-- Page wrapper -->
+<div class="max-w-[1200px] mx-auto px-6 pt-8 pb-16 space-y-6">
+
+  <!-- Page heading -->
+  <div class="flex items-end justify-between">
+    <div>
+      <div class="text-xs font-display text-mny-400 tracking-wider mb-1">ADMIN / SITE MANAGEMENT</div>
+      <h1 class="font-display text-[36px] text-mny-900" style="letter-spacing:0.04em">SITE MANAGEMENT</h1>
+      <p class="text-mny-700 text-sm mt-1 font-proxima">All pages and sections in the <strong>prod</strong> pattern. Edit inline — changes take effect on save.</p>
+    </div>
+    <!-- Quick stats row -->
+    <div class="flex gap-4">
+      <div class="card px-4 py-3 text-center min-w-[80px]">
+        <div class="font-display text-[28px] text-mny-900">47</div>
+        <div class="text-xs text-mny-400 font-display tracking-wide">PAGES</div>
+      </div>
+      <div class="card px-4 py-3 text-center min-w-[80px]">
+        <div class="font-display text-[28px] text-mny-y700">8</div>
+        <div class="text-xs text-mny-400 font-display tracking-wide">DRAFTS</div>
+      </div>
+      <div class="card px-4 py-3 text-center min-w-[80px]">
+        <div class="font-display text-[28px] text-mny-700">312</div>
+        <div class="text-xs text-mny-400 font-display tracking-wide">SECTIONS</div>
+      </div>
+    </div>
+  </div>
+
+  <!--
+    ANNOTATION: The quick-stats row above is 3 Card sections, each with a single
+    numeric column (fn: COUNT or hardcoded), DMS source = pages/sections,
+    with a filter pre-applied (e.g. is_draft=true for the DRAFTS card).
+    No code needed — just section config.
+  -->
+
+  <!-- Tab bar -->
+  <div class="card">
+    <div class="flex border-b border-mny-200 px-4 gap-0">
+      <button class="tab-active font-display text-[13px] tracking-wide px-4 py-3">PAGES</button>
+      <button class="tab-inactive font-display text-[13px] tracking-wide px-4 py-3">SECTIONS</button>
+      <button class="tab-inactive font-display text-[13px] tracking-wide px-4 py-3">PUBLISH QUEUE</button>
+    </div>
+
+    <!-- ────────────────── PAGES TAB ────────────────── -->
+    <div class="p-4 space-y-3">
+
+      <!-- Filter bar -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="text-xs font-display text-mny-400 tracking-wider self-center">FILTER</div>
+
+        <!-- Status filter -->
+        <div class="relative">
+          <select class="appearance-none bg-mny-50 border border-mny-200 rounded-full text-xs font-proxima text-mny-700 pl-3 pr-7 py-1.5 focus:outline-none focus:border-mny-400">
+            <option>All pages</option>
+            <option>Published only</option>
+            <option selected>Drafts only</option>
+            <option>Has changes</option>
+          </select>
+          <div class="absolute right-2 top-1/2 -translate-y-1/2 text-mny-400 text-[10px] pointer-events-none">▾</div>
+        </div>
+
+        <!-- Parent filter -->
+        <div class="relative">
+          <select class="appearance-none bg-mny-50 border border-mny-200 rounded-full text-xs font-proxima text-mny-700 pl-3 pr-7 py-1.5 focus:outline-none focus:border-mny-400">
+            <option>All parents</option>
+            <option>Assess Risk</option>
+            <option>Plan</option>
+            <option>Implement</option>
+          </select>
+          <div class="absolute right-2 top-1/2 -translate-y-1/2 text-mny-400 text-[10px] pointer-events-none">▾</div>
+        </div>
+
+        <!--
+          ANNOTATION: These two filter controls are the external filters on a Spreadsheet section.
+          "Status" → column: published/is_draft (enum select).
+          "Parent" → column: parent (resolved to title — blocked on filter-parent-blank.md fix).
+          "Has changes" → column: has_changes (boolean).
+        -->
+
+        <!-- Search -->
+        <div class="flex-1 min-w-[200px]">
+          <input type="text" placeholder="Search pages…"
+                 class="w-full bg-mny-50 border border-mny-200 rounded-full text-xs font-proxima text-mny-700 px-3 py-1.5 focus:outline-none focus:border-mny-400 placeholder:text-mny-400">
+        </div>
+
+        <div class="flex-1"></div>
+
+        <button class="pill bg-mny-y700 text-white font-display tracking-wider text-[11px] px-4 py-1.5 cursor-pointer">
+          + NEW PAGE
+        </button>
+      </div>
+
+      <!-- Table: Pages -->
+      <div class="overflow-x-auto rounded-lg border border-mny-200">
+
+        <!-- Table header -->
+        <div class="table-header table-row font-display text-[11px] text-mny-400 tracking-wider"
+             style="grid-template-columns: 28px 1fr 120px 90px 90px 110px 140px 40px;">
+          <div></div>
+          <div>TITLE</div>
+          <div>PARENT</div>
+          <div>STATUS</div>
+          <div>CHANGES</div>
+          <div>SLUG</div>
+          <div>AUTH</div>
+          <div></div>
+        </div>
+
+        <!-- Row: draft page -->
+        <div class="table-row font-proxima text-sm text-mny-700"
+             style="grid-template-columns: 28px 1fr 120px 90px 90px 110px 140px 40px;">
+          <div class="flex justify-center"><span class="dot dot-amber"></span></div>
+          <div class="font-semibold text-mny-900">Assess Risk Overview</div>
+          <div class="text-mny-400 text-xs">—</div>
+          <div><span class="pill pill-amber">DRAFT</span></div>
+          <div class="text-mny-400 text-xs text-center">—</div>
+          <div><a class="link-cell">/assess-risk</a></div>
+          <div class="text-mny-400 text-xs">Public</div>
+          <div class="edit-icon text-mny-400 flex items-center justify-center">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+        </div>
+
+        <!-- Row: published with changes -->
+        <div class="table-row font-proxima text-sm text-mny-700"
+             style="grid-template-columns: 28px 1fr 120px 90px 90px 110px 140px 40px;">
+          <div class="flex justify-center"><span class="dot dot-green"></span></div>
+          <div>Natural Hazards</div>
+          <div class="text-xs text-mny-700">Assess Risk</div>
+          <div><span class="pill pill-green">LIVE</span></div>
+          <div class="text-center"><span class="pill pill-amber text-[10px]">UNSAVED</span></div>
+          <div><a class="link-cell">/assess-risk/natural-hazards</a></div>
+          <div class="text-mny-400 text-xs">Public</div>
+          <div class="edit-icon text-mny-400 flex items-center justify-center">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+        </div>
+
+        <!-- Row: published, no changes -->
+        <div class="table-row font-proxima text-sm text-mny-700"
+             style="grid-template-columns: 28px 1fr 120px 90px 90px 110px 140px 40px;">
+          <div class="flex justify-center"><span class="dot dot-green"></span></div>
+          <div>Flooding &amp; Stormwater</div>
+          <div class="text-xs text-mny-700">Natural Hazards</div>
+          <div><span class="pill pill-green">LIVE</span></div>
+          <div class="text-mny-400 text-xs text-center">—</div>
+          <div><a class="link-cell">/assess-risk/flooding</a></div>
+          <div class="text-mny-400 text-xs">Public</div>
+          <div class="edit-icon text-mny-400 flex items-center justify-center">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+        </div>
+
+        <!-- Row: auth-gated draft -->
+        <div class="table-row font-proxima text-sm text-mny-700"
+             style="grid-template-columns: 28px 1fr 120px 90px 90px 110px 140px 40px;">
+          <div class="flex justify-center"><span class="dot dot-amber"></span></div>
+          <div>Vulnerability Assessment</div>
+          <div class="text-xs text-mny-700">Assess Risk</div>
+          <div><span class="pill pill-amber">DRAFT</span></div>
+          <div class="text-mny-400 text-xs text-center">—</div>
+          <div><a class="link-cell">/assess-risk/vulnerability</a></div>
+          <div class="text-mny-700 text-xs font-semibold">Contributors</div>
+          <div class="edit-icon text-mny-400 flex items-center justify-center">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+        </div>
+
+        <!-- Row: hidden in nav -->
+        <div class="table-row font-proxima text-sm text-mny-700 opacity-60"
+             style="grid-template-columns: 28px 1fr 120px 90px 90px 110px 140px 40px;">
+          <div class="flex justify-center"><span class="dot dot-gray"></span></div>
+          <div class="italic">Deprecated Maps Page</div>
+          <div class="text-xs text-mny-400">Assess Risk</div>
+          <div><span class="pill pill-gray">HIDDEN</span></div>
+          <div class="text-mny-400 text-xs text-center">—</div>
+          <div><a class="link-cell">/assess-risk/maps-old</a></div>
+          <div class="text-mny-400 text-xs">Public</div>
+          <div class="edit-icon text-mny-400 flex items-center justify-center">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between px-4 py-2 border-t border-mny-200 bg-mny-50">
+          <div class="text-xs text-mny-400 font-display tracking-wide">SHOWING 1–20 OF 47</div>
+          <div class="flex gap-1">
+            <button class="w-6 h-6 rounded text-xs text-mny-400 hover:bg-mny-100">‹</button>
+            <button class="w-6 h-6 rounded text-xs bg-mny-y700 text-white font-bold">1</button>
+            <button class="w-6 h-6 rounded text-xs text-mny-400 hover:bg-mny-100">2</button>
+            <button class="w-6 h-6 rounded text-xs text-mny-400 hover:bg-mny-100">3</button>
+            <button class="w-6 h-6 rounded text-xs text-mny-400 hover:bg-mny-100">›</button>
+          </div>
+        </div>
+      </div>
+      <!--
+        ANNOTATION: This entire table is a single Spreadsheet section.
+        Source: "All Pages" (i.e. {app}+{type}|page DMS source).
+        Columns: title (editable), parent (serverFn: resolves to title),
+                 published (pill), has_changes (pill), url_slug (pageLink formatFn),
+                 authPermissions (text), edit icon (action column).
+        Filters: published/is_draft (pre-configured), parent (needs filter fix).
+        allowEditInView: true → inline edit on click.
+        NEEDS: url_slug un-hidden, pageLink formatFn, parent filter fix.
+      -->
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────────
+       SECTIONS TAB PREVIEW (collapsed — full version TBD)
+       ─────────────────────────────────────────────────────────────── -->
+  <div class="card p-4">
+    <div class="flex items-center justify-between mb-3">
+      <div class="font-display text-[13px] text-mny-900 tracking-wide">SECTIONS INVENTORY</div>
+      <span class="pill pill-amber text-[11px]">TAB 2 — DESIGN DRAFT</span>
+    </div>
+    <!-- Mini preview of sections table header only -->
+    <div class="overflow-x-auto rounded-lg border border-mny-200 opacity-60">
+      <div class="table-header table-row font-display text-[11px] text-mny-400 tracking-wider"
+           style="grid-template-columns: 28px 1fr 120px 100px 100px 80px 80px;">
+        <div></div>
+        <div>TITLE</div>
+        <div>PARENT PAGE</div>
+        <div>TYPE</div>
+        <div>TAGS</div>
+        <div>IS DRAFT</div>
+        <div>LEVEL</div>
+      </div>
+      <div class="table-row font-proxima text-sm text-mny-500 italic"
+           style="grid-template-columns: 28px 1fr 120px 100px 100px 80px 80px; padding: 12px;">
+        <div></div>
+        <div colspan="6" class="text-mny-400 text-xs">
+          Sections inventory — same pattern as Pages tab. Source: All Sections.
+          Key gap: <code class="bg-mny-50 px-1 rounded">component_type</code> column not exposed yet.
+          <br>See <code>site-mgmt-page-column-ux.md</code> for the fix.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────────
+       PUBLISH QUEUE — filtered view of drafts with bulk-publish CTA
+       ─────────────────────────────────────────────────────────────── -->
+  <div class="card p-4">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <div class="font-display text-[13px] text-mny-900 tracking-wide">PUBLISH QUEUE</div>
+        <div class="text-xs text-mny-400 font-proxima mt-0.5">8 pages with is_draft = true or has_changes = true</div>
+      </div>
+      <span class="pill pill-amber text-[11px]">TAB 3 — DESIGN DRAFT</span>
+    </div>
+
+    <!--
+      ANNOTATION: Publish Queue is a Spreadsheet pre-filtered to
+      (is_draft = true OR has_changes = true).
+      The "Publish all" button is a NEW PRIMITIVE we don't have yet:
+      a bulk action that calls updateItem on each selected row.
+      The filter is easy today; the bulk publish is the gap.
+    -->
+    <div class="flex items-center gap-3 mb-3">
+      <button class="pill bg-mny-y700 text-white font-display tracking-wider text-[11px] px-4 py-1.5 cursor-pointer opacity-50 cursor-not-allowed">
+        PUBLISH ALL (8)
+      </button>
+      <div class="text-xs text-mny-400 font-proxima italic">
+        ← Bulk action primitive not yet implemented. Select-all + batch updateItem needed.
+      </div>
+    </div>
+
+    <!-- Simplified draft list -->
+    <div class="overflow-x-auto rounded-lg border border-mny-200">
+      <div class="table-header table-row font-display text-[11px] text-mny-400 tracking-wider"
+           style="grid-template-columns: 32px 1fr 120px 90px 90px 90px;">
+        <div><input type="checkbox" class="rounded border-mny-200"></div>
+        <div>TITLE</div>
+        <div>PARENT</div>
+        <div>STATUS</div>
+        <div>HAS CHANGES</div>
+        <div>ACTION</div>
+      </div>
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 32px 1fr 120px 90px 90px 90px;">
+        <div><input type="checkbox" class="rounded border-mny-200" checked></div>
+        <div>Assess Risk Overview</div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div><span class="pill pill-amber">DRAFT</span></div>
+        <div class="text-mny-400 text-xs text-center">—</div>
+        <div><button class="text-xs text-mny-y700 font-semibold hover:underline">Publish</button></div>
+      </div>
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 32px 1fr 120px 90px 90px 90px;">
+        <div><input type="checkbox" class="rounded border-mny-200" checked></div>
+        <div>Natural Hazards</div>
+        <div class="text-xs text-mny-700">Assess Risk</div>
+        <div><span class="pill pill-green">LIVE</span></div>
+        <div><span class="pill pill-amber text-[10px]">UNSAVED</span></div>
+        <div><button class="text-xs text-mny-y700 font-semibold hover:underline">Publish changes</button></div>
+      </div>
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 32px 1fr 120px 90px 90px 90px;">
+        <div><input type="checkbox" class="rounded border-mny-200"></div>
+        <div>Vulnerability Assessment</div>
+        <div class="text-xs text-mny-700">Assess Risk</div>
+        <div><span class="pill pill-amber">DRAFT</span></div>
+        <div class="text-mny-400 text-xs text-center">—</div>
+        <div><button class="text-xs text-mny-y700 font-semibold hover:underline">Publish</button></div>
+      </div>
+      <div class="flex items-center justify-between px-4 py-2 border-t border-mny-200 bg-mny-50">
+        <div class="text-xs text-mny-400 font-proxima">2 of 3 selected</div>
+        <div class="text-xs text-mny-400 font-display tracking-wide">SHOWING 1–3 OF 8</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────────
+       GAP ANALYSIS PANEL (design annotation, not a real DMS section)
+       ─────────────────────────────────────────────────────────────── -->
+  <div class="card p-5 border-2 border-dashed border-mny-y500">
+    <div class="font-display text-[13px] text-mny-900 tracking-wide mb-3">
+      GAP ANALYSIS — WHAT NEEDS TO BE BUILT
+    </div>
+    <div class="grid grid-cols-2 gap-4 text-sm font-proxima">
+
+      <div>
+        <div class="font-semibold text-mny-900 mb-2">Blocked on bugs</div>
+        <ul class="space-y-1.5 text-mny-700">
+          <li class="flex gap-2">
+            <span class="pill pill-red text-[10px]">BUG</span>
+            <span>Filter dropdown blank for <code>parent</code> column on sections</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="pill pill-amber text-[10px]">TODO</span>
+            <span>Filtering <em>by</em> resolved parent title (needs SQL JOIN)</span>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="font-semibold text-mny-900 mb-2">Missing primitives</div>
+        <ul class="space-y-1.5 text-mny-700">
+          <li class="flex gap-2">
+            <span class="pill pill-amber text-[10px]">TODO</span>
+            <span><code>url_slug</code> hidden by default — un-hide, add pageLink formatFn</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="pill pill-amber text-[10px]">TODO</span>
+            <span><code>component_type</code> not in sections columns</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="pill pill-amber text-[10px]">TODO</span>
+            <span>Bulk actions (select rows → publish all)</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="pill pill-gray text-[10px]">NICE</span>
+            <span>Friendly source labels: "All Pages" / "All Sections"</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="pill pill-gray text-[10px]">NICE</span>
+            <span><code>allowEditInView</code> discoverable toggle in section menu</span>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="font-semibold text-mny-900 mb-2">Works today ✅</div>
+        <ul class="space-y-1.5 text-mny-700">
+          <li>Pages + Sections as Spreadsheet/Card data source</li>
+          <li>Filter by title, published, is_draft, tags</li>
+          <li>Group by any column</li>
+          <li>Inline edit (title, published, etc.)</li>
+          <li>Add / delete pages and sections</li>
+          <li><code>parent</code> column resolves to parent title</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="font-semibold text-mny-900 mb-2">Needs CLI data to verify</div>
+        <ul class="space-y-1.5 text-mny-700">
+          <li>Actual page count and hierarchy depth in mitigat-ny-prod</li>
+          <li>Real values for <code>parent</code>, <code>url_slug</code>, <code>authPermissions</code></li>
+          <li>Whether any existing page already uses pages-as-source</li>
+          <li>How <code>published</code> is actually stored (bool? enum?)</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="mt-4 pt-4 border-t border-mny-y500/40 text-xs text-mny-400 font-proxima">
+      Tracked tasks: <code>site-mgmt-filter-parent-blank.md</code> ·
+      <code>site-mgmt-filter-by-parent-name.md</code> ·
+      <code>site-mgmt-page-column-ux.md</code>
+    </div>
+  </div>
+
+</div><!-- /page wrapper -->
+
+</body>
+</html>
