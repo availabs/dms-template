@@ -172,7 +172,7 @@
              Publish Queue / Site Tree tabs. Uses real MNY data
              structure. Shows page_publish, element_preview,
              component_type, source_id/view_id, page_link column types.
-     Last updated: 2026-06-08
+     Last updated: 2026-06-09
      ============================================================ -->
 
 <!-- ═══ TOP NAV ═══ -->
@@ -221,15 +221,15 @@
     <!-- Quick stats -->
     <div class="flex gap-3">
       <div class="card px-4 py-3 text-center min-w-[72px]">
-        <div class="font-display text-[26px] text-mny-900 leading-none">47</div>
+        <div class="font-display text-[26px] text-mny-900 leading-none">189</div>
         <div class="font-display text-[10px] text-mny-400 tracking-widest mt-1">PAGES</div>
       </div>
       <div class="card px-4 py-3 text-center min-w-[72px]">
-        <div class="font-display text-[26px] text-mny-y700 leading-none">8</div>
+        <div class="font-display text-[26px] text-mny-y700 leading-none">189</div>
         <div class="font-display text-[10px] text-mny-400 tracking-widest mt-1">DRAFTS</div>
       </div>
       <div class="card px-4 py-3 text-center min-w-[72px]">
-        <div class="font-display text-[26px] text-mny-700 leading-none">312</div>
+        <div class="font-display text-[26px] text-mny-700 leading-none">~1,100</div>
         <div class="font-display text-[10px] text-mny-400 tracking-widest mt-1">SECTIONS</div>
       </div>
       <div class="card px-4 py-3 text-center min-w-[72px]">
@@ -251,6 +251,14 @@
         <span class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-mny-y700 text-white font-display text-[9px]">8</span>
       </button>
       <button class="tab-btn" onclick="switchTab('tree', this)">Site Tree</button>
+      <button class="tab-btn" onclick="switchTab('sources', this)">Data Sources
+        <span class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-mny-ora text-white font-display text-[9px]">2</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('health', this)">Site Health
+        <span class="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-mny-red text-white font-display text-[9px]">15</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('nav', this)">Navigation</button>
+      <button class="tab-btn" onclick="switchTab('activity', this)">Activity</button>
       <div class="flex-1"></div>
       <div class="text-xs font-proxima text-mny-400 pr-3 hidden md:block">
         Spreadsheet section · source: <span class="font-semibold text-mny-700">All Pages</span>
@@ -282,10 +290,12 @@
         <div class="filter-wrap">
           <select class="filter-select pr-8">
             <option>All parents</option>
-            <option>Assess Risk</option>
-            <option>Plan</option>
-            <option>Implement</option>
-            <option>Take Action</option>
+            <option>Hazards of Concern</option>
+            <option>NYS Risk Environment</option>
+            <option>State Mitigation</option>
+            <option>Climate Change</option>
+            <option>Resource Library</option>
+            <option>Local Mitigation</option>
           </select>
         </div>
 
@@ -309,7 +319,9 @@
               <th style="width:52px" class="text-center" title="page_is_root column type">Root?</th>
               <th style="width:68px" class="text-center" title="page_children — total direct children">Children</th>
               <th style="width:90px">Published</th>
+              <th style="width:70px" class="text-center" title="hide_in_nav attribute">In Nav</th>
               <th style="width:90px">Changes</th>
+              <th style="width:130px" title="last_published column type — from data.history.entries">Last Published</th>
               <th style="width:165px">URL Slug</th>
               <th style="width:60px" class="text-center">Sects.</th>
               <th style="width:100px">Auth</th>
@@ -318,7 +330,7 @@
           </thead>
           <tbody>
 
-            <!-- Home — root, draft, 2 children (1 pub / 1 draft) -->
+            <!-- Home — root, draft, never published -->
             <tr>
               <td><span class="dot dot-amber"></span></td>
               <td><a class="link-title" href="#">Home</a></td>
@@ -326,152 +338,199 @@
               <td class="text-center"><span class="badge badge-root">Root</span></td>
               <td class="text-center"><span class="text-sm font-semibold text-mny-700">2</span></td>
               <td><span class="pill pill-amber">Draft</span></td>
+              <td class="text-center"><span class="dot dot-green" title="Visible in nav"></span></td>
               <td><span class="text-mny-200 text-xs">—</span></td>
+              <td><span class="text-mny-400 text-xs italic">Never</span></td>
               <td><a class="link-slug" href="#">/</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">5</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
               <td>
                 <div class="row-actions">
                   <button class="pub-btn pub-btn-publish hover-show">Publish</button>
+                  <button class="preview-btn hover-show" style="font-size:10px;padding:2px 7px;">Duplicate</button>
                   <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
               </td>
             </tr>
 
-            <!-- Assess Risk — root, published, has unsaved changes, 5 children -->
+            <!-- Hazards of Concern — root, published, has unsaved changes, 16 children -->
             <tr>
               <td><span class="dot dot-green"></span></td>
-              <td><a class="link-title" href="#">Assess Risk</a></td>
+              <td><a class="link-title" href="#">Hazards of Concern</a></td>
               <td><span class="text-mny-400 text-xs">—</span></td>
               <td class="text-center"><span class="badge badge-root">Root</span></td>
-              <td class="text-center"><span class="text-sm font-semibold text-mny-700">5</span></td>
+              <td class="text-center"><span class="text-sm font-semibold text-mny-700">16</span></td>
               <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="dot dot-green" title="Visible in nav"></span></td>
               <td><span class="pill pill-amber">Unsaved</span></td>
-              <td><a class="link-slug" href="#">/assess-risk</a></td>
+              <td><span class="text-xs text-mny-700" title="Jun 4, 2026 by sgangdod">5 days ago <span class="text-mny-400">sgangdod</span></span></td>
+              <td><a class="link-slug" href="#">/hazards-of-concern</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">3</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
               <td>
                 <div class="row-actions">
                   <button class="pub-btn pub-btn-publish hover-show">Publish</button>
                   <button class="pub-btn pub-btn-discard hover-show">Discard</button>
+                  <button class="preview-btn hover-show" style="font-size:10px;padding:2px 7px;">Duplicate</button>
                   <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
               </td>
             </tr>
 
-            <!-- Natural Hazards — non-root, published, 3 children -->
+            <!-- Flood — non-root, published, 0 children -->
             <tr>
               <td><span class="dot dot-green"></span></td>
-              <td><a class="link-title" href="#">Natural Hazards</a></td>
-              <td><a class="link-page" href="#">Assess Risk</a></td>
-              <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
-              <td class="text-center"><span class="text-sm font-semibold text-mny-700">3</span></td>
-              <td><span class="pill pill-green">Published</span></td>
-              <td><span class="text-mny-200 text-xs">—</span></td>
-              <td><a class="link-slug" href="#">/assess-risk/natural-hazards</a></td>
-              <td class="text-center"><span class="text-mny-700 font-semibold">8</span></td>
-              <td><span class="text-mny-400 text-xs">Public</span></td>
-              <td>
-                <div class="row-actions">
-                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Flooding — leaf, published, no children -->
-            <tr>
-              <td><span class="dot dot-green"></span></td>
-              <td><a class="link-title" href="#">Flooding &amp; Stormwater</a></td>
-              <td><a class="link-page" href="#">Natural Hazards</a></td>
+              <td><a class="link-title" href="#">Flood</a></td>
+              <td><a class="link-page" href="#">Hazards of Concern</a></td>
               <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
               <td class="text-center"><span class="text-mny-200 text-sm">—</span></td>
               <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="dot dot-green" title="Visible in nav"></span></td>
               <td><span class="text-mny-200 text-xs">—</span></td>
-              <td><a class="link-slug" href="#">/assess-risk/flooding</a></td>
+              <td><span class="text-xs text-mny-700" title="May 22, 2026 by admin">18 days ago <span class="text-mny-400">admin</span></span></td>
+              <td><a class="link-slug" href="#">/hazards-of-concern/flood</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">11</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
               <td>
                 <div class="row-actions">
+                  <button class="preview-btn hover-show" style="font-size:10px;padding:2px 7px;">Duplicate</button>
                   <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
               </td>
             </tr>
 
-            <!-- Vulnerability — leaf, draft, auth-gated -->
+            <!-- Extreme Heat — leaf, draft, never published -->
             <tr>
               <td><span class="dot dot-amber"></span></td>
-              <td><a class="link-title" href="#">Vulnerability Assessment</a></td>
-              <td><a class="link-page" href="#">Plan</a></td>
+              <td><a class="link-title" href="#">Extreme Heat</a></td>
+              <td><a class="link-page" href="#">Hazards of Concern</a></td>
               <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
               <td class="text-center"><span class="text-mny-200 text-sm">—</span></td>
               <td><span class="pill pill-amber">Draft</span></td>
+              <td class="text-center"><span class="dot dot-green" title="Visible in nav"></span></td>
               <td><span class="text-mny-200 text-xs">—</span></td>
-              <td><a class="link-slug" href="#">/plan/vulnerability</a></td>
+              <td><span class="text-mny-400 text-xs italic">Never</span></td>
+              <td><a class="link-slug" href="#">/hazards-of-concern/extreme-heat</a></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold">4</span></td>
+              <td><span class="text-mny-400 text-xs">Public</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="pub-btn pub-btn-publish hover-show">Publish</button>
+                  <button class="preview-btn hover-show" style="font-size:10px;padding:2px 7px;">Duplicate</button>
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </td>
+            </tr>
+
+            <!-- NYS Risk Environment — root, published, 5 children -->
+            <tr>
+              <td><span class="dot dot-green"></span></td>
+              <td><a class="link-title" href="#">NYS Risk Environment</a></td>
+              <td><span class="text-mny-400 text-xs">—</span></td>
+              <td class="text-center"><span class="badge badge-root">Root</span></td>
+              <td class="text-center"><span class="text-sm font-semibold text-mny-700">5</span></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="dot dot-green" title="Visible in nav"></span></td>
+              <td><span class="text-mny-200 text-xs">—</span></td>
+              <td><span class="text-xs text-mny-700" title="Apr 30, 2026 by admin">40 days ago <span class="text-mny-400">admin</span></span></td>
+              <td><a class="link-slug" href="#">/nys-risk-environment</a></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold">6</span></td>
+              <td><span class="text-mny-400 text-xs">Public</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="preview-btn hover-show" style="font-size:10px;padding:2px 7px;">Duplicate</button>
+                  <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Vulnerability — leaf, draft, auth-gated, stale -->
+            <tr>
+              <td><span class="dot dot-amber"></span></td>
+              <td><a class="link-title" href="#">Vulnerability Assessment</a></td>
+              <td><a class="link-page" href="#">State Mitigation</a></td>
+              <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
+              <td class="text-center"><span class="text-mny-200 text-sm">—</span></td>
+              <td><span class="pill pill-amber">Draft</span></td>
+              <td class="text-center"><span class="dot dot-green" title="Visible in nav"></span></td>
+              <td><span class="text-mny-200 text-xs">—</span></td>
+              <td><span class="text-mny-400 text-xs italic">Never</span></td>
+              <td><a class="link-slug" href="#">/state-mitigation/vulnerability</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">6</span></td>
               <td><span class="text-xs font-semibold text-mny-700">Contributors</span></td>
               <td>
                 <div class="row-actions">
                   <button class="pub-btn pub-btn-publish hover-show">Publish</button>
+                  <button class="preview-btn hover-show" style="font-size:10px;padding:2px 7px;">Duplicate</button>
                   <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
               </td>
             </tr>
 
-            <!-- Implement — root, published, unsaved, 2 children (all published) -->
+            <!-- State Mitigation — root, published, unsaved, 5 children -->
             <tr>
               <td><span class="dot dot-green"></span></td>
-              <td><a class="link-title" href="#">Implement</a></td>
+              <td><a class="link-title" href="#">State Mitigation</a></td>
               <td><span class="text-mny-400 text-xs">—</span></td>
               <td class="text-center"><span class="badge badge-root">Root</span></td>
-              <td class="text-center"><span class="text-sm font-semibold text-mny-700">2</span></td>
+              <td class="text-center"><span class="text-sm font-semibold text-mny-700">5</span></td>
               <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="dot dot-green" title="Visible in nav"></span></td>
               <td><span class="pill pill-amber">Unsaved</span></td>
-              <td><a class="link-slug" href="#">/implement</a></td>
+              <td><span class="text-xs text-mny-700" title="Jun 1, 2026 by sgangdod">8 days ago <span class="text-mny-400">sgangdod</span></span></td>
+              <td><a class="link-slug" href="#">/state-mitigation</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">4</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
               <td>
                 <div class="row-actions">
                   <button class="pub-btn pub-btn-publish hover-show">Publish</button>
                   <button class="pub-btn pub-btn-discard hover-show">Discard</button>
+                  <button class="preview-btn hover-show" style="font-size:10px;padding:2px 7px;">Duplicate</button>
                   <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
               </td>
             </tr>
 
-            <!-- Deprecated — hidden in nav, published, leaf -->
-            <tr style="opacity:0.55;">
-              <td><span class="dot dot-gray"></span></td>
+            <!-- Deprecated — hidden in nav (hide_in_nav=true), published -->
+            <tr style="opacity:0.65;">
+              <td><span class="dot dot-green"></span></td>
               <td><a class="link-title" href="#" style="color:#6D96AE;font-style:italic;">Deprecated: Old Maps</a></td>
-              <td><a class="link-page" href="#">Assess Risk</a></td>
+              <td><a class="link-page" href="#">Hazards of Concern</a></td>
               <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
               <td class="text-center"><span class="text-mny-200 text-sm">—</span></td>
-              <td><span class="pill pill-gray">Hidden</span></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="dot dot-gray" title="Hidden from nav (hide_in_nav=true)"></span></td>
               <td><span class="text-mny-200 text-xs">—</span></td>
-              <td><a class="link-slug" href="#">/assess-risk/maps-v1</a></td>
+              <td><span class="text-xs text-mny-400" title="Jan 14, 2026">5 mo ago</span></td>
+              <td><a class="link-slug" href="#">/hazards-of-concern/maps-v1</a></td>
               <td class="text-center"><span class="text-mny-400 text-xs">2</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
               <td>
                 <div class="row-actions">
+                  <button class="preview-btn hover-show" style="font-size:10px;padding:2px 7px;">Duplicate</button>
                   <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
               </td>
             </tr>
 
-            <!-- Extreme Heat — leaf, draft -->
+            <!-- Climate Change — root, draft, never published (stale) -->
             <tr>
               <td><span class="dot dot-amber"></span></td>
-              <td><a class="link-title" href="#">Extreme Heat</a></td>
-              <td><a class="link-page" href="#">Natural Hazards</a></td>
-              <td class="text-center"><span class="text-mny-200 text-xs">—</span></td>
-              <td class="text-center"><span class="text-mny-200 text-sm">—</span></td>
+              <td><a class="link-title" href="#">Climate Change</a></td>
+              <td><span class="text-mny-400 text-xs">—</span></td>
+              <td class="text-center"><span class="badge badge-root">Root</span></td>
+              <td class="text-center"><span class="text-sm font-semibold text-mny-700">5</span></td>
               <td><span class="pill pill-amber">Draft</span></td>
+              <td class="text-center"><span class="dot dot-green" title="Visible in nav"></span></td>
               <td><span class="text-mny-200 text-xs">—</span></td>
-              <td><a class="link-slug" href="#">/assess-risk/extreme-heat</a></td>
+              <td><span class="text-mny-400 text-xs italic">Never</span></td>
+              <td><a class="link-slug" href="#">/climate-change</a></td>
               <td class="text-center"><span class="text-mny-700 font-semibold">4</span></td>
               <td><span class="text-mny-400 text-xs">Public</span></td>
               <td>
                 <div class="row-actions">
                   <button class="pub-btn pub-btn-publish hover-show">Publish</button>
+                  <button class="preview-btn hover-show" style="font-size:10px;padding:2px 7px;">Duplicate</button>
                   <svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
               </td>
@@ -480,7 +539,7 @@
           </tbody>
         </table>
         <div class="table-footer">
-          <span class="font-display text-[10px] text-mny-400 tracking-widest">SHOWING 1–20 OF 47</span>
+          <span class="font-display text-[10px] text-mny-400 tracking-widest">SHOWING 1–20 OF 189</span>
           <div class="flex gap-1">
             <button class="pg-btn pg-btn-inactive">‹</button>
             <button class="pg-btn pg-btn-active">1</button>
@@ -495,9 +554,9 @@
         <p>
           <strong>page_is_root</strong>: checks <code>row.parent</code> (null/empty = Root badge). Zero SQL. ·
           <strong>page_children</strong>: reads <code>ComponentContext.state.data</code>, matches <code>child.parent === row.title</code>. Requires full data load (pagination off). ·
-          Published/draft child counts live in the <strong>Site Tree</strong> tab. ·
-          <strong>Published</strong> and <strong>Changes</strong> are separate columns — <code>row.published</code> pill + <code>row.has_changes</code> pill. Publish/Discard appear on row hover. ·
-          Task: <code>planning/tasks/current/page-hierarchy-columns.md</code>
+          <strong>In Nav</strong>: <code>row.hide_in_nav</code> (<code>page.format.js:163</code>) — green dot = visible, gray dot = hidden. Published and nav visibility are independent: a page can be <em>Published + hidden from nav</em> (e.g. deprecated pages). ·
+          <strong>Last Published</strong>: SQL expression column from <code>data-&gt;'history'-&gt;'entries'</code> WHERE <code>action='publish'</code> ORDER BY timestamp DESC LIMIT 1. NULL = "Never". Task: <code>site-mgmt-last-published-column.md</code>. ·
+          <strong>Duplicate</strong>: <code>duplicate_page</code> column type; clones page + all sections server-side, navigates to new draft. Task: <code>site-mgmt-page-duplication.md</code>.
         </p>
       </div>
     </div><!-- /tab-pages -->
@@ -519,9 +578,9 @@
         <div class="filter-wrap">
           <select class="filter-select pr-8">
             <option>All pages</option>
-            <option>Natural Hazards</option>
-            <option>Flooding &amp; Stormwater</option>
-            <option>Assess Risk</option>
+            <option>Flood</option>
+            <option>Hurricane</option>
+            <option>NYS Risk Environment</option>
           </select>
         </div>
 
@@ -683,7 +742,7 @@
           </tbody>
         </table>
         <div class="table-footer">
-          <span class="font-display text-[10px] text-mny-400 tracking-widest">SHOWING 1–20 OF 312</span>
+          <span class="font-display text-[10px] text-mny-400 tracking-widest">SHOWING 1–20 OF ~1,100</span>
           <div class="flex gap-1">
             <button class="pg-btn pg-btn-inactive">‹</button>
             <button class="pg-btn pg-btn-active">1</button>
@@ -837,7 +896,7 @@
     <div id="tab-tree" class="tab-content p-5 hidden">
 
       <div class="flex items-center justify-between mb-4">
-        <div class="text-sm font-proxima text-mny-700">Showing full page hierarchy for <strong class="text-mny-900">prod</strong> pattern · 47 pages · 4 top-level sections</div>
+        <div class="text-sm font-proxima text-mny-700">Showing full page hierarchy for <strong class="text-mny-900">prod</strong> pattern · 189 pages · 6 top-level sections</div>
         <div class="flex gap-2">
           <button class="filter-select" style="border-radius:6px; padding:5px 12px; cursor:pointer;">Expand All</button>
           <button class="filter-select" style="border-radius:6px; padding:5px 12px; cursor:pointer;">Collapse All</button>
@@ -1031,6 +1090,642 @@
         <p>Site Tree tab — not a standard DMS Spreadsheet. Requires a custom section component reading pages via <code>recurse_extract_data</code>. · <strong>pub / draft child counts</strong> use <code>page_children_published</code> and <code>page_children_draft</code> column types — reads <code>ComponentContext.state.data</code>, matches <code>child.parent === row.title</code>. Requires full data load. Task: <code>planning/tasks/current/page-hierarchy-columns.md</code>. · Drag-to-reorder is a future enhancement.</p>
       </div>
     </div><!-- /tab-tree -->
+
+
+    <!-- ══════════════════════════════════════════
+         TAB 5: DATA SOURCES
+         Source: {pattern} (sources) — all sources in pattern dmsEnv
+         Columns: name, type, view_count, source_section_count (custom),
+                  updated_at, status (Active/Orphaned)
+         ══════════════════════════════════════════ -->
+    <div id="tab-sources" class="tab-content p-5 hidden">
+
+      <div class="flex items-center gap-2 flex-wrap mb-4">
+        <span class="font-display text-[10px] text-mny-400 tracking-widest uppercase">Filter</span>
+        <div class="filter-wrap">
+          <select class="filter-select pr-8">
+            <option>All types</option>
+            <option>internal_table</option>
+            <option>External</option>
+            <option>GIS</option>
+            <option>File upload</option>
+          </select>
+        </div>
+        <div class="filter-wrap">
+          <select class="filter-select pr-8">
+            <option>All status</option>
+            <option>Active</option>
+            <option>Orphaned</option>
+          </select>
+        </div>
+        <input type="text" class="filter-search" placeholder="Search sources…">
+        <div class="flex-1"></div>
+        <a href="#" class="pill bg-mny-700 text-white font-display tracking-wider text-[11px] px-4 py-2 cursor-pointer hover:bg-mny-900" style="border-radius:20px; text-decoration:none;">
+          Manage in Datasets →
+        </a>
+      </div>
+
+      <div class="border border-mny-200 rounded-xl overflow-hidden overflow-x-auto">
+        <table class="mgmt-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th style="width:120px">Type</th>
+              <th style="width:60px" class="text-center">Views</th>
+              <th style="width:110px">Used by</th>
+              <th style="width:140px">Last Updated</th>
+              <th style="width:110px">Status</th>
+              <th style="width:32px"></th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td><span class="src-label">hazards_v2</span></td>
+              <td><span class="text-xs text-mny-700">internal_table</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold">2</span></td>
+              <td><a href="#" class="text-xs text-mny-700 hover:text-mny-900 font-semibold">6 sections</a></td>
+              <td><span class="text-xs text-mny-700" title="Apr 22, 2026">Apr 22, 2026 <span class="text-mny-400">by admin</span></span></td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></td>
+            </tr>
+
+            <tr>
+              <td><span class="src-label">flood_claims</span></td>
+              <td><span class="text-xs text-mny-700">internal_table</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold">3</span></td>
+              <td><a href="#" class="text-xs text-mny-700 hover:text-mny-900 font-semibold">4 sections</a></td>
+              <td><span class="text-xs text-mny-700" title="May 14, 2026">May 14, 2026 <span class="text-mny-400">by sgangdod</span></span></td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></td>
+            </tr>
+
+            <tr>
+              <td><span class="src-label">hvi_data</span></td>
+              <td><span class="text-xs text-mny-700">internal_table</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold">4</span></td>
+              <td><a href="#" class="text-xs text-mny-700 hover:text-mny-900 font-semibold">3 sections</a></td>
+              <td><span class="text-xs text-mny-700" title="Jan 18, 2026">Jan 18, 2026 <span class="text-mny-400">by admin</span></span></td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></td>
+            </tr>
+
+            <tr>
+              <td><span class="src-label">risk_geojson</span></td>
+              <td><span class="text-xs text-mny-700">GIS</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold">1</span></td>
+              <td><a href="#" class="text-xs text-mny-700 hover:text-mny-900 font-semibold">2 sections</a></td>
+              <td><span class="text-xs text-mny-700" title="Mar 10, 2026">Mar 10, 2026 <span class="text-mny-400">by admin</span></span></td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></td>
+            </tr>
+
+            <tr>
+              <td><span class="src-label">strategies_db</span></td>
+              <td><span class="text-xs text-mny-700">External</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold">2</span></td>
+              <td><a href="#" class="text-xs text-mny-700 hover:text-mny-900 font-semibold">2 sections</a></td>
+              <td><span class="text-xs text-mny-700" title="Nov 5, 2025">Nov 5, 2025 <span class="text-mny-400">by admin</span></span></td>
+              <td><span class="pill pill-green">Active</span></td>
+              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></td>
+            </tr>
+
+            <!-- Orphaned source 1 -->
+            <tr style="background:#FFF8F0;">
+              <td><span class="src-label" style="border-color:#EAAD43;">old_risk_data</span></td>
+              <td><span class="text-xs text-mny-700">internal_table</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold">1</span></td>
+              <td><span class="pill pill-amber" style="font-size:10px;">0 sections</span></td>
+              <td><span class="text-xs text-mny-400" title="Dec 1, 2024">Dec 1, 2024</span></td>
+              <td><span class="pill pill-amber">Orphaned</span></td>
+              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></td>
+            </tr>
+
+            <!-- Orphaned source 2 -->
+            <tr style="background:#FFF8F0;">
+              <td><span class="src-label" style="border-color:#EAAD43;">test_data_v1</span></td>
+              <td><span class="text-xs text-mny-700">internal_table</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold">2</span></td>
+              <td><span class="pill pill-amber" style="font-size:10px;">0 sections</span></td>
+              <td><span class="text-xs text-mny-400" title="Jun 15, 2024">Jun 15, 2024</span></td>
+              <td><span class="pill pill-amber">Orphaned</span></td>
+              <td><svg class="action-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></td>
+            </tr>
+
+          </tbody>
+        </table>
+        <div class="table-footer">
+          <span class="font-display text-[10px] text-mny-400 tracking-widest">7 SOURCES · 2 ORPHANED</span>
+          <span class="text-xs text-mny-400 font-proxima">Total: 15 views across all sources</span>
+        </div>
+      </div>
+
+      <div class="annotation-strip mt-3">
+        <p>
+          <strong>Data Sources tab</strong> — new <code>{pattern} (sources)</code> source type in <code>useDataSource.js</code> querying all sources in the pattern dmsEnv. · <strong>source_section_count</strong>: custom column type reads <code>ComponentContext.state.data</code> for sections, counts <code>source_id</code> matches. Orphaned = 0 sections. · <strong>Orphaned rows</strong> highlighted amber — authors can go to Datasets admin to delete. Task: <code>site-mgmt-data-sources-inventory.md</code>
+        </p>
+      </div>
+    </div><!-- /tab-sources -->
+
+
+    <!-- ══════════════════════════════════════════
+         TAB 6: SITE HEALTH
+         Client-side diagnostic: pages with no sections,
+         orphaned pages, duplicate slugs, stale drafts
+         ══════════════════════════════════════════ -->
+    <div id="tab-health" class="tab-content p-5 hidden">
+
+      <!-- Summary stat strip -->
+      <div class="flex gap-3 mb-5 flex-wrap">
+        <div class="card px-4 py-3 flex items-center gap-3 min-w-[180px]">
+          <div class="w-8 h-8 rounded-full bg-mny-y50 flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" fill="none" stroke="#EAAD43" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <div>
+            <div class="font-display text-[22px] text-mny-y700 leading-none">4</div>
+            <div class="font-display text-[10px] text-mny-400 tracking-widest mt-0.5">EMPTY PAGES</div>
+          </div>
+        </div>
+        <div class="card px-4 py-3 flex items-center gap-3 min-w-[180px]">
+          <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" fill="none" stroke="#DD524C" stroke-width="2" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          </div>
+          <div>
+            <div class="font-display text-[22px] text-mny-red leading-none">2</div>
+            <div class="font-display text-[10px] text-mny-400 tracking-widest mt-0.5">ORPHANED</div>
+          </div>
+        </div>
+        <div class="card px-4 py-3 flex items-center gap-3 min-w-[180px]">
+          <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" fill="none" stroke="#DD524C" stroke-width="2" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <div class="font-display text-[22px] text-mny-red leading-none">1</div>
+            <div class="font-display text-[10px] text-mny-400 tracking-widest mt-0.5">DUPE SLUGS</div>
+          </div>
+        </div>
+        <div class="card px-4 py-3 flex items-center gap-3 min-w-[180px]">
+          <div class="w-8 h-8 rounded-full bg-mny-y50 flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" fill="none" stroke="#EAAD43" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div>
+            <div class="font-display text-[22px] text-mny-y700 leading-none">8</div>
+            <div class="font-display text-[10px] text-mny-400 tracking-widest mt-0.5">STALE DRAFTS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issue group 1: Empty pages -->
+      <div class="mb-4">
+        <div class="font-display text-[11px] text-mny-400 tracking-widest uppercase mb-2 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-mny-y700 inline-block"></span>Pages with no sections
+        </div>
+        <div class="border border-mny-200 rounded-xl overflow-hidden">
+          <table class="mgmt-table">
+            <thead><tr>
+              <th>Title</th><th style="width:200px">URL Slug</th><th style="width:120px">Created</th><th style="width:100px">Action</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><a class="link-title" href="#">New Page</a></td>
+                <td><a class="link-slug" href="#">/state-mitigation/new-page</a></td>
+                <td><span class="text-xs text-mny-700">May 20, 2026</span></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Edit →</a></td>
+              </tr>
+              <tr>
+                <td><a class="link-title" href="#">Untitled</a></td>
+                <td><a class="link-slug" href="#">/hazards-of-concern/untitled</a></td>
+                <td><span class="text-xs text-mny-700">Apr 10, 2026</span></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Edit →</a></td>
+              </tr>
+              <tr>
+                <td><a class="link-title" href="#">Infrastructure Planning</a></td>
+                <td><a class="link-slug" href="#">/nys-risk-environment/infrastructure-planning</a></td>
+                <td><span class="text-xs text-mny-700">Sep 2, 2025</span></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Edit →</a></td>
+              </tr>
+              <tr>
+                <td><a class="link-title" href="#">Climate Resilience Background</a></td>
+                <td><a class="link-slug" href="#">/climate-change/background</a></td>
+                <td><span class="text-xs text-mny-700">Aug 14, 2025</span></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Edit →</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Issue group 2: Orphaned pages -->
+      <div class="mb-4">
+        <div class="font-display text-[11px] text-mny-red tracking-widest uppercase mb-2 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-mny-red inline-block"></span>Orphaned pages — parent not found
+        </div>
+        <div class="border border-red-100 rounded-xl overflow-hidden">
+          <table class="mgmt-table">
+            <thead><tr>
+              <th>Title</th><th style="width:200px">Parent (missing)</th><th style="width:200px">URL Slug</th><th style="width:100px">Action</th>
+            </tr></thead>
+            <tbody>
+              <tr style="background:#FFF5F5;">
+                <td><a class="link-title" href="#">Old Maps</a></td>
+                <td><span class="text-xs font-semibold text-mny-red">"Assess Risk (v1)"</span> <span class="text-mny-400 text-xs">— not found</span></td>
+                <td><a class="link-slug" href="#">/assess-risk-v1/maps</a></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Fix parent →</a></td>
+              </tr>
+              <tr style="background:#FFF5F5;">
+                <td><a class="link-title" href="#">Archived Content</a></td>
+                <td><span class="text-xs font-semibold text-mny-red">"Home (legacy)"</span> <span class="text-mny-400 text-xs">— not found</span></td>
+                <td><a class="link-slug" href="#">/home-legacy/archive</a></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Fix parent →</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Issue group 3: Duplicate slugs -->
+      <div class="mb-4">
+        <div class="font-display text-[11px] text-mny-red tracking-widest uppercase mb-2 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-mny-red inline-block"></span>Duplicate URL slugs
+        </div>
+        <div class="border border-red-100 rounded-xl overflow-hidden">
+          <table class="mgmt-table">
+            <thead><tr>
+              <th>Title</th><th style="width:220px">Duplicate Slug</th><th style="width:100px">Action</th>
+            </tr></thead>
+            <tbody>
+              <tr style="background:#FFF5F5;">
+                <td><a class="link-title" href="#">Introduction (v1)</a> <span class="text-mny-400 text-xs ml-1">+ 1 other page</span></td>
+                <td><a class="link-slug" href="#">/hazards-of-concern/introduction</a></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Fix slug →</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Issue group 4: Stale drafts -->
+      <div class="mb-4">
+        <div class="font-display text-[11px] text-mny-400 tracking-widest uppercase mb-2 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-mny-y700 inline-block"></span>Stale drafts — never published, last edited &gt;90 days ago
+        </div>
+        <div class="border border-mny-200 rounded-xl overflow-hidden">
+          <table class="mgmt-table">
+            <thead><tr>
+              <th>Title</th><th style="width:200px">URL Slug</th><th style="width:120px">Last edited</th><th style="width:80px">Age</th><th style="width:100px">Action</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><a class="link-title" href="#">Climate Resilience Background</a></td>
+                <td><a class="link-slug" href="#">/climate-change/background</a></td>
+                <td><span class="text-xs text-mny-400">Aug 14, 2025</span></td>
+                <td><span class="font-semibold text-mny-red text-xs">245 days</span></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Edit →</a></td>
+              </tr>
+              <tr>
+                <td><a class="link-title" href="#">Infrastructure Planning</a></td>
+                <td><a class="link-slug" href="#">/nys-risk-environment/infrastructure-planning</a></td>
+                <td><span class="text-xs text-mny-400">Sep 2, 2025</span></td>
+                <td><span class="font-semibold text-mny-red text-xs">227 days</span></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Edit →</a></td>
+              </tr>
+              <tr>
+                <td><a class="link-title" href="#">Local Planning Toolkit</a></td>
+                <td><a class="link-slug" href="#">/local-mitigation/toolkit</a></td>
+                <td><span class="text-xs text-mny-400">Oct 18, 2025</span></td>
+                <td><span class="font-semibold text-mny-y700 text-xs">180 days</span></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Edit →</a></td>
+              </tr>
+              <tr>
+                <td><a class="link-title" href="#">Earthquake Background</a></td>
+                <td><a class="link-slug" href="#">/hazards-of-concern/earthquake-background</a></td>
+                <td><span class="text-xs text-mny-400">Nov 3, 2025</span></td>
+                <td><span class="font-semibold text-mny-y700 text-xs">163 days</span></td>
+                <td><a href="#" class="text-xs font-semibold text-mny-700 hover:text-mny-900">Edit →</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="annotation-strip mt-3">
+        <p>
+          <strong>Site Health</strong> — custom <code>SiteHealthSection</code> component, not a configured Spreadsheet. Loads pages + sections data, runs 4 client-side checks. <strong>Empty pages</strong>: section_count === 0. <strong>Orphaned</strong>: parent title not found in <code>Set&lt;string&gt;</code> of all page titles. <strong>Duplicate slugs</strong>: frequency map over url_slug. <strong>Stale drafts</strong>: !published &amp;&amp; days_since_updated &gt; 90. Task: <code>site-mgmt-site-health-audit.md</code>
+        </p>
+      </div>
+    </div><!-- /tab-health -->
+
+
+    <!-- ══════════════════════════════════════════
+         TAB 7: NAVIGATION
+         Bulk nav order + visibility management
+         nav_hidden toggle + weight reorder
+         ══════════════════════════════════════════ -->
+    <div id="tab-nav" class="tab-content p-5 hidden">
+
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <p class="text-sm text-mny-700 font-proxima">Manage which pages appear in the site navigation and in what order. Toggle visibility inline or use ↑↓ to reorder.</p>
+        <div class="flex gap-2 text-xs text-mny-400 font-proxima items-center">
+          <span class="w-3 h-3 rounded-sm bg-mny-grn inline-block"></span>Visible
+          <span class="w-3 h-3 rounded-sm bg-mny-200 inline-block ml-2"></span>Hidden from nav
+        </div>
+      </div>
+
+      <!-- Top-level nav items -->
+      <div class="border border-mny-200 rounded-xl overflow-hidden">
+        <table class="mgmt-table">
+          <thead>
+            <tr>
+              <th style="width:32px"></th>
+              <th>Page</th>
+              <th style="width:200px">URL Slug</th>
+              <th style="width:90px">Published</th>
+              <th style="width:90px" class="text-center">Children</th>
+              <th style="width:120px" class="text-center">Visible in Nav</th>
+              <th style="width:64px" class="text-center">Order</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td class="text-mny-400 text-center" style="cursor:grab;">⠿</td>
+              <td><a class="link-title" href="#">Hazards of Concern</a></td>
+              <td><a class="link-slug" href="#">/hazards-of-concern</a></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold text-sm">16</span></td>
+              <td class="text-center">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked class="rounded border-mny-200" style="accent-color:#54B99B;">
+                  <span class="text-xs text-mny-grn font-semibold">On</span>
+                </label>
+              </td>
+              <td class="text-center">
+                <div class="flex items-center justify-center gap-0.5">
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↑</button>
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↓</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="text-mny-400 text-center" style="cursor:grab;">⠿</td>
+              <td><a class="link-title" href="#">NYS Risk Environment</a></td>
+              <td><a class="link-slug" href="#">/nys-risk-environment</a></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold text-sm">5</span></td>
+              <td class="text-center">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked class="rounded border-mny-200" style="accent-color:#54B99B;">
+                  <span class="text-xs text-mny-grn font-semibold">On</span>
+                </label>
+              </td>
+              <td class="text-center">
+                <div class="flex items-center justify-center gap-0.5">
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↑</button>
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↓</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="text-mny-400 text-center" style="cursor:grab;">⠿</td>
+              <td><a class="link-title" href="#">State Mitigation</a></td>
+              <td><a class="link-slug" href="#">/state-mitigation</a></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold text-sm">5</span></td>
+              <td class="text-center">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked class="rounded border-mny-200" style="accent-color:#54B99B;">
+                  <span class="text-xs text-mny-grn font-semibold">On</span>
+                </label>
+              </td>
+              <td class="text-center">
+                <div class="flex items-center justify-center gap-0.5">
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↑</button>
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↓</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="text-mny-400 text-center" style="cursor:grab;">⠿</td>
+              <td><a class="link-title" href="#">Climate Change</a></td>
+              <td><a class="link-slug" href="#">/climate-change</a></td>
+              <td><span class="pill pill-amber">Draft</span></td>
+              <td class="text-center"><span class="text-mny-700 font-semibold text-sm">5</span></td>
+              <td class="text-center">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked class="rounded border-mny-200" style="accent-color:#54B99B;">
+                  <span class="text-xs text-mny-grn font-semibold">On</span>
+                </label>
+              </td>
+              <td class="text-center">
+                <div class="flex items-center justify-center gap-0.5">
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↑</button>
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↓</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Hidden from nav -->
+            <tr style="background:#F3F8F9; opacity:0.75;">
+              <td class="text-mny-400 text-center" style="cursor:grab;">⠿</td>
+              <td><a class="link-title" href="#" style="color:#6D96AE;">Resource Library</a></td>
+              <td><a class="link-slug" href="#">/resource-library</a></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="text-mny-400 font-semibold text-sm">4</span></td>
+              <td class="text-center">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" class="rounded border-mny-200">
+                  <span class="text-xs text-mny-400">Off</span>
+                </label>
+              </td>
+              <td class="text-center">
+                <div class="flex items-center justify-center gap-0.5">
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↑</button>
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↓</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr style="background:#F3F8F9; opacity:0.75;">
+              <td class="text-mny-400 text-center" style="cursor:grab;">⠿</td>
+              <td><a class="link-title" href="#" style="color:#6D96AE;">Local Mitigation</a></td>
+              <td><a class="link-slug" href="#">/local-mitigation</a></td>
+              <td><span class="pill pill-green">Published</span></td>
+              <td class="text-center"><span class="text-mny-400 font-semibold text-sm">4</span></td>
+              <td class="text-center">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" class="rounded border-mny-200">
+                  <span class="text-xs text-mny-400">Off</span>
+                </label>
+              </td>
+              <td class="text-center">
+                <div class="flex items-center justify-center gap-0.5">
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↑</button>
+                  <button class="pg-btn pg-btn-inactive" style="font-size:10px;">↓</button>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+        <div class="table-footer">
+          <span class="font-display text-[10px] text-mny-400 tracking-widest">6 TOP-LEVEL PAGES · 4 VISIBLE · 2 HIDDEN</span>
+          <span class="text-xs text-mny-400 font-proxima italic">Click a row to manage its children's nav order</span>
+        </div>
+      </div>
+
+      <div class="annotation-strip mt-3">
+        <p>
+          <strong>nav_hidden</strong> attribute needed on pages (<code>page.format.js</code>) — verify or add. · <strong>weight</strong> attribute needed for ordering — verify or add; <code>getNavItems()</code> should use it. · Toggle calls <code>apiUpdate({ nav_hidden: !row.nav_hidden })</code>. · ↑↓ buttons swap adjacent <code>weight</code> values (Option A v1). · Drag-to-reorder deferred to v2 (needs bulk-update primitive). Task: <code>site-mgmt-navigation-management.md</code>
+        </p>
+      </div>
+    </div><!-- /tab-nav -->
+
+
+    <!-- ══════════════════════════════════════════
+         TAB 8: ACTIVITY LOG
+         Reverse-chrono feed of page + section changes
+         updated_at / updated_by from data_items
+         ══════════════════════════════════════════ -->
+    <div id="tab-activity" class="tab-content p-5 hidden">
+
+      <div class="flex items-center gap-2 flex-wrap mb-4">
+        <span class="font-display text-[10px] text-mny-400 tracking-widest uppercase">Filter</span>
+        <div class="filter-wrap">
+          <select class="filter-select pr-8">
+            <option>All users</option>
+            <option>sgangdod</option>
+            <option>admin</option>
+          </select>
+        </div>
+        <div class="filter-wrap">
+          <select class="filter-select pr-8">
+            <option>All actions</option>
+            <option>Created</option>
+            <option>Edited</option>
+            <option>Published</option>
+          </select>
+        </div>
+        <div class="filter-wrap">
+          <select class="filter-select pr-8">
+            <option>All time</option>
+            <option>Last 24 hours</option>
+            <option>Last 7 days</option>
+            <option>Last 30 days</option>
+          </select>
+        </div>
+        <input type="text" class="filter-search" placeholder="Search pages or sections…">
+      </div>
+
+      <div class="border border-mny-200 rounded-xl overflow-hidden">
+        <div class="divide-y divide-mny-100">
+
+          <!-- Entry: edit 4m ago -->
+          <div class="flex items-start gap-3 px-4 py-3 hover:bg-mny-50">
+            <div class="w-7 h-7 rounded-full bg-mny-700 flex items-center justify-center text-white text-[10px] font-semibold font-display flex-shrink-0 mt-0.5">SG</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] text-mny-700 font-proxima">
+                <strong class="text-mny-900">sgangdod</strong> edited section <a href="#" class="text-mny-700 hover:text-mny-900 font-semibold">Flood Risk Overview</a>
+                <span class="text-mny-400 mx-1">on</span>
+                <a href="#" class="text-mny-700 hover:text-mny-900">Flood</a>
+              </div>
+              <div class="text-xs text-mny-400 mt-0.5 font-proxima">4 minutes ago</div>
+            </div>
+            <span class="pill pill-blue flex-shrink-0" style="font-size:10px; margin-top:2px;">Section</span>
+          </div>
+
+          <!-- Entry: publish 2h ago -->
+          <div class="flex items-start gap-3 px-4 py-3 hover:bg-mny-50">
+            <div class="w-7 h-7 rounded-full bg-mny-700 flex items-center justify-center text-white text-[10px] font-semibold font-display flex-shrink-0 mt-0.5">SG</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] text-mny-700 font-proxima">
+                <strong class="text-mny-900">sgangdod</strong> published <a href="#" class="text-mny-700 hover:text-mny-900 font-semibold">Hazards of Concern</a>
+              </div>
+              <div class="text-xs text-mny-400 mt-0.5 font-proxima">2 hours ago</div>
+            </div>
+            <span class="pill pill-green flex-shrink-0" style="font-size:10px; margin-top:2px;">Published</span>
+          </div>
+
+          <!-- Entry: edit 5h ago -->
+          <div class="flex items-start gap-3 px-4 py-3 hover:bg-mny-50">
+            <div class="w-7 h-7 rounded-full bg-mny-700 flex items-center justify-center text-white text-[10px] font-semibold font-display flex-shrink-0 mt-0.5">SG</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] text-mny-700 font-proxima">
+                <strong class="text-mny-900">sgangdod</strong> edited <a href="#" class="text-mny-700 hover:text-mny-900 font-semibold">State Mitigation</a>
+              </div>
+              <div class="text-xs text-mny-400 mt-0.5 font-proxima">5 hours ago</div>
+            </div>
+            <span class="pill pill-blue flex-shrink-0" style="font-size:10px; margin-top:2px; background:#E0EBF0; color:#37576B;">Page</span>
+          </div>
+
+          <!-- Entry: create 1d ago -->
+          <div class="flex items-start gap-3 px-4 py-3 hover:bg-mny-50">
+            <div class="w-7 h-7 rounded-full bg-mny-400 flex items-center justify-center text-white text-[10px] font-semibold font-display flex-shrink-0 mt-0.5">SG</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] text-mny-700 font-proxima">
+                <strong class="text-mny-900">sgangdod</strong> created <a href="#" class="text-mny-700 hover:text-mny-900 font-semibold">Extreme Cold</a>
+              </div>
+              <div class="text-xs text-mny-400 mt-0.5 font-proxima">1 day ago · Jun 8, 2026 at 3:42 PM</div>
+            </div>
+            <span class="pill pill-green flex-shrink-0" style="font-size:10px; margin-top:2px; background:#E8F7F2; color:#3A9E86;">Created</span>
+          </div>
+
+          <!-- Entry: edit 2d ago -->
+          <div class="flex items-start gap-3 px-4 py-3 hover:bg-mny-50">
+            <div class="w-7 h-7 rounded-full bg-mny-900 flex items-center justify-center text-white text-[10px] font-semibold font-display flex-shrink-0 mt-0.5">AD</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] text-mny-700 font-proxima">
+                <strong class="text-mny-900">admin</strong> edited section <a href="#" class="text-mny-700 hover:text-mny-900 font-semibold">Hurricane Overview</a>
+                <span class="text-mny-400 mx-1">on</span>
+                <a href="#" class="text-mny-700 hover:text-mny-900">Hurricane</a>
+              </div>
+              <div class="text-xs text-mny-400 mt-0.5 font-proxima">2 days ago · Jun 7, 2026 at 10:15 AM</div>
+            </div>
+            <span class="pill pill-blue flex-shrink-0" style="font-size:10px; margin-top:2px;">Section</span>
+          </div>
+
+          <!-- Entry: publish 5d ago -->
+          <div class="flex items-start gap-3 px-4 py-3 hover:bg-mny-50">
+            <div class="w-7 h-7 rounded-full bg-mny-700 flex items-center justify-center text-white text-[10px] font-semibold font-display flex-shrink-0 mt-0.5">SG</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] text-mny-700 font-proxima">
+                <strong class="text-mny-900">sgangdod</strong> published <a href="#" class="text-mny-700 hover:text-mny-900 font-semibold">Flood</a>
+                <span class="text-mny-400 mx-1">and</span>
+                <span class="text-mny-700 font-semibold">3 other pages</span>
+              </div>
+              <div class="text-xs text-mny-400 mt-0.5 font-proxima">5 days ago · Jun 4, 2026</div>
+            </div>
+            <span class="pill pill-green flex-shrink-0" style="font-size:10px; margin-top:2px;">Published</span>
+          </div>
+
+          <!-- Entry: edit 8d ago -->
+          <div class="flex items-start gap-3 px-4 py-3 hover:bg-mny-50 opacity-70">
+            <div class="w-7 h-7 rounded-full bg-mny-900 flex items-center justify-center text-white text-[10px] font-semibold font-display flex-shrink-0 mt-0.5">AD</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] text-mny-700 font-proxima">
+                <strong class="text-mny-900">admin</strong> edited <a href="#" class="text-mny-700 hover:text-mny-900 font-semibold">NYS Risk Environment</a>
+              </div>
+              <div class="text-xs text-mny-400 mt-0.5 font-proxima">8 days ago · Jun 1, 2026</div>
+            </div>
+            <span class="pill pill-blue flex-shrink-0" style="font-size:10px; margin-top:2px; background:#E0EBF0; color:#37576B;">Page</span>
+          </div>
+
+        </div><!-- /divide-y -->
+        <div class="table-footer">
+          <span class="font-display text-[10px] text-mny-400 tracking-widest">SHOWING LAST 50 CHANGES</span>
+          <button class="preview-btn">Load more</button>
+        </div>
+      </div>
+
+      <div class="annotation-strip mt-3">
+        <p>
+          <strong>v1</strong>: Add <code>updated_at</code>, <code>updated_by</code>, <code>created_at</code>, <code>created_by</code> to <code>cmsPage.attributes</code> + <code>cmsSection.attributes</code> — enables a pages Spreadsheet sorted by <code>updated_at</code> DESC immediately. <strong>activity_action_badge</strong>: derives Created/Edited/Published from row data. · <strong>v2</strong>: <code>{pattern} (activity)</code> merged source UNIONing pages + sections ordered by <code>updated_at</code> DESC with <code>row_kind</code> column. Task: <code>site-mgmt-activity-log.md</code>
+        </p>
+      </div>
+    </div><!-- /tab-activity -->
+
 
   </div><!-- /main card -->
 

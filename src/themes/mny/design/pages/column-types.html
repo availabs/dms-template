@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Column Types (Design Draft)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <style>
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; }
+    .font-display { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+    .card { background: white; border-radius: 12px; box-shadow: 0px 0px 6px 0px rgba(0,0,0,.02), 0px 2px 4px 0px rgba(0,0,0,.08); }
+    .pill { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; }
+    .pill-green  { background: #E8F7F2; color: #54B99B; }
+    .pill-amber  { background: #FCF6EC; color: #EAAD43; }
+    .pill-gray   { background: #E0EBF0; color: #37576B; }
+    .pill-red    { background: #FAEAEA; color: #DD524C; }
+    .pill-blue   { background: #EBF2F8; color: #37576B; }
+    .pill-purple { background: #F0EEFA; color: #6B50B4; }
+    .pill-teal   { background: #E5F5F0; color: #2E8A6E; }
+    .table-row { display: grid; align-items: center; border-bottom: 1px solid #E0EBF0; padding: 8px 12px; }
+    .table-row:last-child { border-bottom: none; }
+    .table-row:hover { background: #F3F8F9; cursor: pointer; }
+    .table-header { background: #F3F8F9; padding: 8px 12px; border-bottom: 2px solid #C5D7E0; }
+    .link-cell { color: #37576B; text-decoration: underline; text-decoration-color: #6D96AE; font-size: 13px; cursor: pointer; }
+    .link-cell:hover { color: #2D3E4C; }
+    .tab-active { border-bottom: 2px solid #EAAD43; color: #2D3E4C; font-weight: 600; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #6D96AE; }
+    .tab-inactive:hover { color: #37576B; border-color: #C5D7E0; }
+    .annotation {
+      background: #FFFDE7; border: 1px dashed #EAAD43;
+      border-radius: 4px; padding: 4px 10px; font-size: 11px; color: #8B6914;
+      font-family: monospace;
+    }
+    .type-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 4px; font-size: 11px; font-family: monospace; font-weight: 600;
+    }
+    .btn-action {
+      display: inline-flex; align-items: center; padding: 2px 8px;
+      border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .btn-publish { background: #16A34A; color: white; }
+    .btn-publish:hover { background: #15803D; }
+    .btn-discard { background: #E0EBF0; color: #37576B; border-color: #C5D7E0; }
+    .btn-discard:hover { background: #C5D7E0; }
+    .btn-preview { background: white; color: #37576B; border: 1px solid #C5D7E0; }
+    .btn-preview:hover { background: #F3F8F9; border-color: #6D96AE; }
+    /* Callout legend */
+    .ct-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%;
+      font-size: 10px; font-weight: 700; flex-shrink: 0;
+    }
+    /* Modal overlay */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 40;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-box {
+      background: white; border-radius: 12px; width: 780px; max-width: 95vw;
+      max-height: 80vh; overflow: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    /* Section component preview mock */
+    .section-preview-bar {
+      height: 6px; border-radius: 3px; background: linear-gradient(90deg, #C5D7E0 0%, #E0EBF0 100%);
+      margin-bottom: 6px;
+    }
+    .spark { display: inline-block; width: 36px; height: 24px; background: #E0EBF0; border-radius: 3px; vertical-align: middle; }
+    /* Monospaced source label */
+    .src-mono { font-family: monospace; font-size: 11px; color: #6D96AE; background: #F3F8F9; padding: 1px 5px; border-radius: 3px; }
+  </style>
+</head>
+<body style="background-color:#F4F4F4; background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ============================================================
+     DESIGN DRAFT — New Column Types for Site Management
+     Status: Annotated mockup showing page_publish, page_link,
+             component_type, source_id, view_id, element_preview.
+     Author: design session 2026-06-08
+     ============================================================ -->
+
+<!-- ─── Top nav ─────────────────────────────────────────────────────── -->
+<div class="sticky top-0 z-50 w-full h-[64px] bg-white shadow-sm flex items-center px-6 gap-4">
+  <div class="font-display text-[20px] tracking-wide text-mny-900" style="letter-spacing:0.08em">MITIGATE<span class="text-mny-y700">NY</span></div>
+  <div class="flex-1"></div>
+  <div class="text-mny-400 text-sm font-proxima">Admin ↗</div>
+  <div class="w-8 h-8 rounded-full bg-mny-200 flex items-center justify-center text-mny-700 text-sm font-semibold">SG</div>
+</div>
+
+<!-- ─── Page wrapper ─────────────────────────────────────────────────── -->
+<div class="max-w-[1260px] mx-auto px-6 pt-8 pb-24 space-y-8">
+
+  <!-- Heading -->
+  <div>
+    <div class="text-xs font-display text-mny-400 tracking-wider mb-1">ADMIN / SITE MANAGEMENT / COLUMN TYPES</div>
+    <h1 class="font-display text-[36px] text-mny-900" style="letter-spacing:0.04em">COLUMN TYPES — DESIGN DRAFT</h1>
+    <p class="text-mny-700 text-sm mt-1 font-proxima max-w-2xl">
+      Six new column types and format functions for site management spreadsheets.
+      Pages get <strong>page_publish</strong> and <strong>page_link</strong>.
+      Sections get <strong>component_type</strong>, <strong>source_id</strong>, <strong>view_id</strong>, and <strong>element_preview</strong>.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       LEGEND
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="card p-5">
+    <div class="font-display text-[13px] text-mny-900 tracking-wide mb-4">COLUMN TYPE LEGEND</div>
+    <div class="grid grid-cols-2 gap-3 text-sm font-proxima" style="grid-template-columns: 1fr 1fr;">
+
+      <div class="flex items-start gap-3 p-3 rounded-lg bg-mny-50 border border-mny-200">
+        <span class="ct-badge bg-green-100 text-green-700">P</span>
+        <div>
+          <div class="font-semibold text-mny-900 text-xs font-display tracking-wider">PAGE_PUBLISH</div>
+          <div class="text-mny-700 text-xs mt-0.5">
+            Status pill (Draft / Changes / Published) with inline <strong>Publish</strong> and <strong>Discard</strong> buttons.
+            Fetches the full page via Falcor before calling <code class="bg-white px-1 rounded border border-mny-200">editFunctions.publish</code>.
+            Pages only.
+          </div>
+          <div class="annotation mt-1.5">type: 'page_publish' · column key: 'published'</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 p-3 rounded-lg bg-mny-50 border border-mny-200">
+        <span class="ct-badge bg-blue-100 text-blue-700">L</span>
+        <div>
+          <div class="font-semibold text-mny-900 text-xs font-display tracking-wider">PAGE_LINK (formatFn)</div>
+          <div class="text-mny-700 text-xs mt-0.5">
+            Applies to any text column. Renders the value as a <code class="bg-white px-1 rounded border border-mny-200">&lt;Link&gt;</code> using <code class="bg-white px-1 rounded border border-mny-200">row.url_slug</code>. Set <strong>Format → page_link</strong> on the Title column.
+          </div>
+          <div class="annotation mt-1.5">formatFn: 'page_link' · reads row.url_slug for href</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 p-3 rounded-lg bg-mny-50 border border-mny-200">
+        <span class="ct-badge bg-purple-100 text-purple-700">C</span>
+        <div>
+          <div class="font-semibold text-mny-900 text-xs font-display tracking-wider">COMPONENT_TYPE (virtual)</div>
+          <div class="text-mny-700 text-xs mt-0.5">
+            Extracted from <code class="bg-white px-1 rounded border border-mny-200">element['element-type']</code> via SQL expression key. Works on all existing data without migration. Filterable. Sections only.
+          </div>
+          <div class="annotation mt-1.5">key: "data->'element'->>'element-type' as component_type"</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 p-3 rounded-lg bg-mny-50 border border-mny-200">
+        <span class="ct-badge bg-amber-100 text-amber-700">S</span>
+        <div>
+          <div class="font-semibold text-mny-900 text-xs font-display tracking-wider">SOURCE_ID / VIEW_ID (virtual)</div>
+          <div class="text-mny-700 text-xs mt-0.5">
+            Extracted from <code class="bg-white px-1 rounded border border-mny-200">element.externalSource</code> nested JSON. Filter sections by data source without any re-save. Sections only.
+          </div>
+          <div class="annotation mt-1.5">key: "data->'element'->'externalSource'->>'source_id' as source_id"</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 p-3 rounded-lg bg-mny-50 border border-mny-200 col-span-2">
+        <span class="ct-badge bg-teal-100 text-teal-700">E</span>
+        <div>
+          <div class="font-semibold text-mny-900 text-xs font-display tracking-wider">ELEMENT_PREVIEW</div>
+          <div class="text-mny-700 text-xs mt-0.5">
+            A <strong>Preview</strong> button column. On click: fetches the section's full <code class="bg-white px-1 rounded border border-mny-200">data</code> blob via Falcor, looks up the component from the registry, and renders it inside a modal using <code class="bg-white px-1 rounded border border-mny-200">SectionComponents.ViewComp</code>. Sections only. No edit capability — preview only.
+          </div>
+          <div class="annotation mt-1.5">type: 'element_preview' · opens modal · fetches byId → data → element</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       PAGES SPREADSHEET — page_publish + page_link
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="card overflow-hidden">
+
+    <!-- Section header -->
+    <div class="flex items-center justify-between px-5 py-3 border-b border-mny-200 bg-mny-50">
+      <div>
+        <div class="font-display text-[13px] text-mny-900 tracking-wide">PAGES — SPREADSHEET VIEW</div>
+        <div class="text-[11px] text-mny-400 font-proxima mt-0.5">Source: dms-site + mitigateny_playground|page</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="ct-badge bg-green-100 text-green-700">P</span>
+        <span class="text-xs text-mny-700 font-proxima">page_publish on <code class="bg-mny-100 px-1 rounded">published</code> column</span>
+        <span class="mx-2 text-mny-200">·</span>
+        <span class="ct-badge bg-blue-100 text-blue-700">L</span>
+        <span class="text-xs text-mny-700 font-proxima">page_link formatFn on <code class="bg-mny-100 px-1 rounded">title</code> column</span>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="flex items-center gap-3 px-5 py-2.5 border-b border-mny-100">
+      <div class="text-[10px] font-display text-mny-400 tracking-wider">FILTER</div>
+      <select class="appearance-none bg-mny-50 border border-mny-200 rounded-full text-xs font-proxima text-mny-700 pl-3 pr-6 py-1 focus:outline-none">
+        <option>All pages</option>
+      </select>
+      <input type="text" placeholder="Search…" class="bg-mny-50 border border-mny-200 rounded-full text-xs font-proxima text-mny-700 px-3 py-1 w-40 focus:outline-none placeholder:text-mny-400">
+      <div class="flex-1"></div>
+      <button class="pill bg-mny-y700 text-white font-display tracking-wider text-[10px] px-3 py-1.5 cursor-pointer">+ NEW PAGE</button>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+
+      <!-- Header -->
+      <div class="table-header table-row font-display text-[10px] text-mny-400 tracking-wider"
+           style="grid-template-columns: 28px minmax(180px,1fr) 120px 160px 100px 130px;">
+        <div></div>
+        <div>TITLE</div>
+        <div>PARENT</div>
+        <!-- P badge -->
+        <div class="flex items-center gap-1">
+          PUBLISH STATUS
+          <span class="ct-badge bg-green-100 text-green-700" style="font-size:8px;width:14px;height:14px;">P</span>
+        </div>
+        <div>SLUG</div>
+        <div>AUTH</div>
+      </div>
+
+      <!-- Row 1: Draft — shows Publish button only -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(180px,1fr) 120px 160px 100px 130px;">
+        <div class="flex justify-center"><span style="width:8px;height:8px;border-radius:50%;background:#EAAD43;display:inline-block;"></span></div>
+        <!-- L: title is a link -->
+        <div>
+          <a class="link-cell font-semibold text-mny-900">Assess Risk Overview</a>
+          <span class="ct-badge bg-blue-100 text-blue-700 ml-1" style="font-size:8px;width:14px;height:14px;">L</span>
+        </div>
+        <div class="text-mny-400 text-xs">—</div>
+        <!-- page_publish: draft state -->
+        <div class="flex items-center gap-1.5">
+          <span class="pill pill-amber" style="font-size:11px;padding:1px 8px;">Draft</span>
+          <button class="btn-action btn-publish">Publish</button>
+        </div>
+        <div class="src-mono">/assess-risk</div>
+        <div class="text-mny-400 text-xs">Public</div>
+      </div>
+
+      <!-- Row 2: Published + has changes — shows Publish + Discard -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(180px,1fr) 120px 160px 100px 130px;">
+        <div class="flex justify-center"><span style="width:8px;height:8px;border-radius:50%;background:#6D96AE;display:inline-block;"></span></div>
+        <div>
+          <a class="link-cell">Natural Hazards</a>
+          <span class="ct-badge bg-blue-100 text-blue-700 ml-1" style="font-size:8px;width:14px;height:14px;">L</span>
+        </div>
+        <div class="text-xs text-mny-700">Assess Risk</div>
+        <!-- page_publish: published + has_changes -->
+        <div class="flex items-center gap-1.5">
+          <span class="pill" style="background:#EBF5FB;color:#2874A6;font-size:11px;padding:1px 8px;">Changes</span>
+          <button class="btn-action btn-publish">Publish</button>
+          <button class="btn-action btn-discard">Discard</button>
+        </div>
+        <div class="src-mono">/assess-risk/hazards</div>
+        <div class="text-mny-400 text-xs">Public</div>
+      </div>
+
+      <!-- Row 3: Published, clean — no buttons, just pill -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(180px,1fr) 120px 160px 100px 130px;">
+        <div class="flex justify-center"><span style="width:8px;height:8px;border-radius:50%;background:#54B99B;display:inline-block;"></span></div>
+        <div>
+          <a class="link-cell">Flooding &amp; Stormwater</a>
+          <span class="ct-badge bg-blue-100 text-blue-700 ml-1" style="font-size:8px;width:14px;height:14px;">L</span>
+        </div>
+        <div class="text-xs text-mny-700">Natural Hazards</div>
+        <!-- page_publish: published, no changes -->
+        <div class="flex items-center gap-1.5">
+          <span class="pill pill-green" style="font-size:11px;padding:1px 8px;">Published</span>
+        </div>
+        <div class="src-mono">/assess-risk/flooding</div>
+        <div class="text-mny-400 text-xs">Public</div>
+      </div>
+
+      <!-- Row 4: Draft -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(180px,1fr) 120px 160px 100px 130px;">
+        <div class="flex justify-center"><span style="width:8px;height:8px;border-radius:50%;background:#EAAD43;display:inline-block;"></span></div>
+        <div>
+          <a class="link-cell">Vulnerability Assessment</a>
+          <span class="ct-badge bg-blue-100 text-blue-700 ml-1" style="font-size:8px;width:14px;height:14px;">L</span>
+        </div>
+        <div class="text-xs text-mny-700">Assess Risk</div>
+        <div class="flex items-center gap-1.5">
+          <span class="pill pill-amber" style="font-size:11px;padding:1px 8px;">Draft</span>
+          <button class="btn-action btn-publish">Publish</button>
+        </div>
+        <div class="src-mono">/assess-risk/vulnerability</div>
+        <div class="text-mny-700 text-xs font-semibold">Contributors</div>
+      </div>
+
+      <!-- Row 5: Published + changes -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(180px,1fr) 120px 160px 100px 130px;">
+        <div class="flex justify-center"><span style="width:8px;height:8px;border-radius:50%;background:#6D96AE;display:inline-block;"></span></div>
+        <div>
+          <a class="link-cell">Action Plans</a>
+          <span class="ct-badge bg-blue-100 text-blue-700 ml-1" style="font-size:8px;width:14px;height:14px;">L</span>
+        </div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div class="flex items-center gap-1.5">
+          <span class="pill" style="background:#EBF5FB;color:#2874A6;font-size:11px;padding:1px 8px;">Changes</span>
+          <button class="btn-action btn-publish">Publish</button>
+          <button class="btn-action btn-discard">Discard</button>
+        </div>
+        <div class="src-mono">/plan/action-plans</div>
+        <div class="text-mny-400 text-xs">Public</div>
+      </div>
+
+      <!-- Row 6: Published, clean -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(180px,1fr) 120px 160px 100px 130px;">
+        <div class="flex justify-center"><span style="width:8px;height:8px;border-radius:50%;background:#54B99B;display:inline-block;"></span></div>
+        <div>
+          <a class="link-cell">NFIP Summary</a>
+          <span class="ct-badge bg-blue-100 text-blue-700 ml-1" style="font-size:8px;width:14px;height:14px;">L</span>
+        </div>
+        <div class="text-xs text-mny-700">Action Plans</div>
+        <div class="flex items-center gap-1.5">
+          <span class="pill pill-green" style="font-size:11px;padding:1px 8px;">Published</span>
+        </div>
+        <div class="src-mono">/plan/nfip</div>
+        <div class="text-mny-400 text-xs">Public</div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-between px-4 py-2 border-t border-mny-200 bg-mny-50">
+        <div class="text-[10px] text-mny-400 font-display tracking-wide">SHOWING 1–6 OF 47</div>
+        <div class="flex gap-1">
+          <button class="w-6 h-6 rounded text-xs text-mny-400">‹</button>
+          <button class="w-6 h-6 rounded text-xs bg-mny-y700 text-white font-bold">1</button>
+          <button class="w-6 h-6 rounded text-xs text-mny-400">2</button>
+          <button class="w-6 h-6 rounded text-xs text-mny-400">3</button>
+          <button class="w-6 h-6 rounded text-xs text-mny-400">›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annotation bar -->
+    <div class="px-5 py-3 bg-mny-y50 border-t border-mny-y500 border-dashed">
+      <div class="flex flex-wrap gap-4 text-[11px] font-proxima text-amber-800">
+        <div>
+          <span class="ct-badge bg-green-100 text-green-700 mr-1">P</span>
+          <strong>page_publish</strong>: reads <code>row.published</code> + <code>row.has_changes</code> already in spreadsheet row.
+          On button click → <code>loadFullPage(falcor, app, type, row.id)</code> fetches <code>['id','data']</code> then calls
+          <code>editFunctions.publish(user, fullPage, apiUpdate)</code>.
+          Discard does the same via <code>editFunctions.discardChanges</code>.
+        </div>
+        <div>
+          <span class="ct-badge bg-blue-100 text-blue-700 mr-1">L</span>
+          <strong>page_link</strong>: formatFn set on any column; renders value as <code>&lt;Link to={row.url_slug}&gt;</code>.
+          No server change — pure client formatFn in <code>utils.jsx</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       SECTIONS SPREADSHEET — component_type, source_id, view_id, element_preview
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="card overflow-hidden">
+
+    <!-- Section header -->
+    <div class="flex items-center justify-between px-5 py-3 border-b border-mny-200 bg-mny-50">
+      <div>
+        <div class="font-display text-[13px] text-mny-900 tracking-wide">SECTIONS — SPREADSHEET VIEW</div>
+        <div class="text-[11px] text-mny-400 font-proxima mt-0.5">Source: dms-site + mitigateny_playground|component</div>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap justify-end">
+        <span class="ct-badge bg-purple-100 text-purple-700">C</span>
+        <span class="ct-badge bg-amber-100 text-amber-700">S</span>
+        <span class="ct-badge bg-teal-100 text-teal-700">E</span>
+        <span class="text-xs text-mny-700 font-proxima">virtual columns + preview button</span>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="flex items-center gap-3 px-5 py-2.5 border-b border-mny-100">
+      <div class="text-[10px] font-display text-mny-400 tracking-wider">FILTER</div>
+      <!-- component_type filter -->
+      <div class="relative">
+        <select class="appearance-none bg-mny-50 border border-mny-200 rounded-full text-xs font-proxima text-mny-700 pl-3 pr-6 py-1 focus:outline-none">
+          <option>All types</option>
+          <option selected>Spreadsheet</option>
+          <option>Card</option>
+          <option>lexical</option>
+          <option>Map</option>
+        </select>
+        <div class="absolute right-2 top-1/2 -translate-y-1/2 text-mny-400 text-[10px] pointer-events-none">▾</div>
+      </div>
+      <!-- source_id filter -->
+      <div class="relative">
+        <select class="appearance-none bg-mny-50 border border-mny-200 rounded-full text-xs font-proxima text-mny-700 pl-3 pr-6 py-1 focus:outline-none">
+          <option>All sources</option>
+          <option>nfip_claims</option>
+          <option>flood_insurance</option>
+        </select>
+        <div class="absolute right-2 top-1/2 -translate-y-1/2 text-mny-400 text-[10px] pointer-events-none">▾</div>
+      </div>
+      <input type="text" placeholder="Search sections…" class="bg-mny-50 border border-mny-200 rounded-full text-xs font-proxima text-mny-700 px-3 py-1 w-44 focus:outline-none placeholder:text-mny-400">
+      <div class="flex-1"></div>
+      <div class="text-[10px] text-mny-400 font-proxima italic">Filters use SQL expression directly in WHERE — no data migration needed</div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+
+      <!-- Header -->
+      <div class="table-header table-row font-display text-[10px] text-mny-400 tracking-wider"
+           style="grid-template-columns: 28px minmax(160px,1fr) 130px 100px 120px 120px 80px;">
+        <div></div>
+        <div>TITLE</div>
+        <div>PARENT PAGE</div>
+        <!-- C badge -->
+        <div class="flex items-center gap-1">
+          COMPONENT
+          <span class="ct-badge bg-purple-100 text-purple-700" style="font-size:8px;width:14px;height:14px;">C</span>
+        </div>
+        <!-- S badge -->
+        <div class="flex items-center gap-1">
+          SOURCE
+          <span class="ct-badge bg-amber-100 text-amber-700" style="font-size:8px;width:14px;height:14px;">S</span>
+        </div>
+        <div class="flex items-center gap-1">
+          VIEW
+          <span class="ct-badge bg-amber-100 text-amber-700" style="font-size:8px;width:14px;height:14px;">S</span>
+        </div>
+        <!-- E badge -->
+        <div class="flex items-center gap-1">
+          PREVIEW
+          <span class="ct-badge bg-teal-100 text-teal-700" style="font-size:8px;width:14px;height:14px;">E</span>
+        </div>
+      </div>
+
+      <!-- Row 1: Spreadsheet, no external source -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(160px,1fr) 130px 100px 120px 120px 80px;">
+        <div></div>
+        <div class="font-semibold text-mny-900 text-[13px]">NFIP Claims Overview</div>
+        <div class="text-xs text-mny-700">Natural Hazards</div>
+        <div><span class="type-badge bg-purple-50" style="color:#6B50B4;">Spreadsheet</span></div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div><button class="btn-action btn-preview text-xs" onclick="document.getElementById('modal-spreadsheet').style.display='flex'">Preview</button></div>
+      </div>
+
+      <!-- Row 2: Spreadsheet with source -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(160px,1fr) 130px 100px 120px 120px 80px;">
+        <div></div>
+        <div class="text-[13px]">Flood Insurance Claims</div>
+        <div class="text-xs text-mny-700">Natural Hazards</div>
+        <div><span class="type-badge bg-purple-50" style="color:#6B50B4;">Spreadsheet</span></div>
+        <div><span class="src-mono">nfip_claims</span></div>
+        <div><span class="src-mono">v3</span></div>
+        <div><button class="btn-action btn-preview text-xs" onclick="document.getElementById('modal-spreadsheet').style.display='flex'">Preview</button></div>
+      </div>
+
+      <!-- Row 3: Card with source -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(160px,1fr) 130px 100px 120px 120px 80px;">
+        <div></div>
+        <div class="text-[13px]">Risk Summary Cards</div>
+        <div class="text-xs text-mny-700">Assess Risk Overview</div>
+        <div><span class="type-badge bg-blue-50" style="color:#2874A6;">Card</span></div>
+        <div><span class="src-mono">risk_summary</span></div>
+        <div><span class="src-mono">v1</span></div>
+        <div><button class="btn-action btn-preview text-xs" onclick="document.getElementById('modal-card').style.display='flex'">Preview</button></div>
+      </div>
+
+      <!-- Row 4: lexical (no source) -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(160px,1fr) 130px 100px 120px 120px 80px;">
+        <div></div>
+        <div class="text-[13px]">Introduction</div>
+        <div class="text-xs text-mny-700">Flooding &amp; Stormwater</div>
+        <div><span class="type-badge bg-gray-50" style="color:#37576B;">lexical</span></div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div><button class="btn-action btn-preview text-xs" onclick="document.getElementById('modal-lexical').style.display='flex'">Preview</button></div>
+      </div>
+
+      <!-- Row 5: Spreadsheet with different source -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(160px,1fr) 130px 100px 120px 120px 80px;">
+        <div></div>
+        <div class="text-[13px]">Mitigation Projects Table</div>
+        <div class="text-xs text-mny-700">Action Plans</div>
+        <div><span class="type-badge bg-purple-50" style="color:#6B50B4;">Spreadsheet</span></div>
+        <div><span class="src-mono">mitigation_projects</span></div>
+        <div><span class="src-mono">v2</span></div>
+        <div><button class="btn-action btn-preview text-xs" onclick="document.getElementById('modal-spreadsheet').style.display='flex'">Preview</button></div>
+      </div>
+
+      <!-- Row 6: Map -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(160px,1fr) 130px 100px 120px 120px 80px;">
+        <div></div>
+        <div class="text-[13px]">Flood Zone Map</div>
+        <div class="text-xs text-mny-700">Flooding &amp; Stormwater</div>
+        <div><span class="type-badge bg-teal-50" style="color:#2E8A6E;">Map</span></div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div><button class="btn-action btn-preview text-xs" onclick="document.getElementById('modal-map').style.display='flex'">Preview</button></div>
+      </div>
+
+      <!-- Row 7: Card, no source -->
+      <div class="table-row font-proxima text-sm text-mny-700"
+           style="grid-template-columns: 28px minmax(160px,1fr) 130px 100px 120px 120px 80px;">
+        <div></div>
+        <div class="text-[13px]">Key Statistics</div>
+        <div class="text-xs text-mny-700">Assess Risk Overview</div>
+        <div><span class="type-badge bg-blue-50" style="color:#2874A6;">Card</span></div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div class="text-mny-400 text-xs">—</div>
+        <div><button class="btn-action btn-preview text-xs" onclick="document.getElementById('modal-card').style.display='flex'">Preview</button></div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-between px-4 py-2 border-t border-mny-200 bg-mny-50">
+        <div class="text-[10px] text-mny-400 font-display tracking-wide">SHOWING 1–7 OF 312 · FILTERED BY: component_type = "Spreadsheet"</div>
+        <div class="flex gap-1">
+          <button class="w-6 h-6 rounded text-xs text-mny-400">‹</button>
+          <button class="w-6 h-6 rounded text-xs bg-mny-y700 text-white font-bold">1</button>
+          <button class="w-6 h-6 rounded text-xs text-mny-400">2</button>
+          <button class="w-6 h-6 rounded text-xs text-mny-400">3</button>
+          <button class="w-6 h-6 rounded text-xs text-mny-400">›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annotation bar -->
+    <div class="px-5 py-3 bg-mny-y50 border-t border-mny-y500 border-dashed">
+      <div class="flex flex-wrap gap-4 text-[11px] font-proxima text-amber-800">
+        <div>
+          <span class="ct-badge bg-purple-100 text-purple-700 mr-1">C</span>
+          <strong>component_type</strong>: SQL key <code>data->'element'->>'element-type' as component_type</code>.
+          <code>isCalculatedCol</code> detects <code> as </code>, emits expression directly in WHERE.
+          Client extracts value from <code>row.element['element-type']</code> via <code>extractDmsJsonPath</code> in getData.js.
+        </div>
+        <div>
+          <span class="ct-badge bg-amber-100 text-amber-700 mr-1">S</span>
+          <strong>source_id / view_id</strong>: same SQL expression mechanism, deeper path: <code>data->'element'->'externalSource'->>'source_id'</code>.
+          Both filterable without any schema change.
+        </div>
+        <div>
+          <span class="ct-badge bg-teal-100 text-teal-700 mr-1">E</span>
+          <strong>element_preview</strong>: button fetches <code>byId → ['id','data']</code> then renders
+          <code>SectionComponents.ViewComp</code> inside a modal. No edit — preview only.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       STATE MATRIX — what each column type shows per publish state
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="card p-5">
+    <div class="font-display text-[13px] text-mny-900 tracking-wide mb-4">PAGE_PUBLISH — STATE MATRIX</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs font-proxima border-collapse">
+        <thead>
+          <tr class="bg-mny-50 font-display text-[10px] text-mny-400 tracking-wider">
+            <th class="text-left p-3 border border-mny-200 font-display">published value</th>
+            <th class="text-left p-3 border border-mny-200 font-display">has_changes</th>
+            <th class="text-left p-3 border border-mny-200 font-display">PILL</th>
+            <th class="text-left p-3 border border-mny-200 font-display">PUBLISH BUTTON</th>
+            <th class="text-left p-3 border border-mny-200 font-display">DISCARD BUTTON</th>
+            <th class="text-left p-3 border border-mny-200 font-display">NOTE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="p-3 border border-mny-200"><code>'draft'</code></td>
+            <td class="p-3 border border-mny-200">any</td>
+            <td class="p-3 border border-mny-200"><span class="pill pill-amber" style="font-size:11px;padding:1px 8px;">Draft</span></td>
+            <td class="p-3 border border-mny-200"><button class="btn-action btn-publish">Publish</button></td>
+            <td class="p-3 border border-mny-200 text-mny-400">—</td>
+            <td class="p-3 border border-mny-200 text-mny-400">Never been published. Sections not live.</td>
+          </tr>
+          <tr>
+            <td class="p-3 border border-mny-200"><code>null / undefined</code></td>
+            <td class="p-3 border border-mny-200">any</td>
+            <td class="p-3 border border-mny-200"><span class="pill pill-amber" style="font-size:11px;padding:1px 8px;">Draft</span></td>
+            <td class="p-3 border border-mny-200"><button class="btn-action btn-publish">Publish</button></td>
+            <td class="p-3 border border-mny-200 text-mny-400">—</td>
+            <td class="p-3 border border-mny-200 text-mny-400">Legacy: treated as draft.</td>
+          </tr>
+          <tr class="bg-mny-50">
+            <td class="p-3 border border-mny-200"><code>'' (empty string)</code></td>
+            <td class="p-3 border border-mny-200"><code>true</code></td>
+            <td class="p-3 border border-mny-200"><span class="pill" style="background:#EBF5FB;color:#2874A6;font-size:11px;padding:1px 8px;">Changes</span></td>
+            <td class="p-3 border border-mny-200"><button class="btn-action btn-publish">Publish</button></td>
+            <td class="p-3 border border-mny-200"><button class="btn-action btn-discard">Discard</button></td>
+            <td class="p-3 border border-mny-200 text-mny-400">Published, draft sections ahead of live.</td>
+          </tr>
+          <tr>
+            <td class="p-3 border border-mny-200"><code>'' (empty string)</code></td>
+            <td class="p-3 border border-mny-200"><code>false / null</code></td>
+            <td class="p-3 border border-mny-200"><span class="pill pill-green" style="font-size:11px;padding:1px 8px;">Published</span></td>
+            <td class="p-3 border border-mny-200 text-mny-400">—</td>
+            <td class="p-3 border border-mny-200 text-mny-400">—</td>
+            <td class="p-3 border border-mny-200 text-mny-400">Live and up to date. No action needed.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="annotation mt-3">
+      isPublished = published !== 'draft' &amp;&amp; published !== undefined &amp;&amp; published !== null
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ELEMENT PREVIEW FLOW DIAGRAM
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="card p-5">
+    <div class="font-display text-[13px] text-mny-900 tracking-wide mb-4">ELEMENT_PREVIEW — FETCH FLOW</div>
+    <div class="flex items-center gap-2 flex-wrap text-xs font-proxima text-mny-700">
+
+      <div class="px-3 py-2 rounded-lg border border-teal-200 bg-teal-50 text-center min-w-[120px]">
+        <div class="font-semibold text-teal-700">User clicks</div>
+        <div class="text-teal-600 mt-0.5">Preview button</div>
+        <div class="text-[10px] text-teal-500 mt-1 font-mono">row.id available</div>
+      </div>
+
+      <div class="text-mny-400 font-bold text-lg">→</div>
+
+      <div class="px-3 py-2 rounded-lg border border-mny-200 bg-mny-50 text-center min-w-[160px]">
+        <div class="font-semibold text-mny-900">loadFullSection()</div>
+        <div class="font-mono text-[10px] text-mny-700 mt-1">falcor.get([<br>'dms','data',appType,<br>'byId',[id],['id','data']<br>])</div>
+      </div>
+
+      <div class="text-mny-400 font-bold text-lg">→</div>
+
+      <div class="px-3 py-2 rounded-lg border border-mny-200 bg-mny-50 text-center min-w-[160px]">
+        <div class="font-semibold text-mny-900">Parse response</div>
+        <div class="font-mono text-[10px] text-mny-700 mt-1">extractAtom(raw.data)<br>→ { element, title, ... }</div>
+      </div>
+
+      <div class="text-mny-400 font-bold text-lg">→</div>
+
+      <div class="px-3 py-2 rounded-lg border border-mny-200 bg-mny-50 text-center min-w-[160px]">
+        <div class="font-semibold text-mny-900">Look up component</div>
+        <div class="font-mono text-[10px] text-mny-700 mt-1">getRegisteredComponents()<br>[ element['element-type'] ]</div>
+      </div>
+
+      <div class="text-mny-400 font-bold text-lg">→</div>
+
+      <div class="px-3 py-2 rounded-lg border border-teal-200 bg-teal-50 text-center min-w-[160px]">
+        <div class="font-semibold text-teal-700">Open modal</div>
+        <div class="font-mono text-[10px] text-teal-600 mt-1">SectionComponents.ViewComp<br>value={element}<br>editPageMode={false}</div>
+      </div>
+    </div>
+
+    <div class="mt-4 p-3 bg-mny-50 rounded-lg border border-mny-200 text-[11px] font-proxima text-mny-700">
+      <strong>Context requirements:</strong>
+      The modal wraps <code>SectionComponents.ViewComp</code> in a minimal <code>PageContext.Provider</code>
+      (<code>pageState:{}, apiLoad, apiUpdate, dataSources:[]</code>) and a stub <code>DataSourceContext.Provider</code>
+      so data-driven components don't throw. They may show empty data, but the layout and chrome render correctly.
+      For a richer preview, the section's own <code>externalSource</code> could be passed through — future enhancement.
+    </div>
+  </div>
+
+</div><!-- /page wrapper -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MODALS — element preview examples (click Preview button above)
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- Modal: Spreadsheet preview -->
+<div id="modal-spreadsheet" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-mny-200">
+      <div>
+        <h2 class="font-display text-[16px] text-mny-900 tracking-wide">NFIP CLAIMS OVERVIEW</h2>
+        <span class="text-xs text-mny-400 font-proxima font-mono">Spreadsheet · source: nfip_claims · view: v3</span>
+      </div>
+      <button onclick="document.getElementById('modal-spreadsheet').style.display='none'"
+              class="text-mny-400 hover:text-mny-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-mny-100">×</button>
+    </div>
+    <div class="p-5">
+      <!-- Simulated spreadsheet preview -->
+      <div class="overflow-x-auto rounded-lg border border-mny-200">
+        <div class="table-header table-row font-display text-[10px] text-mny-400 tracking-wider"
+             style="grid-template-columns: 1fr 100px 100px 100px 100px;">
+          <div>COUNTY</div><div>CLAIMS</div><div>TOTAL PAID</div><div>AVG PAYMENT</div><div>YR</div>
+        </div>
+        <div class="table-row text-xs font-proxima text-mny-700" style="grid-template-columns: 1fr 100px 100px 100px 100px;">
+          <div>Albany</div><div>1,204</div><div>$8.2M</div><div>$6,812</div><div>2022</div>
+        </div>
+        <div class="table-row text-xs font-proxima text-mny-700" style="grid-template-columns: 1fr 100px 100px 100px 100px;">
+          <div>Erie</div><div>3,417</div><div>$22.4M</div><div>$6,554</div><div>2022</div>
+        </div>
+        <div class="table-row text-xs font-proxima text-mny-700" style="grid-template-columns: 1fr 100px 100px 100px 100px;">
+          <div>Nassau</div><div>8,903</div><div>$71.0M</div><div>$7,974</div><div>2022</div>
+        </div>
+        <div class="table-row text-xs font-proxima text-mny-700 opacity-50" style="grid-template-columns: 1fr 100px 100px 100px 100px;">
+          <div colspan="5" class="col-span-5 text-center text-mny-400 italic">… 59 more rows</div>
+        </div>
+      </div>
+      <div class="mt-3 annotation">Modal renders SectionComponents.ViewComp with editPageMode=false — data driven, not live data in this mock.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Card preview -->
+<div id="modal-card" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-mny-200">
+      <div>
+        <h2 class="font-display text-[16px] text-mny-900 tracking-wide">RISK SUMMARY CARDS</h2>
+        <span class="text-xs text-mny-400 font-proxima font-mono">Card · source: risk_summary · view: v1</span>
+      </div>
+      <button onclick="document.getElementById('modal-card').style.display='none'"
+              class="text-mny-400 hover:text-mny-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-mny-100">×</button>
+    </div>
+    <div class="p-5">
+      <div class="grid grid-cols-3 gap-3">
+        <div class="rounded-lg border border-mny-200 p-4 bg-white">
+          <div class="text-[10px] font-display text-mny-400 tracking-wider mb-1">FLOOD RISK SCORE</div>
+          <div class="font-display text-[32px] text-mny-900">7.4</div>
+          <div class="text-xs text-mny-400 mt-1">/ 10 · High risk county</div>
+          <div class="section-preview-bar mt-2"></div>
+        </div>
+        <div class="rounded-lg border border-mny-200 p-4 bg-white">
+          <div class="text-[10px] font-display text-mny-400 tracking-wider mb-1">TOTAL CLAIMS</div>
+          <div class="font-display text-[32px] text-mny-y700">8,903</div>
+          <div class="text-xs text-mny-400 mt-1">since 1978</div>
+          <div class="section-preview-bar mt-2"></div>
+        </div>
+        <div class="rounded-lg border border-mny-200 p-4 bg-white">
+          <div class="text-[10px] font-display text-mny-400 tracking-wider mb-1">PROPERTIES AT RISK</div>
+          <div class="font-display text-[32px] text-mny-700">24%</div>
+          <div class="text-xs text-mny-400 mt-1">of county parcels</div>
+          <div class="section-preview-bar mt-2"></div>
+        </div>
+      </div>
+      <div class="mt-3 annotation">Card grid rendered via SectionComponents.ViewComp — shows layout and chrome, data may be empty without live source context.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Lexical preview -->
+<div id="modal-lexical" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-mny-200">
+      <div>
+        <h2 class="font-display text-[16px] text-mny-900 tracking-wide">INTRODUCTION</h2>
+        <span class="text-xs text-mny-400 font-proxima font-mono">lexical · no external source</span>
+      </div>
+      <button onclick="document.getElementById('modal-lexical').style.display='none'"
+              class="text-mny-400 hover:text-mny-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-mny-100">×</button>
+    </div>
+    <div class="p-5 font-proxima text-mny-700 leading-relaxed">
+      <h3 class="font-display text-[18px] text-mny-900 mb-3 tracking-wide" style="letter-spacing:0.04em">FLOODING &amp; STORMWATER</h3>
+      <p class="mb-3 text-sm">Flooding is one of the most common and costly natural hazards affecting communities across New York State. As climate change intensifies precipitation events, the risk of both riverine and coastal flooding continues to grow.</p>
+      <p class="text-sm text-mny-400 italic">Persistent drought conditions can also increase wildfire risk and affect water supply infrastructure, creating cascading vulnerabilities…</p>
+      <div class="mt-3 annotation">Rich text rendered via Lexical ViewComp — content stored as serialized JSON in element-data, read-only in preview mode.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Map preview -->
+<div id="modal-map" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-mny-200">
+      <div>
+        <h2 class="font-display text-[16px] text-mny-900 tracking-wide">FLOOD ZONE MAP</h2>
+        <span class="text-xs text-mny-400 font-proxima font-mono">Map · no external source</span>
+      </div>
+      <button onclick="document.getElementById('modal-map').style.display='none'"
+              class="text-mny-400 hover:text-mny-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-mny-100">×</button>
+    </div>
+    <div class="p-5">
+      <!-- Map placeholder -->
+      <div class="rounded-lg bg-mny-100 border border-mny-200 flex items-center justify-center" style="height:320px;">
+        <div class="text-center text-mny-400">
+          <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24" class="mx-auto mb-2 opacity-40">
+            <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+          </svg>
+          <div class="font-display text-[12px] tracking-wider">MAP COMPONENT</div>
+          <div class="text-xs mt-1">MapLibre GL — renders with full interactivity</div>
+          <div class="text-xs text-mny-300 mt-0.5">Not rendered in this static mockup</div>
+        </div>
+      </div>
+      <div class="mt-3 annotation">Map sections rendered by SectionComponents.ViewComp — requires MapLibre GL to be initialized. Works in live DMS context.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
