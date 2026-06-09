@@ -101,9 +101,22 @@ const Logo = (props) => React.createElement(
   React.createElement("path", { d: "M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Zm0 4 4.5 1.6V11c0 3.8-2 6.9-4.5 8.6-2.5-1.7-4.5-4.8-4.5-8.6V7.6L12 6Z" })
 );
 
+// ── Freight modes (Freight Atlas) ───────────────────────────────────
+const Road     = svg(<path d="M3 12h18M6 12V7m12 5V7M9 12v5m6-5v5"/>);
+const Rail     = svg(<><rect x="4" y="4" width="16" height="12" rx="2"/><path d="M4 11h16M8 20l2-4m6 4-2-4"/></>);
+const Maritime = svg(<path d="M3 14h18l-2 5H5l-2-5ZM12 3v11M7 9h10"/>);
+const Air      = svg(<path d="M2 16l20-7-9 13-2-5-9-1Z"/>);
+const Pipeline = svg(<path d="M4 7h12v10H4zM16 10h3l2 3v4h-5M6.5 17a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Zm10 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z"/>);
+// ── Atlas surfaces (sidenav glyphs) ─────────────────────────────────
+const House    = svg(<path d="m3 10.5 9-7 9 7M5 9v11h14V9"/>);
+const Atlas    = svg(<path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/>);
+const Book     = svg(<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></>);
+
 const icons = {
   // Navigation
   Pages, Sections, Settings, History, Search, Database, Menu, Folder,
+  // Freight Atlas — modes + surfaces
+  Road, Rail, Maritime, Air, Pipeline, House, Atlas, Book,
   // Direction
   CaretDown, CaretUp, ChevronRight, ChevronLeft, ChevronDown, ChevronUp,
   ArrowRight, ArrowLeft, ArrowDown, ArrowUp,

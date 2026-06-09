@@ -56,7 +56,8 @@ const textSettings = {
       "displayItalicLG", "displayItalicMD",
       "proseLG", "prose", "proseSM", "proseXS",
       "metaMD", "metaSM", "metaXS",
-      "kicker", "cardTitle", "statNum",
+      "kicker", "cardTitle", "cardTitleSM",
+      "statNum", "statXL", "statLG", "statMD",
     ],
   },
   styles: [{
@@ -111,10 +112,19 @@ const textSettings = {
 
     // Card title — Oswald uppercase 18px (product / feature cards)
     cardTitle: `${F_DISP} font-medium text-[18px] leading-[1.15] tracking-tight uppercase ${INK}`,
+    // Compact card title — Oswald uppercase 15px (mode / metric cards; cardTitle is 18px)
+    cardTitleSM: `${F_DISP} font-medium text-[15px] leading-[1.15] tracking-tight uppercase ${INK}`,
     // Stat giant — mono tabular figure (KPI / coverage numbers). Vertical margin
     // gives the big number breathing room from the label above + sublabel below
     // (statNum is used only on stat cards, so this margin is effectively per-instance).
     statNum:   `font-mono! text-[40px]! font-medium leading-[1.05] tabular-nums ${INK}! mt-2! mb-2.5!`,
+    // ── Display stat numbers (Oswald, tabular) — the brand's KPI / metric figures on
+    // data cards, matching the design mockups (statNum above is the mono variant). Use
+    // statXL for hero KPIs (52px), statLG for stat-strip / compact KPIs (28px), statMD
+    // for inline metric figures like a mode card's count (22px).
+    statXL: `${F_DISP} font-semibold text-[52px] leading-[1.0] tracking-tight tabular-nums ${INK}`,
+    statLG: `${F_DISP} font-semibold text-[28px] leading-[1.05] tabular-nums ${INK}`,
+    statMD: `${F_DISP} font-semibold text-[22px] leading-[1.15] tabular-nums ${INK}`,
 
     // ── Legacy generic size scale ──
     textXS:           `text-[11px] font-medium`,
@@ -273,7 +283,7 @@ const layoutGroup = {
     {
       name: "hero",
       wrapper1: "w-full tny-hero-topo border-b border-zinc-950/10",
-      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-14 flex flex-col gap-5",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10 flex flex-col gap-5",
       wrapper3: "",
     },
     {
@@ -1385,6 +1395,28 @@ const pages = {
       editIcon:      "hover:text-[#1F3F8F] size-5",
       contentWrapper:"h-full",
     }],
+  },
+
+  // The sticky in-page-nav rail (the mockup's "on this page" <aside>). A distinct
+  // layout region rendered as the content LayoutGroup's outerChildren, themed
+  // entirely here (flat shape — sectionGroup.jsx / InPageNav.jsx read it via
+  // getComponentTheme(theme,'pages.sectionGroup')). Rail = a nav card + any
+  // sidebar-group sections stacked below.
+  sectionGroup: {
+    // content ↔ rail row (inside the band's max-w-[1480px] content container).
+    // items-stretch keeps the rail column full-height so its inner sticky pins.
+    contentRow: "flex flex-row gap-10 items-stretch",
+    contentCol: "flex-1 min-w-0",
+    sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
+    sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",
+    sideNavContainer3: "flex flex-col gap-4",
+    // "On this page" nav card
+    navWrapper:    "rounded-[8px] border border-zinc-950/10 bg-white p-4",
+    navLabelText:  "On this page",
+    navLabel:      "font-mono uppercase text-[10px] tracking-[0.16em] text-slate-500 mb-3",
+    navList:       "flex flex-col gap-0.5",
+    navItem:       "block w-full text-left font-proxima text-[13px] text-slate-600 hover:text-[#0F2D4D] py-1.5 pl-3 border-l-2 border-transparent transition-colors cursor-pointer",
+    navItemActive: "block w-full text-left font-proxima text-[13px] text-[#0F2D4D] font-medium py-1.5 pl-3 border-l-2 border-[#EAAD43] bg-slate-50/60 transition-colors cursor-pointer",
   },
 
   sectionArray: {

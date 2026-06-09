@@ -493,6 +493,83 @@
                 </div>
               </div>
 
+              <!-- ── Section padding & the card gutter (size 12) ── -->
+              <div class="col-span-12" data-dms-section="section-padding">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">08</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Section padding &amp; the card gutter</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6]">
+                    A band's section grid is <code class="tny-mono">grid grid-cols-12 gap-0</code> — there is
+                    <strong>no grid gap</strong>. Instead, <strong>each section's <code class="tny-mono">padding</code> is the
+                    gutter</strong>: it's rendered on the section wrapper, <em>outside</em> the card chrome box (the
+                    border / radius / background sit on an inner box inside the padding — see
+                    <code class="tny-mono">sectionArray.jsx · sectionChrome</code>). Margins are never used (they fight grid/flex).
+                    The padding <em>inside</em> the card — text inset from the border — is the component's own concern
+                    (a lexical card uses <code class="tny-mono">theme.richtext.contentPadding</code>, <code class="tny-mono">p-4</code>).
+                  </p>
+
+                  <div class="mt-5 grid grid-cols-2 gap-6 max-w-[820px]">
+                    <!-- default gutter visual -->
+                    <div>
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] mb-1">Default gutter</div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-3">defaultPaddingStep: "3" → p-3/side → 24px between cards = the mockups' gap-6</div>
+                      <div class="rounded border border-zinc-950/10 bg-slate-50 grid grid-cols-2 gap-0">
+                        <div class="p-3"><div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-16 flex items-center justify-center font-mono text-[10px] text-slate-400">card</div></div>
+                        <div class="p-3"><div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-16 flex items-center justify-center font-mono text-[10px] text-slate-400">card</div></div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-3 leading-[1.5]">
+                        Leave <code class="tny-mono">padding</code> unset on a card section and it inherits this default.
+                        Two neighbours each contribute <code class="tny-mono">p-3</code> → a 24px gutter, matching the
+                        <code class="tny-mono">gap-6</code> the freight-atlas + landing mockups use. <strong>This is the
+                        right call for almost every card</strong> — don't set per-section padding just to space cards.
+                      </p>
+                    </div>
+                    <!-- override visual -->
+                    <div>
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] mb-1">Per-side override</div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-3">padding: &#123; bottom: "0" &#125; · zero a shared edge to fuse a compound card</div>
+                      <div class="rounded border border-zinc-950/10 bg-slate-50 p-3">
+                        <div class="rounded-t-[8px] border border-b-0 border-zinc-950/10 bg-white shadow-sm h-12 flex items-center justify-center font-mono text-[10px] text-slate-400">header section · padding.bottom 0</div>
+                        <div class="rounded-b-[8px] border border-zinc-950/10 bg-white h-12 flex items-center justify-center font-mono text-[10px] text-slate-400">chart section · padding.top 0</div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-3 leading-[1.5]">
+                        A <strong>per-side object</strong> (<code class="tny-mono">&#123; top, right, bottom, left &#125;</code>) overrides
+                        individual sides against <code class="tny-mono">defaultPaddingStep</code>; zeroing the shared edge fuses two
+                        sections into one card. A bare <strong>literal string</strong> (<code class="tny-mono">"p-6"</code>) overrides
+                        <em>all</em> sides — handy occasionally, but a page-wide habit of <code class="tny-mono">p-4/5/6</code> over-inflates
+                        the gutters past the design (the freight-atlas home first shipped that way; the fix was to drop the overrides).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="mt-5 pt-4 border-t border-zinc-950/05">
+                    <div class="font-display uppercase text-[12px] tracking-wide text-[#CA8A04] mb-2">// Padding steps</div>
+                    <p class="font-proxima text-[12.5px] text-slate-600 max-w-[820px] leading-[1.55]">
+                      Steps map to Tailwind per side via <code class="tny-mono">theme.pages.sectionArray.paddings</code>:
+                      <code class="tny-mono">"0"</code> (flush) · <code class="tny-mono">"2"</code> (16px gutter) ·
+                      <code class="tny-mono">"3"</code> (24px — default) · <code class="tny-mono">"4"</code> (32px) ·
+                      <code class="tny-mono">"6"</code> · <code class="tny-mono">"8"</code>. The author sets these per-side in the
+                      section toolbar (Settings → Layout → Padding). Change the <em>default</em> only to re-space the whole brand;
+                      to nudge one page, override that page's sections.
+                    </p>
+                  </div>
+
+                  <div class="mt-5 pt-4 border-t border-zinc-950/05">
+                    <div class="font-display uppercase text-[12px] tracking-wide text-[#CA8A04] mb-2">// Equal-height rows</div>
+                    <p class="font-proxima text-[12.5px] text-slate-600 max-w-[820px] leading-[1.55]">
+                      For a <strong>row of more than one card</strong> (KPI strip, tile/feature grid, a tall card beside a short
+                      one), set each card section's <code class="tny-mono">height: 'fill'</code> so they stretch to the row's
+                      height and read as an even set instead of ragged, content-shrunk boxes. Leave <code class="tny-mono">height</code>
+                      <strong>unset (auto)</strong> — the default — for a full-width section or a card that's alone in its row.
+                      (Author UI: section toolbar → Settings → Layout → Height.)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
 
