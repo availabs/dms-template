@@ -52,11 +52,12 @@ const textSettings = {
   options: {
     activeStyle: 0,
     slashKeys: [
-      "displayHero", "displayXL", "displayLG", "displayMD", "displaySM", "displayXS",
+      "displayMax", "displayHero", "displayXL", "displayLG", "displayMD", "displaySM", "displayXS",
       "displayItalicLG", "displayItalicMD",
       "proseLG", "prose", "proseSM", "proseXS",
       "metaMD", "metaSM", "metaXS",
-      "kicker",
+      "kicker", "cardTitle", "cardTitleSM",
+      "statNum", "statXL", "statLG", "statMD",
     ],
   },
   styles: [{
@@ -75,6 +76,7 @@ const textSettings = {
     h6: `${F_DISP} font-medium text-[14px] leading-[1.4] uppercase tracking-[0.16em] text-slate-700 scroll-mt-36`,
 
     // ── Display ladder (Oswald) — chrome, page titles, KPI giants ──
+    displayMax:  `${F_DISP} font-semibold text-[64px] leading-[1.02] tracking-tight ${INK}`,
     displayHero: `${F_DISP} font-semibold text-[52px] leading-[1.02] tracking-tight ${INK}`,
     displayXL:   `${F_DISP} font-semibold text-[44px] leading-[1.05] tracking-tight ${INK}`,
     displayLG:   `${F_DISP} font-semibold text-[38px] leading-[1.05] tracking-tight uppercase ${INK}`,
@@ -107,6 +109,22 @@ const textSettings = {
     // Editorial kicker — the "// 01" amber labels that head sections
     kicker: `font-mono! text-[11px]! uppercase tracking-[0.2em] text-[#CA8A04]!`,
     nav:    `${F_DISP} font-medium text-[13.5px] uppercase tracking-wide`,
+
+    // Card title — Oswald uppercase 18px (product / feature cards)
+    cardTitle: `${F_DISP} font-medium text-[18px] leading-[1.15] tracking-tight uppercase ${INK}`,
+    // Compact card title — Oswald uppercase 15px (mode / metric cards; cardTitle is 18px)
+    cardTitleSM: `${F_DISP} font-medium text-[15px] leading-[1.15] tracking-tight uppercase ${INK}`,
+    // Stat giant — mono tabular figure (KPI / coverage numbers). Vertical margin
+    // gives the big number breathing room from the label above + sublabel below
+    // (statNum is used only on stat cards, so this margin is effectively per-instance).
+    statNum:   `font-mono! text-[40px]! font-medium leading-[1.05] tabular-nums ${INK}! mt-2! mb-2.5!`,
+    // ── Display stat numbers (Oswald, tabular) — the brand's KPI / metric figures on
+    // data cards, matching the design mockups (statNum above is the mono variant). Use
+    // statXL for hero KPIs (52px), statLG for stat-strip / compact KPIs (28px), statMD
+    // for inline metric figures like a mode card's count (22px).
+    statXL: `${F_DISP} font-semibold text-[52px] leading-[1.0] tracking-tight tabular-nums ${INK}`,
+    statLG: `${F_DISP} font-semibold text-[28px] leading-[1.05] tabular-nums ${INK}`,
+    statMD: `${F_DISP} font-semibold text-[22px] leading-[1.15] tabular-nums ${INK}`,
 
     // ── Legacy generic size scale ──
     textXS:           `text-[11px] font-medium`,
@@ -249,9 +267,23 @@ const layoutGroup = {
       wrapper3: "",
     },
     {
+      // Tight top-of-page nav bar — fixed height, no vertical padding (unlike
+      // `header`, which is py-10 for page-title blocks). For a topnav band that
+      // holds one full-width section (brand + links + actions row). wrapper2
+      // matches the content bands (mr-auto max-w-[1480px] pl-12 pr-8) so the nav
+      // left-aligns and shares their content width.
+      name: "topbar",
+      wrapper1: "w-full bg-white border-b border-zinc-950/10",
+      // flex-COL (not items-center row): a row would shrink-wrap the section to its
+      // content width; flex-col stretches the section to the full band width (cross-axis
+      // stretch, like the content bands) while justify-center centers it in the 60px bar.
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 h-[60px] flex flex-col justify-center",
+      wrapper3: "",
+    },
+    {
       name: "hero",
       wrapper1: "w-full tny-hero-topo border-b border-zinc-950/10",
-      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-14 flex flex-col gap-5",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10 flex flex-col gap-5",
       wrapper3: "",
     },
     {
@@ -267,9 +299,13 @@ const layoutGroup = {
       wrapper3: "",
     },
     {
+      // login.html is borderless — the form sits directly on the #ECEEF2 pane,
+      // centered, max-w-[400px]. No card chrome here (the old white-card wrapper2
+      // double-carded with authPages.pageWrapper). Card styling, if a future auth
+      // page wants it, belongs on authPages.pageWrapper, not the group.
       name: "auth",
-      wrapper1: "w-full flex-1 flex flex-row p-6 bg-[#ECEEF2]",
-      wrapper2: "mx-auto w-full max-w-md flex flex-col rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-8 place-content-center",
+      wrapper1: "w-full flex-1 flex items-center justify-center px-6 py-12 bg-[#ECEEF2]",
+      wrapper2: "mx-auto w-full max-w-[400px] flex flex-col",
       wrapper3: "",
     },
     {
@@ -513,6 +549,20 @@ const button = {
       name: "amber",
       button: "tny-press cursor-pointer inline-flex items-center gap-2 px-4 h-10 bg-[#EAAD43] hover:bg-[#F1CA87] text-[#37576B] font-proxima font-bold text-[11.5px] uppercase tracking-[0.12em] rounded-[6px] border-b-4 border-[#C68B1F]",
     },
+    // ── Inline text-link button variants (no chrome) — for nav/footer/card links
+    //    that must navigate client-side (ButtonNode → useNavigate) yet read as text.
+    {
+      name: "navlink",
+      button: "cursor-pointer inline-flex items-center px-3 h-9 font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] transition-colors",
+    },
+    {
+      name: "footerlink",
+      button: "cursor-pointer inline-flex items-center py-0.5 font-proxima text-[12.5px] text-slate-600 hover:text-[#1F3F8F] transition-colors",
+    },
+    {
+      name: "cardlink",
+      button: "cursor-pointer inline-flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F] hover:text-[#16307A] transition-colors",
+    },
   ],
 };
 
@@ -643,7 +693,12 @@ const switchTheme = {
 // field / label
 // ─────────────────────────────────────────────────────────────────────────────
 const field = {
+  // fieldWrapper styles FieldSet's <fieldset>; without it a bare <fieldset> falls
+  // back to the browser-default groove border + padding. Stack the fields with a
+  // consistent gap (matches the login form's `flex flex-col gap-4`).
+  fieldWrapper: "flex flex-col gap-4",
   field:       "flex flex-col gap-1.5 pb-2",
+  labelRow:    "flex items-center justify-between",
   label:       "font-display uppercase text-[11px] tracking-[0.16em] text-slate-600",
   description: "font-proxima text-[12px] text-slate-500",
   error:       "font-proxima text-[12px] text-[#EF4444]",
@@ -1342,6 +1397,28 @@ const pages = {
     }],
   },
 
+  // The sticky in-page-nav rail (the mockup's "on this page" <aside>). A distinct
+  // layout region rendered as the content LayoutGroup's outerChildren, themed
+  // entirely here (flat shape — sectionGroup.jsx / InPageNav.jsx read it via
+  // getComponentTheme(theme,'pages.sectionGroup')). Rail = a nav card + any
+  // sidebar-group sections stacked below.
+  sectionGroup: {
+    // content ↔ rail row (inside the band's max-w-[1480px] content container).
+    // items-stretch keeps the rail column full-height so its inner sticky pins.
+    contentRow: "flex flex-row gap-10 items-stretch",
+    contentCol: "flex-1 min-w-0",
+    sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
+    sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",
+    sideNavContainer3: "flex flex-col gap-4",
+    // "On this page" nav card
+    navWrapper:    "rounded-[8px] border border-zinc-950/10 bg-white p-4",
+    navLabelText:  "On this page",
+    navLabel:      "font-mono uppercase text-[10px] tracking-[0.16em] text-slate-500 mb-3",
+    navList:       "flex flex-col gap-0.5",
+    navItem:       "block w-full text-left font-proxima text-[13px] text-slate-600 hover:text-[#0F2D4D] py-1.5 pl-3 border-l-2 border-transparent transition-colors cursor-pointer",
+    navItemActive: "block w-full text-left font-proxima text-[13px] text-[#0F2D4D] font-medium py-1.5 pl-3 border-l-2 border-[#EAAD43] bg-slate-50/60 transition-colors cursor-pointer",
+  },
+
   sectionArray: {
     options: { activeStyle: 0 },
     styles: [{
@@ -1611,17 +1688,68 @@ const datasets = {
 // ─────────────────────────────────────────────────────────────────────────────
 // auth.*
 // ─────────────────────────────────────────────────────────────────────────────
+// The auth pages (authLogin.jsx / authSignup.jsx) are FIXED components styled via
+// `theme.auth.authPages.sectionGroup.default.*` — that's the surface they actually
+// read (authLogin.jsx:18). The earlier `auth.login` / `auth.signup` draft keys were
+// wired to nothing and have been retired in favour of this surface. Keys here
+// deep-merge over patterns/auth/defaultTheme.js.
+//
+// authLogin.jsx renders the extra mockup structure (brand line, kicker + headline +
+// subtitle, "or" divider, SSO button, utility row) ONLY when the matching keys below
+// are set — themes that omit them render the plain default form (backward-compatible).
+// SSO has no provider wired yet; clicking it surfaces a "not available yet" notice.
 const auth = {
-  login: {
-    wrapper:      "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-8 w-full max-w-md",
-    title:        "font-display uppercase text-[20px] tracking-tight text-[#0F1722] mb-6",
-    fieldStack:   "flex flex-col gap-4 mb-5",
-    submitButton: "w-full",
-    divider:      "flex items-center gap-3 my-5 text-[11px] font-mono uppercase tracking-[0.18em] text-slate-400 before:flex-1 before:h-px before:bg-zinc-950/10 after:flex-1 after:h-px after:bg-zinc-950/10",
-    ssoButton:    "w-full h-11 inline-flex items-center justify-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white hover:bg-slate-50 font-proxima text-[13.5px] text-slate-800",
-  },
-  signup: {
-    wrapper: "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-8 w-full max-w-md",
+  authPages: {
+    sectionGroup: {
+      default: {
+        // AuthLayout wrappers — wrap the form column. The TNY mockup has no hero
+        // panel, so wrapper4 (the background-image side) is hidden; wrapper3 is a
+        // pass-through (centering + max-width live on the layoutGroup `auth` style).
+        wrapper3: "w-full",
+        wrapper4: "hidden",
+        // AuthLogin / AuthSignup form content (single flex stack on the pane).
+        pageWrapper:        "w-full flex flex-col gap-5",
+        // Brand line (mark + wordmark).
+        brandWrapper:       "flex items-center gap-2.5",
+        brandMark:          "inline-flex size-7 bg-[#1F3F8F] rounded text-white font-display font-bold text-[11px] items-center justify-center",
+        brandMarkText:      "NY",
+        brandName:          "font-display uppercase text-[#0F1722] text-[13px] tracking-[0.14em]",
+        brandNameText:      "TransportNY",
+        // Title block — kicker + headline (+ amber period accent) + subtitle. Setting
+        // headingText switches the component from the plain `pageTitle` to this block.
+        headingBlock:       "flex flex-col",
+        kicker:             "font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]",
+        kickerText:         "// SIGN IN",
+        heading:            "mt-2 font-display font-semibold text-[32px] leading-[1.05] tracking-tight text-[#0F1722]",
+        headingText:        "Welcome back",
+        headingAccent:      "text-[#CA8A04]",
+        headingAccentText:  ".",
+        subtitle:           "mt-2.5 font-proxima text-[13.5px] leading-[1.55] text-slate-600",
+        subtitleText:       "Public dashboards don't require an account. Sign in to save reports and configure alerts.",
+        // pageTitle is the BC fallback when headingText is unset (e.g. authSignup).
+        pageTitle:          "font-display font-semibold text-[32px] leading-[1.05] tracking-tight text-[#0F1722]",
+        forgotPasswordText: "font-proxima text-[12px] text-[#1F3F8F] hover:text-[#16307A] cursor-pointer",
+        actionButton:       "tny-press cursor-pointer inline-flex items-center justify-center gap-2 w-full px-4 h-11 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F3F8F]/40 disabled:opacity-50 mt-1",
+        actionText:         "text-white font-display uppercase text-[13px] tracking-wide",
+        // "or" divider + SSO button — DISABLED until NY.gov SSO exists. authLogin.jsx
+        // only renders these when `divider` / `ssoButton` are set, so leaving them
+        // commented hides the block. Uncomment to re-enable once a provider is wired.
+        // divider:            "flex items-center gap-3 my-1 text-[10.5px] font-mono uppercase tracking-[0.18em] text-slate-400 before:flex-1 before:h-px before:bg-zinc-950/10 after:flex-1 after:h-px after:bg-zinc-950/10",
+        // dividerText:        "or",
+        // ssoButton:          "cursor-pointer w-full h-11 inline-flex items-center justify-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white hover:bg-slate-50 font-proxima text-[13.5px] text-slate-800",
+        // ssoMark:            "inline-flex size-5 rounded bg-[#1F3F8F] text-white font-display font-bold text-[10px] items-center justify-center",
+        // ssoMarkText:        "NY",
+        // ssoButtonText:      "Continue with NY.gov ID",
+        prompt:             "mt-3 font-mono text-[11px] uppercase tracking-[0.16em] text-slate-500 flex gap-1",
+        // Trailing utility row.
+        utilityWrapper:     "mt-2 flex items-center justify-between font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500",
+        utilityLink:        "hover:text-slate-900 cursor-pointer",
+        utilityLinks: [
+          { text: "Browse without account →", to: "/" },
+          { text: "Request access",           to: "#" },
+        ],
+      },
+    },
   },
 };
 
@@ -1661,6 +1789,26 @@ const fonts = [
       .font-mono { font-family: var(--font-mono); }
     `,
   },
+  {
+    // Brand surface utilities that can't be pure Tailwind class strings
+    // (stacked gradients, :active margin-shift). Ported from the design
+    // system's _shared.css so classes referenced in the theme (tny-hero-topo
+    // on the hero band, tny-press on every brand button) actually render live.
+    type: "style",
+    id: "transportny-surfaces",
+    content: `
+      .tny-hero-topo {
+        background:
+          radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+          radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+          repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+          repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+          #EEF1F3;
+      }
+      .tny-press        { border-bottom-width: 4px; transition: all 0.08s; }
+      .tny-press:active { border-bottom-width: 2px; margin-bottom: 2px; }
+    `,
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1694,9 +1842,22 @@ const widgets = {
 // ─────────────────────────────────────────────────────────────────────────────
 // THE THEME OVERLAY
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// iconStyles — named box treatments for the lexical IconNode. An icon node with
+// `styleKey: "productChip"` renders its SVG inside this padded, tinted square.
+// Resolved in IconNode.decorate via config.theme.iconStyles[styleKey].
+// ─────────────────────────────────────────────────────────────────────────────
+const iconStyles = {
+  productChip: {
+    box:  "inline-flex size-12 rounded bg-[#1F3F8F]/10 items-center justify-center text-[#1F3F8F] mb-1",
+    icon: "w-6 h-6",
+  },
+};
+
 const transportnyTheme = {
   // Foundation
   textSettings,
+  iconStyles,
   Icons: icons,
   fonts,
 
