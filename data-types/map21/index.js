@@ -71,14 +71,11 @@ module.exports = {
           validateCsv: validateCsv ?? true,
         }, pgEnv);
 
-        // Link the queued task into a parent etl_context if supplied (legacy parity).
-        if (parent_context_id) {
-          const db = helpers.getDb(pgEnv);
-          await db.query(
-            `UPDATE data_manager.etl_contexts SET source_id = $1 WHERE etl_context_id = $2`,
-            [resolvedSourceId, parent_context_id]
-          );
-        }
+        // NOTE: the legacy system linked the task into a parent `etl_context` via
+        // `UPDATE data_manager.etl_contexts ...`. That table does NOT exist in the new
+        // DMS schema (only sources/views/tasks/task_events), so the UPDATE is removed —
+        // it threw "relation does not exist" and 500'd whenever parent_context_id was set.
+        // parent_context_id is already carried in the task descriptor above for correlation.
 
         res.json({ etl_context_id: taskId, source_id: resolvedSourceId });
       } catch (err) {

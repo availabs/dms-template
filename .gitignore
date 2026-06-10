@@ -31,6 +31,9 @@ dist-ssr
 # Environment config (contains secrets, local overrides)
 .env
 
+# data_types config
+data-types/**/*.config.json
+
 # CLI scratchpad (per-site working directories)
 scratchpad
 
