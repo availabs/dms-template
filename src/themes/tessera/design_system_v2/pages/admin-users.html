@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin · Users — Tessera</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    .btn-row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+
+    /* ---- KPI strip ---- */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      box-shadow: var(--shadow-lift);
+    }
+    @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+    .kpi { padding: var(--space-4) var(--space-5); border-right: 1px solid var(--color-grout-light); }
+    .kpi:last-child { border-right: 0; }
+    @media (max-width: 900px) { .kpi:nth-child(2) { border-right: 0; } }
+
+    /* ---- Table ---- */
+    .table-frame {
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      box-shadow: var(--shadow-lift);
+    }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead th {
+      text-align: left;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-slate);
+      background: var(--color-parchment);
+      white-space: nowrap;
+    }
+    .data-table thead th.sortable { cursor: pointer; }
+    .data-table thead th.sortable:hover { color: var(--color-slate); }
+    .data-table tbody td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-grout-light);
+      vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: 0; }
+    .data-table tbody tr:hover td { background: var(--color-limestone); transition: background var(--dur-snap); }
+
+    /* ---- Toolbar ---- */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-4);
+      flex-wrap: wrap;
+    }
+    .search-input {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      padding: 7px var(--space-3);
+      min-width: 240px;
+    }
+    .search-input input {
+      border: 0; background: transparent;
+      font-family: var(--font-sans); font-size: var(--fs-body-sm);
+      color: var(--color-slate); outline: none; width: 100%;
+    }
+    .search-input input::placeholder { color: var(--color-fog); }
+
+    /* ---- Avatar ---- */
+    .avatar {
+      width: 28px; height: 28px;
+      background: var(--color-slate);
+      color: var(--color-parchment);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .avatar--verdigris { background: var(--color-verdigris); }
+    .avatar--oxide     { background: var(--color-oxide); }
+    .avatar--ochre     { background: var(--color-ochre); }
+    .avatar--graphite  { background: var(--color-graphite); }
+
+    /* ---- Group pill ---- */
+    .group-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      background: var(--color-limestone);
+      border: 1px solid var(--color-grout-light);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-graphite);
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .group-pill--admin  { background: transparent; border-color: var(--color-oxide); color: var(--color-oxide); }
+    .group-pill--editor { background: transparent; border-color: var(--color-verdigris); color: var(--color-verdigris); }
+
+    /* ---- Status indicator ---- */
+    .user-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .status-dot--active   { background: var(--color-verdigris); }
+    .status-dot--inactive { background: var(--color-fog); }
+    .status-dot--pending  { background: var(--color-ochre); }
+
+    /* ---- Icon buttons ---- */
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      color: var(--color-fog);
+      border-radius: var(--radius-1);
+      transition: background var(--dur-snap), color var(--dur-snap), border-color var(--dur-snap);
+    }
+    .icon-btn:hover { background: var(--color-limestone); color: var(--color-slate); border-color: var(--color-grout-light); }
+    .icon-btn--active { background: var(--color-slate); color: var(--color-parchment); border-color: var(--color-slate); }
+    .icon-btn--active:hover { background: var(--color-graphite); }
+
+    /* ---- Tab strip (users / pending / invites) ---- */
+    .tab-strip {
+      display: flex;
+      align-items: flex-end;
+      border-bottom: 1px solid var(--color-grout-light);
+      gap: 0;
+      margin-bottom: var(--space-4);
+    }
+    .tab {
+      padding: var(--space-2) var(--space-4);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-graphite);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color var(--dur-snap), border-color var(--dur-snap);
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--color-slate); }
+    .tab--active { color: var(--color-slate); border-bottom-color: var(--color-slate); }
+    .tab-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px; height: 18px;
+      padding: 0 4px;
+      background: var(--color-limestone);
+      border: 1px solid var(--color-grout-light);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-graphite);
+      margin-left: 6px;
+      border-radius: 999px;
+    }
+    .tab-count--accent { background: var(--color-ochre); color: var(--color-parchment); border-color: var(--color-ochre); }
+
+    /* ---- Pending requests panel ---- */
+    .request-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .request-row:last-child { border-bottom: 0; }
+
+    /* Table footer */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-3) var(--space-4);
+      border-top: 1px solid var(--color-grout-light);
+    }
+
+    /* ---- Filter chips ---- */
+    .filter-chips { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .filter-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      font-family: var(--font-mono); font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--color-graphite);
+      cursor: pointer; border-radius: 999px;
+      transition: background var(--dur-snap), border-color var(--dur-snap), color var(--dur-snap);
+    }
+    .filter-chip:hover { background: var(--color-limestone); border-color: var(--color-graphite); }
+    .filter-chip--active { background: var(--color-slate); color: var(--color-parchment); border-color: var(--color-slate); }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="#" class="dms-topnav-brand" style="text-decoration:none;">
+              <span class="mark">Tessera</span>
+              <span class="designator">Admin</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right" style="gap: var(--space-5);">
+            <a href="admin-sites.html"  class="t-proseSM weight-500 ink-graphite" style="text-decoration:none;">Sites</a>
+            <a href="admin-themes.html" class="t-proseSM weight-500 ink-graphite" style="text-decoration:none;">Themes</a>
+            <a href="admin-users.html"  class="t-proseSM weight-500"              style="text-decoration:none;">Users</a>
+            <a href="admin-groups.html" class="t-proseSM weight-500 ink-graphite" style="text-decoration:none;">Groups</a>
+            <span class="t-metaSM ink-fog">admin@example.org</span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">manage</div>
+            <a class="dms-sidenav-item" href="admin-sites.html">
+              <span class="dms-sidenav-item-mark"></span>Sites
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">12</span>
+            </a>
+            <a class="dms-sidenav-item" href="admin-themes.html">
+              <span class="dms-sidenav-item-mark"></span>Themes
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">4</span>
+            </a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">auth</div>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="admin-users.html">
+              <span class="dms-sidenav-item-mark"></span>Users
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">38</span>
+            </a>
+            <a class="dms-sidenav-item" href="admin-groups.html">
+              <span class="dms-sidenav-item-mark"></span>Groups
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">6</span>
+            </a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">filter by group</div>
+            <a class="dms-sidenav-item" href="#">
+              <span style="display:inline-block;width:6px;height:6px;border:1px solid var(--color-oxide);"></span>
+              Admin
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">3</span>
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="display:inline-block;width:6px;height:6px;border:1px solid var(--color-verdigris);"></span>
+              Editor
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">12</span>
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="display:inline-block;width:6px;height:6px;background:var(--color-limestone);border:1px solid var(--color-grout-light);"></span>
+              Viewer
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">23</span>
+            </a>
+            <a class="dms-sidenav-item" href="#">
+              <span style="display:inline-block;width:6px;height:6px;background:var(--color-ochre);border-radius:50%;"></span>
+              Pending<span style="margin-left:auto; background:var(--color-ochre); color:var(--color-parchment); font-family:var(--font-mono); font-size:10px; padding:1px 6px; border-radius:999px;">2</span>
+            </a>
+          </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="dms-layout-child">
+
+          <!-- Header -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span>admin</span>
+                <span class="sep">/</span>
+                <span>users</span>
+              </div>
+              <h1 class="dms-page-title">Users — everyone with access to this project.</h1>
+              <p class="dms-page-lede">
+                Manage users, assign groups, reset passwords, and view login activity. Invite new users by email — they'll receive a set-password link.
+              </p>
+              <div class="btn-row" style="margin-top: var(--space-5);">
+                <button class="btn btn-primary">Invite user</button>
+                <button class="btn btn-secondary">Bulk import CSV</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- KPI strip -->
+          <section class="dms-group-content" style="padding-bottom:0;">
+            <div class="dms-group-content-inner" style="padding:0; background:transparent; border:0; box-shadow:none;">
+              <div class="kpis">
+                <div class="kpi">
+                  <div class="t-metaSM ink-graphite">Total users</div>
+                  <div style="font-family:var(--font-display); font-size:36px; font-weight:500; color:var(--color-slate); font-variant-numeric:tabular-nums; line-height:1.1; margin-top:4px;">38</div>
+                  <div class="t-metaSM ink-verdigris tabular" style="margin-top:4px;">+3 this month</div>
+                </div>
+                <div class="kpi">
+                  <div class="t-metaSM ink-graphite">Active (30d)</div>
+                  <div style="font-family:var(--font-display); font-size:36px; font-weight:500; color:var(--color-slate); font-variant-numeric:tabular-nums; line-height:1.1; margin-top:4px;">24</div>
+                  <div class="t-metaSM ink-graphite tabular" style="margin-top:4px;">63% of users</div>
+                </div>
+                <div class="kpi">
+                  <div class="t-metaSM ink-graphite">Pending invites</div>
+                  <div style="font-family:var(--font-display); font-size:36px; font-weight:500; color:var(--color-ochre); font-variant-numeric:tabular-nums; line-height:1.1; margin-top:4px;">2</div>
+                  <div class="t-metaSM ink-graphite tabular" style="margin-top:4px;">awaiting sign-up</div>
+                </div>
+                <div class="kpi">
+                  <div class="t-metaSM ink-graphite">Groups</div>
+                  <div style="font-family:var(--font-display); font-size:36px; font-weight:500; color:var(--color-slate); font-variant-numeric:tabular-nums; line-height:1.1; margin-top:4px;">6</div>
+                  <div class="t-metaSM ink-graphite tabular" style="margin-top:4px;">across 3 permission levels</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Users table -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · USERS</div>
+
+                <!-- Tabs: All Users / Pending / Access Requests -->
+                <div class="tab-strip">
+                  <div class="tab tab--active">
+                    All users
+                    <span class="tab-count">38</span>
+                  </div>
+                  <div class="tab">
+                    Pending invites
+                    <span class="tab-count tab-count--accent">2</span>
+                  </div>
+                  <div class="tab">
+                    Access requests
+                    <span class="tab-count">0</span>
+                  </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="toolbar">
+                  <div style="display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;">
+                    <div class="search-input">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-fog)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                      <input type="text" placeholder="Search by email or name…" />
+                    </div>
+                    <div class="filter-chips">
+                      <span class="filter-chip filter-chip--active">All</span>
+                      <span class="filter-chip">Admin</span>
+                      <span class="filter-chip">Editor</span>
+                      <span class="filter-chip">Viewer</span>
+                    </div>
+                  </div>
+                  <button class="btn btn-primary btn-sm">Invite user</button>
+                </div>
+
+                <div class="table-frame">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th style="width:36px;"></th>
+                        <th class="t-metaSM ink-graphite sortable">Email ↑</th>
+                        <th class="t-metaSM ink-graphite">Groups</th>
+                        <th class="t-metaSM ink-graphite sortable">Created</th>
+                        <th class="t-metaSM ink-graphite sortable">Last login</th>
+                        <th class="t-metaSM ink-graphite">Status</th>
+                        <th style="width:96px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><div class="avatar">AS</div></td>
+                        <td>
+                          <div class="t-proseSM weight-500">admin@example.org</div>
+                        </td>
+                        <td>
+                          <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                            <span class="group-pill group-pill--admin">Prod Admin</span>
+                            <span class="group-pill group-pill--editor">Editor</span>
+                          </div>
+                        </td>
+                        <td><span class="t-metaMD ink-graphite tabular">Jan 5, 2025</span></td>
+                        <td><span class="t-metaMD ink-graphite tabular">2h ago</span></td>
+                        <td>
+                          <span class="user-status">
+                            <span class="status-dot status-dot--active"></span>
+                            <span class="ink-graphite">active</span>
+                          </span>
+                        </td>
+                        <td>
+                          <div style="display:flex; align-items:center; gap:var(--space-1);">
+                            <button class="icon-btn icon-btn--active" title="View As">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                            <button class="icon-btn" title="Reset password">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                            </button>
+                            <button class="icon-btn" title="Edit groups">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><div class="avatar avatar--verdigris">RB</div></td>
+                        <td>
+                          <div class="t-proseSM weight-500">researcher@university.edu</div>
+                        </td>
+                        <td>
+                          <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                            <span class="group-pill group-pill--editor">Editor</span>
+                            <span class="group-pill">Viewer</span>
+                          </div>
+                        </td>
+                        <td><span class="t-metaMD ink-graphite tabular">Mar 12, 2025</span></td>
+                        <td><span class="t-metaMD ink-graphite tabular">1d ago</span></td>
+                        <td>
+                          <span class="user-status">
+                            <span class="status-dot status-dot--active"></span>
+                            <span class="ink-graphite">active</span>
+                          </span>
+                        </td>
+                        <td>
+                          <div style="display:flex; align-items:center; gap:var(--space-1);">
+                            <button class="icon-btn" title="View As">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                            <button class="icon-btn" title="Reset password">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                            </button>
+                            <button class="icon-btn" title="Edit groups">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><div class="avatar avatar--oxide">MT</div></td>
+                        <td>
+                          <div class="t-proseSM weight-500">analyst@agency.gov</div>
+                        </td>
+                        <td>
+                          <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                            <span class="group-pill">Viewer</span>
+                          </div>
+                        </td>
+                        <td><span class="t-metaMD ink-graphite tabular">Apr 3, 2025</span></td>
+                        <td><span class="t-metaMD ink-graphite tabular">2w ago</span></td>
+                        <td>
+                          <span class="user-status">
+                            <span class="status-dot status-dot--inactive"></span>
+                            <span class="ink-fog">inactive</span>
+                          </span>
+                        </td>
+                        <td>
+                          <div style="display:flex; align-items:center; gap:var(--space-1);">
+                            <button class="icon-btn" title="View As">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                            <button class="icon-btn" title="Reset password">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                            </button>
+                            <button class="icon-btn" title="Edit groups">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr style="background: repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(180, 83, 9, 0.03) 8px, rgba(180, 83, 9, 0.03) 16px);">
+                        <td><div class="avatar" style="background:var(--color-limestone); border:1px dashed var(--color-grout-light);">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-fog)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        </div></td>
+                        <td>
+                          <div class="t-proseSM weight-500">newuser@partner.org</div>
+                          <div class="t-metaSM ink-ochre" style="margin-top:2px;">Invitation sent Jun 8, 2026</div>
+                        </td>
+                        <td>
+                          <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                            <span class="group-pill">Viewer</span>
+                          </div>
+                        </td>
+                        <td><span class="t-metaSM ink-fog">—</span></td>
+                        <td><span class="t-metaSM ink-fog">Never</span></td>
+                        <td>
+                          <span class="user-status">
+                            <span class="status-dot status-dot--pending"></span>
+                            <span style="color:var(--color-ochre);">pending</span>
+                          </span>
+                        </td>
+                        <td>
+                          <div style="display:flex; align-items:center; gap:var(--space-1);">
+                            <button class="btn btn-tertiary btn-sm">Resend</button>
+                            <button class="icon-btn" title="Cancel invite" style="color:var(--color-oxide);">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="table-footer">
+                    <span class="t-proseSM ink-graphite">Showing 4 of 38 users</span>
+                    <div style="display:flex; gap:var(--space-2);">
+                      <button class="btn btn-tertiary btn-sm">← Prev</button>
+                      <button class="btn btn-tertiary btn-sm">Next →</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- Design notes -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>DESIGN NOTES · GAPS VS. CURRENT</div>
+                <h2 class="dms-section-title">What this design adds over the current implementation.</h2>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-6); margin-top:var(--space-4);">
+                  <div>
+                    <div class="t-metaSM ink-graphite" style="margin-bottom:var(--space-3);">Added</div>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--space-2);">
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> KPI strip: total, active-30d, pending, group count</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Tab strip: All / Pending invites / Access requests</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Avatar with initials (colour-keyed to user index)</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Group pills colour-coded: oxide=admin, verdigris=editor, neutral=viewer</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Status dot: active (verdigris) / inactive (fog) / pending-invite (ochre)</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Pending row: striped bg + invitation date + Resend / Cancel actions</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> View As icon button (filled=active) vs. secondary button in current code</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Sidenav drill-down by group</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div class="t-metaSM ink-graphite" style="margin-bottom:var(--space-3);">Implementation notes</div>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--space-2);">
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-graphite);">→</span> Active status: <code>last_login</code> within 30 days</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-graphite);">→</span> Pending: <code>user.state === 'invited'</code> or no <code>last_login</code> + created within 7d</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-graphite);">→</span> Group pill colours: check if group name contains "Admin" → oxide; "Edit" → verdigris; else neutral</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-graphite);">→</span> Resend: call <code>/signup/assign/group</code> with same email again</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-graphite);">→</span> Sort columns: client-side sort of the loaded users array</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Footer -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:var(--space-5);">
+                <div>
+                  <div class="t-metaSM ink-graphite">Tessera Admin · Users</div>
+                  <div class="t-proseSM ink-graphite" style="margin-top:var(--space-2);">Design page — placeholder data, real structure.</div>
+                </div>
+                <div class="t-metaSM ink-fog">
+                  <a href="admin-sites.html" style="color:inherit;">sites</a> ·
+                  <a href="admin-themes.html" style="color:inherit;">themes</a> ·
+                  <a href="admin-groups.html" style="color:inherit;">groups</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
