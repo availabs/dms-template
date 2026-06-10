@@ -112,11 +112,28 @@ const House    = svg(<path d="m3 10.5 9-7 9 7M5 9v11h14V9"/>);
 const Atlas    = svg(<path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/>);
 const Book     = svg(<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></>);
 
+// ── Documents / content (report library, embeds, map controls) ──────
+const FileText = svg(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></>);
+const Users    = svg(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></>);
+const Archive  = svg(<path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/>);
+const Mail     = svg(<><path d="M4 4h16v16H4z"/><path d="m4 6 8 6 8-6"/></>);
+const Locate   = svg(<><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></>);
+const Maximize = svg(<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>);
+const Code     = svg(<path d="m8 9-3 3 3 3m8-6 3 3-3 3M13.5 5l-3 14"/>);
+// ── Places / data (legacy report + map pages) ───────────────────────
+const Building = svg(<path d="M3 21h18M5 21V8l7-5 7 5v13M9 14h6M9 18h6"/>);
+const Map      = svg(<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>);
+const Export   = svg(<path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>);
+
 const icons = {
   // Navigation
   Pages, Sections, Settings, History, Search, Database, Menu, Folder,
   // Freight Atlas — modes + surfaces
   Road, Rail, Maritime, Air, Pipeline, House, Atlas, Book,
+  // Documents / content
+  FileText, Users, Archive, Mail, Locate, Maximize, Code,
+  // Places / data
+  Building, Map, Export,
   // Direction
   CaretDown, CaretUp, ChevronRight, ChevronLeft, ChevronDown, ChevronUp,
   ArrowRight, ArrowLeft, ArrowDown, ArrowUp,

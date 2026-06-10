@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TSMO · Congestion · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  tsmo-congestion.html · TSMO IA surface 2 of 10 — the Congestion dashboard.
+  Successor to the congestion.html draft: keeps the filter bar, KPI row, and the
+  corridor table ↔ map pairing; adds the delay-composition story (stacked bars by
+  year with the honest 2019–2020 gap), monthly seasonality heat, ranked region
+  bars, and the methodology footer band. All figures from excessive_delay v3
+  (view 2633) + meta 984; delay attribution runs through Oct 2025.
+  Layout `app` · shared TSMO side-nav (Dashboards / Explorers / Program) ·
+  bands on grid-cols-12 · data-dms-section on every section · no new primitives.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ════════ SIDENAV · TSMO (Congestion active) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <a href="tsmo-home.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">TSMO</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · TransportNY</div></div>
+            </a>
+            <div class="flex-1 py-2 overflow-y-auto">
+              <div class="px-4 pt-3 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Dashboards</div>
+              <a href="tsmo-congestion.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><!-- icon: Gauge --><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg><span class="flex-1">Congestion</span></a>
+              <a href="tsmo-reliability.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Target --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span class="flex-1">Reliability</span></a>
+              <a href="tsmo-incidents.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Alert --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 4h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Incidents</span></a>
+              <a href="tsmo-workzones.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Cone --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.5 4h5L19 20H5L9.5 4Z"/><path d="M7.7 11h8.6M6.6 15.5h10.8"/></svg><span class="flex-1">Work Zones</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Explorers</div>
+              <a href="tsmo-incident-search.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Search --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="flex-1">Incident Search</span></a>
+              <a href="tsmo-corridor.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Road --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 21 9 3m11 18L15 3M12 7v2m0 4v2m0 4v2"/></svg><span class="flex-1">Corridor View</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Program</div>
+              <a href="tsmo-about.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Book --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg><span class="flex-1">About TSMO</span></a>
+              <a href="tsmo-methodology.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Database --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data &amp; Methodology</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><!-- icon: View --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Public access</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">no login required</div></div>
+              <a href="login.html" class="font-mono text-[9.5px] uppercase tracking-wider text-[#FACC15] hover:text-[#EAAD43]">Sign in</a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10 flex items-end justify-between gap-8" data-dms-section="page-header">
+              <div>
+                <nav class="flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mb-3"><a href="tsmo-home.html" class="text-slate-500 hover:text-[#0f1722]">TSMO</a><span class="text-slate-300 px-1">/</span><span class="text-slate-500">Dashboards</span><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Congestion</span></nav>
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// delay attribution · where, when &amp; why</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                </div>
+                <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Congestion<span class="text-[#CA8A04]">.</span></h1>
+                <p class="mt-2 font-proxima text-[14.5px] text-slate-600 leading-[1.6] max-w-[680px]">Excessive delay on New York's monitored roads, split into what recurs every day and what events cause — construction, crashes, and everything else. Computed per road segment and month from NPMRDS probe speeds with TRANSCOM event attribution; dollars use the FHWA value-of-time formula.</p>
+              </div>
+              <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                <div class="flex items-center gap-2">
+                  <span class="h-8 inline-flex items-center gap-2 rounded-full bg-amber-50 border border-amber-600/20 px-3 font-mono text-[10.5px] uppercase tracking-[0.16em] text-amber-800"><span class="size-1.5 rounded-full bg-amber-500 dot-pulse"></span>data as of · delay attribution thru Oct 2025</span>
+                  <button class="h-8 inline-flex items-center gap-1.5 px-3 rounded border border-zinc-950/15 bg-white text-slate-700 text-[12.5px]"><!-- icon: Export --><svg class="size-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/></svg>Export</button>
+                </div>
+                <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">source · excessive_delay v3 · batch monthly</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ TONE_BAR · filters ═════════ -->
+          <div class="w-full bg-[#1F3F8F] text-white border-b border-black/10" data-dms-group="tone_bar">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 h-12 flex items-center gap-8" data-dms-section="filter-bar">
+              <div class="text-[12px] flex items-center gap-2"><span class="text-white/70">Region:</span><button class="flex items-center gap-1.5 font-semibold">Statewide <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px] flex items-center gap-2"><span class="text-white/70">Years:</span><button class="flex items-center gap-1.5 font-semibold font-mono tabular-nums">2018–2025 <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px] flex items-center gap-2"><span class="text-white/70">F-system:</span><button class="flex items-center gap-1.5 font-semibold">All <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-white/60">53,200 monitored TMCs · NY only</div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 01 · HEADLINE KPIs ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <div class="col-span-12 md:col-span-4" data-dms-section="kpi-delay">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full flex flex-col">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Total excessive delay</div>
+                  <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">223.0<span class="text-[22px] font-medium text-slate-500 ml-1">M veh-hrs</span></div>
+                  <div class="mt-1 font-proxima text-[12.5px] text-slate-500">CY 2024 · statewide, all road classes</div>
+                  <div class="mt-auto pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-rose-700">↑ +4.2% vs 2023</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">2025 thru Oct · 207.6M</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-span-12 md:col-span-4" data-dms-section="kpi-cost">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full flex flex-col">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Cost of congestion</div>
+                  <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">$4.2<span class="text-[22px] font-medium text-slate-500 ml-1">billion</span></div>
+                  <div class="mt-1 font-proxima text-[12.5px] text-slate-500">CY 2024 · ≈ $18.8 per vehicle-hour of delay</div>
+                  <div class="mt-auto pt-3 border-t border-zinc-950/05 grid grid-cols-2 gap-3">
+                    <div><div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-600"><span class="size-1.5 rounded-full bg-[#6F6F6F]"></span>Recurrent</div><div class="font-mono text-[16px] tabular-nums text-[#0F1722]">$2.2B</div></div>
+                    <div><div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-amber-700"><span class="size-1.5 rounded-full bg-[#E8843F]"></span>Non-recurrent</div><div class="font-mono text-[16px] tabular-nums text-[#0F1722]">$2.0B</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-span-12 md:col-span-4" data-dms-section="kpi-nonrecurrent">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full flex flex-col">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Non-recurrent share</div>
+                  <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">47<span class="text-[22px] font-medium text-slate-500 ml-0.5">%</span></div>
+                  <div class="mt-1 font-proxima text-[12.5px] text-slate-500">105.8M of 223.0M veh-hrs tied to events, not everyday volume · 2024</div>
+                  <div class="mt-auto pt-3 border-t border-zinc-950/05 space-y-1.5 text-[11.5px] text-slate-600">
+                    <div class="flex items-center gap-2"><span class="size-1.5 rounded-full flex-shrink-0" style="background:#D6453B"></span><span class="flex-1">Construction</span><span class="font-mono tabular-nums">40.3M</span><div class="h-1.5 w-20 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:64%;background:#D6453B"></div></div></div>
+                    <div class="flex items-center gap-2"><span class="size-1.5 rounded-full flex-shrink-0" style="background:#7F1D1D"></span><span class="flex-1">Accident</span><span class="font-mono tabular-nums">3.0M</span><div class="h-1.5 w-20 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:5%;background:#7F1D1D"></div></div></div>
+                    <div class="flex items-center gap-2"><span class="size-1.5 rounded-full flex-shrink-0" style="background:#E8843F"></span><span class="flex-1">Other events</span><span class="font-mono tabular-nums">62.5M</span><div class="h-1.5 w-20 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:100%;background:#E8843F"></div></div></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ═════════ § 02 · DELAY COMPOSITION BY YEAR ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 pb-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="delay-composition">
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                  <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Excessive delay by year · attribution buckets · M veh-hrs · statewide</span>
+                  <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">as of · Oct 2025</span>
+                </div>
+                <div class="p-4">
+                  <!-- decorative --><svg viewBox="0 0 1320 300" class="w-full">
+                    <defs>
+                      <pattern id="gap-hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><rect width="8" height="8" fill="#F1F5F9"/><line x1="0" y1="0" x2="0" y2="8" stroke="#CBD5E1" stroke-width="2"/></pattern>
+                    </defs>
+                    <g stroke="#e2e8f0" stroke-width="1"><line x1="56" x2="1300" y1="28" y2="28"/><line x1="56" x2="1300" y1="82" y2="82"/><line x1="56" x2="1300" y1="136" y2="136"/><line x1="56" x2="1300" y1="190" y2="190"/><line x1="56" x2="1300" y1="244" y2="244"/></g>
+                    <g font-family="ui-monospace" font-size="10" fill="#94a3b8" text-anchor="end"><text x="48" y="31">240M</text><text x="48" y="85">180M</text><text x="48" y="139">120M</text><text x="48" y="193">60M</text><text x="48" y="247">0</text></g>
+
+                    <!-- 2018 · 211.4 = 105.8 rec + 103.8 other + 1.8 constr + 0.0 acc -->
+                    <g><rect x="70" y="148.8" width="100" height="95.2" fill="#6F6F6F"/><rect x="70" y="55.4" width="100" height="93.4" fill="#E8843F"/><rect x="70" y="53.8" width="100" height="1.6" fill="#D6453B"/></g>
+                    <text x="120" y="45.8" font-family="ui-monospace" font-size="11" fill="#0F1722" text-anchor="middle" class="tabular-nums">211.4</text>
+
+                    <!-- 2019 + 2020 · attribution not yet computed -->
+                    <rect x="225" y="28" width="100" height="216" fill="url(#gap-hatch)" stroke="#CBD5E1" stroke-dasharray="4 3"/>
+                    <rect x="380" y="28" width="100" height="216" fill="url(#gap-hatch)" stroke="#CBD5E1" stroke-dasharray="4 3"/>
+                    <rect x="270" y="116" width="165" height="40" rx="4" fill="#fff" stroke="#CBD5E1"/>
+                    <text x="352.5" y="133" font-family="ui-monospace" font-size="10.5" fill="#64748b" text-anchor="middle" letter-spacing="0.5">2019–2020</text>
+                    <text x="352.5" y="148" font-family="ui-monospace" font-size="9.5" fill="#94a3b8" text-anchor="middle" letter-spacing="0.5">attribution not yet computed</text>
+
+                    <!-- 2021 · 230.4 = 122.4 + 54.1 + 49.5 + 4.4 -->
+                    <g><rect x="535" y="133.8" width="100" height="110.2" fill="#6F6F6F"/><rect x="535" y="85.1" width="100" height="48.7" fill="#E8843F"/><rect x="535" y="40.5" width="100" height="44.6" fill="#D6453B"/><rect x="535" y="36.5" width="100" height="4" fill="#7F1D1D"/></g>
+                    <text x="585" y="29" font-family="ui-monospace" font-size="11" fill="#0F1722" text-anchor="middle" class="tabular-nums">230.4</text>
+
+                    <!-- 2022 · 184.5 = 100.7 + 46.2 + 34.9 + 2.7 -->
+                    <g><rect x="690" y="153.4" width="100" height="90.6" fill="#6F6F6F"/><rect x="690" y="111.8" width="100" height="41.6" fill="#E8843F"/><rect x="690" y="80.4" width="100" height="31.4" fill="#D6453B"/><rect x="690" y="78" width="100" height="2.4" fill="#7F1D1D"/></g>
+                    <text x="740" y="70" font-family="ui-monospace" font-size="11" fill="#0F1722" text-anchor="middle" class="tabular-nums">184.5</text>
+
+                    <!-- 2023 · 214.0 = 111.9 + 72.2 + 27.8 + 2.1 -->
+                    <g><rect x="845" y="143.3" width="100" height="100.7" fill="#6F6F6F"/><rect x="845" y="78.3" width="100" height="65" fill="#E8843F"/><rect x="845" y="53.3" width="100" height="25" fill="#D6453B"/><rect x="845" y="51.4" width="100" height="1.9" fill="#7F1D1D"/></g>
+                    <text x="895" y="43.4" font-family="ui-monospace" font-size="11" fill="#0F1722" text-anchor="middle" class="tabular-nums">214.0</text>
+
+                    <!-- 2024 · 223.0 = 117.2 + 62.5 + 40.3 + 3.0 (selected year) -->
+                    <g><rect x="1000" y="138.5" width="100" height="105.5" fill="#6F6F6F"/><rect x="1000" y="82.2" width="100" height="56.3" fill="#E8843F"/><rect x="1000" y="45.9" width="100" height="36.3" fill="#D6453B"/><rect x="1000" y="43.2" width="100" height="2.7" fill="#7F1D1D"/></g>
+                    <g transform="translate(1050, 43.2)"><rect x="-44" y="-28" width="88" height="20" rx="3" fill="#0a0e13"/><text x="0" y="-14" font-family="ui-monospace" font-size="11" font-weight="600" fill="#fff" text-anchor="middle" class="tabular-nums">2024 · 223.0</text></g>
+
+                    <!-- 2025 thru Oct · 207.6 = 113.9 + 56.2 + 34.3 + 3.2 (partial) -->
+                    <g opacity="0.8"><rect x="1155" y="141.5" width="100" height="102.5" fill="#6F6F6F"/><rect x="1155" y="90.9" width="100" height="50.6" fill="#E8843F"/><rect x="1155" y="60" width="100" height="30.9" fill="#D6453B"/><rect x="1155" y="57.1" width="100" height="2.9" fill="#7F1D1D"/></g>
+                    <rect x="1155" y="57.1" width="100" height="186.9" fill="none" stroke="#94a3b8" stroke-dasharray="3 3"/>
+                    <text x="1205" y="49" font-family="ui-monospace" font-size="11" fill="#475569" text-anchor="middle" class="tabular-nums">207.6 *</text>
+
+                    <g font-family="ui-monospace" font-size="10.5" fill="#94a3b8" text-anchor="middle" class="tabular-nums"><text x="120" y="262">2018</text><text x="275" y="262">2019</text><text x="430" y="262">2020</text><text x="585" y="262">2021</text><text x="740" y="262">2022</text><text x="895" y="262">2023</text><text x="1050" y="262">2024</text><text x="1205" y="262">2025</text></g>
+                  </svg>
+                </div>
+                <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm" style="background:#6F6F6F"></span>recurrent (total − non-recurrent)</span>
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm" style="background:#E8843F"></span>non-recurrent · other events</span>
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm" style="background:#D6453B"></span>non-recurrent · construction</span>
+                  <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm" style="background:#7F1D1D"></span>non-recurrent · accident</span>
+                  <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-sm border border-dashed border-slate-400" style="background:repeating-linear-gradient(45deg,#F1F5F9 0 3px,#CBD5E1 3px 4px)"></span>no data</span>
+                </div>
+                <div class="px-4 pb-4 font-proxima text-[12px] text-slate-500 leading-[1.55]">
+                  2019–2020 attribution not yet computed — the current run (v3) covers 2018 and 2021 onward; the gap is shown rather than interpolated. * 2025 is partial, through October. 2018 accident attribution is effectively zero because event-level matching begins with the 2021 vintage.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · SEASONALITY + REGIONS ═════════ -->
+          <div class="w-full bg-[#E4E8EE] border-b border-zinc-950/05 py-8" data-dms-group="content_tint">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- month × region heat -->
+              <div class="col-span-12 lg:col-span-7" data-dms-section="seasonality-heat">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Seasonality · monthly share of each region's delay · 2024</span>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">CY 2024 · complete</span>
+                  </div>
+                  <div class="p-4 flex-1">
+                    <div class="space-y-[3px]">
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center font-mono text-[9.5px] uppercase tracking-wider text-slate-400 mb-1">
+                        <div></div><div class="text-center">J</div><div class="text-center">F</div><div class="text-center">M</div><div class="text-center">A</div><div class="text-center">M</div><div class="text-center">J</div><div class="text-center">J</div><div class="text-center">A</div><div class="text-center">S</div><div class="text-center">O</div><div class="text-center">N</div><div class="text-center">D</div><div class="text-right">delay</div>
+                      </div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R11 · NYC</div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">96.4M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R8 · Hudson Valley</div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">38.2M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R10 · Long Island</div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">34.7M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R5 · Western NY</div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">14.9M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R4 · Genesee Valley</div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">10.2M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R1 · Capital District</div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">9.8M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R3 · Central NY</div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">6.9M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R9 · Southern Tier</div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">4.1M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R2 · Mohawk Valley</div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">3.0M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R7 · North Country</div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FBBF24"></div><div class="h-5 rounded-[2px]" style="background:#7C2D12"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">2.6M</div></div>
+                      <div class="grid grid-cols-[150px_repeat(12,minmax(0,1fr))_64px] gap-[3px] items-center"><div class="font-proxima text-[12px] text-slate-700 truncate pr-1">R6 · Hornell</div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FEF3C7"></div><div class="h-5 rounded-[2px]" style="background:#FDE68A"></div><div class="h-5 rounded-[2px]" style="background:#D97706"></div><div class="font-mono text-[10.5px] tabular-nums text-slate-500 text-right">2.2M</div></div>
+                    </div>
+                    <div class="mt-3 flex items-center justify-between">
+                      <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">
+                        <span>low</span>
+                        <span class="flex gap-[2px]"><span class="size-3 rounded-[2px]" style="background:#FEF3C7"></span><span class="size-3 rounded-[2px]" style="background:#FDE68A"></span><span class="size-3 rounded-[2px]" style="background:#FBBF24"></span><span class="size-3 rounded-[2px]" style="background:#D97706"></span><span class="size-3 rounded-[2px]" style="background:#7C2D12"></span></span>
+                        <span>high · shaded within each region row</span>
+                      </div>
+                    </div>
+                    <p class="mt-2 font-proxima text-[12px] text-slate-500 leading-[1.55]">Downstate regions peak with summer travel volume; upstate the dark cells cluster in December–February, where lake-effect snow and winter weather drive non-recurrent delay.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ranked region bars -->
+              <div class="col-span-12 lg:col-span-5" data-dms-section="region-rank">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Delay by NYSDOT region · 2024</span>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">M veh-hrs</span>
+                  </div>
+                  <div class="p-4 space-y-2.5 flex-1 text-[12.5px] text-slate-700">
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R11 · NYC</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#1F3F8F]" style="width:100%"></div></div><span class="w-12 text-right font-mono tabular-nums">96.4</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R8 · Hudson Valley</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#1F3F8F]" style="width:39.6%"></div></div><span class="w-12 text-right font-mono tabular-nums">38.2</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R10 · Long Island</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#1F3F8F]" style="width:36%"></div></div><span class="w-12 text-right font-mono tabular-nums">34.7</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R5 · Western NY</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#37576B]" style="width:15.5%"></div></div><span class="w-12 text-right font-mono tabular-nums">14.9</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R4 · Genesee Valley</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#37576B]" style="width:10.6%"></div></div><span class="w-12 text-right font-mono tabular-nums">10.2</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R1 · Capital District</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#37576B]" style="width:10.2%"></div></div><span class="w-12 text-right font-mono tabular-nums">9.8</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R3 · Central NY</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#37576B]" style="width:7.2%"></div></div><span class="w-12 text-right font-mono tabular-nums">6.9</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R9 · Southern Tier</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#37576B]" style="width:4.3%"></div></div><span class="w-12 text-right font-mono tabular-nums">4.1</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R2 · Mohawk Valley</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#37576B]" style="width:3.1%"></div></div><span class="w-12 text-right font-mono tabular-nums">3.0</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R7 · North Country</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#37576B]" style="width:2.7%"></div></div><span class="w-12 text-right font-mono tabular-nums">2.6</span></div>
+                    <div class="flex items-center gap-3"><span class="w-36 truncate font-proxima">R6 · Hornell</span><div class="flex-1 h-3 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-[#37576B]" style="width:2.3%"></div></div><span class="w-12 text-right font-mono tabular-nums">2.2</span></div>
+                  </div>
+                  <div class="px-4 pb-4">
+                    <table class="w-full font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                      <tr><td class="py-0.5">monitored TMCs · R11 12,049 · R8 8,234 · R10 8,039 · R5 5,617 · R4 4,909 · R1 4,257</td></tr>
+                      <tr><td class="py-0.5">R3 3,193 · R9 2,349 · R2 2,056 · R7 1,758 · R6 1,080</td></tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ═════════ § 04 · WORST CORRIDORS · table ↔ map ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <div class="col-span-12 md:col-span-8" data-dms-section="corridor-table">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Worst corridors by excessive delay · CY 2024 · statewide</span>
+                    <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded border border-zinc-950/10 bg-white text-slate-700 text-[12px]">Display <!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                  </div>
+                  <table class="w-full text-[13px] text-slate-700">
+                    <thead class="bg-white border-b border-zinc-950/10">
+                      <tr>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Corridor</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">County</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Region</th>
+                        <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Miles</th>
+                        <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Delay · vh</th>
+                        <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Cost</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Trend '18–'25</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2"><a href="tsmo-corridor.html" class="text-[#1F3F8F] hover:underline">I-95 · New England Thwy · New Rochelle</a></td><td class="px-3 py-2">Westchester</td><td class="px-3 py-2 font-mono tabular-nums">R8</td><td class="px-3 py-2 text-right font-mono tabular-nums">6.8</td><td class="px-3 py-2 text-right font-mono tabular-nums">4.91M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$96M</td><td class="px-3 py-2"><!-- decorative --><svg viewBox="0 0 64 20" class="w-16 h-5"><polyline points="2,14 12,13 22,11 32,12 42,9 52,7 62,5" fill="none" stroke="#BE123C" stroke-width="1.5"/></svg></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2"><a href="tsmo-corridor.html" class="text-[#1F3F8F] hover:underline">I-278 · Brooklyn–Queens Expwy</a></td><td class="px-3 py-2">Kings / Queens</td><td class="px-3 py-2 font-mono tabular-nums">R11</td><td class="px-3 py-2 text-right font-mono tabular-nums">11.2</td><td class="px-3 py-2 text-right font-mono tabular-nums">4.62M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$91M</td><td class="px-3 py-2"><!-- decorative --><svg viewBox="0 0 64 20" class="w-16 h-5"><polyline points="2,9 12,10 22,8 32,9 42,8 52,9 62,8" fill="none" stroke="#64748B" stroke-width="1.5"/></svg></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2"><a href="tsmo-corridor.html" class="text-[#1F3F8F] hover:underline">I-87 · Major Deegan Expwy</a></td><td class="px-3 py-2">Bronx</td><td class="px-3 py-2 font-mono tabular-nums">R11</td><td class="px-3 py-2 text-right font-mono tabular-nums">8.7</td><td class="px-3 py-2 text-right font-mono tabular-nums">4.18M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$82M</td><td class="px-3 py-2"><!-- decorative --><svg viewBox="0 0 64 20" class="w-16 h-5"><polyline points="2,13 12,12 22,12 32,10 42,9 52,7 62,6" fill="none" stroke="#BE123C" stroke-width="1.5"/></svg></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2"><a href="tsmo-corridor.html" class="text-[#1F3F8F] hover:underline">I-495 · Long Island Expwy</a></td><td class="px-3 py-2">Queens–Suffolk</td><td class="px-3 py-2 font-mono tabular-nums">R10</td><td class="px-3 py-2 text-right font-mono tabular-nums">22.4</td><td class="px-3 py-2 text-right font-mono tabular-nums">3.96M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$78M</td><td class="px-3 py-2"><!-- decorative --><svg viewBox="0 0 64 20" class="w-16 h-5"><polyline points="2,14 12,12 22,12 32,11 42,10 52,9 62,7" fill="none" stroke="#BE123C" stroke-width="1.5"/></svg></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2"><a href="tsmo-corridor.html" class="text-[#1F3F8F] hover:underline">I-678 · Van Wyck Expwy</a></td><td class="px-3 py-2">Queens</td><td class="px-3 py-2 font-mono tabular-nums">R11</td><td class="px-3 py-2 text-right font-mono tabular-nums">9.9</td><td class="px-3 py-2 text-right font-mono tabular-nums">2.87M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$57M</td><td class="px-3 py-2"><!-- decorative --><svg viewBox="0 0 64 20" class="w-16 h-5"><polyline points="2,10 12,11 22,9 32,10 42,9 52,10 62,9" fill="none" stroke="#64748B" stroke-width="1.5"/></svg></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2"><a href="tsmo-corridor.html" class="text-[#1F3F8F] hover:underline">I-90 · Thruway · Exits 50–55</a></td><td class="px-3 py-2">Erie</td><td class="px-3 py-2 font-mono tabular-nums">R5</td><td class="px-3 py-2 text-right font-mono tabular-nums">14.6</td><td class="px-3 py-2 text-right font-mono tabular-nums">1.84M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$36M</td><td class="px-3 py-2"><!-- decorative --><svg viewBox="0 0 64 20" class="w-16 h-5"><polyline points="2,7 12,8 22,9 32,10 42,11 52,12 62,14" fill="none" stroke="#047857" stroke-width="1.5"/></svg></td></tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]"><td class="px-3 py-2"><a href="tsmo-corridor.html" class="text-[#1F3F8F] hover:underline">NY-9 · Route 9 · Poughkeepsie–Wappinger</a></td><td class="px-3 py-2">Dutchess</td><td class="px-3 py-2 font-mono tabular-nums">R8</td><td class="px-3 py-2 text-right font-mono tabular-nums">9.3</td><td class="px-3 py-2 text-right font-mono tabular-nums">0.97M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$19M</td><td class="px-3 py-2"><!-- decorative --><svg viewBox="0 0 64 20" class="w-16 h-5"><polyline points="2,13 12,12 22,12 32,11 42,10 52,9 62,8" fill="none" stroke="#BE123C" stroke-width="1.5"/></svg></td></tr>
+                      <tr class="hover:bg-[#FFFBEB]"><td class="px-3 py-2"><a href="tsmo-corridor.html" class="text-[#1F3F8F] hover:underline">I-690 · Syracuse</a></td><td class="px-3 py-2">Onondaga</td><td class="px-3 py-2 font-mono tabular-nums">R3</td><td class="px-3 py-2 text-right font-mono tabular-nums">6.4</td><td class="px-3 py-2 text-right font-mono tabular-nums">0.88M</td><td class="px-3 py-2 text-right font-mono tabular-nums">$17M</td><td class="px-3 py-2"><!-- decorative --><svg viewBox="0 0 64 20" class="w-16 h-5"><polyline points="2,8 12,9 22,10 32,9 42,11 52,12 62,12" fill="none" stroke="#047857" stroke-width="1.5"/></svg></td></tr>
+                    </tbody>
+                  </table>
+                  <div class="flex items-center justify-between px-3 h-10 border-t border-zinc-950/05 bg-slate-50/40">
+                    <span class="font-mono text-[11px] uppercase tracking-wider text-slate-500">1–8 of 312 corridors · ranked by 2024 veh-hrs · click a corridor for the time-space view</span>
+                    <div class="flex items-center gap-1">
+                      <button class="h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-[#0F1722] bg-white border border-zinc-950/10 rounded font-medium">1</button>
+                      <button class="h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-slate-600 hover:bg-slate-100 rounded">2</button>
+                      <button class="h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-slate-600 hover:bg-slate-100 rounded">3</button>
+                      <span class="text-[12px] text-slate-400">…</span>
+                      <button class="h-7 w-7 inline-flex items-center justify-center rounded text-slate-500 hover:bg-slate-100"><!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-span-12 md:col-span-4" data-dms-section="corridor-map">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Where the delay is</span>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">CY 2024</span>
+                  </div>
+                  <div class="relative tny-map flex-1 min-h-[420px]">
+                    <!-- decorative --><svg viewBox="0 0 400 420" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                      <path d="M 80 360 L 150 340 L 210 330 L 270 335 L 330 350" stroke="#7C2D12" stroke-width="5" fill="none" stroke-linecap="round"/>
+                      <path d="M 120 300 L 180 290 L 250 295 L 320 300" stroke="#D6453B" stroke-width="4" fill="none" stroke-linecap="round"/>
+                      <path d="M 200 250 L 230 200 L 245 150 L 250 100" stroke="#E8843F" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                      <path d="M 60 120 L 130 130 L 190 140" stroke="#E8843F" stroke-width="3" fill="none" stroke-linecap="round"/>
+                      <path d="M 70 200 L 140 210 L 200 220" stroke="#F2CB3D" stroke-width="3" fill="none" stroke-linecap="round"/>
+                      <path d="M 280 180 L 330 200 L 360 240" stroke="#F2CB3D" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute bottom-2 left-2 rounded-[6px] bg-white shadow-md p-2.5 border border-zinc-950/10">
+                      <div class="font-display uppercase text-[10.5px] tracking-wide text-slate-600 mb-1.5">TMC delay · veh-hrs / mi · 2024</div>
+                      <div class="space-y-1 font-mono text-[10px] text-slate-600">
+                        <div class="flex items-center gap-2"><span class="h-1 w-5 rounded" style="background:#7C2D12"></span>&gt; 400k</div>
+                        <div class="flex items-center gap-2"><span class="h-1 w-5 rounded" style="background:#D6453B"></span>150–400k</div>
+                        <div class="flex items-center gap-2"><span class="h-1 w-5 rounded" style="background:#E8843F"></span>50–150k</div>
+                        <div class="flex items-center gap-2"><span class="h-1 w-5 rounded" style="background:#F2CB3D"></span>&lt; 50k</div>
+                      </div>
+                    </div>
+                    <div class="absolute top-2 right-2 rounded bg-white/90 border border-zinc-950/10 px-2 py-1 font-mono text-[9.5px] uppercase tracking-wider text-slate-500">placeholder · TMC choropleth</div>
+                  </div>
+                  <div class="px-3 h-10 flex items-center border-t border-zinc-950/05 bg-slate-50/40">
+                    <a href="tsmo-corridor.html" class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">open corridor explorer <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ═════════ METHOD NOTE ═════════ -->
+          <div class="w-full bg-[#ECEEF2] pb-10" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="method-note">
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white p-6">
+                <div class="flex items-start gap-6">
+                  <div class="size-9 rounded flex-shrink-0 flex items-center justify-center bg-[#1F3F8F]/10 text-[#1F3F8F]">
+                    <!-- icon: Pages --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">// methodology</div>
+                    <div class="font-display uppercase text-[15px] tracking-[0.06em] text-[#0F1722] font-semibold mb-2">How delay is measured and attributed</div>
+                    <p class="font-proxima text-[13px] leading-[1.55] text-slate-600 max-w-[860px]">
+                      Excessive delay counts vehicle-hours spent below the congestion threshold (60% of posted speed, 20 mph floor), computed per TMC segment and month from NPMRDS 5-minute probe speeds. TRANSCOM events claim their share of the non-recurrent total — construction, accident, and other events — and recurrent delay is the remainder (total minus non-recurrent). Cost multiplies vehicle-hours by AADT-weighted occupancy and FHWA's value-of-time factor (≈ $18.8 per vehicle-hour in 2024). 2019–2020 attribution has not yet been computed and is shown as a gap, never interpolated; 2025 runs through October.
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-6 font-mono text-[10.5px] uppercase tracking-[0.18em]">
+                      <a href="tsmo-methodology.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">full methodology &amp; data coverage <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                      <a href="tsmo-reliability.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">how predictable is travel · reliability <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                      <a href="tsmo-corridor.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">drill into a corridor <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="tsmo-reliability.html" class="hover:text-slate-900">reliability</a>
+                <a href="tsmo-incidents.html" class="hover:text-slate-900">incidents</a>
+                <a href="tsmo-workzones.html" class="hover:text-slate-900">work-zones</a>
+                <a href="tsmo-methodology.html" class="hover:text-slate-900">methodology</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system navigation widget (docs scaffolding per skill §7.0.2 — not Layout chrome; never on a live DMS site) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Proxima Nova',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:220px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;padding:0 16px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:4px;">TransportNY DMS · v0.2</div>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">design system</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">1</span> theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">2</span> layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">3</span> grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">4</span> components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">5</span> patterns</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">pages</div>
+    <a href="landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">6</span> landing</a>
+    <a href="login.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">7</span> login</a>
+    <a href="getting-started.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">8</span> getting-started</a>
+    <a href="docs-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">9</span> docs-overview</a>
+    <a href="map-21.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">10</span> map-21</a>
+    <a href="map-21-system-performance.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">11</span> map-21-system-performance</a>
+    <a href="map-21-trend.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">12</span> map-21-trend</a>
+    <a href="employment-estimates.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">13</span> employment-estimates</a>
+    <a href="employment-estimates-mpo.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">14</span> employment-estimates-mpo</a>
+    <a href="floating-car.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">15</span> floating-car</a>
+    <a href="congestion.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">16</span> congestion</a>
+    <a href="work-zones.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">17</span> work-zones</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">freight atlas</div>
+    <a href="freight-atlas-home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">18</span> freight-atlas-home</a>
+    <a href="freight-atlas-map.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">19</span> freight-atlas-map</a>
+    <a href="freight-atlas-gallery.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">20</span> freight-atlas-gallery</a>
+    <a href="freight-atlas-insights.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">21</span> freight-atlas-insights</a>
+    <a href="freight-atlas-data.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">22</span> freight-atlas-data</a>
+    <a href="freight-atlas-dataset.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">23</span> freight-atlas-dataset</a>
+    <a href="freight-atlas-about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">24</span> freight-atlas-about</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">tsmo</div>
+    <a href="tsmo-congestion.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#CA8A04;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">25</span> tsmo-congestion</a>
+    <a href="tsmo-reliability.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">26</span> tsmo-reliability</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';" style="width:40px;height:40px;border-radius:10px;background:#12181F;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);" aria-label="Design system navigation">
+    <!-- decorative --><svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+</body>
+</html>
