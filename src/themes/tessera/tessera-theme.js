@@ -23,6 +23,15 @@
      treatment. Snap motion (`duration-100`), no eases longer than 200ms.
    ============================================================================= */
 
+import {
+  TypeBadgeView, TypeBadgeEdit,
+  SubdomainPillView, SubdomainPillEdit,
+  UserAvatarView, UserAvatarEdit,
+  GroupPillView, GroupPillEdit,
+  PermBadgeView, PermBadgeEdit,
+  AvatarStackView,
+} from './admin.columnTypes';
+
 /* ---------- Brand palette (mirrors colors_and_type.css :root) ------------- */
 
 const c = {
@@ -508,21 +517,36 @@ const logo = {
   styles: [
     {
       name: 'default',
-      wrapper: `inline-flex items-center gap-2`,
-      image: `h-7 w-auto`,
-      text: `${FONT_DISPLAY} text-lg font-medium tracking-tight text-[${c.slate}]`,
+      logoWrapper: `inline-flex items-center gap-2 px-3 py-3`,
+      img: '/themes/tessera/tessera-wordmark.svg',
+      imgWrapper: ``,
+      imgClass: `h-10 w-auto`,
+      logoAltImg: `inline-flex h-10 w-10 rounded items-center justify-center bg-[${c.slate}] text-[${c.parchment}] ${FONT_DISPLAY} text-sm font-medium`,
+      title: '',
+      titleWrapper: `sr-only`,
+      linkPath: '/',
     },
     {
       name: 'compact',
-      wrapper: `inline-flex items-center`,
-      image: `h-6 w-auto`,
-      text: 'sr-only',
+      logoWrapper: `inline-flex items-center justify-center px-3 py-3`,
+      img: '/themes/tessera/tessera-mark.svg',
+      imgWrapper: ``,
+      imgClass: `h-6 w-auto`,
+      logoAltImg: `inline-flex h-6 w-6 rounded items-center justify-center bg-[${c.slate}]`,
+      title: '',
+      titleWrapper: `sr-only`,
+      linkPath: '/',
     },
     {
       name: 'stacked',
-      wrapper: `inline-flex flex-col items-center gap-1`,
-      image: `h-12 w-auto`,
-      text: `${FONT_DISPLAY} text-base font-medium tracking-tight text-[${c.slate}]`,
+      logoWrapper: `inline-flex flex-col items-center gap-1 px-3 py-4`,
+      img: '/themes/tessera/tessera-mark.svg',
+      imgWrapper: ``,
+      imgClass: `h-10 w-auto`,
+      logoAltImg: `inline-flex h-10 w-10 rounded items-center justify-center bg-[${c.slate}]`,
+      title: 'Tessera',
+      titleWrapper: `${FONT_DISPLAY} text-sm font-medium tracking-tight text-[${c.slate}]`,
+      linkPath: '/',
     },
   ],
 };
@@ -559,7 +583,7 @@ const button = {
 
 const input = {
   input: `w-full ${FONT_SANS} text-sm text-[${c.slate}] bg-[${c.parchment}] border border-[${c.groutLight}] rounded-[2px] px-3 py-2.5 placeholder:text-[${c.fog}] hover:border-[${c.fog}] focus:outline-none focus:border-[${c.slate}] focus:ring-1 focus:ring-[${c.slate}] aria-invalid:border-[${c.oxide}] disabled:opacity-50 transition-colors duration-100`,
-  inputContainer: `relative w-full`,
+  inputContainer: `flex-1 relative w-full`,
   textarea: `w-full ${FONT_SANS} text-sm text-[${c.slate}] bg-[${c.parchment}] border border-[${c.groutLight}] rounded-[2px] px-3 py-2.5 placeholder:text-[${c.fog}] hover:border-[${c.fog}] focus:outline-none focus:border-[${c.slate}] focus:ring-1 focus:ring-[${c.slate}] resize-y min-h-[6rem] transition-colors duration-100`,
   confirmButtonContainer: `absolute right-0 top-0 bottom-0 hidden group-hover:flex items-center gap-1 pr-1`,
   editButton: `p-1 text-[${c.fog}] hover:text-[${c.slate}] cursor-pointer`,
@@ -1105,6 +1129,108 @@ const authTheme = {
   },
 };
 
+/* ---------- Admin namespace ----------------------------------------------- */
+/* Class strings for admin pages (sites, themes, users, groups). Components
+   read these via getComponentTheme(themeFromContext, 'admin'). */
+
+const adminTheme = {
+  // KPI strip
+  kpiStrip: `grid border border-[${c.groutLight}] bg-[${c.parchment}] shadow-[0_2px_8px_rgba(42,47,54,0.08)]`,
+  kpiCell: `px-6 py-5 border-r border-[${c.groutLight}] last:border-r-0`,
+  kpiValue: `font-serif text-4xl font-medium text-[${c.slate}] tabular-nums leading-none mt-1`,
+  kpiLabel: `font-mono text-xs uppercase tracking-[0.06em] text-[${c.graphite}]`,
+
+  // Type badge (pattern_type)
+  typeBadge: `inline-block px-2 py-0.5 border font-mono text-[10px] uppercase tracking-[0.06em] whitespace-nowrap`,
+  typeBadgePage:      `text-[${c.verdigris}] border-[${c.verdigris}]`,
+  typeBadgeDatasets:  `text-[${c.ochre}] border-[${c.ochre}]`,
+  typeBadgeForms:     `text-[${c.graphite}] border-[${c.groutLight}] bg-[${c.limestone}]`,
+  typeBadgeAuth:      `text-[${c.oxide}] border-[${c.oxide}]`,
+  typeBadgeMapeditor: `text-[${c.graphite}] border-[${c.groutLight}]`,
+
+  // Status dot
+  statusDotActive:   `w-1.5 h-1.5 rounded-full bg-[${c.verdigris}] inline-block`,
+  statusDotInactive: `w-1.5 h-1.5 rounded-full bg-[${c.fog}] inline-block`,
+  statusDotPending:  `w-1.5 h-1.5 rounded-full bg-[${c.ochre}] inline-block`,
+
+  // Subdomain pill
+  subdomainPill:       `inline-flex items-center gap-1 px-2 py-0.5 bg-[${c.limestone}] border border-[${c.groutLight}] font-mono text-[11px] text-[${c.graphite}] rounded-full`,
+  subdomainPillGlobal: `text-[${c.fog}] bg-transparent border-[${c.groutLight}]`,
+
+  // Filter chips
+  filterChip:       `inline-flex items-center gap-1.5 px-2.5 py-1 border border-[${c.groutLight}] font-mono text-[11px] uppercase tracking-[0.06em] text-[${c.graphite}] cursor-pointer rounded-full transition-colors duration-100 hover:bg-[${c.limestone}] hover:border-[${c.graphite}]`,
+  filterChipActive: `bg-[${c.limestone}] border-[${c.slate}]`,
+
+  // Avatar initials
+  avatar: `w-7 h-7 inline-flex items-center justify-center font-sans text-[11px] font-semibold text-[${c.parchment}] flex-shrink-0`,
+
+  // Avatar stack (groups page)
+  avatarStack:         `flex`,
+  avatarStackItem:     `w-6 h-6 rounded-full inline-flex items-center justify-center font-sans text-[10px] font-semibold text-[${c.parchment}] border-2 border-[${c.parchment}] -mr-1.5 last:mr-0 flex-shrink-0`,
+  avatarStackOverflow: `bg-[${c.limestone}] text-[${c.graphite}]`,
+
+  // Group pill (users page)
+  groupPill:       `inline-flex items-center px-2 py-0.5 bg-[${c.limestone}] border border-[${c.groutLight}] font-mono text-[11px] text-[${c.graphite}] rounded-full whitespace-nowrap`,
+  groupPillAdmin:  `bg-transparent border-[${c.oxide}] text-[${c.oxide}]`,
+  groupPillEditor: `bg-transparent border-[${c.verdigris}] text-[${c.verdigris}]`,
+
+  // Permission badge (groups page)
+  permBadge:       `inline-flex items-center gap-1.5 px-2.5 py-0.5 border font-mono text-[10px] uppercase tracking-[0.06em] rounded-full whitespace-nowrap`,
+  permBadgeAdmin:  `text-[${c.oxide}] border-[${c.oxide}]`,
+  permBadgeEditor: `text-[${c.verdigris}] border-[${c.verdigris}]`,
+  permBadgeViewer: `text-[${c.graphite}] border-[${c.groutLight}] bg-[${c.limestone}]`,
+  permBadgePublic: `text-[${c.fog}] border-[${c.groutLight}]`,
+
+  // System badge (non-deletable groups)
+  systemBadge: `inline-block px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[${c.fog}] border border-[${c.groutLight}]`,
+
+  // Bulk action bar
+  bulkBar:      `sticky bottom-0 z-10 flex items-center gap-3 px-4 py-3 bg-[${c.slate}] text-[${c.parchment}] shadow-[0_-2px_8px_rgba(0,0,0,0.15)]`,
+  bulkBarCount: `font-mono text-xs uppercase tracking-[0.06em] text-[${c.fog}]`,
+
+  // Tab strip
+  tabStrip:    `flex items-end border-b border-[${c.groutLight}] gap-0 mb-4`,
+  tab:         `px-4 py-2 font-sans text-sm font-medium text-[${c.graphite}] cursor-pointer border-b-2 border-transparent -mb-px transition-colors duration-100 hover:text-[${c.slate}] whitespace-nowrap`,
+  tabActive:   `text-[${c.slate}] border-b-2 border-[${c.slate}]`,
+  tabCount:    `inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-[${c.limestone}] border border-[${c.groutLight}] font-mono text-[10px] text-[${c.graphite}] ml-1.5 rounded-full`,
+
+  // Theme cards (themes page)
+  themeGrid:        `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4`,
+  themeCard:        `bg-[${c.parchment}] border border-[${c.groutLight}] shadow-[0_2px_8px_rgba(42,47,54,0.08)] flex flex-col transition-[border-color] duration-100 hover:border-[${c.graphite}]`,
+  themeCardPalette: `h-12 flex`,
+  themeCardBody:    `p-4 flex-1`,
+  themeCardName:    `font-serif text-xl font-medium text-[${c.slate}] mb-0.5`,
+  themeCardMeta:    `font-mono text-[11px] uppercase tracking-[0.06em] text-[${c.fog}]`,
+  themeCardFooter:  `px-4 py-3 border-t border-[${c.groutLight}] flex items-center justify-between gap-3`,
+  themeUsageChip:   `inline-block px-2 py-0.5 bg-[${c.bone}] border border-[${c.groutLight}] font-mono text-[11px] text-[${c.graphite}]`,
+
+  // Page-level containers
+  pageHeader: `w-full flex items-center justify-between border-b border-[${c.groutLight}] pb-4 mb-4`,
+  pageTitle:  `font-serif text-2xl font-medium text-[${c.slate}]`,
+
+  // Toolbar (search + filter chips row beneath KPI strip)
+  toolbar: `flex items-center gap-3 mt-5 mb-3`,
+
+  // Group description (below group name)
+  groupDescription: `font-mono text-[11px] text-[${c.fog}] mt-0.5`,
+
+  // Permission matrix
+  permMatrixSection: `mt-8 pt-6 border-t border-[${c.groutLight}]`,
+  permMatrixTitle:   `font-serif text-lg font-medium text-[${c.slate}] mb-1`,
+  permMatrixSubtitle:`font-sans text-sm text-[${c.graphite}] mb-4`,
+  permMatrixTable:   `w-full border border-[${c.groutLight}] text-sm`,
+  permMatrixHeaderRow: `bg-[${c.bone}] border-b border-[${c.groutLight}]`,
+  permMatrixHeaderCell:`px-4 py-3 font-mono text-[10px] uppercase tracking-[0.06em] text-[${c.graphite}] text-center`,
+  permMatrixHeaderFirst:`px-4 py-3 font-mono text-[10px] uppercase tracking-[0.06em] text-[${c.graphite}]`,
+  permMatrixRow:     `border-b border-[${c.groutLight}] last:border-0`,
+  permMatrixRowAlt:  `border-b border-[${c.groutLight}] last:border-0 bg-[${c.bone}]`,
+  permMatrixCapability:`px-4 py-3 font-sans text-sm text-[${c.slate}]`,
+  permMatrixCell:    `px-4 py-3 text-center`,
+  permCheckYes:      `mx-auto w-5 h-5 rounded-full bg-[${c.verdigris}] flex items-center justify-center`,
+  permCheckPartial:  `mx-auto w-5 h-5 rounded-full bg-[${c.ochre}] flex items-center justify-center`,
+  permCheckNo:       `mx-auto w-5 h-5 rounded-full border border-[${c.groutLight}] bg-[${c.limestone}]`,
+};
+
 /* ---------- Icons registry ------------------------------------------------ */
 /* For DMS, icons are referenced by name; the actual component map is wired
    up by the host site. This export gives the brand its named icon set —
@@ -1115,7 +1241,14 @@ const Icons = {};   // populated by host site / icons.js
 
 /* ---------- Theme-registered column types (none for v0.1) ----------------- */
 
-const columnTypes = {};   // brand may add e.g. portrait_banner, stream_player
+const columnTypes = {
+  type_badge:     { ViewComp: TypeBadgeView,     EditComp: TypeBadgeEdit },
+  subdomain_pill: { ViewComp: SubdomainPillView, EditComp: SubdomainPillEdit },
+  user_avatar:    { ViewComp: UserAvatarView,    EditComp: UserAvatarEdit },
+  group_pill:     { ViewComp: GroupPillView,     EditComp: GroupPillEdit },
+  perm_badge:     { ViewComp: PermBadgeView,     EditComp: PermBadgeEdit },
+  avatar_stack:   { ViewComp: AvatarStackView,   EditComp: () => null },
+};
 
 /* ---------- Page components registered via theme (none for v0.1) ---------- */
 
@@ -1287,6 +1420,7 @@ const tesseraTheme = {
   pages: pagesTheme,
   datasets: datasetsTheme,
   auth: authTheme,
+  admin: adminTheme,
 
   // Theme-registered column types and page components (extension slots)
   columnTypes,
