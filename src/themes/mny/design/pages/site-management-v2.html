@@ -115,16 +115,21 @@
     .sect-box { border: 1px solid #E8D9B8; border-left: 3px solid #EAAD43; border-radius: 0 10px 10px 10px; background: white; overflow: hidden; }
     .sect-box-head { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: #FCF6EC; border-bottom: 1px solid #F1E4C4; flex-wrap: wrap; }
     .sect-scroll { max-height: 320px; overflow-y: auto; }
-    .sect-table { width: 100%; border-collapse: collapse; }
+    .sect-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .sect-table td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .sect-table th { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 500; text-transform: uppercase;
                      letter-spacing: 0.08em; color: #9BB5C2; padding: 6px 12px; text-align: left; border-bottom: 1px solid #F0F4F6; position: sticky; top: 0; background: white; }
     .sect-table td { padding: 5px 12px; font-size: 12px; color: #37576B; border-bottom: 1px solid #F5F8FA; vertical-align: middle; }
     .sect-table tbody tr:last-child td { border-bottom: none; }
     .sect-table tbody tr:hover { background: #F8FBFC; }
     tr.sect-dim td { opacity: 0.4; }
-    tr.sect-untitled td .s-title { color: #9BB5C2; font-style: italic; font-weight: 400; }
-    tr.sect-hit td .s-title { background: #FCF6EC; box-shadow: 0 0 0 2px #FCF6EC; border-radius: 2px; }
+    tr.sect-hit td .s-title, tr.sect-hit td .s-derived { background: #FCF6EC; box-shadow: 0 0 0 2px #FCF6EC; border-radius: 2px; }
     .s-title { color: #2D3E4C; font-weight: 600; }
+    /* derived content summaries (lexicalSummary) — visually distinct from authored titles */
+    .s-derived { color: #5E7A8C; font-weight: 400; }
+    .s-derived::before { content: '¶ '; color: #B9CBD6; font-size: 10px; }
+    .s-derived-h { color: #37576B; font-weight: 600; }
+    .s-empty { color: #B9CBD6; font-style: italic; font-weight: 400; }
     .s-indent-1 { padding-left: 0; }
     .s-indent-2 { padding-left: 16px; }
     .s-indent-3 { padding-left: 32px; }
@@ -204,6 +209,15 @@
 
     /* Source label */
     .src-label { font-family: monospace; font-size: 11px; background: #F3F8F9; border: 1px solid #E0EBF0; padding: 1px 6px; border-radius: 3px; color: #37576B; }
+    .src-label.src-ext { background: #EAF1F5; border-color: #C5D7E0; }
+
+    /* View chip — which view of the source a section is bound to */
+    .view-chip { font-family: monospace; font-size: 10px; padding: 1px 6px; border-radius: 9999px; margin-left: 4px; border: 1px solid transparent; white-space: nowrap; }
+    .view-chip.ok    { background: #F3F8F9; color: #6D96AE; border-color: #E0EBF0; }
+    .view-chip.stale { background: #FCF0E4; color: #C2702E; border-color: #F0CDA8; cursor: pointer; font-weight: 700; }
+    .view-chip.stale:hover { background: #F8E3CC; }
+    .view-chip.fresh { background: #E8F7F2; color: #3A9E86; border-color: #BCE5D8; font-weight: 700; }
+    .sect-chip .stale-dot { width: 6px; height: 6px; border-radius: 50%; background: #EA8954; flex-shrink: 0; }
 
     /* Table footer */
     .table-footer { background: #F3F8F9; padding: 8px 14px; border-top: 1px solid #E0EBF0; display: flex; align-items: center; justify-content: space-between; border-radius: 0 0 10px 10px; }
@@ -369,9 +383,14 @@
         </div>
         <div class="filter-wrap has-caret hidden" id="src-filter-wrap">
           <select class="filter-select pr-8" id="src-filter" onchange="render()">
-            <option value="">All sources</option>
+            <option value="">All sections</option>
+            <option value="__any__">Any data source</option>
           </select>
         </div>
+        <button class="lens-chip lens-warn hidden" id="stale-toggle" onclick="toggleStale()"
+                title="Sections bound to an older view than their source's latest">
+          Stale Views <span class="lens-count" id="stale-count">0</span>
+        </button>
 
         <div class="flex-1"></div>
 
@@ -389,6 +408,16 @@
         <span class="text-xs text-mny-400 font-proxima" id="bulk-count">0 selected</span>
         <div class="flex-1"></div>
         <button class="gold-btn" id="bulk-publish-btn" disabled onclick="bulkPublish()">Publish Selected</button>
+      </div>
+    </div>
+
+    <!-- Bulk view-update bar — appears under the Stale Views filter -->
+    <div class="px-5 hidden" id="view-bulk-wrap">
+      <div class="bulk-bar">
+        <span class="text-xs font-proxima text-mny-700"><strong id="view-bulk-count">0</strong> sections are bound to outdated views</span>
+        <span class="text-xs text-mny-400 font-proxima italic">updated sections are flagged for column-mapping review</span>
+        <div class="flex-1"></div>
+        <button class="gold-btn" onclick="updateAllStale()">Update All to Latest Views</button>
       </div>
     </div>
 
@@ -454,8 +483,39 @@
       <code>extractDmsJsonPath</code>, <code>element_preview</code> modal — v1's Sections tab, scoped to where the section lives). Real pages average
       <strong>15 sections and run up to 59</strong>, and most are <em>untitled lexical body sections</em> — only the titled, leveled ones form the page
       outline. Hence the panel's <em>Outline / All</em> toggle: Outline shows the titled skeleton (what an editor scans), All shows every row in a
-      scrolling list. The <em>Sections</em> search scope answers cross-cutting questions ("which pages use <code>disaster_declarations</code>?") by
-      filtering sections globally and auto-expanding matches under their pages.
+      scrolling list. The <em>Sections</em> search scope answers cross-cutting questions by filtering sections globally and auto-expanding matches
+      under their pages. Its source dropdown doubles as a <strong>data-source inventory</strong>: "Any data source (N)" shows only sections bound to
+      a source, and each option carries its site-wide section count, grouped <em>Internal (DMS)</em> vs <em>External (UDA)</em>. Both kinds come from
+      the same place — the section's <code>element-data.sourceInfo</code> object (shape verified on live Flooding sections:
+      <code>{ name, source_id, env, srcEnv, view_id, view_name, updated_at }</code>); internal DMS sources have <code>srcEnv
+      "mitigat-ny-prod+prod"</code>, external UDA sources <code>env "hazmit_dama"</code>. The earlier v1 sketch only read
+      <code>externalSource</code> — the real extraction must read <code>sourceInfo</code> to catch both. With a type/source filter active, panels show
+      matching rows only (the page row above is the context), a binding-by-binding audit pairing with the Data Sources surface's "Used by" counts.
+    </p>
+  </div>
+  <div class="annotation-strip">
+    <p>
+      <strong>View staleness &amp; bulk re-binding.</strong> Each source-bound row shows its <strong>View</strong> next to the Source:
+      <code>sourceInfo.view_id</code> vs the source's newest view (max view id over <code>{source}|{name}:view</code> rows for internal sources;
+      the UDA views list for external ones). Live example: Flooding's event sections are bound to <em>AVAIL - Fusion Events V2 (12/10/2024)</em>,
+      view 1648 — when a newer view is published, the amber <code>v1648→1700</code> chip appears, the page's section-count chip gets an orange dot,
+      and the <em>Stale Views (N)</em> filter collects every lagging binding site-wide. Per-chip click rebinds one section; <em>Update All to Latest
+      Views</em> batch-rewrites <code>sourceInfo.view_id</code>/<code>view_name</code> across matches (needs the same batch-updateItem primitive as
+      bulk publish). Updated sections flag <code>v1700 ✓</code> for <strong>column-mapping review</strong> — a new view can drop or rename columns the
+      section's <code>dataRequest</code>/<code>columns</code> config references, so re-binding marks the section (and its page's <code>has_changes</code>)
+      rather than silently publishing.
+    </p>
+  </div>
+  <div class="annotation-strip">
+    <p>
+      <strong>lexicalSummary() — derived content summaries.</strong> Untitled lexical rows show an auto summary instead of "(untitled)":
+      walk <code>element['element-data'].text.root.children</code> (shape verified against the live Flooding page, 1009741); return the first
+      <code>heading</code> node's text if present, else the first non-empty text run truncated to ~90 chars, else flag <em>(empty)</em>.
+      Styling distinguishes provenance: authored titles bold ink, derived heading semibold, derived excerpt regular with a ¶ mark, empty pale italic.
+      Summaries are searchable in the Sections scope (full-text-ish search over page content from site management). The Flooding panel in this mockup
+      carries the real extracted summaries — including 6 truly empty lexical sections it exposed (cleanup candidates, flagged in the panel header).
+      Implementation: client-side helper next to the section sub-table (the recursive walk over Lexical JSON doesn't fit a SQL virtual column);
+      if the full-load walk gets heavy at 2,478 sections, persist a <code>content_summary</code> attribute computed on section save.
     </p>
   </div>
   <div class="annotation-strip">
@@ -562,45 +622,125 @@
    untitled lexical body copy, as in the real rows).
    ────────────────────────────────────────────────────────────── */
 
-/* Outline templates reflecting real section anatomy */
+/* Outline templates reflecting real section anatomy
+   tuple: [title, type, level, src, sumKind, sumText]
+   sumKind/sumText = derived content summary (lexicalSummary) for untitled lexical rows */
 const OUT_HAZARD = [
-  ['(untitled)','Header',0,'mny_header'],
+  ['(untitled)','Header',0],
   ['Overview','Lexical',1],
-  ['Hazard Profile','Card',2,'hazard_profiles'],
-  ['Flood Damage in New York State','Lexical',1],
+  ['Hazard Profile','Card',2,'Hazard Profiles'],
+  ['Damage in New York State','Lexical',1],
   ['Past Occurrences','Lexical',1],
-  ['Presidentially Declared Disasters','Spreadsheet',2,'disaster_declarations'],
-  ['Non-Declared Events','Spreadsheet',2,'storm_events'],
+  ['Presidentially Declared Disasters','Spreadsheet',2,'AVAIL - Fusion Events V2@1648'],
+  ['Non-Declared Events','Spreadsheet',2,'AVAIL - Fusion Events V2@1648'],
   ['Featured Events','Lexical',2],
   ['Intensity','Lexical',1],
   ['Radar','Lexical',3],
   ['Rain Gauges','Lexical',3],
   ['Satellite','Lexical',3],
   ['Content Resources','Lexical',3],
-  ['(untitled)','Footer',0,'mny_footer'],
+  ['(untitled)','Footer',0],
+];
+
+/* The REAL 40-section list of the live Flooding page (1009741), summaries
+   extracted from element-data.text.root.children by lexicalSummary() */
+const FLOOD_SECTIONS = [
+  ['Overview','Lexical',1,null,'excerpt','A flood is an overflow or inundation of water in an area that is usually dry. Floods occur…'],
+  ['(untitled)','Card',0,'AVAIL - Fusion Events V2@1648'],
+  ['(untitled)','Card',null,'FEMA - National Risk Index (NRI) Counties'],
+  ['(untitled)','Card',null,'AVAIL - Fusion Events V2@1648'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',0,null,'excerpt','Each flood type below is described in more detail with general characteristics and definit…'],
+  ['(untitled)','Lexical',null,null,'excerpt','Coastal and lakeshore flooding are also flood types of concern in New York State and are p…'],
+  ['(untitled)','Lexical',null,null,'excerpt','Hurricanes, which can include storm surge, massive rainfall, and devastating flooding, are…'],
+  ['Flood Damage in New York State','Lexical',1,null,'excerpt','From the bustling streets of New York City to the picturesque hamlets nestled along the Hu…'],
+  ['(untitled)','Lexical',null,null,'excerpt','By 2045, more than $8.5 billion worth of residential properties in New York State will be …'],
+  ['(untitled)','Lexical',null,null,'excerpt','One month prior to the finalization of this plan, on September 29th, 2023, New York City w…'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',null,null,'excerpt','Photo gallery to come.'],
+  ['(untitled)','Lexical',null,null,'excerpt','On July 9, 2023, heavy rains caused historic flooding in part of the Hudson Valley. Orange…'],
+  ['(untitled)','Lexical',0,null,'excerpt','In September 2021, remnants of Hurricane Ida brought a storm that tested New York State’s…'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',null,null,'excerpt','Beyond the immediately evident impacts, flooding deepens economic and social inequities –…'],
+  ['(untitled)','Lexical',null,null,'excerpt','"Disasters are not created by natural events alone; rather, they are the product of natura…'],
+  ['Past Occurrences','Lexical',1,null,'excerpt','The following two tables show details of damaging hazard events since 1996. Some events le…'],
+  ['(untitled)','Lexical',null,null,'excerpt','Between September 30, 2018, and September 30, 2023, New York State has faced a series of p…'],
+  ['Presidentially Declared Disasters','Spreadsheet',2,'AVAIL - Fusion Events V2@1648'],
+  ['Non-Declared Events','Spreadsheet',2,'AVAIL - Fusion Events V2@1648'],
+  ['Featured Events','Lexical',2,null,'excerpt','August 2009 – Erie, Chautauqua, Cattaraugus, and Allegany Counties. On August 10, two cons…'],
+  ['(untitled)','Lexical',null,null,'excerpt','On the morning of August 13, 2018 after an unusually wet summer in New York State, rain be…'],
+  ['(untitled)','Lexical',null,null,'excerpt','On Halloween night, October 31, 2019, a severe storm began to sweep across New York, bring…'],
+  ['(untitled)','Lexical',null,null,'excerpt','The remnants of Tropical Storm Fred made landfall in the eastern United States in mid-Augu…'],
+  ['Intensity','Lexical',1,null,'excerpt','Discharge is the volume of water that passes through a given cross section of a body of wa…'],
+  ['Radar','Lexical',3,null,'excerpt','WSR-88D radars graphically display detected precipitation on a map. Radar can show the loc…'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['Rain Gauges','Lexical',3,null,'excerpt','Rain gauges provide the most accurate method of measuring rainfall at a single geographic…'],
+  ['Satellite','Lexical',3,null,'excerpt','Estimates of rainfall from satellite data are less direct and less accurate than either ga…'],
+  ['Content Resources','Lexical',3,null,'excerpt','Content resources are cited throughout the SHMP in parentheticals with a reference number.'],
+  ['(untitled)','Footer',null],
+  ['(untitled)','Header',null],
+  ['(untitled)','Lexical',null,null,'heading','RELATED TO FLOODING'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',null,null,'heading','FLOODING RISK PROFILE'],
+  ['(untitled)','Lexical',null,null,'heading','COASTAL HAZARDS RISK PROFILE'],
+  ['(untitled)','Lexical',null,null,'heading','DAM SAFETY'],
+];
+
+/* ── Source registry — mirrors the real sourceInfo shape on live sections:
+   { name, source_id, env, srcEnv, view_id, view_name, updated_at }.
+   kind 'internal' = DMS source ({dmsenv}|{name}:source, srcEnv "mitigat-ny-prod+prod");
+   kind 'external' = UDA/DAMA source (env "hazmit_dama"). Both bind the same way.
+   `latest` is the source's newest view — sections bound to older views are stale. */
+const SOURCES = {
+  'AVAIL - Fusion Events V2':                 { id:870, kind:'external', latest:1700, latestName:'AVAIL - Fusion Events V2 (05/28/2026)', views:{1648:'12/10/2024', 1700:'05/28/2026'} },
+  'FEMA - National Risk Index (NRI) Counties':{ id:159, kind:'external', latest:1370, latestName:'NRI Counties 09/23/2024', views:{1370:'09/23/2024'} },
+  'FEMA - HAZUS Losses':                      { id:412, kind:'external', latest:1521, latestName:'HAZUS Losses 2024', views:{1521:'2024'} },
+  'Social Vulnerability Index':               { id:233, kind:'external', latest:1102, latestName:'SVI 2022', views:{1102:'2022', 988:'2020'} },
+  'NOAA - Storm Events':                      { id:512, kind:'external', latest:1655, latestName:'Storm Events 04/2026', views:{1655:'04/2026', 1590:'10/2025'} },
+  'Building Footprints':                      { id:31,  kind:'internal', latest:3,    latestName:'v3', views:{3:'v3'} },
+  'Hazard Profiles':                          { id:12,  kind:'internal', latest:14,   latestName:'v14', views:{14:'v14', 12:'v12'} },
+  'Mitigation Actions':                       { id:18,  kind:'internal', latest:31,   latestName:'v31', views:{31:'v31', 27:'v27'} },
+  'Funding Sources':                          { id:22,  kind:'internal', latest:12,   latestName:'v12', views:{12:'v12'} },
+  'County Stats':                             { id:9,   kind:'internal', latest:5,    latestName:'v5',  views:{5:'v5', 4:'v4'} },
+  'Climate Projections':                      { id:27,  kind:'internal', latest:6,    latestName:'v6',  views:{6:'v6'} },
+};
+
+/* plausible excerpts for synthesized untitled lexical body rows on other pages */
+const EXCERPT_POOL = [
+  'New York State experiences a wide range of natural hazards that vary in frequency, intensit…',
+  'Between 1996 and 2023, damaging events in this category led to repeated disaster declaratio…',
+  'Climate projections indicate that the frequency and severity of these events will continue…',
+  'Local jurisdictions identified this hazard as a priority in their county hazard mitigation…',
+  'The table below summarizes estimated annualized losses by county, drawn from the statewide…',
+  'Mitigation actions targeting this hazard range from property acquisition and elevation to…',
+  'Federal funding programs, including HMGP and BRIC, have supported projects addressing this…',
+  'For a detailed methodology, see the statewide risk assessment chapter of the 2023 SHMP.',
+  'Photo gallery to come.',
+  'State agencies coordinate response and recovery for these events through the Office of Eme…',
 ];
 const OUT_RISK = [
-  ['(untitled)','Header',0,'mny_header'],
+  ['(untitled)','Header',0],
   ['Hazard Description','Lexical',1],
-  ['Exposure','Card',2,'building_footprints'],
-  ['Vulnerability','Card',2,'social_vulnerability'],
-  ['Loss Estimates','Spreadsheet',2,'hazus_losses'],
-  ['County Breakdown','Spreadsheet',3,'county_stats'],
-  ['Probability of Future Events','Graph',2,'storm_events'],
+  ['Exposure','Card',2,'Building Footprints'],
+  ['Vulnerability','Card',2,'Social Vulnerability Index@988'],
+  ['Loss Estimates','Spreadsheet',2,'FEMA - HAZUS Losses'],
+  ['County Breakdown','Spreadsheet',3,'County Stats'],
+  ['Probability of Future Events','Graph',2,'NOAA - Storm Events@1590'],
 ];
 const OUT_STRAT = [
-  ['(untitled)','Header',0,'mny_header'],
+  ['(untitled)','Header',0],
   ['Strategy Overview','Lexical',1],
-  ['Actions','Spreadsheet',2,'mitigation_actions'],
-  ['Funding Opportunities','Card',2,'funding_db'],
+  ['Actions','Spreadsheet',2,'Mitigation Actions@27'],
+  ['Funding Opportunities','Card',2,'Funding Sources'],
 ];
 const OUT_STORY = [
-  ['(untitled)','Header',0,'mny_header'],
+  ['(untitled)','Header',0],
   ['The Story','Lexical',1],
-  ['Project Details','Card',2,'mitigation_actions'],
+  ['Project Details','Card',2,'Mitigation Actions'],
 ];
 const OUT_PLAIN = [
-  ['(untitled)','Header',0,'mny_header'],
+  ['(untitled)','Header',0],
   ['Overview','Lexical',1],
 ];
 
@@ -609,7 +749,7 @@ const P = (id,t,p,ix,pub,chg,hid,auth,lastPub,n,o) => ({ id, t, p, ix, pub, chg,
 
 const PAGES = [
   /* ── roots (real root set) ── */
-  P(1009772,'Home',            null,0,'',true ,false,'Public',{when:'12 days ago',by:'sgangdod'},14,[['(untitled)','Header',0,'mny_header'],['Welcome','Lexical',1],['Explore the Plan','Card',2],['County Lookup','Card',2,'county_stats'],['(untitled)','Footer',0,'mny_footer']]),
+  P(1009772,'Home',            null,0,'',true ,false,'Public',{when:'12 days ago',by:'sgangdod'},14,[['(untitled)','Header',0],['Welcome','Lexical',1],['Explore the Plan','Card',2],['County Lookup','Card',2,'County Stats@4'],['(untitled)','Footer',0]]),
   P(1009790,'County Risk Profiles', null,1,'',false,false,'Public',{when:'4 months ago',by:'admin'},0,[]),
   P(1335740,'Know the Environment', null,2,'',false,false,'Public',{when:'2 months ago',by:'admin'},19,OUT_PLAIN),
   P(1335756,'Assess Risk',     null,3,'',false,false,'Public',{when:'2 months ago',by:'admin'},22,OUT_PLAIN),
@@ -627,16 +767,16 @@ const PAGES = [
   P(1336013,'Community Lifelines',    1336001,2,'',true ,false,'Public',{when:'25 days ago',by:'cwirth'},52,OUT_PLAIN),
 
   /* ── Assess Risk ── */
-  P(1009704,'Natural Hazards',  1335756,0,'',true ,false,'Public',{when:'yesterday',by:'sgangdod'},30,[['(untitled)','Header',0,'mny_header'],['Hazards of Concern','Lexical',1],['Hazard Grid','Card',2,'hazard_profiles'],['Methodology','Lexical',2],['(untitled)','Footer',0,'mny_footer']]),
+  P(1009704,'Natural Hazards',  1335756,0,'',true ,false,'Public',{when:'yesterday',by:'sgangdod'},30,[['(untitled)','Header',0],['Hazards of Concern','Lexical',1],['Hazard Grid','Card',2,'Hazard Profiles@12'],['Methodology','Lexical',2],['(untitled)','Footer',0]]),
   P(1009850,'Climate Change',   1335756,1,'',false,false,'Public',{when:'3 months ago',by:'admin'},26,OUT_PLAIN),
-  P(1009860,'Presidentially Declared Disasters',1335756,2,'',false,false,'Public',{when:'3 months ago',by:'admin'},12,[['(untitled)','Header',0,'mny_header'],['Declared Disasters','Spreadsheet',1,'disaster_declarations'],['By County','Graph',2,'disaster_declarations']]),
+  P(1009860,'Presidentially Declared Disasters',1335756,2,'',false,false,'Public',{when:'3 months ago',by:'admin'},12,[['(untitled)','Header',0],['Declared Disasters','Spreadsheet',1,'AVAIL - Fusion Events V2@1648'],['By County','Graph',2,'AVAIL - Fusion Events V2@1648']]),
 
   /* the 14+2 hazards, real names + real section counts */
   P(2001,'Avalanche',      1009704, 0,'',true ,false,'Public',{when:'3 days ago',by:'sgangdod'},18,OUT_HAZARD),
   P(2002,'Coastal Hazards',1009704, 1,'',false,false,'Public',{when:'2 months ago',by:'admin'},20,OUT_HAZARD),
   P(2003,'Drought',        1009704, 2,'',false,false,'Public',{when:'2 months ago',by:'admin'},19,OUT_HAZARD),
   P(2004,'Extreme Heat',   1009704, 3,'',true ,false,'Public',{when:'6 days ago',by:'cwirth'},24,OUT_HAZARD),
-  P(1009741,'Flooding',    1009704, 4,'',false,false,'Public',{when:'1 month ago',by:'sgangdod'},40,OUT_HAZARD),
+  P(1009741,'Flooding',    1009704, 4,'',false,false,'Public',{when:'1 month ago',by:'sgangdod'},40,FLOOD_SECTIONS),
   P(2006,'Hail',           1009704, 5,'',false,false,'Public',{when:'2 months ago',by:'admin'},18,OUT_HAZARD),
   P(2007,'Hurricane',      1009704, 6,'',false,false,'Public',{when:'2 months ago',by:'admin'},22,OUT_HAZARD),
   P(2008,'Ice Storm',      1009704, 7,'',false,false,'Public',{when:'2 months ago',by:'admin'},20,OUT_HAZARD),
@@ -683,7 +823,7 @@ const PAGES = [
   P(1221877,'NYC Risk Profile',1009799,0,'draft',false,false,'Contributors',null,38,OUT_RISK),
 
   /* ── Explore Progress ── */
-  P(5001,'Action Tracking',   1335780,0,'',true ,false,'Public',{when:'3 weeks ago',by:'sgangdod'},19,[['(untitled)','Header',0,'mny_header'],['Tracked Actions','Spreadsheet',1,'mitigation_actions'],['Progress by Agency','Graph',2,'mitigation_actions']]),
+  P(5001,'Action Tracking',   1335780,0,'',true ,false,'Public',{when:'3 weeks ago',by:'sgangdod'},19,[['(untitled)','Header',0],['Tracked Actions','Spreadsheet',1,'Mitigation Actions@27'],['Progress by Agency','Graph',2,'Mitigation Actions@27']]),
   P(5002,'Mitigation Matters',1335780,1,'',false,false,'Public',{when:'1 month ago',by:'admin'},8,OUT_PLAIN),
   P(5003,'Resources',         1335780,2,'',false,false,'Public',{when:'2 months ago',by:'admin'},13,OUT_PLAIN),
   /* real story titles from the live 21-page flat list */
@@ -717,8 +857,10 @@ let scope = 'pages';                    // pages | sections
 let search = '';
 const expanded = new Set([1335756, 1009704]);  // Assess Risk → Natural Hazards open by default
 const openSections = new Set();         // page ids with sections panel open
-const showAllSections = new Set();      // page ids whose panel shows All (vs Outline)
+const outlineOnly = new Set();          // page ids whose panel shows Outline (default is All)
 const checked = new Set();              // bulk-selected page ids
+let staleOnly = false;                  // sections scope: only sections on outdated views
+const updatedViews = new Set();         // '<pageId>:<sectionIdx>' rebound to latest view this session
 
 /* ── Derived helpers ── */
 const byId = {};
@@ -737,19 +879,51 @@ const slugOf = p => {
 };
 
 /* synthesize the full section list: outline rows + untitled lexical body rows,
-   interleaved the way real pages read (body copy follows its heading) */
+   interleaved the way real pages read (body copy follows its heading).
+   Each row may carry a derived content summary (see lexicalSummary annotation):
+   sum.kind = 'heading' (first heading node in content) | 'excerpt' (first ~90
+   chars of text) | 'empty' (no content — cleanup candidate). */
 function sectionsOf(p) {
-  const titled = p.o.map(([t, type, level, src]) => ({ t, type, level, src: src||null, titled: t !== '(untitled)' }));
-  const filler = Math.max(0, p.n - titled.length);
+  const rows = p.o.map(([t, type, level, src, sk, st]) => {
+    /* 'Name@view' pins an explicit (possibly stale) view_id; bare 'Name' = latest */
+    let name = src || null, boundView = null;
+    if (name && name.includes('@')) { const at = name.lastIndexOf('@'); boundView = +name.slice(at + 1); name = name.slice(0, at); }
+    return { t, type, level, src: name, boundView, titled: t !== '(untitled)',
+             sum: sk ? { kind: sk, text: st || '' } : null };
+  });
+  const filler = Math.max(0, p.n - rows.length);
+  if (!filler) return finalizeViews(p, rows);
   const out = [];
-  const per = titled.length ? Math.floor(filler / titled.length) : 0;
-  let extra = titled.length ? filler - per * titled.length : filler;
-  titled.forEach(s => {
+  const per = rows.length ? Math.floor(filler / rows.length) : 0;
+  let extra = rows.length ? filler - per * rows.length : filler;
+  let fi = 0;
+  const mkBody = () => {
+    const i = fi++;
+    const sum = (i % 6 === 4)
+      ? { kind: 'empty', text: '' }
+      : { kind: 'excerpt', text: EXCERPT_POOL[(p.id + i * 7) % EXCERPT_POOL.length] };
+    return { t: null, type: 'Lexical', level: null, src: null, boundView: null, titled: false, sum };
+  };
+  rows.forEach(s => {
     out.push(s);
     let k = per + (extra > 0 ? 1 : 0); if (extra > 0) extra--;
-    while (k--) out.push({ t: null, type: 'Lexical', level: null, src: null, titled: false });
+    while (k--) out.push(mkBody());
   });
-  return out;
+  return finalizeViews(p, out);
+}
+
+/* resolve each source-bound row's view against the source's latest view */
+function finalizeViews(p, list) {
+  list.forEach((s, i) => {
+    s.idx = i;
+    const meta = s.src && SOURCES[s.src];
+    if (!meta) { s.view = null; s.stale = false; return; }
+    s.latest = meta.latest;
+    s.justUpdated = updatedViews.has(p.id + ':' + i);
+    s.view = s.justUpdated ? meta.latest : (s.boundView ?? meta.latest);
+    s.stale = s.view < meta.latest;
+  });
+  return list;
 }
 
 function lensMatch(p) {
@@ -763,8 +937,11 @@ function sectionMatch(s) {
   const tf = document.getElementById('type-filter').value;
   const sf = document.getElementById('src-filter').value;
   if (tf && s.type !== tf) return false;
-  if (sf && s.src !== sf) return false;
-  if (search && !((s.t||'').toLowerCase().includes(search) || (s.src||'').toLowerCase().includes(search))) return false;
+  if (sf === '__any__') { if (!(s.src && SOURCES[s.src])) return false; }
+  else if (sf && s.src !== sf) return false;
+  if (staleOnly && !s.stale && !s.justUpdated) return false;  /* keep just-updated rows visible — they carry the review flag */
+  if (search && !((s.t||'').toLowerCase().includes(search) || (s.src||'').toLowerCase().includes(search)
+      || (s.sum && s.sum.text.toLowerCase().includes(search)))) return false;
   return true;
 }
 function pageMatch(p) {
@@ -809,9 +986,11 @@ function pageRow(p, depth, isMatch) {
     ? `<button class="caret" onclick="toggleExpand(${p.id})">${isOpen ? '▼' : '▶'}</button>`
     : `<button class="caret leaf">▶</button>`;
 
+  const staleCount = ghost ? 0 : sectionsOf(p).filter(s => s.stale).length;
   const sectChip = p.n
-    ? `<button class="sect-chip ${sectOpen ? 'open' : ''}" onclick="toggleSections(${p.id})" title="Show this page's sections">
-         <span class="sc-caret">${sectOpen ? '▼' : '▶'}</span>${p.n}</button>`
+    ? `<button class="sect-chip ${sectOpen ? 'open' : ''}" onclick="toggleSections(${p.id})"
+         title="Show this page's sections${staleCount ? ` — ${staleCount} on outdated views` : ''}">
+         <span class="sc-caret">${sectOpen ? '▼' : '▶'}</span>${p.n}${staleCount ? '<span class="stale-dot"></span>' : ''}</button>`
     : `<span class="sect-chip empty" title="No sections — empty page">0</span>`;
 
   const pubActions = needsPublish(p)
@@ -859,27 +1038,72 @@ function pageRow(p, depth, isMatch) {
   </tr>`;
 }
 
+/* label for a section row: authored title > derived heading > derived excerpt > (empty) */
+function sectionLabel(s) {
+  if (s.titled) return `<span class="s-title">${esc(s.t)}</span>`;
+  if (s.sum) {
+    if (s.sum.kind === 'empty')
+      return `<span class="s-empty" title="Lexical section with no content — cleanup candidate">(empty section)</span>`;
+    if (s.sum.kind === 'heading')
+      return `<span class="s-derived s-derived-h" title="Auto summary — first heading inside the content">${esc(s.sum.text)}</span>`;
+    return `<span class="s-derived" title="Auto summary — first ~90 characters of content">${esc(s.sum.text)}</span>`;
+  }
+  return `<span class="s-empty">(untitled)</span>`;
+}
+
+/* source cell: name + internal/external provenance (from sourceInfo.srcEnv/env) */
+function srcCell(s) {
+  if (!s.src) return '<span class="text-mny-200 text-xs">—</span>';
+  const meta = SOURCES[s.src];
+  if (!meta) return `<span class="src-label">${esc(s.src)}</span>`;
+  const tip = meta.kind === 'internal'
+    ? `Internal DMS source (id ${meta.id}, srcEnv mitigat-ny-prod+prod)`
+    : `External UDA source (id ${meta.id}, env hazmit_dama)`;
+  return `<span class="src-label ${meta.kind === 'external' ? 'src-ext' : ''}" title="${tip}">${esc(s.src)}</span>`;
+}
+
+/* view cell: bound view vs the source's latest — the staleness mechanism */
+function viewChip(p, s) {
+  if (!s.view) return '<span class="text-mny-200 text-xs">—</span>';
+  const meta = SOURCES[s.src];
+  const vName = meta.views[s.view] || 'view ' + s.view;
+  if (s.justUpdated)
+    return `<span class="view-chip fresh" title="Rebound to ${esc(meta.latestName)} just now — review column mappings">v${s.view} ✓</span>`;
+  if (s.stale)
+    return `<button class="view-chip stale" onclick="updateSectionView(${p.id}, ${s.idx})"
+      title="Bound to ${esc(vName)} — ${esc(meta.latestName)} is available. Click to update this section.">v${s.view}→${s.latest}</button>`;
+  return `<span class="view-chip ok" title="Latest view: ${esc(vName)}">v${s.view}</span>`;
+}
+
 function sectionsPanel(p) {
   const inSectScope = scope === 'sections';
   const all = sectionsOf(p);
   const titledCount = all.filter(s => s.titled).length;
-  const showAll = showAllSections.has(p.id) || inSectScope;
-  const rows = all
-    .filter(s => showAll || s.titled)
+  const emptyCount = all.filter(s => s.sum && s.sum.kind === 'empty').length;
+  const showAll = inSectScope || !outlineOnly.has(p.id);
+  /* with an active sections-scope criterion, the panel becomes an inventory:
+     matching rows only — the page row above provides the context */
+  const tf = document.getElementById('type-filter').value;
+  const sf = document.getElementById('src-filter').value;
+  const filtering = inSectScope && (search || tf || sf || staleOnly);
+  const shown = all.filter(s => filtering ? sectionMatch(s) : (showAll || s.titled));
+  const rows = shown
     .map(s => {
-      const hit = inSectScope && sectionMatch(s);
-      const dim = inSectScope && !hit;
+      const hit = filtering && search && sectionMatch(s);
+      const dim = false;
       const indent = s.level >= 2 ? (s.level >= 3 ? 's-indent-3' : 's-indent-2') : 's-indent-1';
+      const pvTitle = (s.t || (s.sum && s.sum.text ? s.sum.text.slice(0, 48) : '(untitled)')).replace(/'/g, '&#39;');
       return `
-      <tr class="${dim ? 'sect-dim' : ''} ${hit ? 'sect-hit' : ''} ${s.titled ? '' : 'sect-untitled'}">
+      <tr class="${dim ? 'sect-dim' : ''} ${hit ? 'sect-hit' : ''}">
         <td style="width:20px"><span class="drag-dots">⠿</span></td>
-        <td><span class="${indent}" style="display:inline-block;"><span class="s-title">${s.t ? esc(s.t) : '(untitled)'}</span></span></td>
-        <td style="width:110px"><span class="badge ${TYPE_BADGE[s.type] || 'badge-lexical'}">${s.type}</span></td>
-        <td style="width:140px">${s.src ? `<span class="src-label">${s.src}</span>` : '<span class="text-mny-200 text-xs">—</span>'}</td>
-        <td style="width:64px">${s.level !== null && s.level !== undefined
+        <td><span class="${indent}">${sectionLabel(s)}</span></td>
+        <td style="width:96px"><span class="badge ${TYPE_BADGE[s.type] || 'badge-lexical'}">${s.type}</span></td>
+        <td style="width:212px">${srcCell(s)}</td>
+        <td style="width:96px">${viewChip(p, s)}</td>
+        <td style="width:56px">${s.level !== null && s.level !== undefined
             ? `<span class="pill ${s.level === 0 ? 'pill-gray' : 'pill-blue'}" style="font-size:10px;">${s.level === 0 ? 'hidden' : 'H'+s.level}</span>`
             : '<span class="text-mny-200 text-xs">—</span>'}</td>
-        <td style="width:80px; text-align:right;"><button class="ghost-btn" onclick="openPreview('${s.type}','${esc(s.t || '(untitled)').replace(/'/g, '&#39;')}','${s.src || ''}')">Preview</button></td>
+        <td style="width:74px; text-align:right;"><button class="ghost-btn" onclick="openPreview('${s.type}','${esc(pvTitle)}','${s.src || ''}')">Preview</button></td>
       </tr>`;
     }).join('');
   return `
@@ -888,11 +1112,13 @@ function sectionsPanel(p) {
       <div class="sect-box" style="margin-left:30px">
         <div class="sect-box-head">
           <span class="font-display text-[10px] tracking-widest uppercase" style="color:#C8922A;">Sections on ${esc(p.t || '(untitled)')}</span>
-          <span class="text-[10px] text-mny-400 font-proxima">${p.n} sections · ${titledCount} titled · {pattern}|component</span>
-          <div class="mini-seg" title="Most sections are untitled lexical body copy — Outline shows the titled skeleton">
-            <button class="${showAll ? '' : 'active'}" onclick="setPanelMode(${p.id}, false)">Outline</button>
-            <button class="${showAll ? 'active' : ''}" onclick="setPanelMode(${p.id}, true)">All</button>
-          </div>
+          <span class="text-[10px] text-mny-400 font-proxima">${filtering
+            ? `<span style="color:#C8922A;font-weight:600;">${shown.length} of ${p.n} match</span> · {pattern}|component`
+            : `${p.n} sections · ${titledCount} titled${emptyCount ? ` · <span style="color:#C8922A;font-weight:600;">${emptyCount} empty</span>` : ''} · {pattern}|component`}</span>
+          ${filtering ? '' : `<div class="mini-seg" title="All shows every section with auto content summaries; Outline shows only the titled skeleton">
+            <button class="${showAll ? '' : 'active'}" onclick="setPanelMode(${p.id}, true)">Outline</button>
+            <button class="${showAll ? 'active' : ''}" onclick="setPanelMode(${p.id}, false)">All</button>
+          </div>`}
           <div class="flex-1"></div>
           <button class="ghost-btn" style="font-size:10px;">+ New Section</button>
         </div>
@@ -908,7 +1134,7 @@ function renderBranch(p, depth, out) {
   if (!showsBranch(p)) return;
   const isMatch = pageMatch(p);
   out.push(pageRow(p, depth, isMatch));
-  if (openSections.has(p.id) && p.n) out.push(sectionsPanel(p));
+  if (openSections.has(p.id) && p.n && (scope !== 'sections' || isMatch)) out.push(sectionsPanel(p));
   const filtered = lens !== 'all' || search || scope === 'sections';
   const open = expanded.has(p.id) || (filtered && childrenOf(p).some(showsBranch));
   if (open) childrenOf(p).forEach(c => renderBranch(c, depth + 1, out));
@@ -954,6 +1180,18 @@ function render() {
   document.getElementById('search-input').placeholder = scope === 'sections' ? 'Search sections & sources…' : 'Search page titles…';
   document.getElementById('bulk-wrap').classList.toggle('hidden', lens !== 'queue');
 
+  /* stale-views chip + bulk bar */
+  let nStale = 0, nStaleMatch = 0;
+  PAGES.forEach(p => sectionsOf(p).forEach(s => {
+    if (s.stale) { nStale++; if (sectionMatch(s)) nStaleMatch++; }
+  }));
+  const staleBtn = document.getElementById('stale-toggle');
+  staleBtn.classList.toggle('hidden', scope !== 'sections');
+  staleBtn.classList.toggle('active', staleOnly);
+  document.getElementById('stale-count').textContent = nStale;
+  document.getElementById('view-bulk-wrap').classList.toggle('hidden', !(scope === 'sections' && staleOnly && nStaleMatch > 0));
+  document.getElementById('view-bulk-count').textContent = nStaleMatch;
+
   /* footer */
   const visiblePages = PAGES.filter(pageMatch).length;
   const footer = document.getElementById('footer-count');
@@ -971,12 +1209,32 @@ function render() {
   document.getElementById('bulk-publish-btn').textContent = sel ? `Publish Selected (${sel})` : 'Publish Selected';
 }
 
-/* populate the source filter from data */
+/* populate the source filter from data — per-source section counts included,
+   so the dropdown doubles as a usage inventory ("which sources are bound where").
+   Grouped by provenance: internal DMS sources vs external UDA sources — both
+   read from the same sourceInfo binding on the section. */
 function initSrcFilter() {
-  const srcs = new Set();
-  PAGES.forEach(p => p.o.forEach(([,,,src]) => src && srcs.add(src)));
+  const counts = {};
+  let withSrc = 0;
+  PAGES.forEach(p => sectionsOf(p).forEach(s => {
+    if (s.src && SOURCES[s.src]) { counts[s.src] = (counts[s.src] || 0) + 1; withSrc++; }
+  }));
   const sel = document.getElementById('src-filter');
-  [...srcs].sort().forEach(s => { const o = document.createElement('option'); o.textContent = s; sel.appendChild(o); });
+  sel.querySelector('option[value="__any__"]').textContent = `Any data source (${withSrc})`;
+  const addGroup = (label, kind) => {
+    const names = Object.keys(counts).filter(s => SOURCES[s].kind === kind).sort();
+    if (!names.length) return;
+    const g = document.createElement('optgroup');
+    g.label = label;
+    names.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = `${s} (${counts[s]})`;
+      g.appendChild(o);
+    });
+    sel.appendChild(g);
+  };
+  addGroup('Internal — DMS sources', 'internal');
+  addGroup('External — UDA (hazmit_dama)', 'external');
 }
 
 /* ── Interactions ── */
@@ -990,7 +1248,15 @@ function onSearch(v) { search = v.trim().toLowerCase(); render(); }
 function toggleExpand(id) { expanded.has(id) ? expanded.delete(id) : expanded.add(id); render(); }
 function expandBranch(id) { const p = byId[id]; expanded.add(id); descendants(p).forEach(d => expanded.add(d.id)); render(); }
 function toggleSections(id) { openSections.has(id) ? openSections.delete(id) : openSections.add(id); render(); }
-function setPanelMode(id, all) { all ? showAllSections.add(id) : showAllSections.delete(id); render(); }
+function setPanelMode(id, outline) { outline ? outlineOnly.add(id) : outlineOnly.delete(id); render(); }
+function toggleStale() { staleOnly = !staleOnly; if (staleOnly && scope !== 'sections') setScope('sections'); else render(); }
+function updateSectionView(pageId, idx) { updatedViews.add(pageId + ':' + idx); render(); }
+function updateAllStale() {
+  PAGES.forEach(p => sectionsOf(p).forEach(s => {
+    if (s.stale && sectionMatch(s)) updatedViews.add(p.id + ':' + s.idx);
+  }));
+  render();
+}
 function expandAll() { PAGES.forEach(p => { if (childrenOf(p).length) expanded.add(p.id); }); render(); }
 function collapseAll() { expanded.clear(); openSections.clear(); render(); }
 function toggleNav(id) { const p = byId[id]; p.hid = !p.hid; render(); }
