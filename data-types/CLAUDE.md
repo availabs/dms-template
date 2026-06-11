@@ -84,6 +84,53 @@ module.exports = {
 See `_example-hello-world/index.js` for an annotated reference of the full
 contract (worker `ctx` shape, route `helpers` shape, response contract).
 
+### `schedulables` contract (cron-scheduled runs)
+
+A plugin opts a worker into cron scheduling by exporting a `schedulables`
+map alongside `workers`/`routes` (collected by `registerDatatype`, served
+to the UI via `GET /dama-admin/:pgEnv/schedulables`, fired by the
+schedules sweep in `dms-server/src/dama/tasks/schedules.js`):
+
+```js
+module.exports = {
+  workers: { 'my_loader/publish': worker },
+  schedulables: {
+    'my_loader/publish': {
+      label: 'Human-readable loader name',     // shown in the Schedule UI
+      defaultCron: '0 2 * * *',                // 5-field cron, suggested cadence
+      params: [                                 // rendered as the UI's param form
+        { name: 'states', type: 'string[]', default: ['NY'] },
+        { name: 'target_id', type: 'source_id', optional: true, desc: '…' },
+        // types: string | number | boolean | string[] | source_id
+      ],
+      // Fire time → a FULLY SELF-CONTAINED descriptor for the worker.
+      // schedule.descriptor holds the author's saved params (template).
+      // Throwing here records a schedule:BLOCKED event (loud, UI-visible).
+      async buildDescriptor({ schedule, db, pgEnv }) { /* → descriptor */ },
+      // Optional refusal gate, runs AFTER buildDescriptor; { ok:false, reason }
+      // records schedule:BLOCKED. Run-now goes through the same gate.
+      async preflight({ schedule, descriptor, db, pgEnv }) { return { ok: true }; },
+    },
+  },
+};
+```
+
+Rules of thumb:
+- `buildDescriptor` must read prior state from the DB (e.g.
+  `max(views.metadata.end_date)`) — never from memory; fires happen on any
+  host, after restarts.
+- Workers consumed by schedules should persist `views.metadata.end_date`
+  on success — it is the idempotency state the next fire reads.
+- The schedules sweep enforces `max_in_flight` (duplicate guard →
+  `schedule:SKIPPED_BUSY`); scheduler-created tasks default to
+  `max_attempts: 3` with transient-error requeue.
+- **RITIS budget**: `npmrds_raw/publish`'s preflight refuses any fire —
+  scheduled OR run-now — when another npmrds_raw download ran in the last
+  24h, across all sources. Do not work around it; the RITIS account limits
+  are shared with other AVAIL production work.
+- Plugins with `schedulables` should add `'schedule'` and `'runs'` to their
+  `pages/index.jsx` `defaultPages` so authors get the UI.
+
 ### Response contract
 
 Routes that queue a task should return `{ etl_context_id, source_id }`.
@@ -177,9 +224,15 @@ built-in page configs. Plugin's own page entries always win on
 conflict, so a plugin can ship its own custom Table while still
 inheriting Map+Metadata.
 
-Currently registered short names: `'table'`, `'map'`, `'metadata'`.
-To add another, edit `defaultPages.js` (and document it here so plugin
-authors know about it).
+Currently registered short names: `'table'`, `'map'`, `'metadata'`,
+`'schedule'`, `'runs'`. To add another, edit `defaultPages.js` (and
+document it here so plugin authors know about it).
+
+`'schedule'` (cron authoring for the plugin's `schedulables`) and
+`'runs'` (task/run history + run detail with live events) are DAMA-only
+pages — they hide themselves on internal (DMS) sources. Plugins whose
+server side registers `schedulables` should include both so authors can
+manage cadences from the source page.
 
 The Table page reads `source.metadata.columns` — see the metadata
 contract above. Without it, "table" inflates to an empty grid.

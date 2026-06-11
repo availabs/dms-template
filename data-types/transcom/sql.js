@@ -631,7 +631,7 @@ function incidentsSQL({ transcomTable, v0Table, waysTable, geoid, startDate, end
     LEFT JOIN ${waysTable} AS cw
         ON cw.id = cv0.id
     WHERE cv0.n < 7
-    ORDER BY trans.event_id, cv0.tmc NULLS LAST;`;
+    ORDER BY trans.event_id, cv0.tmc NULLS LAST, cv0.id;`;
 }
 
 /** Per-year TMC attributes from the npmrds geometry year table. */
@@ -670,7 +670,8 @@ function conflationNodesSQL({ nodesTable, waysTable, v0Table }) {
       JOIN ${v0Table} AS b
         USING(id)
     WHERE n < 7
-  );`;
+  )
+  ORDER BY id;`;
 }
 
 /** Conflation graph ways (SELECT port of the legacy COPY-to-stdout stream). */
@@ -679,7 +680,8 @@ function conflationWaysSQL({ waysTable, v0Table }) {
   FROM ${waysTable} AS a
     JOIN ${v0Table} AS b
       USING(id)
-  WHERE n < 7;`;
+  WHERE n < 7
+  ORDER BY id;`;
 }
 
 // ── metadata.columns descriptors (the cross-DAMA contract) ──────────────────

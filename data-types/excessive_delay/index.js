@@ -85,6 +85,61 @@ module.exports = {
   workers: {
     'excessive_delay/publish': worker,
   },
+
+  schedulables: {
+    // Monthly keep-current: previous-complete-month in mode 'add' against the
+    // latest view, reusing the npmrds/transcom table refs the publish worker
+    // stored on the view metadata (same contract as the /add route's
+    // metadata-reuse path — explicit re-picks go through the route, not here).
+    'excessive_delay/publish': {
+      label: 'Excessive delay (monthly add)',
+      defaultCron: '0 6 3 * *', // 3rd of the month, after the congestion run
+      params: [
+        { name: 'region', type: 'string', optional: true },
+        { name: 'methodology', type: 'string', optional: true, default: 'v1' },
+      ],
+      async buildDescriptor({ schedule, db }) {
+        const t = schedule.descriptor || {};
+        const view = await getView(db, { source_id: schedule.source_id });
+        if (!view) {
+          throw new Error(`No excessive_delay view for source ${schedule.source_id} — run publish first`);
+        }
+        const meta = parseMeta(view.metadata);
+        if (!meta.npmrds_prod_table || !meta.npmrds_meta_table || !meta.transcom_table) {
+          throw new Error(
+            `View ${view.view_id} metadata carries no npmrds/transcom refs — re-run publish (or use the /add route with explicit pickers)`);
+        }
+
+        const { rows: srcRows } = await db.query(
+          `SELECT name FROM ${tableFor(db, 'sources')} WHERE source_id = $1`, [schedule.source_id]);
+
+        const { year, month } = delay.previousCompleteMonth();
+
+        return {
+          mode: 'add',
+          methodology: t.methodology === 'v2' ? 'v2' : 'v1',
+          source_id: schedule.source_id,
+          sourceId: schedule.source_id,
+          view_id: view.view_id,
+          name: (srcRows[0] && srcRows[0].name) || meta.dama_source_name || 'excessive_delay',
+          user_id: t.user_id ?? null,
+          email: t.email ?? null,
+          years: [year],
+          months: [month],
+          region: t.region ?? null,
+          npmrds_production_source_id: meta.npmrds_production_source_id ?? null,
+          npmrds_production_view_id: meta.npmrds_production_view_id ?? null,
+          npmrds_prod_table: meta.npmrds_prod_table,
+          npmrds_meta_view_id: meta.npmrds_meta_view_id ?? null,
+          npmrds_meta_table: meta.npmrds_meta_table,
+          transcom_source_id: meta.transcom_source_id ?? null,
+          transcom_view_id: meta.transcom_view_id ?? null,
+          transcom_table: meta.transcom_table,
+        };
+      },
+    },
+  },
+
   routes: (router, helpers) => {
     router.post('/publish', async (req, res) => {
       try {

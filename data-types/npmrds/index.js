@@ -16,8 +16,20 @@
  *
  * All routes return the legacy contract { etl_context_id, source_id }.
  * NEVER touches data_manager.etl_contexts.
+ *
+ * Schedulable: 'npmrds/add' — the WEEKLY raw→prod add over the last complete
+ * Mon–Sun window (dates.lastCompleteWeek). buildDescriptor resolves the prod
+ * view + the raw views (of the configured npmrds_raw source) whose
+ * metadata window overlaps the week. Preflight is the legacy isNextDay
+ * date-gap check made LOUD: the prod view's end_date must abut the window
+ * start, otherwise the fire is BLOCKED (visible schedule event) instead of
+ * the legacy silent ERROR.
  */
 const { workers } = require('./worker.js');
+const dates = require('./dates.js');
+
+const parseMeta = (m) => (typeof m === 'string' ? JSON.parse(m || '{}') : (m || {}));
+const tableFor = (db, base) => (db.type === 'postgres' ? `data_manager.${base}` : base);
 
 module.exports = {
   workers: {
@@ -25,6 +37,90 @@ module.exports = {
     'npmrds/add': workers.add,
     'npmrds/replace': workers.replace,
     'npmrds/remove': workers.remove,
+  },
+
+  schedulables: {
+    'npmrds/add': {
+      label: 'NPMRDS weekly raw→prod add',
+      defaultCron: '0 3 * * 1', // Mondays 03:00 — last week is complete
+      params: [
+        { name: 'npmrds_raw_source_id', type: 'source_id',
+          desc: 'npmrds_raw source whose views feed the add' },
+        { name: 'view_id', type: 'view_id', optional: true,
+          desc: 'prod view; defaults to the latest view of the source' },
+      ],
+
+      async buildDescriptor({ schedule, db }) {
+        const t = schedule.descriptor || {};
+        const viewsTable = tableFor(db, 'views');
+
+        if (!t.npmrds_raw_source_id) {
+          throw new Error('npmrds_raw_source_id is required in the schedule params');
+        }
+
+        // prod view (target of the add)
+        let viewId = t.view_id;
+        if (!viewId) {
+          const { rows } = await db.query(
+            `SELECT view_id FROM ${viewsTable} WHERE source_id = $1 ORDER BY view_id DESC LIMIT 1`,
+            [schedule.source_id]);
+          viewId = rows[0] && rows[0].view_id;
+        }
+        if (!viewId) {
+          throw new Error(`No prod view for npmrds source ${schedule.source_id} — run publish first`);
+        }
+
+        const { startDate, endDate } = dates.lastCompleteWeek();
+
+        // raw views whose ingested window overlaps the week
+        const { rows: rawViews } = await db.query(
+          `SELECT view_id, metadata FROM ${viewsTable} WHERE source_id = $1`,
+          [t.npmrds_raw_source_id]);
+        const npmrds_raw_view_ids = rawViews
+          .filter((v) => {
+            const m = parseMeta(v.metadata);
+            return m.start_date && m.end_date
+              && String(m.start_date).slice(0, 10) <= endDate
+              && String(m.end_date).slice(0, 10) >= startDate;
+          })
+          .map((v) => v.view_id);
+        if (npmrds_raw_view_ids.length === 0) {
+          throw new Error(
+            `No npmrds_raw view of source ${t.npmrds_raw_source_id} covers ${startDate}..${endDate} — download the raw data first`);
+        }
+
+        return {
+          source_id: schedule.source_id,
+          sourceId: schedule.source_id,
+          view_id: viewId,
+          npmrds_raw_view_ids,
+          startDate,
+          endDate,
+          user_id: t.user_id ?? null,
+          email: t.email ?? null,
+          prodURL: t.prodURL ?? null,
+        };
+      },
+
+      // Legacy isNextDay gap check, failing loudly via schedule:BLOCKED.
+      async preflight({ descriptor, db }) {
+        const viewsTable = tableFor(db, 'views');
+        const { rows: [view] } = await db.query(
+          `SELECT metadata FROM ${viewsTable} WHERE view_id = $1`, [descriptor.view_id]);
+        const endDate = view && parseMeta(view.metadata).end_date;
+
+        // No prior window on the prod view → initial population, allow.
+        if (!endDate) return { ok: true };
+
+        if (!dates.isNextDay(endDate, descriptor.startDate)) {
+          return {
+            ok: false,
+            reason: `Date gap: prod view end_date ${String(endDate).slice(0, 10)} does not abut the window start ${descriptor.startDate} — backfill the missing days first`,
+          };
+        }
+        return { ok: true };
+      },
+    },
   },
 
   routes: (router, helpers) => {

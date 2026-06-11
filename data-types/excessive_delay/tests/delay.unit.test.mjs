@@ -24,6 +24,7 @@ import {
   normalizeDelayRow,
   expandPeriods,
 } from '../delay.js';
+import { previousCompleteMonth } from '../delay.js';
 
 describe('toNullableNumber (legacy-faithful coercion)', () => {
   it('parses numeric strings', () => {
@@ -235,6 +236,7 @@ describe('expandPeriods (arbitrary years[] — backfill must be able to fill gap
 
 // ── M3 (methodology v2): cap attribution at non_recurrent per (tmc, month) ──
 import { capAttribution } from '../delay.js';
+import { previousCompleteMonth } from '../delay.js';
 
 describe('capAttribution (M3 — overlapping events may not exceed non_recurrent)', () => {
   const tmcMap = {
@@ -260,5 +262,14 @@ describe('capAttribution (M3 — overlapping events may not exceed non_recurrent
   it('does not mutate the input map', () => {
     capAttribution(tmcMap, { '120+1001': 50 });
     expect(tmcMap['120+1001'].construction).toBe(60);
+  });
+});
+
+describe('previousCompleteMonth (scheduling seam — monthly add cadence)', () => {
+  it('mid-month: returns the previous calendar month as { year, month }', () => {
+    expect(previousCompleteMonth({ now: new Date(2026, 5, 10) })).toEqual({ year: 2026, month: 5 });
+  });
+  it('January rolls back to December of the previous year', () => {
+    expect(previousCompleteMonth({ now: new Date(2026, 0, 3) })).toEqual({ year: 2025, month: 12 });
   });
 });

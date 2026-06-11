@@ -375,3 +375,67 @@ describe('processIncidents day-batched fetching (CH push-down: arrays in, JS sem
     expect(chQueries.length).toBe(2);
   });
 });
+
+describe('lazy delayData materialization (warm = raw only; expand+calc on first walk access)', () => {
+  const mkFdr = (chQueries) => cg.makeFetchDelayRows({
+    chDb: {
+      async query({ query }) {
+        chQueries.push(query);
+        if (/avg_tt/.test(query)) {
+          // baseline rows for both tmcs
+          return { json: async () => (['A', 'B'].flatMap((tmc) => [{ tmc, epoch: 100, avg_tt: 40, year: 2024 }])) };
+        }
+        // one observed TT row per tmc
+        return { json: async () => (['A', 'B'].map((tmc) => ({
+          tmc, date: '2024-03-01', epoch: 100, month: 3, year: 2024, dow: 5, tt: 90,
+        }))) };
+      },
+    },
+    prodTableName: 'npmrds.p',
+    tmcAttributes: {
+      A: { miles: 0.5, threshold: 32, congestion_level: 'MODERATE_CONGESTION', directionality: 'EVEN_DIST', aadt: 1000, f_system: 1, faciltype: 1, avg_tt: 40 },
+      B: { miles: 0.5, threshold: 32, congestion_level: 'MODERATE_CONGESTION', directionality: 'EVEN_DIST', aadt: 1000, f_system: 1, faciltype: 1, avg_tt: 40 },
+    },
+    ffDataMap: { A: 35, B: 35 },
+    baselineTable: 'temp.b',
+  });
+  const incident = { dates: ['2024-03-01'] };
+
+  it('prefetchRaw fetches + caches raw WITHOUT expanding or computing delayData', async () => {
+    const chQueries = [];
+    const fdr = mkFdr(chQueries);
+    expect(typeof fdr.prefetchRaw).toBe('function');
+    await fdr.prefetchRaw(incident, ['A', 'B']);
+    expect(chQueries.length).toBe(2); // one TT + one baseline
+    expect(fdr.stats()).toEqual({ rawTmcs: 2, expandedTmcs: 0 });
+  });
+
+  it('walk access materializes ONLY the requested tmc, from cache, no new CH queries', async () => {
+    const chQueries = [];
+    const fdr = mkFdr(chQueries);
+    await fdr.prefetchRaw(incident, ['A', 'B']);
+    const rows = await fdr(incident, ['A']);
+    expect(chQueries.length).toBe(2); // no new queries
+    expect(fdr.stats()).toEqual({ rawTmcs: 2, expandedTmcs: 1 });
+    expect(rows.length).toBe(288); // full expansion for A
+    expect(rows.every((r) => r.tmc === 'A')).toBe(true);
+    expect(rows.every((r) => r.delayData !== undefined)).toBe(true);
+    const observed = rows.find((r) => r.epoch === 100);
+    expect(observed.synthetic).toBeUndefined();
+    expect(observed.delayData.delay).toBeCloseTo((90 - 40) / 3600, 9); // tt − max(avg,threshold)
+  });
+
+  it('materialization is memoized and does not pollute the raw cache (copies)', async () => {
+    const chQueries = [];
+    const fdr = mkFdr(chQueries);
+    await fdr.prefetchRaw(incident, ['A', 'B']);
+    const r1 = await fdr(incident, ['A']);
+    const r2 = await fdr(incident, ['A']);
+    expect(fdr.stats().expandedTmcs).toBe(1); // memoized, not re-expanded
+    expect(r2.length).toBe(r1.length);
+    // raw cache purity: B still unexpanded; expanding it now yields clean rows
+    const rb = await fdr(incident, ['B']);
+    expect(rb.length).toBe(288);
+    expect(fdr.stats()).toEqual({ rawTmcs: 2, expandedTmcs: 2 });
+  });
+});

@@ -164,3 +164,27 @@ describe('getYearsBetween', () => {
     expect(dates.getYearsBetween('2023-11-01', '2025-02-01')).toEqual([2023, 2024, 2025]);
   });
 });
+
+describe('previousCompleteMonth (scheduling seam — monthly congestion cadence)', () => {
+  it('mid-month: returns the previous calendar month', () => {
+    const now = new Date(2026, 5, 10); // local 2026-06-10
+    expect(dates.previousCompleteMonth({ now })).toEqual({
+      start_date: '2026-05-01',
+      end_date: '2026-05-31',
+    });
+  });
+  it('January rolls back to December of the previous year', () => {
+    const now = new Date(2026, 0, 3); // local 2026-01-03
+    expect(dates.previousCompleteMonth({ now })).toEqual({
+      start_date: '2025-12-01',
+      end_date: '2025-12-31',
+    });
+  });
+  it('March returns leap-year February correctly', () => {
+    const now = new Date(2024, 2, 5); // local 2024-03-05
+    expect(dates.previousCompleteMonth({ now })).toEqual({
+      start_date: '2024-02-01',
+      end_date: '2024-02-29',
+    });
+  });
+});

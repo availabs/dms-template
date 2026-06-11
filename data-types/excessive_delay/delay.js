@@ -220,6 +220,17 @@ function capAttribution(tmcMap, nonRecByTmc) {
   return out;
 }
 
+
+/**
+ * Scheduling seam for the monthly add cadence: the previous complete
+ * calendar month as { year, month } (local wall clock).
+ */
+function previousCompleteMonth({ now = new Date() } = {}) {
+  const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const month = now.getMonth() === 0 ? 12 : now.getMonth();
+  return { year, month };
+}
+
 module.exports = {
   toNullableNumber,
   roundCents,
@@ -235,4 +246,5 @@ module.exports = {
   roadInformation,
   normalizeDelayRow,
   expandPeriods,
+  previousCompleteMonth,
 };

@@ -60,3 +60,10 @@ src/dms/packages/dms-server/Dockerfile
 # Plugin scratch space (kept tiny but exclude obvious junk).
 **/*.test.js
 **/*.spec.js
+
+# Plugin secrets — NEVER bake into the image; mount at runtime instead
+# (see Dockerfile notes: -v ./data-types/npmrds_raw/ritis.config.json:...).
+**/ritis.config.json
+# Plugin tests aren't needed at runtime
+data-types/*/tests
+data-types/run-tests.js

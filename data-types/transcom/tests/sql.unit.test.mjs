@@ -206,6 +206,11 @@ describe('incidentsSQL', () => {
     expect(re).not.toContain('congestion_data IS NULL');
     expect(re).toContain('nysdot_general_category IS NOT NULL');
   });
+  it('determinism: way tie-break + ordered conflation streams (2026-06-10 fidelity-diff finding)', () => {
+    expect(text).toContain('ORDER BY trans.event_id, cv0.tmc NULLS LAST, cv0.id');
+    expect(sql.conflationNodesSQL({ nodesTable: 'n', waysTable: 'w', v0Table: 'v' })).toMatch(/ORDER BY id/);
+    expect(sql.conflationWaysSQL({ waysTable: 'w', v0Table: 'v' })).toMatch(/ORDER BY id/);
+  });
   it('reprocess + resumeV2: skips events already carrying a v2 blob (probe key) — mid-month resumable', () => {
     const re = sql.incidentsSQL({
       transcomTable: 't', v0Table: 'v', waysTable: 'w', geoid: '36001',

@@ -279,3 +279,27 @@ describe('M2 (methodology v2): median baseline option', () => {
     expect(dflt).toContain('AVG(travel_time_all_vehicles) AS avg_tt');
   });
 });
+
+describe('geometry literal format sniffing (2026-06-10: CH meta mixes GeoJSON, WKB-hex, WKT by vintage)', () => {
+  const row = (geom) => ({ tmc: 'A', year: 2026, month: 4, region_code: '1', total: 1, f_system: 1,
+    non_recurrent: 1, aadt: 1, aadt_combi: 1, aadt_singl: 1, length: 1, roadname: 'I-90',
+    tmclinear: 1, road_order: 1, county_code: '36001', direction: 'E', wkb_geometry: geom, road_information: 'x' });
+  const ins = (geom) => squish(sql.insertRowsSQL({ table: 't', rows: [row(geom)], dialect: 'postgres' }));
+  it('GeoJSON object/string → ST_GeomFromGeoJSON', () => {
+    expect(ins({ type: 'MultiLineString', coordinates: [[[0, 0], [1, 1]]] })).toContain('ST_GeomFromGeoJSON');
+    expect(ins('{"type":"MultiLineString","coordinates":[[[0,0],[1,1]]]}')).toContain('ST_GeomFromGeoJSON');
+  });
+  it('WKB hex → direct ::geometry cast', () => {
+    const s = ins('01050000000100000001020000002C0000003A3B');
+    expect(s).toContain("'01050000000100000001020000002C0000003A3B'::geometry");
+    expect(s).not.toContain('ST_GeomFromGeoJSON');
+  });
+  it('WKT → ST_GeomFromText', () => {
+    expect(ins('MULTILINESTRING((0 0,1 1))')).toContain('ST_GeomFromText');
+  });
+  it('empty / null / junk → NULL (no PostGIS error)', () => {
+    expect(ins('')).toMatch(/NULL/);
+    expect(ins(null)).toMatch(/NULL/);
+    expect(ins('garbage!!')).toMatch(/NULL/);
+  });
+});

@@ -273,15 +273,32 @@ const INSERT_COLUMNS = [
 ];
 
 // rows: cleaned records from delay.js#normalizeDelayRow.
+// CH meta wkb_geometry strings vary by vintage: GeoJSON (2018-2025 era),
+// WKB hex (2026+), WKT (raw-pipeline temp tables). Sniff and emit the right
+// PostGIS constructor; anything unrecognizable becomes NULL instead of a
+// PostGIS parse error (2026-06-10: ED April failed on "unknown GeoJSON type").
+function pgGeometryLiteral(value) {
+  if (value == null) return 'NULL';
+  const v = typeof value === 'object' ? JSON.stringify(value) : String(value);
+  const t = v.trim();
+  if (!t) return 'NULL';
+  if (t.startsWith('{')) return `ST_SetSRID(ST_GeomFromGeoJSON(${escapeLiteral(t)}), 4326)`;
+  if (/^[0-9A-Fa-f]+$/.test(t) && (t.startsWith('00') || t.startsWith('01'))) {
+    return `ST_SetSRID(${escapeLiteral(t)}::geometry, 4326)`;
+  }
+  if (/^(MULTI)?(LINESTRING|POLYGON|POINT)/i.test(t)) {
+    return `ST_SetSRID(ST_GeomFromText(${escapeLiteral(t)}), 4326)`;
+  }
+  return 'NULL';
+}
+
 function insertRowsSQL({ table, rows, dialect, upsert = false }) {
   if (!Array.isArray(rows) || rows.length === 0) throw new Error('rows must be a non-empty array');
   const pg = dialect === 'postgres';
   const tuples = rows.map((r) => {
-    const geom = r.wkb_geometry == null
-      ? 'NULL'
-      : (pg
-        ? `ST_SetSRID(ST_GeomFromGeoJSON(${escapeLiteral(r.wkb_geometry)}), 4326)`
-        : escapeLiteral(r.wkb_geometry));
+    const geom = pg ? pgGeometryLiteral(r.wkb_geometry) : escapeLiteral(
+      r.wkb_geometry && typeof r.wkb_geometry === 'object' ? JSON.stringify(r.wkb_geometry) : r.wkb_geometry
+    );
     const vals = INSERT_COLUMNS.map((c) => (c === 'wkb_geometry' ? geom : escapeLiteral(r[c])));
     return `(${vals.join(', ')})`;
   });
@@ -358,6 +375,7 @@ module.exports = {
   transcomDelayQuery,
   INSERT_COLUMNS,
   insertRowsSQL,
+  pgGeometryLiteral,
   attributionUpdateSQL,
   regionNameUpdateSQL,
   deleteMonthSQL,

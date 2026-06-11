@@ -21,15 +21,24 @@ FROM node:22-bookworm-slim
 WORKDIR /app
 
 # Native deps: gdal for GIS, build tools for native addons (sharp, better-sqlite3, gdal-async).
+# chromium + fonts: headless browser for the npmrds_raw (RITIS login + TOTP)
+# and transcom (SSO) datatype plugins. Puppeteer is pointed at the distro
+# chromium via PUPPETEER_EXECUTABLE_PATH instead of downloading its own.
 RUN apt-get update && apt-get install -y \
       gdal-bin \
       libgdal-dev \
       build-essential \
       python3 \
       zip \
+      unzip \
+      chromium \
+      fonts-liberation \
       --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 # 1) Stage the dms-server submodule package so the file: link below has a target.
 COPY src/dms/packages/dms-server ./src/dms/packages/dms-server
@@ -41,13 +50,21 @@ COPY src/dms/packages/dms-server ./src/dms/packages/dms-server
 #    are installed and hoisted to /app/node_modules. That hoist is what makes
 #    `require('lodash')` and `require('@availabs/dms-server/src/...')` from
 #    /app/data-types/* resolve via Node's upward node_modules walk.
+#    The four extra deps are the datatype plugins' lazy requires:
+#      puppeteer + otplib    npmrds_raw RITIS headless login/TOTP, transcom SSO
+#      axios                 RITIS export/download HTTP calls
+#      extract-zip           RITIS download extraction
 RUN printf '%s\n' \
       '{' \
       '  "name": "dms-template-server",' \
       '  "version": "0.0.0",' \
       '  "private": true,' \
       '  "dependencies": {' \
-      '    "@availabs/dms-server": "file:./src/dms/packages/dms-server"' \
+      '    "@availabs/dms-server": "file:./src/dms/packages/dms-server",' \
+      '    "puppeteer": "^23.0.0",' \
+      '    "otplib": "^12.0.1",' \
+      '    "axios": "^1.7.0",' \
+      '    "extract-zip": "^2.0.1"' \
       '  }' \
       '}' > package.json
 
@@ -56,6 +73,12 @@ RUN npm install --omit=dev
 # 3) Template-owned plugin code. The bootstrap (`register-datatypes.js`) lives
 #    inside `data-types/` and uses sibling-relative requires
 #    (`require('./map21')`, etc.).
+#
+#    SECRETS ARE NOT IN THE IMAGE (.dockerignore excludes **/ritis.config.json).
+#    Provide at runtime:
+#      RITIS creds (npmrds_raw):  -v /secure/ritis.config.json:/app/data-types/npmrds_raw/ritis.config.json:ro
+#      TRANSCOM creds (transcom): TRANSCOM_USERNAME / TRANSCOM_PASSWORD env vars
+#      ClickHouse + Postgres:     the pgEnv's <env>.config.json (db configs volume/baked per deploy)
 COPY data-types ./data-types
 
 # Persistent storage: host ID, upload temp files, local file storage.

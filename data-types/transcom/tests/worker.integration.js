@@ -390,6 +390,17 @@ async function runTests() {
     assert(sql.includes('event_id TEXT PRIMARY KEY'), 'congestion table keyed by event_id');
   });
 
+  await test('congestion view-reuse: passing view_id adds to the existing view (no new view created)', async () => {
+    const { rows: [before] } = await db.query(
+      `SELECT count(*) n FROM views WHERE source_id = $1`, [congResult.source_id]);
+    const rerun = makeCtx({ db, descriptor: { ...cong.ctx.task.descriptor, view_id: congResult.view_id } });
+    const rerunResult = await congestionWorker(rerun.ctx);
+    assert(rerunResult.view_id === congResult.view_id, `reuses view ${congResult.view_id} (got ${rerunResult.view_id})`);
+    const { rows: [after] } = await db.query(
+      `SELECT count(*) n FROM views WHERE source_id = $1`, [congResult.source_id]);
+    assert(Number(after.n) === Number(before.n), `view count unchanged (${before.n} → ${after.n})`);
+  });
+
   await test('congestion upserts the EXACT legacy congestion_data shape per event', async () => {
     const upsert = congestionDataDb.calls.find((c) => /ON CONFLICT \(event_id\)/.test(c.sql) && c.values);
     assert(upsert, 'records a congestion upsert with values');

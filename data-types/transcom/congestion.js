@@ -393,7 +393,9 @@ async function walkGraph(nodeId, graph, tmcAttributes, res) {
   // Batched neighborhood prefetch — fills the fetchDelayRows cache in one
   // round-trip pair; the walk's single-TMC calls below become cache hits.
   const reachable = collectReachableTmcs(graph, nodeId);
-  if (reachable.length) await fetchDelayRows(incident, reachable);
+  if (reachable.length) {
+    await (fetchDelayRows.prefetchRaw || fetchDelayRows)(incident, reachable);
+  }
 
   const eventTmcs = new Set();
   const nodeSet = new Set([nodeId]);
@@ -710,8 +712,9 @@ async function processIncidents(deps, incidents, graph, tmcAttributes) {
         for (const tmc of collectReachableTmcs(graph, cluster.node_id)) union.add(tmc);
       }
       const warmTmcs = [...union];
+      const warm = fetchDelayRows.prefetchRaw || fetchDelayRows;
       for (let i = 0; i < warmTmcs.length; i += WARM_CHUNK) {
-        await fetchDelayRows({ dates }, warmTmcs.slice(i, i + WARM_CHUNK));
+        await warm({ dates }, warmTmcs.slice(i, i + WARM_CHUNK));
       }
     }
 
@@ -795,14 +798,22 @@ async function processIncidents(deps, incidents, graph, tmcAttributes) {
  * cheap indexed lookup instead of a full-table GROUP BY per incident.
  */
 function makeFetchDelayRows({ chDb, prodTableName, tmcAttributes, ffDataMap, baselineTable }) {
-  // Perf cache (bench 2026-06-10): the walk used to fetch per-TMC (~10x the
-  // per-event cost). Rows are cached per (dates, tmc); walkGraph prefetches the
-  // reachable neighborhood in one batch so per-TMC calls become cache hits.
-  // processIncidents resets per cluster to bound memory.
-  let cache = new Map();
+  // Lazy three-store pipeline (2026-06-10 refinement):
+  //   rawCache      (dates|tmc) -> observed CH rows (pristine; bulk-fetched)
+  //   baselineCache (tmc)       -> baseline rows (year-scoped per fetcher)
+  //   expandedCache (dates|tmc) -> expandEpochs + calcDelay output, built ON
+  //                                FIRST WALK ACCESS only (bench: ~80-90% of
+  //                                warmed TMCs are never walked — eager
+  //                                expansion was the dominant JS cost).
+  // prefetchRaw() warms raw+baseline only; fetchDelayRows() keeps its original
+  // contract (expanded rows with delayData) and materializes lazily.
+  let rawCache = new Map();
+  let baselineCache = new Map();
+  let expandedCache = new Map();
   const cacheKey = (incident, tmc) => `${(incident.dates || []).join(',')}|${tmc}`;
 
-  async function fetchDelayRows(incident, tmcs) {
+  async function ensureRaw(incident, tmcs) {
+    if (!tmcs || tmcs.length === 0 || !incident.dates || incident.dates.length === 0) return;
     const [year] = (incident.dates || []).reduce(
       (a, c) => {
         const [yr, month] = c.split('-');
@@ -813,20 +824,16 @@ function makeFetchDelayRows({ chDb, prodTableName, tmcAttributes, ffDataMap, bas
       [null, []]
     );
 
-    if (!tmcs || tmcs.length === 0 || !incident.dates || incident.dates.length === 0) return [];
-
-    // Serve cached TMCs; only round-trip for the misses (in one batch).
     const wanted = [...new Set(tmcs)];
-    const misses = wanted.filter((tmc) => !cache.has(cacheKey(incident, tmc)));
-    if (misses.length === 0) {
-      return wanted.flatMap((tmc) => cache.get(cacheKey(incident, tmc)) || []);
-    }
+    const rawMisses = wanted.filter((tmc) => !rawCache.has(cacheKey(incident, tmc)));
+    const baselineMisses = wanted.filter((tmc) => !baselineCache.has(tmc));
+    if (rawMisses.length === 0 && baselineMisses.length === 0) return;
 
-    const inDates = incident.dates.map((d) => `'${d}'`).join(', ');
-    const inTmcs = misses.map((t) => `'${t}'`).join(', ');
-
-    const incidentRes = await chDb.query({
-      query: `
+    if (rawMisses.length > 0) {
+      const inDates = incident.dates.map((d) => `'${d}'`).join(', ');
+      const inTmcs = rawMisses.map((t) => `'${t}'`).join(', ');
+      const incidentRes = await chDb.query({
+        query: `
         SELECT
             toString(date) AS date,
             tmc,
@@ -841,16 +848,27 @@ function makeFetchDelayRows({ chDb, prodTableName, tmcAttributes, ffDataMap, bas
             AND epoch >= 0
             AND epoch < 288
         SETTINGS max_memory_usage = 0, max_execution_time = 0;`,
-      format: 'JSONEachRow',
-    });
-    const yearlyRes = await chDb.query({
-      query: baselineTable
-        ? `
+        format: 'JSONEachRow',
+      });
+      const incidentTT = await incidentRes.json();
+      const byKey = new Map(rawMisses.map((tmc) => [cacheKey(incident, tmc), []]));
+      for (const row of incidentTT || []) {
+        const k = cacheKey(incident, row.tmc);
+        if (byKey.has(k)) byKey.get(k).push(row);
+      }
+      for (const [k, rows] of byKey) rawCache.set(k, rows);
+    }
+
+    if (baselineMisses.length > 0) {
+      const inTmcs = baselineMisses.map((t) => `'${t}'`).join(', ');
+      const yearlyRes = await chDb.query({
+        query: baselineTable
+          ? `
         SELECT tmc, epoch, avg_tt, ${Number(year)} AS year
         FROM ${baselineTable}
         WHERE tmc IN (${inTmcs})
         SETTINGS max_memory_usage = 0, max_execution_time = 0;`
-        : `
+          : `
         SELECT tmc, epoch, avg_tt, year
         FROM (
           SELECT toYear(date) AS year, tmc, epoch,
@@ -864,35 +882,50 @@ function makeFetchDelayRows({ chDb, prodTableName, tmcAttributes, ffDataMap, bas
         WHERE year = ${year}
           AND tmc IN (${inTmcs})
         SETTINGS max_memory_usage = 0, max_execution_time = 0;`,
-      format: 'JSONEachRow',
-    });
+        format: 'JSONEachRow',
+      });
+      const yearlyTT = await yearlyRes.json();
+      const byTmc = new Map(baselineMisses.map((tmc) => [tmc, []]));
+      for (const row of yearlyTT || []) {
+        if (byTmc.has(row.tmc)) byTmc.get(row.tmc).push(row);
+      }
+      for (const [tmc, rows] of byTmc) baselineCache.set(tmc, rows);
+    }
+  }
 
-    const incidentTT = await incidentRes.json();
-    const yearlyTT = await yearlyRes.json();
+  function materialize(incident, tmc) {
+    const k = cacheKey(incident, tmc);
+    if (expandedCache.has(k)) return expandedCache.get(k);
 
-    const avgYTtMap = (yearlyTT || []).reduce((a, c) => {
+    // COPY raw rows — expandEpochs pushes synthetics into the array and
+    // delayData is assigned onto row objects; the raw cache must stay pristine.
+    const copies = (rawCache.get(k) || []).map((r) => ({ ...r }));
+
+    const avgYTtMap = (baselineCache.get(tmc) || []).reduce((a, c) => {
       if (!(c.year in a)) a[c.year] = {};
       if (!(c.tmc in a[c.year])) a[c.year][c.tmc] = {};
       a[c.year][c.tmc][c.epoch] = c.avg_tt;
       return a;
     }, {});
 
-    const rows = expandEpochs(incidentTT || [], incident.dates, misses, tmcAttributes, ffDataMap);
+    const rows = expandEpochs(copies, incident.dates, [tmc], tmcAttributes, ffDataMap);
     rows.forEach((row) => {
       row.delayData = calcDelay(row, tmcAttributes[row.tmc], avgYTtMap);
     });
-
-    // Fill the cache per TMC, then answer from it for the full requested set.
-    const byTmc = new Map(misses.map((tmc) => [tmc, []]));
-    for (const row of rows) {
-      if (byTmc.has(row.tmc)) byTmc.get(row.tmc).push(row);
-    }
-    for (const [tmc, tmcRows] of byTmc) cache.set(cacheKey(incident, tmc), tmcRows);
-
-    return wanted.flatMap((tmc) => cache.get(cacheKey(incident, tmc)) || []);
+    expandedCache.set(k, rows);
+    return rows;
   }
 
-  fetchDelayRows.resetCache = () => { cache = new Map(); };
+  async function fetchDelayRows(incident, tmcs) {
+    if (!tmcs || tmcs.length === 0 || !incident.dates || incident.dates.length === 0) return [];
+    const wanted = [...new Set(tmcs)];
+    await ensureRaw(incident, wanted);
+    return wanted.flatMap((tmc) => materialize(incident, tmc));
+  }
+
+  fetchDelayRows.prefetchRaw = (incident, tmcs) => ensureRaw(incident, [...new Set(tmcs || [])]);
+  fetchDelayRows.stats = () => ({ rawTmcs: rawCache.size, expandedTmcs: expandedCache.size });
+  fetchDelayRows.resetCache = () => { rawCache = new Map(); baselineCache = new Map(); expandedCache = new Map(); };
   return fetchDelayRows;
 }
 

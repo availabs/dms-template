@@ -64,6 +64,16 @@ IMAGE_NAME="${IMAGE_NAME:-dms-template-server}"
 CONTAINER_NAME="${CONTAINER_NAME:-dms-template-server}"
 ENV_FILE="${ENV_FILE:-${REPO_DIR}/.env}"
 VOLUME_NAME="${VOLUME_NAME:-dms-template-var}"
+# Optional plugin-secret wiring (datatype plugins; see Dockerfile notes):
+#   RITIS_CONFIG=/secure/ritis.config.json   -> mounted ro for the npmrds_raw plugin
+#   TRANSCOM_USERNAME/TRANSCOM_PASSWORD      -> pass via $ENV_FILE
+#   EXTRA_DOCKER_ARGS="..."                  -> any additional docker run args
+RITIS_CONFIG="${RITIS_CONFIG:-}"
+EXTRA_DOCKER_ARGS="${EXTRA_DOCKER_ARGS:-}"
+SECRET_MOUNTS=()
+if [[ -n "$RITIS_CONFIG" ]]; then
+  SECRET_MOUNTS+=(-v "${RITIS_CONFIG}:/app/data-types/npmrds_raw/ritis.config.json:ro")
+fi
 CONTAINER_VAR_PATH="/app/src/dms/packages/dms-server/var"
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-180}"
 KEEP_PREV="${KEEP_PREV:-3}"
@@ -118,6 +128,7 @@ run_canonical() {
     --env-file "$ENV_FILE" \
     -p "${HOST_PORT}:${HOST_PORT}" \
     -v "${VOLUME_NAME}:${CONTAINER_VAR_PATH}" \
+    "${SECRET_MOUNTS[@]}" ${EXTRA_DOCKER_ARGS} \
     --name "$CONTAINER_NAME" \
     "${IMAGE_NAME}:${TAG}" >/dev/null
 }
@@ -160,6 +171,7 @@ log "starting staged container $STAGING (no host port; same env, same volume)"
 docker run -d \
   --env-file "$ENV_FILE" \
   -v "${VOLUME_NAME}:${CONTAINER_VAR_PATH}" \
+  "${SECRET_MOUNTS[@]}" ${EXTRA_DOCKER_ARGS} \
   --name "$STAGING" \
   "${IMAGE_NAME}:${TAG}" >/dev/null
 

@@ -26,8 +26,17 @@
  * The legacy hardcoded conflation source ids (nodes=237, ways=236, v0=238)
  * are descriptor fields with those defaults (sql.DEFAULT_CONFLATION_SOURCE_IDS).
  *
- * The legacy /schedule route is NOT ported (the new runner has no cron);
- * dates.computeNextWindow is the pure 'yesterday' seam for when it lands.
+ * The legacy /schedule route is NOT ported — scheduling now goes through the
+ * dms-server schedules system (data_manager.schedules + the sweep). This
+ * plugin opts in two workers:
+ *   - 'transcom/add'        — DAILY ingest of yesterday's events into the
+ *                             existing view (dates.computeNextWindow). Chosen
+ *                             over /publish for the daily cadence: publish
+ *                             creates a NEW view per run (the bulk/initial
+ *                             path); the legacy schedule worker also ran the
+ *                             incremental add path.
+ *   - 'transcom/congestion' — MONTHLY previous-complete-month attribution
+ *                             (dates.previousCompleteMonth).
  */
 const dates = require('./dates.js');
 const { DEFAULT_CONFLATION_SOURCE_IDS } = require('./sql.js');
@@ -37,12 +46,105 @@ const addWorker = require('./workers/add.js');
 const eventTmcWorker = require('./workers/event_tmc.js');
 const congestionWorker = require('./workers/congestion.js');
 
+const parseMeta = (m) => (typeof m === 'string' ? JSON.parse(m || '{}') : (m || {}));
+const tableFor = (db, base) => (db.type === 'postgres' ? `data_manager.${base}` : base);
+
 module.exports = {
   workers: {
     'transcom/publish': publishWorker,
     'transcom/add': addWorker,
     'transcom/event_tmc': eventTmcWorker,
     'transcom/congestion': congestionWorker,
+  },
+
+  schedulables: {
+    'transcom/add': {
+      label: 'TRANSCOM daily event ingest',
+      defaultCron: '0 4 * * *', // daily 04:00 — yesterday is complete
+      params: [
+        { name: 'geom_source_id', type: 'source_id', optional: true },
+        { name: 'view_id', type: 'view_id', optional: true,
+          desc: 'target view; defaults to the latest view of the source' },
+      ],
+      async buildDescriptor({ schedule, db }) {
+        const t = schedule.descriptor || {};
+        const viewsTable = tableFor(db, 'views');
+
+        let viewId = t.view_id;
+        if (!viewId) {
+          const { rows } = await db.query(
+            `SELECT view_id FROM ${viewsTable} WHERE source_id = $1 ORDER BY view_id DESC LIMIT 1`,
+            [schedule.source_id]);
+          viewId = rows[0] && rows[0].view_id;
+        }
+        if (!viewId) {
+          throw new Error(`No view to add into for transcom source ${schedule.source_id} — run an initial publish first`);
+        }
+
+        const { start_timestamp, end_timestamp } = dates.computeNextWindow();
+
+        return {
+          source_id: schedule.source_id,
+          sourceId: schedule.source_id,
+          view_id: viewId,
+          start_timestamp,
+          end_timestamp,
+          geom_source_id: t.geom_source_id ?? null,
+          user_id: t.user_id ?? null,
+          email: t.email ?? null,
+          parent_context_id: null,
+        };
+      },
+    },
+
+    'transcom/congestion': {
+      label: 'TRANSCOM congestion attribution (monthly)',
+      defaultCron: '0 5 3 * *', // 3rd of the month — events for the prior month have settled
+      params: [
+        { name: 'geom_source_id', type: 'source_id', optional: true },
+        { name: 'npmrds_production_source_id', type: 'source_id', optional: true },
+        { name: 'map21_source_id', type: 'source_id', optional: true },
+        { name: 'methodology', type: 'string', optional: true, default: 'v1' },
+      ],
+      async buildDescriptor({ schedule, db }) {
+        const t = schedule.descriptor || {};
+        const sourcesTable = tableFor(db, 'sources');
+
+        const { rows: [source] } = await db.query(
+          `SELECT name, metadata FROM ${sourcesTable} WHERE source_id = $1`, [schedule.source_id]);
+        if (!source) throw new Error(`Invalid transcom_congestion source ${schedule.source_id}`);
+
+        const transcomSourceId = t.transcom_source_id ?? parseMeta(source.metadata).transcom_source_id;
+        if (!transcomSourceId) {
+          throw new Error('transcom_source_id is required (schedule params or source metadata)');
+        }
+
+        const { start_date, end_date } = dates.previousCompleteMonth();
+
+        return {
+          source_id: schedule.source_id,
+          sourceId: schedule.source_id,
+          methodology: t.methodology === 'v2' ? 'v2' : 'v1',
+          reprocess: t.reprocess === true,
+          transcom_source_id: transcomSourceId,
+          transcom_view_id: t.transcom_view_id ?? null,
+          geom_source_id: t.geom_source_id ?? null,
+          npmrds_production_source_id: t.npmrds_production_source_id ?? null,
+          map21_source_id: t.map21_source_id ?? null,
+          conflation_nodes_source_id:
+            t.conflation_nodes_source_id ?? DEFAULT_CONFLATION_SOURCE_IDS.conflation_nodes_source_id,
+          conflation_ways_source_id:
+            t.conflation_ways_source_id ?? DEFAULT_CONFLATION_SOURCE_IDS.conflation_ways_source_id,
+          conflation_v0_source_id:
+            t.conflation_v0_source_id ?? DEFAULT_CONFLATION_SOURCE_IDS.conflation_v0_source_id,
+          start_date,
+          end_date,
+          user_id: t.user_id ?? null,
+          email: t.email ?? null,
+          parent_context_id: null,
+        };
+      },
+    },
   },
 
   routes: (router, helpers) => {

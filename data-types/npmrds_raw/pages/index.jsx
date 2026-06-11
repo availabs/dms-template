@@ -2,7 +2,7 @@ import React from 'react';
 import Create from './create';
 
 const pages = {
-  defaultPages: ['table'],            // inherit the built-in Table page (metadata.columns is written)
+  defaultPages: ['table', 'schedule', 'runs'], // built-in Table + cron Schedule + Runs pages
   sourceCreate: {
     name: 'Create',
     component: Create,

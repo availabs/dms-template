@@ -223,6 +223,19 @@ function computeNextWindow({ now = new Date() } = {}) {
   };
 }
 
+/**
+ * Scheduling seam for the monthly congestion cadence: the previous complete
+ * calendar month as plain dates (local wall clock, like computeNextWindow).
+ */
+function previousCompleteMonth({ now = new Date() } = {}) {
+  const y = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const m = now.getMonth() === 0 ? 12 : now.getMonth();
+  return {
+    start_date: fmtDate(y, m, 1),
+    end_date: fmtDate(y, m, lastDayOfMonth(y, m)),
+  };
+}
+
 /** Route helpers: expand a date(ish) input to start/end-of-day timestamps. */
 function toStartOfDayTimestamp(dateStr) {
   const p = parseParts(dateStr);
@@ -243,6 +256,7 @@ module.exports = {
   markCongestionTrue,
   getYearsBetween,
   computeNextWindow,
+  previousCompleteMonth,
   toStartOfDayTimestamp,
   toEndOfDayTimestamp,
 };

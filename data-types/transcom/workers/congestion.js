@@ -96,10 +96,25 @@ function makeWorker(depOverrides = {}) {
     }
 
     // ── congestion source view + table ──────────────────────────────────
-    const view = await deps.createDamaView({ source_id, user_id }, pgEnv);
+    // Reuse an existing view when d.view_id is supplied (backfill runs add
+    // months into ONE view/table instead of spawning a view per invocation);
+    // otherwise create one (legacy publish behavior).
     const tableSchema = 'transcom_congestion';
-    const tableName = sanitizeName(`s${source_id}_v${view.view_id}_${source.name}`);
-    await setViewTable(db, view.view_id, tableSchema, tableName);
+    let view;
+    let tableName;
+    if (d.view_id) {
+      view = await getViewById(db, d.view_id);
+      if (!view) throw new Error(`congestion view ${d.view_id} not found`);
+      if (Number(view.source_id) !== Number(source_id)) {
+        throw new Error(`view ${d.view_id} belongs to source ${view.source_id}, not ${source_id}`);
+      }
+      tableName = view.table_name || sanitizeName(`s${source_id}_v${view.view_id}_${source.name}`);
+      if (!view.table_name) await setViewTable(db, view.view_id, tableSchema, tableName);
+    } else {
+      view = await deps.createDamaView({ source_id, user_id }, pgEnv);
+      tableName = sanitizeName(`s${source_id}_v${view.view_id}_${source.name}`);
+      await setViewTable(db, view.view_id, tableSchema, tableName);
+    }
 
     const dataDb = deps.getDataDb(ctx);
     await dataDb.query(sql.congestionTableDDL(tableSchema, tableName));
