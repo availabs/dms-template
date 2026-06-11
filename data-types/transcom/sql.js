@@ -591,14 +591,20 @@ SET congestion_data = excluded.congestion_data;`;
 }
 
 /** Copy congestion results back onto the events table (vehicle_delay, cost = 20x raw). */
-function updateEventsCongestionSQL({ eventsTable, congestionTable }) {
+function updateEventsCongestionSQL({ eventsTable, congestionTable, geoid }) {
+  // geoid-scoped variant: cheap per-county writeback after each county completes,
+  // so the events-table resume markers (congestion_data ? 'probe') survive a
+  // mid-run crash (2026-06-11 finding: year-end-only writeback orphaned 29
+  // counties of markers after an OOM). The unscoped form remains the final sync.
+  const scope = geoid ? `
+  AND t.county_code = '${String(geoid).replace(/'/g, "''")}'` : '';
   return `UPDATE ${eventsTable} AS t
 SET
   congestion_data = m.congestion_data,
   vehicle_delay = (m.congestion_data->>'vehicleDelay')::NUMERIC,
   cost = 20 * (m.congestion_data->>'rawVehicleDelay')::NUMERIC
 FROM ${congestionTable} m
-WHERE t.event_id = m.event_id;`;
+WHERE t.event_id = m.event_id${scope};`;
 }
 
 /** Candidate incidents for one county/month window (processIncidents.getIncidents). */

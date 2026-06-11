@@ -249,6 +249,11 @@ function makeWorker(depOverrides = {}) {
               );
             }
           }
+          // County-scoped writeback so resume markers persist even if the run
+          // dies later (different counties touch disjoint rows — no contention).
+          await dataDb.query(sql.updateEventsCongestionSQL({
+            eventsTable: transcomView.data_table, congestionTable, geoid,
+          }));
           doneGeoids++;
           await dispatchEvent(`transcom_congestion:END_PROCESS_FOR_GEO_${geoid}_FOR_${year}`,
             `county done (${doneGeoids}/${geoids.length})`, { view_id: view.view_id });

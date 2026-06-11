@@ -183,6 +183,15 @@ describe('congestion table builders', () => {
   });
 });
 
+describe('updateEventsCongestionSQL county scoping (crash-resumability of resume markers)', () => {
+  it('geoid-scoped variant updates only that county (cheap per-county writeback)', () => {
+    const scoped = sql.updateEventsCongestionSQL({ eventsTable: 'e', congestionTable: 'c', geoid: '36047' });
+    expect(scoped).toContain("t.county_code = '36047'");
+    const full = sql.updateEventsCongestionSQL({ eventsTable: 'e', congestionTable: 'c' });
+    expect(full).not.toContain('county_code');
+  });
+});
+
 describe('incidentsSQL', () => {
   const text = sql.incidentsSQL({
     transcomTable: 'transcom.events',
