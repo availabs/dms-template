@@ -110,20 +110,22 @@
     .sect-chip.open .sc-caret { color: #C8922A; }
     .sect-chip.empty { border-style: dashed; color: #9BB5C2; cursor: default; }
 
-    /* Nested sections panel */
-    tr.sect-panel > td { padding: 0 12px 14px 12px; background: #FAFCFD; border-bottom: 1px solid #E0EBF0; }
-    .sect-box { border: 1px solid #E8D9B8; border-left: 3px solid #EAAD43; border-radius: 0 10px 10px 10px; background: white; overflow: hidden; }
-    .sect-box-head { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: #FCF6EC; border-bottom: 1px solid #F1E4C4; flex-wrap: wrap; }
-    .sect-scroll { max-height: 320px; overflow-y: auto; }
-    .sect-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    .sect-table td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .sect-table th { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 500; text-transform: uppercase;
-                     letter-spacing: 0.08em; color: #9BB5C2; padding: 6px 12px; text-align: left; border-bottom: 1px solid #F0F4F6; position: sticky; top: 0; background: white; }
-    .sect-table td { padding: 5px 12px; font-size: 12px; color: #37576B; border-bottom: 1px solid #F5F8FA; vertical-align: middle; }
-    .sect-table tbody tr:last-child td { border-bottom: none; }
-    .sect-table tbody tr:hover { background: #F8FBFC; }
-    tr.sect-dim td { opacity: 0.4; }
-    tr.sect-hit td .s-title, tr.sect-hit td .s-derived { background: #FCF6EC; box-shadow: 0 0 0 2px #FCF6EC; border-radius: 2px; }
+    /* Nested sections — continuation rows of the same table, not a boxed widget.
+       A thin rail in the indent gutter ties them to their parent page row. */
+    tr.sect-panel > td { padding: 0; background: white; border-bottom: 1px solid #E0EBF0; }
+    .sect-rail { border-left: 2px solid #DCE7EC; }
+    .sect-meta { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 14px; border-bottom: 1px solid #EEF3F6; flex-wrap: wrap; }
+    .sect-meta-label { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #9BB5C2; }
+    .sect-meta-counts { font-size: 11px; color: #9BB5C2; }
+    .sect-scroll { max-height: 360px; overflow-y: auto; }
+    .srow { display: grid; grid-template-columns: minmax(0,1fr) 96px 212px 96px 56px 74px; gap: 0 12px;
+            align-items: center; padding: 4px 14px 4px 14px; border-bottom: 1px solid #F2F6F9; font-size: 12px; color: #37576B; }
+    .srow > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .srow:last-child { border-bottom: none; }
+    .srow:hover { background: #F7FAFB; }
+    .srow.sect-hit .s-title, .srow.sect-hit .s-derived { background: #FCF6EC; box-shadow: 0 0 0 2px #FCF6EC; border-radius: 2px; }
+    .srow .drag-dots { opacity: 0; transition: opacity .15s; }
+    .srow:hover .drag-dots { opacity: 1; }
     .s-title { color: #2D3E4C; font-weight: 600; }
     /* derived content summaries (lexicalSummary) — visually distinct from authored titles */
     .s-derived { color: #5E7A8C; font-weight: 400; }
@@ -135,11 +137,11 @@
     .s-indent-3 { padding-left: 32px; }
     .drag-dots { color: #DDE7EC; cursor: grab; font-size: 12px; }
 
-    /* Outline/All segmented mini-toggle inside the sections panel */
-    .mini-seg { display: inline-flex; background: white; border: 1px solid #F1CA87; border-radius: 9999px; padding: 1px; }
+    /* Outline/All segmented mini-toggle inside the sections meta row */
+    .mini-seg { display: inline-flex; background: white; border: 1px solid #DCE7EC; border-radius: 9999px; padding: 1px; }
     .mini-seg button { border: none; background: none; border-radius: 9999px; padding: 1px 10px; font-family: 'Oswald', sans-serif;
-                  font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #C8922A; cursor: pointer; }
-    .mini-seg button.active { background: #EAAD43; color: white; }
+                  font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #9BB5C2; cursor: pointer; }
+    .mini-seg button.active { background: #E0EBF0; color: #2D3E4C; }
 
     /* In-nav toggle switch */
     .nav-toggle { width: 30px; height: 17px; border-radius: 9999px; position: relative; cursor: pointer; border: none; transition: background .15s; flex-shrink: 0; }
@@ -1075,7 +1077,7 @@ function viewChip(p, s) {
   return `<span class="view-chip ok" title="Latest view: ${esc(vName)}">v${s.view}</span>`;
 }
 
-function sectionsPanel(p) {
+function sectionsPanel(p, depth) {
   const inSectScope = scope === 'sections';
   const all = sectionsOf(p);
   const titledCount = all.filter(s => s.titled).length;
@@ -1090,40 +1092,39 @@ function sectionsPanel(p) {
   const rows = shown
     .map(s => {
       const hit = filtering && search && sectionMatch(s);
-      const dim = false;
       const indent = s.level >= 2 ? (s.level >= 3 ? 's-indent-3' : 's-indent-2') : 's-indent-1';
       const pvTitle = (s.t || (s.sum && s.sum.text ? s.sum.text.slice(0, 48) : '(untitled)')).replace(/'/g, '&#39;');
       return `
-      <tr class="${dim ? 'sect-dim' : ''} ${hit ? 'sect-hit' : ''}">
-        <td style="width:20px"><span class="drag-dots">⠿</span></td>
-        <td><span class="${indent}">${sectionLabel(s)}</span></td>
-        <td style="width:96px"><span class="badge ${TYPE_BADGE[s.type] || 'badge-lexical'}">${s.type}</span></td>
-        <td style="width:212px">${srcCell(s)}</td>
-        <td style="width:96px">${viewChip(p, s)}</td>
-        <td style="width:56px">${s.level !== null && s.level !== undefined
+      <div class="srow ${hit ? 'sect-hit' : ''}">
+        <span class="${indent}"><span class="drag-dots">⠿ </span>${sectionLabel(s)}</span>
+        <span><span class="badge ${TYPE_BADGE[s.type] || 'badge-lexical'}">${s.type}</span></span>
+        <span>${srcCell(s)}</span>
+        <span>${viewChip(p, s)}</span>
+        <span>${s.level !== null && s.level !== undefined
             ? `<span class="pill ${s.level === 0 ? 'pill-gray' : 'pill-blue'}" style="font-size:10px;">${s.level === 0 ? 'hidden' : 'H'+s.level}</span>`
-            : '<span class="text-mny-200 text-xs">—</span>'}</td>
-        <td style="width:74px; text-align:right;"><button class="ghost-btn" onclick="openPreview('${s.type}','${esc(pvTitle)}','${s.src || ''}')">Preview</button></td>
-      </tr>`;
+            : '<span class="text-mny-200 text-xs">—</span>'}</span>
+        <span style="text-align:right;"><button class="ghost-btn" onclick="openPreview('${s.type}','${esc(pvTitle)}','${s.src || ''}')">Preview</button></span>
+      </div>`;
     }).join('');
+  /* rail starts under the parent page's caret so the rows read as its children */
   return `
   <tr class="sect-panel">
     <td colspan="8">
-      <div class="sect-box" style="margin-left:30px">
-        <div class="sect-box-head">
-          <span class="font-display text-[10px] tracking-widest uppercase" style="color:#C8922A;">Sections on ${esc(p.t || '(untitled)')}</span>
-          <span class="text-[10px] text-mny-400 font-proxima">${filtering
-            ? `<span style="color:#C8922A;font-weight:600;">${shown.length} of ${p.n} match</span> · {pattern}|component`
-            : `${p.n} sections · ${titledCount} titled${emptyCount ? ` · <span style="color:#C8922A;font-weight:600;">${emptyCount} empty</span>` : ''} · {pattern}|component`}</span>
-          ${filtering ? '' : `<div class="mini-seg" title="All shows every section with auto content summaries; Outline shows only the titled skeleton">
-            <button class="${showAll ? '' : 'active'}" onclick="setPanelMode(${p.id}, true)">Outline</button>
-            <button class="${showAll ? 'active' : ''}" onclick="setPanelMode(${p.id}, false)">All</button>
-          </div>`}
-          <div class="flex-1"></div>
-          <button class="ghost-btn" style="font-size:10px;">+ New Section</button>
-        </div>
-        <div class="sect-scroll">
-          <table class="sect-table"><tbody>${rows}</tbody></table>
+      <div style="padding-left:${depth * 26 + 47}px">
+        <div class="sect-rail">
+          <div class="sect-meta">
+            <span class="sect-meta-label" title="{pattern}|component rows WHERE page = ${esc(p.t || p.id)}">Sections</span>
+            <span class="sect-meta-counts">${filtering
+              ? `<strong style="color:#C8922A;">${shown.length} of ${p.n} match</strong>`
+              : `${p.n} · ${titledCount} titled${emptyCount ? ` · <strong style="color:#C8922A;">${emptyCount} empty</strong>` : ''}`}</span>
+            ${filtering ? '' : `<div class="mini-seg" title="All shows every section with auto content summaries; Outline shows only the titled skeleton">
+              <button class="${showAll ? '' : 'active'}" onclick="setPanelMode(${p.id}, true)">Outline</button>
+              <button class="${showAll ? 'active' : ''}" onclick="setPanelMode(${p.id}, false)">All</button>
+            </div>`}
+            <div class="flex-1"></div>
+            <button class="ghost-btn" style="font-size:10px;">+ New Section</button>
+          </div>
+          <div class="sect-scroll">${rows}</div>
         </div>
       </div>
     </td>
@@ -1134,7 +1135,7 @@ function renderBranch(p, depth, out) {
   if (!showsBranch(p)) return;
   const isMatch = pageMatch(p);
   out.push(pageRow(p, depth, isMatch));
-  if (openSections.has(p.id) && p.n && (scope !== 'sections' || isMatch)) out.push(sectionsPanel(p));
+  if (openSections.has(p.id) && p.n && (scope !== 'sections' || isMatch)) out.push(sectionsPanel(p, depth));
   const filtered = lens !== 'all' || search || scope === 'sections';
   const open = expanded.has(p.id) || (filtered && childrenOf(p).some(showsBranch));
   if (open) childrenOf(p).forEach(c => renderBranch(c, depth + 1, out));
