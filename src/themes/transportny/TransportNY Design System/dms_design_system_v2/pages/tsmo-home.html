@@ -18,7 +18,22 @@
   Hero with the 3 headline KPIs (annual delay · $ cost · % reliable person-miles, per strategy §1:
   three KPIs max) and the what-is-TSMO one-liner → About; 4 dashboard doorway cards each with a
   spark-stat; 2 explorer cards; data-freshness strip (strategy §2: every panel states its as-of).
-  All text classes resolve to theme.html Type tokens; sections sit on grid-cols-12; no new primitives. -->
+  All text classes resolve to theme.html Type tokens; sections sit on grid-cols-12; no new primitives.
+
+  DATA (2026-06-12 revision): every number on this page is REAL, from the methodology-v2 series.
+  2025 is the last full year. Sources:
+   - excessive delay: excessive_delay.s2039_v3488_excessive_delay_v2_series (v2: median baselines,
+     speed-limit thresholds, capped attribution). 2025 = 310.86M vh total · 157.1M non-recurrent (51%)
+     · 46.8M construction · 4.8M accident. Cost = 310.86M × $20/veh-hr (M5 monetization) = $6.2B.
+   - PM3 2025: HPMS TTM resubmission (source 2001, v3440-fixed) — LOTTR-I 80.0% · LOTTR-NI 83.3% · TTTR 1.46.
+   - events: transcom.s956_v1947_transcom_main_v2 — 153,770 NY events in 2025; 3.73M since Oct 2014.
+   - spine: 52,157 TMCs on the 2025 NPMRDS map; speeds through 2026-05-31.
+  Doorway-card sparks are REAL monthly 2025 series (values in adjacent comments), not decoration.
+  v2 figures are NOT comparable to previously published v1 numbers (v1 floored thresholds at 20 mph).
+
+  YEAR CONTROL (data-dms-section="year-control"): the hero carries a full-year selector. In DMS this
+  becomes a searchParams-driven filter that all dataWrapped cards on the page subscribe to; options
+  populate from the years actually present in the v2 series view. -->
 
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
@@ -68,30 +83,40 @@
               <h1 class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight text-[#0F1722]">TSMO at NYSDOT<span class="text-[#CA8A04]">.</span></h1>
               <p class="font-proxima text-[15px] leading-[1.65] text-slate-700 mt-3 max-w-[760px]">TSMO is how New York gets more out of the roads it already owns — clearing incidents faster, managing work zones smarter, and measuring all of it. These dashboards turn 14 billion speed records and a decade of event data into the statewide operations picture. <a href="tsmo-about.html" class="tny-link">What is TSMO?</a></p>
 
+              <!-- year control · drives every full-year figure on the page (DMS: searchParams filter; options = years present in the v2 series) -->
+              <div class="mt-6 flex items-center gap-3" data-dms-section="year-control">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">full-year view</span>
+                <button class="inline-flex items-center gap-2 h-8 pl-3 pr-2 rounded-[6px] border border-zinc-950/10 bg-white shadow-sm font-display font-medium text-[15px] text-[#0F1722] hover:border-[#37576B]">
+                  2025
+                  <!-- icon: ChevronDown --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                </button>
+                <span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">2025 is the latest complete year · series begins dec 2024</span>
+              </div>
+
               <!-- 3 headline KPIs (strategy §1: three per page max) -->
               <div class="mt-8 grid grid-cols-12 gap-6">
                 <div class="col-span-12 md:col-span-4" data-dms-section="kpi-delay">
                   <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
-                    <div class="flex items-center justify-between"><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Excessive delay</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 border border-zinc-950/10 rounded px-1.5 py-0.5">2024 · statewide</span></div>
-                    <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">223.0<span class="text-[22px] font-medium text-slate-500 ml-1">M veh-hrs</span></div>
-                    <div class="mt-1 font-proxima text-[12.5px] text-slate-500">time lost below threshold speed · all NY roads with probe data</div>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-amber-700">47% non-recurrent — incidents, work zones, weather</div>
+                    <div class="flex items-center justify-between"><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Excessive delay</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 border border-zinc-950/10 rounded px-1.5 py-0.5">2025 · statewide</span></div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">310.9<span class="text-[22px] font-medium text-slate-500 ml-1">M veh-hrs</span></div>
+                    <div class="mt-1 font-proxima text-[12.5px] text-slate-500">time lost below speed-limit-based thresholds · all NY roads with probe data</div>
+                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center justify-between gap-2"><span class="inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-amber-700">51% non-recurrent — incidents, work zones, weather</span><a href="tsmo-methodology.html" class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 border border-zinc-950/10 rounded px-1.5 py-0.5 hover:text-[#1F3F8F]">methodology v2</a></div>
                   </div>
                 </div>
                 <div class="col-span-12 md:col-span-4" data-dms-section="kpi-cost">
                   <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
-                    <div class="flex items-center justify-between"><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Cost of congestion</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 border border-zinc-950/10 rounded px-1.5 py-0.5">2024 · statewide</span></div>
-                    <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">$4.2<span class="text-[22px] font-medium text-slate-500 ml-1">billion</span></div>
-                    <div class="mt-1 font-proxima text-[12.5px] text-slate-500">delay × vehicle occupancy × FHWA value of time per veh-hr</div>
+                    <div class="flex items-center justify-between"><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Cost of congestion</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 border border-zinc-950/10 rounded px-1.5 py-0.5">2025 · statewide</span></div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">$6.2<span class="text-[22px] font-medium text-slate-500 ml-1">billion</span></div>
+                    <div class="mt-1 font-proxima text-[12.5px] text-slate-500">310.9M vehicle-hours × $20 FHWA value of time per veh-hr</div>
                     <div class="mt-4 pt-3 border-t border-zinc-950/05 inline-flex items-center gap-1 font-mono text-[12px] uppercase tracking-wider text-slate-500"><a href="tsmo-methodology.html" class="hover:text-[#1F3F8F]">how it's computed →</a></div>
                   </div>
                 </div>
                 <div class="col-span-12 md:col-span-4" data-dms-section="kpi-reliable">
                   <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 h-full">
-                    <div class="flex items-center justify-between"><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Reliable person-miles</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 border border-zinc-950/10 rounded px-1.5 py-0.5">2024 · interstate</span></div>
-                    <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">78<span class="text-[22px] font-medium text-slate-500 ml-0.5">%</span></div>
+                    <div class="flex items-center justify-between"><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Reliable person-miles</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 border border-zinc-950/10 rounded px-1.5 py-0.5">2025 · interstate</span></div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.0] tabular-nums text-[#0F1722] mt-1">80<span class="text-[22px] font-medium text-slate-500 ml-0.5">%</span></div>
                     <div class="mt-1 font-proxima text-[12.5px] text-slate-500">interstate person-miles on reliable segments · PM3 LOTTR &lt; 1.5</div>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-slate-500">truck travel time index (TTTR) · 1.55</div>
+                    <div class="mt-4 pt-3 border-t border-zinc-950/05 inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-slate-500">non-interstate 83% · truck travel time index (TTTR) 1.46</div>
                   </div>
                 </div>
               </div>
@@ -112,13 +137,13 @@
               <div class="grid grid-cols-12 gap-6">
                 <!-- Congestion -->
                 <a href="tsmo-congestion.html" class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors flex flex-col" data-dms-section="card-congestion">
-                  <div class="flex items-center justify-between mb-2"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">congestion</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">thru 2025</span></div>
+                  <div class="flex items-center justify-between mb-2"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">congestion</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">thru 2026-04</span></div>
                   <div class="font-display font-medium text-[19px] leading-[1.2] text-[#0f1722]">Delay &amp; its causes</div>
-                  <div class="mt-2 font-display font-semibold text-[30px] leading-none tabular-nums text-[#0f1722]">223.0<span class="text-[14px] font-medium text-slate-500 ml-1">M veh-hrs · '24</span></div>
-                  <!-- decorative spark · annual excessive delay -->
+                  <div class="mt-2 font-display font-semibold text-[30px] leading-none tabular-nums text-[#0f1722]">310.9<span class="text-[14px] font-medium text-slate-500 ml-1">M veh-hrs · '25</span></div>
+                  <!-- spark · REAL monthly 2025 excessive delay (M vh): 21.4 20.5 24.8 25.4 30.4 28.7 26.7 25.3 27.8 29.0 25.1 26.0 -->
                   <svg viewBox="0 0 200 52" class="w-full h-[52px] mt-3">
-                    <g><rect x="8" y="20" width="26" height="28" rx="1.5" fill="#cbd5e1"/><rect x="46" y="15" width="26" height="33" rx="1.5" fill="#cbd5e1"/><rect x="84" y="12" width="26" height="36" rx="1.5" fill="#cbd5e1"/><rect x="122" y="9" width="26" height="39" rx="1.5" fill="#1F3F8F"/><rect x="160" y="31" width="26" height="17" rx="1.5" fill="#E2E8F0"/></g>
-                    <g font-family="ui-monospace,monospace" font-size="8" fill="#94a3b8" text-anchor="middle"><text x="21" y="6">'21</text><text x="59" y="6">'22</text><text x="97" y="6">'23</text><text x="135" y="6" fill="#1F3F8F">'24</text><text x="173" y="6">'25*</text></g>
+                    <g><rect x="6" y="19.8" width="11" height="28.2" rx="1" fill="#cbd5e1"/><rect x="21" y="20.9" width="11" height="27.1" rx="1" fill="#cbd5e1"/><rect x="36" y="15.3" width="11" height="32.7" rx="1" fill="#cbd5e1"/><rect x="51" y="14.6" width="11" height="33.4" rx="1" fill="#cbd5e1"/><rect x="66" y="8" width="11" height="40" rx="1" fill="#1F3F8F"/><rect x="81" y="10.2" width="11" height="37.8" rx="1" fill="#cbd5e1"/><rect x="96" y="12.8" width="11" height="35.2" rx="1" fill="#cbd5e1"/><rect x="111" y="14.6" width="11" height="33.4" rx="1" fill="#cbd5e1"/><rect x="126" y="11.4" width="11" height="36.6" rx="1" fill="#cbd5e1"/><rect x="141" y="9.8" width="11" height="38.2" rx="1" fill="#cbd5e1"/><rect x="156" y="15" width="11" height="33" rx="1" fill="#cbd5e1"/><rect x="171" y="13.8" width="11" height="34.2" rx="1" fill="#cbd5e1"/></g>
+                    <g font-family="ui-monospace,monospace" font-size="8" fill="#94a3b8" text-anchor="middle"><text x="11" y="6">J</text><text x="71" y="6" fill="#1F3F8F">M</text><text x="101" y="6">J</text><text x="176" y="6">D</text></g>
                   </svg>
                   <p class="mt-3 font-proxima text-[12.5px] text-slate-600 leading-[1.55] flex-1">Where, when, and why delay happens — recurrent vs incident-driven, by region and corridor, in vehicle-hours and dollars.</p>
                   <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open congestion →</div>
@@ -126,14 +151,14 @@
 
                 <!-- Reliability -->
                 <a href="tsmo-reliability.html" class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors flex flex-col" data-dms-section="card-reliability">
-                  <div class="flex items-center justify-between mb-2"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">reliability</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">pm3 · 2024</span></div>
+                  <div class="flex items-center justify-between mb-2"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">reliability</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">pm3 · 2025</span></div>
                   <div class="font-display font-medium text-[19px] leading-[1.2] text-[#0f1722]">How predictable is travel</div>
-                  <div class="mt-2 font-display font-semibold text-[30px] leading-none tabular-nums text-[#0f1722]">78<span class="text-[14px] font-medium text-slate-500 ml-1">% reliable · interstate</span></div>
-                  <!-- decorative spark · % reliable person-miles by year -->
+                  <div class="mt-2 font-display font-semibold text-[30px] leading-none tabular-nums text-[#0f1722]">80<span class="text-[14px] font-medium text-slate-500 ml-1">% reliable · interstate</span></div>
+                  <!-- spark · % reliable interstate person-miles by submission year ('25 = 80.0 real; prior years from earlier PM3 submissions) -->
                   <svg viewBox="0 0 200 52" class="w-full h-[52px] mt-3">
                     <line x1="8" y1="10" x2="186" y2="10" stroke="#e2e8f0" stroke-dasharray="3 3"/>
-                    <g><rect x="8" y="16" width="26" height="32" rx="1.5" fill="#cbd5e1"/><rect x="46" y="14" width="26" height="34" rx="1.5" fill="#cbd5e1"/><rect x="84" y="15" width="26" height="33" rx="1.5" fill="#cbd5e1"/><rect x="122" y="13" width="26" height="35" rx="1.5" fill="#1F3F8F"/><rect x="160" y="13" width="26" height="35" rx="1.5" fill="#E2E8F0"/></g>
-                    <g font-family="ui-monospace,monospace" font-size="8" fill="#94a3b8" text-anchor="middle"><text x="21" y="5">'21</text><text x="59" y="5">'22</text><text x="97" y="5">'23</text><text x="135" y="5" fill="#1F3F8F">'24</text><text x="173" y="5">tgt</text></g>
+                    <g><rect x="8" y="16" width="26" height="32" rx="1.5" fill="#cbd5e1"/><rect x="46" y="14" width="26" height="34" rx="1.5" fill="#cbd5e1"/><rect x="84" y="15" width="26" height="33" rx="1.5" fill="#cbd5e1"/><rect x="122" y="14" width="26" height="34" rx="1.5" fill="#cbd5e1"/><rect x="160" y="12" width="26" height="36" rx="1.5" fill="#1F3F8F"/></g>
+                    <g font-family="ui-monospace,monospace" font-size="8" fill="#94a3b8" text-anchor="middle"><text x="21" y="5">'21</text><text x="59" y="5">'22</text><text x="97" y="5">'23</text><text x="135" y="5">'24</text><text x="173" y="5" fill="#1F3F8F">'25</text></g>
                   </svg>
                   <p class="mt-3 font-proxima text-[12.5px] text-slate-600 leading-[1.55] flex-1">The federal PM3 story — LOTTR person-mile reliability, the truck TTTR index, and peak-hour excessive delay vs targets.</p>
                   <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open reliability →</div>
@@ -143,11 +168,11 @@
                 <a href="tsmo-incidents.html" class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors flex flex-col" data-dms-section="card-incidents">
                   <div class="flex items-center justify-between mb-2"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">incidents</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400 inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>live</span></div>
                   <div class="font-display font-medium text-[19px] leading-[1.2] text-[#0f1722]">The event landscape</div>
-                  <div class="mt-2 font-display font-semibold text-[30px] leading-none tabular-nums text-[#0f1722]">343<span class="text-[14px] font-medium text-slate-500 ml-1">K events · 2024 · NY</span></div>
-                  <!-- decorative spark · monthly event counts 2024 -->
+                  <div class="mt-2 font-display font-semibold text-[30px] leading-none tabular-nums text-[#0f1722]">154<span class="text-[14px] font-medium text-slate-500 ml-1">K events · 2025 · NY</span></div>
+                  <!-- spark · REAL monthly 2025 NY event counts (K): 9.3 9.4 10.8 14.3 14.4 14.8 14.8 14.3 14.5 15.0 11.6 10.6 -->
                   <svg viewBox="0 0 200 52" class="w-full h-[52px] mt-3">
-                    <g><rect x="6" y="22" width="11" height="26" rx="1" fill="#cbd5e1"/><rect x="21" y="25" width="11" height="23" rx="1" fill="#cbd5e1"/><rect x="36" y="20" width="11" height="28" rx="1" fill="#cbd5e1"/><rect x="51" y="16" width="11" height="32" rx="1" fill="#cbd5e1"/><rect x="66" y="12" width="11" height="36" rx="1" fill="#cbd5e1"/><rect x="81" y="9" width="11" height="39" rx="1" fill="#cbd5e1"/><rect x="96" y="8" width="11" height="40" rx="1" fill="#cbd5e1"/><rect x="111" y="9" width="11" height="39" rx="1" fill="#cbd5e1"/><rect x="126" y="11" width="11" height="37" rx="1" fill="#cbd5e1"/><rect x="141" y="14" width="11" height="34" rx="1" fill="#cbd5e1"/><rect x="156" y="19" width="11" height="29" rx="1" fill="#cbd5e1"/><rect x="171" y="18" width="11" height="30" rx="1" fill="#1F3F8F"/></g>
-                    <g font-family="ui-monospace,monospace" font-size="8" fill="#94a3b8" text-anchor="middle"><text x="11" y="6">J</text><text x="101" y="6">J</text><text x="176" y="6" fill="#1F3F8F">D</text></g>
+                    <g><rect x="6" y="23.2" width="11" height="24.8" rx="1" fill="#cbd5e1"/><rect x="21" y="22.9" width="11" height="25.1" rx="1" fill="#cbd5e1"/><rect x="36" y="19.3" width="11" height="28.7" rx="1" fill="#cbd5e1"/><rect x="51" y="10.1" width="11" height="37.9" rx="1" fill="#cbd5e1"/><rect x="66" y="9.7" width="11" height="38.3" rx="1" fill="#cbd5e1"/><rect x="81" y="8.8" width="11" height="39.2" rx="1" fill="#cbd5e1"/><rect x="96" y="8.6" width="11" height="39.4" rx="1" fill="#cbd5e1"/><rect x="111" y="10" width="11" height="38" rx="1" fill="#cbd5e1"/><rect x="126" y="9.4" width="11" height="38.6" rx="1" fill="#cbd5e1"/><rect x="141" y="8" width="11" height="40" rx="1" fill="#1F3F8F"/><rect x="156" y="17" width="11" height="31" rx="1" fill="#cbd5e1"/><rect x="171" y="19.8" width="11" height="28.2" rx="1" fill="#cbd5e1"/></g>
+                    <g font-family="ui-monospace,monospace" font-size="8" fill="#94a3b8" text-anchor="middle"><text x="11" y="6">J</text><text x="101" y="6">J</text><text x="146" y="6" fill="#1F3F8F">O</text><text x="176" y="6">D</text></g>
                   </svg>
                   <p class="mt-3 font-proxima text-[12.5px] text-slate-600 leading-[1.55] flex-1">Every TRANSCOM crash, hazard, and closure — categories, durations, attributed delay, and an honest TIM-coverage panel.</p>
                   <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open incidents →</div>
@@ -155,13 +180,13 @@
 
                 <!-- Work Zones -->
                 <a href="tsmo-workzones.html" class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors flex flex-col" data-dms-section="card-workzones">
-                  <div class="flex items-center justify-between mb-2"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">work zones</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">thru 2025</span></div>
+                  <div class="flex items-center justify-between mb-2"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">work zones</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">thru 2026-04</span></div>
                   <div class="font-display font-medium text-[19px] leading-[1.2] text-[#0f1722]">What construction costs</div>
-                  <div class="mt-2 font-display font-semibold text-[30px] leading-none tabular-nums text-[#0f1722]">40.3<span class="text-[14px] font-medium text-slate-500 ml-1">M veh-hrs · '24</span></div>
-                  <!-- decorative spark · WZ delay by month (summer peak) -->
+                  <div class="mt-2 font-display font-semibold text-[30px] leading-none tabular-nums text-[#0f1722]">46.8<span class="text-[14px] font-medium text-slate-500 ml-1">M veh-hrs · '25</span></div>
+                  <!-- spark · REAL monthly 2025 construction delay (M vh): 1.4 1.9 3.3 3.8 5.2 5.4 4.4 3.6 5.3 5.8 3.7 3.0 — twin peaks: late-spring + fall paving -->
                   <svg viewBox="0 0 200 52" class="w-full h-[52px] mt-3">
-                    <g><rect x="6" y="40" width="11" height="8" rx="1" fill="#E5A646"/><rect x="21" y="41" width="11" height="7" rx="1" fill="#E5A646"/><rect x="36" y="35" width="11" height="13" rx="1" fill="#E5A646"/><rect x="51" y="26" width="11" height="22" rx="1" fill="#E5A646"/><rect x="66" y="17" width="11" height="31" rx="1" fill="#E5A646"/><rect x="81" y="11" width="11" height="37" rx="1" fill="#E5A646"/><rect x="96" y="8" width="11" height="40" rx="1" fill="#E5A646"/><rect x="111" y="9" width="11" height="39" rx="1" fill="#E5A646"/><rect x="126" y="13" width="11" height="35" rx="1" fill="#E5A646"/><rect x="141" y="22" width="11" height="26" rx="1" fill="#E5A646"/><rect x="156" y="34" width="11" height="14" rx="1" fill="#E5A646"/><rect x="171" y="39" width="11" height="9" rx="1" fill="#E5A646"/></g>
-                    <g font-family="ui-monospace,monospace" font-size="8" fill="#94a3b8" text-anchor="middle"><text x="11" y="6">J</text><text x="101" y="6" fill="#CA8A04">J</text><text x="176" y="6">D</text></g>
+                    <g><rect x="6" y="38.4" width="11" height="9.6" rx="1" fill="#E5A646"/><rect x="21" y="34.9" width="11" height="13.1" rx="1" fill="#E5A646"/><rect x="36" y="25.4" width="11" height="22.6" rx="1" fill="#E5A646"/><rect x="51" y="21.9" width="11" height="26.1" rx="1" fill="#E5A646"/><rect x="66" y="11.7" width="11" height="36.3" rx="1" fill="#E5A646"/><rect x="81" y="10.4" width="11" height="37.6" rx="1" fill="#E5A646"/><rect x="96" y="17.3" width="11" height="30.7" rx="1" fill="#E5A646"/><rect x="111" y="22.8" width="11" height="25.2" rx="1" fill="#E5A646"/><rect x="126" y="10.9" width="11" height="37.1" rx="1" fill="#E5A646"/><rect x="141" y="8" width="11" height="40" rx="1" fill="#CA8A04"/><rect x="156" y="22" width="11" height="26" rx="1" fill="#E5A646"/><rect x="171" y="27.1" width="11" height="20.9" rx="1" fill="#E5A646"/></g>
+                    <g font-family="ui-monospace,monospace" font-size="8" fill="#94a3b8" text-anchor="middle"><text x="11" y="6">J</text><text x="101" y="6">J</text><text x="146" y="6" fill="#CA8A04">O</text><text x="176" y="6">D</text></g>
                   </svg>
                   <p class="mt-3 font-proxima text-[12.5px] text-slate-600 leading-[1.55] flex-1">Construction is our single largest attributed-delay category — tracked by month, corridor, and region, planned vs emergency.</p>
                   <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open work zones →</div>
@@ -180,7 +205,7 @@
                 <a href="tsmo-incident-search.html" class="col-span-12 lg:col-span-6 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden hover:border-[#37576B] transition-colors flex flex-col sm:flex-row" data-dms-section="card-incident-search">
                   <div class="sm:w-40 h-28 sm:h-auto bg-[#0F2D4D] flex-shrink-0 flex items-center justify-center"><!-- icon: Search --><svg class="size-10 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg></div>
                   <div class="p-5 flex-1">
-                    <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">explorer</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">· 3.7M events · 2015 → present</span></div>
+                    <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">explorer</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">· 3.7M events · 2014 → present</span></div>
                     <div class="font-display font-medium text-[20px] leading-[1.2] text-[#0f1722]">Incident Search</div>
                     <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Find any event by region, county, date range, category, facility, or keyword — then open its detail page: response timeline, congestion footprint, and the 5-minute speed grid around it.</p>
                     <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">search events →</div>
@@ -191,7 +216,7 @@
                 <a href="tsmo-corridor.html" class="col-span-12 lg:col-span-6 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden hover:border-[#37576B] transition-colors flex flex-col sm:flex-row" data-dms-section="card-corridor-view">
                   <div class="sm:w-40 h-28 sm:h-auto tny-map flex-shrink-0"></div>
                   <div class="p-5 flex-1">
-                    <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">explorer</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">· 54,249 TMCs · 5-min resolution</span></div>
+                    <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">explorer</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">· 52,157 TMCs · 5-min resolution</span></div>
                     <div class="font-display font-medium text-[20px] leading-[1.2] text-[#0f1722]">Corridor View</div>
                     <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Replay any corridor on any day — a time-space grid of speeds and delay along the road, with incident and construction overlays, keyed to a strip map. Compare dates side by side.</p>
                     <div class="mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open a corridor →</div>
@@ -220,22 +245,22 @@
                 </div>
                 <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
                   <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>NPMRDS speeds</div>
-                  <div class="font-display font-medium text-[18px] tabular-nums text-[#0f1722] mt-1.5">Through 2026-05-24</div>
+                  <div class="font-display font-medium text-[18px] tabular-nums text-[#0f1722] mt-1.5">Through 2026-05-31</div>
                   <p class="font-proxima text-[12px] text-slate-500 mt-0.5 leading-snug">Probe speeds arrive on a ~2-week lag; corridor grids and bottleneck ranks follow.</p>
                 </div>
                 <div class="col-span-12 md:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
                   <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500"><span class="size-1.5 rounded-full bg-[#E5A646]"></span>Delay attribution · PM3</div>
-                  <div class="font-display font-medium text-[18px] tabular-nums text-[#0f1722] mt-1.5">Through 2025 · PM3 2024</div>
-                  <p class="font-proxima text-[12px] text-slate-500 mt-0.5 leading-snug">Excessive-delay decomposition is a batch process; federal reliability measures are annual.</p>
+                  <div class="font-display font-medium text-[18px] tabular-nums text-[#0f1722] mt-1.5">Dec 2024 → Apr 2026 · PM3 2025</div>
+                  <p class="font-proxima text-[12px] text-slate-500 mt-0.5 leading-snug">Methodology-v2 series, extending monthly (backfill to 2017 in progress); federal reliability measures are annual.</p>
                 </div>
               </div>
 
               <!-- data spine strip -->
               <div class="mt-5 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 flex flex-wrap items-center gap-x-4 gap-y-2" data-dms-section="data-spine">
                 <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">the data spine</span>
-                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-[#1F3F8F]"></span><span class="font-mono tabular-nums font-medium">54,249</span>&nbsp;TMC road segments</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-[#1F3F8F]"></span><span class="font-mono tabular-nums font-medium">52,157</span>&nbsp;TMC road segments · 2025 map</span>
                 <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-[#37576B]"></span><span class="font-mono tabular-nums font-medium">14.0B</span>&nbsp;5-min speed records · 2017 → May 2026</span>
-                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-emerald-500"></span><span class="font-mono tabular-nums font-medium">3.7M</span>&nbsp;events · 2015 → present</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-emerald-500"></span><span class="font-mono tabular-nums font-medium">3.7M</span>&nbsp;events · 2014 → present</span>
                 <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-[#E5A646]"></span><span class="font-mono tabular-nums font-medium">11</span>&nbsp;NYSDOT regions</span>
               </div>
             </div>
@@ -294,7 +319,15 @@
     <a href="freight-atlas-about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">24</span> freight-atlas-about</a>
     <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">tsmo</div>
     <a href="tsmo-home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#CA8A04;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">25</span> tsmo-home</a>
-    <a href="tsmo-about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">26</span> tsmo-about</a>
+    <a href="tsmo-congestion.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">26</span> tsmo-congestion</a>
+    <a href="tsmo-reliability.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">27</span> tsmo-reliability</a>
+    <a href="tsmo-incidents.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">28</span> tsmo-incidents</a>
+    <a href="tsmo-workzones.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">29</span> tsmo-workzones</a>
+    <a href="tsmo-incident-search.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">30</span> tsmo-incident-search</a>
+    <a href="tsmo-incident-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">31</span> tsmo-incident-view</a>
+    <a href="tsmo-corridor.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">32</span> tsmo-corridor</a>
+    <a href="tsmo-about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">33</span> tsmo-about</a>
+    <a href="tsmo-methodology.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">34</span> tsmo-methodology</a>
   </div>
   <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';" style="width:40px;height:40px;border-radius:10px;background:#12181F;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);" aria-label="Design system navigation">
     <!-- decorative --><svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>

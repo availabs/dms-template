@@ -40,6 +40,12 @@ import icons from "./icons";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // textSettings — the global type scale.
+//
+// MEASURE RULE (page authoring): hero/section title + description blocks almost
+// always want a section `size` of 6 or 8 — NOT 12 — to reproduce the designs'
+// text wrap (the mockups cap ledes at ~640-760px). A full-width prose section
+// reads as off-brand even with the right tokens. See
+// skills/creating-pages-from-a-design-pattern.md §5.6.7 ("measure" pattern).
 // ─────────────────────────────────────────────────────────────────────────────
 const F_DISP = "font-display";   // Oswald
 const F_SANS = "font-proxima";   // Proxima Nova / Source Sans 3
@@ -55,7 +61,7 @@ const textSettings = {
       "displayMax", "displayHero", "displayXL", "displayLG", "displayMD", "displaySM", "displayXS",
       "displayItalicLG", "displayItalicMD",
       "proseLG", "prose", "proseSM", "proseXS",
-      "metaMD", "metaSM", "metaXS",
+      "metaMD", "metaSM", "metaXS", "metaAccent", "chip",
       "kicker", "cardTitle", "cardTitleSM",
       "statNum", "statXL", "statLG", "statMD",
     ],
@@ -105,6 +111,13 @@ const textSettings = {
     metaMD: `font-mono! text-[12px]! leading-[1.45] tabular-nums text-slate-600!`,
     metaSM: `font-mono! text-[11px]! leading-[1.4] uppercase tracking-[0.18em] text-slate-500!`,
     metaXS: `font-mono! text-[10px]! leading-[1.4] uppercase tracking-[0.18em] text-slate-400!`,
+    // Accent meta — the amber data callout under hero KPIs ("51% non-recurrent —
+    // incidents, work zones, weather"). Mono like metaMD, NOT uppercase, amber-700.
+    metaAccent: `font-mono! text-[12px]! leading-[1.45] tabular-nums font-medium text-[#B45309]!`,
+    // Chip — the bordered as-of badge on data cards ("2025 · statewide",
+    // "thru 2026-04"). Mono micro-caps in a hairline rounded box; works as a
+    // Card valueFontStyle or a Lexical /Style token.
+    chip: `font-mono! text-[9.5px]! uppercase tracking-[0.14em] text-slate-400! border border-zinc-950/10 rounded px-1.5 py-0.5 inline-block w-fit`,
 
     // Editorial kicker — the "// 01" amber labels that head sections
     kicker: `font-mono! text-[11px]! uppercase tracking-[0.2em] text-[#CA8A04]!`,
@@ -249,21 +262,23 @@ const layoutGroup = {
   options: { activeStyle: 0 },
   styles: [
     {
+      // Band Y padding stays minimal (py-2): sections carry their own p-3 gutters
+      // (sectionArray defaultPaddingStep), so the band only needs a slim frame.
       name: "content",
-      wrapper1: "w-full bg-[#ECEEF2] py-12",
+      wrapper1: "w-full bg-[#ECEEF2] py-2",
       wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 flex flex-col gap-6",
       wrapper3: "",
     },
     {
       name: "content_tint",
-      wrapper1: "w-full bg-[#E4E8EE] py-12",
+      wrapper1: "w-full bg-[#E4E8EE] py-2",
       wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 flex flex-col gap-6",
       wrapper3: "",
     },
     {
       name: "header",
       wrapper1: "w-full bg-white border-b border-zinc-950/10",
-      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10 flex flex-col gap-4",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2 flex flex-col gap-4",
       wrapper3: "",
     },
     {
@@ -283,7 +298,7 @@ const layoutGroup = {
     {
       name: "hero",
       wrapper1: "w-full tny-hero-topo border-b border-zinc-950/10",
-      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10 flex flex-col gap-5",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2 flex flex-col gap-5",
       wrapper3: "",
     },
     {
@@ -874,20 +889,31 @@ const dataCard = {
       img8XL:     "max-w-[32rem] max-h-[32rem]",
       imgDefault: "max-w-[50px] max-h-[50px]",
       // Mirror of textSettings so Card cells can resolve a font-style by name
-      displayHero: `${F_DISP} font-semibold text-[52px] leading-[1.02] tracking-tight`,
-      displayXL:   `${F_DISP} font-semibold text-[44px] leading-[1.05] tracking-tight`,
-      displayLG:   `${F_DISP} font-semibold text-[38px] leading-[1.05] tracking-tight uppercase`,
-      displayMD:   `${F_DISP} font-semibold text-[28px] leading-[1.1]`,
-      displaySM:   `${F_DISP} font-medium text-[22px] leading-[1.2]`,
-      displayXS:   `${F_DISP} font-medium text-[18px] leading-[1.25]`,
-      proseLG:     `${F_SANS} text-[16px] leading-[1.65]`,
-      prose:       `${F_SANS} text-[14.5px] leading-[1.65]`,
-      proseSM:     `${F_SANS} text-[12.5px] leading-[1.55]`,
-      proseXS:     `${F_SANS} text-[11.5px] leading-[1.5]`,
-      metaMD:      `${F_MONO} text-[12px] leading-[1.45] tabular-nums`,
-      metaSM:      `${F_MONO} text-[10.5px] uppercase tracking-[0.18em]`,
-      metaXS:      `${F_MONO} text-[9.5px] uppercase tracking-[0.18em]`,
-      kicker:      `${F_MONO} text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]`,
+      displayHero: `${F_DISP} font-semibold text-[52px]! leading-[1.02] tracking-tight`,
+      displayXL: `${F_DISP} font-semibold text-[44px]! leading-[1.05] tracking-tight`,
+      displayLG: `${F_DISP} font-semibold text-[38px]! leading-[1.05] tracking-tight uppercase`,
+      displayMD: `${F_DISP} font-semibold text-[28px]! leading-[1.1]`,
+      displaySM: `${F_DISP} font-medium text-[22px]! leading-[1.2]`,
+      displayXS: `${F_DISP} font-medium text-[18px]! leading-[1.25]`,
+      proseLG: `${F_SANS} text-[16px]! leading-[1.65]`,
+      prose: `${F_SANS} text-[14.5px]! leading-[1.65]`,
+      proseSM: `${F_SANS} text-[12.5px]! leading-[1.55]`,
+      proseXS: `${F_SANS} text-[11.5px]! leading-[1.5]`,
+      metaMD: `${F_MONO} text-[12px]! leading-[1.45] tabular-nums`,
+      metaSM: `${F_MONO} text-[10.5px]! uppercase tracking-[0.18em] pb-1!`,
+      // ── Parity with textSettings (keep these in sync!): every token an author
+      // can pick in Lexical should also exist here, because Card cells resolve
+      // valueFontStyle/headerFontStyle against THIS map, not textSettings.
+      statNum: `${F_MONO} text-[40px]! font-medium leading-[1.05] tabular-nums ${INK} pb-0!`,
+      statXL: `${F_DISP} font-semibold text-[52px]! leading-[1.0] tracking-tight tabular-nums ${INK} pb-0!`,
+      statLG: `${F_DISP} font-semibold text-[28px]! leading-[1.05] tabular-nums ${INK} pb-0!`,
+      statMD: `${F_DISP} font-semibold text-[22px]! leading-[1.15] tabular-nums ${INK} pb-0!`,
+      cardTitle: `${F_DISP} font-medium text-[18px]! leading-[1.15] tracking-tight uppercase ${INK}`,
+      cardTitleSM: `${F_DISP} font-medium text-[15px]! leading-[1.15] tracking-tight uppercase ${INK}`,
+      metaAccent: `${F_MONO} text-[12px]! leading-[1.45] tabular-nums font-medium text-[#B45309]!`,
+      chip: `${F_MONO} text-[9.5px]! uppercase tracking-[0.14em] text-slate-400! border border-zinc-950/10 rounded px-1.5 py-0.5 inline-block w-fit pb-0!`,
+      metaXS: `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em]`,
+      kicker: `${F_MONO} text-[10.5px]! uppercase tracking-[0.2em] text-[#CA8A04]!`,
       textXS:           "text-[11px] font-medium",
       textXSReg:        "text-[11px] font-normal",
       textSM:           "text-[12.5px] font-medium",
@@ -1239,6 +1265,9 @@ const graph = {
   options: { activeStyle: 0 },
   styles: [{
     name: "default",
+    // Built-in chart padding (consumed by graph_new/GraphComponent's outer div) —
+    // keeps the plot off the section/card edge without per-section margin tweaks.
+    padding:      "p-4",
     text:         `${F_SANS} text-[12px] text-slate-600`,
     darkModeText: `${F_SANS} text-[12px] text-white bg-transparent`,
     headerWrapper:"flex items-baseline justify-between mb-2",
