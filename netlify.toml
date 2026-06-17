@@ -3,6 +3,21 @@
   #functions = "netlify/functions"
   publish = "dist"
 
+  ## Security response headers (applied to every route).
+  ## - X-Frame-Options / frame-ancestors: anti-clickjacking (Qualys WAS 150124).
+  ##   SAMEORIGIN / 'self' blocks third-party framing while allowing the site to
+  ##   frame its own content. Tighten to DENY / 'none' if no self-framing is needed.
+  ## - Cross-Origin-Opener-Policy: defense-in-depth for reverse tabnabbing (150222);
+  ##   the primary fix for that finding is rel="noopener noreferrer" on links in app code.
+  [[headers]]
+    for = "/*"
+    [headers.values]
+      X-Frame-Options = "SAMEORIGIN"
+      Content-Security-Policy = "frame-ancestors 'self'"
+      Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+      X-Content-Type-Options = "nosniff"
+      Referrer-Policy = "strict-origin-when-cross-origin"
+
   ## Uncomment to use this redirect for Single Page Applications like create-react-app.
   ## Not needed for static site generators.
   [[redirects]]
