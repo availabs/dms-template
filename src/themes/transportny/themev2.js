@@ -865,7 +865,13 @@ const dataCard = {
       cardsGrid:                     "grid gap-4",
       cellsGrid:                     "grid",
       subWrapper:                    "flex flex-col w-full",
-      subWrapperCompactView:         "rounded-[8px] bg-white",
+      // Section chrome owns the card shape now: border / per-corner radius / bg
+      // live on the section (sectionArray resolveBorder/resolveRadius/resolveBg),
+      // not on the card. Keeping `rounded-[8px] bg-white` here painted a fully-
+      // rounded white box over the section's per-corner radius, so fused compound
+      // cards never showed their intended corners. Empty = defer to the section.
+      // (The `context` style below keeps its own shell deliberately.)
+      subWrapperCompactView:         "",
       header:                        "font-display text-[12.5px] tracking-[0.04em] text-slate-500 px-3 pt-3 pb-1",
       headerValueWrapper:            "flex flex-col w-full",
       headerValueWrapperFullBleed:   "w-full relative overflow-hidden",
@@ -911,7 +917,14 @@ const dataCard = {
       cardTitle: `${F_DISP} font-medium text-[18px]! leading-[1.15] tracking-tight uppercase ${INK}`,
       cardTitleSM: `${F_DISP} font-medium text-[15px]! leading-[1.15] tracking-tight uppercase ${INK}`,
       metaAccent: `${F_MONO} text-[12px]! leading-[1.45] tabular-nums font-medium text-[#B45309]!`,
-      chip: `${F_MONO} text-[9.5px]! uppercase tracking-[0.14em] text-slate-400! border border-zinc-950/10 rounded px-1.5 py-0.5 inline-block w-fit pb-0!`,
+      // As-of / methodology badge. Full-width (fills its cell so stacked chips'
+      // borders align) with symmetric vertical padding. The inner value wrapper
+      // ships `text-end justify-items-end min-h-[20px]` (column justify:'right' +
+      // theme.valueWrapper); the descendant overrides below force it to
+      // `text-center` and drop the min-height so a single short line centers both
+      // ways — scoped here (not via global justifyTextRight / valueWrapper, which
+      // would hit every value cell). `!` beats theme.value's merged `px-3 pb-3`.
+      chip: `${F_MONO} text-[9.5px]! uppercase tracking-[0.14em] leading-none text-slate-400! border border-zinc-950/10 rounded w-full! px-2! py-1! text-center! [&_div]:text-center [&_div]:min-h-0`,
       metaXS: `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-slate-400!`,
       kicker: `${F_MONO} text-[10.5px]! uppercase tracking-[0.2em] text-[#CA8A04]!`,
       textXS:           "text-[11px] font-medium",
