@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Prioritize Actions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="mny-page-bg min-h-screen">
+
+<!-- ================================================================
+     HEADER — mnyHeader "none" variant (dark rounded-bl corner)
+     ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+
+          <div class="relative w-full lg:h-[420px] lg:-mb-[150px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <!-- Right: dark shape with rounded-bl corner -->
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none mny-page-bg-dark"></div>
+            </div>
+            <!-- Left: white card overlay with title + county selector -->
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-0">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Prioritize<br>Actions
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[460px]">
+                    Assign an implementation priority to each of your county's mitigation actions, and track how much of the portfolio is prioritized.
+                  </div>
+                  <!-- County selector -->
+                  <div class="flex items-center gap-3 mt-4 px-1">
+                    <button class="flex items-center gap-2 px-4 py-2 bg-white border border-mny-100 rounded-full mny-shadow-sm hover:border-mny-200 transition-colors">
+                      <!-- icon: Map -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                      <span class="font-proxima text-[14px] font-[600] text-mny-900">Sullivan County</span>
+                      <!-- icon: ChevronDown -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                    </button>
+                    <span class="font-proxima text-[13px] text-mny-400">FIPS 36105</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV — fixed floating -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end min-w-[110px]">
+          <button class="bg-white flex justify-between items-center h-[48px] w-[217px] py-[8px] pr-[8px] pl-[24px] border border-mny-100 rounded-[1000px] mny-shadow-sm">
+            <span class="uppercase text-mny-900 font-medium text-[12px]">Search</span>
+            <div class="bg-mny-700 p-[10px] rounded-full">
+              <!-- icon: Search -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="text-white" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M15,14.3L10.7,10c1.9-2.3,1.6-5.8-0.7-7.7S4.2,0.7,2.3,3S0.7,8.8,3,10.7c2,1.7,5,1.7,7,0l4.3,4.3L15,14.3z M2,6.5 C2,4,4,2,6.5,2S11,4,11,6.5S9,11,6.5,11S2,9,2,6.5z"/></svg>
+            </div>
+          </button>
+          <div class="flex p-1 items-center">
+            <div class="flex p-2 justify-center items-center">
+              <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+                <!-- icon: User -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16" fill="currentColor"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     PRIORITIZATION PROGRESS — hero white card on the topo canvas
+     LEFT: completion ring (% prioritized).  RIGHT: priority
+     distribution bar graph across the 5 county-priority tiers.
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full grid grid-cols-12 gap-0 pt-8">
+
+            <!-- SECTION: progress hero (span-12) -->
+            <div data-dms="section" data-name="prioritization-progress" class="col-span-12 p-2">
+              <div class="bg-white rounded-[12px] mny-shadow-md p-6 lg:p-8">
+                <div class="flex items-center justify-between mb-6 flex-wrap gap-2">
+                  <div>
+                    <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider">Status Tracking</p>
+                    <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">Prioritization Progress</h3>
+                  </div>
+                  <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-mny-y50 border border-mny-y500">
+                    <!-- icon: Information -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-y700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                    <span class="font-proxima text-[12px] font-[600] text-mny-900">214 actions still need a priority</span>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+                  <!-- LEFT: completion ring -->
+                  <div class="lg:col-span-4 flex items-center gap-6">
+                    <div class="relative w-[150px] h-[150px] flex-shrink-0">
+                      <svg class="w-full h-full -rotate-90" viewBox="0 0 132 132">
+                        <circle cx="66" cy="66" r="56" fill="none" stroke="#E0EBF0" stroke-width="12"/>
+                        <circle cx="66" cy="66" r="56" fill="none" stroke="#EAAD43" stroke-width="12" stroke-linecap="round" stroke-dasharray="193.5 351.9"/>
+                      </svg>
+                      <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="font-display text-[40px] text-mny-900 font-[500] leading-none tracking-[-0.03em]">55%</span>
+                        <span class="font-proxima text-[11px] text-mny-400 font-[600] uppercase tracking-wider mt-1">Prioritized</span>
+                      </div>
+                    </div>
+                    <div class="space-y-3">
+                      <div>
+                        <p class="font-display text-[30px] text-mny-900 font-[500] leading-none tracking-[-0.03em]">259<span class="font-proxima text-[15px] text-mny-400 font-[600]"> / 473</span></p>
+                        <p class="font-proxima text-[12px] text-mny-700 font-[600] mt-1">Actions prioritized</p>
+                      </div>
+                      <div class="pt-3 border-t border-mny-100">
+                        <p class="font-display text-[24px] text-mny-400 font-[500] leading-none tracking-[-0.03em]">214</p>
+                        <p class="font-proxima text-[12px] text-mny-400 font-[600] mt-1">Not yet reported</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- RIGHT: priority distribution bar graph -->
+                  <div class="lg:col-span-8 lg:border-l lg:border-mny-100 lg:pl-8">
+                    <div class="flex items-end justify-between mb-4">
+                      <div>
+                        <h4 class="font-display font-[500] text-[20px] text-mny-900 uppercase leading-none">Priority Distribution</h4>
+                        <p class="font-proxima text-[13px] text-mny-400 mt-1">Share of all 473 actions in each county-priority tier</p>
+                      </div>
+                      <!-- icon: ChartColumn -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-mny-200" viewBox="0 0 20 20" fill="currentColor"><path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 003 0v-13A1.5 1.5 0 0015.5 2zM9.5 6A1.5 1.5 0 008 7.5v9a1.5 1.5 0 003 0v-9A1.5 1.5 0 009.5 6zM3.5 10A1.5 1.5 0 002 11.5v5a1.5 1.5 0 003 0v-5A1.5 1.5 0 003.5 10z"/></svg>
+                    </div>
+
+                    <div class="space-y-2.5">
+                      <!-- Tier 1 -->
+                      <div class="flex items-center gap-3">
+                        <div class="w-[34px] flex-shrink-0 text-right"><span class="font-display text-[14px] text-mny-900">T1</span></div>
+                        <div class="w-[150px] flex-shrink-0"><span class="font-proxima text-[12px] text-mny-700 font-[600]">Top Priority</span></div>
+                        <div class="flex-1 bg-mny-50 rounded-full h-[22px] overflow-hidden">
+                          <div class="bg-mny-y700 h-full rounded-full flex items-center justify-end pr-2 min-w-[42px]" style="width:8%;">
+                            <span class="font-proxima text-[11px] text-mny-900 font-[700]">38</span>
+                          </div>
+                        </div>
+                        <div class="w-[42px] flex-shrink-0 text-right"><span class="font-proxima text-[12px] text-mny-400 font-[600] tabular-nums">8%</span></div>
+                      </div>
+                      <!-- Tier 2 -->
+                      <div class="flex items-center gap-3">
+                        <div class="w-[34px] flex-shrink-0 text-right"><span class="font-display text-[14px] text-mny-900">T2</span></div>
+                        <div class="w-[150px] flex-shrink-0"><span class="font-proxima text-[12px] text-mny-700 font-[600]">Significant</span></div>
+                        <div class="flex-1 bg-mny-50 rounded-full h-[22px] overflow-hidden">
+                          <div class="bg-mny-700 h-full rounded-full flex items-center justify-end pr-2 min-w-[42px]" style="width:16%;">
+                            <span class="font-proxima text-[11px] text-white font-[700]">74</span>
+                          </div>
+                        </div>
+                        <div class="w-[42px] flex-shrink-0 text-right"><span class="font-proxima text-[12px] text-mny-400 font-[600] tabular-nums">16%</span></div>
+                      </div>
+                      <!-- Tier 3 -->
+                      <div class="flex items-center gap-3">
+                        <div class="w-[34px] flex-shrink-0 text-right"><span class="font-display text-[14px] text-mny-900">T3</span></div>
+                        <div class="w-[150px] flex-shrink-0"><span class="font-proxima text-[12px] text-mny-700 font-[600]">Important / Secondary</span></div>
+                        <div class="flex-1 bg-mny-50 rounded-full h-[22px] overflow-hidden">
+                          <div class="bg-mny-400 h-full rounded-full flex items-center justify-end pr-2 min-w-[42px]" style="width:20%;">
+                            <span class="font-proxima text-[11px] text-white font-[700]">96</span>
+                          </div>
+                        </div>
+                        <div class="w-[42px] flex-shrink-0 text-right"><span class="font-proxima text-[12px] text-mny-400 font-[600] tabular-nums">20%</span></div>
+                      </div>
+                      <!-- Tier 4 -->
+                      <div class="flex items-center gap-3">
+                        <div class="w-[34px] flex-shrink-0 text-right"><span class="font-display text-[14px] text-mny-900">T4</span></div>
+                        <div class="w-[150px] flex-shrink-0"><span class="font-proxima text-[12px] text-mny-700 font-[600]">Long-Term / Opportunistic</span></div>
+                        <div class="flex-1 bg-mny-50 rounded-full h-[22px] overflow-hidden">
+                          <div class="bg-mny-200 h-full rounded-full flex items-center justify-end pr-2 min-w-[42px]" style="width:11%;">
+                            <span class="font-proxima text-[11px] text-mny-900 font-[700]">51</span>
+                          </div>
+                        </div>
+                        <div class="w-[42px] flex-shrink-0 text-right"><span class="font-proxima text-[12px] text-mny-400 font-[600] tabular-nums">11%</span></div>
+                      </div>
+                      <!-- Not Reported -->
+                      <div class="flex items-center gap-3">
+                        <div class="w-[34px] flex-shrink-0 text-right"><span class="font-display text-[14px] text-mny-400">—</span></div>
+                        <div class="w-[150px] flex-shrink-0"><span class="font-proxima text-[12px] text-mny-400 font-[600]">Not Reported</span></div>
+                        <div class="flex-1 bg-mny-50 rounded-full h-[22px] overflow-hidden">
+                          <div class="bg-mny-100 border border-mny-200 h-full rounded-full flex items-center justify-end pr-2 min-w-[42px]" style="width:45%;">
+                            <span class="font-proxima text-[11px] text-mny-700 font-[700]">214</span>
+                          </div>
+                        </div>
+                        <div class="w-[42px] flex-shrink-0 text-right"><span class="font-proxima text-[12px] text-mny-400 font-[600] tabular-nums">45%</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     CONTENT CARD — implementation-status context + actions list
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full grid grid-cols-12 gap-0 pt-2 pb-[5px]">
+
+            <!-- SECTION: implementation status context (span-12) -->
+            <div data-dms="section" data-name="implementation-status" class="col-span-12 p-2">
+              <div class="bg-white rounded-[12px] mny-shadow-md p-6 lg:p-7">
+                <div class="flex items-end justify-between mb-4 flex-wrap gap-2">
+                  <div>
+                    <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">Implementation Status</h3>
+                    <p class="font-proxima text-[13px] text-mny-400 mt-1">Where Sullivan County's 473 actions stand today — independent of priority</p>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <!-- Proposed - Not Started -->
+                  <div class="rounded-[10px] border border-mny-100 p-4 flex items-start gap-3">
+                    <span class="mt-0.5 text-mny-200">
+                      <!-- icon: Incomplete -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="2.2"/></svg>
+                    </span>
+                    <div>
+                      <p class="font-display text-[26px] text-mny-900 font-[500] leading-none tracking-[-0.03em]">391</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[600] mt-1 leading-tight">Proposed &middot; Not Started</p>
+                    </div>
+                  </div>
+                  <!-- In-Progress -->
+                  <div class="rounded-[10px] border border-mny-100 p-4 flex items-start gap-3">
+                    <span class="mt-0.5 text-mny-400">
+                      <!-- icon: InProgress -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="2.2"/><path d="M10 3.5a6.5 6.5 0 016.5 6.5H10z" fill="currentColor"/></svg>
+                    </span>
+                    <div>
+                      <p class="font-display text-[26px] text-mny-900 font-[500] leading-none tracking-[-0.03em]">13</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[600] mt-1 leading-tight">In-Progress</p>
+                    </div>
+                  </div>
+                  <!-- Completed -->
+                  <div class="rounded-[10px] border border-mny-100 p-4 flex items-start gap-3">
+                    <span class="mt-0.5 text-mny-grn">
+                      <!-- icon: CheckmarkFilled -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
+                    </span>
+                    <div>
+                      <p class="font-display text-[26px] text-mny-900 font-[500] leading-none tracking-[-0.03em]">40</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[600] mt-1 leading-tight">Completed</p>
+                    </div>
+                  </div>
+                  <!-- Discontinued -->
+                  <div class="rounded-[10px] border border-mny-100 p-4 flex items-start gap-3">
+                    <span class="mt-0.5 text-mny-red">
+                      <!-- icon: Warning -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.7 7.3a1 1 0 011.4 0L10 8.6l-.1-.1.1.1 1.3-1.3a1 1 0 111.4 1.4L11.4 10l1.3 1.3a1 1 0 01-1.4 1.4L10 11.4l-1.3 1.3a1 1 0 01-1.4-1.4L8.6 10 7.3 8.7a1 1 0 010-1.4z" clip-rule="evenodd"/></svg>
+                    </span>
+                    <div>
+                      <p class="font-display text-[26px] text-mny-900 font-[500] leading-none tracking-[-0.03em]">4</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[600] mt-1 leading-tight">Discontinued</p>
+                    </div>
+                  </div>
+                  <!-- Progress Not Reported -->
+                  <div class="rounded-[10px] border border-mny-100 p-4 flex items-start gap-3">
+                    <span class="mt-0.5 text-mny-200">
+                      <!-- icon: CircleSolid -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8"/></svg>
+                    </span>
+                    <div>
+                      <p class="font-display text-[26px] text-mny-900 font-[500] leading-none tracking-[-0.03em]">25</p>
+                      <p class="font-proxima text-[12px] text-mny-700 font-[600] mt-1 leading-tight">Progress Not Reported</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION: actions to prioritize (span-12) -->
+            <div data-dms="section" data-name="actions-to-prioritize" class="col-span-12 p-2">
+              <div class="bg-white rounded-[12px] mny-shadow-md p-6 lg:p-8">
+
+                <!-- header + filter strip -->
+                <div class="flex items-end justify-between mb-5 flex-wrap gap-3">
+                  <div>
+                    <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase">Actions to Prioritize</h3>
+                    <p class="font-proxima text-[14px] text-mny-400 mt-1">Review each action and assign its county priority &middot; <span class="text-mny-700 font-[600]">214 still unprioritized</span></p>
+                  </div>
+                  <span class="font-proxima text-[13px] text-mny-400">Showing 6 of 473</span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 mb-6">
+                  <!-- search -->
+                  <div class="flex items-center gap-2 px-3 h-[40px] bg-white border border-mny-100 rounded-full mny-shadow-sm min-w-[220px]">
+                    <!-- icon: Search -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.9 3.5l4.3 4.3a1 1 0 01-1.4 1.4l-4.3-4.3A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+                    <span class="font-proxima text-[13px] text-mny-400">Search actions…</span>
+                  </div>
+                  <!-- jurisdiction select -->
+                  <button class="flex items-center gap-2 px-4 h-[40px] bg-white border border-mny-100 rounded-full mny-shadow-sm">
+                    <span class="font-proxima text-[13px] text-mny-700 font-[600]">Jurisdiction: All</span>
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <!-- status select -->
+                  <button class="flex items-center gap-2 px-4 h-[40px] bg-white border border-mny-100 rounded-full mny-shadow-sm">
+                    <span class="font-proxima text-[13px] text-mny-700 font-[600]">Status: All</span>
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <!-- unprioritized toggle (active) -->
+                  <button class="flex items-center gap-2 px-4 h-[40px] bg-mny-y50 border border-mny-y500 rounded-full">
+                    <span class="w-2 h-2 rounded-full bg-mny-y700"></span>
+                    <span class="font-proxima text-[13px] text-mny-900 font-[600]">Unprioritized only</span>
+                  </button>
+                  <div class="flex-1"></div>
+                  <!-- sort -->
+                  <button class="flex items-center gap-2 px-4 h-[40px] bg-white border border-mny-100 rounded-full mny-shadow-sm">
+                    <!-- icon: SortDescending -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path d="M3 5h11a1 1 0 010 2H3a1 1 0 110-2zm0 4h7a1 1 0 010 2H3a1 1 0 110-2zm0 4h4a1 1 0 110 2H3a1 1 0 110-2zm13.7.3a1 1 0 00-1.4 0L14 14.6V8a1 1 0 10-2 0v6.6l-1.3-1.3a1 1 0 10-1.4 1.4l3 3a1 1 0 001.4 0l3-3a1 1 0 000-1.4z"/></svg>
+                    <span class="font-proxima text-[13px] text-mny-700 font-[600]">Sort: Cost</span>
+                  </button>
+                </div>
+
+                <!-- ===== ACTION CARDS ===== -->
+                <div class="space-y-3">
+
+                  <!-- CARD 1 — Tier 1 -->
+                  <div class="rounded-[12px] border border-mny-100 hover:border-mny-200 transition-colors p-5 flex flex-col lg:flex-row gap-5">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-3 mb-1.5 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] font-[600] text-mny-700">
+                          <!-- icon: Map -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                          Bethel (Town)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full bg-mny-50 border border-mny-100 text-mny-700 font-proxima font-[700] text-[10px] uppercase tracking-wider">
+                          <span class="w-1.5 h-1.5 rounded-full border-2 border-mny-200"></span>Proposed &middot; Not Started
+                        </span>
+                      </div>
+                      <h4 class="font-proxima font-[700] text-[15px] text-mny-900 leading-snug">Bethel — Floodprone Roads</h4>
+                      <p class="font-proxima text-[13px] text-mny-400 mt-1 max-w-[640px] leading-[1.5]">Develop specific mitigation solutions for flood-prone road systems after a flood study — elevation, drainage improvements, regrading, or resurfacing.</p>
+                      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3.5">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Currency -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.5c-1.4.3-2.5 1.3-2.5 2.7 0 1.6 1.4 2.4 2.9 2.8 1.3.3 1.6.7 1.6 1.1 0 .5-.5.9-1.5.9s-1.5-.4-1.6-.9a1 1 0 10-2 .3c.3 1.2 1.2 2 2.6 2.2v.5a1 1 0 102 0v-.5c1.5-.3 2.5-1.4 2.5-2.7 0-1.7-1.5-2.5-3-2.8-1.2-.3-1.5-.6-1.5-1 0-.5.4-.9 1.4-.9.9 0 1.3.4 1.4.8a1 1 0 101.9-.5c-.3-1.1-1.1-1.9-2.6-2.1V5z" clip-rule="evenodd"/></svg>
+                          $1.2M
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Events -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.3.7l2.5 2.5a1 1 0 001.4-1.4L11 9.6V6z" clip-rule="evenodd"/></svg>
+                          2–4 years
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Tag -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v4.6a2 2 0 00.6 1.4l6.4 6.4a2 2 0 002.8 0l4.6-4.6a2 2 0 000-2.8L11 3.6A2 2 0 009.6 3H5zm1.5 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" clip-rule="evenodd"/></svg>
+                          Goals 1 &middot; 3
+                        </span>
+                        <span class="inline-flex items-center gap-1 pl-1 pr-2.5 py-1 rounded-full bg-mny-50 border border-mny-100">
+                          <img src="../assets/mny/hazards/mny-flood.webp" class="w-4 h-4" alt="Flooding"><span class="font-proxima text-[11px] font-[600] text-mny-700">Flooding</span>
+                        </span>
+                      </div>
+                    </div>
+                    <!-- priority control: Tier 1 (assigned) -->
+                    <div class="lg:w-[220px] flex-shrink-0 lg:border-l lg:border-mny-100 lg:pl-5 flex flex-col gap-2">
+                      <p class="font-proxima text-[10px] uppercase tracking-wider text-mny-400 font-[700]">County Priority</p>
+                      <div class="inline-flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] bg-mny-y50 border border-mny-y500">
+                        <span class="w-7 h-7 rounded-full bg-mny-y700 flex items-center justify-center"><span class="font-display text-[13px] text-mny-900 leading-none">1</span></span>
+                        <div>
+                          <p class="font-display text-[13px] text-mny-900 uppercase leading-none">Tier 1</p>
+                          <p class="font-proxima text-[11px] text-mny-700 leading-tight mt-0.5">Top Implementation Priority</p>
+                        </div>
+                      </div>
+                      <button class="inline-flex items-center gap-1 font-proxima text-[12px] text-mny-400 font-[600] hover:text-mny-700 self-start">
+                        <!-- icon: Edit -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.6 3.4a2 2 0 012.8 2.8l-8.4 8.4-3.7 1 1-3.7 8.3-8.5z"/></svg>
+                        Change
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- CARD 2 — Tier 2 -->
+                  <div class="rounded-[12px] border border-mny-100 hover:border-mny-200 transition-colors p-5 flex flex-col lg:flex-row gap-5">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-3 mb-1.5 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] font-[600] text-mny-700">
+                          <!-- icon: Map -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                          Bethel (Town)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full bg-mny-50 border border-mny-100 text-mny-700 font-proxima font-[700] text-[10px] uppercase tracking-wider">
+                          <span class="w-1.5 h-1.5 rounded-full border-2 border-mny-200"></span>Proposed &middot; Not Started
+                        </span>
+                      </div>
+                      <h4 class="font-proxima font-[700] text-[15px] text-mny-900 leading-snug">Bethel — Generators at Critical Facilities</h4>
+                      <p class="font-proxima text-[13px] text-mny-400 mt-1 max-w-[640px] leading-[1.5]">Study required generator capacity, then purchase and install back-up generators so critical facilities maintain continuity of operations through each hazard of concern.</p>
+                      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3.5">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Currency -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.5c-1.4.3-2.5 1.3-2.5 2.7 0 1.6 1.4 2.4 2.9 2.8 1.3.3 1.6.7 1.6 1.1 0 .5-.5.9-1.5.9s-1.5-.4-1.6-.9a1 1 0 10-2 .3c.3 1.2 1.2 2 2.6 2.2v.5a1 1 0 102 0v-.5c1.5-.3 2.5-1.4 2.5-2.7 0-1.7-1.5-2.5-3-2.8-1.2-.3-1.5-.6-1.5-1 0-.5.4-.9 1.4-.9.9 0 1.3.4 1.4.8a1 1 0 101.9-.5c-.3-1.1-1.1-1.9-2.6-2.1V5z" clip-rule="evenodd"/></svg>
+                          $650K
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Events -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.3.7l2.5 2.5a1 1 0 001.4-1.4L11 9.6V6z" clip-rule="evenodd"/></svg>
+                          Less than 2 years
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Tag -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v4.6a2 2 0 00.6 1.4l6.4 6.4a2 2 0 002.8 0l4.6-4.6a2 2 0 000-2.8L11 3.6A2 2 0 009.6 3H5zm1.5 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" clip-rule="evenodd"/></svg>
+                          Goals 1 &middot; 6
+                        </span>
+                        <span class="inline-flex items-center gap-1 pl-1 pr-2.5 py-1 rounded-full bg-mny-50 border border-mny-100">
+                          <img src="../assets/mny/hazards/mny-extreme-cold.webp" class="w-4 h-4" alt="Extreme Cold"><span class="font-proxima text-[11px] font-[600] text-mny-700">Extreme Cold</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1 pl-1 pr-2.5 py-1 rounded-full bg-mny-50 border border-mny-100">
+                          <img src="../assets/mny/hazards/mny-wind.webp" class="w-4 h-4" alt="Wind"><span class="font-proxima text-[11px] font-[600] text-mny-700">Wind</span>
+                        </span>
+                      </div>
+                    </div>
+                    <!-- priority control: Tier 2 -->
+                    <div class="lg:w-[220px] flex-shrink-0 lg:border-l lg:border-mny-100 lg:pl-5 flex flex-col gap-2">
+                      <p class="font-proxima text-[10px] uppercase tracking-wider text-mny-400 font-[700]">County Priority</p>
+                      <div class="inline-flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] bg-mny-50 border border-mny-200">
+                        <span class="w-7 h-7 rounded-full bg-mny-700 flex items-center justify-center"><span class="font-display text-[13px] text-white leading-none">2</span></span>
+                        <div>
+                          <p class="font-display text-[13px] text-mny-900 uppercase leading-none">Tier 2</p>
+                          <p class="font-proxima text-[11px] text-mny-700 leading-tight mt-0.5">Significant Priority</p>
+                        </div>
+                      </div>
+                      <button class="inline-flex items-center gap-1 font-proxima text-[12px] text-mny-400 font-[600] hover:text-mny-700 self-start">
+                        <!-- icon: Edit -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.6 3.4a2 2 0 012.8 2.8l-8.4 8.4-3.7 1 1-3.7 8.3-8.5z"/></svg>
+                        Change
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- CARD 3 — Tier 3 -->
+                  <div class="rounded-[12px] border border-mny-100 hover:border-mny-200 transition-colors p-5 flex flex-col lg:flex-row gap-5">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-3 mb-1.5 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] font-[600] text-mny-700">
+                          <!-- icon: Map -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                          Bethel (Town)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full bg-mny-50 border border-mny-100 text-mny-700 font-proxima font-[700] text-[10px] uppercase tracking-wider">
+                          <span class="w-1.5 h-1.5 rounded-full border-2 border-mny-200"></span>Proposed &middot; Not Started
+                        </span>
+                      </div>
+                      <h4 class="font-proxima font-[700] text-[15px] text-mny-900 leading-snug">Bethel — Dam Assessment</h4>
+                      <p class="font-proxima text-[13px] text-mny-400 mt-1 max-w-[640px] leading-[1.5]">Complete a dam assessment within the Town to determine the condition of structures (proposed in 2012).</p>
+                      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3.5">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Currency -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.5c-1.4.3-2.5 1.3-2.5 2.7 0 1.6 1.4 2.4 2.9 2.8 1.3.3 1.6.7 1.6 1.1 0 .5-.5.9-1.5.9s-1.5-.4-1.6-.9a1 1 0 10-2 .3c.3 1.2 1.2 2 2.6 2.2v.5a1 1 0 102 0v-.5c1.5-.3 2.5-1.4 2.5-2.7 0-1.7-1.5-2.5-3-2.8-1.2-.3-1.5-.6-1.5-1 0-.5.4-.9 1.4-.9.9 0 1.3.4 1.4.8a1 1 0 101.9-.5c-.3-1.1-1.1-1.9-2.6-2.1V5z" clip-rule="evenodd"/></svg>
+                          $75K
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Events -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.3.7l2.5 2.5a1 1 0 001.4-1.4L11 9.6V6z" clip-rule="evenodd"/></svg>
+                          Less than 2 years
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Tag -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v4.6a2 2 0 00.6 1.4l6.4 6.4a2 2 0 002.8 0l4.6-4.6a2 2 0 000-2.8L11 3.6A2 2 0 009.6 3H5zm1.5 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" clip-rule="evenodd"/></svg>
+                          Goal 3
+                        </span>
+                        <span class="inline-flex items-center gap-1 pl-1 pr-2.5 py-1 rounded-full bg-mny-50 border border-mny-100">
+                          <img src="../assets/mny/hazards/mny-flood.webp" class="w-4 h-4" alt="Flooding"><span class="font-proxima text-[11px] font-[600] text-mny-700">Flooding</span>
+                        </span>
+                      </div>
+                    </div>
+                    <!-- priority control: Tier 3 -->
+                    <div class="lg:w-[220px] flex-shrink-0 lg:border-l lg:border-mny-100 lg:pl-5 flex flex-col gap-2">
+                      <p class="font-proxima text-[10px] uppercase tracking-wider text-mny-400 font-[700]">County Priority</p>
+                      <div class="inline-flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] bg-mny-50 border border-mny-200">
+                        <span class="w-7 h-7 rounded-full bg-mny-400 flex items-center justify-center"><span class="font-display text-[13px] text-white leading-none">3</span></span>
+                        <div>
+                          <p class="font-display text-[13px] text-mny-900 uppercase leading-none">Tier 3</p>
+                          <p class="font-proxima text-[11px] text-mny-700 leading-tight mt-0.5">Important but Secondary</p>
+                        </div>
+                      </div>
+                      <button class="inline-flex items-center gap-1 font-proxima text-[12px] text-mny-400 font-[600] hover:text-mny-700 self-start">
+                        <!-- icon: Edit -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.6 3.4a2 2 0 012.8 2.8l-8.4 8.4-3.7 1 1-3.7 8.3-8.5z"/></svg>
+                        Change
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- CARD 4 — Tier 4 -->
+                  <div class="rounded-[12px] border border-mny-100 hover:border-mny-200 transition-colors p-5 flex flex-col lg:flex-row gap-5">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-3 mb-1.5 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] font-[600] text-mny-700">
+                          <!-- icon: Map -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                          Bethel (Town)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full bg-mny-50 border border-mny-100 text-mny-700 font-proxima font-[700] text-[10px] uppercase tracking-wider">
+                          <span class="w-1.5 h-1.5 rounded-full border-2 border-mny-200"></span>Proposed &middot; Not Started
+                        </span>
+                      </div>
+                      <h4 class="font-proxima font-[700] text-[15px] text-mny-900 leading-snug">Bethel — Floodplain Management Training</h4>
+                      <p class="font-proxima text-[13px] text-mny-400 mt-1 max-w-[640px] leading-[1.5]">Where feasible, send staff to FEMA and NYS DEC floodplain-management trainings and encourage Certified Floodplain Manager certification through ASFPM.</p>
+                      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3.5">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Currency -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.5c-1.4.3-2.5 1.3-2.5 2.7 0 1.6 1.4 2.4 2.9 2.8 1.3.3 1.6.7 1.6 1.1 0 .5-.5.9-1.5.9s-1.5-.4-1.6-.9a1 1 0 10-2 .3c.3 1.2 1.2 2 2.6 2.2v.5a1 1 0 102 0v-.5c1.5-.3 2.5-1.4 2.5-2.7 0-1.7-1.5-2.5-3-2.8-1.2-.3-1.5-.6-1.5-1 0-.5.4-.9 1.4-.9.9 0 1.3.4 1.4.8a1 1 0 101.9-.5c-.3-1.1-1.1-1.9-2.6-2.1V5z" clip-rule="evenodd"/></svg>
+                          $5K
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Events -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.3.7l2.5 2.5a1 1 0 001.4-1.4L11 9.6V6z" clip-rule="evenodd"/></svg>
+                          Ongoing
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Tag -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v4.6a2 2 0 00.6 1.4l6.4 6.4a2 2 0 002.8 0l4.6-4.6a2 2 0 000-2.8L11 3.6A2 2 0 009.6 3H5zm1.5 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" clip-rule="evenodd"/></svg>
+                          Goals 2 &middot; 4
+                        </span>
+                        <span class="inline-flex items-center gap-1 pl-1 pr-2.5 py-1 rounded-full bg-mny-50 border border-mny-100">
+                          <img src="../assets/mny/hazards/mny-flood.webp" class="w-4 h-4" alt="Flooding"><span class="font-proxima text-[11px] font-[600] text-mny-700">Flooding</span>
+                        </span>
+                      </div>
+                    </div>
+                    <!-- priority control: Tier 4 -->
+                    <div class="lg:w-[220px] flex-shrink-0 lg:border-l lg:border-mny-100 lg:pl-5 flex flex-col gap-2">
+                      <p class="font-proxima text-[10px] uppercase tracking-wider text-mny-400 font-[700]">County Priority</p>
+                      <div class="inline-flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] bg-mny-50 border border-mny-100">
+                        <span class="w-7 h-7 rounded-full bg-mny-200 flex items-center justify-center"><span class="font-display text-[13px] text-mny-900 leading-none">4</span></span>
+                        <div>
+                          <p class="font-display text-[13px] text-mny-900 uppercase leading-none">Tier 4</p>
+                          <p class="font-proxima text-[11px] text-mny-700 leading-tight mt-0.5">Long-Term / Opportunistic</p>
+                        </div>
+                      </div>
+                      <button class="inline-flex items-center gap-1 font-proxima text-[12px] text-mny-400 font-[600] hover:text-mny-700 self-start">
+                        <!-- icon: Edit -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.6 3.4a2 2 0 012.8 2.8l-8.4 8.4-3.7 1 1-3.7 8.3-8.5z"/></svg>
+                        Change
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- CARD 5 — Not Reported (call to action) -->
+                  <div class="rounded-[12px] border border-mny-y500/70 bg-mny-y50/30 hover:border-mny-y700 transition-colors p-5 flex flex-col lg:flex-row gap-5">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-3 mb-1.5 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] font-[600] text-mny-700">
+                          <!-- icon: Map -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                          Bethel (Town)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full bg-mny-50 border border-mny-100 text-mny-700 font-proxima font-[700] text-[10px] uppercase tracking-wider">
+                          <span class="w-1.5 h-1.5 rounded-full border-2 border-mny-200"></span>Proposed &middot; Not Started
+                        </span>
+                      </div>
+                      <h4 class="font-proxima font-[700] text-[15px] text-mny-900 leading-snug">Bethel — Repetitive Loss Properties</h4>
+                      <p class="font-proxima text-[13px] text-mny-400 mt-1 max-w-[640px] leading-[1.5]">Outreach to repetitive-loss property owners, then develop a FEMA grant application and BCA to fund acquisition, relocation, or elevation of frequently-flooded properties.</p>
+                      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3.5">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Currency -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.5c-1.4.3-2.5 1.3-2.5 2.7 0 1.6 1.4 2.4 2.9 2.8 1.3.3 1.6.7 1.6 1.1 0 .5-.5.9-1.5.9s-1.5-.4-1.6-.9a1 1 0 10-2 .3c.3 1.2 1.2 2 2.6 2.2v.5a1 1 0 102 0v-.5c1.5-.3 2.5-1.4 2.5-2.7 0-1.7-1.5-2.5-3-2.8-1.2-.3-1.5-.6-1.5-1 0-.5.4-.9 1.4-.9.9 0 1.3.4 1.4.8a1 1 0 101.9-.5c-.3-1.1-1.1-1.9-2.6-2.1V5z" clip-rule="evenodd"/></svg>
+                          $2.4M
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Events -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.3.7l2.5 2.5a1 1 0 001.4-1.4L11 9.6V6z" clip-rule="evenodd"/></svg>
+                          More than 4 years
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Tag -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v4.6a2 2 0 00.6 1.4l6.4 6.4a2 2 0 002.8 0l4.6-4.6a2 2 0 000-2.8L11 3.6A2 2 0 009.6 3H5zm1.5 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" clip-rule="evenodd"/></svg>
+                          Goals 1 &middot; 3
+                        </span>
+                        <span class="inline-flex items-center gap-1 pl-1 pr-2.5 py-1 rounded-full bg-mny-50 border border-mny-100">
+                          <img src="../assets/mny/hazards/mny-flood.webp" class="w-4 h-4" alt="Flooding"><span class="font-proxima text-[11px] font-[600] text-mny-700">Flooding</span>
+                        </span>
+                      </div>
+                    </div>
+                    <!-- priority control: unset -> set priority CTA -->
+                    <div class="lg:w-[220px] flex-shrink-0 lg:border-l lg:border-mny-100 lg:pl-5 flex flex-col gap-2">
+                      <p class="font-proxima text-[10px] uppercase tracking-wider text-mny-400 font-[700]">County Priority</p>
+                      <button class="inline-flex items-center justify-between gap-2 px-3 py-2.5 rounded-[10px] bg-white border border-dashed border-mny-y700 text-mny-900 hover:bg-mny-y50 transition-colors w-full">
+                        <span class="font-proxima text-[13px] font-[700]">Set priority</span>
+                        <!-- icon: ChevronDown -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-y700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z" clip-rule="evenodd"/></svg>
+                      </button>
+                      <p class="font-proxima text-[11px] text-mny-400">Not yet reported</p>
+                    </div>
+                  </div>
+
+                  <!-- CARD 6 — Not Reported (open dropdown showing the 5 tier options) -->
+                  <div class="rounded-[12px] border border-mny-y700 bg-white mny-shadow-sm p-5 flex flex-col lg:flex-row gap-5">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-3 mb-1.5 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] font-[600] text-mny-700">
+                          <!-- icon: Map -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                          Bethel (Town)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full bg-mny-50 border border-mny-100 text-mny-700 font-proxima font-[700] text-[10px] uppercase tracking-wider">
+                          <span class="w-1.5 h-1.5 rounded-full border-2 border-mny-200"></span>Proposed &middot; Not Started
+                        </span>
+                      </div>
+                      <h4 class="font-proxima font-[700] text-[15px] text-mny-900 leading-snug">Bethel — Private Property Tree Assessment</h4>
+                      <p class="font-proxima text-[13px] text-mny-400 mt-1 max-w-[640px] leading-[1.5]">Provide property owners contact info for a forester to assess at-risk trees, and enforce municipal programs that prevent trees from threatening lives and power lines.</p>
+                      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3.5">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Currency -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.5c-1.4.3-2.5 1.3-2.5 2.7 0 1.6 1.4 2.4 2.9 2.8 1.3.3 1.6.7 1.6 1.1 0 .5-.5.9-1.5.9s-1.5-.4-1.6-.9a1 1 0 10-2 .3c.3 1.2 1.2 2 2.6 2.2v.5a1 1 0 102 0v-.5c1.5-.3 2.5-1.4 2.5-2.7 0-1.7-1.5-2.5-3-2.8-1.2-.3-1.5-.6-1.5-1 0-.5.4-.9 1.4-.9.9 0 1.3.4 1.4.8a1 1 0 101.9-.5c-.3-1.1-1.1-1.9-2.6-2.1V5z" clip-rule="evenodd"/></svg>
+                          $20K
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Events -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.3.7l2.5 2.5a1 1 0 001.4-1.4L11 9.6V6z" clip-rule="evenodd"/></svg>
+                          Ongoing
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-mny-700 font-[600]">
+                          <!-- icon: Tag -->
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v4.6a2 2 0 00.6 1.4l6.4 6.4a2 2 0 002.8 0l4.6-4.6a2 2 0 000-2.8L11 3.6A2 2 0 009.6 3H5zm1.5 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" clip-rule="evenodd"/></svg>
+                          Goal 1
+                        </span>
+                        <span class="inline-flex items-center gap-1 pl-1 pr-2.5 py-1 rounded-full bg-mny-50 border border-mny-100">
+                          <img src="../assets/mny/hazards/mny-wind.webp" class="w-4 h-4" alt="Wind"><span class="font-proxima text-[11px] font-[600] text-mny-700">Wind</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1 pl-1 pr-2.5 py-1 rounded-full bg-mny-50 border border-mny-100">
+                          <img src="../assets/mny/hazards/mny-ice-strom.webp" class="w-4 h-4" alt="Ice Storm"><span class="font-proxima text-[11px] font-[600] text-mny-700">Ice Storm</span>
+                        </span>
+                      </div>
+                    </div>
+                    <!-- priority control: open combobox menu -->
+                    <div class="lg:w-[260px] flex-shrink-0 lg:border-l lg:border-mny-100 lg:pl-5 flex flex-col gap-2 relative">
+                      <p class="font-proxima text-[10px] uppercase tracking-wider text-mny-400 font-[700]">County Priority</p>
+                      <button class="inline-flex items-center justify-between gap-2 px-3 py-2.5 rounded-[10px] bg-white border border-mny-y700 text-mny-900 w-full">
+                        <span class="font-proxima text-[13px] text-mny-400">Select a tier…</span>
+                        <!-- icon: ChevronUp -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-y700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.7 12.7a1 1 0 01-1.4 0L10 9.4l-3.3 3.3a1 1 0 01-1.4-1.4l4-4a1 1 0 011.4 0l4 4a1 1 0 010 1.4z" clip-rule="evenodd"/></svg>
+                      </button>
+                      <!-- open menu -->
+                      <div class="rounded-[10px] bg-white border border-mny-100 mny-shadow-md p-1.5 mt-0.5">
+                        <div class="flex items-center gap-2.5 rounded-md px-2.5 py-2 hover:bg-mny-y50 cursor-pointer">
+                          <span class="w-5 h-5 rounded-full bg-mny-y700 flex items-center justify-center"><span class="font-display text-[11px] text-mny-900 leading-none">1</span></span>
+                          <span class="font-proxima text-[13px] text-mny-900 font-[600]">Tier 1 – Top Implementation Priority</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 rounded-md px-2.5 py-2 hover:bg-mny-50 cursor-pointer">
+                          <span class="w-5 h-5 rounded-full bg-mny-700 flex items-center justify-center"><span class="font-display text-[11px] text-white leading-none">2</span></span>
+                          <span class="font-proxima text-[13px] text-mny-900 font-[600]">Tier 2 – Significant Priority</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 rounded-md px-2.5 py-2 hover:bg-mny-50 cursor-pointer">
+                          <span class="w-5 h-5 rounded-full bg-mny-400 flex items-center justify-center"><span class="font-display text-[11px] text-white leading-none">3</span></span>
+                          <span class="font-proxima text-[13px] text-mny-900 font-[600]">Tier 3 – Important but Secondary</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 rounded-md px-2.5 py-2 hover:bg-mny-50 cursor-pointer">
+                          <span class="w-5 h-5 rounded-full bg-mny-200 flex items-center justify-center"><span class="font-display text-[11px] text-mny-900 leading-none">4</span></span>
+                          <span class="font-proxima text-[13px] text-mny-900 font-[600]">Tier 4 – Long-Term / Opportunistic</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 rounded-md px-2.5 py-2 hover:bg-mny-50 cursor-pointer border-t border-mny-100 mt-1 pt-2">
+                          <span class="w-5 h-5 rounded-full border-2 border-mny-200"></span>
+                          <span class="font-proxima text-[13px] text-mny-400 font-[600]">Not Reported</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- list footer -->
+                <div class="flex items-center justify-between mt-6 pt-5 border-t border-mny-100 flex-wrap gap-3">
+                  <button class="px-5 py-2.5 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[14px] uppercase tracking-wider rounded-full cursor-pointer">View all 473 actions</button>
+                  <div class="flex items-center gap-2">
+                    <span class="font-proxima text-[13px] text-mny-400">Page 1 of 79</span>
+                    <div class="flex gap-1">
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-400 hover:bg-mny-50 cursor-pointer">
+                        <!-- icon: ChevronLeft -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.7 5.3a1 1 0 010 1.4L9.4 10l3.3 3.3a1 1 0 01-1.4 1.4l-4-4a1 1 0 010-1.4l4-4a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
+                      </button>
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-700 bg-mny-50 font-proxima text-[13px] font-[600]">1</button>
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-400 hover:bg-mny-50 font-proxima text-[13px] cursor-pointer">2</button>
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-400 hover:bg-mny-50 font-proxima text-[13px] cursor-pointer">3</button>
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-400 hover:bg-mny-50 cursor-pointer">
+                        <!-- icon: ChevronRight -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="font-proxima text-[13px] text-mny-400/60 pt-6 text-right">Data: AVAIL MitigateNY Actions Database &middot; Sullivan County (FIPS 36105). Cost &amp; priority-tier values shown are illustrative sample data.</p>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FOOTER — clearCentered layout
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div data-dms="layoutGroup" data-name="clearCentered">
+      <div class="w-full h-full flex-1 flex flex-row mt-3">
+        <div class="max-w-[1440px] w-full xl:px-[48px] mx-auto">
+          <div class="flex flex-1 w-full flex-col relative h-full min-h-[200px]">
+            <div class="w-full grid grid-cols-6 md:grid-cols-12">
+              <div class="col-span-6 md:col-span-12 p-4">
+                <div class="my-2 flex flex-col gap-[8px] max-w-[1362px] mx-auto text-mny-700 overflow-hidden">
+                  <div class="p-[56px] md:h-[386px] md:max-h-[386px] md:min-h-[386px] bg-white flex flex-col md:flex-row flex-1 px-4 xl:px-[64px] rounded-[12px] mny-shadow-md divide-x divide-mny-100 justify-center">
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Know the Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Built Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">People and Communities</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Environment</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Assess Risk</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Hazards</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Climate Change</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Presidentially Declared Disasters</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Plan to Act</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Local Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Evaluate Capacity &amp; Discover Resources</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Develop Strategies</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Explore Progress</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Action Tracking</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Prioritize Actions</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Resources</a>
+                    </div>
+                  </div>
+                  <div class="p-[16px] md:px-[56px] flex flex-col md:flex-row items-center justify-between md:h-[70px] md:max-h-[70px] md:min-h-[70px] bg-white flex-1 px-4 xl:px-[64px] rounded-[12px] mny-shadow-md">
+                    <div class="font-proxima text-[14px]">&copy; 2025 MitigateNY, All Rights Reserved.</div>
+                    <div class="flex gap-[24px]">
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Privacy Policy</a>
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Terms and Conditions</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:200px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="home-v2.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home v2</a>
+    <a href="section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+    <a href="actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard</a>
+    <a href="actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize Actions</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

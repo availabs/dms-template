@@ -1213,6 +1213,16 @@ const table = {
       cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
       cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2.5 px-4 font-[400] text-[13px] leading-[18px] text-slate-700",
     },
+    {
+      // Heat-grid / dense data cells (data_color_cell, data_bar matrices). Minimal
+      // Y padding so rows pack tight, a small X gap between cells, short rows. Set
+      // per-section via `display.tableStyle: "heat"`. Inherits the rest from default.
+      name: "heat",
+      headerCellContainer:            "w-full px-[3px] py-1 content-center text-center font-mono text-[9.5px] font-normal uppercase tracking-[0.14em]",
+      headerCellContainerBg:          "bg-white text-slate-400",
+      cell:                           "relative flex items-center min-h-[26px] border-b border-transparent",
+      cellInner:                      "w-full min-h-full flex items-center truncate py-[2px] px-[3px] font-[400] text-[12px] leading-[16px] text-slate-700",
+    },
   ],
 };
 
@@ -1316,6 +1326,9 @@ const graph = {
       strokeWidth: 2,
       area: false,
       areaOpacity: 0.14,
+      // Brand bars are solid (the translucent 0.75 CSS default reads washed-out).
+      // A section can still override per-graph via display.barOpacity.
+      barOpacity: 1,
       // Brand axis typography (CSS values, applied inline by the axis renderers). Ticks
       // use the mono numeric ladder (matches the report's metaSM/num treatment) — 11px
       // slate-500 monospace; axis labels use the Proxima sans, 13px medium slate-700.
@@ -1904,13 +1917,25 @@ const iconStyles = {
 // is data-driven via the column's `barMaxColumn`. Read by the dataBar columnType
 // via getComponentTheme(theme, 'dataBar').
 const dataBar = {
-  wrapper: "w-full flex items-center",
-  track:   "relative w-full h-3 rounded-[3px] bg-slate-100 overflow-hidden",
+  wrapper: "w-full flex items-center gap-2",
+  track:   "relative flex-1 min-w-0 h-3 rounded-[3px] bg-slate-100 overflow-hidden",
   fill:    "absolute inset-y-0 left-0 rounded-[3px] transition-[width] duration-300",
+  value:   "shrink-0 font-mono text-[10.5px] tabular-nums text-slate-500",
   fills: {
-    primary: "bg-[#1F3F8F]",
-    muted:   "bg-[#37576B]",
+    primary: "bg-[#1F3F8F]",   // region-rank: top-N
+    muted:   "bg-[#37576B]",   // region-rank: rest
+    warn:    "bg-[#E8843F]",   // corridor WZ share < 50%
+    alert:   "bg-[#D6453B]",   // corridor WZ share ≥ 50%
   },
+};
+
+// data_color_cell column type — the seasonality heat grid's 5-stop amber scale,
+// shaded within each region row. Read via getComponentTheme(theme, 'dataColorCell').
+const dataColorCell = {
+  wrapper: "w-full h-5 flex items-center justify-center px-[2px]", // outer: a couple px of horizontal breathing room between tiles
+  cell:    "w-full h-full rounded-[2px] flex items-center justify-center", // inner: the colour swatch
+  value:   "text-[10px] tabular-nums leading-none text-slate-700",
+  palette: ["#FEF3C7", "#FDE68A", "#FBBF24", "#D97706", "#7C2D12"],
 };
 
 const transportnyTheme = {
@@ -1953,6 +1978,7 @@ const transportnyTheme = {
   card,
   pill,
   dataBar,
+  dataColorCell,
   pagination,
   icon: iconTheme,
 
