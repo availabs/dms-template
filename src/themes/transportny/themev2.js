@@ -35,6 +35,7 @@ import LogoNav from "./LogoNav";
 import QuickLinks from "./QuickLinks";
 import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
+import ReportRouteList from "./components/ReportRouteList"
 
 import icons from "./icons";
 
@@ -2152,6 +2153,7 @@ const navOptions = {
 const pageComponents = {
   AddPageButton,
   Header,
+  ReportRouteList,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
