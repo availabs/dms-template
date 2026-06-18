@@ -1899,6 +1899,20 @@ const iconStyles = {
   },
 };
 
+// data_bar column type — brand-coloured horizontal bars. `fills` maps the
+// data-driven colour key (a sibling column value) to a brand fill; the bar scale
+// is data-driven via the column's `barMaxColumn`. Read by the dataBar columnType
+// via getComponentTheme(theme, 'dataBar').
+const dataBar = {
+  wrapper: "w-full flex items-center",
+  track:   "relative w-full h-3 rounded-[3px] bg-slate-100 overflow-hidden",
+  fill:    "absolute inset-y-0 left-0 rounded-[3px] transition-[width] duration-300",
+  fills: {
+    primary: "bg-[#1F3F8F]",
+    muted:   "bg-[#37576B]",
+  },
+};
+
 const transportnyTheme = {
   // Foundation
   textSettings,
@@ -1938,6 +1952,7 @@ const transportnyTheme = {
   dataCard,
   card,
   pill,
+  dataBar,
   pagination,
   icon: iconTheme,
 
