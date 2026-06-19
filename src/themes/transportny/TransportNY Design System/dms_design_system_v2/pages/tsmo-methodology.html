@@ -165,17 +165,17 @@ recurrent  = total − non-recurrent</code></pre>
                     <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                       <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
                         <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Congestion cost</span>
-                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">delay attribution + AADT</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">class-weighted VOT</span>
                         <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">$</span>
                       </div>
                       <div class="p-4 grid md:grid-cols-2 gap-4">
                         <div>
-                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Delay monetized. Vehicle-hours become person-hours through an average occupancy of 1.7 persons per vehicle, then dollars through the FHWA value-of-time factor. Truck shares use the AADT single/combination splits at a separate freight rate.</p>
-                          <p class="mt-2 font-proxima text-[12px] text-slate-500 leading-[1.5]">Dollar factors are fixed per analysis year and stated on every $ panel.</p>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Delay monetized at a <strong>vehicle-class-weighted value of time</strong>. Each segment's vehicle mix comes from its AADT split — passenger cars, single-unit trucks, and combination trucks (tractor-trailers) — and each class carries its own per-vehicle rate. The effective $/veh-hr is the mix-weighted blend, so a truck-heavy freight corridor is valued higher than a commuter parkway.</p>
+                          <p class="mt-2 font-proxima text-[12px] text-slate-500 leading-[1.5]">Rates (per vehicle-hour, occupancy bundled — not multiplied again): <strong>passenger $52 · single-unit $42 · combination $77</strong>. Network blend ≈ $53; freight corridors $58–62. Fixed and dated per analysis year, stated on every $ panel.</p>
                         </div>
-                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>cost = delay_vh × 1.7 occ/veh
-            × $ per person-hr (FHWA)
-     + truck_vh × $ per truck-hr</code></pre>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>VOT_eff = pass%·$52 + singl%·$42
+        + combi%·$77   (per TMC, from AADT)
+cost    = delay_vh × VOT_eff</code></pre>
                       </div>
                     </div>
 

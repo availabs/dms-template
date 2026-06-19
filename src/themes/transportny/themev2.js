@@ -1218,6 +1218,9 @@ const table = {
       // Y padding so rows pack tight, a small X gap between cells, short rows. Set
       // per-section via `display.tableStyle: "heat"`. Inherits the rest from default.
       name: "heat",
+      // No table chrome of its own — the section compound card frames it. Drop the
+      // default tableContainer's border / rounding / shadow; keep bg + scroll.
+      tableContainer:                 "flex flex-col bg-white overflow-x-auto overflow-y-auto max-h-[calc(78vh_-_10px)]",
       headerCellContainer:            "w-full px-[3px] py-1 content-center text-center font-mono text-[9.5px] font-normal uppercase tracking-[0.14em]",
       headerCellContainerBg:          "bg-white text-slate-400",
       cell:                           "relative flex items-center min-h-[26px] border-b border-transparent",
