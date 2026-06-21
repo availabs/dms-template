@@ -13,12 +13,16 @@
 <body class="tny-pane">
 
 <!--
-  tsmo-incidents.html · TSMO SURFACE 4 of 10 — Incidents dashboard.
-  Layout `app` · shared TSMO SideNav (Incidents active). The incident landscape + TIM
-  performance with honest coverage: threshold KPIs over averages, a TIM data-coverage
-  panel (the honesty layer), delay attribution by category, and the top-delay events
-  table linking into tsmo-incident-view.html. All text classes resolve to theme.html
-  Type tokens; sections sit on grid-cols-12; no new primitives. -->
+  tsmo-incidents.html · TSMO SURFACE 4 of 10 — Incidents dashboard. DELAY-LED redesign.
+  Scope: NON-construction reactive incidents only (crash / road hazard / weather / emergency /
+  special event / maintenance / volume-delay, by nysdot_sub_category) — construction is a planned
+  story on the work-zones dashboard. Tightened to the home/congestion/reliability language:
+  numbered // 01–04 bands, compound headers, YoY delta chips, a multi-year delay trend, and a
+  combined EVENTS-vs-DELAY double-series category chart (count + veh-hrs side by side). Leads with
+  the delay incidents cause (veh-hrs + $) — a single merged delay/cost KPI. Dollars use a
+  vehicle-class-weighted value of time (passenger $52 / single-unit $42 / combination $77 per
+  veh-hr, AADT-mix-weighted, ≈$53 blended). Light TIM (cleared-<90 + honest timestamp coverage).
+  Shared TSMO side-nav · grid-cols-12 · theme Type tokens · no new primitives. -->
 
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
@@ -46,284 +50,397 @@
               <a href="tsmo-methodology.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Data &amp; Methodology</span></a>
             </div>
             <div class="border-t border-[#2a3545] py-2.5 px-4">
-              <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 leading-relaxed">TRANSCOM events · NY-filtered<br/>NPMRDS probe attribution</div>
+              <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 leading-relaxed">TRANSCOM events · NY-filtered<br/>NPMRDS probe delay attribution</div>
             </div>
           </div>
         </aside>
 
         <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
 
-          <!-- HEADER -->
+          <!-- ═════════ PAGE HEADER ═════════ -->
           <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
             <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10 flex items-end justify-between gap-8" data-dms-section="page-header">
               <div>
                 <nav class="flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mb-3"><a href="tsmo-congestion.html" class="text-slate-500 hover:text-[#0f1722]">TSMO</a><span class="text-slate-300 px-1">/</span><span class="text-slate-500">Dashboards</span><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Incidents</span></nav>
-                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// traffic incident management</span>
-                <h1 class="mt-2 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Incidents<span class="text-[#CA8A04]">.</span></h1>
-                <p class="mt-2 font-proxima text-[14.5px] text-slate-600 leading-[1.6] max-w-[680px]">Every TRANSCOM-logged event on New York roads — what happened, how long it lasted, and how much delay it caused. Clearance measures use thresholds, not averages, and carry their timestamp coverage so you can judge them.</p>
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// traffic incident management</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">delay attributed event-by-event · 2018–2024</span>
+                </div>
+                <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Incidents<span class="text-[#CA8A04]">.</span></h1>
+                <p class="mt-2 font-proxima text-[14.5px] text-slate-600 leading-[1.6] max-w-[700px]">Every TRANSCOM-logged event on New York roads — and the delay it caused. We attribute delay to each event by joining its affected segments to NPMRDS probe speeds, so the story isn't how many incidents there are, it's how much time they cost.</p>
               </div>
-              <div class="flex flex-col items-end gap-2">
+              <div class="flex flex-col items-end gap-2 flex-shrink-0">
                 <div class="flex items-center gap-2">
-                  <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 px-2.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span><span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-600">events live · delay attribution thru Oct '25</span></div>
+                  <span class="h-8 inline-flex items-center gap-2 rounded-full bg-white border border-zinc-950/15 px-3 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>events live · delay thru Oct '25</span>
                   <button class="h-8 inline-flex items-center gap-1.5 px-3 rounded border border-zinc-950/15 bg-white text-slate-700 text-[12.5px]"><!-- icon: Export --><svg class="size-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/></svg>Export</button>
                 </div>
-                <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">3.7M events since 2015 · ~343k in 2024</div>
+                <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">source · TRANSCOM multi-state feed, NY-filtered · NPMRDS probe attribution · 3.7M events since 2015</div>
               </div>
             </div>
           </div>
 
-          <!-- TONE_BAR filters -->
+          <!-- ═════════ TONE_BAR · filters ═════════ -->
           <div class="w-full bg-[#1F3F8F] text-white border-b border-black/10" data-dms-group="tone_bar">
             <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 h-12 flex items-center gap-8" data-dms-section="filter-bar">
-              <div class="text-[12px]"><div class="text-white/70">Region:</div><button class="flex items-center gap-1.5 font-semibold">Statewide <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
-              <div class="text-[12px]"><div class="text-white/70">Category:</div><button class="flex items-center gap-1.5 font-semibold">All categories <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
-              <div class="text-[12px]"><div class="text-white/70">Period:</div><button class="flex items-center gap-1.5 font-semibold">Calendar 2024 <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
-              <div class="ml-auto font-mono text-[10px] uppercase tracking-[0.16em] text-white/60">NY-filtered · TRANSCOM is multi-state</div>
+              <div class="text-[12px] flex items-center gap-2"><span class="text-white/70">Region:</span><button class="flex items-center gap-1.5 font-semibold">Statewide <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px] flex items-center gap-2"><span class="text-white/70">Category:</span><button class="flex items-center gap-1.5 font-semibold">All categories <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px] flex items-center gap-2"><span class="text-white/70">Year:</span><button class="flex items-center gap-1.5 font-semibold font-mono tabular-nums">2024 <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="ml-auto font-mono text-[10px] uppercase tracking-[0.16em] text-white/60">NY-filtered · construction → work zones · all figures vs prior year</div>
             </div>
           </div>
 
-          <!-- CONTENT -->
+          <!-- ═════════ § 01 · THE DELAY INCIDENTS CAUSE (hero) ═════════ -->
           <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
-            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
 
-              <!-- KPI 1 · incidents -->
-              <div class="col-span-12 md:col-span-4" data-dms-section="kpi-incidents">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-1 h-full">
-                  <span class="font-display font-medium text-[15px] text-[#0F1722]">Incidents reported</span>
-                  <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">343,021</div>
-                  <div class="font-mono text-[11px] uppercase tracking-wider text-slate-500">NY-region events · 2024 · ≈330–390k/yr steady state</div>
-                  <div class="mt-3 pt-3 border-t border-zinc-950/05 font-proxima text-[12.5px] text-slate-500">3.7M events logged since 2015 · counts from <span class="tny-mono">nysdot_sub_category</span></div>
+              <div class="flex items-end justify-between mb-6" data-dms-section="delay-intro">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">delay caused by incidents · veh-hrs &amp; cost · NY · construction excluded</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">It isn't the count — it's the delay.</h2>
+                  <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.55] max-w-[820px]">This page covers the reactive incidents operations responds to — crashes, road hazards, weather, emergencies — not planned construction, which lives on the work-zones dashboard. Most of the lost time comes from a small number of long, lane-blocking events; we measure each one's delay footprint directly and price it at a vehicle-class-weighted value of time.</p>
                 </div>
+                <a href="tsmo-methodology.html" class="hidden sm:inline-flex font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] items-center gap-1 flex-shrink-0">how delay is attributed <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
               </div>
 
-              <!-- KPI 2 · median duration -->
-              <div class="col-span-12 md:col-span-4" data-dms-section="kpi-duration">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-1 h-full">
-                  <span class="font-display font-medium text-[15px] text-[#0F1722]">Median incident duration</span>
-                  <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">38<span class="text-[20px] text-slate-500 ml-1">min</span></div>
-                  <div class="font-mono text-[11px] uppercase tracking-wider text-slate-500">85th percentile · 97 min · 2024 NY incidents</div>
-                  <div class="mt-3 pt-3 border-t border-zinc-950/05 font-proxima text-[12.5px] text-slate-500">From estimated durations — 98.8% of events carry one</div>
-                </div>
-              </div>
+              <div class="grid grid-cols-12 gap-6">
 
-              <!-- KPI 3 · threshold + coverage badge -->
-              <div class="col-span-12 md:col-span-4" data-dms-section="kpi-cleared">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-1 h-full">
-                  <div class="flex items-start justify-between gap-2">
-                    <span class="font-display font-medium text-[15px] text-[#0F1722]">Cleared in under 90 min</span>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-wider text-amber-700"><!-- icon: Warning --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4m0 3h.01M10.3 4.5 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.5a2 2 0 0 0-3.4 0Z"/></svg>42.7% timestamp coverage</span>
-                  </div>
-                  <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">78<span class="text-[20px] text-slate-500">%</span></div>
-                  <div class="font-mono text-[11px] uppercase tracking-wider text-slate-500">lane-impacting incidents · 46% cleared &lt; 30 min</div>
-                  <div class="mt-3 pt-3 border-t border-zinc-950/05 font-proxima text-[12.5px] text-slate-500">Based on the 42.7% of events with lanes-open timestamps — see the coverage panel below</div>
-                </div>
-              </div>
-
-              <!-- Incidents by category · ranked bars -->
-              <div class="col-span-12 lg:col-span-5" data-dms-section="by-category">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Events by category</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-500">all-time · since 2015</span></div>
-                  <div class="p-4 space-y-3 text-[12.5px] text-slate-700 flex-1">
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#D6453B"></span>Construction</span><span class="font-mono tabular-nums">1.77M</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:100%;background:#D6453B"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#E8843F"></span>Volume / Delay</span><span class="font-mono tabular-nums">575k</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:32%;background:#E8843F"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#1F3F8F"></span>Crash</span><span class="font-mono tabular-nums">381k</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:22%;background:#1F3F8F"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#37576B"></span>Road Hazard</span><span class="font-mono tabular-nums">312k</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:18%;background:#37576B"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#94C24E"></span>Maintenance</span><span class="font-mono tabular-nums">134k</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:7.6%;background:#94C24E"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#E5A646"></span>Emergency Ops</span><span class="font-mono tabular-nums">85k</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:4.8%;background:#E5A646"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#8B5CF6"></span>Special Event</span><span class="font-mono tabular-nums">72k</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:4.1%;background:#8B5CF6"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#64748B"></span>Weather Hazard</span><span class="font-mono tabular-nums">32k</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:1.8%;background:#64748B"></div></div></div>
-                  </div>
-                  <div class="px-4 py-2.5 border-t border-zinc-950/05 bg-slate-50/40 font-mono text-[10.5px] uppercase tracking-wider text-slate-500">construction events → <a href="tsmo-workzones.html" class="text-[#1F3F8F] hover:underline">work zones dashboard</a></div>
-                </div>
-              </div>
-
-              <!-- Monthly trend by category -->
-              <div class="col-span-12 lg:col-span-7" data-dms-section="monthly-trend">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
-                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Monthly trend by category · 2024</span>
-                    <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500"><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-0.5" style="background:#D6453B"></span>constr.</span><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-0.5" style="background:#E8843F"></span>vol/delay</span><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-0.5" style="background:#1F3F8F"></span>crash</span><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-0.5" style="background:#37576B"></span>hazard</span></div>
-                  </div>
-                  <div class="p-4 flex-1">
-                    <!-- decorative --><svg viewBox="0 0 520 200" class="w-full">
-                      <g stroke="#e2e8f0" stroke-width="1"><line x1="40" x2="510" y1="170" y2="170"/><line x1="40" x2="510" y1="95" y2="95"/><line x1="40" x2="510" y1="20" y2="20"/></g>
-                      <g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="end"><text x="35" y="173">0</text><text x="35" y="98">10k</text><text x="35" y="23">20k</text></g>
-                      <polyline fill="none" stroke="#D6453B" stroke-width="2" points="45,96.5 86,92 127,71 168,51.5 209,39.5 250,33.5 291,30.5 332,34.3 373,43.3 414,56 455,79.3 496,98"/>
-                      <polyline fill="none" stroke="#E8843F" stroke-width="2" points="45,140.8 86,142.3 127,138.5 168,137 209,134 250,131.8 291,132.5 332,133.3 373,131 414,134.8 455,136.3 496,137.8"/>
-                      <polyline fill="none" stroke="#1F3F8F" stroke-width="2" points="45,146.8 86,149 127,150.5 168,152 209,151.3 250,150.5 291,149.8 332,150.5 373,149.8 414,149 455,147.5 496,145.3"/>
-                      <polyline fill="none" stroke="#37576B" stroke-width="2" stroke-dasharray="4 3" points="45,144.5 86,148.3 127,152.8 168,155.8 209,156.5 250,157.3 291,156.5 332,157.3 373,155.8 414,154.3 455,150.5 496,146"/>
-                      <g font-family="ui-monospace" font-size="8.5" fill="#94a3b8" text-anchor="middle"><text x="45" y="186">J</text><text x="86" y="186">F</text><text x="127" y="186">M</text><text x="168" y="186">A</text><text x="209" y="186">M</text><text x="250" y="186">J</text><text x="291" y="186">J</text><text x="332" y="186">A</text><text x="373" y="186">S</text><text x="414" y="186">O</text><text x="455" y="186">N</text><text x="496" y="186">D</text></g>
-                      <text x="291" y="22" font-family="ui-monospace" font-size="9" fill="#D6453B" text-anchor="middle">18.6k · jul peak</text>
-                    </svg>
-                    <p class="mt-2 font-proxima text-[12px] text-slate-500 leading-[1.55]">Construction events peak in the summer build season; crashes and road hazards run counter-cyclical, rising through the winter months. Volume/delay events hold steady near 5k a month.</p>
-                  </div>
-                  <div class="px-4 py-2.5 border-t border-zinc-950/05 bg-slate-50/40 font-mono text-[10.5px] uppercase tracking-wider text-slate-500">window · jan–dec 2024 · events as of jun 09 '26</div>
-                </div>
-              </div>
-
-              <!-- Delay caused by incidents -->
-              <div class="col-span-12 lg:col-span-8" data-dms-section="delay-by-category">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Delay attributed by category</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-500">2018 – oct 2025 · M veh-hrs</span></div>
-                  <div class="p-4 space-y-3 text-[12.5px] text-slate-700 flex-1">
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#D6453B"></span>Construction</span><span class="font-mono tabular-nums font-medium">188.6M vh</span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:100%;background:#D6453B"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#1F3F8F"></span>Crash</span><span class="font-mono tabular-nums">8.6M vh</span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:4.6%;background:#1F3F8F"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#37576B"></span>Road Hazard</span><span class="font-mono tabular-nums">5.7M vh</span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:3.0%;background:#37576B"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#8B5CF6"></span>Special Event</span><span class="font-mono tabular-nums">2.6M vh</span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:1.4%;background:#8B5CF6"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#94C24E"></span>Maintenance</span><span class="font-mono tabular-nums">2.4M vh</span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:1.3%;background:#94C24E"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#E8843F"></span>Volume / Delay</span><span class="font-mono tabular-nums">2.2M vh</span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:1.2%;background:#E8843F"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span><span class="size-2 inline-block rounded-full mr-1.5" style="background:#E5A646"></span>Emergency Ops</span><span class="font-mono tabular-nums">1.1M vh</span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:0.6%;background:#E5A646"></div></div></div>
-                  </div>
-                  <div class="px-4 py-2.5 border-t border-zinc-950/05 bg-slate-50/40 font-mono text-[10.5px] uppercase tracking-wider text-slate-500">event × TMC attribution against NPMRDS probe speeds · thru oct '25</div>
-                </div>
-              </div>
-
-              <!-- Insight callout -->
-              <div class="col-span-12 lg:col-span-4" data-dms-section="delay-callout">
-                <div class="rounded-[8px] tny-card-ink shadow-sm p-5 h-full flex flex-col">
-                  <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FACC15]">// what the data says</span>
-                  <div class="mt-2 font-display font-semibold text-[44px] leading-none tabular-nums">22:1</div>
-                  <div class="font-mono text-[11px] uppercase tracking-wider text-white/60 mt-1">construction vs crash delay</div>
-                  <p class="mt-3 font-proxima text-[13px] text-white/80 leading-[1.6] flex-1">Construction is New York's largest source of attributed delay by a wide margin — 188.6M vehicle-hours since 2018, twenty-two times the delay attributed to crashes. That story has its own dashboard.</p>
-                  <a href="tsmo-workzones.html" class="mt-4 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#FACC15] hover:text-[#EAAD43]">work zones dashboard <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
-                </div>
-              </div>
-
-              <!-- Duration distribution -->
-              <div class="col-span-12 lg:col-span-7" data-dms-section="duration-distribution">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Incident duration distribution</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-500">2024 NY incidents</span></div>
-                  <div class="p-4 flex-1">
-                    <!-- decorative --><svg viewBox="0 0 560 230" class="w-full">
-                      <rect x="42" y="30" width="77" height="155" fill="#d1fae5" opacity="0.55"/>
-                      <rect x="119" y="30" width="154" height="155" fill="#fef3c7" opacity="0.6"/>
-                      <g font-family="ui-monospace" font-size="9" text-anchor="middle"><text x="80" y="24" fill="#047857">46% &lt; 30 min</text><text x="196" y="24" fill="#b45309">78% &lt; 90 min</text></g>
-                      <line x1="40" x2="545" y1="185" y2="185" stroke="#cbd5e1"/>
-                      <g fill="#37576B">
-                        <rect x="44" y="95" width="32" height="90" rx="1"/>
-                        <rect x="82.5" y="45" width="32" height="140" rx="1"/>
-                        <rect x="121" y="115" width="32" height="70" rx="1"/>
-                        <rect x="159.5" y="140" width="32" height="45" rx="1"/>
-                        <rect x="198" y="152.5" width="32" height="32.5" rx="1"/>
-                        <rect x="236.5" y="160" width="32" height="25" rx="1"/>
-                        <rect x="275" y="165" width="32" height="20" rx="1"/>
-                        <rect x="313.5" y="170" width="32" height="15" rx="1"/>
-                        <rect x="352" y="172.5" width="32" height="12.5" rx="1"/>
-                        <rect x="390.5" y="175" width="32" height="10" rx="1"/>
-                        <rect x="429" y="177" width="32" height="8" rx="1"/>
-                        <rect x="467.5" y="179" width="32" height="6" rx="1"/>
-                        <rect x="506" y="159" width="32" height="26" rx="1" fill="#94a3b8"/>
-                      </g>
-                      <line x1="139.5" x2="139.5" y1="32" y2="185" stroke="#0F1722" stroke-width="1.5" stroke-dasharray="4 3"/>
-                      <text x="144" y="44" font-family="ui-monospace" font-size="9" fill="#0F1722">median · 38 min</text>
-                      <line x1="291" x2="291" y1="56" y2="185" stroke="#CA8A04" stroke-width="1.5" stroke-dasharray="4 3"/>
-                      <text x="295" y="66" font-family="ui-monospace" font-size="9" fill="#CA8A04">85th pct · 97 min</text>
-                      <g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="middle"><text x="42" y="200">0</text><text x="119" y="200">30</text><text x="196" y="200">60</text><text x="273" y="200">90</text><text x="350" y="200">120</text><text x="427" y="200">150</text><text x="522" y="200">180+</text><text x="290" y="216">minutes</text></g>
-                    </svg>
-                    <p class="mt-2 font-proxima text-[12px] text-slate-500 leading-[1.55]">Durations from <span class="tny-mono">estimated_duration_mins</span> (98.8% populated). The shaded threshold shares — 46% cleared under 30 minutes, 78% under 90 — are computed on the 42.7% of events with real lanes-open timestamps.</p>
+                <!-- KPI stat-table card · 2024 reactive incidents -->
+                <div class="col-span-12 md:col-span-4" data-dms-section="kpi-stats">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full flex flex-col">
+                    <div class="flex items-start justify-between gap-2">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Reactive incidents · 2024</div>
+                      <span class="inline-flex items-center gap-1 rounded-full bg-slate-50 border border-zinc-950/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-500">class-weighted VOT</span>
+                    </div>
+                    <!-- delay + cost hero -->
+                    <div class="flex items-baseline gap-3 mt-1.5">
+                      <div class="font-display font-semibold text-[44px] leading-[1.0] tabular-nums text-[#0F1722]">3.0<span class="text-[18px] font-medium text-slate-500 ml-1">M veh-hrs</span></div>
+                      <div class="font-display font-semibold text-[28px] leading-none tabular-nums text-[#37576B]">$162M</div>
+                    </div>
+                    <div class="mt-1 font-mono text-[10.5px] uppercase tracking-wider text-slate-500">delay caused &amp; its cost · <span class="text-rose-700">↑ +5.3% vs 2023</span></div>
+                    <!-- stat table -->
+                    <div class="mt-4 pt-4 border-t border-zinc-950/05 divide-y divide-zinc-950/05">
+                      <div class="flex items-center justify-between pb-2.5"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Incidents reported</span><span class="flex items-baseline gap-2"><span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0F1722]">178,400</span><span class="font-mono text-[11px] tabular-nums text-rose-700 w-12 text-right">↑ 4.6%</span></span></div>
+                      <div class="flex items-center justify-between py-2.5"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Median duration</span><span class="flex items-baseline gap-2"><span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0F1722]">38<span class="text-[13px] text-slate-500 ml-0.5">min</span></span><span class="font-mono text-[11px] tabular-nums text-emerald-700 w-12 text-right">↓ 2 min</span></span></div>
+                      <div class="flex items-center justify-between pt-2.5"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Cleared &lt; 90 min</span><span class="flex items-baseline gap-2"><span class="font-display font-semibold text-[22px] leading-none tabular-nums text-[#0F1722]">78<span class="text-[13px] text-slate-500">%</span></span><span class="font-mono text-[11px] tabular-nums text-emerald-700 w-12 text-right">↑ 2 pp</span></span></div>
+                    </div>
+                    <div class="mt-auto pt-3 font-proxima text-[11.5px] text-slate-500 leading-[1.5]">Non-construction incidents — crashes, hazards, weather, emergencies. Construction → <a href="tsmo-workzones.html" class="tny-link">work zones</a>.</div>
                   </div>
                 </div>
-              </div>
 
-              <!-- TIM data-coverage panel · the honesty layer -->
-              <div class="col-span-12 lg:col-span-5" data-dms-section="tim-coverage">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
-                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">TIM timestamp coverage</span>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-wider text-amber-700">the honesty layer</span>
-                  </div>
-                  <div class="p-4 space-y-3.5 text-[12.5px] text-slate-700 flex-1">
-                    <div><div class="flex justify-between mb-1"><span class="font-mono text-[11.5px]">incident_reported</span><span class="font-mono tabular-nums text-amber-700">10.6%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-amber-500" style="width:10.6%"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span class="font-mono text-[11.5px]">incident_verified</span><span class="font-mono tabular-nums text-amber-700">20.1%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-amber-500" style="width:20.1%"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span class="font-mono text-[11.5px]">response_arrives_on_scene</span><span class="font-mono tabular-nums text-rose-700">0.3%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-rose-500" style="width:0.6%"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span class="font-mono text-[11.5px]">end_all_lanes_open</span><span class="font-mono tabular-nums text-emerald-700">42.7%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-emerald-600" style="width:42.7%"></div></div></div>
-                    <div><div class="flex justify-between mb-1"><span class="font-mono text-[11.5px]">return_to_normal_flow</span><span class="font-mono tabular-nums text-rose-700">0.1%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-rose-500" style="width:0.4%"></div></div></div>
-                  </div>
-                  <div class="px-4 py-3 border-t border-zinc-950/05 bg-amber-50/50">
-                    <p class="font-proxima text-[12px] text-slate-600 leading-[1.55]"><span class="font-semibold text-slate-700">Why this matters:</span> clearance-time measures are only computable on events with real timestamps — roadway clearance on roughly 10%. We publish the coverage alongside every clearance figure so you can judge it; improving these feeds is on the <a href="tsmo-about.html" class="tny-link">TSMO roadmap</a>.</p>
+                <!-- Multi-year delay trend (marquee) -->
+                <div class="col-span-12 md:col-span-8" data-dms-section="delay-by-year">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Attributed delay by year · M veh-hrs</span>
+                      <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">2018–2024</span>
+                    </div>
+                    <div class="p-4 flex-1">
+                      <!-- decorative --><svg viewBox="0 0 560 180" class="w-full">
+                        <g stroke="#e2e8f0" stroke-width="1"><line x1="34" x2="548" y1="150" y2="150"/><line x1="34" x2="548" y1="100" y2="100"/><line x1="34" x2="548" y1="50" y2="50"/></g>
+                        <g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="end"><text x="29" y="153">0</text><text x="29" y="103">1.5</text><text x="29" y="53">3.0</text></g>
+                        <g fill="#1F3F8F">
+                          <rect x="44" y="70" width="46" height="80" rx="1.5"/>
+                          <rect x="116" y="63" width="46" height="87" rx="1.5"/>
+                          <rect x="188" y="103" width="46" height="47" rx="1.5" fill="#94a3b8"/>
+                          <rect x="260" y="77" width="46" height="73" rx="1.5"/>
+                          <rect x="332" y="60" width="46" height="90" rx="1.5"/>
+                          <rect x="404" y="62" width="46" height="88" rx="1.5"/>
+                          <rect x="476" y="57" width="46" height="93" rx="1.5" fill="#CA8A04"/>
+                        </g>
+                        <text x="211" y="98" font-family="ui-monospace" font-size="8.5" fill="#64748b" text-anchor="middle">2020 · covid</text>
+                        <text x="499" y="51" font-family="ui-monospace" font-size="9" font-weight="600" fill="#CA8A04" text-anchor="middle">2.9</text>
+                        <g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="middle" class="tabular-nums"><text x="67" y="166">2018</text><text x="139" y="166">2019</text><text x="211" y="166">2020</text><text x="283" y="166">2021</text><text x="355" y="166">2022</text><text x="427" y="166">2023</text><text x="499" y="166">2024</text></g>
+                      </svg>
+                      <p class="mt-1 font-proxima text-[12px] text-slate-500 leading-[1.55]">Non-construction incident delay dropped with traffic in 2020, then climbed back above pre-pandemic levels — 2024 is the highest year on record, up 5.3% over 2023.</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Top-10 highest-delay events table -->
-              <div class="col-span-12 lg:col-span-8" data-dms-section="top-events-table">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
-                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
-                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Top 10 highest-delay events · 2024 · Statewide</span>
-                    <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded border border-zinc-950/10 bg-white text-slate-700 text-[12px]">Display <!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                  </div>
-                  <table class="w-full text-[13px] text-slate-700">
-                    <thead class="bg-white border-b border-zinc-950/10">
-                      <tr>
-                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Date</th>
-                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Category</th>
-                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Facility</th>
-                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">County</th>
-                        <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Duration</th>
-                        <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Delay</th>
-                        <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Cost</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Apr 18</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-blue-800"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Crash</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-95 NB · tractor-trailer fire</a></td><td class="px-3 py-2">Westchester</td><td class="px-3 py-2 text-right font-mono tabular-nums">7h 24m</td><td class="px-3 py-2 text-right font-mono tabular-nums">19,840 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$595k</td></tr>
-                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Aug 09</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-slate-600"><span class="size-1.5 rounded-full bg-[#64748B]"></span>Weather Hazard</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-87 Thruway SB · flash flooding</a></td><td class="px-3 py-2">Rockland</td><td class="px-3 py-2 text-right font-mono tabular-nums">11h 05m</td><td class="px-3 py-2 text-right font-mono tabular-nums">17,210 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$516k</td></tr>
-                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Feb 13</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-blue-800"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Crash</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-84 EB · multi-vehicle</a></td><td class="px-3 py-2">Orange</td><td class="px-3 py-2 text-right font-mono tabular-nums">6h 48m</td><td class="px-3 py-2 text-right font-mono tabular-nums">15,920 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$478k</td></tr>
-                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Jul 02</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-blue-800"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Crash</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-278 (BQE) WB · overturned box truck</a></td><td class="px-3 py-2">Kings</td><td class="px-3 py-2 text-right font-mono tabular-nums">5h 36m</td><td class="px-3 py-2 text-right font-mono tabular-nums">14,480 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$434k</td></tr>
-                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Nov 21</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-slate-700"><span class="size-1.5 rounded-full bg-[#37576B]"></span>Road Hazard</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-90 Thruway WB · jackknifed trailer</a></td><td class="px-3 py-2">Erie</td><td class="px-3 py-2 text-right font-mono tabular-nums">8h 12m</td><td class="px-3 py-2 text-right font-mono tabular-nums">13,050 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$392k</td></tr>
-                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">May 30</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-violet-700"><span class="size-1.5 rounded-full bg-[#8B5CF6]"></span>Special Event</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">Grand Central Pkwy EB · stadium egress</a></td><td class="px-3 py-2">Queens</td><td class="px-3 py-2 text-right font-mono tabular-nums">4h 10m</td><td class="px-3 py-2 text-right font-mono tabular-nums">11,760 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$353k</td></tr>
-                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Jan 06</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-slate-600"><span class="size-1.5 rounded-full bg-[#64748B]"></span>Weather Hazard</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-81 NB · snow-squall pileup</a></td><td class="px-3 py-2">Onondaga</td><td class="px-3 py-2 text-right font-mono tabular-nums">9h 02m</td><td class="px-3 py-2 text-right font-mono tabular-nums">11,340 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$340k</td></tr>
-                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Sep 17</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-blue-800"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Crash</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">Taconic SB · overturned tanker</a></td><td class="px-3 py-2">Putnam</td><td class="px-3 py-2 text-right font-mono tabular-nums">6h 15m</td><td class="px-3 py-2 text-right font-mono tabular-nums">10,580 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$317k</td></tr>
-                      <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Oct 24</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-amber-700"><span class="size-1.5 rounded-full bg-[#E5A646]"></span>Emergency Ops</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-495 (LIE) WB · brush-fire closure</a></td><td class="px-3 py-2">Suffolk</td><td class="px-3 py-2 text-right font-mono tabular-nums">3h 58m</td><td class="px-3 py-2 text-right font-mono tabular-nums">9,870 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$296k</td></tr>
-                      <tr class="hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Mar 08</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-blue-800"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Crash</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-690 EB · multi-vehicle</a></td><td class="px-3 py-2">Onondaga</td><td class="px-3 py-2 text-right font-mono tabular-nums">5h 22m</td><td class="px-3 py-2 text-right font-mono tabular-nums">9,420 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$283k</td></tr>
-                    </tbody>
-                  </table>
-                  <div class="flex items-center justify-between px-3 h-10 border-t border-zinc-950/05 bg-slate-50/40">
-                    <span class="font-mono text-[11px] uppercase tracking-wider text-slate-500">ranked by attributed veh-hrs · $ uses FHWA value-of-time</span>
-                    <a href="tsmo-incident-search.html" class="font-mono text-[11px] uppercase tracking-wider text-[#1F3F8F] hover:underline inline-flex items-center gap-1">search all events <!-- icon: ChevronRight --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
-                  </div>
-                </div>
-              </div>
+                <!-- Events vs delay by category · double-series -->
+                <div class="col-span-12 lg:col-span-8" data-dms-section="category-double">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Events vs delay by category · 2024</span>
+                      <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500"><span class="inline-flex items-center gap-1.5"><span class="block w-3.5 h-2 rounded-sm" style="background:#cbd5e1"></span>events</span><span class="inline-flex items-center gap-1.5"><span class="block w-3.5 h-2 rounded-sm" style="background:#1F3F8F"></span>delay</span></div>
+                    </div>
+                    <div class="p-4 flex-1">
+                      <div class="grid grid-cols-[5.75rem_1fr_1fr] gap-x-3 gap-y-2.5 items-center text-[12px] text-slate-700">
+                        <span></span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">count</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">delay · M veh-hrs</span>
 
-              <!-- Recent events map -->
-              <div class="col-span-12 lg:col-span-4" data-dms-section="recent-events-map">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Recent &amp; major events</span><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>live</span></div>
-                  <div class="relative tny-map flex-1 min-h-[420px]">
-                    <!-- decorative --><svg viewBox="0 0 400 420" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
-                      <path d="M 70 60 L 150 110 L 230 170 L 300 240 L 330 330" stroke="#cbd5e1" stroke-width="3" fill="none"/>
-                      <path d="M 60 200 L 160 220 L 260 250 L 340 270" stroke="#cbd5e1" stroke-width="3" fill="none"/>
-                      <path d="M 290 130 L 300 240 L 290 360" stroke="#cbd5e1" stroke-width="2.5" fill="none"/>
-                      <circle cx="300" cy="240" r="7" fill="#1F3F8F" opacity="0.9"/>
-                      <circle cx="300" cy="240" r="12" fill="none" stroke="#1F3F8F" opacity="0.35"/>
-                      <circle cx="150" cy="110" r="5.5" fill="#37576B" opacity="0.9"/>
-                      <circle cx="260" cy="250" r="5.5" fill="#1F3F8F" opacity="0.9"/>
-                      <circle cx="330" cy="330" r="6.5" fill="#64748B" opacity="0.9"/>
-                      <circle cx="90" cy="210" r="5" fill="#E5A646" opacity="0.9"/>
-                      <circle cx="225" cy="165" r="5" fill="#8B5CF6" opacity="0.9"/>
-                    </svg>
-                    <div class="absolute bottom-2 left-2 rounded-[6px] bg-white shadow-md p-2 border border-zinc-950/10">
-                      <div class="font-display uppercase text-[10.5px] tracking-wide text-slate-600 mb-1">Category</div>
-                      <div class="space-y-0.5 font-mono text-[10px]">
-                        <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#1F3F8F"></span>Crash</div>
-                        <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#37576B"></span>Road hazard</div>
-                        <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#64748B"></span>Weather</div>
-                        <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#E5A646"></span>Emergency ops</div>
+                        <span class="flex items-center gap-1.5"><span class="size-2 rounded-full shrink-0" style="background:#1F3F8F"></span>Crash</span>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:67%;background:#cbd5e1"></div></div><span class="w-11 text-right font-mono tabular-nums text-slate-500">43.1k</span></div>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:100%;background:#1F3F8F"></div></div><span class="w-10 text-right font-mono tabular-nums font-medium">1.10</span></div>
+
+                        <span class="flex items-center gap-1.5"><span class="size-2 rounded-full shrink-0" style="background:#37576B"></span>Road Hazard</span>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:55%;background:#cbd5e1"></div></div><span class="w-11 text-right font-mono tabular-nums text-slate-500">35.2k</span></div>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:67%;background:#1F3F8F"></div></div><span class="w-10 text-right font-mono tabular-nums font-medium">0.74</span></div>
+
+                        <span class="flex items-center gap-1.5"><span class="size-2 rounded-full shrink-0" style="background:#8B5CF6"></span>Special Event</span>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:13%;background:#cbd5e1"></div></div><span class="w-11 text-right font-mono tabular-nums text-slate-500">8.1k</span></div>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:31%;background:#1F3F8F"></div></div><span class="w-10 text-right font-mono tabular-nums font-medium">0.34</span></div>
+
+                        <span class="flex items-center gap-1.5"><span class="size-2 rounded-full shrink-0" style="background:#94C24E"></span>Maintenance</span>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:23%;background:#cbd5e1"></div></div><span class="w-11 text-right font-mono tabular-nums text-slate-500">14.9k</span></div>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:28%;background:#1F3F8F"></div></div><span class="w-10 text-right font-mono tabular-nums font-medium">0.31</span></div>
+
+                        <span class="flex items-center gap-1.5"><span class="size-2 rounded-full shrink-0" style="background:#E8843F"></span>Volume / Delay</span>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:100%;background:#cbd5e1"></div></div><span class="w-11 text-right font-mono tabular-nums text-slate-500">64.2k</span></div>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:26%;background:#1F3F8F"></div></div><span class="w-10 text-right font-mono tabular-nums font-medium">0.29</span></div>
+
+                        <span class="flex items-center gap-1.5"><span class="size-2 rounded-full shrink-0" style="background:#E5A646"></span>Emergency Ops</span>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:15%;background:#cbd5e1"></div></div><span class="w-11 text-right font-mono tabular-nums text-slate-500">9.4k</span></div>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:13%;background:#1F3F8F"></div></div><span class="w-10 text-right font-mono tabular-nums font-medium">0.14</span></div>
+
+                        <span class="flex items-center gap-1.5"><span class="size-2 rounded-full shrink-0" style="background:#64748B"></span>Weather</span>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:5%;background:#cbd5e1"></div></div><span class="w-11 text-right font-mono tabular-nums text-slate-500">3.5k</span></div>
+                        <div class="flex items-center gap-2"><div class="flex-1 h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:9%;background:#1F3F8F"></div></div><span class="w-10 text-right font-mono tabular-nums font-medium">0.10</span></div>
                       </div>
                     </div>
-                    <div class="absolute top-2 right-2 rounded-[6px] bg-white shadow-md px-2 py-1 border border-zinc-950/10 font-mono text-[10px] text-slate-600">past 24 hrs · 412 events</div>
+                    <div class="px-4 py-2.5 border-t border-zinc-950/05 bg-slate-50/40 font-mono text-[10.5px] uppercase tracking-wider text-slate-500">the mismatch is the story — volume/delay leads in count, crash leads in delay · <span class="tny-mono">nysdot_sub_category</span> · construction → <a href="tsmo-workzones.html" class="text-[#1F3F8F] hover:underline">work zones</a></div>
                   </div>
                 </div>
-              </div>
 
+                <!-- Insight callout · crashes -->
+                <div class="col-span-12 lg:col-span-4" data-dms-section="delay-callout">
+                  <div class="rounded-[8px] tny-card-ink shadow-sm p-5 h-full flex flex-col">
+                    <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FACC15]">// what the data says</span>
+                    <div class="mt-2 font-display font-semibold text-[44px] leading-none tabular-nums">37<span class="text-[26px]">%</span></div>
+                    <div class="font-mono text-[11px] uppercase tracking-wider text-white/60 mt-1">crashes · share of incident delay</div>
+                    <p class="mt-3 font-proxima text-[13px] text-white/80 leading-[1.6] flex-1">Crashes are the single largest source of reactive-incident delay — more than road hazards and weather combined. They're also the most controllable: faster detection and clearance turn directly into vehicle-hours saved.</p>
+                    <a href="tsmo-incident-search.html" class="mt-4 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#FACC15] hover:text-[#EAAD43]">explore crash events <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
 
-          <!-- METHOD NOTE -->
-          <div class="w-full bg-white border-t border-zinc-950/10" data-dms-group="content">
-            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-6" data-dms-section="method-note">
-              <div class="flex items-start gap-3 max-w-[980px]">
-                <!-- icon: Info --><svg class="size-4 mt-0.5 flex-shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5m0-3h.01"/></svg>
-                <p class="font-proxima text-[12.5px] text-slate-500 leading-[1.6]"><span class="font-semibold text-slate-600">Method.</span> Event counts and categories come from TRANSCOM's multi-state feed, filtered to New York. Delay is attributed per event by joining its affected TMCs against NPMRDS probe speeds and subtracting the recurrent baseline; dollars apply FHWA's per-person-hour value of time. Clearance thresholds are computed only on events with real lanes-open timestamps (42.7%) — coverage is published alongside. Full definitions, formulas, and caveats: <a href="tsmo-methodology.html" class="tny-link">Data &amp; Methodology</a>.</p>
+          <!-- ═════════ § 02 · THE INCIDENT LANDSCAPE (context) ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 pb-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+
+              <div class="flex items-center gap-2 mb-5" data-dms-section="landscape-intro">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                <span class="font-display font-medium text-[16px] text-[#2D3E4C]">What's happening on the network</span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-400">— how many events, what kind, and when</span>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- Monthly trend by category w/ prior-year ghost -->
+                <div class="col-span-12" data-dms-section="monthly-trend">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Monthly events by category · 2024 vs 2023</span>
+                      <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500"><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-0.5" style="background:#E8843F"></span>vol/delay</span><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-0.5" style="background:#1F3F8F"></span>crash</span><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-0.5" style="background:#37576B"></span>hazard</span><span class="inline-flex items-center gap-1.5"><span class="block w-4 h-px border-t border-dashed border-slate-400"></span>crash '23</span></div>
+                    </div>
+                    <div class="p-4 flex-1">
+                      <!-- decorative --><svg viewBox="0 0 1120 180" class="w-full">
+                        <g stroke="#e2e8f0" stroke-width="1"><line x1="40" x2="1110" y1="150" y2="150"/><line x1="40" x2="1110" y1="85" y2="85"/><line x1="40" x2="1110" y1="20" y2="20"/></g>
+                        <g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="end"><text x="35" y="153">0</text><text x="35" y="88">3k</text><text x="35" y="23">6k</text></g>
+                        <!-- crash 2023 ghost -->
+                        <polyline fill="none" stroke="#1F3F8F" stroke-width="1.25" stroke-dasharray="4 3" opacity="0.5" points="55,80 150,82 245,86 340,91 435,93 530,95 625,94 720,93 815,90 910,86 1005,82 1100,79"/>
+                        <!-- 2024 lines -->
+                        <polyline fill="none" stroke="#E8843F" stroke-width="2.25" points="55,50 150,48 245,47 340,46 435,45 530,44 625,45 720,46 815,46 910,48 1005,50 1100,51"/>
+                        <polyline fill="none" stroke="#1F3F8F" stroke-width="2.25" points="55,76 150,78 245,82 340,87 435,90 530,92 625,91 720,90 815,86 910,82 1005,78 1100,75"/>
+                        <polyline fill="none" stroke="#37576B" stroke-width="2" points="55,89 150,92 245,96 340,100 435,102 530,103 625,102 720,101 815,97 910,93 1005,89 1100,86"/>
+                        <g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="middle"><text x="55" y="166">J</text><text x="150" y="166">F</text><text x="245" y="166">M</text><text x="340" y="166">A</text><text x="435" y="166">M</text><text x="530" y="166">J</text><text x="625" y="166">J</text><text x="720" y="166">A</text><text x="815" y="166">S</text><text x="910" y="166">O</text><text x="1005" y="166">N</text><text x="1100" y="166">D</text></g>
+                        <text x="150" y="70" font-family="ui-monospace" font-size="9" fill="#1F3F8F" text-anchor="middle">crashes ↑ vs '23</text>
+                      </svg>
+                      <p class="mt-1 font-proxima text-[12px] text-slate-500 leading-[1.55]">Volume/delay events hold steady near 5,000 a month. Crashes and road hazards run counter-cyclical — rising through the winter — and crashes ran a touch higher than 2023 across the cold months (solid vs dashed).</p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · HOW LONG THEY LAST & CLEAR ═════════ -->
+          <div class="w-full bg-[#E4E8EE] border-b border-zinc-950/05 py-8" data-dms-group="content_tint">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+
+              <div class="flex items-center gap-2 mb-5" data-dms-section="duration-intro">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                <span class="font-display font-medium text-[16px] text-[#2D3E4C]">How long incidents last — and how fast they clear</span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-400">— clearance is shown only where timestamps exist</span>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- Duration distribution -->
+                <div class="col-span-12 lg:col-span-5" data-dms-section="duration-distribution">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Incident duration distribution · 2024</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-500">minutes</span></div>
+                    <div class="p-4 flex-1 flex flex-col justify-center">
+                      <!-- decorative · clean histogram (stats live in the card →) --><svg viewBox="0 0 560 200" class="w-full">
+                        <line x1="40" x2="545" y1="170" y2="170" stroke="#cbd5e1"/>
+                        <g fill="#37576B">
+                          <rect x="44" y="80" width="32" height="90" rx="1"/>
+                          <rect x="82.5" y="30" width="32" height="140" rx="1"/>
+                          <rect x="121" y="100" width="32" height="70" rx="1"/>
+                          <rect x="159.5" y="125" width="32" height="45" rx="1"/>
+                          <rect x="198" y="137.5" width="32" height="32.5" rx="1"/>
+                          <rect x="236.5" y="145" width="32" height="25" rx="1"/>
+                          <rect x="275" y="150" width="32" height="20" rx="1"/>
+                          <rect x="313.5" y="155" width="32" height="15" rx="1"/>
+                          <rect x="352" y="157.5" width="32" height="12.5" rx="1"/>
+                          <rect x="390.5" y="160" width="32" height="10" rx="1"/>
+                          <rect x="429" y="162" width="32" height="8" rx="1"/>
+                          <rect x="467.5" y="164" width="32" height="6" rx="1"/>
+                          <rect x="506" y="144" width="32" height="26" rx="1" fill="#94a3b8"/>
+                        </g>
+                        <g font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="middle"><text x="42" y="186">0</text><text x="119" y="186">30</text><text x="196" y="186">60</text><text x="273" y="186">90</text><text x="350" y="186">120</text><text x="427" y="186">150</text><text x="522" y="186">180+</text></g>
+                      </svg>
+                      <p class="mt-2 font-proxima text-[12px] text-slate-500 leading-[1.55]">Durations from <span class="tny-mono">estimated_duration_mins</span> (98.8% of events). Median, percentile and clearance thresholds are summarized at right.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Duration & clearance stats card -->
+                <div class="col-span-12 sm:col-span-6 lg:col-span-3" data-dms-section="duration-stats">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full flex flex-col">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Duration &amp; clearance · 2024</div>
+                    <div class="mt-3 divide-y divide-zinc-950/05">
+                      <div class="flex items-end justify-between pb-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Median</span><span class="font-display font-semibold text-[24px] leading-none tabular-nums text-[#0F1722]">38<span class="text-[13px] text-slate-500 ml-0.5">min</span></span></div>
+                      <div class="flex items-end justify-between py-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">85th percentile</span><span class="font-display font-semibold text-[24px] leading-none tabular-nums text-[#0F1722]">97<span class="text-[13px] text-slate-500 ml-0.5">min</span></span></div>
+                      <div class="flex items-end justify-between py-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Cleared &lt; 30 min</span><span class="font-display font-semibold text-[24px] leading-none tabular-nums text-emerald-700">46<span class="text-[13px] ml-0.5">%</span></span></div>
+                      <div class="flex items-end justify-between pt-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Cleared &lt; 90 min</span><span class="font-display font-semibold text-[24px] leading-none tabular-nums text-amber-700">78<span class="text-[13px] ml-0.5">%</span></span></div>
+                    </div>
+                    <div class="mt-auto pt-3 font-proxima text-[11.5px] text-slate-500 leading-[1.5]">Clearance thresholds are computed on the 42.7% of events with real lanes-open timestamps.</div>
+                  </div>
+                </div>
+
+                <!-- Clearance + timestamp coverage -->
+                <div class="col-span-12 lg:col-span-4 flex flex-col">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden flex-1 flex flex-col" data-dms-section="tim-coverage">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Timestamp coverage</span>
+                      <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-wider text-amber-700">the honest part</span>
+                    </div>
+                    <div class="p-4 space-y-3 text-[12.5px] text-slate-700 flex-1">
+                      <div><div class="flex justify-between mb-1"><span class="font-mono text-[11px]">all-lanes-open</span><span class="font-mono tabular-nums text-emerald-700">42.7%</span></div><div class="h-1.5 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-emerald-600" style="width:42.7%"></div></div></div>
+                      <div><div class="flex justify-between mb-1"><span class="font-mono text-[11px]">verified</span><span class="font-mono tabular-nums text-amber-700">20.1%</span></div><div class="h-1.5 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-amber-500" style="width:20.1%"></div></div></div>
+                      <div><div class="flex justify-between mb-1"><span class="font-mono text-[11px]">reported</span><span class="font-mono tabular-nums text-amber-700">10.6%</span></div><div class="h-1.5 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-amber-500" style="width:10.6%"></div></div></div>
+                      <div><div class="flex justify-between mb-1"><span class="font-mono text-[11px]">on-scene / normal-flow</span><span class="font-mono tabular-nums text-rose-700">&lt; 1%</span></div><div class="h-1.5 rounded bg-slate-100 overflow-hidden"><div class="h-full bg-rose-500" style="width:1%"></div></div></div>
+                    </div>
+                    <div class="px-4 py-2.5 border-t border-zinc-950/05 bg-amber-50/50 font-proxima text-[11.5px] text-slate-600 leading-[1.5]">We publish clearance only on events with real timestamps and show the coverage beside it. Closing these feeds — and adding secondary-crash tracking — is on the <a href="tsmo-about.html" class="tny-link">TSMO roadmap</a>.</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 04 · THE EVENTS THAT HURT MOST ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+
+              <div class="flex items-center gap-2 mb-5" data-dms-section="worst-intro">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                <span class="font-display font-medium text-[16px] text-[#2D3E4C]">The events that hurt most</span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-400">— ranked by the delay they caused</span>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- Top-10 highest-delay events table -->
+                <div class="col-span-12 lg:col-span-8" data-dms-section="top-events-table">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Highest-delay events · 2024 · Statewide</span>
+                      <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">ranked by veh-hrs</span>
+                    </div>
+                    <table class="w-full text-[13px] text-slate-700">
+                      <thead class="bg-white border-b border-zinc-950/10">
+                        <tr>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Date</th>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Category</th>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Facility</th>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">County</th>
+                          <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Duration</th>
+                          <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Delay</th>
+                          <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Cost</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Apr 18</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-blue-800"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Crash</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-95 NB · tractor-trailer fire</a></td><td class="px-3 py-2">Westchester</td><td class="px-3 py-2 text-right font-mono tabular-nums">7h 24m</td><td class="px-3 py-2 text-right font-mono tabular-nums">19,840 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$1.15M</td></tr>
+                        <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Aug 09</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-slate-600"><span class="size-1.5 rounded-full bg-[#64748B]"></span>Weather Hazard</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-87 Thruway SB · flash flooding</a></td><td class="px-3 py-2">Rockland</td><td class="px-3 py-2 text-right font-mono tabular-nums">11h 05m</td><td class="px-3 py-2 text-right font-mono tabular-nums">17,210 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$1.0M</td></tr>
+                        <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Feb 13</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-blue-800"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Crash</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-84 EB · multi-vehicle</a></td><td class="px-3 py-2">Orange</td><td class="px-3 py-2 text-right font-mono tabular-nums">6h 48m</td><td class="px-3 py-2 text-right font-mono tabular-nums">15,920 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$924k</td></tr>
+                        <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Jul 02</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-blue-800"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Crash</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-278 (BQE) WB · overturned box truck</a></td><td class="px-3 py-2">Kings</td><td class="px-3 py-2 text-right font-mono tabular-nums">5h 36m</td><td class="px-3 py-2 text-right font-mono tabular-nums">14,480 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$840k</td></tr>
+                        <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Nov 21</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-slate-700"><span class="size-1.5 rounded-full bg-[#37576B]"></span>Road Hazard</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-90 Thruway WB · jackknifed trailer</a></td><td class="px-3 py-2">Erie</td><td class="px-3 py-2 text-right font-mono tabular-nums">8h 12m</td><td class="px-3 py-2 text-right font-mono tabular-nums">13,050 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$757k</td></tr>
+                        <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">May 30</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-violet-700"><span class="size-1.5 rounded-full bg-[#8B5CF6]"></span>Special Event</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">Grand Central Pkwy EB · stadium egress</a></td><td class="px-3 py-2">Queens</td><td class="px-3 py-2 text-right font-mono tabular-nums">4h 10m</td><td class="px-3 py-2 text-right font-mono tabular-nums">11,760 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$612k</td></tr>
+                        <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Jan 06</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-slate-600"><span class="size-1.5 rounded-full bg-[#64748B]"></span>Weather Hazard</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">I-81 NB · snow-squall pileup</a></td><td class="px-3 py-2">Onondaga</td><td class="px-3 py-2 text-right font-mono tabular-nums">9h 02m</td><td class="px-3 py-2 text-right font-mono tabular-nums">11,340 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$658k</td></tr>
+                        <tr class="hover:bg-[#FFFBEB] cursor-pointer" onclick="location.href='tsmo-incident-view.html'"><td class="px-3 py-2 font-mono tabular-nums">Sep 17</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 text-[12px] text-blue-800"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Crash</span></td><td class="px-3 py-2"><a href="tsmo-incident-view.html" class="text-[#1F3F8F] hover:underline">Taconic SB · overturned tanker</a></td><td class="px-3 py-2">Putnam</td><td class="px-3 py-2 text-right font-mono tabular-nums">6h 15m</td><td class="px-3 py-2 text-right font-mono tabular-nums">10,580 vh</td><td class="px-3 py-2 text-right font-mono tabular-nums">$550k</td></tr>
+                      </tbody>
+                    </table>
+                    <div class="flex items-center justify-between px-3 h-10 border-t border-zinc-950/05 bg-slate-50/40">
+                      <span class="font-mono text-[11px] uppercase tracking-wider text-slate-500">1–8 of 312 events with a measurable delay footprint · $ at a class-weighted value of time (~$58/veh-hr on these freight corridors)</span>
+                      <a href="tsmo-incident-search.html" class="font-mono text-[11px] uppercase tracking-wider text-[#1F3F8F] hover:underline inline-flex items-center gap-1">search all events <!-- icon: ChevronRight --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Recent events map -->
+                <div class="col-span-12 lg:col-span-4" data-dms-section="recent-events-map">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
+                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Recent &amp; major events</span><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>live</span></div>
+                    <div class="relative tny-map flex-1 min-h-[380px]">
+                      <!-- decorative --><svg viewBox="0 0 400 420" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                        <path d="M 70 60 L 150 110 L 230 170 L 300 240 L 330 330" stroke="#cbd5e1" stroke-width="3" fill="none"/>
+                        <path d="M 60 200 L 160 220 L 260 250 L 340 270" stroke="#cbd5e1" stroke-width="3" fill="none"/>
+                        <path d="M 290 130 L 300 240 L 290 360" stroke="#cbd5e1" stroke-width="2.5" fill="none"/>
+                        <circle cx="300" cy="240" r="7" fill="#1F3F8F" opacity="0.9"/>
+                        <circle cx="300" cy="240" r="12" fill="none" stroke="#1F3F8F" opacity="0.35"/>
+                        <circle cx="150" cy="110" r="5.5" fill="#37576B" opacity="0.9"/>
+                        <circle cx="260" cy="250" r="5.5" fill="#1F3F8F" opacity="0.9"/>
+                        <circle cx="330" cy="330" r="6.5" fill="#64748B" opacity="0.9"/>
+                        <circle cx="90" cy="210" r="5" fill="#E5A646" opacity="0.9"/>
+                        <circle cx="225" cy="165" r="5" fill="#8B5CF6" opacity="0.9"/>
+                      </svg>
+                      <div class="absolute bottom-2 left-2 rounded-[6px] bg-white shadow-md p-2 border border-zinc-950/10">
+                        <div class="font-display uppercase text-[10.5px] tracking-wide text-slate-600 mb-1">Category</div>
+                        <div class="space-y-0.5 font-mono text-[10px]">
+                          <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#1F3F8F"></span>Crash</div>
+                          <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#37576B"></span>Road hazard</div>
+                          <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#64748B"></span>Weather</div>
+                          <div class="flex items-center gap-2"><span class="size-2 rounded-full" style="background:#E5A646"></span>Emergency ops</div>
+                        </div>
+                      </div>
+                      <div class="absolute top-2 right-2 rounded-[6px] bg-white shadow-md px-2 py-1 border border-zinc-950/10 font-mono text-[10px] text-slate-600">past 24 hrs · 412 events</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ METHOD NOTE ═════════ -->
+          <div class="w-full bg-[#ECEEF2] pb-10" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="method-note">
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white p-6">
+                <div class="flex items-start gap-6">
+                  <div class="size-9 rounded flex-shrink-0 flex items-center justify-center bg-[#1F3F8F]/10 text-[#1F3F8F]">
+                    <!-- icon: Pages --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">// methodology</div>
+                    <div class="font-display uppercase text-[15px] tracking-[0.06em] text-[#0F1722] font-semibold mb-2">How incidents are measured</div>
+                    <p class="font-proxima text-[13px] leading-[1.55] text-slate-600 max-w-[920px]">Event counts and categories come from TRANSCOM's multi-state feed, filtered to New York and classified by <span class="tny-mono">nysdot_sub_category</span>. Construction is excluded — it's a planned-work story on the work-zones dashboard — so this page is the reactive incidents operations responds to. Delay is attributed per event by joining its affected TMCs to NPMRDS probe speeds and subtracting the recurrent baseline; about one in five events carries a measurable footprint. Dollars use a vehicle-class-weighted value of time — passenger $52, single-unit truck $42, combination truck $77 per vehicle-hour — weighted by each segment's AADT truck mix (≈$53 blended, higher on freight corridors). Clearance thresholds are computed only on the 42.7% of events with real lanes-open timestamps, with coverage shown alongside; secondary-crash tracking is on the roadmap.</p>
+                    <div class="mt-4 flex flex-wrap gap-6 font-mono text-[10.5px] uppercase tracking-[0.18em]">
+                      <a href="tsmo-methodology.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">full methodology &amp; data coverage <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                      <a href="tsmo-incident-search.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">search all events <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                      <a href="tsmo-workzones.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">construction · work zones <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -350,44 +467,17 @@
 <div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Proxima Nova',system-ui,sans-serif;">
   <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:220px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
     <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;padding:0 16px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:4px;">TransportNY DMS · v0.2</div>
-    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">design system</div>
-    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">1</span> theme</a>
-    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">2</span> layouts</a>
-    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">3</span> grid</a>
-    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">4</span> components</a>
-    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">5</span> patterns</a>
-    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">pages</div>
-    <a href="landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">6</span> landing</a>
-    <a href="login.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">7</span> login</a>
-    <a href="getting-started.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">8</span> getting-started</a>
-    <a href="docs-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">9</span> docs-overview</a>
-    <a href="map-21.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">10</span> map-21</a>
-    <a href="map-21-system-performance.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">11</span> map-21-system-performance</a>
-    <a href="map-21-trend.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">12</span> map-21-trend</a>
-    <a href="employment-estimates.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">13</span> employment-estimates</a>
-    <a href="employment-estimates-mpo.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">14</span> employment-estimates-mpo</a>
-    <a href="floating-car.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">15</span> floating-car</a>
-    <a href="congestion.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">16</span> congestion</a>
-    <a href="work-zones.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">17</span> work-zones</a>
-    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">freight atlas</div>
-    <a href="freight-atlas-home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">18</span> freight-atlas-home</a>
-    <a href="freight-atlas-map.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">19</span> freight-atlas-map</a>
-    <a href="freight-atlas-gallery.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">20</span> freight-atlas-gallery</a>
-    <a href="freight-atlas-insights.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">21</span> freight-atlas-insights</a>
-    <a href="freight-atlas-data.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">22</span> freight-atlas-data</a>
-    <a href="freight-atlas-dataset.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">23</span> freight-atlas-dataset</a>
-    <a href="freight-atlas-about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">24</span> freight-atlas-about</a>
     <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">tsmo</div>
-    <a href="tsmo-home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">25</span> tsmo-home</a>
-    <a href="tsmo-congestion.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">26</span> tsmo-congestion</a>
-    <a href="tsmo-reliability.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">27</span> tsmo-reliability</a>
-    <a href="tsmo-incidents.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#CA8A04;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">28</span> tsmo-incidents</a>
-    <a href="tsmo-workzones.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">29</span> tsmo-workzones</a>
-    <a href="tsmo-incident-search.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">30</span> tsmo-incident-search</a>
-    <a href="tsmo-incident-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">31</span> tsmo-incident-view</a>
-    <a href="tsmo-corridor.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">32</span> tsmo-corridor</a>
-    <a href="tsmo-about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">33</span> tsmo-about</a>
-    <a href="tsmo-methodology.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">34</span> tsmo-methodology</a>
+    <a href="tsmo-home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;">tsmo-home</a>
+    <a href="tsmo-congestion.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;">tsmo-congestion</a>
+    <a href="tsmo-reliability.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;">tsmo-reliability</a>
+    <a href="tsmo-incidents.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#CA8A04;text-decoration:none;">tsmo-incidents</a>
+    <a href="tsmo-workzones.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;">tsmo-workzones</a>
+    <a href="tsmo-incident-search.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;">tsmo-incident-search</a>
+    <a href="tsmo-incident-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;">tsmo-incident-view</a>
+    <a href="tsmo-corridor.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;">tsmo-corridor</a>
+    <a href="tsmo-about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;">tsmo-about</a>
+    <a href="tsmo-methodology.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;">tsmo-methodology</a>
   </div>
   <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';" style="width:40px;height:40px;border-radius:10px;background:#12181F;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);" aria-label="Design system navigation">
     <!-- decorative --><svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>

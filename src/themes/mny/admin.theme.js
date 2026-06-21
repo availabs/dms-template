@@ -513,44 +513,30 @@ const theme = {
       },
     ]
   },
-  "button": {
-    options: {
-      activeStyle: 0
-    },
+  button: {
+    options: { activeStyle: 0 },
     styles: [
       {
-        "name": 'default',
-        "button": "inline-flex items-center gap-2  bg-gray-700 px-1 py-0.5  text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white rounded-md",
+        name: 'default Buttons',
+        button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[14px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-5 py-2.5`,
       },
       {
-        "name": 'plain',
-        "button": "cursor-pointer px-2 py-1 inline-flex text-sm items-center justify-center rounded-md font-regular bg-blue-100 hover:bg-blue-200",
+        name: 'plain',
+        button: `cursor-pointer inline-flex items-center gap-2 border border-[#E0EBF0] bg-white hover:bg-[#E0EBF0] hover:border-[#C5D7E0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[14px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-5 py-2.5`,
       },
       {
-        "name": 'active',
-        "button": "cursor-pointer px-2 py-1 inline-flex  justify-center items-center text-sm font-regular  bg-blue-300 text-blue-800 hover:bg-blue-200 rounded-md",
+        name: 'active',
+        button: `cursor-pointer inline-flex items-center gap-2 border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F3F8F9] disabled:border-[#E0EBF0] disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-3 py-[6px]`,
       },
       {
-        "name": 'inactive',
-        "button": "inline-flex  px-2 py-1 justify-center items-center cursor-not-allowed text-sm font-regular bg-slate-300 text-slate-800 rounded-md",
+        name: 'secondarySmall',
+        button: `cursor-pointer inline-flex items-center gap-2 border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F3F8F9] disabled:border-[#E0EBF0] disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-3 py-[6px]`,
       },
       {
-        "name": 'rounded',
-        "button": "rounded-lg",
+        name: 'primarySmall',
+        button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-3 py-[6px]`,
       },
-      {
-        "name": 'padding',
-        "button": "px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]",
-      },
-      {
-        "name": 'transparent',
-        "button": "hover:bg-gray-100 rounded-lg"
-      },
-      {
-        "name": 'danger',
-        "button": "px-2 py-1 bg-red-300 hover:bg-red-200 text-red-800 text-sm rounded-md"
-      }
-    ]
+    ],
   },
   "menu": {
     "menuItems": "absolute z-40 -mr-1 mt-1 w-64 p-1 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-50 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
