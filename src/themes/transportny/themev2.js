@@ -1016,6 +1016,25 @@ const dataCard = {
       header:                "font-display font-medium text-[15px] text-[#0f1722] leading-tight",
       value:                 "",
     },
+    {
+      // "ink" — dark insight / callout card (the design's `.tny-card-ink`: #0F2D4D,
+      // white text). Gold eyebrow, big white stat, muted-white meta, white prose. The
+      // dark shell + inner padding live on `subWrapperCompactView` (Card.jsx reads that
+      // for the visible per-card chrome, like `context`); the section needs no border/bg.
+      // Inherits sizes/fonts from styles[0] and overrides only the shell + per-token
+      // COLORS (each `!` so it wins over the column value wrapper). Authors pick it via
+      // the section "Card style" control (display.cardStyle:'ink').
+      name: "ink",
+      subWrapperCompactView: "rounded-[8px] bg-[#0F2D4D] shadow-sm p-5 h-full flex flex-col gap-1.5",
+      cardBorder:            "",
+      value:                 "",  // drop default's px-3 pb-3 + dark ink color (shell owns padding)
+      kicker:  `${F_MONO} text-[10px]! uppercase tracking-[0.2em] text-[#FACC15]!`,
+      statXL:  `${F_DISP} font-semibold text-[44px]! leading-none tracking-tight tabular-nums text-white! pb-0!`,
+      statLG:  `${F_DISP} font-semibold text-[28px]! leading-none tracking-tight tabular-nums text-white! pb-0!`,
+      metaSM:  `${F_MONO} text-[11px]! uppercase tracking-wider text-white/60!`,
+      metaXS:  `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-white/50!`,
+      proseSM: `${F_SANS} text-[13px]! leading-[1.6] text-white/80!`,
+    },
   ],
 };
 
@@ -1923,7 +1942,7 @@ const dataBar = {
   wrapper: "w-full flex items-center gap-2",
   track:   "relative flex-1 min-w-0 h-3 rounded-[3px] bg-slate-100 overflow-hidden",
   fill:    "absolute inset-y-0 left-0 rounded-[3px] transition-[width] duration-300",
-  value:   "shrink-0 font-mono text-[10.5px] tabular-nums text-slate-500",
+  value:   "shrink-0 font-mono text-[10.5px] tabular-nums text-slate-500 pl-1 pr-2",  // pr-2: breathing room from the cell edge
   fills: {
     primary: "bg-[#1F3F8F]",   // region-rank: top-N
     muted:   "bg-[#37576B]",   // region-rank: rest
