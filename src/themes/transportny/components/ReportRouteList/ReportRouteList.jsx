@@ -29,12 +29,10 @@ const getSources = async (falcor, envs) => {
 };
 
 const getViews = async (falcor, sourceId, srcEnv, viewAttributes) => {
-  console.log({viewAttributes})
   const lenRes = await falcor.get(["uda", srcEnv, "sources", "byId", sourceId, "views", "length"]);
   const len = get(lenRes, ["json", "uda", srcEnv, "sources", "byId", sourceId, "views", "length"]);
   if (!len) return [];
   const byIndexRes = await falcor.get(["uda", srcEnv, "sources", "byId", sourceId, "views", "byIndex", { from: 0, to: len - 1 }, viewAttributes]);
-  console.log({byIndexRes})
   return Array.from({ length: len }, (_, i) => i).map((i) =>  ({
     view_id: get(byIndexRes, ["json", "uda", srcEnv, "sources", "byId", sourceId, "views", "byIndex", i, "view_id"]),
     name: get(byIndexRes, ["json", "uda", srcEnv, "sources", "byId", sourceId, "views", "byIndex", i, "name"]),
@@ -107,26 +105,27 @@ export default function ReportRouteList(props) {
   const { state, setState, state:{join} } = useContext(ComponentContext) || {};
   const { apiLoad, apiUpdate, pageState, format, clearActionParam, setActionParam } = useContext(PageContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
-  const { Button, Select, Input } = UI || {};
+  const { Button, Select, Input, Icon } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
-  console.log({t})
-  const pContext = useContext(PageContext);
-  const cmContext = useContext(CMSContext)
-    const conContext = useContext(ComponentContext)
-    console.log({pContext, cmContext, conContext})
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [sources, setSources] = useState([]);
   const [views, setViews] = useState([]);
   const [pendingRoute, setPendingRoute] = useState(null);
+  const [expandedRoutes, setExpandedRoutes] = useState({});
+  const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
+  const [editNameValue, setEditNameValue] = useState('');
   const routeSourceInfo = join?.sources?.table1?.sourceInfo;
+
+  const toggleRoute = (index) => {
+    setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
+  };
 
   const currentReport = state?.data?.[0];
   const routes = currentReport?.routes || [];
   const addRouteId = pageState?.filters?.find(f => f.searchKey === 'add_route_id' && f.type === 'action')?.values?.[0];
 
-  console.log({themeFromContext})
   useEffect(() => {
     if (!falcor || !datasources?.length) return;
     const envs = datasources.reduce((acc, ds) => {
@@ -144,7 +143,6 @@ export default function ReportRouteList(props) {
     const viewAttrs = datasources.find(ds => ds.env === srcEnv)?.viewAttributes || ['view_id', 'name'];
 
     getViews(falcor, routeSourceInfo, srcEnv, [...viewAttrs, "view_id"]).then((v) => {
-      console.log("v length::", v.length)
       if(v.length === 1) {
         setState(draft =>{
           draft.routesViewId = v[0]?.view_id;
@@ -270,25 +268,71 @@ export default function ReportRouteList(props) {
       <div className={t.list}>
         {routes.map((r, i) => {
           const tmcArray = getTmcArray(r.tmc_array);
+          const isExpanded = expandedRoutes[i];
           return (
             <div key={`${r.id}-${i}`} className={t.row}>
-              <div className='flex flex-col w-full'>
-                <div className='flex   items-center justify-between w-full'>
-                  <div>{r.name}</div>
-
-                  <Button themeOptions={{ size: "xs" }} disabled={saving} onClick={() => removeRoute(i)}>
-                    Remove
+              <div className={t.rowContainer}>
+                <div className={t.rowHeader}>
+                  <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
+                    {isExpanded ? '-' : '+'}
                   </Button>
+                  {editingRouteNameIndex === i ? (
+                      <div className={t.editContainer}>
+                        <div className={t.editInputWrapper}>
+                          <Input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} />
+                        </div>
+                        <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
+                            updateRoute({index: i, field: 'name', value: editNameValue});
+                            setEditingRouteNameIndex(null);
+                        }}>
+                          <Icon icon={"FloppyDisk"} />
+                        </Button>
+                        <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteNameIndex(null)}>
+                          <Icon icon={"CancelCircle"}/>
+                        </Button>
+                      </div>
+
+                  ) : (
+                    <div className={t.editContainer}>
+                      <div className={t.routeTitle}>{r.name}</div>
+                      {isExpanded && (
+                          <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
+                              setEditingRouteNameIndex(i);
+                              setEditNameValue(r.name);
+                          }}>
+                            <Icon icon={'PencilSquare'}/>
+                          </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
-                {tmcArray.length > 0 && <div className='text-xs text-gray-500 mt-1'>{tmcArray.join(", ")}</div>}
-                <div>
-                  <div>
-                    Start Date:<Input value={r.startDate} onChange={(e) => updateRoute({index: i, field: 'startDate', value: e.target.value})} />
-                  </div>
-                  <div>
-                    End Date:<Input value={r.endDate} onChange={(e) => updateRoute({index: i, field: 'endDate', value: e.target.value})}/>
-                  </div>
-                </div>
+                {isExpanded && (
+                    <div className={t.expandedContainer}>
+                        {tmcArray.length > 0 && (
+                          <div className={t.tmcWrapper}>
+                            <div className={t.tmcLabel}>TMCs:</div>
+                            <div className={t.tmcList}>
+                                {tmcArray.join(", ")}
+                            </div>
+                          </div>
+                        )}
+                        <div className={t.dateInputsContainer}>
+                          <div className={t.dateInputWrapper}>
+                            <label className={t.dateLabel}>Start Date:</label>
+                            <Input value={r.startDate} onChange={(e) => updateRoute({index: i, field: 'startDate', value: e.target.value})} />
+                          </div>
+                          <div className={t.dateInputWrapper}>
+                            <label className={t.dateLabel}>End Date:</label>
+                            <Input value={r.endDate} onChange={(e) => updateRoute({index: i, field: 'endDate', value: e.target.value})}/>
+                          </div>
+                        </div>
+                        <div className={t.removeButtonWrapper}>
+                            <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => removeRoute(i)}>
+                              Remove
+                            </Button>
+                        </div>
+                    </div>
+                )}
               </div>
             </div>
           );
