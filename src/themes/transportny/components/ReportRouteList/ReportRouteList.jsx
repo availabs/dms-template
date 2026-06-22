@@ -41,11 +41,71 @@ const getViews = async (falcor, sourceId, srcEnv, viewAttributes) => {
   }));
 };
 
+function transformReportRoutes(routes) {
+  //const routes = report.data?.routes || [];
+  if(!routes || routes.length < 1){
+    return;
+  }
+  // Helper function to handle MM-DD-YYYY strings safely
+  function parseMDY(dateStr) {
+    const [month, day, year] = dateStr.split('-');
+    // Month is 0-indexed in JS Dates (0 = January)
+    return new Date(year, month - 1, day);
+  }
+
+  // Helper function to generate an array of 'YYYY-MM-DD' dates
+  function generateDateRange(startStr, endStr) {
+    const startDate = parseMDY(startStr);
+    const endDate = parseMDY(endStr);
+    const dates = [];
+
+    // Loop day-by-day from start to end
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      dates.push(`${year}-${month}-${day}`);
+    }
+    return dates;
+  }
+
+  return routes.map(route => {
+    let parsedTmcArray = [];
+    try {
+      parsedTmcArray = JSON.parse(route.tmc_array);
+    } catch (e) {
+      console.error(`Failed to parse tmc_array for route ${route.route_id}:`, e);
+    }
+
+    // Generates the range based on your MM-DD-YYYY inputs
+    const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate) : [];
+
+    return {
+      label: route.name,
+      filters: {
+        op: "AND",
+        groups: [
+          {
+            op: "filter",
+            col: "tmc",
+            value: parsedTmcArray
+          },
+          {
+            op: "filter",
+            col: "date",
+            value: dateArray
+          }
+        ]
+      }
+    };
+  });
+}
+
 export default function ReportRouteList(props) {
   const { isEdit, updateItem } = props;
   const { falcor, datasources } = useContext(CMSContext) || {};
   const { state, setState, state:{join} } = useContext(ComponentContext) || {};
-  const { apiLoad, apiUpdate, pageState, format, clearActionParam } = useContext(PageContext) || {};
+  const { apiLoad, apiUpdate, pageState, format, clearActionParam, setActionParam } = useContext(PageContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Select, Input } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
@@ -190,6 +250,13 @@ export default function ReportRouteList(props) {
     }
   };
 
+  //TODO -- add setActionParam to config for reportRouteList
+  //that will get rid of hardcoded `routes`
+  useEffect(() => {
+    const routeFilter = transformReportRoutes(routes);
+    if (!setActionParam) return;
+    if (routeFilter !== undefined) setActionParam('routes', routeFilter);
+  }, [routes])
 
   const cancelAdd = () => {
     setPendingRoute(null);
