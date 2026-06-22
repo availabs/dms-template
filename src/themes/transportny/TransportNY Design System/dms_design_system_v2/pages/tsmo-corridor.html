@@ -117,15 +117,41 @@
           <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
             <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
 
-              <!-- ── Time-space grid (the centerpiece) ── -->
-              <div class="col-span-12" data-dms-section="time-space-grid">
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
-                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
-                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Time-space diagram · I-495 EB · Thu May 16 2024</span>
-                    <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">14 TMCs × 68 epochs · 05:00–22:00</span>
-                    <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded border border-zinc-950/10 bg-white text-slate-700 text-[12px]">Display <!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+              <!-- ── Daily pattern + time-space explorer (combined header, ONE white field, NO outer card) ── -->
+              <div class="col-span-12 bg-white px-6 py-5" data-dms-section="explorer">
+                  <!-- ONE combined header — implementation header style: kicker → metaSM → displaySM
+                       (matches the live section-header ladder in themev2 textSettings) -->
+                  <div class="mb-5">
+                    <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#CA8A04]">// npmrds 982 ⋈ meta 983</div>
+                    <div class="font-mono text-[11px] leading-[1.4] uppercase tracking-[0.18em] text-slate-500 mt-1.5">daily avg · this month  ·  speed heatmap · TMC (road order) × time of day</div>
+                    <div class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mt-1">Daily pattern &amp; time-space speed</div>
                   </div>
-                  <div class="px-4 pt-3 pb-4">
+
+                  <!-- Month strip · daily average speed (click a day → drives the grid below) -->
+                  <div class="mb-5">
+                    <div class="flex items-center gap-2 mb-1 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                      <span>daily avg speed · May 2024</span><span class="text-slate-300">·</span><span>click a day to drive the grid ↓</span>
+                    </div>
+                    <div class="flex gap-[2px] h-7">
+                      <div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s2 outline outline-2 -outline-offset-2 outline-[#0F1722]"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div>
+                    </div>
+                    <div class="relative h-3 mt-1 font-mono text-[8px] tabular-nums text-slate-400">
+                      <span style="position:absolute;left:0%">May 1</span>
+                      <span style="position:absolute;left:48%;transform:translateX(-50%)">May 16</span>
+                      <span style="position:absolute;right:0%">May 31</span>
+                    </div>
+                  </div>
+
+                  <!-- selected date · ties the strip's active day to the grid below (the day driving the grid) -->
+                  <div class="flex items-center gap-3 mb-4">
+                    <span class="h-px flex-1 bg-zinc-950/10"></span>
+                    <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">grid showing</span>
+                    <span class="font-display font-medium text-[16px] leading-none tracking-tight text-[#0F1722]">Thursday · May 16, 2024</span>
+                    <span class="h-px flex-1 bg-zinc-950/10"></span>
+                  </div>
+
+                  <!-- Time-space grid (no card chrome; flows directly under the strip) -->
+                  <div class="pt-1">
                     <div class="flex">
                       <!-- row labels: cross-streets in road_order, Queens → Suffolk top → bottom -->
                       <div class="w-48 shrink-0">
@@ -191,10 +217,30 @@
                           </div>
                         </div>
                       </div>
+                      <!-- ── Per-TMC daily-average strip (the rotated corridor strip: which segments run slow vs fast on the day) ── -->
+                      <div class="w-12 shrink-0 pl-3">
+                        <div class="h-6 flex items-end justify-center pb-0.5 font-mono text-[8px] uppercase tracking-wider text-slate-400 text-center leading-[1.05]">day<br>avg</div>
+                        <div title="daily average speed per TMC — which segments run slow vs fast on the selected day">
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s2"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s2"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s3"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s3"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s2"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s3"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s2"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s3"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s5"></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <!-- legend strip · speed bins + overlay key -->
-                  <div class="px-4 h-11 border-t border-zinc-950/05 bg-slate-50/40 flex items-center gap-5 flex-wrap font-mono text-[10px] text-slate-600">
+                  <!-- legend strip · speed bins + overlay key (no card chrome) -->
+                  <div class="mt-3 pt-3 border-t border-zinc-950/10 flex items-center gap-5 flex-wrap font-mono text-[10px] text-slate-600">
                     <span class="uppercase tracking-wider text-slate-400">speed</span>
                     <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-[2px]" style="background:#4C9A57"></span>&gt; 55 mph</span>
                     <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-[2px]" style="background:#94C24E"></span>45–55</span>
@@ -202,12 +248,13 @@
                     <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-[2px]" style="background:#E8843F"></span>25–35</span>
                     <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-[2px]" style="background:#D6453B"></span>&lt; 25</span>
                     <span class="h-4 w-px bg-zinc-950/10"></span>
+                    <span class="flex items-center gap-1.5"><span class="h-3 w-4 rounded-[2px] outline outline-2 -outline-offset-2 outline-[#0F1722]" style="background:#E8843F"></span>active day (drives grid)</span>
+                    <span class="h-4 w-px bg-zinc-950/10"></span>
                     <span class="uppercase tracking-wider text-slate-400">overlays</span>
                     <span class="flex items-center gap-1.5"><span class="flex size-3.5 items-center justify-center rounded-full bg-white border border-[#D6453B]"><svg class="size-2 text-[#D6453B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg></span>crash (TRANSCOM)</span>
                     <span class="flex items-center gap-1.5"><span class="h-3 w-5 rounded-[2px] border border-dashed border-[#0F1722]/50" style="background:repeating-linear-gradient(45deg,rgba(15,23,42,0.14) 0 3px,transparent 3px 6px)"></span>work zone</span>
                     <span class="flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-amber-400"></span>signalized cross street</span>
                   </div>
-                </div>
               </div>
 
               <!-- ── Corridor strip map (keyed to grid row order) ── -->

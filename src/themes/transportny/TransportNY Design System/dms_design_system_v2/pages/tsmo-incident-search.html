@@ -14,10 +14,15 @@
 
 <!--
   tsmo-incident-search.html · TSMO IA surface #6 — Incident Search explorer.
-  Find any TRANSCOM event by geography / date / category / facility / keyword.
-  Data: transcom 1947 (+ event_tmc 2799 delay join). Honest-gaps: attributed
-  delay exists on 18.5% of events — coverage note on the results panel.
-  Primitives: filter selects, chips, Table, pagination, map placeholder. -->
+  Find any TRANSCOM event by region / county / year / month / category / keyword.
+  Build plan: planning/transportny/tasks/current/tsmo-incident-search-page-build.md
+  Data: transcom 956/1947 (per-event row carries vehicle_delay + cost already).
+  Filters are live-reactive page variables (no submit button). Keyword = ONE search
+  box fanned across several columns via an OR-group of `like` leaves (DMS skill
+  full-text-search-filter.md). All categories incl. Construction (search = the whole
+  event feed). Attributed delay exists on ~18.5% of events — honest-gaps coverage note.
+  Result map is a v1 placeholder (read-only mirror; no map↔table coordination).
+  Primitives: filter selects, search box, chips, Table, pagination, map placeholder. -->
 
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
@@ -61,7 +66,7 @@
                 <nav class="flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mb-3"><a href="tsmo-home.html" class="text-slate-500 hover:text-[#0f1722]">TSMO</a><span class="text-slate-300 px-1">/</span><a href="tsmo-incidents.html" class="text-slate-500 hover:text-[#0f1722]">Incidents</a><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Search</span></nav>
                 <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// explorer · transcom event store</span>
                 <h1 class="mt-2 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Incident search<span class="text-[#CA8A04]">.</span></h1>
-                <p class="mt-2 font-proxima text-[14.5px] text-slate-600 leading-[1.6] max-w-[680px]">Find any event in the TRANSCOM feed — by geography, date range, category, facility or keyword — and follow it through to its congestion footprint. NY-filtered; 3.7M events since 2015.</p>
+                <p class="mt-2 font-proxima text-[14.5px] text-slate-600 leading-[1.6] max-w-[680px]">Find any event in the TRANSCOM feed — by geography, time period, category or keyword — and follow it through to its congestion footprint. NY-filtered; 3.7M events since 2015.</p>
               </div>
               <div class="flex flex-col items-end gap-2">
                 <button class="h-8 inline-flex items-center gap-1.5 px-3 rounded border border-zinc-950/15 bg-white text-slate-700 text-[12.5px]"><!-- icon: Export --><svg class="size-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/></svg>Export CSV</button>
@@ -75,47 +80,41 @@
             <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-5" data-dms-section="search-panel">
               <div class="grid grid-cols-12 gap-3">
                 <div class="col-span-6 md:col-span-2">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Geography level</div>
-                  <button class="w-full h-9 px-3 rounded-[6px] bg-white border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-[#0F1722] font-medium">Statewide <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Region</div>
+                  <button class="w-full h-9 px-3 rounded-[6px] bg-white border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-[#0F1722] font-medium">All regions <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
                 </div>
                 <div class="col-span-6 md:col-span-2">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Geography value</div>
-                  <button class="w-full h-9 px-3 rounded-[6px] bg-white/70 border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-slate-500">All of New York <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">County</div>
+                  <button class="w-full h-9 px-3 rounded-[6px] bg-white/70 border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-slate-500">All counties <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
                 </div>
                 <div class="col-span-6 md:col-span-2">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Date range</div>
-                  <button class="w-full h-9 px-3 rounded-[6px] bg-white border border-zinc-950/10 flex items-center justify-between text-[12px] text-[#0F1722] font-mono tabular-nums">Apr 1 – Apr 30, 2024 <!-- icon: Calendar --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 2.5V6m8-3.5V6"/></svg></button>
+                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Year</div>
+                  <button class="w-full h-9 px-3 rounded-[6px] bg-white border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-[#0F1722] font-mono tabular-nums">2024 <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
                 </div>
                 <div class="col-span-6 md:col-span-2">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">General category</div>
-                  <button class="w-full h-9 px-3 rounded-[6px] bg-white border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-[#0F1722] font-medium">Incident <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Month</div>
+                  <button class="w-full h-9 px-3 rounded-[6px] bg-white/70 border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-slate-500">All months <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
                 </div>
-                <div class="col-span-6 md:col-span-2">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Sub-category</div>
-                  <button class="w-full h-9 px-3 rounded-[6px] bg-white border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-[#0F1722]">All sub-categories <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                <div class="col-span-12 md:col-span-4">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Category <span class="text-white/35 normal-case tracking-normal">· incl. construction</span></div>
+                  <button class="w-full h-9 px-3 rounded-[6px] bg-white border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-[#0F1722]">All categories <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
                 </div>
-                <div class="col-span-6 md:col-span-2">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Facility</div>
-                  <button class="w-full h-9 px-3 rounded-[6px] bg-white border border-zinc-950/10 flex items-center justify-between text-[12.5px] text-[#0F1722]">All facilities <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                </div>
-                <div class="col-span-12 md:col-span-9">
-                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Keyword · description &amp; summary text</div>
+                <div class="col-span-12 md:col-span-10">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5">Keyword · matches facility · description · category · county · id</div>
                   <div class="h-10 px-3 rounded-[6px] bg-white border border-zinc-950/10 flex items-center gap-2">
                     <!-- icon: Search --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
-                    <span class="font-proxima text-[13px] text-slate-400 flex-1">Search descriptions… e.g. “jackknifed tractor trailer”, “left lanes blocked”</span>
+                    <span class="font-proxima text-[13px] text-slate-400 flex-1">Search events… e.g. “I-495”, “jackknifed tractor trailer”, “Queens”</span>
                   </div>
                 </div>
-                <div class="col-span-12 md:col-span-3 flex items-end gap-2">
-                  <button class="tny-press flex-1 h-10 bg-[#FACC15] hover:bg-[#EAB308] border-b-4 border-[#A16207] text-[#0F1722] font-display uppercase text-[13px] tracking-wide rounded-[6px] flex items-center justify-center gap-2"><!-- icon: Search --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>Search</button>
-                  <button class="h-10 px-3 rounded-[6px] border border-white/25 text-white/80 hover:bg-white/10 font-proxima text-[12.5px]">Reset</button>
+                <div class="col-span-12 md:col-span-2 flex items-end">
+                  <button class="w-full h-10 px-3 rounded-[6px] border border-white/25 text-white/80 hover:bg-white/10 font-proxima text-[12.5px] flex items-center justify-center gap-1.5"><!-- icon: X --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6 6 18"/></svg>Reset</button>
                 </div>
               </div>
-              <!-- active-filter chips + saved searches -->
+              <!-- active-filter chips + saved searches (filters apply live — no submit) -->
               <div class="mt-4 flex items-center flex-wrap gap-2">
                 <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mr-1">Active:</span>
-                <span class="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-1.5 rounded-full bg-white/15 border border-white/20 text-white text-[12px]">Statewide · NY only<button class="size-4 inline-flex items-center justify-center rounded-full hover:bg-white/20"><!-- icon: X --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>
-                <span class="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-1.5 rounded-full bg-white/15 border border-white/20 text-white text-[12px] font-mono tabular-nums">Apr 1 – Apr 30, 2024<button class="size-4 inline-flex items-center justify-center rounded-full hover:bg-white/20"><!-- icon: X --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>
-                <span class="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-1.5 rounded-full bg-white/15 border border-white/20 text-white text-[12px]">Category: Incident<button class="size-4 inline-flex items-center justify-center rounded-full hover:bg-white/20"><!-- icon: X --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>
+                <span class="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-2.5 rounded-full bg-white/10 border border-white/15 text-white/70 text-[12px]">NY only · base scope</span>
+                <span class="inline-flex items-center gap-1.5 h-7 pl-2.5 pr-1.5 rounded-full bg-white/15 border border-white/20 text-white text-[12px] font-mono tabular-nums">2024<button class="size-4 inline-flex items-center justify-center rounded-full hover:bg-white/20"><!-- icon: X --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>
                 <button class="font-mono text-[10.5px] uppercase tracking-wider text-white/60 hover:text-white underline underline-offset-2 ml-1">Clear all</button>
                 <span class="flex-1"></span>
                 <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60">Saved:</span>
@@ -203,7 +202,7 @@
                         <div class="flex items-center gap-2"><span class="size-1.5 rounded-full inline-block" style="background:#37576B"></span>single event</div>
                       </div>
                     </div>
-                    <div class="absolute top-2 right-2 rounded-[6px] bg-white/90 shadow px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-600">zoom to results</div>
+                    <div class="absolute top-2 right-2 rounded-[6px] bg-white/90 shadow px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-600">mirrors filters</div>
                   </div>
                 </div>
 
