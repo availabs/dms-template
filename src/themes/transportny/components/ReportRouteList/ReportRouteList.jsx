@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { get } from 'lodash-es';
+import { get, cloneDeep } from 'lodash-es';
 import { ComponentContext, PageContext, CMSContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
 import { reportRouteListTheme } from './ReportRouteList.theme';
@@ -47,9 +47,9 @@ export default function ReportRouteList(props) {
   const { state, setState, state:{join} } = useContext(ComponentContext) || {};
   const { apiLoad, apiUpdate, pageState, format, clearActionParam } = useContext(PageContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
-  const { Button, Select } = UI || {};
+  const { Button, Select, Input } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
-  console.log({pageState})
+  console.log({t})
   const pContext = useContext(PageContext);
   const cmContext = useContext(CMSContext)
     const conContext = useContext(ComponentContext)
@@ -174,30 +174,55 @@ export default function ReportRouteList(props) {
     }
   };
 
+  const updateRoute = async ({index, field, value}) => {
+    if (!updateItem || !currentReport?.id || saving || !field || !value) return;
+    setSaving(true);
+    setError('');
+    try {
+      const newRoutes = cloneDeep(routes)
+      newRoutes[index][field] = value;
+      await updateItem(newRoutes, { name: 'routes' }, currentReport);
+    } catch (e) {
+      console.error('<ReportRouteList:update>', e);
+      setError('Could not update route.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
   const cancelAdd = () => {
     setPendingRoute(null);
     clearActionParam('add_route_id');
   };
-
   return (
     <div className={t.wrapper}>
-      <div className={t.title}>Report Routes</div>
       <div className={t.title}>{currentReport?.name}</div>
+      <div className={t.title}>Routes</div>
       {loading ? <div className={t.loading}>Loading…</div> : null}
       <div className={t.list}>
         {routes.map((r, i) => {
           const tmcArray = getTmcArray(r.tmc_array);
           return (
             <div key={`${r.id}-${i}`} className={t.row}>
-              <div className="flex flex-col">
-                <div>{r.name}</div>
-                {tmcArray.length > 0 && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    TMCs: {tmcArray.join(', ')}
+              <div className='flex flex-col w-full'>
+                <div className='flex   items-center justify-between w-full'>
+                  <div>{r.name}</div>
+
+                  <Button themeOptions={{ size: "xs" }} disabled={saving} onClick={() => removeRoute(i)}>
+                    Remove
+                  </Button>
+                </div>
+                {tmcArray.length > 0 && <div className='text-xs text-gray-500 mt-1'>{tmcArray.join(", ")}</div>}
+                <div>
+                  <div>
+                    Start Date:<Input value={r.startDate} onChange={(e) => updateRoute({index: i, field: 'startDate', value: e.target.value})} />
                   </div>
-                )}
+                  <div>
+                    End Date:<Input value={r.endDate} onChange={(e) => updateRoute({index: i, field: 'endDate', value: e.target.value})}/>
+                  </div>
+                </div>
               </div>
-              <Button disabled={saving} onClick={() => removeRoute(i)}>Remove</Button>
             </div>
           );
         })}
@@ -208,9 +233,11 @@ export default function ReportRouteList(props) {
         <div className={t.addForm}>
           <div>Add “{pendingRoute.name}”?</div>
           <Button disabled={saving} onClick={addRoute}>
-            {saving ? 'Adding…' : 'Confirm'}
+            {saving ? "Adding…" : "Confirm"}
           </Button>
-          <Button disabled={saving} onClick={cancelAdd}>Cancel</Button>
+          <Button disabled={saving} onClick={cancelAdd}>
+            Cancel
+          </Button>
         </div>
       )}
       {error ? <div className={t.error}>{error}</div> : null}
