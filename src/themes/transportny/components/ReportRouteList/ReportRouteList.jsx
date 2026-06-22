@@ -204,7 +204,23 @@ export default function ReportRouteList(props) {
     setSaving(true);
     setError('');
     try {
-      const updatedRoutes = [...routes, pendingRoute];
+      // Find max ID
+      let maxId = -1;
+      routes.forEach(r => {
+        if (r.route_comp_id && r.route_comp_id.startsWith('comp-')) {
+          const id = parseInt(r.route_comp_id.replace('comp-', ''), 10);
+          if (!isNaN(id) && id > maxId) {
+            maxId = id;
+          }
+        }
+      });
+      
+      const newRoute = {
+        ...pendingRoute,
+        route_comp_id: `comp-${maxId + 1}`
+      };
+
+      const updatedRoutes = [...routes, newRoute];
       await updateItem(updatedRoutes, { name: 'routes' }, currentReport);
 
       setPendingRoute(null);
