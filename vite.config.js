@@ -22,6 +22,22 @@ function buildProgress() {
 }
 
 export default defineConfig(({ isSsrBuild, mode }) => ({
+  server: {
+    watch: {
+      // Don't watch large non-source trees. inotify watches are per-directory
+      // AND shared across all of the user's processes (editor, SSR server, etc.),
+      // so descending into these blows past fs.inotify.max_user_watches with
+      // ENOSPC. references/ alone is a 15GB / ~5,300-dir map-tile pyramid; none
+      // of these are app source, so excluding them only skips needless HMR.
+      // (Merged with Vite's built-in ignores: node_modules, .git, dist, cacheDir.)
+      ignored: [
+        path.resolve(__dirname, 'references/**'),
+        path.resolve(__dirname, '.netlify/**'),
+        path.resolve(__dirname, 'scratchpad/**'),
+        path.resolve(__dirname, 'research/**'),
+      ],
+    },
+  },
   resolve: {
     alias: [
       { find: '~', replacement: path.resolve(__dirname, 'src') },
