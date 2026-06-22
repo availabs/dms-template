@@ -44,17 +44,17 @@ function transformReportRoutes(routes) {
   if(!routes || routes.length < 1){
     return;
   }
-  // Helper function to handle MM-DD-YYYY strings safely
-  function parseMDY(dateStr) {
-    const [month, day, year] = dateStr.split('-');
+  // Helper function to handle YYYY-MM-DD strings safely
+  function parseYMD(dateStr) {
+    const [year, month, day] = dateStr.split('-');
     // Month is 0-indexed in JS Dates (0 = January)
     return new Date(year, month - 1, day);
   }
 
   // Helper function to generate an array of 'YYYY-MM-DD' dates
   function generateDateRange(startStr, endStr) {
-    const startDate = parseMDY(startStr);
-    const endDate = parseMDY(endStr);
+    const startDate = parseYMD(startStr);
+    const endDate = parseYMD(endStr);
     const dates = [];
 
     // Loop day-by-day from start to end
@@ -319,11 +319,11 @@ export default function ReportRouteList(props) {
                         <div className={t.dateInputsContainer}>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>Start Date:</label>
-                            <Input value={r.startDate} onChange={(e) => updateRoute({index: i, field: 'startDate', value: e.target.value})} />
+                            <Input type="date" value={r.startDate} onChange={(e) => updateRoute({index: i, field: 'startDate', value: e.target.value})} />
                           </div>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>End Date:</label>
-                            <Input value={r.endDate} onChange={(e) => updateRoute({index: i, field: 'endDate', value: e.target.value})}/>
+                            <Input type="date" value={r.endDate} onChange={(e) => updateRoute({index: i, field: 'endDate', value: e.target.value})}/>
                           </div>
                         </div>
                         <div className={t.removeButtonWrapper}>
