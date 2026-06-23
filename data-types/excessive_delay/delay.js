@@ -15,6 +15,8 @@
  *    production — it is the same JS the legacy route ran inline.
  */
 
+const { votEff } = require('../_shared/vot_rates.js');
+
 // Legacy coercion, quirk included: Number(null) === 0, so null → 0 (not null).
 function toNullableNumber(value) {
   const num = Number(value);
@@ -133,7 +135,19 @@ function roadInformation({ roadname, direction, totalRoadMiles }) {
 }
 
 // One CH result row → the cleaned record insertRowsSQL consumes.
+//
+// Class-weighted monetization (added 2026-06-22): vot_eff is the per-TMC
+// effective $/veh-hr from the AADT split — computed from RAW undirected aadt
+// (row.aadt_raw), since aadt_singl/aadt_combi are raw while the output `aadt`
+// column is normalized (directional). cost is the headline total-delay dollars
+// (total veh-hrs × vot_eff); bucket-level $ are derivable downstream as
+// bucket × vot_eff. See planning/.../class-weighted-vot-cost.md.
 function normalizeDelayRow(row) {
+  const votEffVal = votEff({
+    aadt: row.aadt_raw,
+    aadt_singl: row.aadt_singl,
+    aadt_combi: row.aadt_combi,
+  });
   return {
     tmc: row.tmc,
     year: toNullableNumber(row.year),
@@ -142,6 +156,8 @@ function normalizeDelayRow(row) {
     total: roundCents(row.total),
     f_system: toNullableNumber(row.f_system),
     non_recurrent: roundCents(row.non_recurrent),
+    vot_eff: roundCents(votEffVal),
+    cost: roundCents((toNullableNumber(row.total) || 0) * votEffVal),
     aadt: toNullableNumber(row.aadt),
     aadt_combi: toNullableNumber(row.aadt_combi),
     aadt_singl: toNullableNumber(row.aadt_singl),

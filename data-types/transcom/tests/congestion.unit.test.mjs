@@ -12,7 +12,7 @@ import { describe, it, expect } from 'vitest';
 import * as cg from '../congestion.js';
 
 const EXPECTED_KEYS = [
-  'branches', 'dates', 'delay', 'endTime', 'eventTmcs', 'node_id',
+  'branches', 'cost', 'dates', 'delay', 'endTime', 'eventTmcs', 'node_id',
   'probe', 'rawDelay', 'rawTmcDelayData', 'rawVehicleDelay', 'startTime',
   'tmcBounds', 'tmcDelayData', 'vehicleDelay', 'way_id',
 ].sort();
@@ -97,7 +97,7 @@ describe('assembleCongestionData — construction events', () => {
       branches: [{ branch: ['A'], ways: ['w9'], direction: 'down-stream', length: 1 }],
       eventTmcs: ['A'],
       times: [], eventStart: 0, eventEnd: 0,
-      tmcAttributes: { A: { f_system: 1 } },
+      tmcAttributes: { A: { f_system: 1, aadt: 1000, aadt_singl: 0, aadt_combi: 0 } },
     });
 
     expect(Object.keys(out).sort()).toEqual(EXPECTED_KEYS);
@@ -107,6 +107,8 @@ describe('assembleCongestionData — construction events', () => {
     expect(out.rawVehicleDelay).toBe(10);
     expect(out.tmcDelayData).toEqual({ A: 30 });
     expect(out.rawTmcDelayData).toEqual({ A: 10 });
+    // all-passenger TMC → $52/veh-hr × 10 raw veh-hrs = $520 (weights RAW, not filled)
+    expect(out.cost).toBeCloseTo(520, 6);
     expect(out.tmcBounds).toEqual({ A: [['2024-03-01', 100], ['2024-03-01', 110]] });
     expect(out.node_id).toBe(5);
     expect(out.startTime).toBe(100);
@@ -122,6 +124,26 @@ describe('assembleCongestionData — construction events', () => {
       times: [], eventStart: 0, eventEnd: 0, tmcAttributes: {},
     });
     expect(out.probe).toEqual({ observedCells: 0, totalCells: 0, coverage: 0 });
+  });
+
+  it('weights each TMC raw delay by its own class-weighted VOT_eff; falls back to the network blend when the split is missing', () => {
+    const out = cg.assembleCongestionData({
+      incident: { event_id: 'E3', node_id: 1, dates: ['2024-03-01'], startTime: 0, endTime: 1 },
+      isConstruction: true,
+      tmcDelayData: [
+        { tmc: 'A', synthetic: false, delayData: { delay: 1, vehicleDelay: 10 } }, // freight TMC
+        { tmc: 'B', synthetic: false, delayData: { delay: 1, vehicleDelay: 10 } }, // no split → fallback
+      ],
+      branches: [{ branch: ['A', 'B'], ways: ['w'], direction: 'down-stream', length: 1 }],
+      eventTmcs: ['A', 'B'],
+      times: [], eventStart: 0, eventEnd: 0,
+      tmcAttributes: {
+        A: { aadt: 1000, aadt_singl: 50, aadt_combi: 150 }, // 0.8*52+0.05*42+0.15*77 = 55.25
+        B: {}, // missing aadt → network blend $52
+      },
+    });
+    // A: 10 × 55.25 = 552.5 ; B: 10 × 52 (fallback) = 520 ; total 1072.5
+    expect(out.cost).toBeCloseTo(552.5 + 520, 6);
   });
 });
 

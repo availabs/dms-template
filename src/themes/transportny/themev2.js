@@ -324,7 +324,10 @@ const layoutGroup = {
     {
       name: "tone_bar",
       wrapper1: "w-full bg-[#1F3F8F] text-white border-b border-black/10",
-      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 h-12 flex items-center gap-8",
+      // min-h (not fixed h-12) so the section grid can grow to contain its controls instead of
+      // overflowing; items-stretch makes the grid fill the band so its cells get a definite height
+      // (which lets each control's filtersWrapper h-full + items-center vertically center it).
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 min-h-12 flex items-stretch gap-8",
       wrapper3: "",
     },
     {
@@ -677,14 +680,23 @@ const multiselect = {
     },
     {
       name: "tone_bar",
-      inputWrapper: "flex items-center gap-1.5 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
+      // min-w so an EMPTY control still has a clickable box (was collapsing to nothing); min-h
+      // keeps it vertically aligned with the label.
+      inputWrapper: "flex items-center gap-1.5 min-w-[72px] min-h-7 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
       singleValue:  "font-semibold text-[13px] text-white",
-      singlePlaceholder: "text-[13px] text-white/80",
+      singlePlaceholder: "text-[13px] text-white/80 italic",
       // multi chips render as plain white values (not gray tokens) to match the
       // dashboard mockup "Region: Statewide ▾"; the × keeps them clearable.
       tokenWrapper: "inline-flex items-center gap-1 font-semibold text-[13px] text-white",
       removeIconClass: "size-3 text-white/60 hover:text-white cursor-pointer",
       caretWrapper: "ml-1 text-white/70",
+      // the open-out: a WHITE menu (the bar is blue) with a real min-width so it isn't a sliver.
+      menuWrapper:      "absolute z-40 mt-1 min-w-[220px] rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden",
+      optionsWrapper:   "max-h-72 overflow-y-auto py-1",
+      menuItem:         "px-3 py-2 text-[13.5px] text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center gap-2",
+      menuItemSelected: "px-3 py-2 text-[13.5px] text-[#0F1722] bg-[#1F3F8F]/5 cursor-pointer flex items-center gap-2 font-medium",
+      smartMenuWrapper: "px-3 py-2 border-b border-zinc-950/5 bg-slate-50/60",
+      smartMenuItem:    "w-full h-8 px-2 rounded border border-zinc-950/10 bg-white text-[13px] text-[#0F1722] focus:outline-none focus:border-[#1F3F8F]",
     },
     {
       name: "multiselect_with_search",
@@ -1495,7 +1507,9 @@ const filters = {
       labelWrapperInline:          "shrink-0 inline-flex items-center",
       filterSettingsWrapperInline: "min-w-0",
       conditionRowInline:          "inline-flex items-center gap-2 w-fit",
-      filtersWrapper:              "w-full flex flex-wrap items-center gap-x-8 gap-y-2",
+      // h-full + items-center → fill the (stretched) section cell and vertically center the control,
+      // so the chips sit on the band's mid-line regardless of the tallest cell (e.g. a 2-line note).
+      filtersWrapper:              "h-full w-full flex flex-wrap items-center gap-x-8 gap-y-2",
     },
     { // 4 · filter_panel — stacked white-box controls in a `filter_bar` band grid:
       // white label ABOVE a full-width multiselect_with_search control (chips with

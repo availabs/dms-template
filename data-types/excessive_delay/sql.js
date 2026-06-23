@@ -32,8 +32,9 @@ function assertIntegers(values, label) {
 
 // ── output table DDL ─────────────────────────────────────────────────────────
 
-// 23 columns — the legacy excessive_delay table shape, verbatim
-// (matches excessive_delay.s1469_v2633_excessive_delay_v3 on npmrds2).
+// 25 columns — the legacy excessive_delay shape (matches
+// excessive_delay.s1469_v2633_excessive_delay_v3 on npmrds2) plus the
+// class-weighted monetization pair (vot_eff, cost) added 2026-06-22.
 function outputTableDDL({ table, dialect }) {
   const pg = dialect === 'postgres';
   const stmts = [`
@@ -47,6 +48,8 @@ CREATE TABLE IF NOT EXISTS ${table} (
   construction DOUBLE PRECISION,
   accident DOUBLE PRECISION,
   other DOUBLE PRECISION,
+  vot_eff DOUBLE PRECISION,
+  cost DOUBLE PRECISION,
   region_code VARCHAR,
   region_name VARCHAR,
   wkb_geometry ${pg ? 'GEOMETRY(MultiLineString)' : 'TEXT'},
@@ -159,6 +162,7 @@ SELECT
     -- geometry string and friends out of the GROUP BY hash keys)
     any(c.f_system) AS f_system,
     any(c.aadt) AS aadt,
+    any(c.aadt_unnorm) AS aadt_raw, -- raw undirected total, for class-weighted VOT_eff (delay.js)
     any(c.aadt_combi) AS aadt_combi,
     any(c.aadt_singl) AS aadt_singl,
     any(c.miles) AS length,
@@ -209,6 +213,7 @@ INNER JOIN (
         congestion_level,
         directionality,
         COALESCE(aadt, 0) / LEAST(COALESCE(faciltype, 2), 2) AS aadt, -- normalized AADT
+        COALESCE(aadt, 0) AS aadt_unnorm, -- raw undirected AADT (VOT_eff needs raw, to match aadt_singl/combi)
         (miles / GREATEST(20, COALESCE(avg_speedlimit, 0) * 0.6)) * 3600 AS threshold_tt,
         concat('WEEKEND_', IF(COALESCE(f_system, 3) < 3, 'FREEWAY', 'NONFREEWAY')) AS weekend_dist,
         concat(
@@ -268,8 +273,8 @@ WHERE start_date_time >= '${monthStart}'
 
 const INSERT_COLUMNS = [
   'tmc', 'year', 'month', 'region_code', 'total', 'f_system', 'non_recurrent',
-  'aadt', 'aadt_combi', 'aadt_singl', 'length', 'roadname', 'tmclinear',
-  'road_order', 'county_code', 'direction', 'wkb_geometry', 'road_information',
+  'vot_eff', 'cost', 'aadt', 'aadt_combi', 'aadt_singl', 'length', 'roadname',
+  'tmclinear', 'road_order', 'county_code', 'direction', 'wkb_geometry', 'road_information',
 ];
 
 // rows: cleaned records from delay.js#normalizeDelayRow.

@@ -43,7 +43,7 @@ describe('outputTableDDL (the excessive_delay output table)', () => {
     expect(pgAll).toContain('year SMALLINT NOT NULL CHECK (year > 2015)');
     expect(pgAll).toContain('month SMALLINT NOT NULL CHECK (month BETWEEN 1 AND 12)');
     expect(pgAll).toContain('UNIQUE (tmc, year, month)');
-    for (const col of ['total', 'non_recurrent', 'construction', 'accident', 'other']) {
+    for (const col of ['total', 'non_recurrent', 'construction', 'accident', 'other', 'vot_eff', 'cost']) {
       expect(pgAll).toContain(`${col} DOUBLE PRECISION`);
     }
     expect(pgAll).toContain('wkb_geometry GEOMETRY(MultiLineString)');
@@ -92,6 +92,10 @@ describe('monthDelayQuery (the ClickHouse bucket computation)', () => {
     }));
     expect(fast).toContain('INNER JOIN temp.avl_avg_tt_v20_2023 AS b ON a.tmc = b.tmc AND a.epoch = b.epoch');
     expect(fast).not.toContain('AVG(travel_time_all_vehicles)'); // no inline recompute
+  });
+  it('exposes raw undirected AADT (aadt_unnorm/aadt_raw) so JS can class-weight VOT_eff', () => {
+    expect(q).toContain('COALESCE(aadt, 0) AS aadt_unnorm');
+    expect(q).toContain('any(c.aadt_unnorm) AS aadt_raw');
   });
   it('embeds the threshold / normalized-AADT / distribution-key expressions', () => {
     expect(q).toContain('COALESCE(aadt, 0) / LEAST(COALESCE(faciltype, 2), 2) AS aadt');
@@ -182,7 +186,7 @@ describe('baseline builders (P1/P2 — shared materialized yearly baseline)', ()
 describe('insertRowsSQL (computed rows → output table)', () => {
   const row = {
     tmc: '120+1001', year: 2023, month: 5, region_code: '1',
-    total: 12.35, f_system: 1, non_recurrent: 4.57,
+    total: 12.35, f_system: 1, non_recurrent: 4.57, vot_eff: 52.95, cost: 653.7,
     aadt: 1000, aadt_combi: 50, aadt_singl: 30, length: 0.5,
     roadname: "O'Hare Access", tmclinear: 11, road_order: 2,
     county_code: '36001', direction: 'EASTBOUND',
@@ -191,7 +195,7 @@ describe('insertRowsSQL (computed rows → output table)', () => {
   };
   it('postgres: wraps geometry in ST_SetSRID(ST_GeomFromGeoJSON(...), 4326) and escapes literals', () => {
     const q = squish(sql.insertRowsSQL({ table: 'excessive_delay.t', rows: [row], dialect: 'postgres' }));
-    expect(q).toContain('INSERT INTO excessive_delay.t (tmc, year, month, region_code, total, f_system, non_recurrent, aadt, aadt_combi, aadt_singl, length, roadname, tmclinear, road_order, county_code, direction, wkb_geometry, road_information)');
+    expect(q).toContain('INSERT INTO excessive_delay.t (tmc, year, month, region_code, total, f_system, non_recurrent, vot_eff, cost, aadt, aadt_combi, aadt_singl, length, roadname, tmclinear, road_order, county_code, direction, wkb_geometry, road_information)');
     expect(q).toContain("ST_SetSRID(ST_GeomFromGeoJSON('{\"type\":\"MultiLineString\",\"coordinates\":[[[0,0],[1,1]]]}'), 4326)");
     expect(q).toContain("'O''Hare Access'");
   });

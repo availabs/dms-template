@@ -63,7 +63,7 @@
               <h1 class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight text-[#0F1722]">Data &amp; Methodology<span class="text-[#CA8A04]">.</span></h1>
               <p class="font-proxima text-[15px] leading-[1.65] text-slate-700 mt-3 max-w-[720px]">How every number on these dashboards is made. Four sources, six measures, one rule: every panel states its window, its method, and its coverage — and where the data is thin, we say so instead of smoothing it over.</p>
               <div class="mt-4 flex items-center gap-2 flex-wrap">
-                <span class="h-7 inline-flex items-center gap-2 rounded-full border border-zinc-950/15 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-slate-600"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>coverage stats queried 2026-06-09</span>
+                <span class="h-7 inline-flex items-center gap-2 rounded-full border border-zinc-950/15 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-slate-600"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>coverage stats queried 2026-06-22</span>
                 <span class="h-7 inline-flex items-center rounded-full border border-zinc-950/15 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-slate-600">all figures read-only from npmrds2</span>
               </div>
             </div>
@@ -132,6 +132,19 @@
                         <span><strong class="text-[#0F1722]">LOTTR · TTTR · PHED</strong></span>
                         <span>per TMC · per year</span>
                         <span class="col-span-2">annual computation · federal submission cycle</span>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="flex items-center gap-2.5 mb-2">
+                        <span class="size-9 rounded bg-[#37576B]/10 flex items-center justify-center text-[#37576B]"><!-- icon: Road --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 21 9 3m11 18L15 3M12 7v2m0 4v2m0 4v2"/></svg></span>
+                        <div class="flex-1"><div class="font-display font-medium text-[15px] text-[#0F1722]">TMC network · shapefile-enhanced</div><div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">npmrds_meta · the spatial backbone</div></div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The geometry and attributes behind every TMC — length, direction, county, road name, cross-street, AADT vehicle mix, functional class, and the linear order that chains segments into a corridor. Probe speeds are joined to it live; it supplies the lengths that turn travel time into speed and the mix that weights congestion cost.</p>
+                      <div class="mt-3 pt-3 border-t border-zinc-950/05 grid grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[10.5px] text-slate-600">
+                        <span class="tabular-nums"><strong class="text-[#0F1722]">54,249</strong> TMCs</span>
+                        <span>annual conflation</span>
+                        <span class="col-span-2">keys · <strong class="text-[#0F1722]">tmclinear · road_order · direction · county · miles · aadt · intersection</strong></span>
                       </div>
                     </div>
 
@@ -244,6 +257,24 @@ report: median · 85th · % &lt; 90 min
                       </div>
                     </div>
 
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Segment speed · time-space replay</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">probe × TMC network</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">mph</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">A segment's speed in a 5-minute slice is its length divided by the observed travel time. The <strong>Corridor View</strong> explorer joins the probe feed to the TMC network on the fly and stacks every segment of one corridor — ordered head-to-tail and anchored at its cross-street — against the 5 AM-to-midnight clock, each cell colored by speed and each row's height scaled to its segment length. The result replays how a slowdown forms and clears along the corridor on any chosen day; a month strip above it carries each day's average so you can pick which day to replay.</p>
+                          <p class="mt-2 font-proxima text-[12px] text-amber-800 leading-[1.5]"><strong>Caveat:</strong> on very short segments a near-zero recorded travel time can imply an impossible speed, so values are capped at 80 mph; the overnight 12-5 AM epochs are dropped as too sparse to read.</p>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>speed = miles ÷ TT_obs × 3600   (mph)
+grid  = TMC(road order) × epoch(5:00→24:00)
+join  = probe speeds ⋈ TMC network on tmc
+cell  = avg speed · row height ∝ miles</code></pre>
+                      </div>
+                    </div>
+
                   </div>
                 </section>
 
@@ -273,7 +304,7 @@ report: median · 85th · % &lt; 90 min
                         <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
                           <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">npmrds lag</div>
                           <div class="mt-1 font-mono text-[24px] font-medium tabular-nums text-[#0F1722]">~2 <span class="text-[13px] text-slate-500">wks</span></div>
-                          <div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">speeds through 2026-05-24</div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">speeds through 2026-06-07</div>
                         </div>
                         <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
                           <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">delay footprint</div>
@@ -294,8 +325,8 @@ report: median · 85th · % &lt; 90 min
                     <table class="w-full text-left border-collapse">
                       <thead><tr class="bg-slate-50 border-b border-zinc-950/10"><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Source</th><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Cadence</th><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Last updated</th></tr></thead>
                       <tbody class="font-proxima text-[12.5px] text-slate-700">
-                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 text-[#0f1722]">TRANSCOM events</td><td class="px-4 py-2">continuous (live feed)</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]"><span class="inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>2026-06-09 04:55 EST</span></td></tr>
-                        <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-4 py-2 text-[#0f1722]">NPMRDS speeds</td><td class="px-4 py-2">daily batch · ~2-week lag</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]">2026-05-24</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 text-[#0f1722]">TRANSCOM events</td><td class="px-4 py-2">continuous (live feed)</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]"><span class="inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>2026-06-22 04:55 EST</span></td></tr>
+                        <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-4 py-2 text-[#0f1722]">NPMRDS speeds</td><td class="px-4 py-2">daily batch · ~2-week lag</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]">2026-06-07</td></tr>
                         <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 text-[#0f1722]">Delay attribution (excessive_delay)</td><td class="px-4 py-2">batch recompute · monthly target</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]">through 2025-10</td></tr>
                         <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-4 py-2 text-[#0f1722]">PM3 measures</td><td class="px-4 py-2">annual · federal cycle</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]">CY 2025 · computed Feb 2026</td></tr>
                         <tr><td class="px-4 py-2 text-[#0f1722]">TMC network (npmrds_meta)</td><td class="px-4 py-2">annual conflation</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]">2026 network</td></tr>
