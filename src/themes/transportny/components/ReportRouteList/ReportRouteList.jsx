@@ -44,8 +44,11 @@ function transformReportRoutes(routes) {
   if(!routes || routes.length < 1){
     return;
   }
-  // Helper function to handle YYYY-MM-DD strings safely
+  // Helper function to handle YYYY-MM-DD or YYYY-MM-DDTHH:mm strings safely
   function parseYMD(dateStr) {
+    if (dateStr.includes('T')) {
+        return new Date(dateStr);
+    }
     const [year, month, day] = dateStr.split('-');
     // Month is 0-indexed in JS Dates (0 = January)
     return new Date(year, month - 1, day);
@@ -67,6 +70,25 @@ function transformReportRoutes(routes) {
     return dates;
   }
 
+  function timeToEpoch(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 12 + Math.floor(minutes / 5);
+  }
+
+  function generateEpochRange(startStr, endStr) {
+    const startTime = startStr.includes('T') ? startStr.split('T')[1] : startStr;
+    const endTime = endStr.includes('T') ? endStr.split('T')[1] : endStr;
+
+    const startEpoch = timeToEpoch(startTime);
+    const endEpoch = timeToEpoch(endTime);
+
+    const epochs = [];
+    for (let e = startEpoch; e <= endEpoch; e++) {
+      epochs.push(e);
+    }
+    return epochs;
+  }
+
   return routes.map(route => {
     let parsedTmcArray = [];
     try {
@@ -77,26 +99,56 @@ function transformReportRoutes(routes) {
 
     // Generates the range based on your MM-DD-YYYY inputs
     const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate) : [];
+    const epochArray = (route.startDate && route.endDate && route.startDate.includes('T') && route.endDate.includes('T')) ? generateEpochRange(route.startDate, route.endDate) : [];
+
+    const groups = [
+      {
+        op: "filter",
+        col: "tmc",
+        value: parsedTmcArray
+      },
+      {
+        op: "filter",
+        col: "date",
+        value: dateArray
+      }
+    ];
+
+    if (epochArray.length > 0) {
+      groups.push({
+        op: "filter",
+        col: "epoch",
+        value: epochArray
+      });
+    }
 
     return {
       label: route.name,
       filters: {
         op: "AND",
-        groups: [
-          {
-            op: "filter",
-            col: "tmc",
-            value: parsedTmcArray
-          },
-          {
-            op: "filter",
-            col: "date",
-            value: dateArray
-          }
-        ]
+        groups: groups
       }
     };
   });
+}
+
+function roundToFiveMinutes(dateStr) {
+  if (!dateStr || !dateStr.includes('T')) return dateStr;
+
+  const [datePart, timePart] = dateStr.split('T');
+  if (!timePart) return dateStr;
+
+  const [hours, minutes] = timePart.split(':').map(Number);
+  const roundedMinutes = Math.round(minutes / 5) * 5;
+
+  let finalHours = hours;
+  let finalMinutes = roundedMinutes;
+  if (finalMinutes >= 60) {
+    finalMinutes = 0;
+    finalHours = (hours + 1) % 24;
+  }
+
+  return `${datePart}T${String(finalHours).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}`;
 }
 
 export default function ReportRouteList(props) {
@@ -253,8 +305,12 @@ export default function ReportRouteList(props) {
     setSaving(true);
     setError('');
     try {
+      let finalValue = value;
+      if ((field === 'startDate' || field === 'endDate') && value.includes('T')) {
+        finalValue = roundToFiveMinutes(value);
+      }
       const newRoutes = cloneDeep(routes)
-      newRoutes[index][field] = value;
+      newRoutes[index][field] = finalValue;
       await updateItem(newRoutes, { name: 'routes' }, currentReport);
     } catch (e) {
       console.error('<ReportRouteList:update>', e);
@@ -335,11 +391,11 @@ export default function ReportRouteList(props) {
                         <div className={t.dateInputsContainer}>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>Start Date:</label>
-                            <Input type="date" value={r.startDate} onChange={(e) => updateRoute({index: i, field: 'startDate', value: e.target.value})} />
+                            <Input type="datetime-local" step="300" value={r.startDate} onChange={(e) => updateRoute({index: i, field: 'startDate', value: e.target.value})} />
                           </div>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>End Date:</label>
-                            <Input type="date" value={r.endDate} onChange={(e) => updateRoute({index: i, field: 'endDate', value: e.target.value})}/>
+                            <Input type="datetime-local" step="300" value={r.endDate} onChange={(e) => updateRoute({index: i, field: 'endDate', value: e.target.value})}/>
                           </div>
                         </div>
                         <div className={t.removeButtonWrapper}>
