@@ -168,6 +168,9 @@ export default function ReportRouteList(props) {
   const [expandedRoutes, setExpandedRoutes] = useState({});
   const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
   const [editNameValue, setEditNameValue] = useState('');
+  const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
+  const [editStartDateValue, setEditStartDateValue] = useState('');
+  const [editEndDateValue, setEditEndDateValue] = useState('');
   const routeSourceInfo = join?.sources?.table1?.sourceInfo;
 
   const toggleRoute = (index) => {
@@ -300,17 +303,19 @@ export default function ReportRouteList(props) {
     }
   };
 
-  const updateRoute = async ({index, field, value}) => {
-    if (!updateItem || !currentReport?.id || saving || !field || !value) return;
+  const updateRoute = async ({index, updates}) => {
+    if (!updateItem || !currentReport?.id || saving || !updates) return;
     setSaving(true);
     setError('');
     try {
-      let finalValue = value;
-      if ((field === 'startDate' || field === 'endDate') && value.includes('T')) {
-        finalValue = roundToFiveMinutes(value);
-      }
       const newRoutes = cloneDeep(routes)
-      newRoutes[index][field] = finalValue;
+      Object.entries(updates).forEach(([field, value]) => {
+          let finalValue = value;
+          if ((field === 'startDate' || field === 'endDate') && typeof finalValue === 'string' && finalValue.includes('T')) {
+            finalValue = roundToFiveMinutes(finalValue);
+          }
+          newRoutes[index][field] = finalValue;
+      });
       await updateItem(newRoutes, { name: 'routes' }, currentReport);
     } catch (e) {
       console.error('<ReportRouteList:update>', e);
@@ -354,7 +359,7 @@ export default function ReportRouteList(props) {
                           <Input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} />
                         </div>
                         <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
-                            updateRoute({index: i, field: 'name', value: editNameValue});
+                            updateRoute({index: i, updates: {name: editNameValue}});
                             setEditingRouteNameIndex(null);
                         }}>
                           <Icon icon={"FloppyDisk"} />
@@ -389,13 +394,37 @@ export default function ReportRouteList(props) {
                           </div>
                         )}
                         <div className={t.dateInputsContainer}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div className={t.dateRangeLabel}>Date Range</div>
+                            {editingRouteDatesIndex === i ? (
+                                <div className={t.editContainer}>
+                                  <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
+                                      updateRoute({index: i, updates: {startDate: editStartDateValue, endDate: editEndDateValue}});
+                                      setEditingRouteDatesIndex(null);
+                                  }}>
+                                    <Icon icon={"FloppyDisk"} />
+                                  </Button>
+                                  <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteDatesIndex(null)}>
+                                    <Icon icon={"CancelCircle"}/>
+                                  </Button>
+                                </div>
+                            ) : (
+                                <Button themeOptions={{ size: "xs" }} title="Edit Dates" onClick={() => {
+                                    setEditingRouteDatesIndex(i);
+                                    setEditStartDateValue(r.startDate);
+                                    setEditEndDateValue(r.endDate);
+                                }}>
+                                  <Icon icon={'PencilSquare'}/>
+                                </Button>
+                            )}
+                          </div>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>Start Date:</label>
-                            <Input type="datetime-local" step="300" value={r.startDate} onChange={(e) => updateRoute({index: i, field: 'startDate', value: e.target.value})} />
+                            <Input type="datetime-local" step="300" value={editingRouteDatesIndex === i ? editStartDateValue : r.startDate} disabled={editingRouteDatesIndex !== i} onChange={(e) => setEditStartDateValue(e.target.value)} />
                           </div>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>End Date:</label>
-                            <Input type="datetime-local" step="300" value={r.endDate} onChange={(e) => updateRoute({index: i, field: 'endDate', value: e.target.value})}/>
+                            <Input type="datetime-local" step="300" value={editingRouteDatesIndex === i ? editEndDateValue : r.endDate} disabled={editingRouteDatesIndex !== i} onChange={(e) => setEditEndDateValue(e.target.value)}/>
                           </div>
                         </div>
                         <div className={t.removeButtonWrapper}>
