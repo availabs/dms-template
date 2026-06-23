@@ -590,7 +590,13 @@ DO UPDATE
 SET congestion_data = excluded.congestion_data;`;
 }
 
-/** Copy congestion results back onto the events table (vehicle_delay, cost = 20x raw). */
+/**
+ * Copy congestion results back onto the events table (vehicle_delay, cost).
+ * cost is the class-weighted value-of-time dollars precomputed per event in
+ * congestion.js#assembleCongestionData (Σ_tmc rawTmcDelay[tmc] × VOT_eff(tmc)),
+ * stored on congestion_data.cost — replaces the old flat 20×rawVehicleDelay.
+ * COALESCE keeps pre-VOT blobs (no cost key) from nulling the column.
+ */
 function updateEventsCongestionSQL({ eventsTable, congestionTable, geoid }) {
   // geoid-scoped variant: cheap per-county writeback after each county completes,
   // so the events-table resume markers (congestion_data ? 'probe') survive a
@@ -602,7 +608,10 @@ function updateEventsCongestionSQL({ eventsTable, congestionTable, geoid }) {
 SET
   congestion_data = m.congestion_data,
   vehicle_delay = (m.congestion_data->>'vehicleDelay')::NUMERIC,
-  cost = 20 * (m.congestion_data->>'rawVehicleDelay')::NUMERIC
+  cost = ROUND(COALESCE(
+    (m.congestion_data->>'cost')::NUMERIC,
+    20 * (m.congestion_data->>'rawVehicleDelay')::NUMERIC
+  ))
 FROM ${congestionTable} m
 WHERE t.event_id = m.event_id${scope};`;
 }
@@ -651,6 +660,8 @@ function tmcAttributesSQL(geomYearDataTable) {
     congestion_level,
     directionality,
     CAST(COALESCE(aadt, 0) AS INTEGER) AS aadt,
+    CAST(COALESCE(aadt_singl, 0) AS INTEGER) AS aadt_singl,
+    CAST(COALESCE(aadt_combi, 0) AS INTEGER) AS aadt_combi,
     CAST(COALESCE(f_system, 3) AS INTEGER) AS f_system,
     CAST(COALESCE(faciltype, 2) AS INTEGER) AS faciltype
 FROM ${geomYearDataTable};`;

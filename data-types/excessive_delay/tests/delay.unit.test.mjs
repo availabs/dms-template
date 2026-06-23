@@ -189,7 +189,7 @@ describe('normalizeDelayRow (CH result row → insert record)', () => {
     tmc: '120+1001', year: '2023', month: '5',
     total: 12.3456, non_recurrent: 4.5678,
     region_code: '1', f_system: '1',
-    aadt: '1000', aadt_combi: '50', aadt_singl: '30',
+    aadt: '500', aadt_raw: '1000', aadt_combi: '50', aadt_singl: '30',
     length: '0.5', roadname: 'I-90', tmclinear: '11', road_order: '2',
     county_code: '36001', direction: 'EASTBOUND',
     wkb_geometry: { type: 'MultiLineString', coordinates: [[[0, 0], [1, 1]]] },
@@ -201,8 +201,21 @@ describe('normalizeDelayRow (CH result row → insert record)', () => {
     expect(r.non_recurrent).toBe(4.57);
     expect(r.year).toBe(2023);
     expect(r.month).toBe(5);
-    expect(r.aadt).toBe(1000);
+    expect(r.aadt).toBe(500); // normalized (directional) — passed through unchanged
     expect(r.f_system).toBe(1);
+  });
+  it('computes class-weighted vot_eff from RAW aadt and cost = total × vot_eff', () => {
+    const r = normalizeDelayRow(chRow);
+    // raw split 920 pass / 30 singl / 50 combi of 1000:
+    // 0.92*52 + 0.03*42 + 0.05*77 = 47.84 + 1.26 + 3.85 = 52.95
+    expect(r.vot_eff).toBe(52.95);
+    // cost uses the unrounded total (12.3456): 12.3456 * 52.95 = 653.70 (2dp)
+    expect(r.cost).toBe(653.7);
+  });
+  it('vot_eff falls back to the network blend when the raw split is missing', () => {
+    const r = normalizeDelayRow({ ...chRow, aadt_raw: '0' });
+    expect(r.vot_eff).toBe(52); // network_blend
+    expect(r.cost).toBe(Math.round(12.3456 * 52 * 100) / 100);
   });
   it('stringifies object geometries and passes string geometries through', () => {
     expect(normalizeDelayRow(chRow).wkb_geometry).toBe(JSON.stringify(chRow.wkb_geometry));

@@ -23,12 +23,14 @@
  */
 const delay = require('./delay');
 const sqlb = require('./sql');
+const { VOT_RATES, CURRENT: VOT_VERSION } = require('../_shared/vot_rates');
 
 const TABLE_SCHEMA = 'excessive_delay';
 
-// metadata.columns descriptor for the output table — the 23-col contract
-// (matches excessive_delay.s1469_v2633_excessive_delay_v3). Drives the Table
-// page, DataWrapper, and the /congestion dashboard sections.
+// metadata.columns descriptor for the output table — the legacy column
+// contract (excessive_delay.s1469_v2633_excessive_delay_v3) plus vot_eff/cost
+// (class-weighted monetization, 2026-06-22). Drives the Table page,
+// DataWrapper, and the /congestion dashboard sections.
 const EXCESSIVE_DELAY_COLUMNS = [
   { name: 'ogc_fid', display_name: 'ID', type: 'INTEGER', desc: null },
   { name: 'tmc', display_name: 'TMC', type: 'VARCHAR', desc: null },
@@ -39,6 +41,8 @@ const EXCESSIVE_DELAY_COLUMNS = [
   { name: 'construction', display_name: 'Construction Delay', type: 'DOUBLE PRECISION', desc: 'Transcom-attributed (NYSDOT category Construction)' },
   { name: 'accident', display_name: 'Accident Delay', type: 'DOUBLE PRECISION', desc: 'Transcom-attributed (NYSDOT category Incident)' },
   { name: 'other', display_name: 'Other Delay', type: 'DOUBLE PRECISION', desc: 'Transcom-attributed (NYSDOT category Other)' },
+  { name: 'vot_eff', display_name: 'VOT (eff. $/veh-hr)', type: 'DOUBLE PRECISION', desc: 'Class-weighted value of time per TMC: (aadt_pass/aadt)·$52 + (aadt_singl/aadt)·$42 + (aadt_combi/aadt)·$77 (2024-25 $); network-blend fallback where the split is NULL/0' },
+  { name: 'cost', display_name: 'Congestion Cost ($)', type: 'DOUBLE PRECISION', desc: 'Headline cost = total delay (veh-hrs) × vot_eff; bucket $ = bucket × vot_eff' },
   { name: 'region_code', display_name: 'Region Code', type: 'VARCHAR', desc: null },
   { name: 'region_name', display_name: 'Region', type: 'VARCHAR', desc: null },
   { name: 'wkb_geometry', display_name: 'Geometry', type: 'GEOMETRY', desc: null },
@@ -238,8 +242,18 @@ function makeWorker(depOverrides = {}) {
         attribution_capped: methodology === 'v2',
         units: 'vehicle_hours',
         monetization: {
-          note: 'person_hours = vehicle_hours x avg_vehicle_occupancy (per-TMC, npmrds_meta); cost uses usd_per_vehicle_hour',
-          usd_per_vehicle_hour: 20,
+          // Class-weighted value of time (adopted 2026-06-19, rates confirmed
+          // 2026-06-22). cost = total delay (veh-hrs) × vot_eff; bucket-level
+          // dollars derive as bucket × vot_eff. Per-vehicle rates with
+          // occupancy already bundled — do NOT also multiply by AVO.
+          method: 'class_weighted_vot',
+          vot_version: VOT_VERSION,
+          vot_rates: VOT_RATES[VOT_VERSION], // dated $/veh-hr by class + network blend
+          note: 'cost column = total veh-hrs × vot_eff (per-TMC class-weighted $/veh-hr from the AADT split). '
+            + 'Where the split is NULL/0, vot_eff falls back to the network-blended rate. '
+            + 'Caveat: NY single-unit (FHWA 4–7) is bus-heavy — revisit a transit person-VOT for bus-dominated urban TMCs.',
+          // Legacy flat rate, retained so pre-2026-06 dashboards stay reproducible.
+          legacy_usd_per_vehicle_hour: 20,
         },
         start_date: first ? bounds(first).startDate : null,
         end_date: last ? bounds(last).endDate : null,

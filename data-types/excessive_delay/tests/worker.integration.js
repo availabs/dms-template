@@ -59,7 +59,7 @@ function fakeChDb() {
       const year = Number(m[1]), month = Number(m[2]);
       const base = (tmc, region, extra) => ({
         tmc, year, month, region_code: region,
-        f_system: 1, aadt: 1000, aadt_combi: 50, aadt_singl: 30,
+        f_system: 1, aadt: 1000, aadt_raw: 1000, aadt_combi: 50, aadt_singl: 30,
         length: 0.5, roadname: 'I-90', tmclinear: 11, road_order: 2,
         county_code: '36001', direction: 'EASTBOUND',
         wkb_geometry: { type: 'MultiLineString', coordinates: [[[0, 0], [1, 1]]] },
@@ -200,13 +200,13 @@ async function runTests() {
     assert(meta.is_clickhouse_table === 0, 'output is a PG table');
   });
 
-  await test('writes source metadata.columns — the 23-col descriptor (drives Table page + /congestion)', async () => {
+  await test('writes source metadata.columns — the 25-col descriptor (drives Table page + /congestion)', async () => {
     const { rows } = await db.query(`SELECT metadata FROM sources WHERE source_id = $1`, [edSrc.source_id]);
     const cols = parseMeta(rows[0].metadata).columns;
-    assert(Array.isArray(cols) && cols.length === 23, `23 columns (got ${cols && cols.length})`);
+    assert(Array.isArray(cols) && cols.length === 25, `25 columns (got ${cols && cols.length})`);
     const names = cols.map((c) => c.name);
     for (const n of ['ogc_fid', 'tmc', 'year', 'month', 'total', 'non_recurrent', 'construction',
-      'accident', 'other', 'region_code', 'region_name', 'wkb_geometry', 'f_system', 'aadt',
+      'accident', 'other', 'vot_eff', 'cost', 'region_code', 'region_name', 'wkb_geometry', 'f_system', 'aadt',
       'aadt_singl', 'aadt_combi', 'length', 'roadname', 'tmclinear', 'road_order',
       'county_code', 'direction', 'road_information']) {
       assert(names.includes(n), `metadata.columns should include ${n}`);
@@ -299,7 +299,11 @@ async function runTests() {
     assert(m2.baseline_statistic === 'median', 'baseline_statistic recorded');
     assert(m2.attribution_capped === true, 'attribution_capped recorded');
     assert(m2.units === 'vehicle_hours', 'units recorded');
-    assert(m2.monetization && m2.monetization.usd_per_vehicle_hour === 20, 'monetization recorded');
+    // class-weighted VOT monetization (2026-06-22): dated rates + legacy flat rate retained
+    assert(m2.monetization && m2.monetization.method === 'class_weighted_vot', 'class-weighted monetization recorded');
+    assert(m2.monetization.vot_rates && m2.monetization.vot_rates.passenger === 52
+      && m2.monetization.vot_rates.combination === 77, 'dated VOT rates recorded');
+    assert(m2.monetization.legacy_usd_per_vehicle_hour === 20, 'legacy flat rate retained for reproducibility');
   });
 
   await test('methodology v1 (default) is unchanged: AVG baseline, uncapped, no v2 keys', async () => {

@@ -275,6 +275,26 @@ const layoutGroup = {
       wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 flex flex-col gap-6",
       wrapper3: "",
     },
+    // card — ONE white card floating on the grey pane, holding a run of sections as a
+    // single composed unit (no inter-section grey gutters). The white surface + border
+    // + rounding live on wrapper3 (the innermost band layer that directly wraps the
+    // sections). Used to fuse the month-strip + time-space grid (merged into one band)
+    // so they read as one card rather than two stacked cards.
+    {
+      name: "card",
+      wrapper1: "w-full bg-[#ECEEF2] py-4",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8",
+      wrapper3: "bg-white rounded-2xl border border-zinc-950/10 shadow-sm px-3 py-4 flex flex-col gap-2",
+    },
+    // panel — like `card` but a plain WHITE FIELD: no border, no rounding, no shadow.
+    // Holds a run of sections as one composed unit WITHOUT reading as a boxed card
+    // (per the corridor explorer: combined header → month strip → date → grid → legend).
+    {
+      name: "panel",
+      wrapper1: "w-full bg-[#ECEEF2] py-4",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8",
+      wrapper3: "bg-white px-5 py-5 flex flex-col gap-2",
+    },
     {
       name: "header",
       wrapper1: "w-full bg-white border-b border-zinc-950/10",
@@ -304,7 +324,22 @@ const layoutGroup = {
     {
       name: "tone_bar",
       wrapper1: "w-full bg-[#1F3F8F] text-white border-b border-black/10",
-      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 h-12 flex items-center gap-8",
+      // min-h (not fixed h-12) so the section grid can grow to contain its controls instead of
+      // overflowing; items-stretch makes the grid fill the band so its cells get a definite height
+      // (which lets each control's filtersWrapper h-full + items-center vertically center it).
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 min-h-12 flex items-stretch gap-8",
+      wrapper3: "",
+    },
+    {
+      // filter_bar — a full filter strip: the `content` band's gutter + 12-col
+      // sectionArray grid (auto-height) on a blue tone surface. Unlike `tone_bar`
+      // (a fixed h-12 flex bar for a single row of chips), this lets a multi-control
+      // filter bar with stacked labels lay out by section size and grow to contain
+      // its controls. Pair with filterStyle "tone_bar" (stacked white label,
+      // full-width multiselect_with_search control).
+      name: "filter_bar",
+      wrapper1: "w-full bg-[#1F3F8F] text-white py-4 border-b border-black/10",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 flex flex-col gap-6",
       wrapper3: "",
     },
     {
@@ -645,9 +680,23 @@ const multiselect = {
     },
     {
       name: "tone_bar",
-      inputWrapper: "flex items-center gap-1.5 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
+      // min-w so an EMPTY control still has a clickable box (was collapsing to nothing); min-h
+      // keeps it vertically aligned with the label.
+      inputWrapper: "flex items-center gap-1.5 min-w-[72px] min-h-7 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
       singleValue:  "font-semibold text-[13px] text-white",
+      singlePlaceholder: "text-[13px] text-white/80 italic",
+      // multi chips render as plain white values (not gray tokens) to match the
+      // dashboard mockup "Region: Statewide ▾"; the × keeps them clearable.
+      tokenWrapper: "inline-flex items-center gap-1 font-semibold text-[13px] text-white",
+      removeIconClass: "size-3 text-white/60 hover:text-white cursor-pointer",
       caretWrapper: "ml-1 text-white/70",
+      // the open-out: a WHITE menu (the bar is blue) with a real min-width so it isn't a sliver.
+      menuWrapper:      "absolute z-40 mt-1 min-w-[220px] rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden",
+      optionsWrapper:   "max-h-72 overflow-y-auto py-1",
+      menuItem:         "px-3 py-2 text-[13.5px] text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center gap-2",
+      menuItemSelected: "px-3 py-2 text-[13.5px] text-[#0F1722] bg-[#1F3F8F]/5 cursor-pointer flex items-center gap-2 font-medium",
+      smartMenuWrapper: "px-3 py-2 border-b border-zinc-950/5 bg-slate-50/60",
+      smartMenuItem:    "w-full h-8 px-2 rounded border border-zinc-950/10 bg-white text-[13px] text-[#0F1722] focus:outline-none focus:border-[#1F3F8F]",
     },
     {
       name: "multiselect_with_search",
@@ -1447,14 +1496,35 @@ const filters = {
       filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-1",
       filtersWrapper:              "w-full flex flex-col gap-2",
     },
-    { // 3 · tone_bar — inline on a dark band (white label, transparent control)
+    { // 3 · tone_bar — thin INLINE control on a tone band: white label BESIDE a
+      // transparent bold value + caret ("Region: Statewide ▾"). Matches the TSMO
+      // dashboard mockups (congestion/reliability/incidents/workzones). Pair with
+      // the `tone_bar` LAYOUTGROUP band (thin h-12 flex) + controlStyle `tone_bar`.
       name: "tone_bar",
       placement: "inline",
       controlStyle: "tone_bar",
-      filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-white/60",
-      labelWrapperInline:          "shrink-0 inline-flex items-center gap-1",
-      conditionRowInline:          "inline-flex items-center gap-1.5 w-fit",
-      filtersWrapper:              "w-full flex flex-wrap items-center gap-2",
+      filterLabel:                 "text-[12px] text-white/70 whitespace-nowrap",
+      labelWrapperInline:          "shrink-0 inline-flex items-center",
+      filterSettingsWrapperInline: "min-w-0",
+      conditionRowInline:          "inline-flex items-center gap-2 w-fit",
+      // h-full + items-center → fill the (stretched) section cell and vertically center the control,
+      // so the chips sit on the band's mid-line regardless of the tallest cell (e.g. a 2-line note).
+      filtersWrapper:              "h-full w-full flex flex-wrap items-center gap-x-8 gap-y-2",
+    },
+    { // 4 · filter_panel — stacked white-box controls in a `filter_bar` band grid:
+      // white label ABOVE a full-width multiselect_with_search control (chips with
+      // × + clean dropdown search; `input` styles the keyword text box). For
+      // filter-HEAVY explorer pages (incident_search). One control per Filter
+      // section; the band's 12-col grid arranges them by section size.
+      name: "filter_panel",
+      placement: "stacked",
+      controlStyle: "multiselect_with_search",
+      filterLabel:                  "font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5",
+      labelWrapperStacked:          "w-full",
+      conditionRowStacked:          "w-full flex flex-col gap-1",
+      filterSettingsWrapperStacked: "w-full",
+      filtersWrapper:               "w-full",
+      input:                        "w-full h-10 px-3 flex items-center text-[13px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/10 rounded-[6px] bg-white focus:outline-none focus:border-[#1F3F8F]",
     },
   ],
 };

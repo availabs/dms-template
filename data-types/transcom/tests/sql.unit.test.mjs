@@ -173,12 +173,16 @@ describe('congestion table builders', () => {
     expect(text).toContain('ON CONFLICT (event_id)');
     expect(text).toMatch(/DO UPDATE/i);
   });
-  it('updateEventsCongestionSQL writes congestion_data, vehicle_delay and cost = 20x raw', () => {
+  it('updateEventsCongestionSQL writes congestion_data, vehicle_delay and the precomputed class-weighted cost', () => {
     const text = sql.updateEventsCongestionSQL({
       eventsTable: 'transcom.events', congestionTable: 'transcom_congestion.cg',
     });
     expect(text).toContain("vehicle_delay = (m.congestion_data->>'vehicleDelay')::NUMERIC");
-    expect(text).toContain("cost = 20 * (m.congestion_data->>'rawVehicleDelay')::NUMERIC");
+    // class-weighted cost precomputed on congestion_data.cost; flat 20× kept only
+    // as the COALESCE fallback for legacy blobs that predate the VOT switch
+    expect(text).toContain("(m.congestion_data->>'cost')::NUMERIC");
+    expect(text).toContain("20 * (m.congestion_data->>'rawVehicleDelay')::NUMERIC");
+    expect(text).toMatch(/cost = ROUND\(COALESCE\(/);
     expect(text).toContain('t.event_id = m.event_id');
   });
 });
@@ -259,5 +263,15 @@ describe('conflation defaults', () => {
       conflation_ways_source_id: 236,
       conflation_v0_source_id: 238,
     });
+  });
+});
+
+describe('tmcAttributesSQL', () => {
+  const text = sql.tmcAttributesSQL('npmrds_meta.s1_v2_geom');
+  it('selects the AADT class split so congestion.js can class-weight VOT_eff per TMC', () => {
+    expect(text).toContain('CAST(COALESCE(aadt, 0) AS INTEGER) AS aadt');
+    expect(text).toContain('CAST(COALESCE(aadt_singl, 0) AS INTEGER) AS aadt_singl');
+    expect(text).toContain('CAST(COALESCE(aadt_combi, 0) AS INTEGER) AS aadt_combi');
+    expect(text).toContain('FROM npmrds_meta.s1_v2_geom');
   });
 });

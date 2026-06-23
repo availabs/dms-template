@@ -21,6 +21,7 @@
  */
 
 const distributions = require('./aadt_distributions.js');
+const { votEff } = require('../_shared/vot_rates.js');
 
 // ── small vanilla ports ──────────────────────────────────────────────────────
 
@@ -657,6 +658,23 @@ function assembleCongestionData({
       }
     }
   }
+
+  // Class-weighted monetization (2026-06-22): weight each TMC's RAW vehicle-delay
+  // by its own effective value of time from the AADT split, replacing the flat
+  // $20/veh-hr that used to be applied at writeback. Per-vehicle rates with
+  // occupancy bundled in. Σ rawTmcDelayData[tmc] == rawVehicleDelay, so this is
+  // the class-weighted analogue of the old 20×rawVehicleDelay.
+  // See planning/transportny/tasks/current/class-weighted-vot-cost.md.
+  let cost = 0;
+  for (const tmc in incidentData.rawTmcDelayData) {
+    const attrs = tmcAttributes && tmcAttributes[tmc];
+    cost += incidentData.rawTmcDelayData[tmc] * votEff({
+      aadt: attrs && attrs.aadt,
+      aadt_singl: attrs && attrs.aadt_singl,
+      aadt_combi: attrs && attrs.aadt_combi,
+    });
+  }
+  incidentData.cost = cost;
 
   return incidentData;
 }
