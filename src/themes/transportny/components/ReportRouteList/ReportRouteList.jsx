@@ -303,6 +303,29 @@ export default function ReportRouteList(props) {
     }
   };
 
+  const reorderRoutes = async (index, direction) => {
+    if (!updateItem || !currentReport?.id || saving) return;
+    
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= routes.length) return;
+
+    setSaving(true);
+    setError('');
+    try {
+      const updatedRoutes = [...routes];
+      const temp = updatedRoutes[index];
+      updatedRoutes[index] = updatedRoutes[newIndex];
+      updatedRoutes[newIndex] = temp;
+      
+      await updateItem(updatedRoutes, { name: 'routes' }, currentReport);
+    } catch (e) {
+      console.error('<ReportRouteList:reorder>', e);
+      setError('Could not reorder route.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const updateRoute = async ({index, updates}) => {
     if (!updateItem || !currentReport?.id || saving || !updates) return;
     setSaving(true);
@@ -349,39 +372,50 @@ export default function ReportRouteList(props) {
           return (
             <div key={`${r.id}-${i}`} className={t.row}>
               <div className={t.rowContainer}>
-                <div className={t.rowHeader}>
-                  <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
-                    {isExpanded ? '-' : '+'}
-                  </Button>
-                  {editingRouteNameIndex === i ? (
-                      <div className={t.editContainer}>
-                        <div className={t.editInputWrapper}>
-                          <Input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} />
-                        </div>
-                        <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
-                            updateRoute({index: i, updates: {name: editNameValue}});
-                            setEditingRouteNameIndex(null);
-                        }}>
-                          <Icon icon={"FloppyDisk"} />
-                        </Button>
-                        <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteNameIndex(null)}>
-                          <Icon icon={"CancelCircle"}/>
-                        </Button>
-                      </div>
-
-                  ) : (
-                    <div className={t.editContainer}>
-                      <div className={t.routeTitle}>{r.name}</div>
-                      {isExpanded && (
-                          <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
-                              setEditingRouteNameIndex(i);
-                              setEditNameValue(r.name);
+                <div className={t.rowHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Icon icon={'Drag'} />
+                    <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
+                      {isExpanded ? '-' : '+'}
+                    </Button>
+                    {editingRouteNameIndex === i ? (
+                        <div className={t.editContainer}>
+                          <div className={t.editInputWrapper}>
+                            <Input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} />
+                          </div>
+                          <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
+                              updateRoute({index: i, updates: {name: editNameValue}});
+                              setEditingRouteNameIndex(null);
                           }}>
-                            <Icon icon={'PencilSquare'}/>
+                            <Icon icon={"FloppyDisk"} />
                           </Button>
-                      )}
-                    </div>
-                  )}
+                          <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteNameIndex(null)}>
+                            <Icon icon={"CancelCircle"}/>
+                          </Button>
+                        </div>
+
+                    ) : (
+                      <div className={t.editContainer}>
+                        <div className={t.routeTitle}>{r.name}</div>
+                        {isExpanded && (
+                            <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
+                                setEditingRouteNameIndex(i);
+                                setEditNameValue(r.name);
+                            }}>
+                              <Icon icon={'PencilSquare'}/>
+                            </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                     <Button themeOptions={{ size: "xs" }} disabled={i === 0 || saving} onClick={() => reorderRoutes(i, 'up')}>
+                        <Icon icon={'ChevronUp'} />
+                     </Button>
+                     <Button themeOptions={{ size: "xs" }} disabled={i === routes.length - 1 || saving} onClick={() => reorderRoutes(i, 'down')}>
+                        <Icon icon={'ChevronDown'} />
+                     </Button>
+                  </div>
                 </div>
                 {isExpanded && (
                     <div className={t.expandedContainer}>
