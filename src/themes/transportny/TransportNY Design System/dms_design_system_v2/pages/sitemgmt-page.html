@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Page QA · Site Management · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+  <style>.font-display{font-family:Oswald,sans-serif}.font-proxima{font-family:'Source Sans 3',system-ui,sans-serif}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}</style>
+</head>
+<body class="tny-pane font-proxima text-[#0F1722]">
+<!--
+  sitemgmt-page.html · SITE MANAGEMENT — per-PAGE QA detail (drill-down from the
+  control-room inventory). Reads ?id=<pageId> (default tsmo2:home), shows the page's
+  statuses, a Definition-of-Done checklist with a % complete, its open/all tickets,
+  and a QA sign-off rail. Everything dynamic is rendered from window.SITEMGMT.
+-->
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+
+      <!-- ════════ SIDENAV ════════ -->
+      <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+        <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+          <a href="sitemgmt-overview.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+            <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[14px]">SM</div>
+            <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">Site Mgmt</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · TransportNY</div></div>
+          </a>
+          <div class="flex-1 py-1 overflow-y-auto">
+            <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Manage</div>
+            <a href="sitemgmt-overview.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10"/></svg><span class="flex-1">Control Room</span></a>
+            <a href="sitemgmt-tickets.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"/><path d="M13 6v12"/></svg><span class="flex-1">Tickets</span></a>
+            <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Surfaces</div>
+            <a href="tsmo-home.html" class="font-proxima text-[12.5px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><span class="flex-1">TSMO (tsmo2)</span></a>
+            <a href="freight-atlas-home.html" class="font-proxima text-[12.5px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><span class="flex-1">Freight Atlas</span></a>
+            <a href="map-21.html" class="font-proxima text-[12.5px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><span class="flex-1">NPMRDS</span></a>
+          </div>
+          <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Delivery team</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">internal · QA</div></div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="flex flex-1 items-start">
+        <div class="flex-1 min-w-0 flex flex-col">
+          <main class="mr-auto w-full max-w-[1280px] pl-12 pr-8 py-8">
+            <a href="sitemgmt-overview.html" class="font-mono text-[11px] text-slate-500 hover:text-slate-800">← control room</a>
+            <div id="pageqa" class="mt-3"></div>
+          </main>
+          <footer class="w-full bg-white border-t border-zinc-950/10 mt-6">
+            <div class="mr-auto w-full max-w-[1280px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="sitemgmt-overview.html" class="hover:text-slate-900">control room</a>
+                <a href="sitemgmt-tickets.html" class="hover:text-slate-900">tickets</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS · QA v0.1 · mockup</span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="sitemgmt-data.js"></script>
+<script>
+(function(){
+  var S = window.SITEMGMT;
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function badge(text, cls){ return '<span class="inline-flex items-center rounded px-2 py-[3px] text-[11px] font-medium '+cls+'">'+esc(text)+'</span>'; }
+
+  // ── resolve page from ?id= (default tsmo2:home, fallback to first page) ──
+  var id = new URLSearchParams(location.search).get('id') || 'tsmo2:home';
+  var p = S.page(id);
+  if (!p) { id = S.pages[0].id; p = S.page(id); }
+
+  var surf = S.surface(p.surface) || { label: p.surface, sub: '' };
+  var rag = S.rag(p);
+  var ragDot = { green:'bg-emerald-500', amber:'bg-amber-400', red:'bg-rose-500' }[rag];
+  var bugs = S.bugsFor(p.id);
+  var openBugCount = bugs.Blocker + bugs.Major + bugs.Minor + bugs.Polish;
+
+  // ── deterministic Definition-of-Done from status ──
+  var buildDone = (p.build === 'Built (draft)' || p.build === 'Published');
+  var published = (p.build === 'Published');
+  var dataReal = (p.data === 'Real');
+  var dataPartialOrReal = (p.data === 'Real' || p.data === 'Partial');
+  var qaSigned = (p.qa === 'Approved' || p.qa === 'Conditional sign-off');
+  var qaApproved = (p.qa === 'Approved');
+
+  var dod = [
+    { group: 'Build', items: [
+      { label: 'Page scaffolded',        done: (p.build !== 'Not started') },
+      { label: 'All sections present',   done: buildDone },
+      { label: 'Responsive at lg/md/sm', done: buildDone },
+      { label: 'No console errors',      done: published },
+    ]},
+    { group: 'Design fidelity', items: [
+      { label: 'Matches mockup layout',   done: buildDone },
+      { label: 'Type tokens applied',     done: buildDone },
+      { label: 'Spacing/density reviewed', done: qaSigned },
+    ]},
+    { group: 'Data binding', items: [
+      { label: 'Bound to real source(s)', done: dataReal },
+      { label: 'Year/filter controls wired', done: dataPartialOrReal },
+      { label: 'No placeholder numbers',  done: dataReal },
+    ]},
+    { group: 'Cross-browser / a11y', items: [
+      { label: 'Chrome/Firefox/Safari', done: qaSigned },
+      { label: 'Keyboard focus order',  done: qaApproved },
+      { label: 'Contrast ≥ AA',         done: qaApproved },
+    ]},
+  ];
+  var totalItems = 0, checkedItems = 0;
+  dod.forEach(function(g){ g.items.forEach(function(it){ totalItems++; if(it.done) checkedItems++; }); });
+  var pct = Math.round(100 * checkedItems / (totalItems || 1));
+
+  function checkIcon(done){
+    return done
+      ? '<svg class="size-[16px] mt-[1px] flex-shrink-0 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor" stroke="none"/><path d="M7 12l3.5 3.5L17 8.5" stroke="white"/></svg>'
+      : '<svg class="size-[16px] mt-[1px] flex-shrink-0 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="3" width="18" height="18" rx="4"/></svg>';
+  }
+
+  // ── tickets: all for page, open first ──
+  var tickets = S.ticketsFor(p.id).slice().sort(function(a,b){
+    var ao = S.isOpen(a)?0:1, bo = S.isOpen(b)?0:1;
+    return (ao-bo) || (a.id-b.id);
+  });
+
+  function ticketRow(t){
+    var open = S.isOpen(t);
+    var resolved = !open;
+    return '<a href="sitemgmt-ticket.html?id='+t.id+'" class="flex items-center gap-3 py-2 hover:bg-slate-50/70 -mx-1 px-1 rounded">'
+      + badge(t.severity, S.sevColor[t.severity])
+      + '<span class="flex-1 min-w-0 truncate font-proxima text-[13px] '+(resolved?'text-slate-400 line-through':'text-slate-700')+'">'+esc(t.title)+'</span>'
+      + '<span class="font-mono text-[10px] '+(resolved?'text-slate-400':'text-slate-500')+'">'+esc(t.status)+'</span>'
+      + '<span class="font-mono text-[11px] text-slate-300">#'+t.id+'</span></a>';
+  }
+
+  function fact(label, val){
+    return '<div class="flex items-center justify-between gap-2 py-1.5">'
+      + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">'+esc(label)+'</span>'
+      + '<span class="font-proxima text-[12.5px] text-slate-700 text-right truncate">'+val+'</span></div>';
+  }
+
+  // ── render ──
+  var html = '';
+
+  // page header card
+  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-5 mb-5">'
+    + '<div class="flex items-start gap-3">'
+    + '<span class="size-4 rounded-full '+ragDot+' shadow mt-1.5 flex-shrink-0"></span>'
+    + '<div class="min-w-0">'
+    + '<h1 class="font-display text-[26px] font-medium leading-tight text-[#0F1722]">'+esc(p.name)+'</h1>'
+    + '<div class="font-mono text-[11px] text-slate-500 mt-0.5">'+esc(surf.label)+' · '+esc(p.route)+'</div>'
+    + '</div></div>'
+    + '<div class="flex flex-wrap items-center gap-2 mt-4">'
+    + badge(p.build, S.buildColor[p.build])
+    + badge(p.qa, S.qaColor[p.qa])
+    + badge(p.data, S.dataColor[p.data])
+    + '<span class="font-mono text-[11px] text-slate-400 ml-1">owner '+esc(p.owner)+'</span>'
+    + '<span class="font-mono text-[11px] text-slate-400">updated '+esc(p.updated)+'</span>'
+    + '</div></div>';
+
+  // two-column grid
+  html += '<div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5">';
+
+  // ── LEFT column ──
+  html += '<div class="space-y-5">';
+
+  // 1) preview placeholder
+  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
+    + '<div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-2">// preview</div>'
+    + '<div class="aspect-[16/10] rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center">'
+    + '<span class="font-mono text-[12px] text-slate-400">'+esc(p.name)+' — preview</span>'
+    + '</div></div>';
+
+  // 2) Definition of Done
+  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
+    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">'
+    + '<span class="font-display text-[14px] font-medium text-slate-800">Definition of Done</span>'
+    + '<span class="font-mono text-[11px] tabular-nums text-slate-500">'+checkedItems+' / '+totalItems+' · '+pct+'%</span>'
+    + '</div>'
+    + '<div class="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden mb-4"><div class="h-full rounded-full bg-[#1F3F8F]" style="width:'+pct+'%"></div></div>'
+    + '<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">'
+    + dod.map(function(g){
+        return '<div>'
+          + '<div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-1.5">'+esc(g.group)+'</div>'
+          + '<ul class="space-y-1.5">'
+          + g.items.map(function(it){
+              return '<li class="flex items-start gap-2">'+checkIcon(it.done)
+                + '<span class="font-proxima text-[13px] '+(it.done?'text-slate-700':'text-slate-400')+'">'+esc(it.label)+'</span></li>';
+            }).join('')
+          + '</ul></div>';
+      }).join('')
+    + '</div></div>';
+
+  // 3) Open tickets
+  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
+    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">'
+    + '<span class="font-display text-[14px] font-medium text-slate-800">Open tickets</span>'
+    + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">'+tickets.length+' total · '+S.openTicketsFor(p.id).length+' open</span>'
+    + '</div>'
+    + '<div id="ticketList" class="divide-y divide-slate-50">'
+    + (tickets.length
+        ? tickets.map(ticketRow).join('')
+        : '<div class="py-3 font-proxima text-[13px] text-slate-400">No tickets for this page.</div>')
+    + '</div></div>';
+
+  html += '</div>'; // end LEFT
+
+  // ── RIGHT rail ──
+  html += '<div class="space-y-5 lg:sticky lg:top-6 self-start">';
+
+  // QA sign-off
+  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
+    + '<div class="font-display text-[14px] font-medium text-slate-800 border-b border-slate-100 pb-2 mb-3">QA sign-off</div>'
+    + '<div class="space-y-2">'
+    + '<button type="button" class="w-full font-proxima text-[13px] font-medium px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700">Approve</button>'
+    + '<button type="button" class="w-full font-proxima text-[13px] font-medium px-3 py-2 rounded-md bg-amber-400 text-amber-950 hover:bg-amber-500">Conditional sign-off</button>'
+    + '<button type="button" class="w-full font-proxima text-[13px] font-medium px-3 py-2 rounded-md bg-white text-rose-600 border border-rose-300 hover:bg-rose-50">Request changes</button>'
+    + '</div>'
+    + '<div class="flex items-center justify-between mt-4 mb-2">'
+    + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">Reviewer</span>'
+    + '<span class="font-mono text-[12px] text-slate-500">—</span></div>'
+    + '<textarea disabled placeholder="Sign-off note…" rows="3" class="w-full font-proxima text-[12.5px] px-2.5 py-2 rounded-md border border-slate-200 bg-slate-50 text-slate-400 resize-none cursor-not-allowed"></textarea>'
+    + '<div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">'
+    + '<span class="font-mono text-[11px] text-slate-400">Current</span>'
+    + badge(p.qa, S.qaColor[p.qa])
+    + '</div></div>';
+
+  // Quick facts
+  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
+    + '<div class="font-display text-[14px] font-medium text-slate-800 border-b border-slate-100 pb-2 mb-2">Quick facts</div>'
+    + '<div class="divide-y divide-slate-50">'
+    + fact('surface', esc(surf.label))
+    + fact('route', '<span class="font-mono text-[12px]">'+esc(p.route)+'</span>')
+    + fact('owner', '<span class="font-mono text-[12px]">'+esc(p.owner)+'</span>')
+    + fact('data binding', badge(p.data, S.dataColor[p.data]))
+    + fact('open bugs', '<span class="font-mono text-[12px] tabular-nums '+(openBugCount?'text-rose-600 font-semibold':'text-slate-500')+'">'+openBugCount+'</span>')
+    + '</div></div>';
+
+  html += '</div>'; // end RIGHT
+  html += '</div>'; // end grid
+
+  document.getElementById('pageqa').innerHTML = html;
+})();
+</script>
+<script src="../ds-nav.js"></script>
+</body>
+</html>
