@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Tickets · Site Management · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+  <style>.font-display{font-family:Oswald,sans-serif}.font-proxima{font-family:'Source Sans 3',system-ui,sans-serif}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}</style>
+</head>
+<body class="tny-pane font-proxima text-[#0F1722]">
+<!--
+  sitemgmt-tickets.html · SITE MANAGEMENT 2 of 4 — the ticket board + list.
+  Board (4 status columns) ⇄ Table toggle over the full ticket set.
+  Everything dynamic is rendered from window.SITEMGMT (sitemgmt-data.js).
+-->
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+
+      <!-- ════════ SIDENAV ════════ -->
+      <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+        <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+          <a href="sitemgmt-overview.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+            <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[14px]">SM</div>
+            <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">Site Mgmt</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · TransportNY</div></div>
+          </a>
+          <div class="flex-1 py-1 overflow-y-auto">
+            <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Manage</div>
+            <a href="sitemgmt-overview.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10"/></svg><span class="flex-1">Control Room</span></a>
+            <a href="sitemgmt-tickets.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"/><path d="M13 6v12"/></svg><span class="flex-1">Tickets</span></a>
+            <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Surfaces</div>
+            <a href="tsmo-home.html" class="font-proxima text-[12.5px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><span class="flex-1">TSMO (tsmo2)</span></a>
+            <a href="freight-atlas-home.html" class="font-proxima text-[12.5px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><span class="flex-1">Freight Atlas</span></a>
+            <a href="map-21.html" class="font-proxima text-[12.5px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><span class="flex-1">NPMRDS</span></a>
+          </div>
+          <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Delivery team</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">internal · QA</div></div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="flex flex-1 items-start">
+        <div class="flex-1 min-w-0 flex flex-col">
+          <main class="mr-auto w-full max-w-[1560px] pl-12 pr-8 py-8">
+
+            <!-- header -->
+            <div class="flex items-end justify-between mb-5">
+              <div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">// site management · tickets</div>
+                <h1 class="font-display text-[30px] leading-none font-medium text-[#0F1722]">Tickets</h1>
+              </div>
+              <div class="inline-flex rounded-md overflow-hidden border border-slate-200 shadow-sm">
+                <button id="btnBoard" onclick="showView('board')" class="font-proxima text-[12.5px] px-3.5 py-1.5 bg-[#1F3F8F] text-white">Board</button>
+                <button id="btnTable" onclick="showView('table')" class="font-proxima text-[12.5px] px-3.5 py-1.5 bg-white text-slate-600 border-l border-slate-200">Table</button>
+              </div>
+            </div>
+
+            <!-- filter bar (visual) -->
+            <div class="flex flex-wrap items-center gap-2 mb-4" id="filters"></div>
+
+            <!-- board -->
+            <div id="board" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+
+            <!-- table -->
+            <div id="table" hidden>
+              <div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                      <th class="py-2 pl-4 pr-2 font-medium">ID</th>
+                      <th class="py-2 px-2 font-medium">Severity</th>
+                      <th class="py-2 px-2 font-medium">Priority</th>
+                      <th class="py-2 px-2 font-medium">Status</th>
+                      <th class="py-2 px-2 font-medium">Surface · Page</th>
+                      <th class="py-2 px-2 font-medium">Title</th>
+                      <th class="py-2 px-2 font-medium">Assignee</th>
+                      <th class="py-2 px-2 pr-4 font-medium">Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ticketRows"></tbody>
+                </table>
+              </div>
+            </div>
+
+          </main>
+          <footer class="w-full bg-white border-t border-zinc-950/10 mt-6">
+            <div class="mr-auto w-full max-w-[1560px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="sitemgmt-overview.html" class="hover:text-slate-900">control room</a>
+                <a href="sitemgmt-tickets.html" class="hover:text-slate-900">tickets</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS · QA v0.1 · mockup</span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showView(v){
+    var board = document.getElementById('board'), table = document.getElementById('table');
+    var bB = document.getElementById('btnBoard'), bT = document.getElementById('btnTable');
+    var on = 'font-proxima text-[12.5px] px-3.5 py-1.5 bg-[#1F3F8F] text-white';
+    var off = 'font-proxima text-[12.5px] px-3.5 py-1.5 bg-white text-slate-600 border border-slate-200';
+    if (v === 'table'){ board.hidden = true; table.hidden = false; bT.className = on; bB.className = off; }
+    else { board.hidden = false; table.hidden = true; bB.className = on; bT.className = off; }
+  }
+</script>
+<script src="sitemgmt-data.js"></script>
+<script>
+(function(){
+  var S = window.SITEMGMT;
+  var $ = function(id){ return document.getElementById(id); };
+  function badge(text, cls){ return '<span class="inline-flex items-center rounded px-2 py-[3px] text-[11px] font-medium '+cls+'">'+text+'</span>'; }
+  function pill(text, cls){ return '<span class="inline-flex items-center rounded-full px-2 py-[2px] text-[10.5px] font-medium '+cls+'">'+text+'</span>'; }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function initials(a){ return (a && a !== '—') ? a : '—'; }
+  function ageDays(t){ return Math.round((Date.parse(S.asOf) - Date.parse(t.opened)) / 86400000); }
+
+  var statusBadge = function(status){
+    var cls = (status === 'Resolved' || status === 'Closed') ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600';
+    return badge(status, cls);
+  };
+
+  // ── filter bar (visual only) ──
+  var fchips = ['All','Blocker+Major','Now','Open','Resolved'];
+  $('filters').innerHTML = '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mr-1">filter</span>'
+    + fchips.map(function(f,i){ return '<button class="font-proxima text-[12px] px-2.5 py-1 rounded-full border '+(i===0?'bg-[#1F3F8F] text-white border-[#1F3F8F]':'bg-white text-slate-600 border-slate-200 hover:border-slate-300')+'">'+f+'</button>'; }).join('')
+    + '<div class="ml-auto"><input placeholder="search tickets…" class="font-proxima text-[12px] px-3 py-1.5 rounded-md border border-slate-200 w-48 focus:outline-none focus:border-[#1F3F8F]"/></div>';
+
+  // ── BOARD ──
+  var statuses = ['Triage','In progress','In review','Resolved'];
+  function card(t){
+    var p = S.page(t.page), surf = S.surface(p.surface);
+    return '<a href="sitemgmt-ticket.html?id='+t.id+'" class="block bg-white rounded-md shadow-sm border border-zinc-950/5 p-3 hover:shadow-md transition-shadow">'
+      + '<div class="flex items-center gap-2 mb-2">'
+      +   badge(t.severity, S.sevColor[t.severity])
+      +   pill(t.priority, S.prioColor[t.priority])
+      +   '<span class="ml-auto font-mono text-[11px] text-slate-300">#'+t.id+'</span>'
+      + '</div>'
+      + '<div class="font-proxima text-[13px] text-slate-800 leading-snug mb-2.5 line-clamp-2">'+esc(t.title)+'</div>'
+      + '<div class="flex items-center gap-2">'
+      +   '<span class="font-mono text-[10px] text-slate-400 truncate flex-1 min-w-0">'+esc(surf.label)+' / '+esc(p.name)+'</span>'
+      +   '<span class="inline-flex items-center justify-center size-5 rounded-full bg-slate-200 text-slate-600 font-mono text-[9px] font-semibold">'+esc(initials(t.assignee))+'</span>'
+      +   '<span class="font-mono text-[10px] text-slate-400 tabular-nums">'+ageDays(t)+'d</span>'
+      + '</div>'
+      + '</a>';
+  }
+  $('board').innerHTML = statuses.map(function(st){
+    var col = S.tickets.filter(function(t){ return t.status === st; });
+    return '<div class="bg-slate-50/70 rounded-lg p-2">'
+      + '<div class="flex items-center justify-between px-1.5 py-1.5 mb-1">'
+      +   '<span class="font-display text-[12px] font-semibold uppercase tracking-wide text-slate-600">'+st+'</span>'
+      +   '<span class="inline-flex items-center justify-center min-w-[20px] px-1.5 h-5 rounded-full bg-white border border-slate-200 font-mono text-[10px] text-slate-500 tabular-nums">'+col.length+'</span>'
+      + '</div>'
+      + '<div class="flex flex-col gap-2">'+ (col.length ? col.map(card).join('') : '<div class="px-1.5 py-4 text-center font-mono text-[11px] text-slate-300">none</div>') +'</div>'
+      + '</div>';
+  }).join('');
+
+  // ── TABLE ──
+  $('ticketRows').innerHTML = S.tickets.map(function(t){
+    var p = S.page(t.page), surf = S.surface(p.surface);
+    var done = (t.status === 'Resolved' || t.status === 'Closed');
+    var muted = done ? ' text-slate-400' : '';
+    return '<tr onclick="location.href=\'sitemgmt-ticket.html?id='+t.id+'\'" class="border-b border-slate-50 hover:bg-blue-50/40 cursor-pointer'+muted+'">'
+      + '<td class="py-2.5 pl-4 pr-2"><span class="font-mono text-[11px] text-slate-400 tabular-nums">#'+t.id+'</span></td>'
+      + '<td class="py-2.5 px-2">'+badge(t.severity, S.sevColor[t.severity])+'</td>'
+      + '<td class="py-2.5 px-2">'+pill(t.priority, S.prioColor[t.priority])+'</td>'
+      + '<td class="py-2.5 px-2">'+statusBadge(t.status)+'</td>'
+      + '<td class="py-2.5 px-2"><span class="font-mono text-[11px] text-slate-500">'+esc(surf.label)+' / '+esc(p.name)+'</span></td>'
+      + '<td class="py-2.5 px-2"><span class="font-proxima text-[13px]'+(done?' text-slate-400':' text-slate-800')+'">'+esc(t.title)+'</span></td>'
+      + '<td class="py-2.5 px-2"><span class="font-mono text-[11px] text-slate-500">'+esc(t.assignee)+'</span></td>'
+      + '<td class="py-2.5 px-2 pr-4"><span class="font-mono text-[11px] text-slate-400 tabular-nums">'+esc(t.updated)+'</span></td>'
+      + '</tr>';
+  }).join('');
+})();
+</script>
+<script src="../ds-nav.js"></script>
+</body>
+</html>
