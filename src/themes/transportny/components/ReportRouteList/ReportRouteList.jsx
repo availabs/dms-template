@@ -173,6 +173,17 @@ export default function ReportRouteList(props) {
   const [editEndDateValue, setEditEndDateValue] = useState('');
   const routeSourceInfo = join?.sources?.table1?.sourceInfo;
 
+  const getDateValue = (val) => (val || '').split('T')[0];
+  const getTimeValue = (val) => (val || '').split('T')[1] || '';
+  const onDateChange = (e, currentValue, setter) => {
+    const time = currentValue.split('T')[1] || '';
+    setter(time ? `${e.target.value}T${time}` : e.target.value);
+  };
+  const onTimeChange = (e, currentValue, setter) => {
+    const date = currentValue.split('T')[0] || '';
+    setter(e.target.value ? `${date}T${e.target.value}` : date);
+  };
+
   const toggleRoute = (index) => {
     setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
   };
@@ -372,8 +383,8 @@ export default function ReportRouteList(props) {
           return (
             <div key={`${r.id}-${i}`} className={t.row}>
               <div className={t.rowContainer}>
-                <div className={t.rowHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div className={t.rowHeader}>
+                  <div className={t.iconContainer}>
                     <Icon icon={'Drag'} />
                     <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
                       {isExpanded ? '-' : '+'}
@@ -408,7 +419,7 @@ export default function ReportRouteList(props) {
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  <div className={t.reorderButtons}>
                      <Button themeOptions={{ size: "xs" }} disabled={i === 0 || saving} onClick={() => reorderRoutes(i, 'up')}>
                         <Icon icon={'ChevronUp'} />
                      </Button>
@@ -454,11 +465,17 @@ export default function ReportRouteList(props) {
                           </div>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>Start Date:</label>
-                            <Input type="datetime-local" step="300" value={editingRouteDatesIndex === i ? editStartDateValue : r.startDate} disabled={editingRouteDatesIndex !== i} onChange={(e) => setEditStartDateValue(e.target.value)} />
+                            <div className={t.dateInputFlex}>
+                                <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
+                                <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
+                            </div>
                           </div>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>End Date:</label>
-                            <Input type="datetime-local" step="300" value={editingRouteDatesIndex === i ? editEndDateValue : r.endDate} disabled={editingRouteDatesIndex !== i} onChange={(e) => setEditEndDateValue(e.target.value)}/>
+                            <div className={t.dateInputFlex}>
+                                <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
+                                <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
+                            </div>
                           </div>
                         </div>
                         <div className={t.removeButtonWrapper}>
