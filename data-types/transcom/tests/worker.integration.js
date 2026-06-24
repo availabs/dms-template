@@ -321,6 +321,33 @@ async function runTests() {
     assert(evt.progress[evt.progress.length - 1] === 1, 'final progress 1');
   });
 
+  await test('event_tmc with target_view_id upserts into the existing view (no new view) + stamps source metadata', async () => {
+    const targetViewId = evtResult.view_id;
+    const { rows: before } = await db.query(`SELECT count(*) n FROM views WHERE source_id = $1`, [evtTmcSrc.source_id]);
+    const evt2 = makeCtx({ db, descriptor: {
+      source_id: evtTmcSrc.source_id,
+      transcom_source_id: transcomSrc.source_id,
+      geom_source_id: geomSrc.source_id,
+      target_view_id: targetViewId,
+      start_date: '2024-04-01',
+      end_date: '2024-04-30',
+      user_id: 1,
+    } });
+    const r2 = await eventTmcWorker(evt2.ctx);
+    assert(r2.view_id === targetViewId, 'reuses the target view rather than creating a new one');
+
+    const { rows: after } = await db.query(`SELECT count(*) n FROM views WHERE source_id = $1`, [evtTmcSrc.source_id]);
+    assert(Number(after[0].n) === Number(before[0].n), 'no new view row was created');
+
+    const { rows: srcRows } = await db.query(`SELECT metadata FROM sources WHERE source_id = $1`, [evtTmcSrc.source_id]);
+    assert(parseMeta(srcRows[0].metadata).event_tmc_view_id === targetViewId, 'stamps source metadata.event_tmc_view_id');
+
+    const { rows: vRows } = await db.query(`SELECT metadata FROM views WHERE view_id = $1`, [targetViewId]);
+    const vmeta = parseMeta(vRows[0].metadata);
+    assert(vmeta.last_run_start === '2024-04-01' && vmeta.last_run_end === '2024-04-30', 'target view records the last_run window');
+    assert(vmeta.start_date === '2024-03-01', 'original view window is preserved (accumulating view)');
+  });
+
   // ════ transcom/congestion ═══════════════════════════════════════════════
   console.log('-- transcom/congestion --');
 
