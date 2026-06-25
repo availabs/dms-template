@@ -24,5 +24,9 @@ export const reportRouteListTheme = {
   loading: 'text-gray-500',
   empty: 'text-gray-400 italic',
   addForm: 'mt-4 p-2 bg-gray-50 rounded',
-  error: 'text-red-500 mt-2'
+  error: 'text-red-500 mt-2',
+  graphTemplateWrapper: 'mt-4 p-4 border rounded',
+  addedGraphsWrapper: 'p-4 border rounded shadow-sm mt-4',
+  graphTemplateSelectContainer: 'mt-2',
+  addGraphButton: 'mt-2'
 };
