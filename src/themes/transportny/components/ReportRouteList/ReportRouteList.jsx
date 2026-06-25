@@ -585,7 +585,7 @@ export default function ReportRouteList(props) {
         })}
         {!loading && routes.length === 0 ? <div className={t.empty}>No routes added.</div> : null}
       </div>
-      <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #ccc' }}>
+      <div className={t.graphTemplateWrapper}>
         <label>Select Graph Template</label>
         <Select
           aria-label="Select Graph Template"
@@ -599,14 +599,14 @@ export default function ReportRouteList(props) {
         />
           <Button
             themeOptions={{ size: "sm" }}
-            style={{ marginTop: '0.5rem' }}
+            className={t.addGraphButton}
             onClick={addGraph}
           >
           Add Graph
           </Button>
       </div>
       {currentReport?.graph_comps && currentReport.graph_comps.length > 0 && (
-          <div className={t.wrapper} style={{ marginTop: '1rem' }}>
+          <div className={t.addedGraphsWrapper}>
               <div className={t.title}>Added Graphs</div>
               <div className={t.list}>
               {currentReport.graph_comps.map((g, i) => (
