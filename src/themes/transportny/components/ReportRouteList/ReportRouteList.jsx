@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState, useRef } from 'react';
 import { get, cloneDeep } from 'lodash-es';
 import { ComponentContext, PageContext, CMSContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
@@ -175,6 +175,14 @@ export default function ReportRouteList(props) {
   const [selectedGraphTemplateId, setSelectedGraphTemplateId] = useState('');
   const routeSourceInfo = join?.sources?.table1?.sourceInfo;
 
+  const currentReport = state?.data?.[0];
+
+  // Track graph_comps for dynamic updates without causing loops
+  const graphCompsRef = useRef(currentReport?.graph_comps);
+  useEffect(() => {
+    graphCompsRef.current = currentReport?.graph_comps;
+  }, [currentReport?.graph_comps]);
+
   const loadTemplates = useCallback(async () => {
     if (!apiLoad) return;
     
@@ -202,11 +210,11 @@ export default function ReportRouteList(props) {
   const getDateValue = (val) => (val || '').split('T')[0];
   const getTimeValue = (val) => (val || '').split('T')[1] || '';
   const onDateChange = (e, currentValue, setter) => {
-    const time = currentValue.split('T')[1] || '';
+    const time = currentValue?.split('T')[1] || '';
     setter(time ? `${e.target.value}T${time}` : e.target.value);
   };
   const onTimeChange = (e, currentValue, setter) => {
-    const date = currentValue.split('T')[0] || '';
+    const date = currentValue?.split('T')[0] || '';
     setter(e.target.value ? `${date}T${e.target.value}` : date);
   };
 
@@ -214,7 +222,6 @@ export default function ReportRouteList(props) {
     setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
-  const currentReport = state?.data?.[0];
   const routes = currentReport?.routes || [];
   const reportId = pageState?.filters?.find(f => f.searchKey === 'report_id')?.values?.[0];
   const addRouteId = pageState?.filters?.find(f => f.searchKey === 'add_route_id' && f.type === 'action')?.values?.[0];
@@ -400,14 +407,54 @@ export default function ReportRouteList(props) {
       setSaving(false);
     }
   };
-
-  //TODO -- add setActionParam to config for reportRouteList
-  //that will get rid of hardcoded `routes`
+  // Update dynamic bindings and graph component configurations when routes change
   useEffect(() => {
+    // 1. Existing setActionParam
     const routeFilter = transformReportRoutes(routes);
-    if (!setActionParam) return;
-    if (routeFilter !== undefined) setActionParam('routes', routeFilter);
-  }, [routes])
+    if (setActionParam && routeFilter !== undefined) {
+      setActionParam('routes', routeFilter);
+    }
+
+    // 2. New logic: Update graph_comps element-data with new variants
+    if (!graphCompsRef.current || !updateItem || !currentReport?.id) return;
+
+    let updated = false;
+    const updatedGraphComps = graphCompsRef.current.map(comp => {
+      // Calculate new variants based on routes
+      const newVariants = transformReportRoutes(routes.filter(r => comp.route_comp_ids?.includes(r.route_comp_id))) || [];
+      
+      // Check if variants actually changed
+      if (JSON.stringify(comp.comparisonSeries.variants) === JSON.stringify(newVariants)) {
+        return comp;
+      }
+
+      updated = true;
+      // Prepare new comparisonSeries config
+      const newComparisonSeries = {
+        ...comp.comparisonSeries,
+        variants: newVariants,
+        seriesLabel: comp.comparisonSeries.seriesLabel || 'Routes' // Ensure seriesLabel persists
+      };
+
+      // Parse element-data
+      const elementData = comp.element['element-data'] ? JSON.parse(comp.element['element-data']) : {};
+      elementData.comparisonSeries = newComparisonSeries;
+
+      // Return updated component
+      return {
+        ...comp,
+        comparisonSeries: newComparisonSeries,
+        element: {
+          ...comp.element,
+          'element-data': JSON.stringify(elementData)
+        }
+      };
+    });
+
+    if (updated) {
+      updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
+    }
+  }, [routes, updateItem, setActionParam, currentReport?.id]);
 
   // Sync graph_comps to page item
   useEffect(() => {
@@ -422,9 +469,17 @@ export default function ReportRouteList(props) {
         // Remove existing 'reports' components
         draft.sections = draft.sections.filter(c => c.createdBy !== 'reports');
         draft.draft_sections = draft.draft_sections.filter(c => c.createdBy !== 'reports');
-        
         // Add components from graph_comps
-        const injected = currentReport.graph_comps || [];
+        const injected = (currentReport.graph_comps || []).map(comp => ({
+            ...comp,
+            // Ensure comparisonSeries is merged into the section configuration
+            config: {
+                ...(comp.config || {}),
+                comparisonSeries: comp.comparisonSeries,
+                route_comp_ids: comp.route_comp_ids,
+                routes // Pass live routes to allow dynamic resolution
+            }
+        }));
         
         draft.sections.push(...injected);
         draft.draft_sections.push(...injected);
@@ -445,6 +500,20 @@ export default function ReportRouteList(props) {
     const id = crypto.randomUUID();
     const trackingId = crypto.randomUUID();
 
+    // Store the mapping of which routes belong to this graph.
+    const initialRouteCompIds = routes.map(r => r.route_comp_id);
+    
+    // Minimal config: let the component resolve variants dynamically.
+    const comparisonSeriesConfig = {
+      enabled: true,
+      seriesKey: '__series',
+      seriesLabel: 'Routes', // Added series label
+      // variants will be resolved dynamically by the component
+    };
+
+    parsedState.comparisonSeries = comparisonSeriesConfig;
+    parsedState.route_comp_ids = initialRouteCompIds;
+
     const newComponent = {
       ...layout,
       id,
@@ -454,6 +523,8 @@ export default function ReportRouteList(props) {
         'element-type': elementType,
         'element-data': JSON.stringify(parsedState),
       },
+      comparisonSeries: comparisonSeriesConfig,
+      route_comp_ids: initialRouteCompIds
     };
 
     if (updateItem && currentReport) {
