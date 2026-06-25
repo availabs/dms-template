@@ -216,6 +216,7 @@ export default function ReportRouteList(props) {
 
   const currentReport = state?.data?.[0];
   const routes = currentReport?.routes || [];
+  const reportId = pageState?.filters?.find(f => f.searchKey === 'report_id')?.values?.[0];
   const addRouteId = pageState?.filters?.find(f => f.searchKey === 'add_route_id' && f.type === 'action')?.values?.[0];
 
   useEffect(() => {
@@ -467,68 +468,72 @@ export default function ReportRouteList(props) {
   };
   return (
     <div className={t.wrapper}>
-      <div className={t.title}>{currentReport?.name}</div>
-      <div className={t.title}>Routes</div>
-      {loading ? <div className={t.loading}>Loading…</div> : null}
-      <div className={t.list}>
-        {routes.map((r, i) => {
-          const tmcArray = getTmcArray(r.tmc_array);
-          const isExpanded = expandedRoutes[i];
-          return (
-            <div key={`${r.id}-${i}`} className={t.row}>
-              <div className={t.rowContainer}>
-                <div className={t.rowHeader}>
-                  <div className={t.iconContainer}>
-                    <Icon icon={'Drag'} />
-                    <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
-                      {isExpanded ? '-' : '+'}
-                    </Button>
-                    {editingRouteNameIndex === i ? (
-                        <div className={t.editContainer}>
-                          <div className={t.editInputWrapper}>
-                            <Input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} />
-                          </div>
-                          <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
-                              updateRoute({index: i, updates: {name: editNameValue}});
+      {reportId == -1 || !reportId ? (
+        <div className={t.empty}>Select a report to get started</div>
+      ) : (
+        <>
+          <div className={t.title}>{currentReport?.name}</div>
+          <div className={t.title}>Routes</div>
+          {loading ? <div className={t.loading}>Loading…</div> : null}
+          <div className={t.list}>
+            {routes.map((r, i) => {
+              const tmcArray = getTmcArray(r.tmc_array);
+              const isExpanded = expandedRoutes[i];
+              return (
+                <div key={`${r.id}-${i}`} className={t.row}>
+                  <div className={t.rowContainer}>
+                    <div className={t.rowHeader}>
+                      <div className={t.iconContainer}>
+                        <Icon icon={'Drag'} />
+                        <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
+                          {isExpanded ? '-' : '+'}
+                        </Button>
+                        {editingRouteNameIndex === i ? (
+                          <div className={t.editContainer}>
+                            <div className={t.editInputWrapper}>
+                              <Input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} />
+                            </div>
+                            <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
+                              updateRoute({ index: i, updates: { name: editNameValue } });
                               setEditingRouteNameIndex(null);
-                          }}>
-                            <Icon icon={"FloppyDisk"} />
-                          </Button>
-                          <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteNameIndex(null)}>
-                            <Icon icon={"CancelCircle"}/>
-                          </Button>
-                        </div>
+                            }}>
+                              <Icon icon={"FloppyDisk"} />
+                            </Button>
+                            <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteNameIndex(null)}>
+                              <Icon icon={"CancelCircle"} />
+                            </Button>
+                          </div>
 
-                    ) : (
-                      <div className={t.editContainer}>
-                        <div className={t.routeTitle}>{r.name}</div>
-                        {isExpanded && (
-                            <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
+                        ) : (
+                          <div className={t.editContainer}>
+                            <div className={t.routeTitle}>{r.name}</div>
+                            {isExpanded && (
+                              <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
                                 setEditingRouteNameIndex(i);
                                 setEditNameValue(r.name);
-                            }}>
-                              <Icon icon={'PencilSquare'}/>
-                            </Button>
+                              }}>
+                                <Icon icon={'PencilSquare'} />
+                              </Button>
+                            )}
+                          </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                  <div className={t.reorderButtons}>
-                     <Button themeOptions={{ size: "xs" }} disabled={i === 0 || saving} onClick={() => reorderRoutes(i, 'up')}>
-                        <Icon icon={'ChevronUp'} />
-                     </Button>
-                     <Button themeOptions={{ size: "xs" }} disabled={i === routes.length - 1 || saving} onClick={() => reorderRoutes(i, 'down')}>
-                        <Icon icon={'ChevronDown'} />
-                     </Button>
-                  </div>
-                </div>
-                {isExpanded && (
-                    <div className={t.expandedContainer}>
+                      <div className={t.reorderButtons}>
+                        <Button themeOptions={{ size: "xs" }} disabled={i === 0 || saving} onClick={() => reorderRoutes(i, 'up')}>
+                          <Icon icon={'ChevronUp'} />
+                        </Button>
+                        <Button themeOptions={{ size: "xs" }} disabled={i === routes.length - 1 || saving} onClick={() => reorderRoutes(i, 'down')}>
+                          <Icon icon={'ChevronDown'} />
+                        </Button>
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div className={t.expandedContainer}>
                         {tmcArray.length > 0 && (
                           <div className={t.tmcWrapper}>
                             <div className={t.tmcLabel}>TMCs:</div>
                             <div className={t.tmcList}>
-                                {tmcArray.join(", ")}
+                              {tmcArray.join(", ")}
                             </div>
                           </div>
                         )}
@@ -536,104 +541,106 @@ export default function ReportRouteList(props) {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div className={t.dateRangeLabel}>Date Range</div>
                             {editingRouteDatesIndex === i ? (
-                                <div className={t.editContainer}>
-                                  <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
-                                      updateRoute({index: i, updates: {startDate: editStartDateValue, endDate: editEndDateValue}});
-                                      setEditingRouteDatesIndex(null);
-                                  }}>
-                                    <Icon icon={"FloppyDisk"} />
-                                  </Button>
-                                  <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteDatesIndex(null)}>
-                                    <Icon icon={"CancelCircle"}/>
-                                  </Button>
-                                </div>
-                            ) : (
-                                <Button themeOptions={{ size: "xs" }} title="Edit Dates" onClick={() => {
-                                    setEditingRouteDatesIndex(i);
-                                    setEditStartDateValue(r.startDate);
-                                    setEditEndDateValue(r.endDate);
+                              <div className={t.editContainer}>
+                                <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
+                                  updateRoute({ index: i, updates: { startDate: editStartDateValue, endDate: editEndDateValue } });
+                                  setEditingRouteDatesIndex(null);
                                 }}>
-                                  <Icon icon={'PencilSquare'}/>
+                                  <Icon icon={"FloppyDisk"} />
                                 </Button>
+                                <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteDatesIndex(null)}>
+                                  <Icon icon={"CancelCircle"} />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button themeOptions={{ size: "xs" }} title="Edit Dates" onClick={() => {
+                                setEditingRouteDatesIndex(i);
+                                setEditStartDateValue(r.startDate);
+                                setEditEndDateValue(r.endDate);
+                              }}>
+                                <Icon icon={'PencilSquare'} />
+                              </Button>
                             )}
                           </div>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>Start Date:</label>
                             <div className={t.dateInputFlex}>
-                                <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
-                                <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
+                              <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
+                              <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
                             </div>
                           </div>
                           <div className={t.dateInputWrapper}>
                             <label className={t.dateLabel}>End Date:</label>
                             <div className={t.dateInputFlex}>
-                                <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
-                                <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
+                              <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
+                              <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
                             </div>
                           </div>
                         </div>
                         <div className={t.removeButtonWrapper}>
-                            <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => removeRoute(i)}>
-                              Remove
-                            </Button>
+                          <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => removeRoute(i)}>
+                            Remove
+                          </Button>
                         </div>
-                    </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-        {!loading && routes.length === 0 ? <div className={t.empty}>No routes added.</div> : null}
-      </div>
-      <div className={t.graphTemplateWrapper}>
-        <label>Select Graph Template</label>
-        <Select
-          aria-label="Select Graph Template"
-          value={graphTemplates.find(gt => gt.id === selectedGraphTemplateId)?.name}
-          onChange={(e) => setSelectedGraphTemplateId(e.props.value)}
-          options={graphTemplates.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name || g.id}
-            </option>
-          ))}
-        />
-          <Button
-            themeOptions={{ size: "sm" }}
-            className={t.addGraphButton}
-            onClick={addGraph}
-          >
-          Add Graph
-          </Button>
-      </div>
-      {currentReport?.graph_comps && currentReport.graph_comps.length > 0 && (
-          <div className={t.addedGraphsWrapper}>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {!loading && routes.length === 0 ? <div className={t.empty}>No routes added.</div> : null}
+          </div>
+          <div className={t.graphTemplateWrapper}>
+            <label>Select Graph Template</label>
+            <Select
+              aria-label="Select Graph Template"
+              value={graphTemplates.find(gt => gt.id === selectedGraphTemplateId)?.name}
+              onChange={(e) => setSelectedGraphTemplateId(e.props.value)}
+              options={graphTemplates.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name || g.id}
+                </option>
+              ))}
+            />
+            <Button
+              themeOptions={{ size: "sm" }}
+              className={t.addGraphButton}
+              onClick={addGraph}
+            >
+              Add Graph
+            </Button>
+          </div>
+          {currentReport?.graph_comps && currentReport.graph_comps.length > 0 && (
+            <div className={t.addedGraphsWrapper}>
               <div className={t.title}>Added Graphs</div>
               <div className={t.list}>
-              {currentReport.graph_comps.map((g, i) => (
+                {currentReport.graph_comps.map((g, i) => (
                   <div key={i} className={t.row}>
-                      <span>{g.element?.['element-type'] || 'Graph'}</span>
-                      <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => removeGraph(i)}>
-                        Remove
-                      </Button>
+                    <span>{g.element?.['element-type'] || 'Graph'}</span>
+                    <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => removeGraph(i)}>
+                      Remove
+                    </Button>
                   </div>
-              ))}
+                ))}
               </div>
-          </div>
-      )}
+            </div>
+          )}
 
 
-      {pendingRoute && (
-        <div className={t.addForm}>
-          <div>Add “{pendingRoute.name}”?</div>
-          <Button disabled={saving} onClick={addRoute}>
-            {saving ? "Adding…" : "Confirm"}
-          </Button>
-          <Button disabled={saving} onClick={cancelAdd}>
-            Cancel
-          </Button>
-        </div>
+          {pendingRoute && (
+            <div className={t.addForm}>
+              <div>Add “{pendingRoute.name}”?</div>
+              <Button disabled={saving} onClick={addRoute}>
+                {saving ? "Adding…" : "Confirm"}
+              </Button>
+              <Button disabled={saving} onClick={cancelAdd}>
+                Cancel
+              </Button>
+            </div>
+          )}
+          {error ? <div className={t.error}>{error}</div> : null}
+        </>
       )}
-      {error ? <div className={t.error}>{error}</div> : null}
     </div>
   );
 }
