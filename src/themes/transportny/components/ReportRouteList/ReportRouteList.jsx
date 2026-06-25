@@ -155,7 +155,7 @@ export default function ReportRouteList(props) {
   const { isEdit, updateItem } = props;
   const { falcor, datasources } = useContext(CMSContext) || {};
   const { state, setState, state:{join} } = useContext(ComponentContext) || {};
-  const { apiLoad, apiUpdate, pageState, format, clearActionParam, setActionParam } = useContext(PageContext) || {};
+  const { apiLoad, apiUpdate, pageState, setPageState, format, clearActionParam, setActionParam,item, setItem } = useContext(PageContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Select, Input, Icon } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
@@ -171,7 +171,33 @@ export default function ReportRouteList(props) {
   const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
   const [editStartDateValue, setEditStartDateValue] = useState('');
   const [editEndDateValue, setEditEndDateValue] = useState('');
+  const [graphTemplates, setGraphTemplates] = useState([]);
+  const [selectedGraphTemplateId, setSelectedGraphTemplateId] = useState('');
   const routeSourceInfo = join?.sources?.table1?.sourceInfo;
+
+  const loadTemplates = useCallback(async () => {
+    if (!apiLoad) return;
+    
+    // Mimicking TemplateManager pattern
+    try {
+      const rows = await apiLoad({
+        format: { 
+          app: "npmrdsv5", 
+          type: "npmrds_sub|avl_graph_template", 
+          attributes: ["id", "updated_at", "app", "type", "data"] 
+        },
+        children: [{ type: () => {}, action: "list", path: "/" }],
+      });
+      const list = (rows || []).filter(r => r && r.id);
+      setGraphTemplates(list);
+    } catch (e) {
+      console.error('<ReportRouteList:loadTemplates>', e);
+    }
+  }, [apiLoad]);
+
+  useEffect(() => { 
+    loadTemplates(); 
+  }, [loadTemplates]);
 
   const getDateValue = (val) => (val || '').split('T')[0];
   const getTimeValue = (val) => (val || '').split('T')[1] || '';
@@ -263,7 +289,7 @@ export default function ReportRouteList(props) {
     if(addRouteId) {
       fetchDynamicRoute();
     }
-  },[addRouteId])
+  },[addRouteId]);
 
   const addRoute = async () => {
     if (!updateItem || !currentReport?.id || !pendingRoute || saving) return;
@@ -309,6 +335,21 @@ export default function ReportRouteList(props) {
     } catch (e) {
       console.error('<ReportRouteList:remove>', e);
       setError('Could not remove route.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeGraph = async (indexToRemove) => {
+    if (!updateItem || !currentReport?.id || saving) return;
+    setSaving(true);
+    setError('');
+    try {
+      const updatedGraphComps = (currentReport.graph_comps || []).filter((_, i) => i !== indexToRemove);
+      await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
+    } catch (e) {
+      console.error('<ReportRouteList:removeGraph>', e);
+      setError('Could not remove graph.');
     } finally {
       setSaving(false);
     }
@@ -366,6 +407,59 @@ export default function ReportRouteList(props) {
     if (!setActionParam) return;
     if (routeFilter !== undefined) setActionParam('routes', routeFilter);
   }, [routes])
+
+  // Sync graph_comps to page item
+  useEffect(() => {
+    console.log("before conditional graph comp effect", {currentReport, setItem})
+    if (!currentReport?.graph_comps || !setItem) return;
+
+    setItem(draft => {
+        // Ensure `draft` has `sections` and `draft_sections` arrays.
+        if (!draft.sections) draft.sections = [];
+        if (!draft.draft_sections) draft.draft_sections = [];
+
+        // Remove existing 'reports' components
+        draft.sections = draft.sections.filter(c => c.createdBy !== 'reports');
+        draft.draft_sections = draft.draft_sections.filter(c => c.createdBy !== 'reports');
+        
+        // Add components from graph_comps
+        const injected = currentReport.graph_comps || [];
+        
+        draft.sections.push(...injected);
+        draft.draft_sections.push(...injected);
+    });
+  }, [currentReport?.graph_comps, setItem]);
+
+  const addGraph = async () => {
+    const templateRow = graphTemplates.find(gt => gt.id === selectedGraphTemplateId);
+    if (!templateRow) return;
+
+    // Ensure templateRow.data is parsed
+    const tpl = { ...templateRow, ...(typeof templateRow.data === 'string' ? JSON.parse(templateRow.data) : templateRow.data) };
+
+    const parsedState = tpl.stateJson ? JSON.parse(tpl.stateJson) : {};
+    const layout = tpl.includesLayout && tpl.layoutJson ? JSON.parse(tpl.layoutJson) : {};
+    const elementType = tpl.elementType || 'Graph';
+
+    const id = crypto.randomUUID();
+    const trackingId = crypto.randomUUID();
+
+    const newComponent = {
+      ...layout,
+      id,
+      trackingId,
+      createdBy: 'reports',
+      element: {
+        'element-type': elementType,
+        'element-data': JSON.stringify(parsedState),
+      },
+    };
+
+    if (updateItem && currentReport) {
+      const updatedGraphComps = [...(currentReport.graph_comps || []), newComponent];
+      await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
+    }
+  };
 
   const cancelAdd = () => {
     setPendingRoute(null);
@@ -491,6 +585,42 @@ export default function ReportRouteList(props) {
         })}
         {!loading && routes.length === 0 ? <div className={t.empty}>No routes added.</div> : null}
       </div>
+      <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #ccc' }}>
+        <label>Select Graph Template</label>
+        <Select
+          aria-label="Select Graph Template"
+          value={graphTemplates.find(gt => gt.id === selectedGraphTemplateId)?.name}
+          onChange={(e) => setSelectedGraphTemplateId(e.props.value)}
+          options={graphTemplates.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name || g.id}
+            </option>
+          ))}
+        />
+          <Button
+            themeOptions={{ size: "sm" }}
+            style={{ marginTop: '0.5rem' }}
+            onClick={addGraph}
+          >
+          Add Graph
+          </Button>
+      </div>
+      {currentReport?.graph_comps && currentReport.graph_comps.length > 0 && (
+          <div className={t.wrapper} style={{ marginTop: '1rem' }}>
+              <div className={t.title}>Added Graphs</div>
+              <div className={t.list}>
+              {currentReport.graph_comps.map((g, i) => (
+                  <div key={i} className={t.row}>
+                      <span>{g.element?.['element-type'] || 'Graph'}</span>
+                      <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => removeGraph(i)}>
+                        Remove
+                      </Button>
+                  </div>
+              ))}
+              </div>
+          </div>
+      )}
+
 
       {pendingRoute && (
         <div className={t.addForm}>
