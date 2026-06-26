@@ -1,6 +1,7 @@
 export const reportRouteListTheme = {
   wrapper: 'p-3 bg-white border border-slate-200 rounded-lg shadow-sm',
   title: 'text-sm font-bold text-slate-800 mb-2',
+  titleWrapper: 'flex justify-between items-center text-sm font-bold text-slate-800 mb-2',
   list: 'mt-2 space-y-2',
   row: 'bg-slate-50 border border-slate-200 rounded-lg p-2 flex flex-col',
   rowContainer: 'flex flex-col w-full',
@@ -26,7 +27,7 @@ export const reportRouteListTheme = {
   addForm: 'mt-2 p-1.5 bg-gray-50 rounded text-sm',
   error: 'text-red-500 mt-1 text-xs',
   graphTemplateWrapper: 'mt-3 p-2 border border-slate-200 rounded-lg',
-  addedGraphsWrapper: 'p-3 bg-white border border-slate-200 rounded-lg shadow-sm mt-3',
+  addedGraphsWrapper: 'mt-3',
   graphTemplateSelectContainer: 'mt-1',
   addGraphButton: 'mt-1 w-full',
   graphAssociationContainer: 'flex flex-wrap items-center gap-1 pt-2 mt-2 border-t border-slate-100',
