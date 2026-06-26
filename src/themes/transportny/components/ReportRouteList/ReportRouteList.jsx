@@ -168,6 +168,8 @@ export default function ReportRouteList(props) {
   const [expandedRoutes, setExpandedRoutes] = useState({});
   const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
   const [editNameValue, setEditNameValue] = useState('');
+  const [editingGraphNameIndex, setEditingGraphNameIndex] = useState(null);
+  const [editGraphNameValue, setEditGraphNameValue] = useState('');
   const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
   const [editStartDateValue, setEditStartDateValue] = useState('');
   const [editEndDateValue, setEditEndDateValue] = useState('');
@@ -176,12 +178,6 @@ export default function ReportRouteList(props) {
   const routeSourceInfo = join?.sources?.table1?.sourceInfo;
 
   const currentReport = state?.data?.[0];
-
-  // Track graph_comps for dynamic updates without causing loops
-  const graphCompsRef = useRef(currentReport?.graph_comps);
-  useEffect(() => {
-    graphCompsRef.current = currentReport?.graph_comps;
-  }, [currentReport?.graph_comps]);
 
   const loadTemplates = useCallback(async () => {
     if (!apiLoad) return;
@@ -348,6 +344,36 @@ export default function ReportRouteList(props) {
     }
   };
 
+  const updateGraphRouteAssociation = async (graphIndex, routeCompId, action) => {
+    if (!updateItem || !currentReport?.id || saving) return;
+    setSaving(true);
+    setError('');
+    try {
+      const updatedGraphComps = cloneDeep(currentReport.graph_comps || []);
+      const graph = updatedGraphComps[graphIndex];
+      
+      if (action === 'add') {
+        if (!graph.route_comp_ids.includes(routeCompId)) {
+          graph.route_comp_ids.push(routeCompId);
+        }
+      } else if (action === 'remove') {
+        graph.route_comp_ids = graph.route_comp_ids.filter(id => id !== routeCompId);
+      }
+      
+      // Update element-data to keep it in sync
+      const elementData = graph.element['element-data'] ? JSON.parse(graph.element['element-data']) : {};
+      elementData.route_comp_ids = graph.route_comp_ids;
+      graph.element['element-data'] = JSON.stringify(elementData);
+
+      await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
+    } catch (e) {
+      console.error('<ReportRouteList:updateGraphRouteAssociation>', e);
+      setError('Could not update graph association.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const removeGraph = async (indexToRemove) => {
     if (!updateItem || !currentReport?.id || saving) return;
     setSaving(true);
@@ -358,6 +384,30 @@ export default function ReportRouteList(props) {
     } catch (e) {
       console.error('<ReportRouteList:removeGraph>', e);
       setError('Could not remove graph.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateGraph = async ({index, updates}) => {
+    if (!updateItem || !currentReport?.id || saving || !updates) return;
+    setSaving(true);
+    setError('');
+    try {
+      const updatedGraphComps = cloneDeep(currentReport.graph_comps || []);
+      const graph = updatedGraphComps[index];
+      const elementData = graph.element['element-data'] ? JSON.parse(graph.element['element-data']) : {};
+      
+      if (updates.title !== undefined) {
+        elementData.title = updates.title;
+      }
+      
+      graph.element['element-data'] = JSON.stringify(elementData);
+      
+      await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
+    } catch (e) {
+      console.error('<ReportRouteList:updateGraph>', e);
+      setError('Could not update graph.');
     } finally {
       setSaving(false);
     }
@@ -408,6 +458,7 @@ export default function ReportRouteList(props) {
     }
   };
   // Update dynamic bindings and graph component configurations when routes change
+  // UPDATES THE PERSISTED DB DATA WITHIN CURRENT ROUTE
   useEffect(() => {
     // 1. Existing setActionParam
     const routeFilter = transformReportRoutes(routes);
@@ -416,12 +467,12 @@ export default function ReportRouteList(props) {
     // }
 
     // 2. New logic: Update graph_comps element-data with new variants
-    if (!graphCompsRef.current || !updateItem || !currentReport?.id) {
+    if (!currentReport?.graph_comps || !updateItem || !currentReport?.id) {
       return;
     }
 
     let updated = false;
-    const updatedGraphComps = graphCompsRef.current.map(comp => {
+    const updatedGraphComps = currentReport.graph_comps.map(comp => {
       // Calculate new variants based on routes
       const newVariants = transformReportRoutes(routes.filter(r => comp.route_comp_ids?.includes(r.route_comp_id))) || [];
       
@@ -456,9 +507,9 @@ export default function ReportRouteList(props) {
     if (updated) {
       updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
     }
-  }, [routes, updateItem, setActionParam, currentReport?.id]);
+  }, [routes, updateItem, setActionParam, currentReport?.id, currentReport?.graph_comps]);
 
-  // Sync graph_comps to page item
+  // Sync graph_comps to page item -- RENDERS GRAPHS TO PAGE
   useEffect(() => {
     if (!currentReport?.graph_comps || !setItem) return;
 
@@ -471,17 +522,22 @@ export default function ReportRouteList(props) {
         draft.sections = draft.sections.filter(c => c.createdBy !== 'reports');
         draft.draft_sections = draft.draft_sections.filter(c => c.createdBy !== 'reports');
         // Add components from graph_comps
-        const injected = (currentReport.graph_comps || []).map(comp => ({
-            ...comp,
-            // Ensure comparisonSeries is merged into the section configuration
-            config: {
-                ...(comp.config || {}),
-                comparisonSeries: comp.comparisonSeries,
-                route_comp_ids: comp.route_comp_ids,
-                routes // Pass live routes to allow dynamic resolution
-            }
-        }));
-
+        const injected = (currentReport.graph_comps || []).map(comp => {
+          const elementData = comp.element['element-data'] ? JSON.parse(comp.element['element-data']) : {};
+          return {
+              ...comp,
+              title: elementData?.title || 'New Graph',
+              display: {...comp.display, title: elementData?.title || 'New Graph' },
+              // Ensure comparisonSeries is merged into the section configuration
+              config: {
+                  ...(comp.config || {}),
+                  title: elementData.title,
+                  comparisonSeries: comp.comparisonSeries,
+                  route_comp_ids: comp.route_comp_ids,
+                  routes // Pass live routes to allow dynamic resolution
+              }
+          }
+        });
         draft.sections.push(...injected);
         draft.draft_sections.push(...injected);
     });
@@ -548,12 +604,12 @@ export default function ReportRouteList(props) {
       createdBy: 'reports',
       element: {
         'element-type': elementType,
-        'element-data': JSON.stringify(parsedState),
+        'element-data': JSON.stringify({ ...parsedState, title: layout?.title || 'New Graph' }),
       },
       comparisonSeries: comparisonSeriesConfig,
       route_comp_ids: initialRouteCompIds
     };
-    
+
     if (updateItem && currentReport) {
       const updatedGraphComps = [...(currentReport.graph_comps || []), newComponent];
       await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
@@ -675,9 +731,35 @@ export default function ReportRouteList(props) {
                             </div>
                           </div>
                         </div>
+                        <div className={t.graphAssociationContainer}>
+                          <div className={t.tmcLabel}>Graph Membership:</div>
+                          {(currentReport.graph_comps || []).map((graph, gIdx) => {
+                            const isAdded = graph.route_comp_ids?.includes(r.route_comp_id);
+                            const graphLabel = JSON.parse(graph.element['element-data'] || '{}').title || graph.element?.['element-type'] || 'Graph'
+                            return (
+                              <Button 
+                                key={gIdx} 
+                                themeOptions={{ 
+                                  size: "xs", 
+                                  color: isAdded ? "primary" : "secondary" 
+                                }} 
+                                title={isAdded ? `Remove from ${graphLabel}` : `Add to ${graphLabel}`}
+                                onClick={() => updateGraphRouteAssociation(gIdx, r.route_comp_id, isAdded ? 'remove' : 'add')}
+                              >
+                                <Icon icon={isAdded ? "XMark" : "Plus"} />
+                                {graphLabel}
+                              </Button>
+                            );
+                          })}
+                        </div>
                         <div className={t.removeButtonWrapper}>
-                          <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => removeRoute(i)}>
-                            Remove
+                          <Button 
+                            themeOptions={{ size: "xs", color: "danger" }} 
+                            disabled={saving} 
+                            onClick={() => removeRoute(i)}
+                            className="bg-red-100 text-red-700 hover:bg-red-200"
+                          >
+                            <Icon icon="Trash" /> Remove Route from Report
                           </Button>
                         </div>
                       </div>
@@ -714,9 +796,50 @@ export default function ReportRouteList(props) {
               <div className={t.list}>
                 {currentReport.graph_comps.map((g, i) => (
                   <div key={i} className={t.row}>
-                    <span>{g.element?.['element-type'] || 'Graph'}</span>
+                    <div className={t.editContainer}>
+                      {editingGraphNameIndex === i ? (
+                          <div className={t.editContainer}>
+                            <div className={t.editInputWrapper}>
+                              <Input value={editGraphNameValue} onChange={(e) => setEditGraphNameValue(e.target.value)} />
+                            </div>
+                            <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
+                              updateGraph({ index: i, updates: { title: editGraphNameValue } });
+                              setEditingGraphNameIndex(null);
+                            }}>
+                              <Icon icon={"FloppyDisk"} />
+                            </Button>
+                            <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingGraphNameIndex(null)}>
+                              <Icon icon={"CancelCircle"} />
+                            </Button>
+                          </div>
+                      ) : (
+                          <>
+                            <div className={t.routeTitle}>
+                                {JSON.parse(g.element['element-data'] || '{}').title || g.element?.['element-type'] || 'Graph'}
+                            </div>
+                            <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
+                              const title = JSON.parse(g.element['element-data'] || '{}').title || '';
+                              setEditingGraphNameIndex(i);
+                              setEditGraphNameValue(title);
+                            }}>
+                              <Icon icon={'PencilSquare'} />
+                            </Button>
+                          </>
+                      )}
+                    </div>
+                    <div className={t.routesInGraph}>
+                      {(g.route_comp_ids || []).map(rId => {
+                        const route = routes.find(r => r.route_comp_id === rId);
+                        return route ? (
+                           <div key={rId} className={t.routeInGraph}>
+                             {route.name}
+                             <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => updateGraphRouteAssociation(i, rId, 'remove')}><Icon icon="XMark" /></Button>
+                           </div>
+                        ) : null;
+                      })}
+                    </div>
                     <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => removeGraph(i)}>
-                      Remove
+                      Remove Graph
                     </Button>
                   </div>
                 ))}
