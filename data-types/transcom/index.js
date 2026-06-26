@@ -145,6 +145,90 @@ module.exports = {
         };
       },
     },
+
+    'transcom/event_tmc': {
+      label: 'TRANSCOM event→TMC expansion (daily)',
+      defaultCron: '0 6 * * *', // daily 06:00 — after the 04:00 event ingest
+      params: [
+        { name: 'transcom_source_id', type: 'source_id', optional: true,
+          desc: 'transcom events source; defaults to the event_tmc source metadata' },
+        { name: 'transcom_view_id', type: 'view_id', optional: true },
+        { name: 'geom_source_id', type: 'source_id', optional: true },
+        { name: 'target_view_id', type: 'view_id', optional: true,
+          desc: 'view to upsert into; defaults to source metadata, else the oldest built view' },
+      ],
+      async buildDescriptor({ schedule, db }) {
+        const t = schedule.descriptor || {};
+        const sourcesTable = tableFor(db, 'sources');
+        const viewsTable = tableFor(db, 'views');
+
+        const { rows: [source] } = await db.query(
+          `SELECT metadata FROM ${sourcesTable} WHERE source_id = $1`, [schedule.source_id]);
+        if (!source) throw new Error(`Invalid transcom_event_tmc source ${schedule.source_id}`);
+        const meta = parseMeta(source.metadata);
+
+        const transcomSourceId = t.transcom_source_id ?? meta.transcom_source_id;
+        if (!transcomSourceId) {
+          throw new Error('transcom_source_id is required (schedule params or source metadata)');
+        }
+
+        // The canonical accumulating view the page reads. Prefer an explicit param,
+        // then the value the worker stamps (source.metadata.event_tmc_view_id), then
+        // the source's OLDEST view with a table (the original full build — never a
+        // stray partial view). Runs upsert into it instead of spawning new views.
+        let targetViewId = t.target_view_id ?? meta.event_tmc_view_id ?? null;
+        if (!targetViewId) {
+          const { rows: [v] } = await db.query(
+            `SELECT view_id FROM ${viewsTable}
+             WHERE source_id = $1 AND table_name IS NOT NULL
+             ORDER BY view_id ASC LIMIT 1`, [schedule.source_id]);
+          targetViewId = v && v.view_id;
+        }
+        if (!targetViewId) {
+          throw new Error(`No target view for event_tmc source ${schedule.source_id} — run an initial build first`);
+        }
+
+        // Resume from the day after the latest already-expanded event date in the
+        // TARGET view's table, so each run only covers new events.
+        const { rows: [tv] } = await db.query(
+          `SELECT table_schema, table_name FROM ${viewsTable} WHERE view_id = $1`, [targetViewId]);
+        const now = new Date();
+        let start = null;
+        if (tv && tv.table_name) {
+          const { rows: [mx] } = await db.query(
+            `SELECT max(bound_start_date)::date AS d FROM "${tv.table_schema}"."${tv.table_name}"`);
+          if (mx && mx.d) start = new Date(mx.d.getTime() + 86400000);
+        }
+        // No prior expansion: start at the beginning of the current year.
+        if (!start) start = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+
+        // The expansion joins EVERY event in a window to ONE year of geometry
+        // (sql.js: `g.year = EXTRACT(YEAR FROM start_date)`), so a single run must
+        // not cross a calendar-year boundary — the later year's TMCs would miss the
+        // geom join and land with NULL tmclinear. Cap the window at the end of the
+        // start year; the next daily run continues into the new year. A large
+        // multi-year catch-up should use the manual `/event_tmc` route, one run/year.
+        const startYearEnd = new Date(Date.UTC(start.getUTCFullYear(), 11, 31));
+        const end = now < startYearEnd ? now : startYearEnd;
+        const fmt = (d) => d.toISOString().slice(0, 10);
+        // Already current through today → re-expand today only (idempotent upsert).
+        const startStr = start > end ? fmt(end) : fmt(start);
+
+        return {
+          source_id: schedule.source_id,
+          sourceId: schedule.source_id,
+          transcom_source_id: transcomSourceId,
+          transcom_view_id: t.transcom_view_id ?? null,
+          geom_source_id: t.geom_source_id ?? meta.geom_source_id ?? null,
+          target_view_id: targetViewId,
+          start_date: startStr,
+          end_date: fmt(end),
+          user_id: t.user_id ?? null,
+          email: t.email ?? null,
+          parent_context_id: null,
+        };
+      },
+    },
   },
 
   routes: (router, helpers) => {
@@ -248,7 +332,7 @@ module.exports = {
         const {
           source_id, name, user_id, email,
           transcom_source_id, transcom_view_id, geom_source_id,
-          start_date, end_date, parent_context_id,
+          start_date, end_date, parent_context_id, target_view_id,
         } = req.body || {};
 
         if (!transcom_source_id) {
@@ -276,6 +360,7 @@ module.exports = {
           transcom_source_id,
           transcom_view_id: transcom_view_id ?? null,
           geom_source_id: geom_source_id ?? null,
+          target_view_id: target_view_id ?? null,
           start_date,
           end_date,
           user_id,

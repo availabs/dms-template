@@ -12,7 +12,7 @@
 const sql = require('../sql.js');
 const {
   sanitizeName, tableFor, mergeJsonColumn, getSourceById,
-  getViewsForSource, resolveGeomFullView, setViewTable,
+  getViewsForSource, getViewById, resolveGeomFullView, setViewTable,
 } = require('./util.js');
 
 function defaultDeps() {
@@ -57,10 +57,26 @@ function makeWorker(depOverrides = {}) {
     await updateProgress(0.1);
 
     // ── view + expansion table ───────────────────────────────────────────
-    const view = await deps.createDamaView({ source_id, user_id }, pgEnv);
-    const tableSchema = 'transcom';
-    const tableName = sanitizeName(`s${source_id}_v${view.view_id}_${source.name}`).toLowerCase();
-    await setViewTable(db, view.view_id, tableSchema, tableName);
+    // Default: create a fresh view per run. With `target_view_id`, UPSERT into an
+    // existing view's table instead — so scheduled/backfill runs accumulate into the
+    // page-facing view (e.g. 2799) rather than spawning partial views nothing reads.
+    // The insert is ON CONFLICT (event_id, tmc) and the DDL is CREATE IF NOT EXISTS,
+    // so targeting an existing table is safe and idempotent.
+    let view, tableSchema, tableName;
+    if (d.target_view_id) {
+      view = await getViewById(db, d.target_view_id);
+      if (!view) throw new Error(`target_view_id ${d.target_view_id} not found`);
+      tableSchema = view.table_schema;
+      tableName = view.table_name;
+      if (!tableSchema || !tableName) {
+        throw new Error(`target view ${d.target_view_id} has no physical table`);
+      }
+    } else {
+      view = await deps.createDamaView({ source_id, user_id }, pgEnv);
+      tableSchema = 'transcom';
+      tableName = sanitizeName(`s${source_id}_v${view.view_id}_${source.name}`).toLowerCase();
+      await setViewTable(db, view.view_id, tableSchema, tableName);
+    }
 
     const dataDb = deps.getDataDb(ctx);
     await dataDb.query(sql.eventTmcTableDDL(tableSchema, tableName));
@@ -91,13 +107,17 @@ function makeWorker(depOverrides = {}) {
       transcom_view_id: transcomView.view_id,
       geom_source_id: geomSourceId,
       geom_view_id: geomFullView.view_id,
-      start_date,
-      end_date,
+      // A fresh view records the window it covers; an accumulating target view
+      // tracks only the latest run — its full coverage is the table itself.
+      ...(d.target_view_id ? { last_run_start: start_date, last_run_end: end_date }
+                           : { start_date, end_date }),
     });
     await mergeJsonColumn(db, sourcesTable, 'source_id', source_id, 'metadata', {
       columns: sql.EVENT_TMC_TABLE_COLUMNS,
       schema: 'transcom_event_tmc_v1',
       transcom_source_id: transcomSourceId,
+      // Record the canonical accumulating view so the schedule/route can target it.
+      ...(d.target_view_id ? { event_tmc_view_id: d.target_view_id } : {}),
     });
 
     await updateProgress(1);
