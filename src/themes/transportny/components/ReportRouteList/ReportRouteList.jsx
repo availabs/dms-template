@@ -411,12 +411,14 @@ export default function ReportRouteList(props) {
   useEffect(() => {
     // 1. Existing setActionParam
     const routeFilter = transformReportRoutes(routes);
-    if (setActionParam && routeFilter !== undefined) {
-      setActionParam('routes', routeFilter);
-    }
+    // if (setActionParam && routeFilter !== undefined) {
+    //   setActionParam('routes', routeFilter);
+    // }
 
     // 2. New logic: Update graph_comps element-data with new variants
-    if (!graphCompsRef.current || !updateItem || !currentReport?.id) return;
+    if (!graphCompsRef.current || !updateItem || !currentReport?.id) {
+      return;
+    }
 
     let updated = false;
     const updatedGraphComps = graphCompsRef.current.map(comp => {
@@ -427,7 +429,7 @@ export default function ReportRouteList(props) {
       if (JSON.stringify(comp.comparisonSeries.variants) === JSON.stringify(newVariants)) {
         return comp;
       }
-
+      
       updated = true;
       // Prepare new comparisonSeries config
       const newComparisonSeries = {
@@ -458,7 +460,6 @@ export default function ReportRouteList(props) {
 
   // Sync graph_comps to page item
   useEffect(() => {
-    console.log("before conditional graph comp effect", {currentReport, setItem})
     if (!currentReport?.graph_comps || !setItem) return;
 
     setItem(draft => {
@@ -480,7 +481,7 @@ export default function ReportRouteList(props) {
                 routes // Pass live routes to allow dynamic resolution
             }
         }));
-        
+
         draft.sections.push(...injected);
         draft.draft_sections.push(...injected);
     });
@@ -497,22 +498,48 @@ export default function ReportRouteList(props) {
     const layout = tpl.includesLayout && tpl.layoutJson ? JSON.parse(tpl.layoutJson) : {};
     const elementType = tpl.elementType || 'Graph';
 
+    // // Build UDA config to get outputSourceInfo
+    // const udaConfig = buildUdaConfig({
+    //   externalSource: parsedState.externalSource,
+    //   columns: parsedState.columns || [],
+    //   filters: parsedState.filters,
+    //   comparisonSeries: parsedState.comparisonSeries,
+    // });
+
     const id = crypto.randomUUID();
     const trackingId = crypto.randomUUID();
 
     // Store the mapping of which routes belong to this graph.
     const initialRouteCompIds = routes.map(r => r.route_comp_id);
-    
+    const newVariants = transformReportRoutes(routes) || [];
     // Minimal config: let the component resolve variants dynamically.
     const comparisonSeriesConfig = {
       enabled: true,
       seriesKey: '__series',
       seriesLabel: 'Routes', // Added series label
-      // variants will be resolved dynamically by the component
+      variants: newVariants,// will also be resolved dynamically by the component
     };
 
+    //TODO -- there is prob a better way of making sure we inject this column
+    //esp since name/alias are harcoded herre b ut the user can change them
+    const seriesColumn = {
+      name: "__series",
+      alias: "__series",
+      type: "text",
+      show: true,
+      group: true,
+      target: "categorize",
+      isCalculatedColumn: false,
+      origin: "comparison-series",
+    };
+
+    if(!parsedState.columns.some(c => c.alias === "__series")){
+      parsedState.columns.push(seriesColumn)
+    }
     parsedState.comparisonSeries = comparisonSeriesConfig;
     parsedState.route_comp_ids = initialRouteCompIds;
+    // Inject outputSourceInfo
+    //parsedState.outputSourceInfo = { asUdaConfig: udaConfig };
 
     const newComponent = {
       ...layout,
@@ -526,7 +553,7 @@ export default function ReportRouteList(props) {
       comparisonSeries: comparisonSeriesConfig,
       route_comp_ids: initialRouteCompIds
     };
-
+    
     if (updateItem && currentReport) {
       const updatedGraphComps = [...(currentReport.graph_comps || []), newComponent];
       await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
