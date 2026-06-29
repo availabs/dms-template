@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Page Template Layout Designs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-800': '#243240', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B', 'mny-ora': '#EA8954',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <style>
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; background: #edf0f2; }
+
+    /* ── section annotation labels ── */
+    .ds-label {
+      font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #6D96AE;
+      padding: 4px 10px; background: #E0EBF0; border-radius: 4px;
+      display: inline-block; margin-bottom: 8px;
+    }
+
+    /* ── page mockup container ── */
+    .page-mock {
+      background: #F3F8F9;
+      border: 1px solid #C5D7E0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    /* ── section components within the page ── */
+    .sec-panel {
+      background: white;
+      border-radius: 0;
+    }
+
+    /* ── shared card surface ── */
+    .card { background: white; border-radius: 8px; box-shadow: 0px 1px 3px rgba(0,0,0,0.06), 0px 2px 8px rgba(0,0,0,0.06); }
+
+    /* ── SVG bar chart ── */
+    .chart-bar { transition: opacity .15s; }
+    .chart-bar:hover { opacity: 0.85; }
+  </style>
+</head>
+<body class="py-10 px-4 sm:px-8">
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     PAGE HEADER
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="max-w-[900px] mx-auto mb-10">
+  <p class="font-display text-[11px] font-[500] text-mny-400 uppercase tracking-[0.16em] mb-1">Page Template Layouts</p>
+  <h1 class="font-display text-[32px] font-[600] text-mny-900 uppercase tracking-[-0.01em] mb-2">Three New Templates</h1>
+  <p class="font-proxima text-[14px] text-mny-400 max-w-[540px] leading-[1.6]">
+    Three structurally distinct layouts to add to the template picker.
+    Each uses a different combination of section types and position groups.
+  </p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     TEMPLATE 1 — NARRATIVE REPORT
+     Structure: content group only — richtext (full) → graph (full) → richtext (full) → spreadsheet (full)
+     Visual character: single-column, editorial, document-like
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="max-w-[900px] mx-auto mb-14">
+
+  <div class="flex items-baseline gap-3 mb-3">
+    <h2 class="font-display text-[22px] font-[500] text-mny-900 uppercase tracking-[0.02em]">1 — Narrative Report</h2>
+    <span class="font-proxima text-[12px] text-mny-400">Single-column flow · richtext → chart → richtext → table</span>
+  </div>
+
+  <div class="page-mock">
+
+    <!-- ── Intro richtext section ─────────────────────────────────────────── -->
+    <div class="px-10 py-9 border-b border-mny-100">
+      <span class="ds-label">Rich Text · full width</span>
+      <div class="max-w-[660px]">
+        <h1 class="font-display text-[40px] font-[600] text-mny-900 uppercase tracking-[-0.01em] leading-[1.1] mb-3">
+          Flood Damage<br>Analysis Report
+        </h1>
+        <p class="font-proxima text-[15px] text-mny-700 leading-[1.7] mb-3">
+          This report summarizes flood-related property damage and infrastructure losses across New York State
+          from 2021 to 2024. Data reflects FEMA-validated claims, state agency submissions, and county-level
+          assessments aggregated across all 62 counties.
+        </p>
+        <div class="flex items-center gap-2">
+          <span class="px-3 py-[3px] bg-mny-50 text-mny-700 font-proxima font-[600] text-[11px] uppercase tracking-wider rounded-full border border-mny-100">Infrastructure</span>
+          <span class="px-3 py-[3px] bg-mny-50 text-mny-700 font-proxima font-[600] text-[11px] uppercase tracking-wider rounded-full border border-mny-100">Flood</span>
+          <span class="px-3 py-[3px] bg-mny-50 text-mny-700 font-proxima font-[600] text-[11px] uppercase tracking-wider rounded-full border border-mny-100">FY 2021–2024</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Graph section ──────────────────────────────────────────────────── -->
+    <div class="px-10 py-8 border-b border-mny-100 bg-white">
+      <span class="ds-label">Graph · full width</span>
+      <p class="font-display text-[13px] font-[500] text-mny-400 uppercase tracking-[0.1em] mb-1">Figure 1</p>
+      <p class="font-proxima text-[15px] font-[600] text-mny-900 mb-5">Annual Loss by Hazard Category, 2021–2024</p>
+
+      <!-- Bar chart -->
+      <svg viewBox="0 0 760 200" class="w-full" style="height:200px;" xmlns="http://www.w3.org/2000/svg">
+        <!-- Y grid lines -->
+        <line x1="60" y1="20" x2="60" y2="165" stroke="#E0EBF0" stroke-width="1"/>
+        <line x1="60" y1="20" x2="740" y2="20" stroke="#E0EBF0" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="60" y1="55" x2="740" y2="55" stroke="#E0EBF0" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="60" y1="90" x2="740" y2="90" stroke="#E0EBF0" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="60" y1="125" x2="740" y2="125" stroke="#E0EBF0" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="60" y1="165" x2="740" y2="165" stroke="#E0EBF0" stroke-width="1"/>
+
+        <!-- Y labels -->
+        <text x="52" y="24" font-family="Source Sans 3,sans-serif" font-size="9" fill="#9BB5C2" text-anchor="end">200</text>
+        <text x="52" y="59" font-family="Source Sans 3,sans-serif" font-size="9" fill="#9BB5C2" text-anchor="end">150</text>
+        <text x="52" y="94" font-family="Source Sans 3,sans-serif" font-size="9" fill="#9BB5C2" text-anchor="end">100</text>
+        <text x="52" y="129" font-family="Source Sans 3,sans-serif" font-size="9" fill="#9BB5C2" text-anchor="end">50</text>
+        <text x="52" y="169" font-family="Source Sans 3,sans-serif" font-size="9" fill="#9BB5C2" text-anchor="end">0</text>
+
+        <!-- 2021 group (x=80) -->
+        <!-- Infrastructure: 45 → 45/200*145=32.6 -->
+        <rect x="80" y="132" width="28" height="33" fill="#2D3E4C" rx="2" class="chart-bar"/>
+        <!-- Analysis: 32 → 23.2 -->
+        <rect x="80" y="109" width="28" height="23" fill="#EAAD43" rx="2" class="chart-bar"/>
+        <!-- Planning: 28 → 20.3 -->
+        <rect x="80" y="88" width="28" height="22" fill="#AA2E26" rx="2" class="chart-bar"/>
+        <text x="94" y="181" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9BB5C2" text-anchor="middle">2021</text>
+
+        <!-- 2022 group (x=240) -->
+        <rect x="240" y="123" width="28" height="42" fill="#2D3E4C" rx="2" class="chart-bar"/>
+        <rect x="240" y="93" width="28" height="30" fill="#EAAD43" rx="2" class="chart-bar"/>
+        <rect x="240" y="68" width="28" height="25" fill="#AA2E26" rx="2" class="chart-bar"/>
+        <text x="254" y="181" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9BB5C2" text-anchor="middle">2022</text>
+
+        <!-- 2023 group (x=400) -->
+        <rect x="400" y="119" width="28" height="46" fill="#2D3E4C" rx="2" class="chart-bar"/>
+        <rect x="400" y="79" width="28" height="40" fill="#EAAD43" rx="2" class="chart-bar"/>
+        <rect x="400" y="47" width="28" height="32" fill="#AA2E26" rx="2" class="chart-bar"/>
+        <text x="414" y="181" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9BB5C2" text-anchor="middle">2023</text>
+
+        <!-- 2024 group (x=560) -->
+        <rect x="560" y="113" width="28" height="52" fill="#2D3E4C" rx="2" class="chart-bar"/>
+        <rect x="560" y="68" width="28" height="45" fill="#EAAD43" rx="2" class="chart-bar"/>
+        <rect x="560" y="38" width="28" height="30" fill="#AA2E26" rx="2" class="chart-bar"/>
+        <text x="574" y="181" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9BB5C2" text-anchor="middle">2024</text>
+
+        <!-- Y axis label -->
+        <text x="12" y="95" font-family="Source Sans 3,sans-serif" font-size="9" fill="#9BB5C2" transform="rotate(-90,12,95)" text-anchor="middle">Count (M$)</text>
+      </svg>
+
+      <!-- Legend -->
+      <div class="flex gap-5 mt-2">
+        <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded-sm" style="background:#2D3E4C;"></div><span class="font-proxima text-[12px] text-mny-700">Infrastructure</span></div>
+        <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded-sm" style="background:#EAAD43;"></div><span class="font-proxima text-[12px] text-mny-700">Analysis</span></div>
+        <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded-sm" style="background:#AA2E26;"></div><span class="font-proxima text-[12px] text-mny-700">Planning</span></div>
+      </div>
+    </div>
+
+    <!-- ── Analysis richtext section ─────────────────────────────────────── -->
+    <div class="px-10 py-7 border-b border-mny-100 bg-mny-50">
+      <span class="ds-label">Rich Text · full width</span>
+      <p class="font-proxima text-[15px] text-mny-700 leading-[1.75] max-w-[680px]">
+        The 2024 data shows a significant upward trend in all three hazard categories, with infrastructure damage
+        accounting for the largest share at 43% of total losses. The increase in planning-related costs reflects
+        updated state guidelines requiring additional environmental impact assessments. Counties in the Northeast
+        region experienced the highest concentration of incidents (38% of all reported events).
+      </p>
+    </div>
+
+    <!-- ── Spreadsheet section ────────────────────────────────────────────── -->
+    <div class="px-10 py-7">
+      <span class="ds-label">Spreadsheet · full width</span>
+      <p class="font-display text-[13px] font-[500] text-mny-400 uppercase tracking-[0.1em] mb-3">Table 1 — Project Records</p>
+      <table class="w-full" style="border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #C5D7E0;">
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-4">ID</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-4">Name</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-4">Type</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-4">Region</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-right py-2 pr-4">Value</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[12px] text-mny-400 py-2.5 pr-4">001</td>
+            <td class="font-proxima text-[13px] font-[600] text-mny-900 py-2.5 pr-4">Project Alpha</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4">Infrastructure</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4">Northeast</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4 text-right font-[600]">$1,250</td>
+            <td class="py-2.5"><span class="px-2 py-0.5 bg-mny-grn/15 text-mny-grn font-proxima font-[600] text-[11px] uppercase tracking-wider rounded-full">Active</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[12px] text-mny-400 py-2.5 pr-4">002</td>
+            <td class="font-proxima text-[13px] font-[600] text-mny-900 py-2.5 pr-4">Project Beta</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4">Analysis</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4">Southeast</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4 text-right font-[600]">$3,890</td>
+            <td class="py-2.5"><span class="px-2 py-0.5 bg-mny-400/15 text-mny-700 font-proxima font-[600] text-[11px] uppercase tracking-wider rounded-full">Complete</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[12px] text-mny-400 py-2.5 pr-4">003</td>
+            <td class="font-proxima text-[13px] font-[600] text-mny-900 py-2.5 pr-4">Project Gamma</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4">Infrastructure</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4">Midwest</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4 text-right font-[600]">$750</td>
+            <td class="py-2.5"><span class="px-2 py-0.5 bg-mny-grn/15 text-mny-grn font-proxima font-[600] text-[11px] uppercase tracking-wider rounded-full">Active</span></td>
+          </tr>
+          <tr class="hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[12px] text-mny-400 py-2.5 pr-4">004</td>
+            <td class="font-proxima text-[13px] font-[600] text-mny-900 py-2.5 pr-4">Project Delta</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4">Planning</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4">Northeast</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-4 text-right font-[600]">$5,200</td>
+            <td class="py-2.5"><span class="px-2 py-0.5 bg-mny-y700/15 text-mny-y700 font-proxima font-[600] text-[11px] uppercase tracking-wider rounded-full">Pending</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /page-mock -->
+</div><!-- /template 1 -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     TEMPLATE 2 — OVERVIEW
+     Structure: top group (header) with dark header band
+                content group: Card (1/2 KPIs) + Graph (1/2) stacked first row,
+                               Spreadsheet (full) below
+     Visual character: bold header + structured data at a glance
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="max-w-[900px] mx-auto mb-14">
+
+  <div class="flex items-baseline gap-3 mb-3">
+    <h2 class="font-display text-[22px] font-[500] text-mny-900 uppercase tracking-[0.02em]">2 — Overview</h2>
+    <span class="font-proxima text-[12px] text-mny-400">Header band · KPI cards (½) + chart (½) · full table</span>
+  </div>
+
+  <div class="page-mock">
+
+    <!-- ── Header group — dark band ───────────────────────────────────────── -->
+    <div class="relative px-10 py-9" style="background:#2D3E4C;">
+      <!-- Subtle topo texture -->
+      <div class="absolute inset-0 opacity-[0.06]"
+           style="background-image:radial-gradient(circle, #6D96AE 1px, transparent 1px);background-size:20px 20px;"></div>
+      <span class="ds-label relative z-10" style="background:rgba(109,150,174,0.25);color:#C5D7E0;">Rich Text · top group</span>
+      <div class="relative z-10">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="font-display text-[12px] font-[500] text-mny-y700 uppercase tracking-[0.18em] mb-2">Infrastructure Program</p>
+            <h1 class="font-display text-[46px] font-[600] text-white uppercase tracking-[-0.01em] leading-[1.05] mb-3">
+              Northeast Region<br>Overview
+            </h1>
+            <p class="font-proxima text-[15px] text-mny-200 leading-[1.6] max-w-[480px]">
+              Program-wide snapshot for Q4 FY 2024. Connect a data source to populate the sections below with live figures.
+            </p>
+          </div>
+          <!-- Meta badge cluster -->
+          <div class="hidden sm:flex flex-col items-end gap-2 mt-1">
+            <span class="px-3 py-1 bg-white/10 text-mny-200 font-proxima font-[600] text-[11px] uppercase tracking-wider rounded-full border border-white/20">FY 2024</span>
+            <span class="px-3 py-1 bg-mny-y700/20 text-mny-y700 font-proxima font-[600] text-[11px] uppercase tracking-wider rounded-full border border-mny-y700/30">Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Content group: KPIs (½) + Chart (½) ─────────────────────────── -->
+    <div class="flex border-b border-mny-100">
+
+      <!-- KPI Card section (½) -->
+      <div class="flex-1 px-8 py-7 border-r border-mny-100">
+        <span class="ds-label">Card · half width</span>
+        <div class="grid grid-cols-2 gap-4">
+          <!-- KPI 1 -->
+          <div class="rounded-lg p-4" style="background:#F3F8F9;border:1px solid #E0EBF0;">
+            <p class="font-display text-[11px] font-[500] text-mny-400 uppercase tracking-[0.1em] mb-1">Total Projects</p>
+            <p class="font-display text-[36px] font-[600] text-mny-900 leading-[1] tracking-[-0.02em]">1,284</p>
+            <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">↑ 8.3% vs last year</p>
+          </div>
+          <!-- KPI 2 -->
+          <div class="rounded-lg p-4" style="background:#F3F8F9;border:1px solid #E0EBF0;">
+            <p class="font-display text-[11px] font-[500] text-mny-400 uppercase tracking-[0.1em] mb-1">Active Projects</p>
+            <p class="font-display text-[36px] font-[600] text-mny-900 leading-[1] tracking-[-0.02em]">947</p>
+            <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">↑ 12.1% vs last year</p>
+          </div>
+          <!-- KPI 3 -->
+          <div class="rounded-lg p-4" style="background:#F3F8F9;border:1px solid #E0EBF0;">
+            <p class="font-display text-[11px] font-[500] text-mny-400 uppercase tracking-[0.1em] mb-1">Avg. Value</p>
+            <p class="font-display text-[36px] font-[600] text-mny-900 leading-[1] tracking-[-0.02em]">$2.8M</p>
+            <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">↑ 5.4% vs last year</p>
+          </div>
+          <!-- KPI 4 -->
+          <div class="rounded-lg p-4" style="background:#F3F8F9;border:1px solid #E0EBF0;">
+            <p class="font-display text-[11px] font-[500] text-mny-400 uppercase tracking-[0.1em] mb-1">Completion Rate</p>
+            <p class="font-display text-[36px] font-[600] text-mny-900 leading-[1] tracking-[-0.02em]">73%</p>
+            <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">↑ 2.1% vs last year</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graph section (½) -->
+      <div class="flex-1 px-8 py-7">
+        <span class="ds-label">Graph · half width</span>
+        <p class="font-proxima text-[13px] font-[600] text-mny-900 mb-4">Annual Trend by Category</p>
+        <svg viewBox="0 0 340 170" class="w-full" style="height:170px;" xmlns="http://www.w3.org/2000/svg">
+          <!-- Grid -->
+          <line x1="36" y1="10" x2="36" y2="140" stroke="#E0EBF0" stroke-width="1"/>
+          <line x1="36" y1="10" x2="330" y2="10" stroke="#E0EBF0" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="36" y1="43" x2="330" y2="43" stroke="#E0EBF0" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="36" y1="76" x2="330" y2="76" stroke="#E0EBF0" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="36" y1="109" x2="330" y2="109" stroke="#E0EBF0" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="36" y1="140" x2="330" y2="140" stroke="#E0EBF0" stroke-width="1"/>
+
+          <!-- Y labels -->
+          <text x="30" y="14" font-size="8" fill="#9BB5C2" text-anchor="end" font-family="Source Sans 3,sans-serif">200</text>
+          <text x="30" y="47" font-size="8" fill="#9BB5C2" text-anchor="end" font-family="Source Sans 3,sans-serif">150</text>
+          <text x="30" y="80" font-size="8" fill="#9BB5C2" text-anchor="end" font-family="Source Sans 3,sans-serif">100</text>
+          <text x="30" y="113" font-size="8" fill="#9BB5C2" text-anchor="end" font-family="Source Sans 3,sans-serif">50</text>
+
+          <!-- 2021: groups side-by-side -->
+          <rect x="46" y="107" width="14" height="33" fill="#2D3E4C" rx="2"/>
+          <rect x="62" y="117" width="14" height="23" fill="#EAAD43" rx="2"/>
+          <rect x="78" y="120" width="14" height="20" fill="#AA2E26" rx="2"/>
+          <text x="74" y="155" font-size="8" fill="#9BB5C2" text-anchor="middle" font-family="Source Sans 3,sans-serif">2021</text>
+
+          <!-- 2022 -->
+          <rect x="116" y="99" width="14" height="41" fill="#2D3E4C" rx="2"/>
+          <rect x="132" y="110" width="14" height="30" fill="#EAAD43" rx="2"/>
+          <rect x="148" y="115" width="14" height="25" fill="#AA2E26" rx="2"/>
+          <text x="141" y="155" font-size="8" fill="#9BB5C2" text-anchor="middle" font-family="Source Sans 3,sans-serif">2022</text>
+
+          <!-- 2023 -->
+          <rect x="186" y="93" width="14" height="47" fill="#2D3E4C" rx="2"/>
+          <rect x="202" y="100" width="14" height="40" fill="#EAAD43" rx="2"/>
+          <rect x="218" y="108" width="14" height="32" fill="#AA2E26" rx="2"/>
+          <text x="209" y="155" font-size="8" fill="#9BB5C2" text-anchor="middle" font-family="Source Sans 3,sans-serif">2023</text>
+
+          <!-- 2024 -->
+          <rect x="256" y="86" width="14" height="54" fill="#2D3E4C" rx="2"/>
+          <rect x="272" y="93" width="14" height="47" fill="#EAAD43" rx="2"/>
+          <rect x="288" y="98" width="14" height="42" fill="#AA2E26" rx="2"/>
+          <text x="279" y="155" font-size="8" fill="#9BB5C2" text-anchor="middle" font-family="Source Sans 3,sans-serif">2024</text>
+        </svg>
+        <div class="flex gap-4 mt-1">
+          <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm" style="background:#2D3E4C;"></div><span class="font-proxima text-[11px] text-mny-700">Infrastructure</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm" style="background:#EAAD43;"></div><span class="font-proxima text-[11px] text-mny-700">Analysis</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm" style="background:#AA2E26;"></div><span class="font-proxima text-[11px] text-mny-700">Planning</span></div>
+        </div>
+      </div>
+
+    </div><!-- /half-half row -->
+
+    <!-- ── Spreadsheet section — full width ──────────────────────────────── -->
+    <div class="px-10 py-7 bg-mny-50">
+      <span class="ds-label">Spreadsheet · full width</span>
+      <table class="w-full" style="border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #C5D7E0;">
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-5">Name</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-5">Type</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-5">Region</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-right py-2 pr-5">Value</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-5">Year</th>
+            <th class="font-display font-[500] text-[10px] uppercase tracking-[0.1em] text-mny-400 text-left py-2">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #E0EBF0;"><td class="font-proxima text-[12px] font-[600] text-mny-900 py-2 pr-5">Project Alpha</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">Infrastructure</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">Northeast</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5 text-right font-[600]">$1,250</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">2022</td><td class="py-2"><span class="px-2 py-0.5 bg-mny-grn/15 text-mny-grn font-proxima font-[600] text-[10px] uppercase rounded-full">Active</span></td></tr>
+          <tr style="border-bottom:1px solid #E0EBF0;"><td class="font-proxima text-[12px] font-[600] text-mny-900 py-2 pr-5">Project Beta</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">Analysis</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">Southeast</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5 text-right font-[600]">$3,890</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">2023</td><td class="py-2"><span class="px-2 py-0.5 bg-mny-400/15 text-mny-700 font-proxima font-[600] text-[10px] uppercase rounded-full">Complete</span></td></tr>
+          <tr style="border-bottom:1px solid #E0EBF0;"><td class="font-proxima text-[12px] font-[600] text-mny-900 py-2 pr-5">Project Gamma</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">Infrastructure</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">Midwest</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5 text-right font-[600]">$750</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">2022</td><td class="py-2"><span class="px-2 py-0.5 bg-mny-grn/15 text-mny-grn font-proxima font-[600] text-[10px] uppercase rounded-full">Active</span></td></tr>
+          <tr><td class="font-proxima text-[12px] font-[600] text-mny-900 py-2 pr-5">Project Delta</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">Planning</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">Northeast</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5 text-right font-[600]">$5,200</td><td class="font-proxima text-[12px] text-mny-700 py-2 pr-5">2024</td><td class="py-2"><span class="px-2 py-0.5 bg-mny-y700/15 text-mny-y700 font-proxima font-[600] text-[10px] uppercase rounded-full">Pending</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /page-mock -->
+</div><!-- /template 2 -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     TEMPLATE 3 — PROFILE / DETAIL
+     Structure: top group (header) dark band with name + status
+                content group: richtext (½ narrative) + Card (½ attributes)
+     Visual character: entity / record detail; clean editorial + structured data
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="max-w-[900px] mx-auto mb-14">
+
+  <div class="flex items-baseline gap-3 mb-3">
+    <h2 class="font-display text-[22px] font-[500] text-mny-900 uppercase tracking-[0.02em]">3 — Profile / Detail</h2>
+    <span class="font-proxima text-[12px] text-mny-400">Header band · narrative text (½) + attribute card (½)</span>
+  </div>
+
+  <div class="page-mock">
+
+    <!-- ── Header group — accent stripe left ─────────────────────────────── -->
+    <div class="relative flex items-stretch" style="background:#2D3E4C; min-height:160px;">
+      <!-- Gold accent stripe on left -->
+      <div class="w-1.5 flex-shrink-0" style="background:linear-gradient(to bottom, #EAAD43, #EA8954);"></div>
+
+      <!-- Subtle pattern -->
+      <div class="absolute inset-0 opacity-[0.05]"
+           style="background-image:linear-gradient(45deg,#6D96AE 25%,transparent 25%),linear-gradient(-45deg,#6D96AE 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#6D96AE 75%),linear-gradient(-45deg,transparent 75%,#6D96AE 75%);background-size:8px 8px;background-position:0 0,0 4px,4px -4px,-4px 0;"></div>
+
+      <div class="relative z-10 flex-1 px-9 py-8">
+        <span class="ds-label" style="background:rgba(109,150,174,0.25);color:#C5D7E0;">Rich Text · top group</span>
+        <div class="flex items-end justify-between">
+          <div>
+            <p class="font-display text-[11px] font-[500] text-mny-y700 uppercase tracking-[0.18em] mb-2">Albany County · Partnership Plan</p>
+            <h1 class="font-display text-[48px] font-[600] text-white uppercase tracking-[-0.02em] leading-[1.0] mb-3">
+              Project<br>Profile
+            </h1>
+          </div>
+          <div class="flex flex-col items-end gap-2 pb-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full" style="background:#54B99B;"></span>
+              <span class="font-display text-[13px] font-[500] text-mny-grn uppercase tracking-[0.08em]">Active</span>
+            </div>
+            <span class="font-proxima text-[12px] text-mny-400">Updated Jun 2024</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Content group: Narrative (½) + Attributes (½) ─────────────────── -->
+    <div class="flex">
+
+      <!-- Narrative richtext (½) -->
+      <div class="flex-1 px-9 py-8 border-r border-mny-100">
+        <span class="ds-label">Rich Text · half width</span>
+        <h2 class="font-display text-[18px] font-[500] text-mny-900 uppercase tracking-[0.02em] mb-3">About This Project</h2>
+        <p class="font-proxima text-[14px] text-mny-700 leading-[1.75] mb-4">
+          Project Alpha is a long-term infrastructure resilience initiative spanning three counties in the
+          Northeast region. The project focuses on upgrading flood control systems along primary river
+          corridors and improving drainage capacity in densely populated areas.
+        </p>
+        <p class="font-proxima text-[14px] text-mny-700 leading-[1.75] mb-4">
+          Funding is a combined federal-state partnership under the BRIC program, with a local cost-share
+          of 25%. The current phase covers engineering design and environmental permitting, with
+          construction expected to begin in Q2 2025.
+        </p>
+        <p class="font-proxima text-[13px] text-mny-400 leading-[1.6]">
+          For additional details, contact the Regional Program Coordinator or reference plan document
+          <strong class="text-mny-700">BRIC-NY-2024-0041</strong>.
+        </p>
+      </div>
+
+      <!-- Attributes Card (½) -->
+      <div class="flex-1 px-9 py-8 bg-mny-50">
+        <span class="ds-label">Card · half width</span>
+        <div class="space-y-0 rounded-lg overflow-hidden border border-mny-100 bg-white">
+          <!-- Attribute rows -->
+          <div class="flex items-baseline px-4 py-3 border-b border-mny-50">
+            <span class="font-display text-[10px] font-[500] text-mny-400 uppercase tracking-[0.1em] w-28 flex-shrink-0">Type</span>
+            <span class="font-proxima text-[13px] text-mny-900 font-[600]">Infrastructure</span>
+          </div>
+          <div class="flex items-baseline px-4 py-3 border-b border-mny-50">
+            <span class="font-display text-[10px] font-[500] text-mny-400 uppercase tracking-[0.1em] w-28 flex-shrink-0">Region</span>
+            <span class="font-proxima text-[13px] text-mny-900">Northeast</span>
+          </div>
+          <div class="flex items-baseline px-4 py-3 border-b border-mny-50">
+            <span class="font-display text-[10px] font-[500] text-mny-400 uppercase tracking-[0.1em] w-28 flex-shrink-0">Value</span>
+            <span class="font-proxima text-[13px] text-mny-900 font-[600]">$1,250,000</span>
+          </div>
+          <div class="flex items-baseline px-4 py-3 border-b border-mny-50">
+            <span class="font-display text-[10px] font-[500] text-mny-400 uppercase tracking-[0.1em] w-28 flex-shrink-0">Year</span>
+            <span class="font-proxima text-[13px] text-mny-900">2022</span>
+          </div>
+          <div class="flex items-baseline px-4 py-3 border-b border-mny-50">
+            <span class="font-display text-[10px] font-[500] text-mny-400 uppercase tracking-[0.1em] w-28 flex-shrink-0">Status</span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-mny-grn"></span>
+              <span class="font-proxima text-[13px] text-mny-grn font-[600]">Active</span>
+            </span>
+          </div>
+          <div class="flex items-baseline px-4 py-3">
+            <span class="font-display text-[10px] font-[500] text-mny-400 uppercase tracking-[0.1em] w-28 flex-shrink-0">Category</span>
+            <span class="font-proxima text-[13px] text-mny-900">Flood / Drainage</span>
+          </div>
+        </div>
+
+        <!-- Bottom: Metric highlight -->
+        <div class="mt-4 rounded-lg p-4 border border-mny-y500/30" style="background:#FCF6EC;">
+          <p class="font-display text-[10px] font-[500] text-mny-y700 uppercase tracking-[0.1em] mb-1">Total Estimated Benefit</p>
+          <p class="font-display text-[32px] font-[600] text-mny-900 leading-[1] tracking-[-0.02em]">$4.2M</p>
+          <p class="font-proxima text-[11px] text-mny-700 mt-1">Net present value over 20-year horizon</p>
+        </div>
+      </div>
+
+    </div><!-- /content row -->
+
+  </div><!-- /page-mock -->
+</div><!-- /template 3 -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     IMPLEMENTATION NOTES
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="max-w-[900px] mx-auto mb-16">
+  <div class="rounded-xl border border-mny-100 bg-white p-7">
+    <p class="font-display text-[13px] font-[500] text-mny-400 uppercase tracking-[0.1em] mb-3">Implementation Notes</p>
+    <div class="grid grid-cols-3 gap-6 text-[13px] font-proxima text-mny-700 leading-[1.6]">
+      <div>
+        <p class="font-[700] text-mny-900 mb-1">1 · Narrative</p>
+        <p><code class="text-mny-400 font-[600]">content</code> group only (no header group).<br>
+        Sections: lexical (full) → Graph (full) → lexical (full) → Spreadsheet (full).<br>
+        Four sections, all full-width, stacked.</p>
+      </div>
+      <div>
+        <p class="font-[700] text-mny-900 mb-1">2 · Overview</p>
+        <p><code class="text-mny-400 font-[600]">header</code> + <code class="text-mny-400 font-[600]">content</code> groups.<br>
+        Content: Card (½) + Graph (½) first, then Spreadsheet (full) second.<br>
+        Three sections in content group.</p>
+      </div>
+      <div>
+        <p class="font-[700] text-mny-900 mb-1">3 · Profile</p>
+        <p><code class="text-mny-400 font-[600]">header</code> + <code class="text-mny-400 font-[600]">content</code> groups.<br>
+        Content: lexical (½) + Card (½).<br>
+        Two sections, side by side.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
