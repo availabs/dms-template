@@ -549,12 +549,14 @@ export default function ReportRouteList(props) {
         draft.sections = draft.sections.filter(c => c.createdBy !== 'reports');
         draft.draft_sections = draft.draft_sections.filter(c => c.createdBy !== 'reports');
         // Add components from graph_comps
+
+        console.log("current graph comps::", currentReport.graph_comps)
         const injected = (currentReport.graph_comps || []).map(comp => {
           const elementData = comp.element['element-data'] ? JSON.parse(comp.element['element-data']) : {};
           return {
               ...comp,
               title: elementData?.title || 'New Graph',
-              display: {...comp.display, title: elementData?.title || 'New Graph' },
+              //display: {...comp.display, title: elementData?.title || 'New Graph' },
               // Ensure comparisonSeries is merged into the section configuration
               config: {
                   ...(comp.config || {}),
@@ -576,7 +578,7 @@ export default function ReportRouteList(props) {
 
     // Ensure templateRow.data is parsed
     const tpl = { ...templateRow, ...(typeof templateRow.data === 'string' ? JSON.parse(templateRow.data) : templateRow.data) };
-
+    console.log("add G, tpl::", tpl)
     const parsedState = tpl.stateJson ? JSON.parse(tpl.stateJson) : {};
     const layout = tpl.includesLayout && tpl.layoutJson ? JSON.parse(tpl.layoutJson) : {};
     const elementType = tpl.elementType || 'Graph';
@@ -636,7 +638,7 @@ export default function ReportRouteList(props) {
       comparisonSeries: comparisonSeriesConfig,
       route_comp_ids: initialRouteCompIds
     };
-
+    console.log({newComponent})
     if (updateItem && currentReport) {
       const updatedGraphComps = [...(currentReport.graph_comps || []), newComponent];
       await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
@@ -656,7 +658,7 @@ export default function ReportRouteList(props) {
           <div className={t.title}>{currentReport?.name}</div>
           <div className={t.titleWrapper}>
             <div>Routes</div>
-            <Button themeOptions={{ size: "xs" }} onClick={() => setIsRoutesExpanded(!isRoutesExpanded)}>
+            <Button themeOptions={{ size: "xs", color:"transparent" }} onClick={() => setIsRoutesExpanded(!isRoutesExpanded)}>
               {isRoutesExpanded ? <Icon icon="ChevronUp" /> : <Icon icon="ChevronDown" />}
             </Button>
           </div>
@@ -821,7 +823,7 @@ export default function ReportRouteList(props) {
             <div className={t.addedGraphsWrapper}>
               <div className={t.titleWrapper}>
                 <div>Graphs</div>
-                <Button themeOptions={{ size: "xs" }} onClick={() => setIsGraphsExpanded(!isGraphsExpanded)}>
+                <Button themeOptions={{ size: "xs", color:"transparent" }} onClick={() => setIsGraphsExpanded(!isGraphsExpanded)}>
                   {isGraphsExpanded ? <Icon icon="ChevronUp" /> : <Icon icon="ChevronDown" />}
                 </Button>
               </div>
@@ -925,19 +927,6 @@ export default function ReportRouteList(props) {
                   </div>
                 </>
               )}
-            </div>
-          )}
-
-
-          {pendingRoute && (
-            <div className={t.addForm}>
-              <div>Add “{pendingRoute.name}”?</div>
-              <Button disabled={saving} onClick={addRoute}>
-                {saving ? "Adding…" : "Confirm"}
-              </Button>
-              <Button disabled={saving} onClick={cancelAdd}>
-                Cancel
-              </Button>
             </div>
           )}
           {error ? <div className={t.error}>{error}</div> : null}
