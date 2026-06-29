@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Sign in</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body>
+
+<!-- META-NAV — documentation chrome only -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="../design-system/theme.html">theme</a>
+    <a href="../design-system/layouts.html">layouts</a>
+    <a href="../design-system/grid.html">grid</a>
+    <a href="../design-system/components.html">components</a>
+    <a href="../design-system/patterns.html">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="./home.html">home</a>
+    <a href="./listen.html">listen</a>
+    <a href="./schedule.html">schedule</a>
+    <a href="./show.html">show</a>
+    <a href="./djs.html">djs</a>
+    <a href="./spins.html">spins</a>
+    <a href="./blog.html">blog</a>
+    <a href="./events.html">events</a>
+    <a href="./login.html" data-active="true">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default — auth variant.
+     NOTE: WCDB's theme.js doesn't ship an `auth` LayoutGroup variant
+     explicitly. For login, we render a single `content` LayoutGroup
+     with `place-content-center` added so the form lands centred
+     vertically, and the inner shell is `max-w-md mx-auto` to
+     constrain horizontally. The cutaway layout doesn't apply to
+     auth — there's no editorial split, just a centred form on the
+     page background. The active topnav state shows only the WCDB
+     logo (no menu items) so the page reads as a single attentional
+     surface.
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <!-- LAYOUT.wrapper -->
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+
+    <!-- LAYOUT.wrapper2 -->
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <!-- TOPNAV — auth pages show logo only (no menu). -->
+      <header class="w-full h-14 flex items-center bg-[var(--page-bg)] border-b border-[var(--line-1)]">
+        <div class="flex items-center bg-[var(--page-bg)] h-14 pl-4">
+          <div class="font-[family-name:var(--font-display)] italic text-[20px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</div>
+          <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                       font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
+        </div>
+        <div class="flex-1"></div>
+        <div class="hidden md:flex h-full items-center pr-4 gap-2 bg-[var(--page-bg)]">
+          <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">Back to wcdb.fm →</a>
+        </div>
+      </header>
+
+      <!-- LAYOUT.wrapper3 -->
+      <div class="flex flex-1 items-start">
+
+        <!-- LAYOUT.childWrapper · single-column collapse for auth -->
+        <div class="flex-1 flex flex-col md:grid md:grid-cols-2">
+
+          <!-- ============================================================
+               LAYOUTGROUP · content (auth variant — centred)
+               `place-content-center` is added so the form lands centred
+               vertically inside the available space. `max-w-md mx-auto`
+               constrains the inner shell horizontally.
+               ============================================================ -->
+          <div data-dms-group="content"
+               class="md:col-span-2 w-full flex-1 flex flex-row p-2 place-content-center">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-md mx-auto justify-center">
+
+              <!-- ============================================================
+                   SECTION · lexical:hero — centred header
+                   ============================================================ -->
+              <section data-dms-section="lexical:hero" class="pt-12 pb-8 text-center">
+                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)] mb-6">
+                  WCDB · 90.9 FM · SUNY Albany
+                </div>
+                <h1 class="font-[family-name:var(--font-display)] italic
+                           text-[48px] leading-[1.0] tracking-[-0.03em]
+                           text-[color:var(--ink-1)] m-0">
+                  Studio access.
+                </h1>
+                <p class="mt-4 font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] max-w-[320px] mx-auto">
+                  Sign in to manage your show, post spins, and edit the
+                  schedule.
+                </p>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:login-form — centred form card
+                   ============================================================ -->
+              <section data-dms-section="card:login-form" class="mb-8">
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
+
+                  <form class="flex flex-col gap-4">
+
+                    <!-- Email -->
+                    <label class="flex flex-col gap-2">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Email</span>
+                      <input type="email"
+                             placeholder="dj@albany.edu"
+                             class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none transition-colors duration-150 focus:border-[color:var(--ink-3)]">
+                    </label>
+
+                    <!-- Password -->
+                    <label class="flex flex-col gap-2">
+                      <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Password</span>
+                      <input type="password"
+                             placeholder="••••••••••"
+                             class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none transition-colors duration-150 focus:border-[color:var(--ink-3)]">
+                    </label>
+
+                    <!-- Remember + Forgot -->
+                    <div class="flex items-center justify-between pt-1">
+                      <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                        <span class="relative inline-block w-9 h-5 rounded-full bg-[var(--bg-3)] ring-1 ring-[var(--line-2)] transition-colors">
+                          <span class="absolute left-0.5 top-0.5 size-4 rounded-full bg-[var(--ink-3)] transition-transform"></span>
+                        </span>
+                        <span class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)]">Remember me</span>
+                      </label>
+                      <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">Forgot password</a>
+                    </div>
+
+                    <!-- Sign in button -->
+                    <button type="submit"
+                            class="mt-3 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full
+                                   bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                   font-[family-name:var(--font-sans)] text-[14px] font-medium
+                                   hover:scale-[1.01] active:scale-100 transition-transform">
+                      Sign in
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="flex items-center gap-3 my-2">
+                      <div class="flex-1 wcdb-hairline"></div>
+                      <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">or</span>
+                      <div class="flex-1 wcdb-hairline"></div>
+                    </div>
+
+                    <!-- SSO -->
+                    <button type="button"
+                            class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full
+                                   border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
+                                   font-[family-name:var(--font-sans)] text-[13px] font-medium transition-colors">
+                      Continue with SUNY SSO
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </button>
+                  </form>
+
+                  <!-- Footer link -->
+                  <div class="mt-7 pt-5 border-t border-[var(--line-1)] text-center">
+                    <a class="font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]">
+                      New here?
+                      <span class="text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5 ml-1">Request studio access</span>
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:footer-meta — small metaXS row.
+                   No big inverted footer on auth pages.
+                   ============================================================ -->
+              <section data-dms-section="card:footer-meta" class="pb-12 text-center">
+                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] inline-flex items-center gap-3">
+                  <a class="hover:text-[color:var(--ink-2)]">Privacy</a>
+                  <span aria-hidden="true">·</span>
+                  <a class="hover:text-[color:var(--ink-2)]">Terms</a>
+                  <span aria-hidden="true">·</span>
+                  <span>© 1977–2026 WCDB</span>
+                </div>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="../design-system/theme.html">theme</a></li>
+      <li><a href="../design-system/layouts.html">layouts</a></li>
+      <li><a href="../design-system/grid.html">grid</a></li>
+      <li><a href="../design-system/components.html">components</a></li>
+      <li><a href="../design-system/patterns.html">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · editorial</h3>
+    <ul>
+      <li><a href="./home.html">home</a></li>
+      <li><a href="./listen.html">listen</a></li>
+      <li><a href="./blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · catalogue</h3>
+    <ul>
+      <li><a href="./schedule.html">schedule</a></li>
+      <li><a href="./show.html">show</a></li>
+      <li><a href="./djs.html">djs</a></li>
+      <li><a href="./spins.html">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · misc</h3>
+    <ul>
+      <li><a href="./events.html">events</a></li>
+      <li><a href="./login.html" data-active="true">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

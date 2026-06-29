@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Theme · TransportNY DMS Design System v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+  <script>
+    // The Play CDN's inline config block — keeps brand font-family
+    // and named colors resolving inside this page even though the
+    // host project's Tailwind config isn't loaded.
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'nys-blue': '#1F3F8F', 'blue-press': '#16307A', 'ink-navy': '#0F2D4D',
+            'sidebar-ink': '#12181F', 'logo-plate': '#0A0E13',
+            'active-amber': '#FACC15', 'underline-amber': '#EAAD43', 'kicker-amber': '#CA8A04',
+            'slate-tag': '#37576B',
+            'pane': '#ECEEF2', 'pane-tint': '#E4E8EE',
+          },
+          fontFamily: {
+            display: ['Oswald', 'Bebas Neue', 'sans-serif'],
+            proxima: ['Proxima Nova', 'Source Sans 3', 'system-ui', 'sans-serif'],
+            sans:    ['Proxima Nova', 'Source Sans 3', 'system-ui', 'sans-serif'],
+            mono:    ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="tny-pane dms-annotated">
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     META-NAV (documentation chrome) · §7.0
+     One-click navigation across every page in the deliverable. NOT part
+     of the rendered DMS chrome — never appears on a real DMS site.
+     ════════════════════════════════════════════════════════════════════════ -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     LAYOUT · app · class strings mirror theme.js → layout.styles[1]
+     ════════════════════════════════════════════════════════════════════════ -->
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ════════ SIDENAV · sidenav.styles[0] (default · 240px) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <div class="flex-1 ml-3 min-w-0">
+                <span class="font-display uppercase text-white text-[15px] tracking-wide truncate">DESIGN SYSTEM</span>
+              </div>
+              <svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+            </div>
+            <div class="px-3 pt-3">
+              <button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] hover:border-[#3a4555] flex items-center gap-2 text-slate-400 hover:text-slate-300">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+                <span class="font-proxima text-[13px] flex-1 text-left">Search</span>
+              </button>
+            </div>
+            <div class="px-4 py-2 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">SYSTEM</div>
+            <div class="flex-1 py-1">
+              <a href="theme.html"      class="font-proxima text-[13.5px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-[18px] mr-3 text-[#FACC15] flex-shrink-0"><path d="M6 6.878V6a2.25 2.25 0 0 1 2.25-2.25h7.5A2.25 2.25 0 0 1 18 6v.878M6 6.878A2.25 2.25 0 0 0 4.5 9v9a2.25 2.25 0 0 0 2.25 2.25h10.5A2.25 2.25 0 0 0 19.5 18V9A2.25 2.25 0 0 0 18 6.878"/></svg>
+                <span class="flex-1 text-left">Theme</span>
+              </a>
+              <a href="layouts.html"    class="font-proxima text-[13.5px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-[18px] mr-3 text-slate-400 flex-shrink-0"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 9v12"/></svg>
+                <span class="flex-1 text-left">Layouts</span>
+              </a>
+              <a href="grid.html"       class="font-proxima text-[13.5px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-[18px] mr-3 text-slate-400 flex-shrink-0"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
+                <span class="flex-1 text-left">Grid</span>
+              </a>
+              <a href="components.html" class="font-proxima text-[13.5px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-[18px] mr-3 text-slate-400 flex-shrink-0"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                <span class="flex-1 text-left">Components</span>
+              </a>
+              <a href="patterns.html"   class="font-proxima text-[13.5px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent cursor-pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-[18px] mr-3 text-slate-400 flex-shrink-0"><path d="M6.43 9.75 2.25 12l4.18 2.25m0-4.5 5.57 3 5.57-3m-11.14 0L2.25 7.5 12 2.25l9.75 5.25-4.18 2.25"/></svg>
+                <span class="flex-1 text-left">Patterns</span>
+              </a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2">
+              <div class="flex items-center gap-3 px-4 py-2">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white text-[11px] font-medium ring-1 ring-[#FACC15]/20">AM</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Alex Muro</div>
+                  <div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">Design</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ════════ HERO LAYOUTGROUP · layoutGroup.styles[3] (hero) ════════ -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-14 flex flex-col gap-5">
+              <div data-dms-section="page-intro">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01 · foundation</span>
+                </div>
+                <h1 class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight text-[#0F1722] mb-3">Theme<span class="text-[#CA8A04]">.</span></h1>
+                <p class="font-proxima text-[15.5px] text-slate-600 max-w-[680px] leading-[1.65]">
+                  Color, type, icons, spacing — the foundational tokens every TransportNY
+                  primitive inherits from. If a token is missing here, it'll be missing
+                  everywhere that consumes it.
+                </p>
+                <div class="mt-4 flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                  <span class="text-slate-400">layout:</span><span class="px-2 py-0.5 rounded bg-white border border-zinc-950/10">app</span>
+                  <span class="text-slate-400 ml-2">container:</span><span class="px-2 py-0.5 rounded bg-white border border-zinc-950/10">data · 1480</span>
+                  <span class="text-slate-400 ml-2">grid:</span><span class="px-2 py-0.5 rounded bg-white border border-zinc-950/10">12-col</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ════════ CONTENT LAYOUTGROUP · layoutGroup.styles[0] (content) ════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- ── SECTION · Core Palette (size 8) ── -->
+              <div class="col-span-12 md:col-span-8" data-dms-section="core-palette">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">01</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Core Palette</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-5 max-w-[680px]">
+                    Two-axis system: ink-dark navigation against light editorial canvases, with a
+                    saturated NYS blue used in filter strips and a yellow active marker.
+                  </p>
+                  <div class="grid grid-cols-4 gap-3">
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-16" style="background:#1F3F8F"></div><div class="px-3 py-2"><div class="font-display font-medium text-[13px] text-slate-900 uppercase tracking-wide">NYS Blue</div><div class="text-[11px] text-slate-500 font-mono mt-0.5">#1f3f8f</div><div class="text-[11.5px] text-slate-600 mt-1.5">Primary brand · CTAs, links</div></div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-16" style="background:#16307A"></div><div class="px-3 py-2"><div class="font-display font-medium text-[13px] text-slate-900 uppercase tracking-wide">Blue Press</div><div class="text-[11px] text-slate-500 font-mono mt-0.5">#16307a</div><div class="text-[11.5px] text-slate-600 mt-1.5">Hover/active for blue surfaces</div></div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-16" style="background:#0F2D4D"></div><div class="px-3 py-2"><div class="font-display font-medium text-[13px] text-slate-900 uppercase tracking-wide">Ink Navy</div><div class="text-[11px] text-slate-500 font-mono mt-0.5">#0f2d4d</div><div class="text-[11.5px] text-slate-600 mt-1.5">Table headers, deep accents</div></div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-16" style="background:#12181F"></div><div class="px-3 py-2"><div class="font-display font-medium text-[13px] text-slate-900 uppercase tracking-wide">Sidebar Ink</div><div class="text-[11px] text-slate-500 font-mono mt-0.5">#12181f</div><div class="text-[11.5px] text-slate-600 mt-1.5">Persistent left rail · white text</div></div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-16" style="background:#0A0E13"></div><div class="px-3 py-2"><div class="font-display font-medium text-[13px] text-slate-900 uppercase tracking-wide">Logo Plate</div><div class="text-[11px] text-slate-500 font-mono mt-0.5">#0a0e13</div><div class="text-[11.5px] text-slate-600 mt-1.5">Behind NYS mark</div></div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-16" style="background:#FACC15"></div><div class="px-3 py-2"><div class="font-display font-medium text-[13px] text-slate-900 uppercase tracking-wide">Active Amber</div><div class="text-[11px] text-slate-500 font-mono mt-0.5">#facc15</div><div class="text-[11.5px] text-slate-600 mt-1.5">Selected nav, toolbar buttons</div></div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-16" style="background:#EAAD43"></div><div class="px-3 py-2"><div class="font-display font-medium text-[13px] text-slate-900 uppercase tracking-wide">Underline Amber</div><div class="text-[11px] text-slate-500 font-mono mt-0.5">#eaad43</div><div class="text-[11.5px] text-slate-600 mt-1.5">Heading underline, anchored TOC</div></div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-16" style="background:#37576B"></div><div class="px-3 py-2"><div class="font-display font-medium text-[13px] text-slate-900 uppercase tracking-wide">Slate Tag</div><div class="text-[11px] text-slate-500 font-mono mt-0.5">#37576b</div><div class="text-[11.5px] text-slate-600 mt-1.5">Status chips, avatar gradient</div></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── TOC Aside (size 4) ── -->
+              <aside class="col-span-12 md:col-span-4 pt-1 sticky top-4 self-start" data-dms-section="toc">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4 shadow-sm">
+                  <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                  <a href="#core-palette" class="tny-toc-item active">Core Palette</a>
+                  <a href="#data-viz" class="tny-toc-item">Data Visualisation</a>
+                  <a href="#surface" class="tny-toc-item">Surface &amp; Canvas</a>
+                  <a href="#type" class="tny-toc-item">Typography</a>
+                  <a href="#icons" class="tny-toc-item">Icons</a>
+                  <a href="#spacing" class="tny-toc-item">Spacing &amp; Radius</a>
+                  <a href="#elevation" class="tny-toc-item">Elevation &amp; Motion</a>
+                </div>
+              </aside>
+
+              <!-- ── SECTION · Data Viz (size 12) ── -->
+              <div class="col-span-12" id="data-viz" data-dms-section="data-viz">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Data Visualisation</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-5 max-w-[680px]">
+                    Chart palettes are split into a categorical set (series swatches, ≤ 5) and a
+                    sequential MPH ramp used on speed maps. Never use brand NYS Blue inside a
+                    multi-series chart — it pulls focus to the wrong line.
+                  </p>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">Categorical · max 5</div>
+                  <div class="grid grid-cols-5 gap-3 mb-6">
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#6F6F6F"></div><div class="px-2 py-1.5 text-[11.5px] font-mono">cat-1 · #6f6f6f</div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#E5A646"></div><div class="px-2 py-1.5 text-[11.5px] font-mono">cat-2 · #e5a646</div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#94C24E"></div><div class="px-2 py-1.5 text-[11.5px] font-mono">cat-3 · #94c24e</div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#E160A4"></div><div class="px-2 py-1.5 text-[11.5px] font-mono">cat-4 · #e160a4</div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#F2CB3D"></div><div class="px-2 py-1.5 text-[11.5px] font-mono">cat-5 · #f2cb3d</div></div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">Speed ramp · sequential</div>
+                  <div class="grid grid-cols-5 gap-3 mb-6">
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#D6453B"></div><div class="px-2 py-1.5 text-[11px] font-mono">42.12 mph<br/><span class="text-slate-500">slowest</span></div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#E8843F"></div><div class="px-2 py-1.5 text-[11px] font-mono">42.46–44.41</div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#F2E18A"></div><div class="px-2 py-1.5 text-[11px] font-mono">44.41–47.14</div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#A8D26B"></div><div class="px-2 py-1.5 text-[11px] font-mono">47.14–49.62</div></div>
+                    <div class="rounded-md overflow-hidden border border-zinc-950/10"><div class="h-12" style="background:#3FA34D"></div><div class="px-2 py-1.5 text-[11px] font-mono">49.62 mph<br/><span class="text-slate-500">freeflow</span></div></div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">Status dots · never as backgrounds</div>
+                  <div class="flex flex-wrap items-center gap-4">
+                    <span class="inline-flex items-center gap-2 text-[12.5px] text-emerald-700"><span class="size-2 rounded-full bg-emerald-500"></span> good · #10b981</span>
+                    <span class="inline-flex items-center gap-2 text-[12.5px] text-amber-700"><span class="size-2 rounded-full bg-amber-500"></span> warn · #f59e0b</span>
+                    <span class="inline-flex items-center gap-2 text-[12.5px] text-rose-700"><span class="size-2 rounded-full bg-rose-500"></span> bad · #ef4444</span>
+                    <span class="inline-flex items-center gap-2 text-[12.5px] text-slate-500"><span class="size-2 rounded-full bg-slate-400"></span> n/a · #94a3b8</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · Surface & Canvas (size 6) ── -->
+              <div class="col-span-12 md:col-span-6" id="surface" data-dms-section="surface">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Surface &amp; Canvas</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-4">
+                    <strong>The cards-on-pane rule.</strong> Section background is always the pane
+                    (or pane-tint). Content lives inside cards with a hairline edge. Never put
+                    <code class="tny-mono">bg-white</code> on a section.
+                  </p>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="tny-pane rounded-md p-3 border border-zinc-950/10">
+                      <div class="tny-card p-3">
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">card on pane</div>
+                        <div class="text-[12.5px] text-slate-700 mt-1.5">Default white surface, hairline border, soft shadow.</div>
+                      </div>
+                    </div>
+                    <div class="tny-pane-tint rounded-md p-3 border border-zinc-950/10">
+                      <div class="tny-card p-3">
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">card on pane-tint</div>
+                        <div class="text-[12.5px] text-slate-700 mt-1.5">Alternating sections use pane-tint instead of pane.</div>
+                      </div>
+                    </div>
+                    <div class="tny-pane rounded-md p-3 border border-zinc-950/10">
+                      <div class="tny-card overflow-hidden">
+                        <div class="tny-card-tint px-3 py-2 border-b border-zinc-950/10 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">title bar</div>
+                        <div class="p-3 text-[12.5px] text-slate-700">Tinted title bar at top of card.</div>
+                      </div>
+                    </div>
+                    <div class="tny-pane rounded-md p-3 border border-zinc-950/10">
+                      <div class="rounded-md p-3 border-2 border-dashed border-amber-300 tny-card-bone">
+                        <div class="font-display uppercase font-bold text-[13px] tracking-wide text-slate-900 border-b-2 border-amber-400 inline-block pb-0.5">EDITORIAL DOC</div>
+                        <div class="text-[12.5px] text-slate-700 mt-2">Bone surface · printable narrative.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · Spacing & Radius (size 6) ── -->
+              <div class="col-span-12 md:col-span-6" id="spacing" data-dms-section="spacing">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Spacing &amp; Radius</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">Section padding · vertical only · pick one per page</div>
+                  <div class="grid grid-cols-4 gap-3 mb-6">
+                    <div class="rounded border border-zinc-950/10 overflow-hidden"><div style="height:24px;background:#1F3F8F"></div><div class="px-2 py-1.5 text-[11.5px] font-mono">dense · 24</div></div>
+                    <div class="rounded border border-zinc-950/10 overflow-hidden"><div style="height:48px;background:#1F3F8F"></div><div class="px-2 py-1.5 text-[11.5px] font-mono">comfortable · 48</div></div>
+                    <div class="rounded border border-zinc-950/10 overflow-hidden"><div style="height:72px;background:#1F3F8F"></div><div class="px-2 py-1.5 text-[11.5px] font-mono">roomy · 72</div></div>
+                    <div class="rounded border border-zinc-950/10 overflow-hidden"><div style="height:96px;background:#1F3F8F"></div><div class="px-2 py-1.5 text-[11.5px] font-mono">feature · 96</div></div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">Radius scale</div>
+                  <div class="flex flex-wrap items-end gap-3">
+                    <div class="size-12 bg-[#1F3F8F]" style="border-radius:0"></div>
+                    <div class="size-12 bg-[#1F3F8F]" style="border-radius:3px"></div>
+                    <div class="size-12 bg-[#1F3F8F]" style="border-radius:6px"></div>
+                    <div class="size-12 bg-[#1F3F8F]" style="border-radius:8px"></div>
+                    <div class="size-12 bg-[#1F3F8F]" style="border-radius:9999px"></div>
+                  </div>
+                  <div class="mt-2 grid grid-cols-5 gap-3 text-[10.5px] font-mono uppercase tracking-wider text-slate-500">
+                    <span>0 · sidebar items</span>
+                    <span>3 · inline code</span>
+                    <span>6 · input · button</span>
+                    <span>8 · card · panel</span>
+                    <span>full · pill · dock</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · Typography (size 12) ── -->
+              <div class="col-span-12" id="type" data-dms-section="type">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">05</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Typography</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-4 max-w-[680px]">
+                    Four roles in the universal <code class="tny-mono">{role}{Size}</code> pattern.
+                    <strong class="font-display uppercase text-[13px] tracking-wide">Oswald</strong> is the condensed display face — chrome,
+                    headings, tabular labels. <strong>Proxima Nova</strong> (Source Sans 3 as the
+                    open substitute) handles all running prose and form copy. <strong>Mono</strong> is
+                    the system stack, reserved for numerics ≥ 18px and metadata.
+                  </p>
+
+                  <!-- Display ladder -->
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-3">// display ladder · Oswald</div>
+                  <div class="space-y-3 mb-6 border-b border-zinc-950/05 pb-6">
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">displayHero</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">52px / 600</div></div>
+                      <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight text-[#0F1722]">Getting Started</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Page hero · landing</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">displayXL</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">44px / 600</div></div>
+                      <div class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight text-[#0F1722]">MAP-21 PM3 performance</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Section opener</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">displayLG</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">38px / 600 · upper</div></div>
+                      <div class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Bethel municipality</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">tone="data" headers</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">displayMD</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">28px / 600</div></div>
+                      <div class="font-display font-semibold text-[28px] leading-[1.1] text-[#0F1722]">When to use each tool</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">In-doc h2 / spec headings</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">displaySM</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">22px / 500</div></div>
+                      <div class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Subsection title — average day</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">h3 / card cluster heads</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">displayXS</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">18px / 500</div></div>
+                      <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Card title — annual freight tonnage</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Card / dataCard headers</div>
+                    </div>
+                  </div>
+
+                  <!-- Prose ladder -->
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-3">// prose ladder · Proxima Nova / Source Sans 3</div>
+                  <div class="space-y-3 mb-6 border-b border-zinc-950/05 pb-6">
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">proseLG</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">16px / 400</div></div>
+                      <div class="font-proxima text-[16px] leading-[1.65] text-slate-700">Welcome to the National Performance Management Research Data Set.</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Lede paragraph</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">prose</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">14.5px / 400</div></div>
+                      <div class="font-proxima text-[14.5px] leading-[1.65] text-slate-700">Running prose, descriptive copy. The default body size. Line-height tuned for legibility at 680 px max width.</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Default body</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">proseSM</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">12.5px / 400</div></div>
+                      <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">Smaller-typeface body. Card subtitles, helper hints, table footnotes.</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Helper / caption</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">proseXS</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">11.5px / 400</div></div>
+                      <div class="font-proxima text-[11.5px] leading-[1.5] text-slate-500">Microcopy · attribution lines, "since" timestamps, fine print.</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Microcopy</div>
+                    </div>
+                  </div>
+
+                  <!-- Meta ladder -->
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-3">// meta ladder · mono · kickers, metadata, codes</div>
+                  <div class="space-y-3 mb-6 border-b border-zinc-950/05 pb-6">
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">metaMD</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">12px / 400 · tabular</div></div>
+                      <div class="font-mono text-[12px] tabular-nums text-slate-600">1,234,567 · 40.8/day · 23 CFR §490.5</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Inline metadata · codes</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">metaSM</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">10.5px / 400 · upper</div></div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">NPMRDS · TRAVEL-TIME RELIABILITY</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Section eyebrow · headers</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">metaXS</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">9.5px / 400 · upper</div></div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">LAST REFRESH · 2026-05-08 04:12 EST · CYCLE 4/4</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Tertiary metadata</div>
+                    </div>
+                  </div>
+
+                  <!-- Kicker -->
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mb-3">// kicker · the "// 01" amber labels that mark section heads</div>
+                  <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline">
+                    <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">kicker</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">10.5px / 400 · amber</div></div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01 · regional analysis</div>
+                    <div class="font-proxima text-[12.5px] text-slate-600">Section openers · TOC index</div>
+                  </div>
+
+                  <!-- Stat numbers (Oswald display, tabular) + compact card title -->
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#CA8A04] mt-8 mb-3">// stat numbers · Oswald display, tabular — KPI / metric card figures (statNum is the mono variant)</div>
+                  <div class="space-y-3">
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">statXL</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">52px / 600 · tabular</div></div>
+                      <div class="font-display font-semibold text-[52px] leading-[1.0] tracking-tight tabular-nums text-[#0F1722]">936.5</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Hero KPI figure</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">statLG</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">28px / 600 · tabular</div></div>
+                      <div class="font-display font-semibold text-[28px] leading-[1.05] tabular-nums text-[#0F1722]">1,145</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Stat-strip · compact KPI</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline border-b border-zinc-950/05 pb-3">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">statMD</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">22px / 600 · tabular</div></div>
+                      <div class="font-display font-semibold text-[22px] leading-[1.15] tabular-nums text-[#0F1722]">8</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Inline metric figure</div>
+                    </div>
+                    <div class="grid grid-cols-[140px_1fr_180px] gap-6 items-baseline">
+                      <div><div class="font-mono uppercase text-[10px] tracking-wider text-slate-500">cardTitleSM</div><div class="font-mono text-[11px] text-slate-500 mt-0.5">15px / 500 · upper</div></div>
+                      <div class="font-display font-medium text-[15px] leading-[1.15] tracking-tight uppercase text-[#0F1722]">Road network</div>
+                      <div class="font-proxima text-[12.5px] text-slate-600">Compact metric-card title (cardTitle is 18px)</div>
+                    </div>
+                  </div>
+
+                  <p class="mt-6 font-proxima text-[12.5px] text-slate-500 max-w-[680px]">
+                    <strong class="text-slate-700">Folded into existing tokens (not their own):</strong>
+                    16px h5 (use <code class="tny-mono">displayXS</code>), 14px h6 (use
+                    <code class="tny-mono">metaSM</code> with darker ink), italic pull-quote
+                    (use <code class="tny-mono">displayItalicMD</code> at the call site).
+                    See [skill §7.2.1] — every variation that <em>could</em> have been a
+                    token was folded back if it differed only by colour or text-transform.
+                  </p>
+                </div>
+              </div>
+
+              <!-- ── SECTION · Icons (size 12) ── -->
+              <div class="col-span-12" id="icons" data-dms-section="icons">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">06</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Icons</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-4 max-w-[680px]">
+                    24×24 grid, <code class="tny-mono">stroke="currentColor"</code>, strokeWidth 1.5,
+                    rounded caps and joins. Names are the API — every primitive references icons
+                    by string name, never by import.
+                  </p>
+                  <div class="grid grid-cols-8 gap-3">
+                    <!-- icon: Pages --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="font-mono text-[10px] text-slate-500">Pages</span></div>
+                    <!-- icon: Sections --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M6 6.878V6a2.25 2.25 0 0 1 2.25-2.25h7.5A2.25 2.25 0 0 1 18 6v.878M6 6.878A2.25 2.25 0 0 0 4.5 9v9a2.25 2.25 0 0 0 2.25 2.25h10.5A2.25 2.25 0 0 0 19.5 18V9A2.25 2.25 0 0 0 18 6.878"/></svg><span class="font-mono text-[10px] text-slate-500">Sections</span></div>
+                    <!-- icon: Settings --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"/></svg><span class="font-mono text-[10px] text-slate-500">Settings</span></div>
+                    <!-- icon: History --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M12 22C6.477 22 2 17.523 2 12C2 6.477 6.477 2 12 2C16.478 2 20.226 4.943 21.5 9H19"/><path d="M12 8V12L14 14"/></svg><span class="font-mono text-[10px] text-slate-500">History</span></div>
+                    <!-- icon: Search --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-mono text-[10px] text-slate-500">Search</span></div>
+                    <!-- icon: Database --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 12C20 13.657 16.418 15 12 15C7.582 15 4 13.657 4 12"/><path d="M20 5V19C20 20.657 16.418 22 12 22C7.582 22 4 20.657 4 19V5"/></svg><span class="font-mono text-[10px] text-slate-500">Database</span></div>
+                    <!-- icon: Folder --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 7C3 5.343 4.343 4 6 4H9.586C10.116 4 10.625 4.211 11 4.586L12 6H18C19.657 6 21 7.343 21 9V17C21 18.657 19.657 20 18 20H6C4.343 20 3 18.657 3 17V7Z"/></svg><span class="font-mono text-[10px] text-slate-500">Folder</span></div>
+                    <!-- icon: Menu --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/></svg><span class="font-mono text-[10px] text-slate-500">Menu</span></div>
+                    <!-- icon: Road --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 12h18M6 12V7m12 5V7M9 12v5m6-5v5"/></svg><span class="font-mono text-[10px] text-slate-500">Road</span></div>
+                    <!-- icon: Rail --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><rect x="4" y="4" width="16" height="12" rx="2"/><path d="M4 11h16M8 20l2-4m6 4-2-4"/></svg><span class="font-mono text-[10px] text-slate-500">Rail</span></div>
+                    <!-- icon: Maritime --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 14h18l-2 5H5l-2-5ZM12 3v11M7 9h10"/></svg><span class="font-mono text-[10px] text-slate-500">Maritime</span></div>
+                    <!-- icon: Air --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M2 16l20-7-9 13-2-5-9-1Z"/></svg><span class="font-mono text-[10px] text-slate-500">Air</span></div>
+                    <!-- icon: Pipeline --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M4 7h12v10H4zM16 10h3l2 3v4h-5M6.5 17a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Zm10 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z"/></svg><span class="font-mono text-[10px] text-slate-500">Pipeline</span></div>
+                    <!-- icon: House --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="font-mono text-[10px] text-slate-500">House</span></div>
+                    <!-- icon: Atlas --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg><span class="font-mono text-[10px] text-slate-500">Atlas</span></div>
+                    <!-- icon: Book --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg><span class="font-mono text-[10px] text-slate-500">Book</span></div>
+                    <!-- icon: FileText --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="font-mono text-[10px] text-slate-500">FileText</span></div>
+                    <!-- icon: Users --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg><span class="font-mono text-[10px] text-slate-500">Users</span></div>
+                    <!-- icon: Archive --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/></svg><span class="font-mono text-[10px] text-slate-500">Archive</span></div>
+                    <!-- icon: Mail --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M4 4h16v16H4z"/><path d="m4 6 8 6 8-6"/></svg><span class="font-mono text-[10px] text-slate-500">Mail</span></div>
+                    <!-- icon: Locate --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg><span class="font-mono text-[10px] text-slate-500">Locate</span></div>
+                    <!-- icon: Maximize --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg><span class="font-mono text-[10px] text-slate-500">Maximize</span></div>
+                    <!-- icon: Code --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="m8 9-3 3 3 3m8-6 3 3-3 3M13.5 5l-3 14"/></svg><span class="font-mono text-[10px] text-slate-500">Code</span></div>
+                    <!-- icon: Building --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 14h6M9 18h6"/></svg><span class="font-mono text-[10px] text-slate-500">Building</span></div>
+                    <!-- icon: Map --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg><span class="font-mono text-[10px] text-slate-500">Map</span></div>
+                    <!-- icon: Export --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-mono text-[10px] text-slate-500">Export</span></div>
+
+                    <!-- icon: CaretDown --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg><span class="font-mono text-[10px] text-slate-500">CaretDown</span></div>
+                    <!-- icon: CaretUp --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg><span class="font-mono text-[10px] text-slate-500">CaretUp</span></div>
+                    <!-- icon: ChevronRight --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg><span class="font-mono text-[10px] text-slate-500">ChevronRight</span></div>
+                    <!-- icon: ChevronLeft --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M15.75 19.5 8.25 12l7.5-7.5"/></svg><span class="font-mono text-[10px] text-slate-500">ChevronLeft</span></div>
+                    <!-- icon: ArrowRight --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M5 12h14M13 5l7 7-7 7"/></svg><span class="font-mono text-[10px] text-slate-500">ArrowRight</span></div>
+                    <!-- icon: ArrowLeft --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M19 12H5M11 5l-7 7 7 7"/></svg><span class="font-mono text-[10px] text-slate-500">ArrowLeft</span></div>
+                    <!-- icon: ArrowDown --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M12 5v14M5 13l7 7 7-7"/></svg><span class="font-mono text-[10px] text-slate-500">ArrowDown</span></div>
+                    <!-- icon: ArrowUp --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M12 19V5M5 11l7-7 7 7"/></svg><span class="font-mono text-[10px] text-slate-500">ArrowUp</span></div>
+
+                    <!-- icon: User --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M18.5 20V17.97C18.5 16.73 17.94 15.51 16.81 14.99C15.43 14.37 13.78 14 12 14C10.22 14 8.57 14.37 7.19 14.99C6.06 15.51 5.5 16.73 5.5 17.97V20"/><circle cx="12" cy="7.5" r="3.5"/></svg><span class="font-mono text-[10px] text-slate-500">User</span></div>
+                    <!-- icon: Lock --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg><span class="font-mono text-[10px] text-slate-500">Lock</span></div>
+                    <!-- icon: PencilEdit --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M16.21 4.98L17.62 3.58C18.39 2.81 19.65 2.81 20.42 3.58C21.19 4.35 21.19 5.61 20.42 6.38L19.02 7.79M16.21 4.98L10.98 10.22C9.93 11.26 9.41 11.78 9.06 12.42C8.7 13.06 8.34 14.56 8 16C9.44 15.66 10.94 15.3 11.58 14.94C12.22 14.59 12.74 14.07 13.78 13.02L19.02 7.79"/></svg><span class="font-mono text-[10px] text-slate-500">PencilEdit</span></div>
+                    <!-- icon: View --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><circle cx="12" cy="12" r="3"/><path d="M21.54 11.05C21.85 11.47 22 11.68 22 12C22 12.32 21.85 12.53 21.54 12.96C20.18 14.87 16.69 19 12 19C7.31 19 3.82 14.87 2.46 12.96C2.15 12.53 2 12.32 2 12C2 11.68 2.15 11.47 2.46 11.05C3.82 9.13 7.31 5 12 5C16.69 5 20.18 9.13 21.54 11.05Z"/></svg><span class="font-mono text-[10px] text-slate-500">View</span></div>
+                    <!-- icon: Plus --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M12 4V20"/><path d="M4 12H20"/></svg><span class="font-mono text-[10px] text-slate-500">Plus</span></div>
+                    <!-- icon: Minus --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M5 12h14"/></svg><span class="font-mono text-[10px] text-slate-500">Minus</span></div>
+                    <!-- icon: XMark --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M6 18 18 6M6 6l12 12"/></svg><span class="font-mono text-[10px] text-slate-500">XMark</span></div>
+                    <!-- icon: Check --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M4.5 12.75 9 17.25 19.5 6.75"/></svg><span class="font-mono text-[10px] text-slate-500">Check</span></div>
+
+                    <!-- icon: Trash --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 6h18"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><path d="M19 6l-1 14c-.1 1-1 2-2 2H8c-1 0-1.9-1-2-2L5 6"/></svg><span class="font-mono text-[10px] text-slate-500">Trash</span></div>
+                    <!-- icon: RefreshCw --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v6h-6"/></svg><span class="font-mono text-[10px] text-slate-500">RefreshCw</span></div>
+                    <!-- icon: ExternalLink --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M19 14v5c0 1-1 2-2 2H5c-1 0-2-1-2-2V7c0-1 1-2 2-2h5"/></svg><span class="font-mono text-[10px] text-slate-500">ExternalLink</span></div>
+                    <!-- icon: Star --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M12 2l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg><span class="font-mono text-[10px] text-slate-500">Star</span></div>
+                    <!-- icon: Tag --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 12V5a2 2 0 0 1 2-2h7l9 9-9 9z"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg><span class="font-mono text-[10px] text-slate-500">Tag</span></div>
+                    <!-- icon: Info --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01"/><path d="M11 11h1v5h1"/></svg><span class="font-mono text-[10px] text-slate-500">Info</span></div>
+                    <!-- icon: AlertTriangle --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17v.01"/></svg><span class="font-mono text-[10px] text-slate-500">AlertTriangle</span></div>
+                    <!-- icon: Filter --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M8.86 12.5C6.37 10.65 4.6 8.6 3.63 7.45C3.33 7.09 3.23 6.83 3.17 6.37C2.97 4.8 2.87 4.01 3.33 3.51C3.79 3 4.6 3 6.23 3H17.77C19.4 3 20.21 3 20.67 3.51C21.13 4.01 21.03 4.8 20.83 6.37C20.77 6.83 20.67 7.09 20.37 7.45C19.4 8.6 17.63 10.65 15.13 12.51C14.91 12.68 14.76 12.96 14.73 13.26C14.48 15.99 14.26 17.49 14.11 18.24C13.89 19.47 12.15 20.2 11.23 20.86C10.67 21.25 10 20.78 9.93 20.18C9.8 19.03 9.54 16.69 9.26 13.26C9.23 12.95 9.08 12.68 8.86 12.5Z"/></svg><span class="font-mono text-[10px] text-slate-500">Filter</span></div>
+
+                    <!-- icon: Download --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 17C3 17.93 3 18.4 3.1 18.78C3.38 19.81 4.19 20.62 5.22 20.9C5.6 21 6.07 21 7 21H17C17.93 21 18.4 21 18.78 20.9C19.81 20.62 20.62 19.81 20.9 18.78C21 18.4 21 17.93 21 17"/><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/></svg><span class="font-mono text-[10px] text-slate-500">Download</span></div>
+                    <!-- icon: More --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"/></svg><span class="font-mono text-[10px] text-slate-500">More</span></div>
+                    <!-- icon: Drag --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><circle cx="9" cy="6" r="1.25"/><circle cx="15" cy="6" r="1.25"/><circle cx="9" cy="12" r="1.25"/><circle cx="15" cy="12" r="1.25"/><circle cx="9" cy="18" r="1.25"/><circle cx="15" cy="18" r="1.25"/></svg><span class="font-mono text-[10px] text-slate-500">Drag</span></div>
+                    <!-- icon: SortAsc --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M4 14h6m0 0L7 17M10 14L7 11"/><path d="M14 4h7m0 0-3 3m3-3-3-3"/></svg><span class="font-mono text-[10px] text-slate-500">SortAsc</span></div>
+                    <!-- icon: MapLayers --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M6.43 9.75 2.25 12l4.18 2.25m0-4.5 5.57 3 5.57-3m-11.14 0L2.25 7.5 12 2.25l9.75 5.25-4.18 2.25"/></svg><span class="font-mono text-[10px] text-slate-500">MapLayers</span></div>
+                    <!-- icon: MapPin --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span class="font-mono text-[10px] text-slate-500">MapPin</span></div>
+                    <!-- icon: Activity --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="font-mono text-[10px] text-slate-500">Activity</span></div>
+                    <!-- icon: Grid --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg><span class="font-mono text-[10px] text-slate-500">Grid</span></div>
+
+                    <!-- icon: ChartLine --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 20V4"/><path d="M21 20H3"/><path d="M7 14l4-4 3 3 5-7"/></svg><span class="font-mono text-[10px] text-slate-500">ChartLine</span></div>
+                    <!-- icon: ChartBar --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M3 20V4"/><path d="M21 20H3"/><rect x="6" y="10" width="3" height="8"/><rect x="11" y="6" width="3" height="12"/><rect x="16" y="13" width="3" height="5"/></svg><span class="font-mono text-[10px] text-slate-500">ChartBar</span></div>
+                    <!-- icon: Bell --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><path d="M2.53 14.39C2.4 15.27 3 15.88 3.73 16.18C6.55 17.34 17.45 17.34 20.27 16.18C21 15.88 21.6 15.27 21.47 14.39C21.39 13.85 20.99 13.4 20.69 12.96C20.3 12.36 20.26 11.71 20.26 11C20.26 8.82 19.39 6.74 17.84 5.2C16.29 3.67 14.19 2.81 12 2.81C9.81 2.81 7.71 3.67 6.16 5.2C4.61 6.74 3.74 8.82 3.74 11C3.74 11.71 3.7 12.36 3.31 12.96C3.01 13.4 2.61 13.85 2.53 14.39Z"/><path d="M9 21C9.79 21.6 10.86 22 12 22C13.14 22 14.21 21.6 15 21"/></svg><span class="font-mono text-[10px] text-slate-500">Bell</span></div>
+                    <!-- icon: Play --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="currentColor" class="size-6 text-slate-700"><path d="M6 5v14l13-7z"/></svg><span class="font-mono text-[10px] text-slate-500">Play</span></div>
+                    <!-- icon: Pause --><div class="rounded border border-zinc-950/05 p-3 flex flex-col items-center gap-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-6 text-slate-700"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg><span class="font-mono text-[10px] text-slate-500">Pause</span></div>
+                  </div>
+                  <p class="mt-4 font-proxima text-[12.5px] text-slate-500">
+                    Sizes: <code class="tny-mono">size-4</code> (16px · inline meta) ·
+                    <code class="tny-mono">size-[18px]</code> (sidenav default) ·
+                    <code class="tny-mono">size-5</code> (button left/right) ·
+                    <code class="tny-mono">size-6</code> (compact sidenav · gallery).
+                  </p>
+                </div>
+              </div>
+
+              <!-- ── SECTION · Elevation & Motion (size 12) ── -->
+              <div class="col-span-12" id="elevation" data-dms-section="elevation">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">07</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Elevation &amp; Motion</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 grid grid-cols-3 gap-6">
+                  <div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white p-5 shadow-sm">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">card</div>
+                      <div class="font-proxima text-[13px] text-slate-700 mt-1">8 radius · shadow-card</div>
+                    </div>
+                    <div class="mt-2 font-mono text-[10.5px] text-slate-400">0 1px 2px rgba(15,23,42,.04)</div>
+                  </div>
+                  <div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white p-5 shadow-lg">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">popover · menu</div>
+                      <div class="font-proxima text-[13px] text-slate-700 mt-1">8 radius · shadow-popover</div>
+                    </div>
+                    <div class="mt-2 font-mono text-[10.5px] text-slate-400">0 10px 24px -4px rgba(0,0,0,.18)</div>
+                  </div>
+                  <div>
+                    <div class="rounded-full border border-zinc-950/10 bg-white px-4 py-3 shadow-xl inline-flex items-center gap-2">
+                      <svg class="size-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 12C20 13.657 16.418 15 12 15C7.582 15 4 13.657 4 12"/><path d="M20 5V19C20 20.657 16.418 22 12 22C7.582 22 4 20.657 4 19V5"/></svg>
+                      <div class="font-proxima text-[13px] text-slate-700">Floating dock · fully rounded</div>
+                    </div>
+                    <div class="mt-2 font-mono text-[10.5px] text-slate-400">0 8px 24px -2px rgba(0,0,0,.20)</div>
+                  </div>
+                  <div class="col-span-3 grid grid-cols-3 gap-6 mt-4 border-t border-zinc-950/05 pt-4 text-[13px] text-slate-600">
+                    <div><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 block mb-1">Hover</span>120ms ease-out</div>
+                    <div><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 block mb-1">Tone-bar press</span>80ms — border drops 2px (mass effect)</div>
+                    <div><span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 block mb-1">Popover open</span>140ms · opacity + 6px translateY</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ════════ FOOTER LAYOUTGROUP · layoutGroup.styles[7] (footer) ════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="theme.html" class="text-slate-900 font-semibold">theme</a>
+                <a href="layouts.html" class="hover:text-slate-900">layouts</a>
+                <a href="grid.html" class="hover:text-slate-900">grid</a>
+                <a href="components.html" class="hover:text-slate-900">components</a>
+                <a href="patterns.html" class="hover:text-slate-900">patterns</a>
+                <span class="text-slate-300">·</span>
+                <a href="../pages/landing.html" class="hover:text-slate-900">landing</a>
+                <a href="../pages/getting-started.html" class="hover:text-slate-900">getting-started</a>
+                <a href="../pages/map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="../pages/docs-overview.html" class="hover:text-slate-900">docs</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

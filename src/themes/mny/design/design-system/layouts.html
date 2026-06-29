@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Design System — Layouts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    /* Mini layout diagram */
+    .mini-layout { border: 1.5px dashed #C5D7E0; border-radius: 8px; overflow: hidden; font-family: "Source Sans 3", sans-serif; }
+    .mini-topnav { background: white; border-bottom: 1px solid #E0EBF0; height: 28px; display: flex; align-items: center; padding: 0 8px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #6D96AE; gap: 6px; }
+    .mini-topnav .logo-dot { width: 12px; height: 12px; background: #2D3E4C; border-radius: 3px; }
+    .mini-body { display: flex; min-height: 100px; }
+    .mini-sidenav { background: white; border-right: 1px solid #E0EBF0; width: 40px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 8px; gap: 4px; }
+    .mini-nav-dot { width: 16px; height: 4px; background: #C5D7E0; border-radius: 2px; }
+    .mini-nav-dot.active { background: #37576B; }
+    .mini-content { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 4px;
+      background-image: linear-gradient(0deg,rgba(244,244,244,0.92),rgba(244,244,244,0.92)),url('../assets/mny/topolines.png'); background-size: 200px; }
+    .mini-group { background: white; border-radius: 4px; padding: 4px 6px; }
+    .mini-group.header { background: transparent; border: 1px dashed #E0EBF0; }
+    .mini-group.dark { background: #2D3E4C; }
+    .mini-section-row { display: flex; gap: 4px; }
+    .mini-section { background: #F3F8F9; border-radius: 3px; height: 20px; flex: 1; }
+    .mini-section.gold { background: #EAAD43; opacity: 0.3; }
+    .mini-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6D96AE; margin-bottom: 3px; }
+
+    /* LG variant cards */
+    .lg-variant { border: 1.5px solid #E0EBF0; border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+    .lg-variant-header { background: #F3F8F9; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E0EBF0; }
+    .lg-variant-name { font-family: "Oswald", sans-serif; font-size: 13px; font-weight: 500; text-transform: uppercase; color: #2D3E4C; }
+    .lg-variant-body { padding: 12px; }
+
+    /* Wrapper class reference table */
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .ref-table th { background: #F3F8F9; padding: 8px 10px; text-align: left; font-family: "Oswald", sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; color: #37576B; border-bottom: 2px solid #E0EBF0; letter-spacing: 0.04em; }
+    .ref-table td { padding: 8px 10px; border-bottom: 1px solid #F3F8F9; font-family: "Source Sans 3", sans-serif; color: #37576B; vertical-align: top; line-height: 1.5; }
+    .ref-table tr:last-child td { border-bottom: 0; }
+    .ref-table code { font-family: monospace; font-size: 11px; background: #F3F8F9; padding: 1px 4px; border-radius: 3px; color: #2D3E4C; }
+    .ref-table .variant-name { font-weight: 700; color: #2D3E4C; white-space: nowrap; }
+    .ref-table .align-note { color: #6D96AE; font-style: italic; font-size: 11px; }
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- DMS Layout: default -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto">
+  <div class="flex flex-col">
+
+    <!-- TopNav -->
+    <div class="sticky top-0 z-20 px-4 pt-8 xl:px-[64px] pointer-events-none">
+      <nav class="px-6 py-4 w-full bg-white h-20 flex items-center rounded-lg pointer-events-auto"
+           style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06)">
+        <div class="flex items-center w-full">
+          <div class="h-12 pl-3 pr-2 flex items-center flex-shrink-0">
+            <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-10">
+          </div>
+          <span class="hidden md:block font-display text-[13px] font-[500] text-[#6D96AE] uppercase tracking-wider ml-3 mr-5 border-l border-[#E0EBF0] pl-5">Design System</span>
+          <div class="hidden md:flex items-center flex-1 h-full gap-1">
+            <a href="theme.html" class="dms-ds-toplink">Theme</a>
+            <a href="layouts.html" class="dms-ds-toplink active">Layouts</a>
+            <a href="grid.html" class="dms-ds-toplink">Grid</a>
+            <a href="components.html" class="dms-ds-toplink">Components</a>
+            <a href="patterns.html" class="dms-ds-toplink">Patterns</a>
+          </div>
+          <span class="hidden md:block font-proxima text-[11px] text-[#C5D7E0] tracking-wider ml-auto">2 / 5</span>
+        </div>
+      </nav>
+    </div>
+
+    <div class="flex flex-1 md:px-4 xl:px-[64px] pb-8">
+      <div class="flex-1 pt-8">
+
+        <!-- Header group -->
+        <div data-dms="group" data-name="header" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col py-6">
+            <div data-dms="section" data-name="lexical-header">
+              <p class="font-proxima text-[14px] font-[500] text-[#37576B] uppercase tracking-wider mb-2">2.0 Structure</p>
+              <h1 class="font-display text-[48px] font-[500] text-[#2D3E4C] uppercase leading-none mb-3"
+                  style="text-decoration: underline; text-decoration-color: #EAAD43; text-decoration-thickness: 4px; text-underline-offset: 8px;">
+                Layouts &amp; LayoutGroups
+              </h1>
+              <p class="font-proxima text-[16px] text-[#37576B] leading-[1.6] max-w-[640px]">
+                The structural layer: every DMS page is wrapped in a <strong>Layout</strong> (page chrome + nav slots),
+                then divided into <strong>LayoutGroups</strong> (bands of content). This page documents each named variant,
+                its wrapper class strings, and when to use it.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page Canvas — topo background surface -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="page-canvas">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-2">Page Canvas</h2>
+              <p class="font-proxima text-[14px] text-[#37576B] leading-[1.6] mb-4">
+                Every MNY page sits on a <strong>topographic-line texture</strong> (<code class="bg-[#F3F8F9] px-1 rounded text-[12px]">topolines.png</code>) masked behind a translucent color wash.
+                The outerWrapper applies this as a tiling 500px background. LayoutGroups then either sit directly on this canvas (header — transparent) or float above it on white cards (content — opaque).
+              </p>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <!-- Light -->
+                <div class="border border-[#E0EBF0] rounded-[12px] overflow-hidden">
+                  <div class="rounded-[8px] overflow-hidden h-[140px] relative"
+                       style="background-image: linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png'); background-size:500px;">
+                    <div class="absolute inset-0 flex items-end p-3">
+                      <div class="bg-white rounded-[8px] px-3 py-2 mny-shadow-sm">
+                        <span class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase">Content card</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="p-3 bg-white border-t border-[#E0EBF0]">
+                    <div class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase mb-1">mny-page-bg <span class="font-proxima text-[10px] font-[400] normal-case text-[#6D96AE]">(default)</span></div>
+                    <div class="font-proxima text-[11px] text-[#6D96AE] leading-[1.5]">
+                      #F4F4F4 @ 96% opacity<br>
+                      <code class="text-[10px]">rgba(244,244,244,0.96)</code>
+                    </div>
+                  </div>
+                </div>
+                <!-- Dark -->
+                <div class="border border-[#E0EBF0] rounded-[12px] overflow-hidden">
+                  <div class="rounded-[8px] overflow-hidden h-[140px] relative"
+                       style="background-image: linear-gradient(0deg,rgba(33,52,64,0.96),rgba(55,87,107,0.96)),url('../assets/mny/topolines.png'); background-size:500px;">
+                    <div class="absolute inset-0 flex items-end p-3">
+                      <span class="font-proxima text-[13px] font-[600] text-white">White text on dark topo</span>
+                    </div>
+                  </div>
+                  <div class="p-3 bg-white border-t border-[#E0EBF0]">
+                    <div class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase mb-1">mny-page-bg-dark</div>
+                    <div class="font-proxima text-[11px] text-[#6D96AE] leading-[1.5]">
+                      mny-900 → mny-700 gradient @ 96%<br>
+                      <code class="text-[10px]">rgba(33,52,64,.96) → rgba(55,87,107,.96)</code>
+                    </div>
+                  </div>
+                </div>
+                <!-- Yellow -->
+                <div class="border border-[#E0EBF0] rounded-[12px] overflow-hidden">
+                  <div class="rounded-[8px] overflow-hidden h-[140px] relative"
+                       style="background-image: linear-gradient(0deg,rgba(252,246,236,0.96),rgba(252,246,236,0.96)),url('../assets/mny/topolines.png'); background-size:500px;">
+                    <div class="absolute inset-0 flex items-end p-3">
+                      <span class="font-proxima text-[13px] font-[600] text-[#2D3E4C]">Warm callout surface</span>
+                    </div>
+                  </div>
+                  <div class="p-3 bg-white border-t border-[#E0EBF0]">
+                    <div class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase mb-1">mny-page-bg-yellow</div>
+                    <div class="font-proxima text-[11px] text-[#6D96AE] leading-[1.5]">
+                      mny-y50 @ 96% opacity<br>
+                      <code class="text-[10px]">rgba(252,246,236,0.96)</code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-[#FCF6EC] border border-[#F1CA87] rounded-[8px] p-4">
+                <p class="font-proxima text-[13px] text-[#37576B] leading-[1.6]">
+                  <strong>How groups interact with the canvas:</strong> The <code class="bg-white px-1 rounded text-[11px]">header</code> LayoutGroup is transparent — its title and eyebrow text sit directly on the topo texture.
+                  The <code class="bg-white px-1 rounded text-[11px]">content</code> / <code class="bg-white px-1 rounded text-[11px]">default</code> groups use <code class="bg-white px-1 rounded text-[11px]">bg-white rounded-[12px] shadow-md</code> on wrapper2, creating white cards that float above the canvas.
+                  The <code class="bg-white px-1 rounded text-[11px]">darkSection</code> group applies its own dark topo overlay via wrapper1, creating a full-bleed dark band.
+                </p>
+              </div>
+
+              <div class="mt-4 overflow-x-auto">
+                <table class="ref-table">
+                  <thead><tr><th>CSS class</th><th>Tailwind equivalent (production)</th><th>Use</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td class="variant-name">mny-page-bg</td>
+                      <td><code>bg-[linear-gradient(0deg,rgba(244,244,244,.96),rgba(244,244,244,.96)),url('/themes/mny/topolines.png')] bg-[size:500px]</code></td>
+                      <td>outerWrapper — every public page</td>
+                    </tr>
+                    <tr>
+                      <td class="variant-name">mny-page-bg-dark</td>
+                      <td><code>bg-[linear-gradient(0deg,rgba(33,52,64,.96),rgba(55,87,107,.96)),url('/themes/mny/topolines.png')] bg-[size:500px]</code></td>
+                      <td>darkSection wrapper1, auth outerWrapper</td>
+                    </tr>
+                    <tr>
+                      <td class="variant-name">mny-page-bg-yellow</td>
+                      <td><code>bg-[linear-gradient(0deg,rgba(252,246,236,.96),rgba(252,246,236,.96)),url('/themes/mny/topolines.png')] bg-[size:500px]</code></td>
+                      <td>warm callout bands (optional)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DMS Hierarchy diagram -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="hierarchy-diagram">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">DMS Hierarchy</h2>
+              <div class="bg-[#F3F8F9] rounded-[8px] p-4 font-proxima text-[14px] text-[#37576B] leading-[2]">
+                <div><span class="text-[#6D96AE] font-[600]">Site</span></div>
+                <div class="pl-4">└─ <span class="text-[#2D3E4C] font-[700]">Layout</span> <span class="text-[#6D96AE]">— page chrome: outerWrapper, TopNav, SideNav, childWrapper</span></div>
+                <div class="pl-10">├─ <span class="text-[#37576B] font-[600]">(TopNav)</span> <span class="text-[#6D96AE]">— floating nav, 80px, rounded on md+, white bg</span></div>
+                <div class="pl-10">├─ <span class="text-[#37576B] font-[600]">(SideNav)</span> <span class="text-[#6D96AE]">— optional left panel, 302px or 64px icon strip</span></div>
+                <div class="pl-10">└─ <span class="text-[#2D3E4C] font-[700]">childWrapper</span></div>
+                <div class="pl-16">└─ <span class="text-[#2D3E4C] font-[700]">LayoutGroup</span> <span class="text-[#6D96AE]">— a "band" of content (header / content / footer / auth)</span></div>
+                <div class="pl-24">└─ <span class="text-[#37576B] font-[600]">Section</span> <span class="text-[#6D96AE]">— one editable block (Card / Lexical / Graph / Map)</span></div>
+                <div class="pl-32">└─ <span class="text-[#6D96AE]">Component primitive (Card, Table, Map, Lexical …)</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Variants -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="layout-variants">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">Layout Variants</h2>
+              <p class="font-proxima text-[14px] text-[#37576B] mb-6">Three named Layout styles. Each controls outer wrapper, nav slots, and the content area class stack.</p>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Default -->
+                <div class="border border-[#E0EBF0] rounded-[12px] overflow-hidden">
+                  <div class="bg-[#F3F8F9] px-4 py-3 border-b border-[#E0EBF0]">
+                    <span class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase">Default</span>
+                    <span class="ml-2 font-proxima text-[11px] text-[#6D96AE]">public-facing pages</span>
+                  </div>
+                  <div class="p-4">
+                    <div class="mini-layout">
+                      <div class="mini-topnav"><div class="logo-dot"></div><span>Nav (floating, rounded)</span></div>
+                      <div class="mini-body">
+                        <div class="mini-content">
+                          <div class="mini-group header"><div class="mini-label">header group</div><div class="mini-section-row"><div class="mini-section gold"></div></div></div>
+                          <div class="mini-group"><div class="mini-label">content group</div><div class="mini-section-row"><div class="mini-section"></div><div class="mini-section"></div></div></div>
+                          <div class="mini-group"><div class="mini-section-row"><div class="mini-section"></div><div class="mini-section"></div><div class="mini-section"></div></div></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <div class="font-proxima text-[12px] text-[#37576B] leading-[1.7]">
+                        <div><span class="font-[600]">outerWrapper:</span> mny-page-bg (topo)</div>
+                        <div><span class="font-[600]">wrapper:</span> max-w-[1440px] mx-auto</div>
+                        <div><span class="font-[600]">wrapper3:</span> flex md:px-4 xl:px-[64px]</div>
+                        <div><span class="font-[600]">SideNav:</span> none</div>
+                        <div><span class="font-[600]">TopNav:</span> floating, compact</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- App (with sidenav) -->
+                <div class="border border-[#E0EBF0] rounded-[12px] overflow-hidden">
+                  <div class="bg-[#F3F8F9] px-4 py-3 border-b border-[#E0EBF0]">
+                    <span class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase">App / Admin</span>
+                    <span class="ml-2 font-proxima text-[11px] text-[#6D96AE]">content-section pages</span>
+                  </div>
+                  <div class="p-4">
+                    <div class="mini-layout">
+                      <div class="mini-topnav"><div class="logo-dot"></div><span>Nav (floating)</span></div>
+                      <div class="mini-body">
+                        <div class="mini-sidenav">
+                          <div class="mini-nav-dot active"></div>
+                          <div class="mini-nav-dot"></div>
+                          <div class="mini-nav-dot"></div>
+                          <div class="mini-nav-dot"></div>
+                          <div class="mini-nav-dot"></div>
+                        </div>
+                        <div class="mini-content">
+                          <div class="mini-group"><div class="mini-label">content group</div><div class="mini-section-row"><div class="mini-section"></div></div></div>
+                          <div class="mini-group"><div class="mini-section-row"><div class="mini-section"></div><div class="mini-section"></div></div></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <div class="font-proxima text-[12px] text-[#37576B] leading-[1.7]">
+                        <div><span class="font-[600]">SideNav:</span> 302px, sticky</div>
+                        <div><span class="font-[600]">SideNav alt:</span> 64px icon strip</div>
+                        <div><span class="font-[600]">TopNav:</span> floating above sidenav</div>
+                        <div><span class="font-[600]">Content pt:</span> pt-[118px] clears nav</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Auth -->
+                <div class="border border-[#E0EBF0] rounded-[12px] overflow-hidden">
+                  <div class="bg-[#F3F8F9] px-4 py-3 border-b border-[#E0EBF0]">
+                    <span class="font-display text-[14px] font-[500] text-[#2D3E4C] uppercase">Auth</span>
+                    <span class="ml-2 font-proxima text-[11px] text-[#6D96AE]">sign-in / sign-up</span>
+                  </div>
+                  <div class="p-4">
+                    <div class="mini-layout">
+                      <div class="mini-topnav"><div class="logo-dot"></div><span>Logo only</span></div>
+                      <div class="mini-body">
+                        <div class="mini-content" style="align-items:center; justify-content:center;">
+                          <div class="mini-group" style="width:60%; padding:8px">
+                            <div class="mini-label">auth group</div>
+                            <div class="mini-section-row"><div class="mini-section gold" style="height:12px"></div></div>
+                            <div class="mini-section-row mt-1"><div class="mini-section"></div></div>
+                            <div class="mini-section-row mt-1"><div class="mini-section"></div></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <div class="font-proxima text-[12px] text-[#37576B] leading-[1.7]">
+                        <div><span class="font-[600]">outerWrapper:</span> w-screen h-screen</div>
+                        <div><span class="font-[600]">TopNav:</span> absolute, logo only</div>
+                        <div><span class="font-[600]">SideNav:</span> none</div>
+                        <div><span class="font-[600]">childWrapper:</span> w-screen h-screen</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LayoutGroup Variants -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="layoutgroup-variants">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-4">LayoutGroup Variants</h2>
+              <p class="font-proxima text-[14px] text-[#37576B] mb-4">Each variant defines the surface recipe for a band of content within the Layout's childWrapper.</p>
+
+              <!-- content (default) -->
+              <div class="lg-variant">
+                <div class="lg-variant-header">
+                  <span class="lg-variant-name">content <span class="font-proxima text-[11px] font-[400] normal-case">(default)</span></span>
+                  <span class="font-proxima text-[11px] text-[#6D96AE]">main page body · white card · shadow</span>
+                </div>
+                <div class="lg-variant-body">
+                  <div class="w-full flex flex-col bg-white rounded-[12px] p-4 mb-2 mny-shadow-md min-h-[80px] relative">
+                    <div class="font-proxima text-[12px] text-[#6D96AE]">wrapper2: white card, rounded-[12px], shadow-md, p-4</div>
+                  </div>
+                  <div class="font-proxima text-[12px] text-[#37576B] leading-[1.8]">
+                    <div><span class="font-[600]">wrapper1:</span> <code class="bg-[#F3F8F9] px-1 rounded">w-full h-full flex-1 flex flex-row lg:pt-[118px] pb-[5px]</code></div>
+                    <div><span class="font-[600]">wrapper2:</span> <code class="bg-[#F3F8F9] px-1 rounded">flex flex-1 w-full flex-col shadow-md bg-white rounded-[12px] p-4 h-full min-h-[calc(100vh-102px)]</code></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- header -->
+              <div class="lg-variant">
+                <div class="lg-variant-header">
+                  <span class="lg-variant-name">header</span>
+                  <span class="font-proxima text-[11px] text-[#6D96AE]">page title band · transparent · no shadow</span>
+                </div>
+                <div class="lg-variant-body">
+                  <div class="w-full py-6 mb-2 min-h-[60px]">
+                    <div class="font-proxima text-[12px] text-[#6D96AE]">wrapper2: no background, no shadow — content sits on the topo canvas</div>
+                  </div>
+                  <div class="font-proxima text-[12px] text-[#37576B] leading-[1.8]">
+                    <div><span class="font-[600]">wrapper1:</span> <code class="bg-[#F3F8F9] px-1 rounded">w-full h-full flex-1 flex flex-row</code></div>
+                    <div><span class="font-[600]">wrapper2:</span> <code class="bg-[#F3F8F9] px-1 rounded">flex flex-1 w-full flex-col relative min-h-[200px]</code></div>
+                    <div><span class="font-[600]">Use when:</span> page eyebrow + displaySM title + lead paragraph before the first white card</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- darkSection -->
+              <div class="lg-variant">
+                <div class="lg-variant-header">
+                  <span class="lg-variant-name">darkSection</span>
+                  <span class="font-proxima text-[11px] text-[#6D96AE]">full-bleed dark band · white text · topo texture</span>
+                </div>
+                <div class="lg-variant-body">
+                  <div class="w-full -my-2 py-8 mb-4 rounded-[8px] overflow-hidden"
+                       style="background-image: linear-gradient(0deg,rgba(33,52,64,.96),rgba(55,87,107,.96)),url('../assets/mny/topolines.png'); background-size:500px">
+                    <div class="px-4 text-white font-proxima text-[14px]">Dark full-bleed band — natural hazard stats, feature calls to action</div>
+                  </div>
+                  <div class="font-proxima text-[12px] text-[#37576B] leading-[1.8]">
+                    <div><span class="font-[600]">wrapper1:</span> <code class="bg-[#F3F8F9] px-1 rounded">w-full h-full flex-1 flex flex-row -my-8 py-10 bg-[linear-gradient(...dark...)]</code></div>
+                    <div><span class="font-[600]">wrapper2:</span> <code class="bg-[#F3F8F9] px-1 rounded">max-w-[1440px] xl:px-[64px] md:px-4 mx-auto</code></div>
+                    <div><span class="font-[600]">wrapper3:</span> <code class="bg-[#F3F8F9] px-1 rounded">flex flex-1 w-full flex-col relative p-4 min-h-[200px]</code></div>
+                    <div><span class="font-[600]">Use when:</span> the "Natural Hazards" stats band, feature spotlights, dark CTA sections</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- lightCentered -->
+              <div class="lg-variant">
+                <div class="lg-variant-header">
+                  <span class="lg-variant-name">lightCentered</span>
+                  <span class="font-proxima text-[11px] text-[#6D96AE]">white card, horizontally centred</span>
+                </div>
+                <div class="lg-variant-body">
+                  <div class="font-proxima text-[12px] text-[#37576B] leading-[1.8]">
+                    <div><span class="font-[600]">wrapper1:</span> <code class="bg-[#F3F8F9] px-1 rounded">w-full h-full flex-1 flex flex-row pb-[4px]</code></div>
+                    <div><span class="font-[600]">wrapper2:</span> <code class="bg-[#F3F8F9] px-1 rounded">max-w-[1440px] xl:px-[64px] md:px-4 mx-auto</code></div>
+                    <div><span class="font-[600]">wrapper3:</span> <code class="bg-[#F3F8F9] px-1 rounded">flex flex-1 w-full shadow-md bg-white rounded-[12px] flex-col relative p-4 min-h-[200px]</code></div>
+                    <div><span class="font-[600]">Use when:</span> a section needs a centred max-width white card that is not inside the main content flow</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- clearCentered -->
+              <div class="lg-variant">
+                <div class="lg-variant-header">
+                  <span class="lg-variant-name">clearCentered</span>
+                  <span class="font-proxima text-[11px] text-[#6D96AE]">transparent, max-width capped, negative margin-top</span>
+                </div>
+                <div class="lg-variant-body">
+                  <div class="font-proxima text-[12px] text-[#37576B] leading-[1.8]">
+                    <div><span class="font-[600]">wrapper1:</span> <code class="bg-[#F3F8F9] px-1 rounded">w-full h-full flex-1 flex flex-row -mt-3</code></div>
+                    <div><span class="font-[600]">wrapper2:</span> <code class="bg-[#F3F8F9] px-1 rounded">max-w-[1440px] w-full xl:px-[48px] mx-auto</code></div>
+                    <div><span class="font-[600]">wrapper3:</span> <code class="bg-[#F3F8F9] px-1 rounded">flex flex-1 w-full flex-col relative h-full min-h-[200px]</code></div>
+                    <div><span class="font-[600]">Use when:</span> a full-width area overlapping the previous band (e.g. hero content extending below a header image)</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- auth -->
+              <div class="lg-variant">
+                <div class="lg-variant-header">
+                  <span class="lg-variant-name">auth</span>
+                  <span class="font-proxima text-[11px] text-[#6D96AE]">full screen, flex row, form centred (mx-auto kept)</span>
+                </div>
+                <div class="lg-variant-body">
+                  <div class="font-proxima text-[12px] text-[#37576B] leading-[1.8]">
+                    <div><span class="font-[600]">wrapper1:</span> <code class="bg-[#F3F8F9] px-1 rounded">w-full h-full flex-1 flex flex-row</code></div>
+                    <div><span class="font-[600]">wrapper2:</span> <code class="bg-[#F3F8F9] px-1 rounded">w-full h-full flex-1 flex flex-row min-h-screen</code></div>
+                    <div><span class="font-[600]">wrapper3:</span> <code class="bg-[#F3F8F9] px-1 rounded">flex w-full flex-row gap-4 relative text-md</code></div>
+                    <div class="text-[#6D96AE] italic mt-1">Only variant that retains mx-auto on the inner form — sign-in is the intentional centred surface.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wrapper class reference table -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="wrapper-class-reference">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-2">LayoutGroup Wrapper Class Reference</h2>
+              <p class="font-proxima text-[14px] text-[#37576B] mb-4">
+                Verbatim class strings for each named LayoutGroup variant. <strong>Product LayoutGroups use <code class="bg-[#F3F8F9] px-1 rounded text-[12px]">mr-auto</code> on wrapper2, NOT <code class="bg-[#F3F8F9] px-1 rounded text-[12px]">mx-auto</code></strong> — only <code class="bg-[#F3F8F9] px-1 rounded text-[12px]">auth</code> is centred.
+              </p>
+              <div class="overflow-x-auto">
+                <table class="ref-table">
+                  <thead>
+                    <tr>
+                      <th>Variant</th>
+                      <th>wrapper1</th>
+                      <th>wrapper2</th>
+                      <th>Alignment</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="variant-name">content</td>
+                      <td><code>w-full h-full flex-1 flex flex-row lg:pt-[118px] pb-[5px]</code></td>
+                      <td><code>flex flex-1 w-full flex-col shadow-md bg-white rounded-[12px] p-4 h-full</code></td>
+                      <td class="align-note">left-aligned · white card</td>
+                    </tr>
+                    <tr>
+                      <td class="variant-name">default</td>
+                      <td><code>w-full h-full flex-1 flex flex-row pt-2</code></td>
+                      <td><code>flex flex-1 w-full flex-col shadow-md bg-white rounded-[12px] p-4 min-h-[200px]</code></td>
+                      <td class="align-note">left-aligned · white card</td>
+                    </tr>
+                    <tr>
+                      <td class="variant-name">header</td>
+                      <td><code>w-full h-full flex-1 flex flex-row</code></td>
+                      <td><code>flex flex-1 w-full flex-col relative min-h-[200px]</code></td>
+                      <td class="align-note">transparent · on canvas</td>
+                    </tr>
+                    <tr>
+                      <td class="variant-name">darkSection</td>
+                      <td><code>w-full flex-1 flex flex-row -my-8 py-10 bg-[linear-gradient(dark+topo)]</code></td>
+                      <td><code>max-w-[1440px] xl:px-[64px] md:px-4 mx-auto</code></td>
+                      <td class="align-note">full-bleed dark</td>
+                    </tr>
+                    <tr>
+                      <td class="variant-name">lightCentered</td>
+                      <td><code>w-full h-full flex-1 flex flex-row pb-[4px]</code></td>
+                      <td><code>max-w-[1440px] xl:px-[64px] md:px-4 mx-auto</code></td>
+                      <td class="align-note">centred · white card in w3</td>
+                    </tr>
+                    <tr>
+                      <td class="variant-name">clearCentered</td>
+                      <td><code>w-full h-full flex-1 flex flex-row -mt-3</code></td>
+                      <td><code>max-w-[1440px] w-full xl:px-[48px] mx-auto</code></td>
+                      <td class="align-note">transparent · overlap</td>
+                    </tr>
+                    <tr>
+                      <td class="variant-name">auth</td>
+                      <td><code>w-full h-full flex-1 flex flex-row</code></td>
+                      <td><code>w-full h-full flex-1 flex flex-row min-h-screen</code></td>
+                      <td class="align-note">centred (mx-auto on inner form)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-4 bg-[#FCF6EC] border border-[#F1CA87] rounded-[8px] p-4">
+                <p class="font-proxima text-[13px] text-[#37576B] leading-[1.6]">
+                  <strong>mr-auto rule:</strong> The <code class="bg-white px-1 rounded text-[11px]">content</code> and <code class="bg-white px-1 rounded text-[11px]">default</code> variants let wrapper2 fill the full width instead of centering — sections within them are capped by the sectionArray's <code class="bg-white px-1 rounded text-[11px]">layouts.centered</code> class. This keeps content flush with the SideNav's right edge rather than floating in the centre of wide viewports.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section width: centered vs fullwidth -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="section-width">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-2">Section Width — centered vs. full-width</h2>
+              <p class="font-proxima text-[14px] text-[#37576B] mb-4">Inside any LayoutGroup, the sectionArray picks one of two width classes based on <code class="bg-[#F3F8F9] px-1 rounded text-[12px]">group.full_width</code>.</p>
+              <div class="overflow-x-auto mb-4">
+                <table class="ref-table">
+                  <thead><tr><th>group.full_width</th><th>Class applied</th><th>Result</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td><code>'off'</code> (default)</td>
+                      <td><code>layouts.centered</code> → <code>max-w-[1020px] mx-auto px-0 lg:px-[56px]</code></td>
+                      <td class="font-proxima text-[12px]">Sections capped at 1020px, left-aligned</td>
+                    </tr>
+                    <tr>
+                      <td><code>'show'</code></td>
+                      <td><code>layouts.fullwidth</code> → <code>""</code> (empty)</td>
+                      <td class="font-proxima text-[12px]">Sections fill parent — for maps, wide tables</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="bg-[#F3F8F9] rounded-[8px] p-4 font-proxima text-[13px] text-[#37576B] leading-[1.6]">
+                <strong>Pairing with LayoutGroup variant:</strong> For a true edge-to-edge map workbench, use <code class="bg-white px-1 rounded text-[11px]">darkSection</code> or a custom variant that drops <code class="bg-white px-1 rounded text-[11px]">max-w</code> from wrapper2, <em>and</em> set <code class="bg-white px-1 rounded text-[11px]">group.full_width: 'show'</code>. Setting fullwidth alone on a <code class="bg-white px-1 rounded text-[11px]">content</code> group is still clipped by wrapper2's implicit width.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="py-6 flex flex-wrap gap-4 justify-center">
+          <a href="theme.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Theme</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="layouts.html" class="font-proxima text-[12px] font-[600] text-[#EAAD43] uppercase tracking-wider">Layouts</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="grid.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Grid</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="components.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Components</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="patterns.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Patterns</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+  
+    <a href="../pages/actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize Actions</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Site Management v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-grn': '#54B99B', 'mny-ora': '#EA8954',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; }
+
+    /* Card surface */
+    .card { background: white; border-radius: 12px; box-shadow: 0px 0px 6px 0px rgba(0,0,0,.02), 0px 2px 4px 0px rgba(0,0,0,.08); }
+
+    /* ── Tree-table ── */
+    .mgmt-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .mgmt-table thead tr { background: #F3F8F9; border-bottom: 2px solid #C5D7E0; }
+    .mgmt-table thead th {
+      font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.08em; color: #6D96AE;
+      padding: 9px 12px; text-align: left; white-space: nowrap;
+    }
+    .mgmt-table tbody tr.page-row { border-bottom: 1px solid #E0EBF0; transition: background 0.1s; }
+    .mgmt-table tbody tr.page-row:hover { background: #F3F8F9; }
+    .mgmt-table td { padding: 7px 12px; font-size: 13px; color: #37576B; vertical-align: middle; }
+
+    /* Context (ancestor-of-match) rows under a lens */
+    tr.ctx-row { opacity: 0.45; }
+    tr.ctx-row:hover { opacity: 0.8; }
+    /* Hidden-in-nav and ghost rows */
+    tr.navhidden-row td .pg-title { color: #6D96AE; font-style: italic; }
+    tr.ghost-row td .pg-title { color: #9BB5C2; font-style: italic; font-weight: 400; }
+
+    /* Group divider rows (Orphaned pages band) */
+    tr.group-row td { background: #FAEAEA; border-top: 1px solid #F2C9C7; border-bottom: 1px solid #F2C9C7;
+      font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #C04040; padding: 5px 12px; }
+
+    /* Page cell internals */
+    .pg-cell { display: flex; align-items: center; min-width: 0; overflow: hidden; }
+    .drag-handle { color: #C5D7E0; cursor: grab; width: 14px; flex-shrink: 0; opacity: 0; transition: opacity .15s; font-size: 13px; }
+    tr:hover .drag-handle { opacity: 1; }
+    .caret { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+             color: #6D96AE; font-size: 10px; cursor: pointer; user-select: none; border: none; background: none; }
+    .caret:hover { background: #E0EBF0; color: #2D3E4C; }
+    .caret.leaf { visibility: hidden; }
+    .pg-title { color: #2D3E4C; font-weight: 600; text-decoration: none; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px; }
+    .pg-title:hover { color: #37576B; text-decoration: underline; text-decoration-color: #EAAD43; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+    .pg-slug { color: #9BB5C2; font-size: 11px; font-family: monospace; margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
+    .child-count { font-size: 10px; color: #6D96AE; background: #E0EBF0; border-radius: 9999px; padding: 0 6px; margin-left: 7px; font-weight: 600; }
+    .rollup-chip { font-size: 10px; color: #C8922A; background: #FCF6EC; border: 1px solid #F1CA87; border-radius: 9999px;
+                   padding: 0 7px; margin-left: 7px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+    .rollup-chip:hover { background: #F9EBD2; }
+    .orphan-chip { font-size: 10px; color: #C04040; background: #FAEAEA; border: 1px solid #F2C9C7; border-radius: 9999px;
+                   padding: 0 7px; margin-left: 7px; font-weight: 600; white-space: nowrap; }
+    .ghost-chip { font-size: 10px; color: #78909C; background: #ECEFF1; border-radius: 9999px; padding: 0 7px; margin-left: 7px; font-weight: 600; }
+
+    /* Status dot */
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; margin: 0 8px 0 4px; }
+    .dot-green { background: #54B99B; }
+    .dot-amber { background: #EAAD43; }
+    .dot-gray  { background: #B0BEC5; }
+
+    /* Pills */
+    .pill { display: inline-flex; align-items: center; padding: 1px 9px; border-radius: 9999px; font-size: 11px; font-weight: 600; letter-spacing: 0.03em; white-space: nowrap; }
+    .pill-green   { background: #E8F7F2; color: #3A9E86; }
+    .pill-amber   { background: #FCF6EC; color: #C8922A; }
+    .pill-blue    { background: #E0EBF0; color: #37576B; }
+    .pill-gray    { background: #ECEFF1; color: #78909C; }
+    .pill-red     { background: #FAEAEA; color: #C04040; }
+    .changes-dot  { width: 7px; height: 7px; border-radius: 50%; background: #EAAD43; display: inline-block; margin-left: 5px; }
+
+    /* Component type badges (sections sub-table) */
+    .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: 'Oswald', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+    .badge-card        { background: #EDE9FE; color: #5B21B6; }
+    .badge-spreadsheet { background: #DBEAFE; color: #1D4ED8; }
+    .badge-lexical     { background: #E0EBF0; color: #37576B; }
+    .badge-map         { background: #CCFBF1; color: #0F766E; }
+    .badge-header      { background: #FEF3C7; color: #B45309; }
+    .badge-footer      { background: #FEF3C7; color: #B45309; }
+    .badge-filters     { background: #FFE4E6; color: #BE123C; }
+    .badge-graph       { background: #DCFCE7; color: #15803D; }
+
+    /* Sections count chip — the door into the nested sections table */
+    .sect-chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid #C5D7E0; background: white;
+                 border-radius: 9999px; padding: 2px 10px; font-size: 11px; font-weight: 600; color: #37576B; cursor: pointer; transition: all .12s; }
+    .sect-chip:hover { border-color: #EAAD43; background: #FCF6EC; }
+    .sect-chip.open { border-color: #EAAD43; background: #FCF6EC; color: #2D3E4C; }
+    .sect-chip .sc-caret { font-size: 8px; color: #9BB5C2; }
+    .sect-chip.open .sc-caret { color: #C8922A; }
+    .sect-chip.empty { border-style: dashed; color: #9BB5C2; cursor: default; }
+
+    /* Nested sections — continuation rows of the same table, not a boxed widget.
+       A thin rail in the indent gutter ties them to their parent page row. */
+    tr.sect-panel > td { padding: 0; background: white; border-bottom: 1px solid #E0EBF0; }
+    .sect-rail { border-left: 2px solid #DCE7EC; }
+    .sect-meta { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 14px; border-bottom: 1px solid #EEF3F6; flex-wrap: wrap; }
+    .sect-meta-label { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #9BB5C2; }
+    .sect-meta-counts { font-size: 11px; color: #9BB5C2; }
+    .sect-scroll { max-height: 360px; overflow-y: auto; }
+    .srow { display: grid; grid-template-columns: minmax(0,1fr) 96px 212px 96px 56px 74px; gap: 0 12px;
+            align-items: center; padding: 4px 14px 4px 14px; border-bottom: 1px solid #F2F6F9; font-size: 12px; color: #37576B; }
+    .srow > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .srow:last-child { border-bottom: none; }
+    .srow:hover { background: #F7FAFB; }
+    .srow.sect-hit .s-title, .srow.sect-hit .s-derived { background: #FCF6EC; box-shadow: 0 0 0 2px #FCF6EC; border-radius: 2px; }
+    .srow .drag-dots { opacity: 0; transition: opacity .15s; }
+    .srow:hover .drag-dots { opacity: 1; }
+    .s-title { color: #2D3E4C; font-weight: 600; }
+    /* derived content summaries (lexicalSummary) — visually distinct from authored titles */
+    .s-derived { color: #5E7A8C; font-weight: 400; }
+    .s-derived::before { content: '¶ '; color: #B9CBD6; font-size: 10px; }
+    .s-derived-h { color: #37576B; font-weight: 600; }
+    .s-empty { color: #B9CBD6; font-style: italic; font-weight: 400; }
+    .s-indent-1 { padding-left: 0; }
+    .s-indent-2 { padding-left: 16px; }
+    .s-indent-3 { padding-left: 32px; }
+    .drag-dots { color: #DDE7EC; cursor: grab; font-size: 12px; }
+
+    /* Outline/All segmented mini-toggle inside the sections meta row */
+    .mini-seg { display: inline-flex; background: white; border: 1px solid #DCE7EC; border-radius: 9999px; padding: 1px; }
+    .mini-seg button { border: none; background: none; border-radius: 9999px; padding: 1px 10px; font-family: 'Oswald', sans-serif;
+                  font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #9BB5C2; cursor: pointer; }
+    .mini-seg button.active { background: #E0EBF0; color: #2D3E4C; }
+
+    /* In-nav toggle switch */
+    .nav-toggle { width: 30px; height: 17px; border-radius: 9999px; position: relative; cursor: pointer; border: none; transition: background .15s; flex-shrink: 0; }
+    .nav-toggle .knob { position: absolute; top: 2px; width: 13px; height: 13px; border-radius: 50%; background: white; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+    .nav-toggle.on  { background: #54B99B; } .nav-toggle.on .knob { left: 15px; }
+    .nav-toggle.off { background: #C5D7E0; } .nav-toggle.off .knob { left: 2px; }
+
+    /* Lens chips */
+    .lens-chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #C5D7E0; background: white; color: #37576B;
+                 border-radius: 9999px; padding: 5px 14px; font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+                 letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer; transition: all .12s; white-space: nowrap; }
+    .lens-chip:hover { border-color: #6D96AE; }
+    .lens-chip.active { background: #2D3E4C; border-color: #2D3E4C; color: white; }
+    .lens-count { font-family: 'Source Sans 3', sans-serif; font-size: 10px; font-weight: 700; border-radius: 9999px; padding: 0 6px; background: #E0EBF0; color: #37576B; }
+    .lens-chip.active .lens-count { background: #EAAD43; color: white; }
+    .lens-chip.lens-warn .lens-count { background: #FAEAEA; color: #C04040; }
+    .lens-chip.active.lens-warn .lens-count { background: #DD524C; color: white; }
+
+    /* Scope segmented toggle */
+    .seg { display: inline-flex; background: #F3F8F9; border: 1px solid #C5D7E0; border-radius: 9999px; padding: 2px; }
+    .seg button { border: none; background: none; border-radius: 9999px; padding: 3px 14px; font-family: 'Oswald', sans-serif;
+                  font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: #6D96AE; cursor: pointer; }
+    .seg button.active { background: white; color: #2D3E4C; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+
+    /* Filter inputs */
+    .filter-select { appearance: none; background: #F3F8F9; border: 1px solid #C5D7E0; border-radius: 20px;
+      font-family: 'Source Sans 3', sans-serif; font-size: 12px; color: #37576B; padding: 5px 28px 5px 12px; cursor: pointer; }
+    .filter-select:focus { outline: none; border-color: #6D96AE; }
+    .filter-search { background: #F3F8F9; border: 1px solid #C5D7E0; border-radius: 20px;
+      font-family: 'Source Sans 3', sans-serif; font-size: 12px; color: #37576B; padding: 5px 12px 5px 30px; width: 230px; }
+    .filter-search:focus { outline: none; border-color: #6D96AE; }
+    .filter-search::placeholder { color: #9BB5C2; }
+    .filter-wrap { position: relative; display: inline-block; }
+    .filter-wrap.has-caret::after { content: "▾"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 10px; color: #6D96AE; pointer-events: none; }
+    .search-ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9BB5C2; pointer-events: none; }
+
+    /* Buttons */
+    .pub-btn { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; cursor: pointer; border: none; white-space: nowrap; }
+    .pub-btn-publish { background: #54B99B; color: white; }
+    .pub-btn-publish:hover { background: #3A9E86; }
+    .pub-btn-discard { background: #E0EBF0; color: #37576B; }
+    .pub-btn-discard:hover { background: #C5D7E0; }
+    .ghost-btn { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 4px; border: 1px solid #C5D7E0; background: white; color: #37576B; cursor: pointer; font-family: 'Source Sans 3', sans-serif; white-space: nowrap; }
+    .ghost-btn:hover { background: #F3F8F9; border-color: #6D96AE; color: #2D3E4C; }
+    .hover-show { opacity: 0; transition: opacity 0.15s; }
+    tr:hover .hover-show { opacity: 1; }
+    .row-actions { display: flex; align-items: center; gap: 4px; white-space: nowrap; justify-content: flex-end; }
+
+    /* Bulk bar */
+    .bulk-bar { display: flex; align-items: center; gap: 12px; padding: 9px 14px; background: #FCF6EC; border: 1px solid #F1CA87; border-radius: 10px; margin-bottom: 12px; }
+    .gold-btn { background: #EAAD43; color: white; border: none; border-radius: 20px; font-family: 'Oswald', sans-serif;
+                font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; padding: 7px 16px; cursor: pointer; }
+    .gold-btn:hover { background: #D99A2E; }
+    .gold-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .row-check { accent-color: #EAAD43; cursor: pointer; }
+
+    /* Stat cards */
+    .stat-card { cursor: pointer; border: 1px solid transparent; transition: border-color .12s, transform .12s; }
+    .stat-card:hover { border-color: #C5D7E0; transform: translateY(-1px); }
+    .stat-card.active { border-color: #EAAD43; box-shadow: 0 0 0 1px #EAAD43, 0px 2px 4px 0px rgba(0,0,0,.08); }
+
+    /* Surface tabs (secondary, above main card) */
+    .surf-tab { font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+                padding: 8px 2px; margin-right: 26px; border-bottom: 2px solid transparent; color: #6D96AE; cursor: pointer; background: none; border-top: none; border-left: none; border-right: none; }
+    .surf-tab:hover { color: #37576B; }
+    .surf-tab.active { color: #2D3E4C; border-bottom-color: #EAAD43; }
+
+    /* Source label */
+    .src-label { font-family: monospace; font-size: 11px; background: #F3F8F9; border: 1px solid #E0EBF0; padding: 1px 6px; border-radius: 3px; color: #37576B; }
+    .src-label.src-ext { background: #EAF1F5; border-color: #C5D7E0; }
+
+    /* View chip — which view of the source a section is bound to */
+    .view-chip { font-family: monospace; font-size: 10px; padding: 1px 6px; border-radius: 9999px; margin-left: 4px; border: 1px solid transparent; white-space: nowrap; }
+    .view-chip.ok    { background: #F3F8F9; color: #6D96AE; border-color: #E0EBF0; }
+    .view-chip.stale { background: #FCF0E4; color: #C2702E; border-color: #F0CDA8; cursor: pointer; font-weight: 700; }
+    .view-chip.stale:hover { background: #F8E3CC; }
+    .view-chip.fresh { background: #E8F7F2; color: #3A9E86; border-color: #BCE5D8; font-weight: 700; }
+    .sect-chip .stale-dot { width: 6px; height: 6px; border-radius: 50%; background: #EA8954; flex-shrink: 0; }
+
+    /* Table footer */
+    .table-footer { background: #F3F8F9; padding: 8px 14px; border-top: 1px solid #E0EBF0; display: flex; align-items: center; justify-content: space-between; border-radius: 0 0 10px 10px; }
+
+    /* Annotation strip */
+    .annotation-strip { background: #FFF8E1; border-left: 3px solid #EAAD43; padding: 8px 12px; border-radius: 0 6px 6px 0; margin-top: 12px; }
+    .annotation-strip p { font-size: 11px; color: #7A5C1E; line-height: 1.55; margin: 0; }
+
+    /* Inspector slide-over */
+    .inspector-overlay { position: fixed; inset: 0; background: rgba(45,62,76,0.25); z-index: 90; opacity: 0; pointer-events: none; transition: opacity .18s; }
+    .inspector-overlay.open { opacity: 1; pointer-events: auto; }
+    .inspector { position: fixed; top: 0; right: 0; bottom: 0; width: 390px; max-width: 92vw; background: white; z-index: 95;
+                 box-shadow: -8px 0 30px rgba(0,0,0,0.12); transform: translateX(100%); transition: transform .2s ease; display: flex; flex-direction: column; }
+    .inspector.open { transform: translateX(0); }
+    .insp-head { padding: 18px 20px 14px; border-bottom: 1px solid #E0EBF0; }
+    .insp-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
+    .insp-label { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #9BB5C2; margin-bottom: 4px; }
+    .insp-row { margin-bottom: 16px; }
+    .insp-foot { padding: 14px 20px; border-top: 1px solid #E0EBF0; display: flex; gap: 8px; flex-wrap: wrap; }
+    .hist-entry { display: flex; gap: 9px; padding: 7px 0; border-bottom: 1px solid #F0F4F6; font-size: 12px; }
+    .hist-entry:last-child { border-bottom: none; }
+    .modal-close { color: #9BB5C2; font-size: 22px; line-height: 1; cursor: pointer; border: none; background: none; padding: 0 4px; }
+    .modal-close:hover { color: #37576B; }
+
+    /* Preview modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; display: flex; align-items: center; justify-content: center; }
+    .modal-box { background: white; border-radius: 14px; width: 680px; max-width: 95vw; max-height: 80vh; overflow: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+
+    /* Nav */
+    .topnav { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 8px rgba(0,0,0,0.04); }
+  </style>
+</head>
+<body class="mny-page-bg min-h-screen">
+
+<!-- ============================================================
+     DESIGN DRAFT — Site Management V2 (Unified Tree)
+     Status:  Interactive mockup. Concept: "one tree, many lenses."
+              The page hierarchy is the single working surface; the
+              v1 tabs Pages / Publish Queue / Site Tree / Navigation
+              collapse into lenses + columns on that tree, and each
+              page expands inline into its sections table.
+              v1 design (site-management.html) left untouched.
+     Data:    Modeled on the REAL prod|mitigateny_2025:pattern
+              (mitigat-ny-prod, pattern id 985070): 164 pages, 4
+              levels deep, 2,478 sections (avg 15/page, max 59),
+              30 pages with unpublished changes vs only 2 drafts,
+              44 empty pages, 40 ghost rows, 3 orphans, duplicate
+              titles ("Risk Profile" ×12, "Mitigation Strategy" ×13).
+              Mockup ships a representative ~80-page subset.
+              Source dump: scratchpad/mitigat-ny-prod-prod/
+     Last updated: 2026-06-11
+     ============================================================ -->
+
+<!-- ═══ TOP NAV ═══ -->
+<div class="sticky top-0 z-50 px-4 pt-6 pointer-events-none">
+  <nav class="topnav max-w-[1240px] mx-auto px-5 h-16 flex items-center rounded-xl pointer-events-auto">
+    <div class="flex items-center flex-shrink-0 mr-6">
+      <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-9">
+    </div>
+    <span class="font-display text-[11px] text-mny-400 tracking-widest uppercase border-l border-mny-100 pl-5 mr-5 hidden md:block">Admin</span>
+    <div class="hidden md:flex items-center gap-1 text-[13px] font-proxima">
+      <a href="#" class="text-mny-400 hover:text-mny-700 px-2 py-1 rounded">Dashboard</a>
+      <a href="#" class="text-mny-700 font-semibold bg-mny-50 px-2 py-1 rounded">Site Management</a>
+      <a href="#" class="text-mny-400 hover:text-mny-700 px-2 py-1 rounded">Data Sources</a>
+      <a href="#" class="text-mny-400 hover:text-mny-700 px-2 py-1 rounded">Users</a>
+    </div>
+    <div class="ml-auto flex items-center gap-3">
+      <div class="text-xs text-mny-400 font-proxima hidden md:block">MitigateNY_2025 pattern</div>
+      <div class="w-8 h-8 rounded-full bg-mny-700 flex items-center justify-center text-white text-xs font-semibold font-display">SG</div>
+    </div>
+  </nav>
+</div>
+
+<!-- ═══ PAGE WRAPPER ═══ -->
+<div class="max-w-[1240px] mx-auto px-4 pt-6 pb-20">
+
+  <!-- Breadcrumb -->
+  <div class="text-xs font-proxima text-mny-400 mb-4 flex items-center gap-1">
+    <a href="#" class="hover:text-mny-700">Admin</a>
+    <span class="text-mny-200">›</span>
+    <span class="text-mny-700">Site Management</span>
+    <span class="pill pill-amber ml-2" style="font-size:9px;">V2 CONCEPT</span>
+  </div>
+
+  <!-- ─── Page header ─── -->
+  <div class="flex items-end justify-between mb-6 flex-wrap gap-4">
+    <div>
+      <h1 class="font-display text-[38px] text-mny-900 leading-none tracking-wide uppercase"
+          style="text-decoration: underline; text-decoration-color: #EAAD43; text-decoration-thickness: 3px; text-underline-offset: 6px;">
+        Site Management
+      </h1>
+      <p class="text-mny-700 text-sm mt-2 font-proxima">
+        <strong class="text-mny-900">MitigateNY_2025</strong> pattern ·
+        <span class="text-mny-400">last updated 4 minutes ago by</span>
+        <strong class="text-mny-700">sgangdod</strong>
+      </p>
+    </div>
+    <!-- Quick stats — each one is a lens shortcut -->
+    <div class="flex gap-3" id="stat-cards">
+      <div class="card stat-card px-4 py-3 text-center min-w-[86px]" data-lens="all" onclick="setLens('all')">
+        <div class="font-display text-[26px] text-mny-900 leading-none" id="stat-pages">—</div>
+        <div class="font-display text-[10px] text-mny-400 tracking-widest mt-1">PAGES</div>
+      </div>
+      <div class="card stat-card px-4 py-3 text-center min-w-[86px]" data-lens="queue" onclick="setLens('queue')">
+        <div class="font-display text-[26px] text-mny-y700 leading-none" id="stat-queue">—</div>
+        <div class="font-display text-[10px] text-mny-400 tracking-widest mt-1">TO PUBLISH</div>
+      </div>
+      <div class="card stat-card px-4 py-3 text-center min-w-[86px]" data-lens="sections" onclick="setScope('sections')">
+        <div class="font-display text-[26px] text-mny-700 leading-none" id="stat-sections">—</div>
+        <div class="font-display text-[10px] text-mny-400 tracking-widest mt-1">SECTIONS</div>
+      </div>
+      <div class="card stat-card px-4 py-3 text-center min-w-[86px]" data-lens="empty" onclick="setLens('empty')">
+        <div class="font-display text-[26px] text-mny-400 leading-none" id="stat-empty">—</div>
+        <div class="font-display text-[10px] text-mny-400 tracking-widest mt-1">EMPTY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Surface tabs: the unified tree is the home surface; cross-cutting
+           audits stay as their own surfaces (unchanged from v1 design) ─── -->
+  <div class="flex items-center border-b border-mny-200 mb-5 px-1">
+    <button class="surf-tab active">Site</button>
+    <button class="surf-tab" title="Unchanged from v1 design — see site-management.html">Data Sources</button>
+    <button class="surf-tab" title="Unchanged from v1 design — see site-management.html">Site Health</button>
+    <button class="surf-tab" title="Unchanged from v1 design — see site-management.html">Activity</button>
+  </div>
+
+  <!-- ─── Main card: THE TREE ─── -->
+  <div class="card overflow-hidden">
+    <div class="p-5 pb-4">
+
+      <!-- Command bar -->
+      <div class="flex items-center gap-2 flex-wrap mb-1">
+        <!-- Lenses -->
+        <div class="flex items-center gap-2 flex-wrap" id="lens-bar">
+          <button class="lens-chip active" data-lens="all" onclick="setLens('all')">All Pages</button>
+          <button class="lens-chip" data-lens="queue" onclick="setLens('queue')">To Publish <span class="lens-count" id="lens-count-queue">0</span></button>
+          <button class="lens-chip" data-lens="empty" onclick="setLens('empty')">Empty <span class="lens-count" id="lens-count-empty">0</span></button>
+          <button class="lens-chip lens-warn" data-lens="orphans" onclick="setLens('orphans')">Orphans <span class="lens-count" id="lens-count-orphans">0</span></button>
+          <button class="lens-chip" data-lens="hidden" onclick="setLens('hidden')">Off Nav <span class="lens-count" id="lens-count-hidden">0</span></button>
+        </div>
+
+        <div class="w-px h-6 bg-mny-100 mx-1 hidden lg:block"></div>
+
+        <!-- Search scope: page titles vs section titles/sources -->
+        <div class="seg" id="scope-seg">
+          <button class="active" data-scope="pages" onclick="setScope('pages')">Pages</button>
+          <button data-scope="sections" onclick="setScope('sections')">Sections</button>
+        </div>
+
+        <div class="filter-wrap">
+          <svg class="search-ico" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" class="filter-search" id="search-input" placeholder="Search page titles…" oninput="onSearch(this.value)">
+        </div>
+
+        <!-- Section-scope filters (hidden in page scope) -->
+        <div class="filter-wrap has-caret hidden" id="type-filter-wrap">
+          <select class="filter-select pr-8" id="type-filter" onchange="render()">
+            <option value="">All types</option>
+            <option>Lexical</option><option>Card</option><option>Spreadsheet</option>
+            <option>Graph</option><option>Header</option><option>Footer</option>
+          </select>
+        </div>
+        <div class="filter-wrap has-caret hidden" id="src-filter-wrap">
+          <select class="filter-select pr-8" id="src-filter" onchange="render()">
+            <option value="">All sections</option>
+            <option value="__any__">Any data source</option>
+          </select>
+        </div>
+        <button class="lens-chip lens-warn hidden" id="stale-toggle" onclick="toggleStale()"
+                title="Sections bound to an older view than their source's latest">
+          Stale Views <span class="lens-count" id="stale-count">0</span>
+        </button>
+
+        <div class="flex-1"></div>
+
+        <button class="ghost-btn" onclick="expandAll()">Expand All</button>
+        <button class="ghost-btn" onclick="collapseAll()">Collapse All</button>
+        <button class="gold-btn">+ New Page</button>
+      </div>
+    </div>
+
+    <!-- Bulk publish bar — appears under the To Publish lens -->
+    <div class="px-5 hidden" id="bulk-wrap">
+      <div class="bulk-bar">
+        <input type="checkbox" id="select-all" class="row-check" onchange="toggleSelectAll(this.checked)">
+        <label for="select-all" class="text-xs font-proxima text-mny-700 cursor-pointer">Select all needing publish</label>
+        <span class="text-xs text-mny-400 font-proxima" id="bulk-count">0 selected</span>
+        <div class="flex-1"></div>
+        <button class="gold-btn" id="bulk-publish-btn" disabled onclick="bulkPublish()">Publish Selected</button>
+      </div>
+    </div>
+
+    <!-- Bulk view-update bar — appears under the Stale Views filter -->
+    <div class="px-5 hidden" id="view-bulk-wrap">
+      <div class="bulk-bar">
+        <span class="text-xs font-proxima text-mny-700"><strong id="view-bulk-count">0</strong> sections are bound to outdated views</span>
+        <span class="text-xs text-mny-400 font-proxima italic">updated sections are flagged for column-mapping review</span>
+        <div class="flex-1"></div>
+        <button class="gold-btn" onclick="updateAllStale()">Update All to Latest Views</button>
+      </div>
+    </div>
+
+    <!-- Tree table -->
+    <div class="px-5 pb-5">
+      <div class="border border-mny-200 rounded-xl overflow-hidden overflow-x-auto">
+        <table class="mgmt-table" style="min-width: 1020px;">
+          <thead>
+            <tr>
+              <th style="width:30px" class="check-col"></th>
+              <th>Page</th>
+              <th style="width:106px">State</th>
+              <th style="width:64px" class="text-center" title="hide_in_nav — toggle writes immediately">In Nav</th>
+              <th style="width:120px" title="last publish entry from data.history">Last Published</th>
+              <th style="width:90px" class="text-center" title="Click to expand this page's sections inline">Sections</th>
+              <th style="width:80px">Auth</th>
+              <th style="width:152px"></th>
+            </tr>
+          </thead>
+          <tbody id="tree-body"><!-- rendered by JS --></tbody>
+        </table>
+        <div class="table-footer">
+          <span class="font-display text-[10px] text-mny-400 tracking-widest" id="footer-count">—</span>
+          <span class="text-xs text-mny-400 font-proxima italic" id="footer-hint">Tree order = nav order (index) · drag handle to reorder</span>
+        </div>
+      </div>
+    </div>
+  </div><!-- /main card -->
+
+  <!-- ─── Annotations: how this maps onto DMS ─── -->
+  <div class="annotation-strip">
+    <p>
+      <strong>Unified tree</strong> — one surface replaces the v1 Pages / Publish Queue / Site Tree / Navigation tabs. Built as a custom
+      <code>SiteTreeSection</code> component (the v1 Site Tree annotation already concluded a Spreadsheet can't express hierarchy): full pages load,
+      tree assembled client-side by <strong><code>child.parent === parent.id</code></strong>, siblings ordered by <code>index</code>. Note: the real
+      mitigateny_2025 data stores <code>parent</code> as a page <em>id</em>, not a title — and with "Risk Profile" ×12 and "Mitigation Strategy" ×13
+      in the same pattern, any title-based join (as sketched in the v1 <code>page_children</code> annotations) would mis-count. Hierarchy columns must
+      join on id. Pagination off — same full-load constraint <code>planning/tasks/current/page-hierarchy-columns.md</code> already accepts.
+    </p>
+  </div>
+  <div class="annotation-strip">
+    <p>
+      <strong>Lenses = saved filters, not tabs.</strong> <em>To Publish</em> ≡ <code>published='draft' OR has_changes=true</code> (v1's Publish Queue);
+      <em>Empty</em> ≡ <code>section_count=0</code>; <em>Orphans</em> ≡ parent id not found; <em>Off Nav</em> ≡ <code>hide_in_nav=true</code>. A lens
+      filters the tree but keeps ancestors visible (dimmed) so a flagged page is always seen <em>in its place in the site</em>. Real-data shape these
+      lenses serve: 30 changed + 2 drafts, <strong>44 empty pages</strong> (incl. ~40 "ghost" rows with no data at all), 3 orphans, 1 hidden page.
+      The publish queue is overwhelmingly <em>changed</em> pages, not drafts — so the State column shows Published + an amber changes-dot rather than
+      leading with a Draft pill.
+    </p>
+  </div>
+  <div class="annotation-strip">
+    <p>
+      <strong>Navigation folded into the tree</strong> — sibling order <em>is</em> nav order (<code>index</code>), so a separate Navigation tab becomes
+      redundant: the ⠿ handle reorders siblings (drag deferred — needs the bulk-update primitive; ↑↓ swap of adjacent <code>index</code> works today,
+      task <code>site-mgmt-navigation-management.md</code>), and the In&nbsp;Nav toggle writes <code>hide_in_nav</code> via <code>apiUpdate</code> inline.
+      Published and nav visibility stay independent, as in v1.
+    </p>
+  </div>
+  <div class="annotation-strip">
+    <p>
+      <strong>Sections as the tree's second level.</strong> Clicking a page's section chip expands an inline sub-table of that page's
+      <code>{pattern}|component</code> rows (<code>component_type</code> / <code>source_id</code> / <code>view_id</code> virtual SQL columns via
+      <code>extractDmsJsonPath</code>, <code>element_preview</code> modal — v1's Sections tab, scoped to where the section lives). Real pages average
+      <strong>15 sections and run up to 59</strong>, and most are <em>untitled lexical body sections</em> — only the titled, leveled ones form the page
+      outline. Hence the panel's <em>Outline / All</em> toggle: Outline shows the titled skeleton (what an editor scans), All shows every row in a
+      scrolling list. The <em>Sections</em> search scope answers cross-cutting questions by filtering sections globally and auto-expanding matches
+      under their pages. Its source dropdown doubles as a <strong>data-source inventory</strong>: "Any data source (N)" shows only sections bound to
+      a source, and each option carries its site-wide section count, grouped <em>Internal (DMS)</em> vs <em>External (UDA)</em>. Both kinds come from
+      the same place — the section's <code>element-data.sourceInfo</code> object (shape verified on live Flooding sections:
+      <code>{ name, source_id, env, srcEnv, view_id, view_name, updated_at }</code>); internal DMS sources have <code>srcEnv
+      "mitigat-ny-prod+prod"</code>, external UDA sources <code>env "hazmit_dama"</code>. The earlier v1 sketch only read
+      <code>externalSource</code> — the real extraction must read <code>sourceInfo</code> to catch both. With a type/source filter active, panels show
+      matching rows only (the page row above is the context), a binding-by-binding audit pairing with the Data Sources surface's "Used by" counts.
+    </p>
+  </div>
+  <div class="annotation-strip">
+    <p>
+      <strong>View staleness &amp; bulk re-binding.</strong> Each source-bound row shows its <strong>View</strong> next to the Source:
+      <code>sourceInfo.view_id</code> vs the source's newest view (max view id over <code>{source}|{name}:view</code> rows for internal sources;
+      the UDA views list for external ones). Live example: Flooding's event sections are bound to <em>AVAIL - Fusion Events V2 (12/10/2024)</em>,
+      view 1648 — when a newer view is published, the amber <code>v1648→1700</code> chip appears, the page's section-count chip gets an orange dot,
+      and the <em>Stale Views (N)</em> filter collects every lagging binding site-wide. Per-chip click rebinds one section; <em>Update All to Latest
+      Views</em> batch-rewrites <code>sourceInfo.view_id</code>/<code>view_name</code> across matches (needs the same batch-updateItem primitive as
+      bulk publish). Updated sections flag <code>v1700 ✓</code> for <strong>column-mapping review</strong> — a new view can drop or rename columns the
+      section's <code>dataRequest</code>/<code>columns</code> config references, so re-binding marks the section (and its page's <code>has_changes</code>)
+      rather than silently publishing.
+    </p>
+  </div>
+  <div class="annotation-strip">
+    <p>
+      <strong>lexicalSummary() — derived content summaries.</strong> Untitled lexical rows show an auto summary instead of "(untitled)":
+      walk <code>element['element-data'].text.root.children</code> (shape verified against the live Flooding page, 1009741); return the first
+      <code>heading</code> node's text if present, else the first non-empty text run truncated to ~90 chars, else flag <em>(empty)</em>.
+      Styling distinguishes provenance: authored titles bold ink, derived heading semibold, derived excerpt regular with a ¶ mark, empty pale italic.
+      Summaries are searchable in the Sections scope (full-text-ish search over page content from site management). The Flooding panel in this mockup
+      carries the real extracted summaries — including 6 truly empty lexical sections it exposed (cleanup candidates, flagged in the panel header).
+      Implementation: client-side helper next to the section sub-table (the recursive walk over Lexical JSON doesn't fit a SQL virtual column);
+      if the full-load walk gets heavy at 2,478 sections, persist a <code>content_summary</code> attribute computed on section save.
+    </p>
+  </div>
+  <div class="annotation-strip">
+    <p>
+      <strong>Bulk publish</strong> — select-rows + batch <code>updateItem</code> is a new primitive (same dependency v1 flagged). Per-row Publish /
+      Discard reuse <code>page_publish</code> behavior (<code>editFunctions.jsx</code>: set <code>published=''</code>, <code>has_changes=false</code>,
+      append history entry). <strong>Inspector</strong> (click a page title) reads <code>data.history.entries</code> — same source as
+      <code>site-mgmt-last-published-column.md</code>. Data Sources / Site Health / Activity remain separate surfaces, unchanged from v1 — though the
+      tree already absorbs the health checks that are <em>structural</em> (empty pages, orphans) as lenses.
+    </p>
+  </div>
+  <div class="annotation-strip">
+    <p>
+      <strong>Reference data</strong> — structure, counts, names, and pathologies in this mockup are drawn from the live
+      <code>prod|mitigateny_2025:pattern</code> (app <code>mitigat-ny-prod</code>, pattern 985070): 164 pages / 2,478 sections; Natural Hazards with 16
+      hazard children each carrying a Risk Profile (41–59 sections) and Mitigation Strategy (17–21); Mitigation Matters with 21 flat story pages;
+      ghost rows and orphaned test pages. Dump: <code>scratchpad/mitigat-ny-prod-prod/mny2025-pages-full.json</code>.
+    </p>
+  </div>
+
+</div><!-- /page wrapper -->
+
+
+<!-- ═══ INSPECTOR SLIDE-OVER ═══ -->
+<div class="inspector-overlay" id="insp-overlay" onclick="closeInspector()"></div>
+<aside class="inspector" id="inspector">
+  <div class="insp-head">
+    <div class="flex items-start justify-between">
+      <div>
+        <div class="insp-label">Page</div>
+        <h2 class="font-display text-[20px] text-mny-900 tracking-wide uppercase leading-tight" id="insp-title">—</h2>
+        <div class="text-[11px] font-mono text-mny-400 mt-1" id="insp-slug">—</div>
+      </div>
+      <button class="modal-close" onclick="closeInspector()">×</button>
+    </div>
+    <div class="flex items-center gap-2 mt-3 flex-wrap" id="insp-pills"></div>
+  </div>
+  <div class="insp-body">
+    <div class="insp-row">
+      <div class="insp-label">Location</div>
+      <div class="text-sm text-mny-700" id="insp-parent">—</div>
+    </div>
+    <div class="grid grid-cols-2 gap-4 insp-row">
+      <div>
+        <div class="insp-label">Sections</div>
+        <div class="text-sm text-mny-700 font-semibold" id="insp-sections">—</div>
+      </div>
+      <div>
+        <div class="insp-label">Children</div>
+        <div class="text-sm text-mny-700 font-semibold" id="insp-children">—</div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4 insp-row">
+      <div>
+        <div class="insp-label">Auth</div>
+        <div class="text-sm text-mny-700" id="insp-auth">—</div>
+      </div>
+      <div>
+        <div class="insp-label">In Navigation</div>
+        <div class="text-sm text-mny-700" id="insp-nav">—</div>
+      </div>
+    </div>
+    <div class="insp-row">
+      <div class="insp-label">History</div>
+      <div id="insp-history"></div>
+    </div>
+  </div>
+  <div class="insp-foot" id="insp-actions"></div>
+</aside>
+
+
+<!-- ═══ SECTION PREVIEW MODAL ═══ -->
+<div id="preview-modal" class="modal-overlay hidden" onclick="if(event.target===this)closePreview()">
+  <div class="modal-box">
+    <div class="px-5 pt-5 pb-3 border-b border-mny-100 flex items-start justify-between">
+      <div>
+        <h2 class="font-display text-[18px] text-mny-900 tracking-wide uppercase" id="pv-title">Section Preview</h2>
+        <div class="flex items-center gap-2 mt-1">
+          <span id="pv-badge" class="badge badge-card">Card</span>
+          <span class="text-xs text-mny-400 font-proxima" id="pv-meta"></span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closePreview()">×</button>
+    </div>
+    <div class="p-5" id="pv-body"></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════
+     DATA + RENDER
+     ════════════════════ -->
+<script>
+/* ──────────────────────────────────────────────────────────────
+   Mock site data — a representative subset of the REAL
+   prod|mitigateny_2025:pattern tree (mitigat-ny-prod). Mirrors the
+   {pattern}|page shape: parent is a page ID (not a title — titles
+   duplicate heavily in real data), index is sibling/nav order,
+   published is '' (live) | 'draft', has_changes marks published
+   pages with unpublished edits.
+
+   Per page: n = total section count (real numbers where known),
+   o = outline (the titled, leveled sections; everything else is
+   untitled lexical body copy, as in the real rows).
+   ────────────────────────────────────────────────────────────── */
+
+/* Outline templates reflecting real section anatomy
+   tuple: [title, type, level, src, sumKind, sumText]
+   sumKind/sumText = derived content summary (lexicalSummary) for untitled lexical rows */
+const OUT_HAZARD = [
+  ['(untitled)','Header',0],
+  ['Overview','Lexical',1],
+  ['Hazard Profile','Card',2,'Hazard Profiles'],
+  ['Damage in New York State','Lexical',1],
+  ['Past Occurrences','Lexical',1],
+  ['Presidentially Declared Disasters','Spreadsheet',2,'AVAIL - Fusion Events V2@1648'],
+  ['Non-Declared Events','Spreadsheet',2,'AVAIL - Fusion Events V2@1648'],
+  ['Featured Events','Lexical',2],
+  ['Intensity','Lexical',1],
+  ['Radar','Lexical',3],
+  ['Rain Gauges','Lexical',3],
+  ['Satellite','Lexical',3],
+  ['Content Resources','Lexical',3],
+  ['(untitled)','Footer',0],
+];
+
+/* The REAL 40-section list of the live Flooding page (1009741), summaries
+   extracted from element-data.text.root.children by lexicalSummary() */
+const FLOOD_SECTIONS = [
+  ['Overview','Lexical',1,null,'excerpt','A flood is an overflow or inundation of water in an area that is usually dry. Floods occur…'],
+  ['(untitled)','Card',0,'AVAIL - Fusion Events V2@1648'],
+  ['(untitled)','Card',null,'FEMA - National Risk Index (NRI) Counties'],
+  ['(untitled)','Card',null,'AVAIL - Fusion Events V2@1648'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',0,null,'excerpt','Each flood type below is described in more detail with general characteristics and definit…'],
+  ['(untitled)','Lexical',null,null,'excerpt','Coastal and lakeshore flooding are also flood types of concern in New York State and are p…'],
+  ['(untitled)','Lexical',null,null,'excerpt','Hurricanes, which can include storm surge, massive rainfall, and devastating flooding, are…'],
+  ['Flood Damage in New York State','Lexical',1,null,'excerpt','From the bustling streets of New York City to the picturesque hamlets nestled along the Hu…'],
+  ['(untitled)','Lexical',null,null,'excerpt','By 2045, more than $8.5 billion worth of residential properties in New York State will be …'],
+  ['(untitled)','Lexical',null,null,'excerpt','One month prior to the finalization of this plan, on September 29th, 2023, New York City w…'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',null,null,'excerpt','Photo gallery to come.'],
+  ['(untitled)','Lexical',null,null,'excerpt','On July 9, 2023, heavy rains caused historic flooding in part of the Hudson Valley. Orange…'],
+  ['(untitled)','Lexical',0,null,'excerpt','In September 2021, remnants of Hurricane Ida brought a storm that tested New York State’s…'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',null,null,'excerpt','Beyond the immediately evident impacts, flooding deepens economic and social inequities –…'],
+  ['(untitled)','Lexical',null,null,'excerpt','"Disasters are not created by natural events alone; rather, they are the product of natura…'],
+  ['Past Occurrences','Lexical',1,null,'excerpt','The following two tables show details of damaging hazard events since 1996. Some events le…'],
+  ['(untitled)','Lexical',null,null,'excerpt','Between September 30, 2018, and September 30, 2023, New York State has faced a series of p…'],
+  ['Presidentially Declared Disasters','Spreadsheet',2,'AVAIL - Fusion Events V2@1648'],
+  ['Non-Declared Events','Spreadsheet',2,'AVAIL - Fusion Events V2@1648'],
+  ['Featured Events','Lexical',2,null,'excerpt','August 2009 – Erie, Chautauqua, Cattaraugus, and Allegany Counties. On August 10, two cons…'],
+  ['(untitled)','Lexical',null,null,'excerpt','On the morning of August 13, 2018 after an unusually wet summer in New York State, rain be…'],
+  ['(untitled)','Lexical',null,null,'excerpt','On Halloween night, October 31, 2019, a severe storm began to sweep across New York, bring…'],
+  ['(untitled)','Lexical',null,null,'excerpt','The remnants of Tropical Storm Fred made landfall in the eastern United States in mid-Augu…'],
+  ['Intensity','Lexical',1,null,'excerpt','Discharge is the volume of water that passes through a given cross section of a body of wa…'],
+  ['Radar','Lexical',3,null,'excerpt','WSR-88D radars graphically display detected precipitation on a map. Radar can show the loc…'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['Rain Gauges','Lexical',3,null,'excerpt','Rain gauges provide the most accurate method of measuring rainfall at a single geographic…'],
+  ['Satellite','Lexical',3,null,'excerpt','Estimates of rainfall from satellite data are less direct and less accurate than either ga…'],
+  ['Content Resources','Lexical',3,null,'excerpt','Content resources are cited throughout the SHMP in parentheticals with a reference number.'],
+  ['(untitled)','Footer',null],
+  ['(untitled)','Header',null],
+  ['(untitled)','Lexical',null,null,'heading','RELATED TO FLOODING'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',null,null,'empty'],
+  ['(untitled)','Lexical',null,null,'heading','FLOODING RISK PROFILE'],
+  ['(untitled)','Lexical',null,null,'heading','COASTAL HAZARDS RISK PROFILE'],
+  ['(untitled)','Lexical',null,null,'heading','DAM SAFETY'],
+];
+
+/* ── Source registry — mirrors the real sourceInfo shape on live sections:
+   { name, source_id, env, srcEnv, view_id, view_name, updated_at }.
+   kind 'internal' = DMS source ({dmsenv}|{name}:source, srcEnv "mitigat-ny-prod+prod");
+   kind 'external' = UDA/DAMA source (env "hazmit_dama"). Both bind the same way.
+   `latest` is the source's newest view — sections bound to older views are stale. */
+const SOURCES = {
+  'AVAIL - Fusion Events V2':                 { id:870, kind:'external', latest:1700, latestName:'AVAIL - Fusion Events V2 (05/28/2026)', views:{1648:'12/10/2024', 1700:'05/28/2026'} },
+  'FEMA - National Risk Index (NRI) Counties':{ id:159, kind:'external', latest:1370, latestName:'NRI Counties 09/23/2024', views:{1370:'09/23/2024'} },
+  'FEMA - HAZUS Losses':                      { id:412, kind:'external', latest:1521, latestName:'HAZUS Losses 2024', views:{1521:'2024'} },
+  'Social Vulnerability Index':               { id:233, kind:'external', latest:1102, latestName:'SVI 2022', views:{1102:'2022', 988:'2020'} },
+  'NOAA - Storm Events':                      { id:512, kind:'external', latest:1655, latestName:'Storm Events 04/2026', views:{1655:'04/2026', 1590:'10/2025'} },
+  'Building Footprints':                      { id:31,  kind:'internal', latest:3,    latestName:'v3', views:{3:'v3'} },
+  'Hazard Profiles':                          { id:12,  kind:'internal', latest:14,   latestName:'v14', views:{14:'v14', 12:'v12'} },
+  'Mitigation Actions':                       { id:18,  kind:'internal', latest:31,   latestName:'v31', views:{31:'v31', 27:'v27'} },
+  'Funding Sources':                          { id:22,  kind:'internal', latest:12,   latestName:'v12', views:{12:'v12'} },
+  'County Stats':                             { id:9,   kind:'internal', latest:5,    latestName:'v5',  views:{5:'v5', 4:'v4'} },
+  'Climate Projections':                      { id:27,  kind:'internal', latest:6,    latestName:'v6',  views:{6:'v6'} },
+};
+
+/* plausible excerpts for synthesized untitled lexical body rows on other pages */
+const EXCERPT_POOL = [
+  'New York State experiences a wide range of natural hazards that vary in frequency, intensit…',
+  'Between 1996 and 2023, damaging events in this category led to repeated disaster declaratio…',
+  'Climate projections indicate that the frequency and severity of these events will continue…',
+  'Local jurisdictions identified this hazard as a priority in their county hazard mitigation…',
+  'The table below summarizes estimated annualized losses by county, drawn from the statewide…',
+  'Mitigation actions targeting this hazard range from property acquisition and elevation to…',
+  'Federal funding programs, including HMGP and BRIC, have supported projects addressing this…',
+  'For a detailed methodology, see the statewide risk assessment chapter of the 2023 SHMP.',
+  'Photo gallery to come.',
+  'State agencies coordinate response and recovery for these events through the Office of Eme…',
+];
+const OUT_RISK = [
+  ['(untitled)','Header',0],
+  ['Hazard Description','Lexical',1],
+  ['Exposure','Card',2,'Building Footprints'],
+  ['Vulnerability','Card',2,'Social Vulnerability Index@988'],
+  ['Loss Estimates','Spreadsheet',2,'FEMA - HAZUS Losses'],
+  ['County Breakdown','Spreadsheet',3,'County Stats'],
+  ['Probability of Future Events','Graph',2,'NOAA - Storm Events@1590'],
+];
+const OUT_STRAT = [
+  ['(untitled)','Header',0],
+  ['Strategy Overview','Lexical',1],
+  ['Actions','Spreadsheet',2,'Mitigation Actions@27'],
+  ['Funding Opportunities','Card',2,'Funding Sources'],
+];
+const OUT_STORY = [
+  ['(untitled)','Header',0],
+  ['The Story','Lexical',1],
+  ['Project Details','Card',2,'Mitigation Actions'],
+];
+const OUT_PLAIN = [
+  ['(untitled)','Header',0],
+  ['Overview','Lexical',1],
+];
+
+/* id, title, parent-id, index, published, has_changes, hide_in_nav, auth, lastPub, n sections, outline */
+const P = (id,t,p,ix,pub,chg,hid,auth,lastPub,n,o) => ({ id, t, p, ix, pub, chg, hid, auth, lastPub, n, o: o||OUT_PLAIN });
+
+const PAGES = [
+  /* ── roots (real root set) ── */
+  P(1009772,'Home',            null,0,'',true ,false,'Public',{when:'12 days ago',by:'sgangdod'},14,[['(untitled)','Header',0],['Welcome','Lexical',1],['Explore the Plan','Card',2],['County Lookup','Card',2,'County Stats@4'],['(untitled)','Footer',0]]),
+  P(1009790,'County Risk Profiles', null,1,'',false,false,'Public',{when:'4 months ago',by:'admin'},0,[]),
+  P(1335740,'Know the Environment', null,2,'',false,false,'Public',{when:'2 months ago',by:'admin'},19,OUT_PLAIN),
+  P(1335756,'Assess Risk',     null,3,'',false,false,'Public',{when:'2 months ago',by:'admin'},22,OUT_PLAIN),
+  P(1432001,'PDF Cover',       null,4,'',false,false,'AVAIL',null,3,OUT_PLAIN),
+  P(1335770,'Plan to Act',     null,5,'',true ,false,'Public',{when:'1 month ago',by:'sgangdod'},18,OUT_PLAIN),
+  P(1335780,'Explore Progress',null,6,'',false,false,'Public',{when:'2 months ago',by:'admin'},16,OUT_PLAIN),
+  P(1335790,'County Profile',  null,7,'',false,true ,'Public',{when:'5 months ago',by:'admin'},31,OUT_PLAIN),
+
+  /* ── Know the Environment ── */
+  P(1336001,'Built Environment',      1335740,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},21,OUT_PLAIN),
+  P(1336002,'People and Communities', 1335740,1,'',true ,false,'Public',{when:'19 days ago',by:'cwirth'},24,OUT_PLAIN),
+  P(1336003,'Natural Environment',    1335740,2,'',false,false,'Public',{when:'2 months ago',by:'admin'},17,OUT_PLAIN),
+  P(1336011,'Buildings',              1336001,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},16,OUT_PLAIN),
+  P(1336012,'Critical Infrastructure',1336001,1,'',false,false,'Public',{when:'2 months ago',by:'admin'},19,OUT_PLAIN),
+  P(1336013,'Community Lifelines',    1336001,2,'',true ,false,'Public',{when:'25 days ago',by:'cwirth'},52,OUT_PLAIN),
+
+  /* ── Assess Risk ── */
+  P(1009704,'Natural Hazards',  1335756,0,'',true ,false,'Public',{when:'yesterday',by:'sgangdod'},30,[['(untitled)','Header',0],['Hazards of Concern','Lexical',1],['Hazard Grid','Card',2,'Hazard Profiles@12'],['Methodology','Lexical',2],['(untitled)','Footer',0]]),
+  P(1009850,'Climate Change',   1335756,1,'',false,false,'Public',{when:'3 months ago',by:'admin'},26,OUT_PLAIN),
+  P(1009860,'Presidentially Declared Disasters',1335756,2,'',false,false,'Public',{when:'3 months ago',by:'admin'},12,[['(untitled)','Header',0],['Declared Disasters','Spreadsheet',1,'AVAIL - Fusion Events V2@1648'],['By County','Graph',2,'AVAIL - Fusion Events V2@1648']]),
+
+  /* the 14+2 hazards, real names + real section counts */
+  P(2001,'Avalanche',      1009704, 0,'',true ,false,'Public',{when:'3 days ago',by:'sgangdod'},18,OUT_HAZARD),
+  P(2002,'Coastal Hazards',1009704, 1,'',false,false,'Public',{when:'2 months ago',by:'admin'},20,OUT_HAZARD),
+  P(2003,'Drought',        1009704, 2,'',false,false,'Public',{when:'2 months ago',by:'admin'},19,OUT_HAZARD),
+  P(2004,'Extreme Heat',   1009704, 3,'',true ,false,'Public',{when:'6 days ago',by:'cwirth'},24,OUT_HAZARD),
+  P(1009741,'Flooding',    1009704, 4,'',false,false,'Public',{when:'1 month ago',by:'sgangdod'},40,FLOOD_SECTIONS),
+  P(2006,'Hail',           1009704, 5,'',false,false,'Public',{when:'2 months ago',by:'admin'},18,OUT_HAZARD),
+  P(2007,'Hurricane',      1009704, 6,'',false,false,'Public',{when:'2 months ago',by:'admin'},22,OUT_HAZARD),
+  P(2008,'Ice Storm',      1009704, 7,'',false,false,'Public',{when:'2 months ago',by:'admin'},20,OUT_HAZARD),
+  P(2009,'Landslide',      1009704, 8,'',false,false,'Public',{when:'2 months ago',by:'admin'},21,OUT_HAZARD),
+  P(2010,'Lightning',      1009704, 9,'',false,false,'Public',{when:'2 months ago',by:'admin'},19,OUT_HAZARD),
+  P(2011,'Snowstorm',      1009704,10,'',false,false,'Public',{when:'2 months ago',by:'admin'},20,OUT_HAZARD),
+  P(2012,'Tornado',        1009704,11,'',false,false,'Public',{when:'2 months ago',by:'admin'},21,OUT_HAZARD),
+  P(2013,'Wildfire',       1009704,12,'',false,false,'Public',{when:'2 months ago',by:'admin'},20,OUT_HAZARD),
+  P(2014,'Wind',           1009704,13,'',false,false,'Public',{when:'2 months ago',by:'admin'},22,OUT_HAZARD),
+
+  /* hazard children — note the ×12 duplicate "Risk Profile" titles (real) */
+  P(3001,'Risk Profile',       2001,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},41,OUT_RISK),
+  P(3002,'Mitigation Strategy',2001,1,'',false,false,'Public',{when:'2 months ago',by:'admin'},20,OUT_STRAT),
+  P(3003,'Risk Profile',       2002,0,'',true ,false,'Public',{when:'8 days ago',by:'cwirth'},59,OUT_RISK),
+  P(3004,'Risk Profile',       2004,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},59,OUT_RISK),
+  P(3005,'Mitigation Strategy',2004,1,'',false,false,'Public',{when:'2 months ago',by:'admin'},20,OUT_STRAT),
+  P(3006,'Floodplain Management and the NFIP',1009741,0,'',false,false,'Public',{when:'1 month ago',by:'admin'},15,OUT_PLAIN),
+  P(3007,'Mitigation Strategy',1009741,1,'',true ,false,'Public',{when:'4 days ago',by:'sgangdod'},19,OUT_STRAT),
+  P(3008,'Dam Safety',         1009741,2,'',false,false,'Public',{when:'1 month ago',by:'admin'},33,OUT_PLAIN),
+  P(3009,'Risk Profile',       2006,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},47,OUT_RISK),
+  P(3010,'Mitigation Strategy',2007,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},21,OUT_STRAT),
+  P(3011,'Risk Profile',       2008,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},43,OUT_RISK),
+  P(3012,'Mitigation Strategy',2008,1,'',false,false,'Public',{when:'2 months ago',by:'admin'},18,OUT_STRAT),
+  P(3013,'Risk Profile',       2011,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},47,OUT_RISK),
+  P(3014,'Risk Profile',       2012,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},45,OUT_RISK),
+  P(3015,'Risk Profile',       2013,0,'',true ,false,'Public',{when:'2 weeks ago',by:'cwirth'},47,OUT_RISK),
+  P(3016,'Wildfire Smoke',     2013,1,'',false,false,'Public',{when:'2 months ago',by:'admin'},15,OUT_PLAIN),
+  P(3017,'Risk Profile',       2014,0,'',false,false,'Public',{when:'2 months ago',by:'admin'},51,OUT_RISK),
+
+  /* Climate Change children */
+  P(3101,'Projections & Trends', 1009850,0,'',false,false,'Public',{when:'3 months ago',by:'admin'},23,OUT_PLAIN),
+  P(3102,'Adaptation',           1009850,1,'',false,false,'Public',{when:'3 months ago',by:'admin'},14,OUT_PLAIN),
+
+  /* ── Plan to Act ── */
+  P(4001,'State Planning', 1335770,0,'',false,false,'Public',{when:'1 month ago',by:'admin'},20,OUT_PLAIN),
+  P(4002,'Local Planning', 1335770,1,'',true ,false,'Public',{when:'10 days ago',by:'sgangdod'},17,OUT_PLAIN),
+  P(4003,'Evaluate Capacity & Discover Resources',1335770,2,'',false,false,'Public',{when:'1 month ago',by:'admin'},15,OUT_PLAIN),
+  P(4004,'Develop Strategies',1335770,3,'',false,false,'Public',{when:'1 month ago',by:'admin'},16,OUT_PLAIN),
+  P(4011,'Planning Process',     4001,0,'',false,false,'Public',{when:'1 month ago',by:'admin'},12,OUT_PLAIN),
+  P(4012,'Capability Assessment',4001,1,'',false,false,'Public',{when:'1 month ago',by:'admin'},18,OUT_PLAIN),
+  P(1009799,'County Risk Profiles',4002,0,'',false,false,'Public',{when:'1 month ago',by:'admin'},9,OUT_PLAIN),
+  P(4022,'Plan Review Tools',    4002,1,'',false,false,'Contributors',{when:'2 months ago',by:'admin'},11,OUT_PLAIN),
+  /* one of only TWO real drafts in the whole pattern */
+  P(1221877,'NYC Risk Profile',1009799,0,'draft',false,false,'Contributors',null,38,OUT_RISK),
+
+  /* ── Explore Progress ── */
+  P(5001,'Action Tracking',   1335780,0,'',true ,false,'Public',{when:'3 weeks ago',by:'sgangdod'},19,[['(untitled)','Header',0],['Tracked Actions','Spreadsheet',1,'Mitigation Actions@27'],['Progress by Agency','Graph',2,'Mitigation Actions@27']]),
+  P(5002,'Mitigation Matters',1335780,1,'',false,false,'Public',{when:'1 month ago',by:'admin'},8,OUT_PLAIN),
+  P(5003,'Resources',         1335780,2,'',false,false,'Public',{when:'2 months ago',by:'admin'},13,OUT_PLAIN),
+  /* real story titles from the live 21-page flat list */
+  P(5101,'Bright Colors, Big Conversations: NYC Develops Tools',5002,0,'',false,false,'Public',{when:'1 month ago',by:'admin'},9,OUT_STORY),
+  P(5102,'From Risk to Resilience: Van Campen Creek',           5002,1,'',false,false,'Public',{when:'1 month ago',by:'admin'},8,OUT_STORY),
+  P(5103,'Asharoken Secures Main Access Road',                  5002,2,'',false,false,'Public',{when:'1 month ago',by:'admin'},7,OUT_STORY),
+  P(5104,'Staten Island University Hospital Ensures Electrical Stability',5002,3,'',true,false,'Public',{when:'2 weeks ago',by:'cwirth'},9,OUT_STORY),
+  P(5105,'Building Safety Along Catatonk Creek',                5002,4,'',false,false,'Public',{when:'1 month ago',by:'admin'},8,OUT_STORY),
+  P(5106,'Town of Rye Saves Park Land',                         5002,5,'',false,false,'Public',{when:'1 month ago',by:'admin'},7,OUT_STORY),
+  P(5107,'The Town of Tioga Recovers from Natural Disaster',    5002,6,'',false,false,'Public',{when:'1 month ago',by:'admin'},8,OUT_STORY),
+  P(5108,'Smithtown Elevation Project',                         5002,7,'',false,false,'Public',{when:'1 month ago',by:'admin'},7,OUT_STORY),
+
+  /* ── real pathologies ── */
+  /* orphans: parent id no longer exists (real rows) */
+  P(985080,'Test Page SM - Communications',1008831,0,'draft',false,false,'Public',null,2,OUT_PLAIN),
+  P(1008827,'New Page',                    1008775,1,'',false,false,'Public',{when:'8 months ago',by:'admin'},0,[]),
+  P(6003,'Buildings',                      1008831,2,'',false,false,'Public',{when:'7 months ago',by:'admin'},5,OUT_PLAIN),
+  /* ghost rows: data came back empty — the real pattern has ~40 of these */
+  P(7001,null,null, 8,'',false,false,'—',null,0,[]),
+  P(7002,null,null, 9,'',false,false,'—',null,0,[]),
+  P(7003,null,null,10,'',false,false,'—',null,0,[]),
+  P(7004,null,null,11,'',false,false,'—',null,0,[]),
+];
+
+/* derive slugs from the tree (real slugs are path-shaped) */
+const slugify = s => (s||'untitled').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+
+/* ── State ── */
+let lens = 'all';                       // all | queue | empty | orphans | hidden
+let scope = 'pages';                    // pages | sections
+let search = '';
+const expanded = new Set([1335756, 1009704]);  // Assess Risk → Natural Hazards open by default
+const openSections = new Set();         // page ids with sections panel open
+const outlineOnly = new Set();          // page ids whose panel shows Outline (default is All)
+const checked = new Set();              // bulk-selected page ids
+let staleOnly = false;                  // sections scope: only sections on outdated views
+const updatedViews = new Set();         // '<pageId>:<sectionIdx>' rebound to latest view this session
+
+/* ── Derived helpers ── */
+const byId = {};
+PAGES.forEach(p => byId[p.id] = p);
+const childrenOf = p => PAGES.filter(c => c.p === p.id).sort((a,b) => a.ix - b.ix);
+const isOrphan = p => p.p !== null && !byId[p.p];
+const roots = () => PAGES.filter(p => p.p === null).sort((a,b) => a.ix - b.ix);
+const orphans = () => PAGES.filter(isOrphan).sort((a,b) => a.ix - b.ix);
+const needsPublish = p => p.pub === 'draft' || p.chg;
+const descendants = p => childrenOf(p).flatMap(c => [c, ...descendants(c)]);
+const slugOf = p => {
+  if (!p.t) return '(no data)';
+  const parts = []; let cur = p;
+  while (cur) { parts.unshift(slugify(cur.t)); cur = cur.p !== null ? byId[cur.p] : null; }
+  return '/' + parts.join('/');
+};
+
+/* synthesize the full section list: outline rows + untitled lexical body rows,
+   interleaved the way real pages read (body copy follows its heading).
+   Each row may carry a derived content summary (see lexicalSummary annotation):
+   sum.kind = 'heading' (first heading node in content) | 'excerpt' (first ~90
+   chars of text) | 'empty' (no content — cleanup candidate). */
+function sectionsOf(p) {
+  const rows = p.o.map(([t, type, level, src, sk, st]) => {
+    /* 'Name@view' pins an explicit (possibly stale) view_id; bare 'Name' = latest */
+    let name = src || null, boundView = null;
+    if (name && name.includes('@')) { const at = name.lastIndexOf('@'); boundView = +name.slice(at + 1); name = name.slice(0, at); }
+    return { t, type, level, src: name, boundView, titled: t !== '(untitled)',
+             sum: sk ? { kind: sk, text: st || '' } : null };
+  });
+  const filler = Math.max(0, p.n - rows.length);
+  if (!filler) return finalizeViews(p, rows);
+  const out = [];
+  const per = rows.length ? Math.floor(filler / rows.length) : 0;
+  let extra = rows.length ? filler - per * rows.length : filler;
+  let fi = 0;
+  const mkBody = () => {
+    const i = fi++;
+    const sum = (i % 6 === 4)
+      ? { kind: 'empty', text: '' }
+      : { kind: 'excerpt', text: EXCERPT_POOL[(p.id + i * 7) % EXCERPT_POOL.length] };
+    return { t: null, type: 'Lexical', level: null, src: null, boundView: null, titled: false, sum };
+  };
+  rows.forEach(s => {
+    out.push(s);
+    let k = per + (extra > 0 ? 1 : 0); if (extra > 0) extra--;
+    while (k--) out.push(mkBody());
+  });
+  return finalizeViews(p, out);
+}
+
+/* resolve each source-bound row's view against the source's latest view */
+function finalizeViews(p, list) {
+  list.forEach((s, i) => {
+    s.idx = i;
+    const meta = s.src && SOURCES[s.src];
+    if (!meta) { s.view = null; s.stale = false; return; }
+    s.latest = meta.latest;
+    s.justUpdated = updatedViews.has(p.id + ':' + i);
+    s.view = s.justUpdated ? meta.latest : (s.boundView ?? meta.latest);
+    s.stale = s.view < meta.latest;
+  });
+  return list;
+}
+
+function lensMatch(p) {
+  if (lens === 'queue')   return needsPublish(p);
+  if (lens === 'hidden')  return p.hid;
+  if (lens === 'empty')   return p.n === 0;
+  if (lens === 'orphans') return isOrphan(p);
+  return true;
+}
+function sectionMatch(s) {
+  const tf = document.getElementById('type-filter').value;
+  const sf = document.getElementById('src-filter').value;
+  if (tf && s.type !== tf) return false;
+  if (sf === '__any__') { if (!(s.src && SOURCES[s.src])) return false; }
+  else if (sf && s.src !== sf) return false;
+  if (staleOnly && !s.stale && !s.justUpdated) return false;  /* keep just-updated rows visible — they carry the review flag */
+  if (search && !((s.t||'').toLowerCase().includes(search) || (s.src||'').toLowerCase().includes(search)
+      || (s.sum && s.sum.text.toLowerCase().includes(search)))) return false;
+  return true;
+}
+function pageMatch(p) {
+  if (scope === 'sections') return lensMatch(p) && sectionsOf(p).some(sectionMatch);
+  if (search && !(p.t||'(untitled)').toLowerCase().includes(search)) return false;
+  return lensMatch(p);
+}
+/* a page is shown if it matches, or any descendant matches (as dimmed context) */
+function showsBranch(p) { return pageMatch(p) || childrenOf(p).some(showsBranch); }
+
+/* ── Rendering ── */
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+function statePill(p) {
+  if (p.pub === 'draft')
+    return `<span class="pill pill-amber">Draft</span>`;
+  let h = `<span class="pill pill-green">Published</span>`;
+  if (p.chg) h += `<span class="changes-dot" title="has_changes — unpublished edits"></span>`;
+  return h;
+}
+function lastPubCell(p) {
+  if (!p.lastPub) return `<span class="text-mny-400 text-xs italic">Never</span>`;
+  return `<span class="text-xs text-mny-700">${p.lastPub.when} <span class="text-mny-400">${p.lastPub.by}</span></span>`;
+}
+const TYPE_BADGE = { Card:'badge-card', Spreadsheet:'badge-spreadsheet', Lexical:'badge-lexical', Map:'badge-map',
+                     Header:'badge-header', Footer:'badge-footer', Filters:'badge-filters', Graph:'badge-graph' };
+
+function pageRow(p, depth, isMatch) {
+  const kids = childrenOf(p);
+  const isOpen = expanded.has(p.id);
+  const filtered = lens !== 'all' || search || scope === 'sections';
+  const pendingBelow = descendants(p).filter(needsPublish).length;
+  const showCheck = lens === 'queue';
+  const sectOpen = openSections.has(p.id);
+  const ghost = p.t === null;
+  const title = p.t || '(untitled)';
+
+  const rollup = (!isOpen && kids.length && pendingBelow && !filtered)
+    ? `<span class="rollup-chip" onclick="event.stopPropagation();expandBranch(${p.id})" title="Drafts or unpublished changes inside — click to expand">▾ ${pendingBelow} to publish</span>` : '';
+
+  const caret = kids.length
+    ? `<button class="caret" onclick="toggleExpand(${p.id})">${isOpen ? '▼' : '▶'}</button>`
+    : `<button class="caret leaf">▶</button>`;
+
+  const staleCount = ghost ? 0 : sectionsOf(p).filter(s => s.stale).length;
+  const sectChip = p.n
+    ? `<button class="sect-chip ${sectOpen ? 'open' : ''}" onclick="toggleSections(${p.id})"
+         title="Show this page's sections${staleCount ? ` — ${staleCount} on outdated views` : ''}">
+         <span class="sc-caret">${sectOpen ? '▼' : '▶'}</span>${p.n}${staleCount ? '<span class="stale-dot"></span>' : ''}</button>`
+    : `<span class="sect-chip empty" title="No sections — empty page">0</span>`;
+
+  const pubActions = needsPublish(p)
+    ? (p.pub === 'draft'
+        ? `<button class="pub-btn pub-btn-publish hover-show" onclick="publishPage(${p.id})">Publish</button>`
+        : `<button class="pub-btn pub-btn-publish hover-show" onclick="publishPage(${p.id})">Publish changes</button>
+           <button class="pub-btn pub-btn-discard hover-show" onclick="discardPage(${p.id})">Discard</button>`)
+    : '';
+
+  return `
+  <tr class="page-row ${isMatch ? '' : 'ctx-row'} ${p.hid ? 'navhidden-row' : ''} ${ghost ? 'ghost-row' : ''}" data-id="${p.id}">
+    <td class="check-col" style="padding-right:0;">
+      ${showCheck && isMatch && needsPublish(p) ? `<input type="checkbox" class="row-check" ${checked.has(p.id) ? 'checked' : ''} onchange="toggleCheck(${p.id}, this.checked)">` : ''}
+    </td>
+    <td>
+      <div class="pg-cell" style="padding-left:${depth * 26}px">
+        <span class="drag-handle" title="Drag to reorder siblings — writes index (nav order)">⠿</span>
+        ${caret}
+        <span class="dot ${ghost ? 'dot-gray' : p.pub === 'draft' ? 'dot-amber' : 'dot-green'}"></span>
+        <a class="pg-title" onclick="openInspector(${p.id})">${esc(title)}</a>
+        ${kids.length ? `<span class="child-count" title="${kids.length} child pages">${kids.length}</span>` : ''}
+        ${isOrphan(p) ? `<span class="orphan-chip" title="parent ${p.p} not found">orphan</span>` : ''}
+        ${ghost ? `<span class="ghost-chip" title="row has no data payload">ghost</span>` : ''}
+        ${rollup}
+        <span class="pg-slug">${ghost ? 'id '+p.id : slugOf(p)}</span>
+      </div>
+    </td>
+    <td style="white-space:nowrap;"><span style="display:inline-flex;align-items:center;">${ghost ? '<span class="text-mny-200 text-xs">—</span>' : statePill(p)}</span></td>
+    <td class="text-center">
+      ${ghost ? '<span class="text-mny-200 text-xs">—</span>' :
+      `<button class="nav-toggle ${p.hid ? 'off' : 'on'}" onclick="toggleNav(${p.id})" title="hide_in_nav = ${p.hid}"><span class="knob"></span></button>`}
+    </td>
+    <td>${ghost ? '<span class="text-mny-200 text-xs">—</span>' : lastPubCell(p)}</td>
+    <td class="text-center">${sectChip}</td>
+    <td><span class="text-xs ${p.auth === 'Public' ? 'text-mny-400' : 'font-semibold text-mny-700'}">${p.auth}</span></td>
+    <td>
+      <div class="row-actions">
+        ${ghost
+          ? `<button class="ghost-btn hover-show" style="color:#C04040;border-color:#F2C9C7;">Delete</button>`
+          : `${pubActions}
+             <button class="ghost-btn hover-show">Edit</button>
+             <button class="ghost-btn hover-show" title="Create child page under ${esc(title)}">+ Child</button>`}
+      </div>
+    </td>
+  </tr>`;
+}
+
+/* label for a section row: authored title > derived heading > derived excerpt > (empty) */
+function sectionLabel(s) {
+  if (s.titled) return `<span class="s-title">${esc(s.t)}</span>`;
+  if (s.sum) {
+    if (s.sum.kind === 'empty')
+      return `<span class="s-empty" title="Lexical section with no content — cleanup candidate">(empty section)</span>`;
+    if (s.sum.kind === 'heading')
+      return `<span class="s-derived s-derived-h" title="Auto summary — first heading inside the content">${esc(s.sum.text)}</span>`;
+    return `<span class="s-derived" title="Auto summary — first ~90 characters of content">${esc(s.sum.text)}</span>`;
+  }
+  return `<span class="s-empty">(untitled)</span>`;
+}
+
+/* source cell: name + internal/external provenance (from sourceInfo.srcEnv/env) */
+function srcCell(s) {
+  if (!s.src) return '<span class="text-mny-200 text-xs">—</span>';
+  const meta = SOURCES[s.src];
+  if (!meta) return `<span class="src-label">${esc(s.src)}</span>`;
+  const tip = meta.kind === 'internal'
+    ? `Internal DMS source (id ${meta.id}, srcEnv mitigat-ny-prod+prod)`
+    : `External UDA source (id ${meta.id}, env hazmit_dama)`;
+  return `<span class="src-label ${meta.kind === 'external' ? 'src-ext' : ''}" title="${tip}">${esc(s.src)}</span>`;
+}
+
+/* view cell: bound view vs the source's latest — the staleness mechanism */
+function viewChip(p, s) {
+  if (!s.view) return '<span class="text-mny-200 text-xs">—</span>';
+  const meta = SOURCES[s.src];
+  const vName = meta.views[s.view] || 'view ' + s.view;
+  if (s.justUpdated)
+    return `<span class="view-chip fresh" title="Rebound to ${esc(meta.latestName)} just now — review column mappings">v${s.view} ✓</span>`;
+  if (s.stale)
+    return `<button class="view-chip stale" onclick="updateSectionView(${p.id}, ${s.idx})"
+      title="Bound to ${esc(vName)} — ${esc(meta.latestName)} is available. Click to update this section.">v${s.view}→${s.latest}</button>`;
+  return `<span class="view-chip ok" title="Latest view: ${esc(vName)}">v${s.view}</span>`;
+}
+
+function sectionsPanel(p, depth) {
+  const inSectScope = scope === 'sections';
+  const all = sectionsOf(p);
+  const titledCount = all.filter(s => s.titled).length;
+  const emptyCount = all.filter(s => s.sum && s.sum.kind === 'empty').length;
+  const showAll = inSectScope || !outlineOnly.has(p.id);
+  /* with an active sections-scope criterion, the panel becomes an inventory:
+     matching rows only — the page row above provides the context */
+  const tf = document.getElementById('type-filter').value;
+  const sf = document.getElementById('src-filter').value;
+  const filtering = inSectScope && (search || tf || sf || staleOnly);
+  const shown = all.filter(s => filtering ? sectionMatch(s) : (showAll || s.titled));
+  const rows = shown
+    .map(s => {
+      const hit = filtering && search && sectionMatch(s);
+      const indent = s.level >= 2 ? (s.level >= 3 ? 's-indent-3' : 's-indent-2') : 's-indent-1';
+      const pvTitle = (s.t || (s.sum && s.sum.text ? s.sum.text.slice(0, 48) : '(untitled)')).replace(/'/g, '&#39;');
+      return `
+      <div class="srow ${hit ? 'sect-hit' : ''}">
+        <span class="${indent}"><span class="drag-dots">⠿ </span>${sectionLabel(s)}</span>
+        <span><span class="badge ${TYPE_BADGE[s.type] || 'badge-lexical'}">${s.type}</span></span>
+        <span>${srcCell(s)}</span>
+        <span>${viewChip(p, s)}</span>
+        <span>${s.level !== null && s.level !== undefined
+            ? `<span class="pill ${s.level === 0 ? 'pill-gray' : 'pill-blue'}" style="font-size:10px;">${s.level === 0 ? 'hidden' : 'H'+s.level}</span>`
+            : '<span class="text-mny-200 text-xs">—</span>'}</span>
+        <span style="text-align:right;"><button class="ghost-btn" onclick="openPreview('${s.type}','${esc(pvTitle)}','${s.src || ''}')">Preview</button></span>
+      </div>`;
+    }).join('');
+  /* rail starts under the parent page's caret so the rows read as its children */
+  return `
+  <tr class="sect-panel">
+    <td colspan="8">
+      <div style="padding-left:${depth * 26 + 47}px">
+        <div class="sect-rail">
+          <div class="sect-meta">
+            <span class="sect-meta-label" title="{pattern}|component rows WHERE page = ${esc(p.t || p.id)}">Sections</span>
+            <span class="sect-meta-counts">${filtering
+              ? `<strong style="color:#C8922A;">${shown.length} of ${p.n} match</strong>`
+              : `${p.n} · ${titledCount} titled${emptyCount ? ` · <strong style="color:#C8922A;">${emptyCount} empty</strong>` : ''}`}</span>
+            ${filtering ? '' : `<div class="mini-seg" title="All shows every section with auto content summaries; Outline shows only the titled skeleton">
+              <button class="${showAll ? '' : 'active'}" onclick="setPanelMode(${p.id}, true)">Outline</button>
+              <button class="${showAll ? 'active' : ''}" onclick="setPanelMode(${p.id}, false)">All</button>
+            </div>`}
+            <div class="flex-1"></div>
+            <button class="ghost-btn" style="font-size:10px;">+ New Section</button>
+          </div>
+          <div class="sect-scroll">${rows}</div>
+        </div>
+      </div>
+    </td>
+  </tr>`;
+}
+
+function renderBranch(p, depth, out) {
+  if (!showsBranch(p)) return;
+  const isMatch = pageMatch(p);
+  out.push(pageRow(p, depth, isMatch));
+  if (openSections.has(p.id) && p.n && (scope !== 'sections' || isMatch)) out.push(sectionsPanel(p, depth));
+  const filtered = lens !== 'all' || search || scope === 'sections';
+  const open = expanded.has(p.id) || (filtered && childrenOf(p).some(showsBranch));
+  if (open) childrenOf(p).forEach(c => renderBranch(c, depth + 1, out));
+}
+
+function render() {
+  /* auto-open sections panels for matches in section scope */
+  if (scope === 'sections') {
+    PAGES.forEach(p => { if (pageMatch(p)) openSections.add(p.id); });
+  }
+  const out = [];
+  roots().forEach(p => renderBranch(p, 0, out));
+  /* orphaned pages render under their own band — parent id missing */
+  const orph = orphans().filter(showsBranch);
+  if (orph.length) {
+    out.push(`<tr class="group-row"><td colspan="8">⚠ Orphaned — parent id not found</td></tr>`);
+    orph.forEach(p => renderBranch(p, 0, out));
+  }
+  document.getElementById('tree-body').innerHTML = out.join('');
+
+  /* counts */
+  const nQueue = PAGES.filter(needsPublish).length;
+  const nHidden = PAGES.filter(p => p.hid).length;
+  const nEmpty = PAGES.filter(p => p.n === 0).length;
+  const nOrphan = orphans().length;
+  const nSections = PAGES.reduce((a,p) => a + p.n, 0);
+  document.getElementById('stat-pages').textContent = PAGES.length;
+  document.getElementById('stat-queue').textContent = nQueue;
+  document.getElementById('stat-sections').textContent = nSections.toLocaleString();
+  document.getElementById('stat-empty').textContent = nEmpty;
+  document.getElementById('lens-count-queue').textContent = nQueue;
+  document.getElementById('lens-count-hidden').textContent = nHidden;
+  document.getElementById('lens-count-empty').textContent = nEmpty;
+  document.getElementById('lens-count-orphans').textContent = nOrphan;
+
+  /* chrome state */
+  document.querySelectorAll('#lens-bar .lens-chip').forEach(b => b.classList.toggle('active', b.dataset.lens === lens));
+  document.querySelectorAll('#stat-cards .stat-card').forEach(b => b.classList.toggle('active',
+    (b.dataset.lens === lens && b.dataset.lens !== 'sections') || (b.dataset.lens === 'sections' && scope === 'sections')));
+  document.querySelectorAll('#scope-seg button').forEach(b => b.classList.toggle('active', b.dataset.scope === scope));
+  document.getElementById('type-filter-wrap').classList.toggle('hidden', scope !== 'sections');
+  document.getElementById('src-filter-wrap').classList.toggle('hidden', scope !== 'sections');
+  document.getElementById('search-input').placeholder = scope === 'sections' ? 'Search sections & sources…' : 'Search page titles…';
+  document.getElementById('bulk-wrap').classList.toggle('hidden', lens !== 'queue');
+
+  /* stale-views chip + bulk bar */
+  let nStale = 0, nStaleMatch = 0;
+  PAGES.forEach(p => sectionsOf(p).forEach(s => {
+    if (s.stale) { nStale++; if (sectionMatch(s)) nStaleMatch++; }
+  }));
+  const staleBtn = document.getElementById('stale-toggle');
+  staleBtn.classList.toggle('hidden', scope !== 'sections');
+  staleBtn.classList.toggle('active', staleOnly);
+  document.getElementById('stale-count').textContent = nStale;
+  document.getElementById('view-bulk-wrap').classList.toggle('hidden', !(scope === 'sections' && staleOnly && nStaleMatch > 0));
+  document.getElementById('view-bulk-count').textContent = nStaleMatch;
+
+  /* footer */
+  const visiblePages = PAGES.filter(pageMatch).length;
+  const footer = document.getElementById('footer-count');
+  if (scope === 'sections') {
+    const nHits = PAGES.filter(lensMatch).reduce((a,p) => a + sectionsOf(p).filter(sectionMatch).length, 0);
+    footer.textContent = `${nHits} SECTIONS ACROSS ${visiblePages} PAGES`;
+  } else {
+    footer.textContent = lens === 'all' && !search
+      ? `${PAGES.length} PAGES SHOWN (OF 164 IN PATTERN) · TREE ORDER = NAV ORDER`
+      : `${visiblePages} OF ${PAGES.length} PAGES MATCH · ANCESTORS SHOWN DIMMED FOR CONTEXT`;
+  }
+  const sel = [...checked].filter(id => byId[id] && needsPublish(byId[id])).length;
+  document.getElementById('bulk-count').textContent = `${sel} selected`;
+  document.getElementById('bulk-publish-btn').disabled = sel === 0;
+  document.getElementById('bulk-publish-btn').textContent = sel ? `Publish Selected (${sel})` : 'Publish Selected';
+}
+
+/* populate the source filter from data — per-source section counts included,
+   so the dropdown doubles as a usage inventory ("which sources are bound where").
+   Grouped by provenance: internal DMS sources vs external UDA sources — both
+   read from the same sourceInfo binding on the section. */
+function initSrcFilter() {
+  const counts = {};
+  let withSrc = 0;
+  PAGES.forEach(p => sectionsOf(p).forEach(s => {
+    if (s.src && SOURCES[s.src]) { counts[s.src] = (counts[s.src] || 0) + 1; withSrc++; }
+  }));
+  const sel = document.getElementById('src-filter');
+  sel.querySelector('option[value="__any__"]').textContent = `Any data source (${withSrc})`;
+  const addGroup = (label, kind) => {
+    const names = Object.keys(counts).filter(s => SOURCES[s].kind === kind).sort();
+    if (!names.length) return;
+    const g = document.createElement('optgroup');
+    g.label = label;
+    names.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = `${s} (${counts[s]})`;
+      g.appendChild(o);
+    });
+    sel.appendChild(g);
+  };
+  addGroup('Internal — DMS sources', 'internal');
+  addGroup('External — UDA (hazmit_dama)', 'external');
+}
+
+/* ── Interactions ── */
+function setLens(l) { lens = l; if (l !== 'queue') checked.clear(); render(); }
+function setScope(s) {
+  scope = s;
+  document.getElementById('search-input').value = ''; search = '';
+  render();
+}
+function onSearch(v) { search = v.trim().toLowerCase(); render(); }
+function toggleExpand(id) { expanded.has(id) ? expanded.delete(id) : expanded.add(id); render(); }
+function expandBranch(id) { const p = byId[id]; expanded.add(id); descendants(p).forEach(d => expanded.add(d.id)); render(); }
+function toggleSections(id) { openSections.has(id) ? openSections.delete(id) : openSections.add(id); render(); }
+function setPanelMode(id, outline) { outline ? outlineOnly.add(id) : outlineOnly.delete(id); render(); }
+function toggleStale() { staleOnly = !staleOnly; if (staleOnly && scope !== 'sections') setScope('sections'); else render(); }
+function updateSectionView(pageId, idx) { updatedViews.add(pageId + ':' + idx); render(); }
+function updateAllStale() {
+  PAGES.forEach(p => sectionsOf(p).forEach(s => {
+    if (s.stale && sectionMatch(s)) updatedViews.add(p.id + ':' + s.idx);
+  }));
+  render();
+}
+function expandAll() { PAGES.forEach(p => { if (childrenOf(p).length) expanded.add(p.id); }); render(); }
+function collapseAll() { expanded.clear(); openSections.clear(); render(); }
+function toggleNav(id) { const p = byId[id]; p.hid = !p.hid; render(); }
+function toggleCheck(id, on) { on ? checked.add(id) : checked.delete(id); render(); }
+function toggleSelectAll(on) {
+  checked.clear();
+  if (on) PAGES.filter(p => pageMatch(p) && needsPublish(p)).forEach(p => checked.add(p.id));
+  render();
+}
+function publishPage(id) { const p = byId[id]; p.pub = ''; p.chg = false; p.lastPub = { when:'just now', by:'sgangdod' }; checked.delete(id); render(); }
+function discardPage(id) { const p = byId[id]; p.chg = false; checked.delete(id); render(); }
+function bulkPublish() { [...checked].forEach(publishPage); checked.clear(); render(); }
+
+/* ── Inspector ── */
+function openInspector(id) {
+  const p = byId[id];
+  document.getElementById('insp-title').textContent = p.t || '(untitled)';
+  document.getElementById('insp-slug').textContent = p.t ? slugOf(p) : 'row '+p.id+' — no data payload';
+  document.getElementById('insp-pills').innerHTML =
+    (p.t === null ? '<span class="pill pill-gray">Ghost row</span>' : statePill(p)) +
+    (isOrphan(p) ? '<span class="pill pill-red">Orphaned</span>' : '') +
+    (p.hid ? '<span class="pill pill-gray">Hidden from nav</span>' : (p.t ? '<span class="pill pill-blue">In nav</span>' : ''));
+  const crumbs = []; let cur = p;
+  while (cur && cur.p !== null && byId[cur.p]) { crumbs.unshift(byId[cur.p].t); cur = byId[cur.p]; }
+  document.getElementById('insp-parent').innerHTML = isOrphan(p)
+    ? `<span class="text-mny-red font-semibold">parent ${p.p} not found</span> — reassign or delete`
+    : crumbs.length
+      ? crumbs.map(esc).join(' <span style="color:#C5D7E0">›</span> ') + ' <span style="color:#C5D7E0">›</span> <strong>' + esc(p.t || '(untitled)') + '</strong>'
+      : '<strong>' + esc(p.t || '(untitled)') + '</strong> <span class="pill pill-blue" style="font-size:10px;margin-left:6px;">Root</span>';
+  document.getElementById('insp-sections').textContent = p.n;
+  document.getElementById('insp-children').textContent = childrenOf(p).length;
+  document.getElementById('insp-auth').textContent = p.auth;
+  document.getElementById('insp-nav').textContent = p.hid ? 'Hidden (hide_in_nav = true)' : 'Visible';
+  const hist = [];
+  if (p.chg) hist.push({ who:'sgangdod', what:'edited (unpublished changes)', when:'today' });
+  if (p.lastPub) hist.push({ who:p.lastPub.by, what:'published', when:p.lastPub.when });
+  hist.push({ who:'admin', what:'created page', when:'Jan 2025' });
+  document.getElementById('insp-history').innerHTML = hist.map(h => `
+    <div class="hist-entry">
+      <div class="w-6 h-6 rounded-full bg-mny-700 flex items-center justify-center text-white text-[9px] font-semibold font-display flex-shrink-0">${h.who.slice(0,2).toUpperCase()}</div>
+      <div><strong class="text-mny-900">${h.who}</strong> <span class="text-mny-700">${h.what}</span>
+        <div class="text-[11px] text-mny-400">${h.when}</div></div>
+    </div>`).join('');
+  document.getElementById('insp-actions').innerHTML = p.t === null
+    ? `<button class="ghost-btn" style="color:#C04040;border-color:#F2C9C7;padding:6px 14px;">Delete ghost row</button>`
+    : `<button class="gold-btn" style="font-size:10px;">Edit Page →</button>` +
+      (needsPublish(p) ? `<button class="pub-btn pub-btn-publish" style="padding:6px 14px;" onclick="publishPage(${p.id});openInspector(${p.id})">Publish</button>` : '') +
+      (p.chg ? `<button class="pub-btn pub-btn-discard" style="padding:6px 14px;" onclick="discardPage(${p.id});openInspector(${p.id})">Discard</button>` : '') +
+      `<button class="ghost-btn" style="padding:5px 12px;">Duplicate</button>`;
+  document.getElementById('inspector').classList.add('open');
+  document.getElementById('insp-overlay').classList.add('open');
+}
+function closeInspector() {
+  document.getElementById('inspector').classList.remove('open');
+  document.getElementById('insp-overlay').classList.remove('open');
+}
+
+/* ── Section preview modal (element_preview) ── */
+const PV = {
+  Card: src => `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">${['Flooding','Ice Storm','Extreme Heat','Landslide','Hurricane','Drought'].map(h => `
+    <div style="background:#F3F8F9;border-radius:8px;padding:14px;border:1px solid #E0EBF0;">
+      <div style="font-family:'Oswald',sans-serif;font-size:13px;color:#2D3E4C;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">${h}</div>
+      <div style="font-size:12px;color:#6D96AE;">Risk level: <strong style="color:#EAAD43;">Moderate</strong></div>
+    </div>`).join('')}</div>`,
+  Spreadsheet: src => `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead><tr style="background:#F3F8F9;border-bottom:2px solid #C5D7E0;">${['County','Events','Total Damage','Avg'].map(h => `<th style="padding:7px 10px;text-align:left;font-family:'Oswald',sans-serif;font-size:10px;color:#6D96AE;letter-spacing:0.08em;text-transform:uppercase;">${h}</th>`).join('')}</tr></thead>
+    <tbody>${[['Kings','4,821','$142.3M','$29,510'],['Queens','3,204','$98.7M','$30,806'],['Suffolk','2,113','$64.2M','$30,383']].map(r => `<tr style="border-bottom:1px solid #E0EBF0;">${r.map((c,i) => `<td style="padding:7px 10px;color:${i?'#37576B':'#2D3E4C'};font-weight:${i?400:600};">${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`,
+  Graph: src => `<div style="display:flex;align-items:flex-end;gap:10px;height:160px;padding:10px;border:1px solid #E0EBF0;border-radius:8px;background:#FAFCFD;">${[42,68,35,80,55,92,61].map(h => `<div style="flex:1;background:#37576B;border-radius:3px 3px 0 0;height:${h}%;"></div>`).join('')}</div>
+    <p style="font-size:11px;color:#9BB5C2;margin-top:8px;">avlGraph · ${src || 'source'}</p>`,
+  Lexical: () => `<div style="color:#37576B;line-height:1.7;max-width:540px;">
+    <h2 style="font-family:'Oswald',sans-serif;font-size:20px;color:#2D3E4C;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;">Rich Text Content</h2>
+    <p style="font-size:14px;">Lexical editor content renders here — headings, body copy, links, and inline media as authored. Untitled lexical sections are the body copy between a page's titled outline headings.</p></div>`,
+  Header: () => `<div style="background:linear-gradient(135deg,#2D3E4C 0%,#37576B 100%);border-radius:8px;padding:28px;">
+    <h1 style="font-family:'Oswald',sans-serif;font-size:30px;color:white;text-transform:uppercase;letter-spacing:0.06em;line-height:1.1;">MNY Data<br>Header</h1>
+    <p style="font-size:13px;color:#C5D7E0;margin-top:8px;">Registry component "Header: MNY Data" — hero band with topo texture.</p></div>`,
+  Footer: () => `<div style="background:#2D3E4C;border-radius:8px;padding:20px;display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-family:'Oswald',sans-serif;font-size:14px;color:white;text-transform:uppercase;letter-spacing:0.08em;">MitigateNY</span>
+    <span style="font-size:11px;color:#6D96AE;">Registry component "Footer: MNY Footer"</span></div>`,
+};
+function openPreview(type, title, src) {
+  document.getElementById('pv-title').textContent = title;
+  const b = document.getElementById('pv-badge');
+  b.className = 'badge ' + (TYPE_BADGE[type] || 'badge-lexical'); b.textContent = type;
+  document.getElementById('pv-meta').textContent = src ? src : 'No data source';
+  document.getElementById('pv-body').innerHTML = (PV[type] || PV.Lexical)(src);
+  document.getElementById('preview-modal').classList.remove('hidden');
+}
+function closePreview() { document.getElementById('preview-modal').classList.add('hidden'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePreview(); closeInspector(); } });
+
+initSrcFilter();
+render();
+</script>
+
+<!-- ═══ DESIGN SYSTEM NAV WIDGET ═══ -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="home-v2.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home v2</a>
+    <a href="section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+    <a href="site-management.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Site Management</a>
+    <a href="site-management-v2.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Site Management v2</a>
+  
+    <a href="actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize Actions</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

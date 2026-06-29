@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Layouts · TransportNY DMS Design System v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane dms-annotated">
+
+
+
+<!-- LAYOUT · app -->
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- SIDENAV (default · 240px) -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">DESIGN SYSTEM</span>
+            </div>
+            <div class="px-4 py-2 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em] mt-3">SYSTEM</div>
+            <div class="flex-1 py-1">
+              <a href="theme.html"      class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Theme</a>
+              <a href="layouts.html"    class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]">Layouts</a>
+              <a href="grid.html"       class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Grid</a>
+              <a href="components.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Components</a>
+              <a href="patterns.html"   class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent">Patterns</a>
+            </div>
+          </div>
+        </aside>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- HERO -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-14 flex flex-col gap-5">
+              <div data-dms-section="page-intro">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02 · structure</span>
+                <h1 class="mt-3 font-display font-semibold text-[52px] leading-[1.02] tracking-tight text-[#0F1722]">Layouts<span class="text-[#CA8A04]">.</span></h1>
+                <p class="mt-3 font-proxima text-[15.5px] text-slate-600 max-w-[680px] leading-[1.65]">
+                  Page chrome shapes. The named Layout variants (the outer wrapper, the SideNav slot,
+                  the TopNav slot) and the named LayoutGroup variants (the band recipes that hold
+                  Sections). This page is <strong>not</strong> about the column grid — that lives
+                  in <a href="grid.html" class="tny-link">grid.html</a>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- ── Hierarchy diagram (size 8) ── -->
+              <div class="col-span-12 md:col-span-8" data-dms-section="hierarchy">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">01</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">The five-layer hierarchy</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-4 max-w-[640px]">
+                    Every TransportNY surface nests through these layers. The Layout owns the
+                    chrome; the LayoutGroup owns a band; the Section owns one editable block; the
+                    Component is the actual rendering.
+                  </p>
+                  <pre class="font-mono text-[11.5px] leading-[1.55] text-slate-700 bg-slate-50 p-4 rounded border border-zinc-950/05 overflow-x-auto">Site
+└── Layout                  ← every page is wrapped in one
+    ├── (TopNav)             ← optional, configured per layout
+    ├── (SideNav)            ← present on every TransportNY product surface
+    └── childWrapper
+        └── LayoutGroup      ← one per "band" (header / content / footer)
+            └── LayoutGroup wrapper
+                └── Section  ← one per content unit (the editable block)
+                    └── Component (from the registry)</pre>
+                  <div class="mt-4 grid grid-cols-2 gap-4 text-[12.5px] text-slate-600 leading-[1.55]">
+                    <div>
+                      <div class="font-display uppercase text-[11px] tracking-wide text-slate-500 mb-1">Layout owns</div>
+                      Page background, the outer wrapper, whether/how TopNav and SideNav render,
+                      the content area where LayoutGroups live. Three named styles ship:
+                      <code class="tny-mono">default</code> · <code class="tny-mono">app</code> · <code class="tny-mono">bare</code>.
+                    </div>
+                    <div>
+                      <div class="font-display uppercase text-[11px] tracking-wide text-slate-500 mb-1">LayoutGroup owns</div>
+                      A band of content within a Layout. Sets the band's background (pane / pane-tint
+                      / topo / bluebar), the max-width container, the vertical padding, the gap
+                      between Sections inside.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Naming reference (size 4) ── -->
+              <aside class="col-span-12 md:col-span-4" data-dms-section="naming">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Naming</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="space-y-3 font-proxima text-[12.5px] text-slate-700">
+                    <div>
+                      <div class="font-display uppercase text-[11px] tracking-wide text-slate-500">For marketing pages</div>
+                      Layout <code class="tny-mono">default</code> · LayoutGroup <code class="tny-mono">hero</code> + <code class="tny-mono">content</code> + <code class="tny-mono">footer</code>.
+                    </div>
+                    <div>
+                      <div class="font-display uppercase text-[11px] tracking-wide text-slate-500">For product pages</div>
+                      Layout <code class="tny-mono">app</code> · LayoutGroup <code class="tny-mono">header</code> + <code class="tny-mono">tone_bar</code> (optional) + <code class="tny-mono">content</code>.
+                    </div>
+                    <div>
+                      <div class="font-display uppercase text-[11px] tracking-wide text-slate-500">For dense workbenches</div>
+                      Layout <code class="tny-mono">app</code> · LayoutGroup <code class="tny-mono">workbench</code> (full-bleed, edge-to-edge).
+                    </div>
+                    <div>
+                      <div class="font-display uppercase text-[11px] tracking-wide text-slate-500">For auth flows</div>
+                      Layout <code class="tny-mono">bare</code> · LayoutGroup <code class="tny-mono">auth</code>.
+                    </div>
+                  </div>
+                </div>
+              </aside>
+
+              <!-- ── Layout variants (size 12) ── -->
+              <div class="col-span-12" data-dms-section="layouts">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Layout variants</h3>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                  <!-- default -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-44 bg-white border-b border-zinc-950/05 relative">
+                      <div class="absolute top-0 inset-x-0 h-8 bg-white border-b border-zinc-950/10 flex items-center px-4 gap-4">
+                        <div class="w-8 h-3 bg-[#1F3F8F] rounded-sm"></div>
+                        <div class="flex gap-3 text-[8px] text-slate-500"><span>Products</span><span>Docs</span><span>Sign in</span></div>
+                      </div>
+                      <div class="absolute inset-x-6 top-12 bottom-3 grid grid-cols-3 gap-1">
+                        <div class="bg-slate-100 rounded col-span-3 h-8"></div>
+                        <div class="bg-slate-50 border border-zinc-950/10 rounded"></div>
+                        <div class="bg-slate-50 border border-zinc-950/10 rounded"></div>
+                        <div class="bg-slate-50 border border-zinc-950/10 rounded"></div>
+                      </div>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">default</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">Marketing / public surfaces. White background, optional TopNav, no SideNav. Generous max-width content area.</p>
+                      <div class="mt-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">layout.styles[0]</div>
+                    </div>
+                  </div>
+                  <!-- app -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-44 bg-[#ECEEF2] border-b border-zinc-950/05 relative flex">
+                      <div class="w-12 bg-[#12181F] border-r border-[#2a3545] flex flex-col items-center pt-3 gap-2">
+                        <div class="size-5 bg-[#FACC15] rounded-sm"></div>
+                        <div class="size-3 bg-slate-500 rounded-sm"></div>
+                        <div class="size-3 bg-slate-500 rounded-sm"></div>
+                        <div class="size-3 bg-slate-500 rounded-sm"></div>
+                      </div>
+                      <div class="flex-1 grid grid-cols-3 gap-1 p-2">
+                        <div class="bg-white border border-zinc-950/05 rounded col-span-3 h-6"></div>
+                        <div class="bg-white border border-zinc-950/05 rounded"></div>
+                        <div class="bg-white border border-zinc-950/05 rounded"></div>
+                        <div class="bg-white border border-zinc-950/05 rounded"></div>
+                        <div class="bg-white border border-zinc-950/05 rounded col-span-3"></div>
+                      </div>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">app</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">Canonical product surface. Pane background, persistent SideNav, no TopNav. Cards on pane. Most pages use this.</p>
+                      <div class="mt-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">layout.styles[1] · default</div>
+                    </div>
+                  </div>
+                  <!-- bare -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-44 bg-[#ECEEF2] border-b border-zinc-950/05 relative flex items-center justify-center">
+                      <div class="w-32 h-24 bg-white border border-zinc-950/10 rounded shadow-sm p-2 flex flex-col gap-1">
+                        <div class="h-2 bg-slate-300 rounded w-16"></div>
+                        <div class="h-3 bg-slate-100 rounded"></div>
+                        <div class="h-3 bg-slate-100 rounded"></div>
+                        <div class="h-3 bg-[#1F3F8F] rounded mt-1"></div>
+                      </div>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">bare</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">Auth / embedded / print. No navs, no chrome. Content centred on the pane background.</p>
+                      <div class="mt-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">layout.styles[2]</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-3 rounded-[6px] border border-zinc-950/05 bg-slate-50 p-4 font-mono text-[11.5px] text-slate-600">
+                  <div class="font-display uppercase text-[10.5px] tracking-[0.18em] text-slate-500 mb-1">Wrapper key roles</div>
+                  <code class="tny-mono">outerWrapper</code> — page background.
+                  <code class="tny-mono">wrapper</code> — flex direction.
+                  <code class="tny-mono">wrapper2</code> — column with TopNav + content.
+                  <code class="tny-mono">wrapper3</code> — row with SideNav + content.
+                  <code class="tny-mono">childWrapper</code> — where LayoutGroups render.
+                </div>
+              </div>
+
+              <!-- ── LayoutGroup variants (size 12) ── -->
+              <div class="col-span-12" data-dms-section="layoutgroups">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">LayoutGroup variants</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+
+                  <!-- content -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="bg-[#ECEEF2] p-3 flex gap-2 items-stretch">
+                      <div class="flex-1 rounded-md bg-white border border-zinc-950/10 shadow-sm p-2 text-[10px] text-slate-500">card</div>
+                      <div class="flex-1 rounded-md bg-white border border-zinc-950/10 shadow-sm p-2 text-[10px] text-slate-500">card</div>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">content <span class="text-[10.5px] font-mono text-slate-500 normal-case tracking-normal ml-1">styles[0] · default</span></div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">Main page body. Pane bg, cards inside. The default. Pad 48 (comfortable).</p>
+                    </div>
+                  </div>
+
+                  <!-- content_tint -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="bg-[#E4E8EE] p-3 flex gap-2 items-stretch">
+                      <div class="flex-1 rounded-md bg-white border border-zinc-950/10 shadow-sm p-2 text-[10px] text-slate-500">card</div>
+                      <div class="flex-1 rounded-md bg-white border border-zinc-950/10 shadow-sm p-2 text-[10px] text-slate-500">card</div>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">content_tint</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">Alternating section background. Pane-tint instead of pane. Use sparingly to break long pages.</p>
+                    </div>
+                  </div>
+
+                  <!-- header -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="bg-white border-b border-zinc-950/10 p-4">
+                      <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-[#CA8A04]">// section</div>
+                      <div class="font-display font-semibold text-[18px] text-[#0F1722]">Page title.</div>
+                      <div class="font-proxima text-[10px] text-slate-500 mt-0.5">Sub-line with description and metadata.</div>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">header</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">White band with a hairline at the bottom. Page intro / page header. Tones: data, hero, editorial.</p>
+                    </div>
+                  </div>
+
+                  <!-- hero -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="tny-hero-topo border-b border-zinc-950/10 p-4">
+                      <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-[#CA8A04]">// hero</div>
+                      <div class="font-display font-semibold text-[24px] text-[#0F1722]">Big page hero.</div>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">hero</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">Topo background, taller padding. Landing / docs / getting-started.</p>
+                    </div>
+                  </div>
+
+                  <!-- tone_bar -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="tny-bluebar h-12 px-4 flex items-center text-white text-[11px] gap-6">
+                      <span>Region: <strong>Region 3</strong></span>
+                      <span>Month: <strong>Oct '25</strong></span>
+                      <span>Road Class: <strong>All</strong></span>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">tone_bar</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">Saturated NYS-blue strip. Used for global filter selectors. White-on-blue selects with caret triggers.</p>
+                    </div>
+                  </div>
+
+                  <!-- tone_bar_dark -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="tny-bluebar-dark h-14 px-4 flex items-center gap-2 overflow-x-auto">
+                      <span class="inline-flex items-center gap-2 h-8 pl-2.5 pr-2 rounded-full bg-white text-slate-700 shadow-sm text-[12.5px]"><span class="size-2 rounded-full bg-[#E5A646]"></span>I-87 NB</span>
+                      <span class="inline-flex items-center gap-2 h-8 pl-2.5 pr-2 rounded-full bg-white text-slate-700 shadow-sm text-[12.5px]"><span class="size-2 rounded-full bg-[#F2CB3D]"></span>I-95 NB</span>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">tone_bar_dark</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">Darker companion strip. Holds route/series pills under a tone_bar.</p>
+                    </div>
+                  </div>
+
+                  <!-- auth -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="bg-[#ECEEF2] p-8 flex items-center justify-center">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 w-44">
+                        <div class="font-display uppercase text-[11px] tracking-wide text-slate-700 mb-2">Sign in</div>
+                        <div class="space-y-1.5">
+                          <div class="h-5 rounded border border-zinc-950/15"></div>
+                          <div class="h-5 rounded border border-zinc-950/15"></div>
+                          <div class="h-6 rounded bg-[#1F3F8F]"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">auth</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">Centered card on pane. Sign-in / sign-up / password-reset. Used with Layout <code class="tny-mono">bare</code>.</p>
+                    </div>
+                  </div>
+
+                  <!-- footer -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="bg-white border-t border-zinc-950/10 p-3 flex items-center justify-between text-[11px] text-slate-500">
+                      <div class="flex gap-3"><a class="tny-link">User Guide</a><a class="tny-link">API Guide</a></div>
+                      <span class="font-mono text-[10px]">© NYSDOT</span>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">footer</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">White band, hairline at top. Footer-link block + copyright.</p>
+                    </div>
+                  </div>
+
+                  <!-- workbench -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden col-span-2">
+                    <div class="bg-[#ECEEF2] p-3 grid grid-cols-3 gap-2">
+                      <div class="rounded-md bg-white border border-zinc-950/10 shadow-sm p-2 text-[10px] text-slate-500">stat</div>
+                      <div class="rounded-md bg-white border border-zinc-950/10 shadow-sm p-2 text-[10px] text-slate-500">stat</div>
+                      <div class="rounded-md tny-map border border-zinc-950/10 shadow-sm h-16"></div>
+                    </div>
+                    <div class="p-4">
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722]">workbench</div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-1 leading-[1.5]">No max-width container — the band runs edge-to-edge. For map workbenches, dense data canvases. Tighter vertical padding (24).</p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- ── LayoutGroup wrapper class reference (size 12) ── -->
+              <div class="col-span-12" data-dms-section="wrapper-reference">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">05</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">LayoutGroup wrapper class reference</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <p class="font-proxima text-[13.5px] text-slate-600 max-w-[760px] p-6 pb-3">
+                    Every LayoutGroup renders as <code class="tny-mono">&lt;wrapper1&gt; → &lt;wrapper2&gt; → &lt;wrapper3&gt;</code>.
+                    <strong>wrapper1</strong> is the band (full-viewport-width, sets background and vertical padding).
+                    <strong>wrapper2</strong> is the bounded inner container (max-width, horizontal alignment, internal padding).
+                    <strong>wrapper3</strong> is rarely used. The class strings below are what
+                    <code class="tny-mono">theme.layoutGroup.styles[N]</code> ships.
+                  </p>
+                  <table class="w-full text-[12.5px] border-t border-zinc-950/05">
+                    <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                      <tr>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Variant</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">wrapper1</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">wrapper2</th>
+                        <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Alignment</th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-mono text-[11.5px] text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium normal-case text-[#0F1722]">content</td><td class="px-3 py-2">w-full bg-[#ECEEF2] py-12</td><td class="px-3 py-2">mr-auto w-full max-w-[1480px] pl-12 pr-8</td><td class="px-3 py-2 font-proxima text-emerald-700">left-aligned · 1480 cap</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium normal-case text-[#0F1722]">content_tint</td><td class="px-3 py-2">w-full bg-[#E4E8EE] py-12</td><td class="px-3 py-2">mr-auto w-full max-w-[1480px] pl-12 pr-8</td><td class="px-3 py-2 font-proxima text-emerald-700">left-aligned · 1480 cap</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium normal-case text-[#0F1722]">header</td><td class="px-3 py-2">w-full bg-white border-b</td><td class="px-3 py-2">mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10</td><td class="px-3 py-2 font-proxima text-emerald-700">left-aligned · 1480 cap</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium normal-case text-[#0F1722]">hero</td><td class="px-3 py-2">w-full tny-hero-topo</td><td class="px-3 py-2">mr-auto w-full max-w-[1480px] pl-12 pr-8 py-14</td><td class="px-3 py-2 font-proxima text-emerald-700">left-aligned · 1480 cap</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium normal-case text-[#0F1722]">tone_bar</td><td class="px-3 py-2">w-full bg-[#1F3F8F] text-white</td><td class="px-3 py-2">mr-auto w-full max-w-[1480px] pl-12 pr-8 h-12</td><td class="px-3 py-2 font-proxima text-emerald-700">left-aligned · 1480 cap</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium normal-case text-[#0F1722]">tone_bar_dark</td><td class="px-3 py-2">w-full bg-[#16307A] text-white</td><td class="px-3 py-2">mr-auto w-full max-w-[1480px] pl-12 pr-8 h-14</td><td class="px-3 py-2 font-proxima text-emerald-700">left-aligned · 1480 cap</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium normal-case text-[#0F1722]">footer</td><td class="px-3 py-2">w-full bg-white border-t</td><td class="px-3 py-2">mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4</td><td class="px-3 py-2 font-proxima text-emerald-700">left-aligned · 1480 cap</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-medium normal-case text-[#0F1722]">auth</td><td class="px-3 py-2">w-full flex-1 flex p-6 bg-[#ECEEF2]</td><td class="px-3 py-2">mx-auto w-full max-w-md flex flex-col</td><td class="px-3 py-2 font-proxima text-amber-700">centred (intentional)</td></tr>
+                      <tr><td class="px-3 py-2 font-medium normal-case text-[#0F1722]">workbench</td><td class="px-3 py-2">w-full bg-[#ECEEF2] py-6</td><td class="px-3 py-2">w-full px-0</td><td class="px-3 py-2 font-proxima text-rose-700">full-bleed · no cap</td></tr>
+                    </tbody>
+                  </table>
+                  <div class="p-6 border-t border-zinc-950/05 bg-amber-50/30">
+                    <div class="flex items-start gap-3">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04] flex-shrink-0 mt-0.5">// rule</span>
+                      <div>
+                        <div class="font-display font-medium text-[15px] text-[#0F1722]">Product LayoutGroups use <code class="tny-mono">mr-auto</code>, not <code class="tny-mono">mx-auto</code>.</div>
+                        <p class="font-proxima text-[12.5px] text-slate-700 mt-1 leading-[1.55] max-w-[760px]">
+                          <code class="tny-mono">mx-auto</code> centres content within the available width, which feels marketing-like on wide monitors —
+                          content drifts away from the sidebar's right edge. <code class="tny-mono">mr-auto</code> pins content flush-left
+                          (with <code class="tny-mono">px-8</code> for breathing room) and consumes the remaining viewport on the right.
+                          That's how the handoff's <code class="tny-mono">&lt;main className="ml-60"&gt;</code> behaves naturally and what every product page
+                          should match. Only <code class="tny-mono">auth</code> stays centred — sign-in forms are the brand's one centred surface.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Section width inside a LayoutGroup (size 12) ── -->
+              <div class="col-span-12" data-dms-section="section-width">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">06</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Section width — regular vs full-width groups</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <p class="font-proxima text-[13.5px] text-slate-600 max-w-[760px] p-6 pb-3">
+                    Inside any LayoutGroup, the sectionArray applies one of two layout classes to its grid container,
+                    chosen by the <code class="tny-mono">group.full_width</code> flag (set per-group in the section-groups
+                    editor — <em>Full Width: off</em> or <em>show</em>). Source:
+                    <code class="tny-mono">src/dms/packages/dms/src/patterns/page/components/sections/sectionArray.jsx</code>.
+                  </p>
+                  <pre class="font-mono text-[11.5px] leading-[1.55] text-slate-700 bg-slate-50 mx-6 mb-4 p-4 rounded border border-zinc-950/05 overflow-x-auto">// sectionArray.jsx · line ~161
+&lt;div className={`
+    ${theme.container}
+    ${theme.layouts[group.full_width === 'show' ? 'fullwidth' : 'centered']}
+`}&gt;</pre>
+                  <div class="px-6 grid grid-cols-2 gap-6 pb-6">
+                    <!-- regular -->
+                    <div>
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] mb-1">Regular · default</div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-3">group.full_width: 'off' · layouts.centered</div>
+                      <div class="rounded border border-zinc-950/10 bg-slate-50 p-3">
+                        <div class="rounded bg-white border border-zinc-950/10 p-2 max-w-[60%] mr-auto">
+                          <div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-500 mb-1">band wrapper2 · max-w-[1480px] mr-auto</div>
+                          <div class="grid grid-cols-3 gap-1">
+                            <div class="bg-[#1F3F8F]/15 border border-[#1F3F8F]/30 rounded h-6"></div>
+                            <div class="bg-[#1F3F8F]/15 border border-[#1F3F8F]/30 rounded h-6"></div>
+                            <div class="bg-[#1F3F8F]/15 border border-[#1F3F8F]/30 rounded h-6"></div>
+                          </div>
+                        </div>
+                        <div class="text-[10.5px] text-slate-400 font-mono mt-2">↑ band sits flush-left; right side absorbs extra space</div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 mt-3 leading-[1.5]">
+                        The default. Class: <code class="tny-mono">'max-w-[1480px] mr-auto'</code>.
+                        Sections lay out on the 12-col grid within the 1480-px cap. Use for every LayoutGroup except the workbench/canvas case.
+                      </p>
+                    </div>
+                    <!-- fullwidth -->
+                    <div>
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] mb-1">Full-width · opt in</div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-3">group.full_width: 'show' · layouts.fullwidth</div>
+                      <div class="rounded border border-zinc-950/10 bg-slate-50 p-3">
+                        <div class="rounded bg-white border border-zinc-950/10 p-2">
+                          <div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-500 mb-1">band wrapper2 · w-full px-0</div>
+                          <div class="grid grid-cols-12 gap-1">
+                            <div class="col-span-12 bg-[#1F3F8F]/15 border border-[#1F3F8F]/30 rounded h-6"></div>
+                          </div>
+                        </div>
+                        <div class="text-[10.5px] text-slate-400 font-mono mt-2">↑ band edge-to-edge; map / canvas content owns the width</div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 mt-3 leading-[1.5]">
+                        Author opt-in via the section-groups editor toolbar (<em>Full Width: show</em>).
+                        Class: <code class="tny-mono">''</code> (empty — the wrapper's own constraints don't apply).
+                        Pair with the <code class="tny-mono">workbench</code> LayoutGroup so the band also drops its max-width.
+                        Used for: the TMC segment map on <a href="../pages/map-21.html" class="tny-link">map-21</a>, dense canvases.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="px-6 pb-6">
+                    <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] mb-2">How the author toggles it</div>
+                    <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.5] max-w-[760px]">
+                      In the page editor's section-groups pane (<code class="tny-mono">patterns/page/pages/edit/editPane/sectionGroupsPane.jsx</code>),
+                      each group exposes a "Full Width" menu item with two options: <code class="tny-mono">off</code> (default) and
+                      <code class="tny-mono">show</code>. Selecting <em>show</em> sets <code class="tny-mono">group.full_width = 'show'</code>
+                      on the row, which sectionArray reads to pick between
+                      <code class="tny-mono">layouts.centered</code> and <code class="tny-mono">layouts.fullwidth</code>.
+                      There's no third option — it's binary.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Nesting example (size 12) ── -->
+              <div class="col-span-12" data-dms-section="nesting">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">07</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Nesting example — a typical product page</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 mb-4 max-w-[680px]">
+                    A canonical TransportNY product page (e.g. <a href="../pages/map-21.html" class="tny-link">map-21.html</a>) is
+                    <code class="tny-mono">Layout 'app'</code> →
+                    <code class="tny-mono">[header] · [tone_bar] · [content] · [workbench] · [footer]</code>.
+                    Each band is a single LayoutGroup; each LayoutGroup hosts one or more Sections.
+                  </p>
+                  <pre class="font-mono text-[11.5px] leading-[1.55] text-slate-700 bg-slate-50 p-4 rounded border border-zinc-950/05 overflow-x-auto">Layout app
+├── LayoutGroup header        ← page title + actions
+│   └── Section page-header
+├── LayoutGroup tone_bar      ← Region · Month · Road Class
+│   └── Section global-filters
+├── LayoutGroup content       ← KPI strip + leaderboard
+│   ├── Section kpi-strip            (12 / 12 wide)
+│   ├── Section trend-chart          ( 8 / 12 wide)
+│   └── Section mpo-leaderboard      ( 4 / 12 wide)
+├── LayoutGroup workbench     ← edge-to-edge map
+│   └── Section map-tmc-segments
+└── LayoutGroup footer
+    └── Section footer-links</pre>
+                </div>
+              </div>
+
+              <!-- ── Section padding & the card gutter (size 12) ── -->
+              <div class="col-span-12" data-dms-section="section-padding">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">08</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h3 class="font-display font-semibold text-[20px] text-[#0F1722]">Section padding &amp; the card gutter</h3>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6]">
+                    A band's section grid is <code class="tny-mono">grid grid-cols-12 gap-0</code> — there is
+                    <strong>no grid gap</strong>. Instead, <strong>each section's <code class="tny-mono">padding</code> is the
+                    gutter</strong>: it's rendered on the section wrapper, <em>outside</em> the card chrome box (the
+                    border / radius / background sit on an inner box inside the padding — see
+                    <code class="tny-mono">sectionArray.jsx · sectionChrome</code>). Margins are never used (they fight grid/flex).
+                    The padding <em>inside</em> the card — text inset from the border — is the component's own concern
+                    (a lexical card uses <code class="tny-mono">theme.richtext.contentPadding</code>, <code class="tny-mono">p-4</code>).
+                  </p>
+
+                  <div class="mt-5 grid grid-cols-2 gap-6 max-w-[820px]">
+                    <!-- default gutter visual -->
+                    <div>
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] mb-1">Default gutter</div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-3">defaultPaddingStep: "3" → p-3/side → 24px between cards = the mockups' gap-6</div>
+                      <div class="rounded border border-zinc-950/10 bg-slate-50 grid grid-cols-2 gap-0">
+                        <div class="p-3"><div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-16 flex items-center justify-center font-mono text-[10px] text-slate-400">card</div></div>
+                        <div class="p-3"><div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-16 flex items-center justify-center font-mono text-[10px] text-slate-400">card</div></div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-3 leading-[1.5]">
+                        Leave <code class="tny-mono">padding</code> unset on a card section and it inherits this default.
+                        Two neighbours each contribute <code class="tny-mono">p-3</code> → a 24px gutter, matching the
+                        <code class="tny-mono">gap-6</code> the freight-atlas + landing mockups use. <strong>This is the
+                        right call for almost every card</strong> — don't set per-section padding just to space cards.
+                      </p>
+                    </div>
+                    <!-- override visual -->
+                    <div>
+                      <div class="font-display uppercase text-[13px] tracking-wide text-[#0F1722] mb-1">Per-side override</div>
+                      <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mb-3">padding: &#123; bottom: "0" &#125; · zero a shared edge to fuse a compound card</div>
+                      <div class="rounded border border-zinc-950/10 bg-slate-50 p-3">
+                        <div class="rounded-t-[8px] border border-b-0 border-zinc-950/10 bg-white shadow-sm h-12 flex items-center justify-center font-mono text-[10px] text-slate-400">header section · padding.bottom 0</div>
+                        <div class="rounded-b-[8px] border border-zinc-950/10 bg-white h-12 flex items-center justify-center font-mono text-[10px] text-slate-400">chart section · padding.top 0</div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-slate-600 mt-3 leading-[1.5]">
+                        A <strong>per-side object</strong> (<code class="tny-mono">&#123; top, right, bottom, left &#125;</code>) overrides
+                        individual sides against <code class="tny-mono">defaultPaddingStep</code>; zeroing the shared edge fuses two
+                        sections into one card. A bare <strong>literal string</strong> (<code class="tny-mono">"p-6"</code>) overrides
+                        <em>all</em> sides — handy occasionally, but a page-wide habit of <code class="tny-mono">p-4/5/6</code> over-inflates
+                        the gutters past the design (the freight-atlas home first shipped that way; the fix was to drop the overrides).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="mt-5 pt-4 border-t border-zinc-950/05">
+                    <div class="font-display uppercase text-[12px] tracking-wide text-[#CA8A04] mb-2">// Padding steps</div>
+                    <p class="font-proxima text-[12.5px] text-slate-600 max-w-[820px] leading-[1.55]">
+                      Steps map to Tailwind per side via <code class="tny-mono">theme.pages.sectionArray.paddings</code>:
+                      <code class="tny-mono">"0"</code> (flush) · <code class="tny-mono">"2"</code> (16px gutter) ·
+                      <code class="tny-mono">"3"</code> (24px — default) · <code class="tny-mono">"4"</code> (32px) ·
+                      <code class="tny-mono">"6"</code> · <code class="tny-mono">"8"</code>. The author sets these per-side in the
+                      section toolbar (Settings → Layout → Padding). Change the <em>default</em> only to re-space the whole brand;
+                      to nudge one page, override that page's sections.
+                    </p>
+                  </div>
+
+                  <div class="mt-5 pt-4 border-t border-zinc-950/05">
+                    <div class="font-display uppercase text-[12px] tracking-wide text-[#CA8A04] mb-2">// Equal-height rows</div>
+                    <p class="font-proxima text-[12.5px] text-slate-600 max-w-[820px] leading-[1.55]">
+                      For a <strong>row of more than one card</strong> (KPI strip, tile/feature grid, a tall card beside a short
+                      one), set each card section's <code class="tny-mono">height: 'fill'</code> so they stretch to the row's
+                      height and read as an even set instead of ragged, content-shrunk boxes. Leave <code class="tny-mono">height</code>
+                      <strong>unset (auto)</strong> — the default — for a full-width section or a card that's alone in its row.
+                      (Author UI: section toolbar → Settings → Layout → Height.)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="theme.html" class="hover:text-slate-900">theme</a>
+                <a href="layouts.html" class="text-slate-900 font-semibold">layouts</a>
+                <a href="grid.html" class="hover:text-slate-900">grid</a>
+                <a href="components.html" class="hover:text-slate-900">components</a>
+                <a href="patterns.html" class="hover:text-slate-900">patterns</a>
+                <span class="text-slate-300">·</span>
+                <a href="../pages/landing.html" class="hover:text-slate-900">landing</a>
+                <a href="../pages/map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="../pages/docs-overview.html" class="hover:text-slate-900">docs</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+<meta charset="utf-8">
+<title>WCDB DS — Components</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/components.css">
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+const CURRENT = 'components.html';
+
+// ─── shared compo wrapper ───
+function Spec({ name, dms, code, children }) {
+  return (
+    <div style={{ borderTop: '1px solid var(--line-1)', paddingTop: 28, marginTop: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 32, alignItems: 'baseline' }}>
+        <div>
+          <div className="serif" style={{ fontStyle: 'italic', fontSize: 24, letterSpacing: '-0.02em' }}>{name}</div>
+          <div className="mono" style={{ fontSize: 10, letterSpacing: '0.10em', color: 'var(--ink-4)', textTransform: 'uppercase', marginTop: 8 }}>{dms}</div>
+          {code && <div className="mono" style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 14 }}>{code}</div>}
+        </div>
+        <div style={{
+          background: 'var(--bg-2)', border: '1px solid var(--line-1)', borderRadius: 14,
+          padding: '36px 32px', display: 'flex', flexDirection: 'column', gap: 18,
+        }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── individual primitives ───
+function ButtonStrip() {
+  return (
+    <Spec name="Button" dms="UI.Button" code="theme.button">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+        <button className="wc-btn wc-btn--primary">Primary</button>
+        <button className="wc-btn wc-btn--secondary">Secondary</button>
+        <button className="wc-btn wc-btn--ghost">Ghost</button>
+        <button className="wc-btn wc-btn--link">Underline link</button>
+        <button className="wc-btn wc-btn--secondary" disabled>Disabled</button>
+      </div>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <button className="wc-btn wc-btn--primary wc-btn--sm">Small</button>
+        <button className="wc-btn wc-btn--primary">Medium</button>
+        <button className="wc-btn wc-btn--primary wc-btn--lg">Large</button>
+      </div>
+    </Spec>
+  );
+}
+
+function InputStrip() {
+  const [v, setV] = useState('');
+  return (
+    <Spec name="Input" dms="UI.Input · UI.Textarea" code="theme.input">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <div>
+          <label className="wc-label">Email</label>
+          <input className="wc-input" placeholder="dj@wcdb.fm" value={v} onChange={e => setV(e.target.value)} />
+        </div>
+        <div>
+          <label className="wc-label">Show name</label>
+          <input className="wc-input wc-input--bordered" placeholder="The Late Set" />
+        </div>
+      </div>
+      <div>
+        <label className="wc-label">Description</label>
+        <textarea className="wc-input wc-input--bordered" rows={3} placeholder="What is this show about?" />
+      </div>
+    </Spec>
+  );
+}
+
+function PillStrip() {
+  return (
+    <Spec name="Pill / Tag" dms="UI.Pill" code="theme.pill">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <span className="wc-pill">Indie</span>
+        <span className="wc-pill">Jazz</span>
+        <span className="wc-pill">Talk</span>
+        <span className="wc-pill wc-pill--solid">Featured</span>
+        <span className="wc-pill wc-pill--onair">On Air</span>
+      </div>
+    </Spec>
+  );
+}
+
+function CardStrip() {
+  return (
+    <Spec name="Card" dms="UI.Card · UI.dataCard" code="theme.dataCard">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="wc-card">
+          <div className="uppercase-meta">Show — 1184</div>
+          <div className="serif" style={{ fontStyle: 'italic', fontSize: 28, marginTop: 12, letterSpacing: '-0.02em' }}>Late Modernism</div>
+          <div style={{ marginTop: 8, color: 'var(--ink-3)', fontSize: 13 }}>Wednesdays · 22:00 — 00:00</div>
+          <p style={{ marginTop: 16, color: 'var(--ink-2)', fontSize: 14, lineHeight: 1.6 }}>Two hours of post-punk, no-wave, and minimal synth, hosted by DJ Halftone.</p>
+        </div>
+        <div className="wc-card wc-card--flat">
+          <div className="uppercase-meta">Spin · 02:14</div>
+          <div className="serif" style={{ fontStyle: 'italic', fontSize: 28, marginTop: 12, letterSpacing: '-0.02em' }}>Lo Boob Oscillator</div>
+          <div style={{ marginTop: 8, color: 'var(--ink-3)', fontSize: 13 }}>Stereolab · Refried Ectoplasm</div>
+          <p style={{ marginTop: 16, color: 'var(--ink-2)', fontSize: 14, lineHeight: 1.6 }}>Played 3 minutes ago on Late Modernism with DJ Halftone.</p>
+        </div>
+      </div>
+    </Spec>
+  );
+}
+
+function TabsStrip() {
+  const [tab, setTab] = useState(0);
+  const [seg, setSeg] = useState(1);
+  return (
+    <Spec name="Tabs · Segmented" dms="UI.Tabs" code="theme.tabs">
+      <div className="wc-tabs">
+        {['Overview', 'Schedule', 'DJs', 'Spins', 'Blog'].map((t, i) => (
+          <button key={t} className={'wc-tab ' + (tab===i ? 'wc-tab--active' : '')} onClick={() => setTab(i)}>{t}</button>
+        ))}
+      </div>
+      <div className="wc-seg">
+        {['Live', 'Today', 'Week', 'Month'].map((s, i) => (
+          <button key={s} className={'wc-seg__item ' + (seg===i ? 'wc-seg__item--active' : '')} onClick={() => setSeg(i)}>{s}</button>
+        ))}
+      </div>
+    </Spec>
+  );
+}
+
+function SwitchStrip() {
+  const [a, setA] = useState(true);
+  const [b, setB] = useState(false);
+  return (
+    <Spec name="Switch" dms="UI.Switch" code="theme.switch">
+      <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className={'wc-switch ' + (a ? 'wc-switch--on' : '')} onClick={() => setA(!a)}><div className="wc-switch__thumb" /></div>
+          <span style={{ fontSize: 14 }}>Stream auto-play</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className={'wc-switch ' + (b ? 'wc-switch--on' : '')} onClick={() => setB(!b)}><div className="wc-switch__thumb" /></div>
+          <span style={{ fontSize: 14, color: 'var(--ink-3)' }}>Notify when live</span>
+        </div>
+      </div>
+    </Spec>
+  );
+}
+
+function SelectStrip() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Spec name="Select · Combo" dms="UI.Select · UI.ComboBox" code="theme.select">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'flex-start' }}>
+        <div style={{ position: 'relative' }}>
+          <label className="wc-label">Genre</label>
+          <button onClick={() => setOpen(!open)} style={{
+            width: '100%', textAlign: 'left',
+            padding: '12px 14px',
+            border: '1px solid var(--line-2)',
+            borderRadius: 'var(--r-md)',
+            background: 'var(--bg-1)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            color: 'var(--ink-1)', fontSize: 14,
+          }}>
+            <span>Indie · Post-punk</span>
+            <span style={{ color: 'var(--ink-3)' }}>{open ? '▴' : '▾'}</span>
+          </button>
+          {open && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+              background: 'var(--bg-2)', border: '1px solid var(--line-2)', borderRadius: 8,
+              padding: 6, zIndex: 30,
+            }}>
+              {['Indie · Post-punk', 'Jazz', 'Talk', 'Sports'].map(o => (
+                <div key={o} style={{ padding: '8px 10px', borderRadius: 6, fontSize: 14, cursor: 'pointer' }}
+                     onMouseEnter={e=>e.currentTarget.style.background='var(--bg-3)'}
+                     onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  {o}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div>
+          <label className="wc-label">DJ</label>
+          <input className="wc-input wc-input--bordered" placeholder="Search DJs…" />
+        </div>
+      </div>
+    </Spec>
+  );
+}
+
+function TableStrip() {
+  const rows = [
+    ['02:14', 'Stereolab',     'Lo Boob Oscillator',     'Refried Ectoplasm'],
+    ['02:09', 'Slowdive',      'Star Roving',            'Slowdive'],
+    ['02:04', 'Cocteau Twins', 'Cherry-Coloured Funk',   'Heaven or Las Vegas'],
+    ['02:00', 'Broadcast',     'Tears in the Typing Pool','Tender Buttons'],
+  ];
+  return (
+    <Spec name="Table" dms="UI.Table" code="theme.table">
+      <table className="wc-table">
+        <thead><tr><th>Time</th><th>Artist</th><th>Track</th><th>Album</th></tr></thead>
+        <tbody>
+          {rows.map(r => (
+            <tr key={r[0]}>
+              <td className="mono" style={{ color: 'var(--ink-3)' }}>{r[0]}</td>
+              <td className="serif" style={{ fontStyle: 'italic', fontSize: 18 }}>{r[1]}</td>
+              <td>{r[2]}</td>
+              <td style={{ color: 'var(--ink-3)' }}>{r[3]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Spec>
+  );
+}
+
+function MenuStrip() {
+  return (
+    <Spec name="Menu · Dropdown" dms="UI.Menu · UI.Dropdown" code="theme.menu">
+      <div style={{
+        background: 'var(--bg-1)', border: '1px solid var(--line-2)', borderRadius: 10,
+        padding: 6, width: 240,
+      }}>
+        {[
+          ['Now playing', '⌘1'],
+          ['Schedule',    '⌘2'],
+          ['DJs',         '⌘3'],
+          null,
+          ['Settings',    '⌘,'],
+          ['Sign out',    null],
+        ].map((r, i) => r ? (
+          <div key={i} style={{
+            display: 'flex', justifyContent: 'space-between', padding: '10px 12px',
+            borderRadius: 6, fontSize: 14, cursor: 'pointer',
+          }}
+            onMouseEnter={e=>e.currentTarget.style.background='var(--bg-3)'}
+            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+            <span>{r[0]}</span>
+            {r[1] && <span className="mono" style={{ color: 'var(--ink-4)', fontSize: 11 }}>{r[1]}</span>}
+          </div>
+        ) : <div key={i} style={{ height: 1, background: 'var(--line-1)', margin: '4px 0' }} />)}
+      </div>
+    </Spec>
+  );
+}
+
+function DialogStrip() {
+  return (
+    <Spec name="Dialog · Modal" dms="UI.Dialog · UI.Modal" code="theme.dialog">
+      <div style={{
+        background: 'var(--bg-4)', border: '1px solid var(--line-2)', borderRadius: 14,
+        padding: 28, maxWidth: 460, position: 'relative',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+      }}>
+        <div className="uppercase-meta">Confirm · 01</div>
+        <h4 className="serif" style={{ fontStyle: 'italic', fontSize: 24, margin: '12px 0 12px', letterSpacing: '-0.02em', fontWeight: 400 }}>
+          Delete this show?
+        </h4>
+        <p style={{ color: 'var(--ink-2)', fontSize: 14, margin: 0 }}>
+          “Late Modernism” has 184 episodes. They will be archived but not deleted.
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 28 }}>
+          <button className="wc-btn wc-btn--ghost">Cancel</button>
+          <button className="wc-btn wc-btn--primary">Archive show</button>
+        </div>
+      </div>
+    </Spec>
+  );
+}
+
+function PaginationStrip() {
+  const [page, setPage] = useState(2);
+  return (
+    <Spec name="Pagination" dms="UI.Pagination" code="theme.pagination">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <button className="wc-btn wc-btn--secondary wc-btn--sm">←</button>
+        {[1, 2, 3, 4, 5].map(n => (
+          <button key={n} onClick={() => setPage(n)}
+            className={'wc-btn wc-btn--sm ' + (n === page ? 'wc-btn--primary' : 'wc-btn--ghost')}
+            style={{ width: 36, justifyContent: 'center' }}>
+            {n}
+          </button>
+        ))}
+        <span style={{ color: 'var(--ink-4)', padding: '0 6px' }}>…</span>
+        <button className="wc-btn wc-btn--ghost wc-btn--sm" style={{ width: 36, justifyContent: 'center' }}>24</button>
+        <button className="wc-btn wc-btn--secondary wc-btn--sm">→</button>
+      </div>
+    </Spec>
+  );
+}
+
+function PermissionsStrip() {
+  return (
+    <Spec name="Permissions matrix" dms="UI.Permissions" code="theme.permissions">
+      <table className="wc-table" style={{ marginBottom: 0 }}>
+        <thead>
+          <tr>
+            <th>Role</th><th>View</th><th>Schedule</th><th>Edit</th><th>Publish</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ['Listener', '✓', '—', '—', '—'],
+            ['DJ',       '✓', '✓', '✓', '—'],
+            ['Producer', '✓', '✓', '✓', '✓'],
+            ['Admin',    '✓', '✓', '✓', '✓'],
+          ].map(r => (
+            <tr key={r[0]}>
+              <td>{r[0]}</td>
+              {r.slice(1).map((c, i) => <td key={i} className="mono" style={{ color: c === '✓' ? 'var(--ink-1)' : 'var(--ink-4)' }}>{c}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Spec>
+  );
+}
+
+function NavStrip() {
+  return (
+    <Spec name="TopNav · SideNav · Logo" dms="UI.TopNav · UI.SideNav · UI.Logo" code="theme.topnav · theme.sidenav · theme.logo">
+      <div style={{
+        background: 'var(--bg-1)', border: '1px solid var(--line-2)', borderRadius: 12, overflow: 'hidden',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 22px', borderBottom: '1px solid var(--line-1)',
+        }}>
+          <WCDBMark size="sm" />
+          <nav style={{ display: 'flex', gap: 22, fontSize: 13 }}>
+            {['Listen', 'Schedule', 'DJs', 'Blog', 'Spins'].map((l, i) => (
+              <a key={l} href="#" style={{ color: i === 1 ? 'var(--ink-1)' : 'var(--ink-3)' }}>{l}</a>
+            ))}
+          </nav>
+          <button className="wc-btn wc-btn--primary wc-btn--sm">Listen Live</button>
+        </div>
+        <div style={{ display: 'flex' }}>
+          <div style={{
+            width: 200, padding: 18,
+            borderRight: '1px solid var(--line-1)',
+            display: 'flex', flexDirection: 'column', gap: 4,
+          }}>
+            {[
+              ['Now playing', true],
+              ['This week', false],
+              ['Archive', false],
+              ['Submit', false],
+            ].map(([l, a]) => (
+              <a key={l} href="#" style={{
+                fontSize: 13, padding: '8px 10px', borderRadius: 6,
+                color: a ? 'var(--ink-1)' : 'var(--ink-3)',
+                background: a ? 'var(--bg-3)' : 'transparent',
+              }}>{l}</a>
+            ))}
+          </div>
+          <div style={{ flex: 1, padding: '24px 22px', color: 'var(--ink-3)', fontSize: 13 }}>
+            Page content area.
+          </div>
+        </div>
+      </div>
+    </Spec>
+  );
+}
+
+function App() {
+  return (
+    <PageShell current={CURRENT}>
+      <SectionHead num="01" kicker="Components" title="The themed dms primitives." />
+      <p style={{ color: 'var(--ink-2)', fontSize: 16, lineHeight: 1.6, maxWidth: 720, marginTop: -16, marginBottom: 32 }}>
+        Each card below is one component from <span className="mono" style={{ fontSize: 12 }}>@availabs/dms</span>'s UI registry, restyled. The label on the left names the dms component and the theme key that ports the styling back into <span className="mono" style={{ fontSize: 12 }}>wcdb_theme.js</span>.
+      </p>
+
+      <NavStrip />
+      <ButtonStrip />
+      <InputStrip />
+      <SelectStrip />
+      <PillStrip />
+      <CardStrip />
+      <TabsStrip />
+      <SwitchStrip />
+      <MenuStrip />
+      <DialogStrip />
+      <TableStrip />
+      <PaginationStrip />
+      <PermissionsStrip />
+
+      <WCDBTweaks />
+    </PageShell>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+</script>
+</body>
+</html>

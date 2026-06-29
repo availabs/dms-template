@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Patterns · TransportNY</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="_icons.jsx"></script>
+<script type="text/babel" src="_chrome.jsx"></script>
+</head>
+<body class="tny-pane">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const Icon = window.TNYIcon;
+
+function Pattern({ id, title, when, container, alignment, padding, structure, dos, donts, example }) {
+  return (
+    <section id={id} className="tny-card p-8 mb-6">
+      <h2 className="font-oswald font-semibold text-[26px] text-slate-900">{title}</h2>
+      <p className="text-[13.5px] text-slate-600 max-w-2xl mt-1 leading-relaxed">{when}</p>
+
+      {(container || alignment || padding) && (
+        <div className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+          <span className="text-slate-400">grid ·</span>
+          {container && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700">container: {container}</span>}
+          {alignment && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700">align: {alignment}</span>}
+          {padding && <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700">padding: {padding}</span>}
+          <a href="grid-system.html" className="text-[#37576B] underline underline-offset-2 ml-1">tokens →</a>
+        </div>
+      )}
+
+      <div className="mt-6 rounded-lg border border-zinc-950/10 bg-[#F7F8FA] overflow-hidden">{example}</div>
+      <div className="mt-5 grid grid-cols-3 gap-6">
+        <div>
+          <div className="font-oswald uppercase text-[11px] text-slate-500 tracking-wider mb-1.5">Structure</div>
+          <ul className="text-[12.5px] text-slate-700 space-y-1.5 list-disc pl-4">{structure.map((s,i)=>(<li key={i}>{s}</li>))}</ul>
+        </div>
+        <div>
+          <div className="font-oswald uppercase text-[11px] text-emerald-700 tracking-wider mb-1.5">Do</div>
+          <ul className="text-[12.5px] text-slate-700 space-y-1.5 list-disc pl-4">{dos.map((s,i)=>(<li key={i}>{s}</li>))}</ul>
+        </div>
+        <div>
+          <div className="font-oswald uppercase text-[11px] text-rose-700 tracking-wider mb-1.5">Don&apos;t</div>
+          <ul className="text-[12.5px] text-slate-700 space-y-1.5 list-disc pl-4">{donts.map((s,i)=>(<li key={i}>{s}</li>))}</ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MiniSidebar({ active }) {
+  return (
+    <div className="bg-[#12181F] flex flex-col w-12 flex-shrink-0">
+      <div className="h-12 bg-[#0A0E13] flex items-center justify-center"><img src="../assets/nys_logo_white.svg" className="w-7 h-7"/></div>
+      {['Search','Pages','MapLayers','Sections','MapPin','Activity'].map((i,k)=>(
+        <div key={k} className={`h-10 flex items-center justify-center ${k===active?'bg-[#1e2530] border-l-2 border-yellow-400 -ml-0.5':''}`}>
+          <Icon name={i} className={`size-4 ${k===active?'text-yellow-400':'text-slate-400'}`}/>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div className="min-h-screen">
+      <TNYSidebar product="DESIGN" active="patterns" expanded={true}
+        nav={[
+          { id:'theme', label:'Theme', icon:'Sections', onClick:'theme.html' },
+          { id:'grid', label:'Grid', icon:'Grid', onClick:'grid-system.html' },
+          { id:'components', label:'Components', icon:'Pages', onClick:'components.html' },
+          { id:'patterns', label:'Patterns', icon:'MapLayers' },
+        ]}/>
+      <main className="ml-60">
+        <TNYPageHeader
+          tone="hero"
+          breadcrumb={[{label:'Design System', href:'#'}, {label:'Patterns'}]}
+          kicker="// design system"
+          meta="v0.2 · page archetypes"
+          title="Patterns"
+          accent="."
+          desc="Recipes for the page archetypes across TransportNY. Each pattern fixes a container, an alignment, and a section-padding scale from the grid system, then composes them into a working surface."
+        />
+
+        <div className="grid grid-cols-[1fr_220px] gap-10 px-10 py-8">
+          <div>
+            <Pattern id="form" title="Form · single column"
+              container="narrow · 480"
+              alignment="centred (both axes)"
+              padding="compact · 32"
+              when="Sign-in, sign-up, request-access, MFA challenge, password reset — any short one-or-two-field flow. Centred horizontally; vertically too when the form is short."
+              structure={[
+                'Page split: form-left, art-right (or just the form on small screens).',
+                'Container narrow (480 px) inside the form column.',
+                'Eyebrow + Oswald headline + short sub.',
+                'SSO options stacked above a divider, then email/password fields.',
+                'Primary CTA at the bottom; tertiary helpers below.',
+              ]}
+              dos={['Use the same SSO order across forms (NY.gov → NYSDOT → MPO)','Keep the form within 6 fields — longer flows go to a multi-step pattern','Anchor a single primary action at the bottom']}
+              donts={['Centre a 1200-wide form just because the viewport allows','Use the Hero tone for a sign-in page','Allow more than one primary CTA per form']}
+              example={
+                <div className="bg-white h-[280px] flex">
+                  <MiniSidebar active={0}/>
+                  <div className="flex-1 flex">
+                    <div className="flex-1 border-r border-zinc-950/05 flex items-center justify-center">
+                      <div className="w-[200px] space-y-1.5">
+                        <div className="h-2 w-12 bg-slate-300 rounded"/>
+                        <div className="h-4 w-32 bg-slate-700 rounded"/>
+                        <div className="h-1.5 w-40 bg-slate-200 rounded"/>
+                        <div className="h-1.5 w-36 bg-slate-200 rounded"/>
+                        <div className="pt-2 space-y-1">
+                          <div className="h-5 w-full border border-zinc-950/15 rounded bg-white"/>
+                          <div className="h-5 w-full border border-zinc-950/15 rounded bg-white"/>
+                          <div className="h-5 w-full border border-zinc-950/15 rounded bg-white"/>
+                        </div>
+                        <div className="h-px bg-zinc-950/10 my-2"/>
+                        <div className="h-5 w-full border border-zinc-950/15 rounded"/>
+                        <div className="h-5 w-full border border-zinc-950/15 rounded"/>
+                        <div className="h-6 w-full rounded bg-[#EAAD43]"/>
+                      </div>
+                    </div>
+                    <div className="flex-1 bg-[#0a0e13] flex items-center justify-center text-slate-500 font-mono text-[10px] uppercase tracking-wider">art panel</div>
+                  </div>
+                </div>
+              }/>
+
+            <Pattern id="dashboard" title="Data dashboard · operational"
+              container="data · 1480"
+              alignment="left-aligned"
+              padding="comfortable · 48"
+              when="Show the current state of a domain (MAP-21 PM3, congestion, work zones, freight) for a chosen region and time window. The user scans for outliers, then drills into a row or a TMC."
+              structure={[
+                'Ink sidebar (collapsed) anchors product navigation.',
+                'Page hero is replaced by a Type selector at top — Congestion / Work Zones / Incidents.',
+                'A saturated NYS-Blue tone-bar carries the global filters: Region · Month · Road Class.',
+                'Content grid: KPI cards top-left, primary chart top-right, sortable table + map bottom.',
+                'Map sits flush to the right edge — no card chrome — to maximize geographic real estate.',
+              ]}
+              dos={['Limit primary filters to three','Keep the same 5-color categorical palette across all charts on the page','Use the small green/red arrow to communicate Δ — never a colored background']}
+              donts={['Add a hero block to a dashboard — it wastes the most valuable vertical inch','Use brand blue inside a chart','Show more than 15 rows in the corridor table without paging']}
+              example={
+                <div className="flex h-[280px] bg-white">
+                  <MiniSidebar active={2}/>
+                  <div className="flex-1">
+                    <div className="tny-bluebar h-12 px-5 flex items-center text-white"><div><div className="text-[10px] text-white/70">Type</div><div className="font-oswald font-semibold text-[18px] flex items-center gap-1">Congestion <Icon name="CaretDown" className="size-3.5"/></div></div></div>
+                    <div className="tny-bluebar h-9 px-5 flex items-center gap-6 text-white text-[11px] border-t border-white/10"><span>Region: Region 3</span><span>Month: Oct '25</span><span>Road Class: All</span></div>
+                    <div className="grid grid-cols-[1fr_1fr_1.6fr_2fr] gap-2 p-3">
+                      <div className="rounded border border-zinc-950/10 p-2 text-[10px]"><div className="font-oswald font-medium">Total Cost</div><div className="font-mono font-semibold text-[14px] mt-1">1,265</div></div>
+                      <div className="rounded border border-zinc-950/10 p-2 text-[10px]"><div className="font-oswald font-medium">By Type</div><div className="font-mono font-semibold text-[14px] mt-1">1,265</div></div>
+                      <div className="rounded border border-zinc-950/10 p-2"><div className="text-[10px] font-oswald font-medium">By Month</div><div className="flex items-end gap-0.5 h-12 mt-1">{[6,7,7,8,9,9,8,8].map((v,i)=>(<div key={i} className="flex-1 bg-amber-300" style={{height:v*5}}/>))}</div></div>
+                      <div className="tny-map rounded border border-zinc-950/10"/>
+                    </div>
+                  </div>
+                </div>
+              }/>
+
+            <Pattern id="template" title="Report Template"
+              container="data · 1480"
+              alignment="left-aligned"
+              padding="comfortable · 48"
+              when="A saved chart layout the user can re-run against different routes. Used in NPMRDS Route Reports and PM3."
+              structure={[
+                'Topo hero presents Template name + a Save as Template / Save as Report pair top-right.',
+                'A two-line blue toolbar below the hero: line 1 holds Templates / Routes selectors + Chart Colors + Add Chart; line 2 holds the active route pills.',
+                'Stacked single-column of cards underneath — Map, then chart pairs (line + grid, bar + summary).',
+                'Per-card overflow menu offers View Data · Save PNG · Duplicate · Remove.',
+              ]}
+              dos={['Anchor route pills to the toolbar so they scroll with it','Keep the map full-width — it sets context for every chart below','Lock chart legends to the route pill order and color']}
+              donts={['Mix template editing chrome (left rail) with run-mode chrome on the same surface — they belong on separate screens','Allow more than 8 route pills on the toolbar — collapse into a +N chip']}
+              example={
+                <div className="bg-white h-[280px] flex">
+                  <MiniSidebar active={2}/>
+                  <div className="flex-1">
+                    <div className="tny-hero-topo px-5 py-3 flex items-start justify-between"><div><div className="font-oswald font-semibold text-[20px]">Floating Car</div><div className="font-oswald text-[12px] text-slate-700">Average Day</div></div><div className="flex gap-1"><button className="h-6 px-2 rounded bg-[#1F3F8F] text-white text-[10px]">Save Template</button><button className="h-6 px-2 rounded border border-[#1F3F8F] text-[#1F3F8F] text-[10px]">Save Report</button></div></div>
+                    <div className="tny-bluebar h-7 px-5 flex items-center gap-4 text-white text-[10px]"><span>Templates ▾</span><span>Routes ▾</span><div className="flex-1"/><span>Chart Colors ▾</span><span>+ Add Chart</span></div>
+                    <div className="tny-bluebar-dark h-9 px-5 flex items-center gap-1.5">{['#E5A646','#F2CB3D','#C8D2E0','#B07FE6'].map((c,i)=>(<span key={i} className="h-5 px-2 rounded-full bg-white text-[10px] flex items-center gap-1"><span className="size-1.5 rounded-full" style={{background:c}}/>Route {i+1}</span>))}</div>
+                    <div className="px-3 py-2 space-y-1.5">
+                      <div className="h-12 rounded border border-zinc-950/10 tny-map-dark"/>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <div className="h-16 rounded border border-zinc-950/10 bg-white p-1.5"><div className="text-[9px] font-oswald font-medium">Route Line Graph</div><svg viewBox="0 0 100 30" className="w-full h-10"><polyline fill="none" stroke="#D6453B" strokeWidth="0.8" points="0,12 10,11 20,12 30,10 40,14 50,9 60,11 70,15 80,12 90,10 100,11"/></svg></div>
+                        <div className="h-16 rounded border border-zinc-950/10 bg-white"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }/>
+
+            <Pattern id="docs" title="Editorial / doc"
+              container="prose · 720"
+              alignment="left-aligned with TOC"
+              padding="roomy · 72"
+              when="Long-form documentation, methodology pages, changelogs. Body lives in a prose-width column; a sticky TOC runs alongside in the right gutter."
+              structure={[
+                'Standard hero with a single primary action button.',
+                'Optional blue "tertiary links" strip directly under the hero for sibling docs.',
+                'Two-column body: 680-px running prose left, sticky anchored TOC right.',
+                'Use Oswald H2 to break long sections; bullet lists for tool inventories.',
+              ]}
+              dos={['Lead with a plain-language paragraph before any acronym salad','Pin the TOC and highlight the in-view section with the Amber rule','Inline cross-link to other docs with the standard tny-link style']}
+              donts={['Set body copy in Oswald — it is a display face only','Use cards to break up prose — they fragment the read']}
+              example={
+                <div className="bg-white h-[280px] flex">
+                  <MiniSidebar active={1}/>
+                  <div className="flex-1 p-4">
+                    <div className="tny-hero-topo rounded p-3 mb-2 flex items-start justify-between"><div className="font-oswald font-semibold text-[18px]">Overview</div><button className="h-6 px-2 rounded bg-[#1F3F8F] text-white text-[10px]">Primary Action</button></div>
+                    <div className="grid grid-cols-[1fr_80px] gap-3">
+                      <div className="space-y-1">
+                        {[...Array(10)].map((_,i)=>(<div key={i} className="h-1.5 rounded bg-slate-200" style={{width:`${85-i*4}%`}}/>))}
+                        <div className="h-2 w-32 rounded bg-slate-700 mt-2"/>
+                        {[...Array(4)].map((_,i)=>(<div key={i} className="h-1.5 rounded bg-slate-200" style={{width:`${80-i*8}%`}}/>))}
+                      </div>
+                      <div className="space-y-1.5 text-[8px]">
+                        <div className="border-l-2 border-amber-400 pl-1 text-slate-900 font-medium">Overview</div>
+                        <div className="border-l-2 border-slate-200 pl-1 text-slate-500">What is the NPMRDS?</div>
+                        <div className="border-l-2 border-slate-200 pl-1 text-slate-500">Strengths</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }/>
+
+            <Pattern id="editor" title="Workbench · editor canvas"
+              container="data · 1480 (hero) + full-bleed (canvas)"
+              alignment="hero left-aligned; canvas edge-to-edge"
+              padding="0 inside canvas; comfortable above/below"
+              when="Author-authored printable documents (PM3 narrative, regional reports). The user composes blocks; a settings rail mirrors their selection."
+              structure={[
+                'Sidebar collapsed to icon rail — the editor canvas needs every pixel of width.',
+                'Document blocks have dashed selection borders + a floating action menu (⋯).',
+                'Bottom of the canvas: a black floating dock with snapshot / page / lock / version controls.',
+                'Right side: stacked settings cards — block-type at top, instance properties below.',
+                'Settings rows are 40-px tall, icon + label + value-chip pattern; toggles are NYS Blue.',
+              ]}
+              dos={['Mirror the selected block in the top settings card title (e.g. "Municipality Profile")','Pair every toggle with a clear English label — abbreviations get lost in long lists','Use action-icon tinted backgrounds (blue/red/amber) to communicate destructive vs neutral']}
+              donts={['Hide structural actions (move up/down, duplicate) behind menus — they should be one-click in the settings card header','Allow tooltips to substitute for descriptive labels']}
+              example={
+                <div className="bg-[#f4f5f7] h-[280px] flex">
+                  <MiniSidebar active={1}/>
+                  <div className="flex-1 p-3 grid grid-cols-[1fr_120px] gap-3">
+                    <div className="rounded border-2 border-dashed border-amber-300 bg-white p-3"><div className="font-oswald font-bold text-[14px] border-b-2 border-amber-400 inline-block pb-0.5">REGIONAL REPORT</div><div className="mt-2 space-y-1"><div className="h-1 bg-slate-200 rounded w-5/6"/><div className="h-1 bg-slate-200 rounded w-4/6"/><div className="h-6 bg-[#0F2D4D] rounded mt-1.5"/><div className="h-3 bg-slate-100 rounded"/></div></div>
+                    <div className="space-y-1.5">
+                      <div className="rounded border border-zinc-950/10 bg-white p-1.5 shadow"><div className="text-[9px] font-oswald font-medium border-b border-zinc-950/10 pb-1 mb-1">Settings</div><div className="text-[8px] flex justify-between py-0.5">Type<span>Card</span></div><div className="text-[8px] flex justify-between py-0.5">Card Settings<span>›</span></div></div>
+                      <div className="rounded border border-zinc-950/10 bg-white p-1.5 shadow"><div className="text-[9px] font-oswald font-medium border-b border-zinc-950/10 pb-1 mb-1">Block</div><div className="text-[8px] flex justify-between py-0.5">Hide Header<span className="inline-block w-4 h-2 rounded-full bg-[#1F3F8F]"/></div><div className="text-[8px] flex justify-between py-0.5">Allow Edit<span className="inline-block w-4 h-2 rounded-full bg-[#1F3F8F]"/></div></div>
+                    </div>
+                  </div>
+                </div>
+              }/>
+
+            <Pattern id="split" title="Split · list + detail"
+              container="split · 1024"
+              alignment="left-aligned, two equal panes"
+              padding="comfortable · 48"
+              when="Settings, source catalogues, segment browsers. Left lists, right shows the selected item's detail. URL drives selection; refreshing keeps state."
+              structure={[
+                'Container split (1024) inside the main content area.',
+                'Inner grid is 12-col: list spans 4 (sticky), detail spans 8.',
+                'List header is a search/filter input; rows are 36–44 px high.',
+                'Detail panel has its own internal header + actions row.',
+                'Selection persists in the URL (e.g. /sources/faf5).',
+              ]}
+              dos={['Make the selected row visually loud — yellow active-bar carries through','Keep detail header sticky so the action row is always reachable','Allow the list to scroll independently of the detail']}
+              donts={['Use this pattern with fewer than ~8 rows — a tabbed page is simpler','Hide actions behind a dot-menu when there is room for them inline']}
+              example={
+                <div className="bg-white h-[280px] flex">
+                  <MiniSidebar active={1}/>
+                  <div className="flex-1 grid grid-cols-12 gap-0">
+                    {/* list */}
+                    <div className="col-span-4 border-r border-zinc-950/10 bg-white">
+                      <div className="h-8 border-b border-zinc-950/10 px-2 flex items-center font-mono text-[9px] uppercase tracking-wider text-slate-500">search</div>
+                      {[0,1,2,3,4,5,6,7,8].map(i=>(
+                        <div key={i} className={`h-7 px-3 flex items-center text-[11px] border-b border-zinc-950/05 ${i===2?'bg-[#FFFBEB] border-l-[3px] border-[#FACC15] -ml-[3px] text-slate-900 font-medium':'text-slate-600'}`}>Item {i+1}</div>
+                      ))}
+                    </div>
+                    {/* detail */}
+                    <div className="col-span-8 p-3">
+                      <div className="font-oswald font-semibold text-[14px]">Item 3 · detail</div>
+                      <div className="text-[10px] text-slate-500 font-mono">id · 120P04571</div>
+                      <div className="mt-2 h-20 bg-slate-100 rounded border border-zinc-950/05"/>
+                      <div className="mt-2 grid grid-cols-2 gap-1.5">
+                        <div className="h-2 bg-slate-200 rounded"/><div className="h-2 bg-slate-200 rounded"/>
+                        <div className="h-2 bg-slate-200 rounded"/><div className="h-2 bg-slate-200 rounded"/>
+                      </div>
+                      <div className="mt-2 flex gap-1">
+                        <div className="h-5 w-14 bg-[#EAAD43] rounded"/>
+                        <div className="h-5 w-14 bg-slate-100 border border-zinc-950/10 rounded"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }/>
+
+            <Pattern id="getting-started" title="Catalog / Marketing"
+              container="marketing · 1280"
+              alignment="centred within main content area"
+              padding="feature · 96"
+              when="Public landing pages, product overviews, getting-started catalogs. Section backgrounds may be full-bleed; content inside each section is held to the marketing container and centred."
+              structure={[
+                'Topo hero + plain copy explaining the screen.',
+                'A single saturated blue tone-bar carries the most critical scope filter (typically Region).',
+                'Grouped grids of report cards underneath, 3-up. Group headings use Oswald H2.',
+                'Sticky right-side TOC repeats the section names.',
+                'Each card is a linked title + 1-line description + "Core Insights" footer.',
+              ]}
+              dos={['Keep the card body to one short paragraph','Show 2–3 Core Insights — anything more and the card becomes a doc','Use the same card shape across every group on the page']}
+              donts={['Use icons inside the cards — they fight the report title for attention','Add screenshots inside the catalog — they belong on the report page itself']}
+              example={
+                <div className="bg-white h-[280px] flex">
+                  <MiniSidebar active={1}/>
+                  <div className="flex-1">
+                    <div className="tny-hero-topo p-3"><div className="font-oswald font-semibold text-[18px]">Getting Started</div><div className="text-[9px] text-slate-600 max-w-xs mt-0.5">Pick a region, then choose a report.</div></div>
+                    <div className="tny-bluebar h-7 px-4 flex items-center text-white text-[10px]"><span className="opacity-70 mr-1">Region:</span><span className="font-semibold">Capital District ▾</span></div>
+                    <div className="p-3"><div className="text-[10px] font-oswald font-semibold mb-1">Floating Car</div>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {['50th Percentile','80th Percentile','Freeflow'].map((t,i)=>(
+                          <div key={i} className="rounded border border-zinc-950/10 p-1.5"><div className="text-[9px] text-[#1F3F8F] underline font-oswald font-medium">{t}</div><div className="text-[7.5px] text-slate-500 mt-0.5">Speed distribution by epoch.</div><div className="mt-1 pt-1 border-t border-zinc-950/5 text-[7px] font-oswald font-semibold">CORE INSIGHTS</div></div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }/>
+          </div>
+
+          <aside className="pt-1 sticky top-4 self-start">
+            <a href="#form" className="tny-toc-item active">Form</a>
+            <a href="#dashboard" className="tny-toc-item">Data dashboard</a>
+            <a href="#template" className="tny-toc-item">Report template</a>
+            <a href="#docs" className="tny-toc-item">Editorial / doc</a>
+            <a href="#editor" className="tny-toc-item">Workbench</a>
+            <a href="#split" className="tny-toc-item">Split · list + detail</a>
+            <a href="#getting-started" className="tny-toc-item">Catalog / Marketing</a>
+            <div className="mt-4 pt-3 border-t border-slate-200/60">
+              <a href="grid-system.html" className="font-mono text-[10.5px] uppercase tracking-wider text-[#37576B] hover:text-[#1f3450]">→ grid &amp; layout</a>
+            </div>
+          </aside>
+        </div>
+        <TNYFooter/>
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

@@ -319,6 +319,9 @@ const theme = {
   // ----------------------- End Layout ------------------------
   // Pages Pattern
   // ------------------
+  richtext: {
+    contentPadding: 'p-0',
+  },
   pages: {
     sectionArray: {
       "options": {
@@ -328,6 +331,7 @@ const theme = {
         {
           container: "w-full grid grid-cols-6 md:grid-cols-12 ",
           gridSize: 12,
+          sectionPadding: 'p-0',
           sectionEditHover: 'absolute inset-0 border border-transparent group-hover:border-[#37576b] border border-2 pointer-events-none z-10 rounded-md',
           addSectionIcon: 'size-6 p-1.5 text-white bg-[#37576b] rounded-full group-hover/icon:hidden',
           addSectionText: 'px-1.5 py-1 text-white text-sm font-semibold bg-[#37576b] rounded-full',
@@ -428,6 +432,31 @@ const theme = {
     3: `font-[500]  text-[#2D3E4C] text-[16px] leading-[16px] scroll-mt-36 font-['Oswald'] pb-[12x]`,
     4: `text-[36px] sm:text-[48px] tracking-[-2px] items-center font-medium font-['Oswald'] text-[#2D3E4C] sm:leading-[100%] uppercase`,
     default: "",
+  },
+  button: {
+    options: { activeStyle: 0 },
+    styles: [
+      {
+        name: 'default Buttons',
+        button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[14px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-5 py-2.5`,
+      },
+      {
+        name: 'plain',
+        button: `cursor-pointer inline-flex items-center gap-2 border border-[#E0EBF0] bg-white hover:bg-[#E0EBF0] hover:border-[#C5D7E0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[14px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-5 py-2.5`,
+      },
+      {
+        name: 'active',
+        button: `cursor-pointer inline-flex items-center gap-2 border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F3F8F9] disabled:border-[#E0EBF0] disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-3 py-[6px]`,
+      },
+      {
+        name: 'secondarySmall',
+        button: `cursor-pointer inline-flex items-center gap-2 border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F3F8F9] disabled:border-[#E0EBF0] disabled:text-[#C5D7E0] disabled:cursor-not-allowed px-3 py-[6px]`,
+      },
+      {
+        name: 'primarySmall',
+        button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-3 py-[6px]`,
+      },
+    ],
   },
   levelClasses: {
     1: " pt-2 pb-1 uppercase text-sm text-blue-400 hover:underline cursor-pointer border-r-2 mr-4",
@@ -536,10 +565,10 @@ const theme = {
         iconAndColorValues: 'flex items-center gap-1.5 uppercase',
 
         formEditButtonsWrapper: 'self-end flex gap-0.5 text-sm',
-        formEditSaveButton: 'bg-blue-300 hover:bg-blue-400 text-blue-700 rounded-lg w-fit px-2 py-0.5',
-        formEditCancelButton: 'bg-red-300 hover:bg-red-400 text-red-700 rounded-lg w-fit px-2 py-0.5',
-        formAddNewItemButton: 'bg-blue-300 hover:bg-blue-400 text-blue-700 rounded-lg w-fit px-2 py-0.5 text-sm self-end',
-
+        formAddNewItemButton: 'font-[Proxima Nova] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-bold uppercase rounded-lg w-fit px-2 py-1 mr-0.5 mb-0.5 self-end cursor-pointer',
+        formEditSaveButton: 'font-[Proxima Nova] bg-[#F1CA87] hover:bg-[#EAAD43] text-[#2D3E4C] font-bold uppercase rounded-lg w-fit px-2 py-1 mr-0.5 mb-0.5 self-end cursor-pointer',
+        formEditCancelButton: 'font-[Proxima Nova] bg-[#DD524C] hover:bg-[#AA2E26] text-[#2D3E4C] font-bold uppercase rounded-lg w-fit px-2 py-1 mr-0.5 mb-0.5 self-end cursor-pointer',
+        formEditSavingAnimation: 'ring-2 ring-blue-400 animate-pulse',
         linkColValue:
             "flex-1 flex justify-center w-full bg-[#C5D7E0] rounded-full px-[12px] py-[8px] font-[Proxima Nova] font-bold text-[12px] leading-[100%] tracking-[0px] uppercase",
         justifyTextLeft: "text-start justify-items-start",
@@ -614,7 +643,7 @@ const theme = {
         tablist: 'flex gap-4',
         tab: `
     py-1 px-3 font-semibold text-slate-600 focus:outline-none border-b-2 border-white text-xs hover:text-slate-900
-    data-[selected]:border-blue-500 data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white
+    aria-selected:border-blue-500 aria-selected:bg-white/10 hover:bg-white/5 aria-selected:hover:bg-white/10 focus-visible:outline-1 focus-visible:outline-white
   `,
         tabpanels: '',
         tabpanel: 'rounded-xl bg-white/5'
@@ -624,18 +653,19 @@ const theme = {
         tablist: 'flex flex-col',
         tab: `
     px-2 py-2 font-semibold text-[#37576B] text-xs hover:text-[#2D3E4C] focus:outline-none border-b-2 border-white
-    data-[selected]:bg-[#2D3E4C] data-[selected]:text-white data-[hover]:bg-white/5 data-[selected]:text-white data-[focus]:outline-1 data-[focus]:outline-white cursor-pointer
+    aria-selected:bg-[#2D3E4C] aria-selected:text-white hover:bg-white/5 aria-selected:text-white focus-visible:outline-1 focus-visible:outline-white cursor-pointer
   `,
         tabpanels: 'w-full h-screen max-h-screen overflow-y-auto scrollbar-sm',
         tabpanel: 'rounded-xl bg-white/5 divide-y divide-[#37576b8c]',
         tabTitle: 'p-2 text-[#2D3E4C]'
       },
       {
+        name: 'pages-pane',
         tabGroup: 'flex flex-row divide-x divide-[#37576b8c]',
         tablist: 'flex flex-col gap-1 pt-12',
         tab: `
     px-2 py-3 font-semibold text-[#37576B] text-xs hover:text-[#2D3E4C] focus:outline-none border-b-2 border-white
-    data-[selected]:bg-[#2D3E4C] data-[selected]:text-white data-[hover]:bg-white/5 data-[selected]:text-white data-[focus]:outline-1 data-[focus]:outline-white cursor-pointer
+    aria-selected:bg-[#2D3E4C] aria-selected:text-white hover:bg-white/5 aria-selected:text-white focus-visible:outline-1 focus-visible:outline-white cursor-pointer
   `,
         tabpanels: 'w-full max-h-screen overflow-y-auto scrollbar-sm',
         tabpanel: 'rounded-xl bg-white/5 divide-y divide-[#37576b8c]',
@@ -675,6 +705,10 @@ const theme = {
   },
   icon: {
     icon: "text-slate-400 hover:text-blue-500 size-4",
+  },
+  scrollbar: {
+    sm: "[&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:rounded-[10px] [&::-webkit-scrollbar-thumb]:rounded-[10px]"
+    // sm: "[&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:bg-[#C5D7E0] [&::-webkit-scrollbar]:rounded-[10px] [&::-webkit-scrollbar-thumb]:bg-[#37576B] [&::-webkit-scrollbar-thumb]:rounded-[10px]"
   },
   lexical: {
     // MNY theme uses options/styles pattern with flat keys

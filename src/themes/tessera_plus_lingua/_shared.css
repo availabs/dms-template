@@ -1,0 +1,899 @@
+/* =============================================================================
+   Tessera ✕ Lingua — "Warm Electricity"
+   Design System Foundation v0.1
+   =============================================================================
+   Tessera gives the BONES: mineral warm surfaces, serif editorial type,
+   the cosmati-tile mark, flat dividers, architectural composition.
+   Lingua gives the ENERGY: electric blue accent, frosted nav, rounded
+   cards with depth, dark code surfaces, product UI patterns.
+
+   The result: something more considered than Lingua (developer SaaS),
+   more modern than Tessera (academic publication). A platform with a soul.
+   ============================================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+/* ----- Local webfonts (Tessera's already-licensed assets) --------------- */
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../tessera/Tessera Design System/fonts/Newsreader-Roman.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../tessera/Tessera Design System/fonts/Newsreader-Italic.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../tessera/Tessera Design System/fonts/IBMPlexSans-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../tessera/Tessera Design System/fonts/IBMPlexSans-Italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../tessera/Tessera Design System/fonts/IBMPlexSans-Medium.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../tessera/Tessera Design System/fonts/IBMPlexSans-SemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../tessera/Tessera Design System/fonts/IBMPlexMono-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../tessera/Tessera Design System/fonts/IBMPlexMono-Italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../tessera/Tessera Design System/fonts/IBMPlexMono-Medium.woff2") format("woff2");
+}
+
+/* =============================================================================
+   DESIGN TOKENS
+   ============================================================================= */
+
+:root {
+  /* ----- Surfaces (sage green — same hue family throughout) ----------------- */
+  --color-bone:         #EDF1E9;   /* primary background — pale sage */
+  --color-limestone:    #DCE3D6;   /* secondary surface / dividers */
+  --color-parchment:    #F5F8F2;   /* lifted surface, cards — sage-tinted, not white */
+  --color-chalk:        #EBF0E7;   /* panel inset / sunken surface */
+
+  /* ----- Ink (Tessera) ------------------------------------------------------ */
+  --color-slate:        #2A2F36;   /* primary ink */
+  --color-graphite:     #4A5160;   /* secondary ink */
+  --color-fog:          #A7ADB6;   /* tertiary ink, disabled */
+
+  /* ----- Primary Accent — Amber / golden ------------------------------------ */
+  --color-accent:       #C87C0A;
+  --color-accent-hover: #A86608;
+  --color-accent-active:#8A5206;
+  --color-accent-soft:  #FDF3E0;
+  --color-accent-ink:   #FFFFFF;
+
+  /* ----- Warm Accent — Terracotta (Tessera's oxide, demoted to decorative) -- */
+  --color-oxide:        #B5532C;   /* cosmati frieze, tile mark accent */
+  --color-tile:         #7F1D1D;
+  --color-verdigris:    #5D8A85;
+  --color-ochre:        #B45309;
+
+  /* ----- Status (Lingua) ---------------------------------------------------- */
+  --color-signal:       #FF5630;
+  --color-signal-soft:  #FFE9E2;
+  --color-success:      #14B881;
+  --color-success-soft: #DEF7EC;
+  --color-margin:       #FFC83D;
+  --color-margin-soft:  #FFF5D8;
+
+  /* ----- Grout (Tessera's divider system) ----------------------------------- */
+  --color-grout-light:  #CDD5C6;
+  --color-grout-dark:   #1A1D22;
+
+  /* ----- Code surface (Lingua — deep, always dark) -------------------------- */
+  --color-code-bg:      #0E0F12;
+  --color-code-bg-soft: #1A1B1F;
+  --color-code-border:  #26272D;
+  --color-code-fg:      #E6E7EA;
+  --color-code-mute:    #6C7079;
+  --color-code-accent:  #79B8FF;
+  --color-code-string:  #B5F4A5;
+  --color-code-keyword: #FFA8B4;
+  --color-code-number:  #FFC83D;
+
+  /* ----- Semantic aliases --------------------------------------------------- */
+  --bg:           var(--color-bone);
+  --bg-raised:    var(--color-parchment);
+  --bg-sunken:    var(--color-limestone);
+  --fg:           var(--color-slate);
+  --fg-muted:     var(--color-graphite);
+  --fg-subtle:    var(--color-fog);
+  --rule:         var(--color-grout-light);
+  --accent:       var(--color-accent);
+  --accent-warm:  var(--color-oxide);
+
+  /* ----- Type families ------------------------------------------------------ */
+  --font-display: "Newsreader", "GT Sectra", Georgia, "Times New Roman", serif;
+  --font-sans:    "IBM Plex Sans", "Söhne", system-ui, -apple-system, Helvetica, sans-serif;
+  --font-mono:    "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* ----- Type scale --------------------------------------------------------- */
+  --fs-display-hero: 72px;
+  --fs-display-xl:   56px;
+  --fs-display-lg:   44px;
+  --fs-display-md:   34px;
+  --fs-display-sm:   28px;
+  --fs-h2:           22px;
+  --fs-h3:           18px;
+  --fs-h4:           16px;
+  --fs-body-lg:      20px;
+  --fs-body:         16px;
+  --fs-body-sm:      14px;
+  --fs-caption:      13px;
+  --fs-mono:         14px;
+  --fs-mono-sm:      12px;
+  --fs-mono-xs:      11px;
+  --fs-micro:        10px;
+
+  /* ----- Line heights ------------------------------------------------------- */
+  --lh-display: 1.06;
+  --lh-heading: 1.22;
+  --lh-body:    1.58;
+  --lh-mono:    1.48;
+
+  /* ----- Tracking ----------------------------------------------------------- */
+  --tracking-tight:  -0.022em;
+  --tracking-normal:  0;
+  --tracking-caps:    0.08em;
+
+  /* ----- Space scale (4px base) --------------------------------------------- */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+  --space-9:  96px;
+  --space-10: 128px;
+  --space-11: 160px;
+
+  /* ----- Radii (compromise: not flat like Tessera, not fully round like Lingua) */
+  --radius-0:   0;         /* square: for grout-grid layouts */
+  --radius-sm:  3px;       /* buttons, inputs */
+  --radius-md:  7px;       /* cards */
+  --radius-lg:  12px;      /* hero panels, modals */
+  --radius-pill: 999px;
+
+  /* ----- Borders ------------------------------------------------------------ */
+  --border-hair:   1px solid var(--color-grout-light);
+  --border-ink:    1px solid var(--color-slate);
+  --border-accent: 1px solid var(--color-accent);
+
+  /* ----- Elevation (Lingua enables shadows, Tessera was flat) --------------- */
+  --shadow-sm: 0 1px 3px rgba(42, 47, 54, 0.05);
+  --shadow-md: 0 4px 16px rgba(42, 47, 54, 0.07), 0 1px 2px rgba(42, 47, 54, 0.04);
+  --shadow-lg: 0 16px 48px rgba(42, 47, 54, 0.09), 0 2px 6px rgba(42, 47, 54, 0.04);
+  --shadow-on-dark: 0 8px 32px rgba(0, 0, 0, 0.45);
+
+  /* ----- Motion ------------------------------------------------------------- */
+  --ease-snap:  cubic-bezier(0.2, 0, 0.1, 1);
+  --ease-soft:  cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-snap:   120ms;
+  --dur-move:   200ms;
+  --dur-page:   280ms;
+
+  /* ----- Focus ring --------------------------------------------------------- */
+  --focus-ring: 0 0 0 2px var(--color-bone), 0 0 0 4px var(--color-accent);
+
+  /* ----- Grid --------------------------------------------------------------- */
+  --grid-max:      1280px;
+  --grid-narrow:   1040px;
+  --grid-gutter:   24px;
+  --measure-prose: 680px;
+}
+
+/* =============================================================================
+   BASE RESET + GLOBAL STYLES
+   ============================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+}
+
+::selection { background: var(--color-accent); color: white; }
+
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+
+/* =============================================================================
+   TYPE TOKEN CLASSES
+   ============================================================================= */
+
+/* --- Display (Newsreader serif, weight 400-500 — editorial & stately) ------- */
+.tx-displayHero { font-family: var(--font-display); font-size: var(--fs-display-hero); font-weight: 400; line-height: var(--lh-display); letter-spacing: -0.025em; color: var(--fg); }
+.tx-displayXL   { font-family: var(--font-display); font-size: var(--fs-display-xl);   font-weight: 400; line-height: 1.08;              letter-spacing: -0.018em; color: var(--fg); }
+.tx-displayLG   { font-family: var(--font-display); font-size: var(--fs-display-lg);   font-weight: 400; line-height: 1.12;              letter-spacing: -0.016em; color: var(--fg); }
+.tx-displayMD   { font-family: var(--font-display); font-size: var(--fs-display-md);   font-weight: 400; line-height: 1.18;              letter-spacing: -0.012em; color: var(--fg); }
+.tx-displaySM   { font-family: var(--font-display); font-size: var(--fs-display-sm);   font-weight: 400; line-height: 1.22;              letter-spacing: -0.008em; color: var(--fg); }
+
+/* --- Display Italic (Newsreader, the editorial accent) ---------------------- */
+.tx-displayItalicLG { font-family: var(--font-display); font-style: italic; font-size: var(--fs-display-lg); font-weight: 400; line-height: 1.12; letter-spacing: -0.016em; color: var(--fg); }
+.tx-displayItalicMD { font-family: var(--font-display); font-style: italic; font-size: var(--fs-display-md); font-weight: 400; line-height: 1.20; letter-spacing: -0.012em; color: var(--fg); }
+
+/* --- Headings (IBM Plex Sans, weight 500-600 — clear and functional) -------- */
+.tx-h2 { font-family: var(--font-sans); font-size: var(--fs-h2); font-weight: 600; line-height: 1.25; letter-spacing: -0.010em; color: var(--fg); }
+.tx-h3 { font-family: var(--font-sans); font-size: var(--fs-h3); font-weight: 600; line-height: 1.30; letter-spacing: -0.005em; color: var(--fg); }
+.tx-h4 { font-family: var(--font-sans); font-size: var(--fs-h4); font-weight: 600; line-height: 1.35; letter-spacing: -0.002em; color: var(--fg); }
+
+/* --- Prose (IBM Plex Sans, weight 400 — body text) -------------------------- */
+.tx-proseLG { font-family: var(--font-sans); font-size: var(--fs-body-lg); font-weight: 400; line-height: var(--lh-body); color: var(--fg); }
+.tx-prose   { font-family: var(--font-sans); font-size: var(--fs-body);    font-weight: 400; line-height: var(--lh-body); color: var(--fg); }
+.tx-proseSM { font-family: var(--font-sans); font-size: var(--fs-body-sm); font-weight: 400; line-height: 1.52;           color: var(--fg-muted); }
+.tx-proseXS { font-family: var(--font-sans); font-size: var(--fs-caption); font-weight: 400; line-height: 1.48;           color: var(--fg-subtle); }
+
+/* --- Mono (JetBrains Mono — machine-readable labels, KPI, code) ------------ */
+.tx-mono   { font-family: var(--font-mono); font-size: var(--fs-mono);    font-weight: 400; line-height: var(--lh-mono); color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.tx-monoSM { font-family: var(--font-mono); font-size: var(--fs-mono-sm); font-weight: 400; line-height: 1.42;           color: var(--fg-subtle); font-variant-numeric: tabular-nums; }
+.tx-monoXS { font-family: var(--font-mono); font-size: var(--fs-mono-xs); font-weight: 500; line-height: 1.42; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--fg-subtle); }
+
+/* --- Modifier axes ---------------------------------------------------------- */
+.ink-slate    { color: var(--color-slate); }
+.ink-graphite { color: var(--color-graphite); }
+.ink-fog      { color: var(--color-fog); }
+.ink-accent   { color: var(--color-accent); }
+.ink-oxide    { color: var(--color-oxide); }
+.ink-white    { color: var(--color-parchment); }
+.italic       { font-style: italic; }
+.weight-500   { font-weight: 500; }
+.weight-600   { font-weight: 600; }
+.tabular      { font-variant-numeric: tabular-nums; }
+.upper        { text-transform: uppercase; letter-spacing: var(--tracking-caps); }
+.balance      { text-wrap: balance; }
+
+/* =============================================================================
+   LAYOUT CHROME
+   ============================================================================= */
+
+.dms-layout-outer    { background: var(--bg); min-height: 100vh; }
+.dms-layout-wrapper  { position: relative; isolation: isolate; display: flex; min-height: 100vh; width: 100%; }
+@media (max-width: 1024px) { .dms-layout-wrapper { flex-direction: column; } }
+.dms-layout-wrapper2 { flex: 1; display: flex; flex-direction: column; max-width: 100%; min-height: 100vh; }
+.dms-layout-wrapper3 { display: flex; flex: 1; align-items: flex-start; width: 100%; }
+.dms-layout-child    { flex: 1; display: flex; flex-direction: column; min-height: 100%; }
+
+/* ----- TopNav --------------------------------------------------------------- */
+
+.dms-topnav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  width: 100%;
+  background: #263524;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.dms-topnav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: 0 var(--space-6);
+  height: 64px;
+  max-width: var(--grid-max);
+  margin: 0 auto;
+}
+
+.dms-topnav-left  { display: flex; align-items: center; gap: var(--space-7); }
+.dms-topnav-right { display: flex; align-items: center; gap: var(--space-4); }
+
+/* The hybrid wordmark: cosmati tile + Newsreader letterforms */
+.tx-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #fff;
+}
+.tx-brand .tile-mark {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 1.5px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.tx-brand .tile-mark span {
+  background: rgba(255,255,255,0.2);
+  border-radius: 1px;
+  transition: background var(--dur-snap) var(--ease-snap);
+}
+.tx-brand .tile-mark span:nth-child(1) { background: rgba(255,255,255,0.7); }
+.tx-brand .tile-mark span:nth-child(2) { background: var(--color-accent); }
+.tx-brand .tile-mark span:nth-child(3) { background: rgba(255,255,255,0.7); }
+.tx-brand .tile-mark span:nth-child(5) { background: var(--color-oxide); }
+.tx-brand .tile-mark span:nth-child(8) { background: rgba(255,255,255,0.7); }
+.tx-brand .tile-mark span:nth-child(4),
+.tx-brand .tile-mark span:nth-child(6),
+.tx-brand .tile-mark span:nth-child(7),
+.tx-brand .tile-mark span:nth-child(9) { background: transparent; border: 1px solid rgba(255,255,255,0.15); }
+
+.tx-brand .wordmark {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  color: #fff;
+  line-height: 1;
+}
+.tx-brand:hover .tile-mark span:nth-child(2) { background: var(--color-accent-hover); }
+
+/* Nav links */
+.topnav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+}
+.topnav-links a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  padding: 4px 0;
+  border-bottom: 1.5px solid transparent;
+  transition: color var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+}
+.topnav-links a:hover  { color: #fff; }
+.topnav-links a.active { color: #fff; border-bottom-color: rgba(255,255,255,0.5); }
+
+/* ----- SideNav -------------------------------------------------------------- */
+
+.dms-sidenav {
+  width: 248px;
+  flex-shrink: 0;
+  background: var(--color-bone);
+  border-right: 1px solid var(--color-grout-light);
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5) 0;
+  gap: var(--space-2);
+}
+@media (max-width: 1024px) { .dms-sidenav { display: none; } }
+
+.dms-sidenav-section  { padding: 0 var(--space-4) var(--space-4); border-bottom: 1px solid var(--color-grout-light); margin-bottom: var(--space-3); }
+.dms-sidenav-section:last-child { border-bottom: 0; }
+.dms-sidenav-eyebrow  { font-family: var(--font-mono); font-size: var(--fs-micro); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--color-fog); padding: 0 var(--space-2) var(--space-2); }
+.dms-sidenav-item {
+  display: block;
+  padding: 6px var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-graphite);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+}
+.dms-sidenav-item:hover { background: var(--color-limestone); color: var(--color-slate); }
+.dms-sidenav-item--active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: 500;
+}
+.dms-sidenav-item--sub { font-size: var(--fs-caption); padding-left: var(--space-4); }
+
+/* ----- LayoutGroups --------------------------------------------------------- */
+
+.dms-group-header {
+  width: 100%;
+  background: var(--bg);
+  padding: var(--space-9) 0 var(--space-7);
+}
+.dms-group-header-inner {
+  max-width: var(--grid-max);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.dms-group-content { width: 100%; padding: var(--space-7) 0; }
+.dms-group-content-inner {
+  max-width: var(--grid-max);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+.dms-group-content + .dms-group-content { border-top: var(--border-hair); }
+
+.dms-group-footer { background: var(--color-limestone); border-top: var(--border-hair); padding: var(--space-8) 0 var(--space-7); }
+.dms-group-footer-inner { max-width: var(--grid-max); margin: 0 auto; padding: 0 var(--space-6); }
+
+/* ----- Section chrome ------------------------------------------------------- */
+
+.dms-section { display: flex; flex-direction: column; gap: var(--space-5); }
+.dms-section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--color-fog);
+}
+.dms-section-eyebrow .mark {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+.dms-section-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-display-md);
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: -0.012em;
+  color: var(--fg);
+  margin: 0;
+  text-wrap: balance;
+}
+.dms-section-lede {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-lg);
+  line-height: var(--lh-body);
+  color: var(--fg-muted);
+  margin: 0;
+  max-width: 64ch;
+}
+.dms-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 7vw, var(--fs-display-hero));
+  font-weight: 400;
+  line-height: var(--lh-display);
+  letter-spacing: -0.025em;
+  color: var(--fg);
+  margin: 0;
+  text-wrap: balance;
+}
+.dms-page-title .accent { color: var(--color-accent); }
+.dms-page-lede {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-lg);
+  line-height: var(--lh-body);
+  color: var(--fg-muted);
+  max-width: 58ch;
+  margin: var(--space-5) 0 0;
+}
+
+/* Grid helpers */
+.dms-grid   { display: grid; gap: var(--space-6); }
+.dms-grid-2 { grid-template-columns: 1fr 1fr; }
+.dms-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 900px) {
+  .dms-grid-2 { grid-template-columns: 1fr; }
+  .dms-grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Annotation */
+.dms-annotation {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-fog);
+}
+.dms-annotation-block {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono-xs);
+  color: var(--color-graphite);
+  background: var(--color-limestone);
+  border: var(--border-hair);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  line-height: 1.8;
+}
+.dms-annotation-block .key { color: var(--color-accent); font-weight: 500; }
+
+/* =============================================================================
+   BUTTONS
+   ============================================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  font-weight: 500;
+  line-height: 1;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--dur-snap) var(--ease-snap),
+              color var(--dur-snap) var(--ease-snap),
+              border-color var(--dur-snap) var(--ease-snap),
+              box-shadow var(--dur-snap) var(--ease-snap);
+  white-space: nowrap;
+}
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-color: var(--color-accent);
+}
+.btn-primary:hover  { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
+.btn-primary:active { background: var(--color-accent-active); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--color-grout-light);
+}
+.btn-secondary:hover { background: var(--color-limestone); border-color: var(--color-graphite); }
+
+.btn-dark {
+  background: var(--color-slate);
+  color: var(--color-parchment);
+  border-color: var(--color-slate);
+}
+.btn-dark:hover { background: var(--color-grout-dark); }
+
+.btn-link {
+  background: transparent;
+  color: var(--color-accent);
+  border-color: transparent;
+  padding-inline: 0;
+  text-decoration: none;
+  font-weight: 500;
+}
+.btn-link:hover { text-decoration: underline; text-decoration-color: var(--color-accent); }
+
+.btn-sm  { padding: 7px 14px; font-size: 13px; }
+.btn-lg  { padding: 13px 24px; font-size: 15px; }
+.btn-xl  { padding: 15px 28px; font-size: 16px; }
+
+/* =============================================================================
+   BADGES, PILLS
+   ============================================================================= */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border: 1px solid var(--rule);
+  background: var(--bg-raised);
+  color: var(--fg-muted);
+  border-radius: var(--radius-sm);
+}
+.badge-accent   { color: var(--color-accent); border-color: rgba(59,91,255,.4); background: var(--color-accent-soft); }
+.badge-oxide    { color: var(--color-oxide);  border-color: var(--color-oxide); background: transparent; }
+.badge-success  { color: var(--color-success); border-color: var(--color-success); background: var(--color-success-soft); }
+.badge-signal   { color: var(--color-signal);  border-color: var(--color-signal);  background: var(--color-signal-soft); }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  padding: 4px 12px;
+  border: 1px solid var(--rule);
+  background: var(--bg-raised);
+  color: var(--fg-muted);
+  border-radius: var(--radius-pill);
+}
+.pill-accent { background: var(--color-accent-soft); color: var(--color-accent); border-color: rgba(59,91,255,.3); }
+.pill-dot::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); display: inline-block; }
+
+/* =============================================================================
+   CARDS
+   ============================================================================= */
+
+.card {
+  background: var(--bg-raised);
+  border: var(--border-hair);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  transition: border-color var(--dur-snap) var(--ease-snap),
+              box-shadow var(--dur-snap) var(--ease-snap);
+}
+.card:hover { border-color: rgba(59,91,255,.3); box-shadow: var(--shadow-md); }
+.card-flat  { border-radius: var(--radius-0); background: var(--bg-raised); }
+.card-sunken { background: var(--bg-sunken); }
+
+/* Feature card variant */
+.card-feature {
+  background: var(--bg-raised);
+  border: var(--border-hair);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--dur-snap) var(--ease-snap),
+              box-shadow var(--dur-snap) var(--ease-snap);
+}
+.card-feature:hover { border-color: var(--color-grout-light); box-shadow: var(--shadow-md); }
+
+.card-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+}
+.card-icon svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* =============================================================================
+   CODE + TERMINAL SURFACE (Lingua's signature)
+   ============================================================================= */
+
+.code-block {
+  background: var(--color-code-bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-code-border);
+}
+.code-block__chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--color-code-bg-soft);
+  border-bottom: 1px solid var(--color-code-border);
+}
+.code-block__chrome .filename {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-code-mute);
+}
+.code-block__chrome .actions {
+  display: inline-flex;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-code-mute);
+}
+.code-block__chrome .actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 0;
+}
+.code-block__chrome .actions button:hover { color: var(--color-code-fg); }
+.code-block__body { padding: var(--space-5); overflow-x: auto; }
+.code-block__body pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-code-fg);
+  white-space: pre;
+}
+.tk-com { color: var(--color-code-mute); }
+.tk-kw  { color: var(--color-code-keyword); }
+.tk-fn  { color: var(--color-code-accent); }
+.tk-str { color: var(--color-code-string); }
+.tk-num { color: var(--color-code-number); }
+.tk-prop { color: var(--color-code-fg); }
+.tk-punc { color: rgba(230, 231, 234, 0.5); }
+
+.terminal-block {
+  background: var(--color-code-bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-code-border);
+}
+.terminal-block__chrome {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 16px;
+  background: var(--color-code-bg-soft);
+  border-bottom: 1px solid var(--color-code-border);
+}
+.terminal-block__chrome .dot { width: 11px; height: 11px; border-radius: 50%; }
+.terminal-block__chrome .title {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-code-mute);
+  padding-left: var(--space-3);
+}
+.terminal-block__body { padding: var(--space-5); }
+.terminal-block__body pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-code-fg);
+}
+.term-prompt { color: var(--color-code-fg); font-weight: 500; }
+.term-dim    { color: var(--color-code-mute); }
+.term-ok     { color: var(--color-code-string); }
+.term-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  background: var(--color-code-fg);
+  vertical-align: -0.12em;
+  animation: blink 1.2s step-start infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* =============================================================================
+   COSMATI FRIEZE (Tessera's decorative DNA)
+   ============================================================================= */
+
+.frieze {
+  height: 20px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--color-slate)   0 10px,
+      transparent          10px 14px,
+      var(--color-accent)  14px 18px,
+      transparent          18px 24px,
+      var(--color-oxide)   24px 28px,
+      transparent          28px 40px
+    );
+  opacity: 0.45;
+}
+.frieze-wide {
+  height: 24px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--color-slate)   0 8px,
+      transparent          8px 12px,
+      var(--color-accent)  12px 16px,
+      transparent          16px 22px,
+      var(--color-oxide)   22px 26px,
+      transparent          26px 38px
+    );
+  opacity: 0.4;
+}
+
+/* =============================================================================
+   KPI
+   ============================================================================= */
+
+.kpi-block {
+  background: var(--bg-raised);
+  border: var(--border-hair);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+.kpi-block__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--color-fog);
+  margin-bottom: var(--space-2);
+}
+.kpi-block__value {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.kpi-block__delta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono-xs);
+  color: var(--color-success);
+  margin-top: var(--space-2);
+}
+.kpi-block__delta--down { color: var(--color-signal); }
+
+/* =============================================================================
+   ACTIVITY FEED
+   ============================================================================= */
+
+.activity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-grout-light);
+}
+.activity-row:last-child { border-bottom: 0; }
+.activity-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.activity-text { flex: 1; font-size: var(--fs-body-sm); line-height: 1.5; color: var(--fg-muted); }
+.activity-text .verb { color: var(--color-accent); font-weight: 500; }
+.activity-text .what { color: var(--fg); font-weight: 500; }
+.activity-time { font-family: var(--font-mono); font-size: 11px; color: var(--color-fog); white-space: nowrap; }
+
+/* =============================================================================
+   TABLE
+   ============================================================================= */
+
+.tx-table { width: 100%; border-collapse: collapse; font-size: var(--fs-body-sm); }
+.tx-table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  border-bottom: 1px solid var(--color-slate);
+  padding: 10px 12px;
+}
+.tx-table td { padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+.tx-table tr:hover td { background: var(--color-limestone); }

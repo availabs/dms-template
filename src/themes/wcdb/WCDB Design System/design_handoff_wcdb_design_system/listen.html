@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head><meta charset="utf-8"><title>WCDB — Listen</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles/tokens.css"><link rel="stylesheet" href="styles/components.css"></head>
+<body><div id="app"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+<script type="text/babel" src="scripts/wcdb-patterns.jsx"></script>
+<script type="text/babel" src="scripts/mockup-shell.jsx"></script>
+<script type="text/babel">
+function App(){return(
+<MockupShell active="Listen">
+<section data-screen-label="Listen" style={{padding:'40px 0 24px'}}>
+<div className="uppercase-meta">LIVE · 90.9 FM · 184 LISTENERS</div>
+<h1 className="serif" style={{fontStyle:'italic',fontSize:'clamp(72px,10vw,160px)',lineHeight:0.94,letterSpacing:'-0.04em',margin:'20px 0 0',fontWeight:400,textWrap:'balance'}}>Listen.</h1>
+</section>
+
+<section style={{margin:'48px 0',background:'var(--bg-2)',border:'1px solid var(--line-1)',borderRadius:18,padding:48,display:'grid',gridTemplateColumns:'auto 1fr auto',alignItems:'center',gap:32}}>
+<button style={{width:96,height:96,borderRadius:'50%',background:'var(--ink-1)',color:'var(--bg-1)',display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:32}}>▶</button>
+<div>
+<span className="wc-pill wc-pill--onair" style={{marginBottom:12}}>On Air</span>
+<div className="serif" style={{fontStyle:'italic',fontSize:42,letterSpacing:'-0.02em',marginTop:14,lineHeight:1.1}}>Stereolab — Lo Boob Oscillator</div>
+<div className="mono" style={{fontSize:12,color:'var(--ink-3)',letterSpacing:'0.10em',textTransform:'uppercase',marginTop:10}}>LATE MODERNISM · w/ DJ HALFTONE · 02:14 ET</div>
+</div>
+<div className="wc-eq" style={{color:'var(--on-air)',height:32}}>
+<span style={{width:3}}/><span style={{width:3}}/><span style={{width:3}}/><span style={{width:3}}/><span style={{width:3}}/><span style={{width:3}}/>
+</div>
+</section>
+
+<section style={{margin:'56px 0'}}>
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:24,paddingBottom:18,borderBottom:'1px solid var(--line-1)'}}>
+<h2 className="serif" style={{fontStyle:'italic',fontSize:32,letterSpacing:'-0.03em',margin:0,fontWeight:400}}>Where to listen</h2>
+</div>
+<div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:1,background:'var(--line-1)'}}>
+{[
+['01','OVER THE AIR','90.9 FM','Capital Region of New York. About a 25-mile radius from Albany.'],
+['02','ONLINE STREAM','wcdb.fm/live','Direct MP3 stream. Anywhere with an internet connection.'],
+['03','APPS','TuneIn · Apple Music','Search "WCDB Albany" in your favorite radio app.'],
+].map(c=>(
+<div key={c[0]} style={{background:'var(--bg-1)',padding:'40px 36px 48px'}}>
+<div className="uppercase-meta">{c[0]} · {c[1]}</div>
+<div className="serif" style={{fontStyle:'italic',fontSize:36,letterSpacing:'-0.03em',marginTop:18,fontWeight:400,lineHeight:1.05}}>{c[2]}</div>
+<p style={{color:'var(--ink-3)',fontSize:14,lineHeight:1.6,margin:'18px 0 0',maxWidth:300}}>{c[3]}</p>
+</div>
+))}
+</div>
+</section>
+
+<section style={{margin:'64px 0',display:'grid',gridTemplateColumns:'1fr 1fr',gap:32,alignItems:'baseline'}}>
+<div>
+<div className="uppercase-meta">RECENT</div>
+<h3 className="serif" style={{fontStyle:'italic',fontSize:32,letterSpacing:'-0.03em',margin:'14px 0 18px',fontWeight:400}}>Just played</h3>
+</div>
+<div><CompactSpinList/></div>
+</section>
+
+<WCDBTweaks/>
+</MockupShell>
+)}
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+</script></body></html>

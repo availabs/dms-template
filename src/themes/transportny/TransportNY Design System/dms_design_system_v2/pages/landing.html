@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TransportNY · Public-sector data platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="bg-white">
+
+
+
+<!-- LAYOUT · default · marketing (no SideNav, only TopNav) -->
+<div class="bg-white" data-dms-layout="default">
+  <div class="relative isolate flex min-h-svh w-full flex-col">
+
+    <!-- TopNav LayoutGroup -->
+    <header class="w-full z-20 bg-white border-b border-zinc-950/10" data-dms-group="topnav">
+      <div class="w-full h-[60px] flex items-center">
+        <div class="mx-auto max-w-[1280px] w-full flex items-center justify-between px-8">
+          <div class="flex items-center gap-6">
+            <a class="flex items-center gap-2 cursor-pointer">
+              <div class="size-9 bg-[#1F3F8F] rounded flex items-center justify-center text-white font-display font-bold text-[14px]">NY</div>
+              <span class="font-display uppercase text-[#0F1722] text-[15px] tracking-wide">TransportNY</span>
+            </a>
+          </div>
+          <div class="hidden lg:flex items-center gap-8">
+            <a class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Products</a>
+            <a class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Data</a>
+            <a class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Documentation</a>
+            <a class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">About</a>
+          </div>
+          <div class="flex items-center gap-3">
+            <a href="login.html" class="cursor-pointer inline-flex items-center gap-2 px-3 h-9 text-slate-700 hover:text-[#0F1722] hover:bg-slate-100 font-proxima text-[13px] rounded-[6px]">Sign in</a>
+            <a href="getting-started.html" class="tny-press cursor-pointer inline-flex items-center gap-2 px-4 h-10 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]">Get started</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO LayoutGroup -->
+    <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+      <div class="mx-auto max-w-[1280px] w-full px-8 py-24 grid grid-cols-12 gap-6">
+        <div class="col-span-12 md:col-span-8" data-dms-section="hero-copy">
+          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// nysdot · public release · 2026.Q2</span>
+          <h1 class="mt-3 font-display font-semibold text-[64px] leading-[1.02] tracking-tight text-[#0F1722] max-w-[820px]">
+            New York's transportation data, in the open<span class="text-[#CA8A04]">.</span>
+          </h1>
+          <p class="mt-5 font-proxima text-[16px] text-slate-700 leading-[1.65] max-w-[680px]">
+            TransportNY is the public-sector data platform for NYSDOT, the State's MPOs, academic
+            partners, and anyone who wants travel-time data they can actually use. Travel-time
+            reliability, freight movement, MAP-21 PM3 federal reporting, congestion, work zones —
+            all from the National Performance Management Research Data Set, refreshed nightly.
+          </p>
+          <div class="mt-7 flex items-center gap-3">
+            <a href="getting-started.html" class="tny-press cursor-pointer inline-flex items-center gap-2 px-5 h-12 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[14px] tracking-wide rounded-[6px]">Start exploring</a>
+            <a href="docs-overview.html" class="cursor-pointer inline-flex items-center gap-2 px-5 h-12 bg-white hover:bg-slate-50 border border-[#1F3F8F] text-[#1F3F8F] font-proxima text-[14px] font-semibold rounded-[6px]">Read the docs</a>
+          </div>
+          <div class="mt-8 flex items-center gap-6 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">
+            <span class="inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>data current</span>
+            <span>last refresh · 2026-05-08 · 04:12 EST</span>
+            <span>· 7 ingest feeds online</span>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-4 self-end" data-dms-section="hero-stat">
+          <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+            <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500">CURRENT COVERAGE</div>
+            <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722] mt-1">42,108</div>
+            <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500 mt-0.5">TMC SEGMENTS · NHS + TPF</div>
+            <div class="mt-3 pt-3 border-t border-zinc-950/05 grid grid-cols-3 gap-2 text-[11.5px]">
+              <div><div class="font-mono tabular-nums text-[#0F1722] text-[15px]">11</div><div class="font-mono text-[10px] uppercase text-slate-500">regions</div></div>
+              <div><div class="font-mono tabular-nums text-[#0F1722] text-[15px]">62</div><div class="font-mono text-[10px] uppercase text-slate-500">counties</div></div>
+              <div><div class="font-mono tabular-nums text-[#0F1722] text-[15px]">14</div><div class="font-mono text-[10px] uppercase text-slate-500">MPOs</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT LayoutGroup · products -->
+    <div class="w-full bg-[#ECEEF2] py-24" data-dms-group="content">
+      <div class="mx-auto max-w-[1280px] w-full px-8 grid grid-cols-12 gap-6">
+        <div class="col-span-12" data-dms-section="products-intro">
+          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01 · what's inside</span>
+          <h2 class="mt-3 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Products</h2>
+          <p class="mt-3 font-proxima text-[15.5px] text-slate-600 max-w-[680px] leading-[1.65]">Five working surfaces. All run against the same NPMRDS / FHWA feeds. All free for public-read.</p>
+        </div>
+
+        <!-- 3-up product cards -->
+        <div class="col-span-12 md:col-span-4" data-dms-section="product-1">
+          <a class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 hover:border-[#37576B] transition-colors h-full">
+            <div class="size-12 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><!-- icon: Activity --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+            <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722]">MAP-21 PM3</div>
+            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">Federal-reporting performance: travel-time reliability, freight reliability, peak-hour excessive delay. Per-year deep-dive + multi-year trend.</p>
+            <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F]">View →</div>
+          </a>
+        </div>
+        <div class="col-span-12 md:col-span-4" data-dms-section="product-2">
+          <a class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 hover:border-[#37576B] transition-colors h-full">
+            <div class="size-12 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><!-- icon: MapLayers --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25m0-4.5 5.57 3 5.57-3m-11.14 0L2.25 7.5 12 2.25l9.75 5.25-4.18 2.25"/></svg></div>
+            <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722]">NPMRDS routes</div>
+            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">Speed, travel time, and reliability for any TMC corridor — by epoch, by day-of-week, by month. Save as templates, run against new routes.</p>
+            <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F]">View →</div>
+          </a>
+        </div>
+        <div class="col-span-12 md:col-span-4" data-dms-section="product-3">
+          <a class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 hover:border-[#37576B] transition-colors h-full">
+            <div class="size-12 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><!-- icon: Database --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 12C20 13.657 16.418 15 12 15C7.582 15 4 13.657 4 12"/><path d="M20 5V19C20 20.657 16.418 22 12 22"/></svg></div>
+            <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722]">Freight atlas</div>
+            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">FAF5 commodity flows, truck travel-time reliability by corridor, port-of-entry counts. The standard kit for freight planners.</p>
+            <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F]">View →</div>
+          </a>
+        </div>
+        <div class="col-span-12 md:col-span-6" data-dms-section="product-4">
+          <a class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 hover:border-[#37576B] transition-colors h-full">
+            <div class="size-12 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><!-- icon: MapPin --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg></div>
+            <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722]">Work zones &amp; congestion</div>
+            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">When delay happens, where it costs, and how much of it is recurrent versus event-driven. Stitched from 511NY incident feeds + NPMRDS travel-times.</p>
+            <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F]">View →</div>
+          </a>
+        </div>
+        <div class="col-span-12 md:col-span-6" data-dms-section="product-5">
+          <a class="block rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 hover:border-[#37576B] transition-colors h-full">
+            <div class="size-12 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F] mb-3"><!-- icon: Pages --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25"/></svg></div>
+            <div class="font-display uppercase text-[18px] tracking-tight text-[#0F1722]">Documentation</div>
+            <p class="mt-2 font-proxima text-[13.5px] text-slate-600 leading-[1.6]">User guides, methodology, API reference, data dictionary. Read it before you build a report — every number on every page is documented.</p>
+            <div class="mt-4 pt-3 border-t border-zinc-950/05 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F]">View →</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT TINT band -->
+    <div class="w-full bg-[#E4E8EE] py-24" data-dms-group="content_tint">
+      <div class="mx-auto max-w-[1280px] w-full px-8 grid grid-cols-12 gap-6">
+        <div class="col-span-12 md:col-span-7" data-dms-section="for-whom">
+          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02 · who's it for</span>
+          <h2 class="mt-3 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">For state planners. For MPOs. For the public.</h2>
+          <p class="mt-3 font-proxima text-[15.5px] text-slate-600 leading-[1.65] max-w-[640px]">
+            TransportNY started as an NYSDOT internal reporting tool and grew into a shared platform.
+            The MPOs use it to draft their TIPs. NYSDOT uses it to file MAP-21 PM3 federal reports.
+            Academics pull the same data for research. Journalists check the same dashboards before
+            running a story. Public-read access requires no account.
+          </p>
+        </div>
+        <div class="col-span-12 md:col-span-5" data-dms-section="audiences">
+          <ul class="space-y-3">
+            <li class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+              <div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">NYSDOT — REGIONS 1–11</div>
+              <div class="font-proxima text-[12.5px] text-slate-600 mt-0.5">Federal reporting, internal TIP analysis, congestion mitigation.</div>
+            </li>
+            <li class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+              <div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">METROPOLITAN PLANNING ORGS</div>
+              <div class="font-proxima text-[12.5px] text-slate-600 mt-0.5">All 14 NY MPOs draft and publish their TIP / UPWP reports here.</div>
+            </li>
+            <li class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+              <div class="font-display uppercase text-[12.5px] tracking-wide text-[#0F1722]">ACADEMIC + PUBLIC</div>
+              <div class="font-proxima text-[12.5px] text-slate-600 mt-0.5">Free public-read access. CSV export, REST + GraphQL APIs, GIS layers.</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER LayoutGroup -->
+    <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+      <div class="mx-auto max-w-[1280px] w-full px-8 py-8 grid grid-cols-12 gap-6">
+        <div class="col-span-12 md:col-span-4" data-dms-section="footer-brand">
+          <div class="flex items-center gap-2"><div class="size-7 bg-[#1F3F8F] rounded flex items-center justify-center text-white font-display font-bold text-[11px]">NY</div><span class="font-display uppercase text-[#0F1722] text-[13px] tracking-wide">TransportNY</span></div>
+          <p class="mt-3 font-proxima text-[12.5px] text-slate-500 leading-[1.55]">Public-sector data platform · A program of NYSDOT in partnership with AVAIL.</p>
+        </div>
+        <div class="col-span-6 md:col-span-2" data-dms-section="footer-products">
+          <div class="font-display uppercase text-[11px] tracking-wide text-slate-700 mb-2">Products</div>
+          <ul class="space-y-1 font-proxima text-[12.5px] text-slate-600">
+            <li><a class="hover:text-[#1F3F8F]" href="getting-started.html">NPMRDS</a></li>
+            <li><a class="hover:text-[#1F3F8F]" href="map-21-system-performance.html">MAP-21 PM3</a></li>
+            <li><a class="hover:text-[#1F3F8F]" href="floating-car.html">Floating Car</a></li>
+            <li><a class="hover:text-[#1F3F8F]" href="congestion.html">Congestion</a></li>
+            <li><a class="hover:text-[#1F3F8F]" href="work-zones.html">Work zones</a></li>
+          </ul>
+        </div>
+        <div class="col-span-6 md:col-span-2" data-dms-section="footer-resources">
+          <div class="font-display uppercase text-[11px] tracking-wide text-slate-700 mb-2">Resources</div>
+          <ul class="space-y-1 font-proxima text-[12.5px] text-slate-600">
+            <li><a class="hover:text-[#1F3F8F]" href="docs-overview.html">User Guide</a></li>
+            <li><a class="hover:text-[#1F3F8F]">API Guide</a></li>
+            <li><a class="hover:text-[#1F3F8F]">Data Dictionary</a></li>
+            <li><a class="hover:text-[#1F3F8F]">What's New</a></li>
+          </ul>
+        </div>
+        <div class="col-span-12 md:col-span-4" data-dms-section="footer-contact">
+          <div class="font-display uppercase text-[11px] tracking-wide text-slate-700 mb-2">Status</div>
+          <div class="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-wider text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>All systems operational · 2026-05-08 04:12 EST</div>
+          <div class="mt-3 font-proxima text-[12px] text-slate-500">All data is public domain. Source: NPMRDS, FAF5, NYSDOT 511NY.</div>
+        </div>
+      </div>
+      <div class="border-t border-zinc-950/10">
+        <div class="mx-auto max-w-[1280px] w-full px-8 py-4 flex items-center justify-between font-mono text-[11px] text-slate-500">
+          <span>© 2026 NYSDOT · TransportNY · A program of New York State Department of Transportation</span>
+          <span>v2026.05 · public release</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

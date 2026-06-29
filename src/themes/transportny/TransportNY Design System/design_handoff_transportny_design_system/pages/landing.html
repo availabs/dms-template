@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TransportNY — New York State transportation data, published</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { fontFamily: {
+  oswald: ['Oswald','Bebas Neue','sans-serif'],
+  proxima: ['Proxima Nova','Source Sans 3','system-ui','sans-serif'],
+  mono: ['ui-monospace','SFMono-Regular','Menlo','monospace'],
+}}}};
+</script>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+html, body { background:#0a0e13; }
+body { font-family:'Proxima Nova', system-ui, sans-serif; color:#0f1722; -webkit-font-smoothing:antialiased; }
+.font-oswald { font-family:'Oswald','Bebas Neue',sans-serif; }
+.font-proxima { font-family:'Proxima Nova','Source Sans 3',system-ui,sans-serif; }
+.font-mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+
+.tny-press { border-bottom-width:4px; transition:all .08s; }
+.tny-press:active { border-bottom-width:2px; margin-bottom:2px; }
+
+/* ── Dark hero foundation — flat ink, with brand-tint vignettes ─ */
+.hero-dark {
+  background: #0a0e13;
+}
+.hero-vignette::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 70% at 100% 0%, rgba(250,204,21,0.07), transparent 65%),
+    radial-gradient(ellipse 80% 60% at 0% 100%, rgba(55,87,107,0.30), transparent 70%);
+}
+.scan::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px);
+  mix-blend-mode: overlay;
+}
+
+/* faint grid on dark surfaces — used in lieu of the streets pattern */
+.grid-dark {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: -1px -1px;
+}
+
+/* topo overlay for product cards */
+.topo {
+  background:
+    radial-gradient(circle at 25% 30%, rgba(15,23,42,0.05), transparent 40%),
+    radial-gradient(circle at 75% 70%, rgba(15,23,42,0.06), transparent 50%),
+    repeating-linear-gradient(28deg, transparent 0 30px, rgba(15,23,42,0.04) 30px 31px, transparent 31px 60px),
+    repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15,23,42,0.03) 36px 37px, transparent 37px 70px);
+}
+
+/* ── Live indicator pulse ─────────────────────────────────────── */
+@keyframes pulse-dot { 0%,100%{ opacity:1; transform:scale(1) } 50%{ opacity:.45; transform:scale(1.25) } }
+.dot-pulse { animation: pulse-dot 2.4s ease-in-out infinite; transform-origin:center; }
+
+/* ── Marquee ticker ───────────────────────────────────────────── */
+@keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+.ticker-track { animation: ticker 80s linear infinite; will-change: transform; }
+
+/* dashed route flow */
+@keyframes dash-run { to { stroke-dashoffset: -120 } }
+.route-flow { stroke-dasharray: 2 6; animation: dash-run 8s linear infinite; }
+
+/* counter ticker (count-up entrance) */
+@keyframes count-rise { from { transform: translateY(0.7em); opacity:0 } to { transform:none; opacity:1 } }
+.count-in { animation: count-rise .8s cubic-bezier(.2,.7,.2,1) both; }
+
+/* glow */
+.glow-y { filter: drop-shadow(0 0 6px rgba(250,204,21,0.45)); }
+.glow-c { filter: drop-shadow(0 0 5px rgba(55,87,107,0.5)); }
+
+/* card hover */
+.prod-card { transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease, border-color .15s ease; }
+.prod-card:hover { transform: translateY(-3px); box-shadow: 0 20px 40px -16px rgba(8,12,16,0.35); border-color: rgba(15,23,42,0.2); }
+.prod-card:hover .prod-arrow { transform: translateX(4px); }
+.prod-arrow { transition: transform .25s cubic-bezier(.2,.7,.2,1); }
+
+/* changelog row */
+.cl-row:hover { background: #fafafa; }
+.cl-row:hover .cl-tag { color:#0f1722; }
+
+/* link */
+.tlink { color:#37576B; text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
+.tlink:hover { color:#1f3450; text-decoration-thickness:2px; }
+
+/* selection */
+::selection { background:#FACC15; color:#0a0e13; }
+
+/* scrollbar (light) */
+.scroll-light::-webkit-scrollbar { width:6px; height:6px; }
+.scroll-light::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.15); border-radius:3px; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="../ui_kits/transportny/icons.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx?v=4"></script>
+<script type="text/babel" src="landing-parts.jsx?v=4"></script>
+<script type="text/babel" src="landing-app.jsx?v=4"></script>
+</head>
+<body class="bg-white">
+<div id="root"></div>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Data &amp; Methodology · TSMO · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  tsmo-methodology.html · TSMO SURFACE 10 of 10 — Data & Methodology (the trust layer).
+  Layout `app` · TSMO SideNav, Data & Methodology active. Source catalog (NPMRDS /
+  TRANSCOM / delay attribution / PM3, real coverage facts) · one-measure-one-explainer
+  cards (MnDOT pattern) · data-coverage honesty dashboard (TIM timestamp completeness,
+  ED year gaps, npmrds lag, footprint share) · refresh-cadence table · glossary ·
+  downloads/API pointers. Sticky right-rail TOC = freight-atlas-about pattern (§7.6.5). -->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ════════ SIDENAV · TSMO (Data & Methodology active) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <a href="tsmo-home.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">TSMO</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · Operations</div></div>
+            </a>
+            <div class="flex-1 py-1 overflow-y-auto">
+              <div class="px-4 pt-3 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Dashboards</div>
+              <a href="tsmo-congestion.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: ChartLine --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg><span class="flex-1">Congestion</span></a>
+              <a href="tsmo-reliability.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Gauge --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg><span class="flex-1">Reliability</span></a>
+              <a href="tsmo-incidents.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: AlertTriangle --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="flex-1">Incidents</span></a>
+              <a href="tsmo-workzones.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Cone --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 19 12 4.5 15.5 19"/><path d="M5 19h14"/><path d="M9.6 14.5h4.8"/></svg><span class="flex-1">Work Zones</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Explorers</div>
+              <a href="tsmo-incident-search.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Search --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5 22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="flex-1">Incident Search</span></a>
+              <a href="tsmo-corridor.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Rows --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="4" width="17" height="4" rx="1"/><rect x="3.5" y="10" width="17" height="4" rx="1"/><rect x="3.5" y="16" width="17" height="4" rx="1"/></svg><span class="flex-1">Corridor View</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Program</div>
+              <a href="tsmo-about.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Info --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 11v5"/></svg><span class="flex-1">About TSMO</span></a>
+              <a href="tsmo-methodology.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><!-- icon: Database --><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data &amp; Methodology</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><!-- icon: View --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Public access</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">no login required</div></div>
+              <a href="login.html" class="font-mono text-[9.5px] uppercase tracking-wider text-[#FACC15] hover:text-[#EAAD43]">Sign in</a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ PAGE HEADER ═════════ -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-12" data-dms-section="page-header">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 mb-4"><a href="tsmo-home.html" class="hover:text-[#0f1722]">TSMO</a><span class="text-slate-300 px-1">/</span><span class="text-slate-500">Program</span><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Data &amp; Methodology</span></nav>
+              <div class="flex items-center gap-3 mb-2"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// the trust layer</span><span class="h-px w-10 bg-[#CA8A04]/50"></span></div>
+              <h1 class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight text-[#0F1722]">Data &amp; Methodology<span class="text-[#CA8A04]">.</span></h1>
+              <p class="font-proxima text-[15px] leading-[1.65] text-slate-700 mt-3 max-w-[720px]">How every number on these dashboards is made. Four sources, six measures, one rule: every panel states its window, its method, and its coverage — and where the data is thin, we say so instead of smoothing it over.</p>
+              <div class="mt-4 flex items-center gap-2 flex-wrap">
+                <span class="h-7 inline-flex items-center gap-2 rounded-full border border-zinc-950/15 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-slate-600"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>coverage stats queried 2026-06-22</span>
+                <span class="h-7 inline-flex items-center rounded-full border border-zinc-950/15 bg-white px-3 font-mono text-[10px] uppercase tracking-wider text-slate-600">all figures read-only from npmrds2</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ CONTENT + TOC ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- MAIN -->
+              <div class="col-span-12 lg:col-span-8 space-y-10">
+
+                <!-- 01 · Source catalog -->
+                <section id="sources" data-dms-section="source-catalog">
+                  <div class="flex items-center gap-2 mb-4"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Source catalog</h2></div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="flex items-center gap-2.5 mb-2">
+                        <span class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F]"><!-- icon: Activity --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+                        <div class="flex-1"><div class="font-display font-medium text-[15px] text-[#0F1722]">NPMRDS probe speeds</div><div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">FHWA probe feed · ground truth</div></div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">One observed travel time per TMC per 5 minutes — all vehicles, passenger, and freight. Everything else on this site derives from it.</p>
+                      <div class="mt-3 pt-3 border-t border-zinc-950/05 grid grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[10.5px] text-slate-600">
+                        <span class="tabular-nums"><strong class="text-[#0F1722]">54,249</strong> TMCs</span>
+                        <span class="tabular-nums"><strong class="text-[#0F1722]">14.0B</strong> 5-min records</span>
+                        <span class="tabular-nums">2017 → <strong class="text-[#0F1722]">May 2026</strong></span>
+                        <span>lag <strong class="text-[#0F1722]">~2 weeks</strong></span>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="flex items-center gap-2.5 mb-2">
+                        <span class="size-9 rounded bg-rose-500/10 flex items-center justify-center text-rose-700"><!-- icon: AlertTriangle --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>
+                        <div class="flex-1"><div class="font-display font-medium text-[15px] text-[#0F1722]">TRANSCOM events</div><div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">coalition feed · the event store</div></div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Incidents, construction, conditions, and special events from the TRANSCOM coalition. The feed covers the whole multi-state region — every page here filters to New York.</p>
+                      <div class="mt-3 pt-3 border-t border-zinc-950/05 grid grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[10.5px] text-slate-600">
+                        <span class="tabular-nums"><strong class="text-[#0F1722]">3.7M</strong> events</span>
+                        <span>2015 → <strong class="text-[#0F1722]">present</strong></span>
+                        <span><strong class="text-emerald-700">live</strong> feed</span>
+                        <span>multi-state · <strong class="text-[#0F1722]">NY-filtered</strong></span>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="flex items-center gap-2.5 mb-2">
+                        <span class="size-9 rounded bg-amber-500/10 flex items-center justify-center text-amber-700"><!-- icon: Layers --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg></span>
+                        <div class="flex-1"><div class="font-display font-medium text-[15px] text-[#0F1722]">Delay attribution</div><div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">excessive_delay · derived in-house</div></div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Our TMC × month delay table — replays speeds around events to split delay into cause buckets. The engine behind the Congestion and Work Zones dashboards.</p>
+                      <div class="mt-3 pt-3 border-t border-zinc-950/05 grid grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[10.5px] text-slate-600">
+                        <span class="tabular-nums"><strong class="text-[#0F1722]">3.4M</strong> TMC-month rows</span>
+                        <span>2018 + <strong class="text-[#0F1722]">2021–2025</strong></span>
+                        <span class="col-span-2">buckets · <strong class="text-[#0F1722]">recurrent / non-recurrent / construction / accident / other</strong></span>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="flex items-center gap-2.5 mb-2">
+                        <span class="size-9 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-700"><!-- icon: Flag --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 22V4c0-.6.4-1 1-1h12.6c.8 0 1.3.9.8 1.6L15 9l3.4 4.4c.5.7 0 1.6-.8 1.6H5"/></svg></span>
+                        <div class="flex-1"><div class="font-display font-medium text-[15px] text-[#0F1722]">Federal PM3 measures</div><div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">MAP-21 · annual</div></div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The federally defined reliability measures, computed per TMC per year from the probe feed. The Reliability dashboard reports these exactly as FHWA defines them.</p>
+                      <div class="mt-3 pt-3 border-t border-zinc-950/05 grid grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[10.5px] text-slate-600">
+                        <span><strong class="text-[#0F1722]">LOTTR · TTTR · PHED</strong></span>
+                        <span>per TMC · per year</span>
+                        <span class="col-span-2">annual computation · federal submission cycle</span>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="flex items-center gap-2.5 mb-2">
+                        <span class="size-9 rounded bg-[#37576B]/10 flex items-center justify-center text-[#37576B]"><!-- icon: Road --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 21 9 3m11 18L15 3M12 7v2m0 4v2m0 4v2"/></svg></span>
+                        <div class="flex-1"><div class="font-display font-medium text-[15px] text-[#0F1722]">TMC network · shapefile-enhanced</div><div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">npmrds_meta · the spatial backbone</div></div>
+                      </div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The geometry and attributes behind every TMC — length, direction, county, road name, cross-street, AADT vehicle mix, functional class, and the linear order that chains segments into a corridor. Probe speeds are joined to it live; it supplies the lengths that turn travel time into speed and the mix that weights congestion cost.</p>
+                      <div class="mt-3 pt-3 border-t border-zinc-950/05 grid grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[10.5px] text-slate-600">
+                        <span class="tabular-nums"><strong class="text-[#0F1722]">54,249</strong> TMCs</span>
+                        <span>annual conflation</span>
+                        <span class="col-span-2">keys · <strong class="text-[#0F1722]">tmclinear · road_order · direction · county · miles · aadt · intersection</strong></span>
+                      </div>
+                    </div>
+
+                  </div>
+                </section>
+
+                <!-- 02 · Measure cards (one measure, one explainer) -->
+                <section id="measures" data-dms-section="measure-cards">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Measure definitions</h2></div>
+                  <p class="font-proxima text-[13px] text-slate-600 mb-4">One measure, one explainer. Each card is the canonical method note that every dashboard panel links back to.</p>
+                  <div class="space-y-3">
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Excessive delay</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">delay attribution</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">veh-hrs</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Time spent traveling slower than the excessive-delay threshold — the greater of 20 mph or 60% of the posted speed — multiplied by the vehicles present in that 5-minute slice. Summed to TMC × month, then split into cause buckets by overlapping TRANSCOM events.</p>
+                          <p class="mt-2 font-proxima text-[12px] text-amber-800 leading-[1.5]"><strong>Caveat:</strong> 2019–2020 were not computed in the current run; 2025 is partial through October. Trend charts show the gap rather than interpolating.</p>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>threshold = max(20 mph, 0.6 × posted)
+delay₅ₘᵢₙ  = max(0, TTobs − TTthr) × veh₅ₘᵢₙ
+veh-hrs    = Σ delay₅ₘᵢₙ   per TMC × month
+recurrent  = total − non-recurrent</code></pre>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Congestion cost</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">class-weighted VOT</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">$</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Delay monetized at a <strong>vehicle-class-weighted value of time</strong>. Each segment's vehicle mix comes from its AADT split — passenger cars, single-unit trucks, and combination trucks (tractor-trailers) — and each class carries its own per-vehicle rate. The effective $/veh-hr is the mix-weighted blend, so a truck-heavy freight corridor is valued higher than a commuter parkway.</p>
+                          <p class="mt-2 font-proxima text-[12px] text-slate-500 leading-[1.5]">Rates (per vehicle-hour, occupancy bundled — not multiplied again): <strong>passenger $52 · single-unit $42 · combination $77</strong>. Network blend ≈ $53; freight corridors $58–62. Fixed and dated per analysis year, stated on every $ panel.</p>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>VOT_eff = pass%·$52 + singl%·$42
+        + combi%·$77   (per TMC, from AADT)
+cost    = delay_vh × VOT_eff</code></pre>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">LOTTR · level of travel time reliability</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">PM3</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">ratio</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">How much worse a bad day is than a normal one: the 80th-percentile travel time divided by the 50th, computed for four day-parts. A segment is <strong>reliable</strong> when every period stays under 1.5. Reported as the % of person-miles on reliable segments.</p>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>LOTTRₚ = TT₈₀ₜₕ ÷ TT₅₀ₜₕ
+reliable ⇔ LOTTRₚ &lt; 1.5  ∀ 4 periods
+report  = % person-miles reliable</code></pre>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">TTTR · truck travel time reliability</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">PM3</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">index</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">The freight version, interstates only: 95th-percentile truck travel time over the 50th, across five periods (the four LOTTR day-parts plus overnight). The statewide index is the length-weighted average of each segment's worst period.</p>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>TTTRₚ = TT₉₅ₜₕ(truck) ÷ TT₅₀ₜₕ(truck)
+index = Σ len × max(TTTRₚ) ÷ Σ len</code></pre>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">PHED · peak-hour excessive delay</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">PM3</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">hrs / capita</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Annual person-hours of excessive delay during peak periods (6–10 AM, 3–7 PM weekdays), per capita, for each large urbanized area. Same speed threshold as excessive delay; population from the Census UZA estimate.</p>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>PHED = Σ peak delay × occupancy
+       ÷ UZA population   (per year)</code></pre>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-amber-500/40 bg-white shadow-sm overflow-hidden">
+                      <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-amber-50/60">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Roadway clearance time</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">TRANSCOM · TIM</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 border border-amber-500/30 text-amber-800">coverage-badged</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">Time from incident verification to all lanes reopened — the FHWA TIM headline measure. <strong>We compute it only on the timestamped subset</strong>: lanes-open exists on 42.7% of events and verification on 20.1%, so every clearance figure carries a "based on N% of incidents" badge — and we trend the coverage itself.</p>
+                          <p class="mt-2 font-proxima text-[12px] text-amber-800 leading-[1.5]"><strong>Limitation:</strong> medians on a sparse subset can shift as coverage improves. Threshold shares (% cleared &lt; 90 min) tolerate the missingness better than means — that's what the Incidents dashboard headlines.</p>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>RCT = end_all_lanes_open
+    − incident_verified
+subset: both timestamps present
+report: median · 85th · % &lt; 90 min
+        + coverage %</code></pre>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="px-4 h-11 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                        <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Segment speed · time-space replay</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 border border-zinc-950/10 text-[#37576B]">probe × TMC network</span>
+                        <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">mph</span>
+                      </div>
+                      <div class="p-4 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="font-proxima text-[13px] text-slate-700 leading-[1.6]">A segment's speed in a 5-minute slice is its length divided by the observed travel time. The <strong>Corridor View</strong> explorer joins the probe feed to the TMC network on the fly and stacks every segment of one corridor — ordered head-to-tail and anchored at its cross-street — against the 5 AM-to-midnight clock, each cell colored by speed and each row's height scaled to its segment length. The result replays how a slowdown forms and clears along the corridor on any chosen day; a month strip above it carries each day's average so you can pick which day to replay.</p>
+                          <p class="mt-2 font-proxima text-[12px] text-amber-800 leading-[1.5]"><strong>Caveat:</strong> on very short segments a near-zero recorded travel time can imply an impossible speed, so values are capped at 80 mph; the overnight 12-5 AM epochs are dropped as too sparse to read.</p>
+                        </div>
+                        <pre class="font-mono text-[11.5px] leading-[1.6] p-3 rounded-[6px] bg-[#0F1722] text-slate-100 overflow-x-auto"><code>speed = miles ÷ TT_obs × 3600   (mph)
+grid  = TMC(road order) × epoch(5:00→24:00)
+join  = probe speeds ⋈ TMC network on tmc
+cell  = avg speed · row height ∝ miles</code></pre>
+                      </div>
+                    </div>
+
+                  </div>
+                </section>
+
+                <!-- 03 · Data coverage (the honesty dashboard) -->
+                <section id="coverage" data-dms-section="data-coverage">
+                  <div class="flex items-center gap-2 mb-1"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Data coverage &amp; gaps</h2></div>
+                  <p class="font-proxima text-[13px] text-slate-600 mb-4">The dashboard about the dashboards. If a number upstairs is built on partial data, this is where the partial is quantified.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 font-display font-medium text-[14px] text-[#2D3E4C]">TIM timestamp completeness <span class="ml-auto font-mono text-[10px] uppercase tracking-wider text-slate-400 font-normal">of 3.7M events</span></div>
+                      <div class="p-4 space-y-3 text-[12.5px] text-slate-700">
+                        <div><div class="flex justify-between mb-1"><span class="font-mono text-[11px]">end_all_lanes_open_to_traffic</span><span class="font-mono tabular-nums font-semibold">42.7%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:42.7%;background:#F2CB3D"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-mono text-[11px]">incident_verified</span><span class="font-mono tabular-nums font-semibold">20.1%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:20.1%;background:#E8843F"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-mono text-[11px]">incident_reported</span><span class="font-mono tabular-nums font-semibold">10.6%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:10.6%;background:#D6453B"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-mono text-[11px]">response_arrives_on_scene</span><span class="font-mono tabular-nums font-semibold">0.3%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:1.2%;background:#D6453B"></div></div></div>
+                        <p class="pt-1 font-proxima text-[11.5px] text-slate-500 leading-[1.5]">Clearance-time measures are computed only where the needed pair of timestamps exists; the badge on each TIM panel restates the subset size.</p>
+                      </div>
+                    </div>
+
+                    <div class="space-y-4">
+                      <div class="rounded-[8px] border border-amber-500/40 bg-amber-50/50 shadow-sm p-4">
+                        <div class="flex items-center gap-2 mb-1.5"><!-- icon: AlertTriangle --><svg class="size-4 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="font-display font-medium text-[14px] text-[#0F1722]">Delay attribution: 2019–2020 not computed</span></div>
+                        <p class="font-proxima text-[12.5px] text-slate-700 leading-[1.55]">The current excessive-delay run covers 2018 and 2021–2025. Multi-year delay trends show those two years as an explicit gap; recomputing them is on the ETL roadmap.</p>
+                      </div>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                          <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">npmrds lag</div>
+                          <div class="mt-1 font-mono text-[24px] font-medium tabular-nums text-[#0F1722]">~2 <span class="text-[13px] text-slate-500">wks</span></div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">speeds through 2026-06-07</div>
+                        </div>
+                        <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                          <div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">delay footprint</div>
+                          <div class="mt-1 font-mono text-[24px] font-medium tabular-nums text-[#0F1722]">18.5<span class="text-[13px] text-slate-500">%</span></div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">of events have one · by design</div>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[11.5px] text-slate-500 leading-[1.55] px-1">A congestion footprint is only computed for delay-relevant events — event lists therefore never imply that every event delayed traffic.</p>
+                    </div>
+
+                  </div>
+                </section>
+
+                <!-- 04 · Refresh cadence -->
+                <section id="cadence" data-dms-section="refresh-cadence">
+                  <div class="flex items-center gap-2 mb-4"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Refresh cadence</h2></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                      <thead><tr class="bg-slate-50 border-b border-zinc-950/10"><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Source</th><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Cadence</th><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Last updated</th></tr></thead>
+                      <tbody class="font-proxima text-[12.5px] text-slate-700">
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 text-[#0f1722]">TRANSCOM events</td><td class="px-4 py-2">continuous (live feed)</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]"><span class="inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>2026-06-22 04:55 EST</span></td></tr>
+                        <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-4 py-2 text-[#0f1722]">NPMRDS speeds</td><td class="px-4 py-2">daily batch · ~2-week lag</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]">2026-06-07</td></tr>
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 text-[#0f1722]">Delay attribution (excessive_delay)</td><td class="px-4 py-2">batch recompute · monthly target</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]">through 2025-10</td></tr>
+                        <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-4 py-2 text-[#0f1722]">PM3 measures</td><td class="px-4 py-2">annual · federal cycle</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]">CY 2025 · computed Feb 2026</td></tr>
+                        <tr><td class="px-4 py-2 text-[#0f1722]">TMC network (npmrds_meta)</td><td class="px-4 py-2">annual conflation</td><td class="px-4 py-2 font-mono tabular-nums text-[12px]">2026 network</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="mt-2 font-proxima text-[12px] text-slate-500">Freshness is asymmetric on purpose — events are live, speeds run two weeks behind, derived tables are batch. That's why every panel carries its own data-as-of badge instead of one sitewide date.</p>
+                </section>
+
+                <!-- 05 · Glossary -->
+                <section id="glossary" data-dms-section="glossary">
+                  <div class="flex items-center gap-2 mb-4"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Glossary</h2></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm divide-y divide-zinc-950/05">
+                    <div class="px-4 py-3 flex gap-4"><span class="w-32 shrink-0 font-mono text-[11.5px] font-semibold text-[#1F3F8F]">TMC</span><span class="font-proxima text-[13px] text-slate-700 leading-[1.55]">Traffic Message Channel segment — the ½–2 mile road piece every probe record keys on. New York's network has 54,249 of them.</span></div>
+                    <div class="px-4 py-3 flex gap-4"><span class="w-32 shrink-0 font-mono text-[11.5px] font-semibold text-[#1F3F8F]">LOTTR</span><span class="font-proxima text-[13px] text-slate-700 leading-[1.55]">Level of Travel Time Reliability — 80th ÷ 50th percentile travel time. A segment is reliable when every day-part stays under 1.5.</span></div>
+                    <div class="px-4 py-3 flex gap-4"><span class="w-32 shrink-0 font-mono text-[11.5px] font-semibold text-[#1F3F8F]">TTTR</span><span class="font-proxima text-[13px] text-slate-700 leading-[1.55]">Truck Travel Time Reliability — 95th ÷ 50th percentile truck travel time, interstates only.</span></div>
+                    <div class="px-4 py-3 flex gap-4"><span class="w-32 shrink-0 font-mono text-[11.5px] font-semibold text-[#1F3F8F]">PHED</span><span class="font-proxima text-[13px] text-slate-700 leading-[1.55]">Peak Hour Excessive Delay — annual person-hours of excessive delay per capita in large urbanized areas.</span></div>
+                    <div class="px-4 py-3 flex gap-4"><span class="w-32 shrink-0 font-mono text-[11.5px] font-semibold text-[#1F3F8F]">vehicle-hours</span><span class="font-proxima text-[13px] text-slate-700 leading-[1.55]">One vehicle delayed one hour = 1 veh-hr. The common unit behind every delay figure on the site; person-hours = veh-hrs × occupancy.</span></div>
+                    <div class="px-4 py-3 flex gap-4"><span class="w-32 shrink-0 font-mono text-[11.5px] font-semibold text-[#1F3F8F]">f_system</span><span class="font-proxima text-[13px] text-slate-700 leading-[1.55]">FHWA functional classification, 1 (interstate) through 7 (local). f_system 0 marks our extended set of local and unclassified roads.</span></div>
+                    <div class="px-4 py-3 flex gap-4"><span class="w-32 shrink-0 font-mono text-[11.5px] font-semibold text-[#1F3F8F]">NYSDOT region</span><span class="font-proxima text-[13px] text-slate-700 leading-[1.55]">The eleven administrative regions (R1 Capital District … R11 New York City) every dashboard's region selector rolls up to.</span></div>
+                  </div>
+                </section>
+
+                <!-- 06 · Downloads & API -->
+                <section id="downloads" data-dms-section="downloads-api">
+                  <div class="flex items-center gap-2 mb-4"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Downloads &amp; API</h2></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm divide-y divide-zinc-950/05">
+                    <a class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"><span class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F]"><!-- icon: Download --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/><path d="M4 20h16"/></svg></span><span class="flex-1"><span class="font-proxima text-[13.5px] text-[#0f1722] block">Bulk tables — delay attribution · event×TMC delay · PM3</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">CSV / Parquet · per year · NY extract</span></span><span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">download</span></a>
+                    <a href="docs-overview.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"><span class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F]"><!-- icon: Code --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg></span><span class="flex-1"><span class="font-proxima text-[13.5px] text-[#0f1722] block">API access — the same endpoint every dashboard renders against</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">key on sign-in · 10,000 req/day public · see the API guide</span></span><span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">api guide</span></a>
+                    <a class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"><span class="size-9 rounded bg-slate-100 flex items-center justify-center text-slate-500"><!-- icon: External --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 4h6v6M20 4 10 14"/><path d="M20 14v6H4V4h6"/></svg></span><span class="flex-1"><span class="font-proxima text-[13.5px] text-[#0f1722] block">Raw NPMRDS — full probe feed via FHWA / RITIS</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">external · agency credentials required</span></span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">external</span></a>
+                  </div>
+                </section>
+              </div>
+
+              <!-- TOC (sticky) -->
+              <aside class="col-span-12 lg:col-span-4" data-dms-section="toc">
+                <div class="sticky top-4 space-y-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                    <a href="#sources" class="tny-toc-item active">Source catalog</a>
+                    <a href="#measures" class="tny-toc-item">Measure definitions</a>
+                    <a href="#coverage" class="tny-toc-item">Data coverage &amp; gaps</a>
+                    <a href="#cadence" class="tny-toc-item">Refresh cadence</a>
+                    <a href="#glossary" class="tny-toc-item">Glossary</a>
+                    <a href="#downloads" class="tny-toc-item">Downloads &amp; API</a>
+                  </div>
+                  <div class="rounded-[8px] border border-[#1F3F8F]/20 bg-white shadow-sm p-5">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">see it in use</div>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">Every panel links back here</div>
+                    <div class="mt-3 space-y-2">
+                      <a href="tsmo-congestion.html" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: ChartLine --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Congestion dashboard</a>
+                      <a href="tsmo-corridor.html" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Rows --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="4" width="17" height="4" rx="1"/><rect x="3.5" y="10" width="17" height="4" rx="1"/><rect x="3.5" y="16" width="17" height="4" rx="1"/></svg>Corridor View explorer</a>
+                      <a href="docs-overview.html" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Book --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>NPMRDS documentation</a>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 font-proxima text-[11.5px] text-slate-500">Spot a number that doesn't match its method note? Email the TSMO data team via NYSDOT Operations.</div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="tsmo-congestion.html" class="hover:text-slate-900">congestion</a>
+                <a href="tsmo-corridor.html" class="hover:text-slate-900">corridor-view</a>
+                <a href="tsmo-about.html" class="hover:text-slate-900">about-tsmo</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

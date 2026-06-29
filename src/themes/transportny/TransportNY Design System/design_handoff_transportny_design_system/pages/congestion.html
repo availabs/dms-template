@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Congestion — TransportNY</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="_shared.css"/>
+<style>
+@font-face { font-family:'Oswald'; src:url('../fonts/Oswald-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url('../fonts/SourceSans3-Variable.woff2') format('woff2-variations'); font-weight:300 700; font-display:swap; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="_icons.jsx"></script>
+<script type="text/babel" src="_chrome.jsx"></script>
+</head>
+<body class="tny-pane">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const Icon = window.TNYIcon;
+
+/* KPI item — coloured dot + Total / value / per-day / delta */
+function KPI({ dot, label, total='1,265', perDay='40.8/day', deltaDir='down', delta='0.8', perDayNum='41.1/day', highlighted }) {
+  const up = deltaDir === 'up';
+  return (
+    <div className={`px-4 py-3 ${highlighted ? 'bg-slate-50' : ''}`}>
+      <div className="flex items-center gap-2 mb-1">
+        {dot==='radio'
+          ? <span className="size-3 rounded-full border-2 border-slate-400"/>
+          : <span className="size-2.5 rounded-full" style={{background:dot}}/>}
+        <span className="text-[12.5px] text-slate-600">{label}</span>
+      </div>
+      <div className="flex items-end justify-between">
+        <div>
+          <div className="font-oswald font-semibold text-[22px] text-slate-900 leading-none tabular-nums">{total}</div>
+          <div className="text-[10.5px] font-mono text-slate-500 mt-1">{perDay}</div>
+        </div>
+        <div className="text-right">
+          <div className={`text-[14px] font-oswald font-semibold tabular-nums ${up?'text-red-600':'text-emerald-600'}`}>
+            {up? '↑':'↓'} {delta}%
+          </div>
+          <div className="text-[10.5px] font-mono text-slate-500 mt-1">{perDayNum}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CardShell({ title, sub, children, className='' }) {
+  return (
+    <div className={`rounded border border-zinc-950/10 bg-white shadow-sm overflow-hidden ${className}`}>
+      <div className="px-4 pt-3 pb-2 border-b border-zinc-950/5">
+        <div className="font-oswald font-medium text-[14px] text-slate-800 leading-snug">{title}</div>
+        {sub && <div className="text-[11px] text-slate-500">{sub}</div>}
+      </div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+/* Stacked bar chart — total congestion (vehicle hours) by month */
+function StackedBars() {
+  const months = ['2025-01','2025-02','2025-03','2025-04','2025-05','2025-06','2025-07','2025-08','2025-09'];
+  const recurrent = [230, 225, 240, 255, 282, 285, 277, 280, 278];
+  const trucks    = [ 42,  40,  41,  43,  47,  48,  46,  47,  47];
+  const max = 300, W=620, H=260, gutterL=44, gutterR=10, gutterB=28, gutterT=10;
+  const innerW = W - gutterL - gutterR;
+  const innerH = H - gutterT - gutterB;
+  const slot = innerW / months.length;
+  const bw = slot * 0.62;
+  const y = v => gutterT + innerH - (v / max) * innerH;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {/* gridlines + y labels */}
+      {[0,50000,100000,150000,200000,250000].map((v,i) => {
+        const yy = y(v/1000);
+        return (<g key={i}>
+          <line x1={gutterL} y1={yy} x2={W-gutterR} y2={yy} stroke="rgba(15,23,42,0.06)"/>
+          <text x={gutterL-4} y={yy+3} fontSize="9" fontFamily="ui-monospace,monospace" textAnchor="end" fill="#94a3b8">{v.toLocaleString()}</text>
+        </g>);
+      })}
+      {months.map((m,i) => {
+        const cx = gutterL + slot*i + slot/2;
+        const top = recurrent[i] + trucks[i];
+        return (<g key={m}>
+          <rect x={cx-bw/2} y={y(top)}      width={bw} height={y(recurrent[i])-y(top)} fill="#F3CB6B"/>
+          <rect x={cx-bw/2} y={y(recurrent[i])} width={bw} height={H-gutterB-y(recurrent[i])} fill="#EF6F92"/>
+          <text x={cx} y={H-10} fontSize="9.5" fontFamily="ui-monospace,monospace" textAnchor="middle" fill="#64748b">{m}</text>
+        </g>);
+      })}
+    </svg>
+  );
+}
+
+/* Top 15 corridors — table + map */
+function CorridorsBlock() {
+  const rows = Array.from({length:7}).map(() => ['Construction','2025-10-15 11:00:10','I-81','11:00:10','$0.00','7h 0m']);
+  return (
+    <div className="rounded border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+      <div className="px-4 py-3 border-b border-zinc-950/5 flex items-center justify-between">
+        <div>
+          <div className="font-oswald font-medium text-[14px] text-slate-800">Top 15 Corridors</div>
+          <div className="text-[11px] text-slate-500">by Vehicle Hours of Delay/Mile</div>
+        </div>
+      </div>
+      <div className="grid grid-cols-[1fr_1fr]">
+        {/* table */}
+        <div>
+          <table className="w-full tbl">
+            <thead>
+              <tr className="bg-slate-50">
+                {[['EVENT','desc'],['FACILITY'],['COST'],['DURATION']].map(([h,o],i)=>(
+                  <th key={h} className="font-oswald uppercase text-[10.5px] tracking-[0.1em] text-slate-700 px-3 py-2 text-left">
+                    <span className="inline-flex items-center gap-1.5">{h}<Icon name={o==='desc'?'SortDesc':'SortAsc'} className="size-3 text-slate-500"/></span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r,i)=>(
+                <tr key={i}>
+                  <td className="px-3 py-2.5">
+                    <div className="text-[13px] text-slate-700">{r[0]}</div>
+                    <div className="text-[10.5px] font-mono text-slate-500">{r[1].split(' ')[0]}</div>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <div className="text-[13px] text-slate-700">{r[2]}</div>
+                    <div className="text-[10.5px] font-mono text-slate-500">{r[3]}</div>
+                  </td>
+                  <td className="px-3 py-2.5 text-[13px] text-slate-700">{r[4]}</td>
+                  <td className="px-3 py-2.5 text-[13px] text-slate-700">{r[5]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {/* map */}
+        <div className="relative tny-map border-l border-zinc-950/10 min-h-[400px]">
+          {/* expand arrow */}
+          <button className="absolute top-2 left-2 w-7 h-7 rounded bg-white shadow border border-zinc-950/10 flex items-center justify-center"><Icon name="ChevronLeft" className="size-3.5 text-slate-600 rotate-180"/></button>
+          {/* label */}
+          <div className="absolute top-12 left-12 text-[11px] font-oswald uppercase tracking-wider text-slate-700">Royston</div>
+          <div className="absolute top-32 left-24 text-[11px] font-oswald uppercase tracking-wider text-slate-700">Minetto</div>
+          <div className="absolute top-44 left-48 text-[11px] font-oswald uppercase tracking-wider text-slate-700">Fulton</div>
+          <div className="absolute bottom-32 left-44 text-[11px] font-oswald uppercase tracking-wider text-slate-700">Clay</div>
+          <div className="absolute bottom-20 left-24 text-[11px] font-oswald uppercase tracking-wider text-slate-700">Van B.</div>
+          <div className="absolute top-36 left-32 text-[10px] font-mono text-slate-500">OSWEGO</div>
+          {/* highway shields */}
+          <div className="absolute top-10 right-16 px-1.5 py-0.5 bg-white border border-slate-400 rounded-sm text-[9px] font-mono">104</div>
+          <div className="absolute top-1/2 right-8 px-2 py-0.5 bg-amber-500 rounded-sm text-[10px] text-white font-bold">81</div>
+          <div className="absolute bottom-20 right-12 px-2 py-0.5 bg-amber-500 rounded-sm text-[10px] text-white font-bold">90</div>
+          {/* incident dots */}
+          {[[200,180],[225,210],[240,220],[260,230],[275,260],[290,300],[260,310],[245,290],[270,275]].map(([x,y],i)=>(
+            <span key={i} className="absolute size-3 rounded-full bg-yellow-400 border border-yellow-700/40 shadow" style={{left:x, top:y}}/>
+          ))}
+          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-white/80 text-[9px] font-mono text-slate-500 rounded">© placeholder map</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div className="min-h-screen">
+      <TNYSidebar product="NPMRDS" active="macro" expanded={false} nav={[
+        { id:'search', label:'Search', icon:'Search' },
+        { id:'tile', label:'Tiles', icon:'MapLayers' },
+        { id:'pin', label:'Pins', icon:'MapPin' },
+        { id:'macro', label:'Macro', icon:'Activity' },
+      ]}/>
+      <main className="ml-16">
+        {/* Type hero — blue */}
+        <div data-screen-label="01 Type" className="tny-bluebar px-10 pt-5 pb-7 text-white">
+          <div className="text-[12px] font-proxima text-white/70 mb-1">Type</div>
+          <div className="flex items-center gap-3">
+            <h1 className="font-oswald font-semibold text-[44px] leading-none">Congestion</h1>
+            <Icon name="CaretDown" className="size-7 text-white/80"/>
+          </div>
+        </div>
+        <TNYFilterBar items={[
+          { label:'Region', value:'Region 3 - Central New York' },
+          { label:'Month', value:"October '25" },
+          { label:'Road Class', value:'All' },
+        ]}/>
+
+        <div className="px-10 py-6 space-y-5">
+          {/* KPI grid + chart */}
+          <div className="grid grid-cols-[1fr_1fr_1.6fr] gap-4">
+            <CardShell title="Total Congestion Cost" sub="vs previous month/day">
+              <KPI dot="radio" label="Total"/>
+              <KPI dot="#E25A82" label="Recurrent" highlighted/>
+              <KPI dot="#F3CB6B" label="Non-recurrent"/>
+              <KPI dot="#F3CB6B" label="Accident"/>
+              <KPI dot="#F3CB6B" label="Construction" deltaDir="up" delta="2"/>
+            </CardShell>
+            <CardShell title="Congestion" sub="by Type">
+              <KPI dot="radio" label="Total"/>
+              <KPI dot="#E25A82" label="Recurrent"/>
+              <KPI dot="#F3CB6B" label="Non-recurrent"/>
+              <KPI dot="#F3CB6B" label="Accident"/>
+              <KPI dot="#F3CB6B" label="Construction" deltaDir="up" delta="2"/>
+            </CardShell>
+            <CardShell title="Total Congestion" sub="(Vehicle Hours) by Month" className="">
+              <div className="p-3"><StackedBars/></div>
+            </CardShell>
+          </div>
+
+          <CorridorsBlock/>
+        </div>
+        <TNYFooter/>
+      </main>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

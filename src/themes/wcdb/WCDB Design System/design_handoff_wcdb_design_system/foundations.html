@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+<meta charset="utf-8">
+<title>WCDB DS — Foundations</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/components.css">
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+
+<script type="text/babel">
+const CURRENT = 'foundations.html';
+
+const SURFACES = [
+  { name: 'bg-0', token: '--bg-0', use: 'Page edge' },
+  { name: 'bg-1', token: '--bg-1', use: 'Surface (canvas)' },
+  { name: 'bg-2', token: '--bg-2', use: 'Card' },
+  { name: 'bg-3', token: '--bg-3', use: 'Card hover' },
+  { name: 'bg-4', token: '--bg-4', use: 'Content panel' },
+  { name: 'bg-5', token: '--bg-5', use: 'Hover / pressed' },
+];
+
+const INKS = [
+  { name: 'ink-1', token: '--ink-1', use: 'Headings, body' },
+  { name: 'ink-2', token: '--ink-2', use: 'Secondary' },
+  { name: 'ink-3', token: '--ink-3', use: 'Meta, captions' },
+  { name: 'ink-4', token: '--ink-4', use: 'Disabled' },
+];
+
+function Swatch({ name, token, use, big }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{
+        height: big ? 140 : 72,
+        background: `var(${token})`,
+        border: '1px solid var(--line-1)',
+        borderRadius: 8,
+      }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <span className="mono" style={{ fontSize: 11, color: 'var(--ink-1)' }}>{name}</span>
+        <span className="mono" style={{ fontSize: 10, color: 'var(--ink-4)' }}>{token}</span>
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>{use}</div>
+    </div>
+  );
+}
+
+function ColorSection() {
+  return (
+    <section>
+      <SectionHead num="01" kicker="Color" title="A monochrome scale, plus one signal." />
+      <div style={{ marginBottom: 48 }}>
+        <div className="uppercase-meta" style={{ marginBottom: 24 }}>Surfaces</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 24 }}>
+          {SURFACES.map(s => <Swatch key={s.name} {...s} />)}
+        </div>
+      </div>
+      <div style={{ marginBottom: 48 }}>
+        <div className="uppercase-meta" style={{ marginBottom: 24 }}>Ink</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
+          {INKS.map(s => (
+            <div key={s.name} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--line-1)', borderRadius: 8, padding: '32px 20px' }}>
+                <div className="serif" style={{ color: `var(${s.token})`, fontSize: 32, fontStyle: 'italic', lineHeight: 1 }}>Aa</div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span className="mono" style={{ fontSize: 11 }}>{s.name}</span>
+                <span className="mono" style={{ fontSize: 10, color: 'var(--ink-4)' }}>{s.token}</span>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>{s.use}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="uppercase-meta" style={{ marginBottom: 24 }}>Signal</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 24, alignItems: 'stretch' }}>
+          <div style={{ background: 'var(--on-air-soft)', border: '1px solid var(--on-air)', borderRadius: 8, padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span className="wc-pill wc-pill--onair" style={{ alignSelf: 'flex-start' }}>On Air</span>
+            <span className="mono" style={{ fontSize: 11, color: 'var(--on-air)', marginTop: 12 }}>--on-air · #ff3b2f</span>
+          </div>
+          <div style={{ padding: '40px 0', color: 'var(--ink-2)', fontSize: 14, lineHeight: 1.7, maxWidth: 540 }}>
+            One color does functional work in this system: a saturated red, used <em>only</em> to mark live broadcasts, recording sessions, and breaking station alerts. Everywhere else, contrast is built from ink-on-ink.
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TypeSpecimen() {
+  return (
+    <section>
+      <SectionHead num="02" kicker="Type" title="Display serif, grotesk body, mono utility." />
+
+      <div style={{ marginBottom: 64, paddingBottom: 64, borderBottom: '1px solid var(--line-1)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 32 }}>
+          <span className="uppercase-meta">Display — Instrument Serif Italic</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>--font-display</span>
+        </div>
+        <p className="serif" style={{ fontStyle: 'italic', fontSize: 'var(--tx-9xl)', lineHeight: 0.92, margin: 0, letterSpacing: '-0.04em' }}>
+          Tune the dial.
+        </p>
+        <p className="serif" style={{ fontStyle: 'italic', fontSize: 'var(--tx-5xl)', lineHeight: 1, margin: '32px 0 0', letterSpacing: '-0.03em', color: 'var(--ink-2)' }}>
+          Used for hero text, section titles, and the occasional pull-quote. Italic is the default voice.
+        </p>
+      </div>
+
+      <div style={{ marginBottom: 64, paddingBottom: 64, borderBottom: '1px solid var(--line-1)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 32 }}>
+          <span className="uppercase-meta">Body — Geist</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>--font-sans</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 60px', gap: 32, alignItems: 'baseline', rowGap: 18 }}>
+          {[
+            ['64 / 1.0',  'var(--tx-6xl)', 'Editorial headline'],
+            ['36 / 1.1',  'var(--tx-4xl)', 'Section title'],
+            ['22 / 1.3',  'var(--tx-2xl)', 'Lede paragraph for show descriptions'],
+            ['16 / 1.6',  'var(--tx-lg)',  'Body text. Reads at a comfortable measure of 65 characters.'],
+            ['14 / 1.5',  'var(--tx-md)',  'UI text — buttons, inputs, table cells.'],
+            ['12 / 1.4',  'var(--tx-sm)',  'Captions and footnotes.'],
+          ].map(([label, size, sample]) => (
+            <React.Fragment key={label}>
+              <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>{label}</span>
+              <span style={{ fontSize: size, lineHeight: 1.2, fontFamily: 'var(--font-sans)' }}>{sample}</span>
+              <span className="mono" style={{ fontSize: 10, color: 'var(--ink-4)' }}>400</span>
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 32 }}>
+          <span className="uppercase-meta">Mono — Geist Mono</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>--font-mono</span>
+        </div>
+        <p style={{ color: 'var(--ink-3)', maxWidth: 600, fontSize: 14, marginBottom: 32 }}>
+          Used for metadata: frequencies, timestamps, track IDs, table headers, labels. Always uppercase
+          when used as an eyebrow / label. Tracking +0.10–0.16em.
+        </p>
+        <div style={{ background: 'var(--bg-2)', border: '1px solid var(--line-1)', borderRadius: 12, padding: 32, display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: 18, columnGap: 32 }}>
+          <div className="mono" style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>NOW PLAYING — 02:14</div>
+          <div className="mono" style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>WED · MAR 5 · 22:00 ET</div>
+          <div className="mono" style={{ fontSize: 14, color: 'var(--ink-1)' }}>90.9 FM ALBANY</div>
+          <div className="mono" style={{ fontSize: 14, color: 'var(--ink-1)' }}>SHOW · 0184 · S03E22</div>
+          <div className="mono" style={{ fontSize: 16, color: 'var(--ink-1)' }}>0123456789 → /×↗</div>
+          <div className="mono" style={{ fontSize: 16, color: 'var(--ink-1)' }}>{'<'}/{'>'} {'{'}{'}'}  [ ] · = ≠</div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SpacingSection() {
+  const SCALE = [
+    { token: '--sp-1', px: 4 },
+    { token: '--sp-2', px: 8 },
+    { token: '--sp-3', px: 12 },
+    { token: '--sp-4', px: 16 },
+    { token: '--sp-5', px: 24 },
+    { token: '--sp-6', px: 32 },
+    { token: '--sp-7', px: 48 },
+    { token: '--sp-8', px: 64 },
+    { token: '--sp-9', px: 96 },
+    { token: '--sp-10', px: 128 },
+  ];
+  const RADII = [
+    { token: '--r-sm', label: '4', size: 4 },
+    { token: '--r-md', label: '8', size: 8 },
+    { token: '--r-lg', label: '14', size: 14 },
+    { token: '--r-xl', label: '18', size: 18 },
+    { token: '--r-pill', label: '∞', size: 999 },
+  ];
+  return (
+    <section>
+      <SectionHead num="03" kicker="Space & shape" title="A 4-pt scale and four radii." />
+      <div style={{ marginBottom: 64 }}>
+        <div className="uppercase-meta" style={{ marginBottom: 24 }}>Spacing scale</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {SCALE.map(s => (
+            <div key={s.token} style={{ display: 'grid', gridTemplateColumns: '120px 60px 1fr', alignItems: 'center', gap: 16, padding: '6px 0' }}>
+              <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>{s.token}</span>
+              <span className="mono" style={{ fontSize: 11, color: 'var(--ink-1)' }}>{s.px}px</span>
+              <div style={{ height: 14, background: 'var(--ink-1)', width: s.px, maxWidth: '100%' }} />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="uppercase-meta" style={{ marginBottom: 24 }}>Radii</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 24 }}>
+          {RADII.map(r => (
+            <div key={r.token} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--line-2)', height: 100, borderRadius: r.size }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span className="mono" style={{ fontSize: 11 }}>{r.label}px</span>
+                <span className="mono" style={{ fontSize: 10, color: 'var(--ink-4)' }}>{r.token}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MotionSection() {
+  return (
+    <section>
+      <SectionHead num="04" kicker="Motion" title="Slow when in doubt. Fast for feedback." />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'var(--line-1)' }}>
+        {[
+          ['120ms · ease', 'Hover, focus, button press'],
+          ['160ms · cubic-bezier(.2,.8,.2,1)', 'Switch, tab, panel'],
+          ['200ms · ease', 'Card hover wash'],
+          ['400ms · ease-out', 'Modal enter, drawer'],
+        ].map(([t, use]) => (
+          <div key={t} style={{ background: 'var(--bg-1)', padding: '32px 32px 40px' }}>
+            <div className="mono" style={{ fontSize: 11, letterSpacing: '0.10em', color: 'var(--ink-1)' }}>{t}</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-3)', marginTop: 10 }}>{use}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function App() {
+  return (
+    <PageShell current={CURRENT}>
+      <ColorSection />
+      <TypeSpecimen />
+      <SpacingSection />
+      <MotionSection />
+      <WCDBTweaks />
+    </PageShell>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+</script>
+</body>
+</html>

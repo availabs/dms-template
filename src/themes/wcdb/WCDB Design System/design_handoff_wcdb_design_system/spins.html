@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head><meta charset="utf-8"><title>WCDB — Recent Spins</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles/tokens.css"><link rel="stylesheet" href="styles/components.css"></head>
+<body><div id="app"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="scripts/tweaks.jsx"></script>
+<script type="text/babel" src="scripts/shell.jsx"></script>
+<script type="text/babel" src="scripts/wcdb-patterns.jsx"></script>
+<script type="text/babel" src="scripts/mockup-shell.jsx"></script>
+<script type="text/babel">
+const SPINS=[
+['02:14','Stereolab','Lo Boob Oscillator','Refried Ectoplasm','Late Modernism',3],
+['02:09','Slowdive','Star Roving','Slowdive','Late Modernism',1],
+['02:04','Cocteau Twins','Cherry-Coloured Funk','Heaven or Las Vegas','Late Modernism',11],
+['02:00','Broadcast','Tears in the Typing Pool','Tender Buttons','Late Modernism',1],
+['01:55','The Durutti Column','Sketch for Summer','The Return…','Late Modernism',2],
+['01:49','Galaxie 500','Tugboat','Today','Late Modernism',1],
+['01:44','Beach House','Walk in the Park','Teen Dream','Late Modernism',1],
+['01:40','Slint','Good Morning, Captain','Spiderland','Late Modernism',1],
+['01:32','Yo La Tengo','Sugarcube','I Can Hear…','Late Modernism',1],
+['01:26','My Bloody Valentine','Soon','Loveless','Late Modernism',6],
+];
+function App(){return(
+<MockupShell active="Spins">
+<section data-screen-label="Recent Spins" style={{padding:'24px 0 32px'}}>
+<div className="uppercase-meta">RECENT · LAST 24 HOURS</div>
+<h1 className="serif" style={{fontStyle:'italic',fontSize:'clamp(56px,7vw,96px)',lineHeight:0.95,letterSpacing:'-0.04em',margin:'20px 0 16px',fontWeight:400}}>What we've spun.</h1>
+<p style={{color:'var(--ink-2)',fontSize:18,maxWidth:600,lineHeight:1.5}}>Logged automatically by the studio. {SPINS.length} of 412 spins logged today.</p>
+</section>
+<section style={{margin:'32px 0',display:'flex',gap:12,alignItems:'center'}}>
+<input className="wc-input wc-input--bordered" placeholder="Filter by artist, track, or show…" style={{maxWidth:420}}/>
+<div className="wc-seg">{['Today','Week','Month','All'].map((t,i)=>(<button key={t} className={'wc-seg__item '+(i===0?'wc-seg__item--active':'')}>{t}</button>))}</div>
+<button className="wc-btn wc-btn--ghost wc-btn--sm" style={{marginLeft:'auto'}}>Export CSV</button>
+</section>
+<section style={{margin:'24px 0 80px'}}>
+<table className="wc-table">
+<thead><tr><th>Time</th><th>Artist</th><th>Track</th><th>Album</th><th>Show</th><th>Plays</th></tr></thead>
+<tbody>
+{SPINS.map((s,i)=>(<tr key={i}>
+<td className="mono" style={{color:'var(--ink-3)'}}>{s[0]}</td>
+<td className="serif" style={{fontStyle:'italic',fontSize:18}}>{s[1]}</td>
+<td>{s[2]}</td>
+<td style={{color:'var(--ink-3)'}}>{s[3]}</td>
+<td className="mono" style={{fontSize:11,color:'var(--ink-3)',letterSpacing:'0.06em',textTransform:'uppercase'}}>{s[4]}</td>
+<td>{s[5]>1?<span className="mono" style={{fontSize:10,letterSpacing:'0.10em',color:'var(--ink-3)',border:'1px solid var(--line-2)',padding:'2px 6px',borderRadius:999}}>×{s[5]}</span>:<span style={{color:'var(--ink-4)'}}>—</span>}</td>
+</tr>))}
+</tbody>
+</table>
+</section>
+<WCDBTweaks/>
+</MockupShell>
+)}
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+</script></body></html>

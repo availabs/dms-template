@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MAP-21 PM3 · System Performance · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  PAGE 1 · Statewide System Performance (landing) — built from MAP21_REPORTING_PLAN.md §5.
+  Trends-first landing that absorbs map-21-trend.html and carries the per-year KPI band
+  from map-21.html. Real targets (LOTTR-I ≥75, LOTTR-N ≥70, TTTR ≤2.0) + Warde-table actuals.
+
+  Sections / LayoutGroups:
+    header        — breadcrumb · kicker · H1 · subtitle · Year scrubber (drives §01 + §04) · refresh
+    content  §01  — Compliance snapshot (4 KpiCardCompliance: Interstate, Non-Int, Truck, PHED-context)
+    content  §02  — Reliability over time (3 trend charts w/ stepped FHWA target rule + period marks)
+    content_tint §03 — How MAP-21 targets work (significant-progress two-prong test + 3-state legend)
+    content  §04  — Annual data download (HPMS Travel Time Metrics submission, year-filtered)
+    footer        — source & methodology
+
+  textSettings tokens: displayLG (h1) · displaySM (h2) · displayHero (KPI) · kicker · metaSM · metaMD · prose · proseSM
+  Data binding (live build): DAMA source 2001 / view 3394 (npmrds2) ⋈ targets source 2027 / view 3460 on ds.year_record.
+-->
+
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- SIDENAV -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">NPMRDS</span>
+            </div>
+            <div class="px-3 pt-3"><button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] flex items-center gap-2 text-slate-400"><!-- icon: Search --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-proxima text-[13px]">Search</span></button></div>
+            <div class="flex-1 py-2">
+              <a href="getting-started.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Pages --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25"/></svg><span class="text-[13px]">Getting started</span></a>
+              <!-- One sidenav entry for the whole MAP-21 PM3 report (single page);
+                   sections are reached via the in-header jump-nav, not the left nav. -->
+              <a href="map-21-system-performance.html" class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><!-- icon: Activity --><svg class="size-[18px] text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="text-[13px] flex-1">MAP-21 PM3</span></a>
+              <a href="congestion.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Activity --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="text-[13px]">Congestion</span></a>
+              <a href="work-zones.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: MapPin --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span class="text-[13px]">Work zones</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white text-[11px] font-medium ring-1 ring-[#FACC15]/20">AM</div>
+              <div class="flex-1"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Alex Muro</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">Region 3</div></div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10" data-dms-section="page-header">
+              <div class="flex items-center justify-between gap-4 mb-4">
+                <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1">
+                  <a href="getting-started.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                  <span class="text-slate-300 px-1">/</span>
+                  <span class="text-[#0f1722]">MAP-21 PM3</span>
+                </nav>
+              </div>
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// federal reporting</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">23 CFR 490 · full report · 10-yr</span>
+              </div>
+              <div class="flex items-end justify-between gap-8">
+                <div class="max-w-[760px]">
+                  <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">MAP-21 PM3 system performance<span class="text-[#CA8A04]">.</span></h1>
+                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[680px]">New York's complete MAP-21 PM3 report on one page — statewide compliance and the ten-year trajectory, then the regional breakdown (MPO · County) and urban congestion (PHED, Non-SOV) for the reporting UZAs. Use the jump links above to skip ahead.</p>
+                </div>
+                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                  <!-- YearScrubber: drives §01 snapshot + §04 download -->
+                  <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 pl-2.5 pr-1.5">
+                    <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">Year</span>
+                    <span class="font-mono tabular-nums text-[12px] text-[#0F1722] font-medium">2025</span>
+                    <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-2">
+                    <span>last refresh</span><span class="text-[#0f1722]">2026-05-08 04:12 EST</span>
+                    <span class="text-slate-300">·</span>
+                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>data current</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ░░ CONTENT + sticky TOC rail · max-w-1480 grid (getting-started pattern) ░░ -->
+          <div class="mr-auto w-full max-w-[1480px] pr-8 grid grid-cols-[minmax(0,1fr)_260px] gap-8 items-start">
+            <div class="min-w-0">
+
+          <!-- ═════════ § 01 · COMPLIANCE SNAPSHOT · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" id="snapshot" data-dms-section="compliance">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Compliance snapshot · CY 2025</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Are we meeting our 4-yr FHWA targets?</h2>
+                </div>
+                <div class="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">
+                  <span class="font-display font-semibold text-[20px] tabular-nums text-[#0F1722] normal-case tracking-normal">3/3</span>
+                  <span>statewide measures met</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-6">
+
+                <!-- Card 01 · Interstate reliable (meets) -->
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-interstate">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>meets target</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Interstate reliable</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">79.8<span class="text-[28px] font-medium tracking-normal text-slate-500 ml-0.5">%</span></div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">4-yr target <span class="font-proxima normal-case tracking-normal text-[#0f1722] font-medium">≥ 75%</span></div>
+                    <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:79.8%"></div>
+                      <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:75%"></div>
+                      <div class="absolute -top-1 size-3 rounded-full bg-white border-2 border-[#0f1722]" style="left:calc(75% - 6px)"></div>
+                    </div>
+                    <div class="mt-auto inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-emerald-700">↑ +1.3 <span class="text-slate-400 normal-case tracking-normal">vs 2024</span></div>
+                    <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">4.8 pts above target</div>
+                  </div>
+                </div>
+
+                <!-- Card 02 · Non-Interstate NHS reliable (meets) -->
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-nonint">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>meets target</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Non-Interstate NHS reliable</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">85.0<span class="text-[28px] font-medium tracking-normal text-slate-500 ml-0.5">%</span></div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">4-yr target <span class="font-proxima normal-case tracking-normal text-[#0f1722] font-medium">≥ 70%</span></div>
+                    <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:85%"></div>
+                      <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:70%"></div>
+                      <div class="absolute -top-1 size-3 rounded-full bg-white border-2 border-[#0f1722]" style="left:calc(70% - 6px)"></div>
+                    </div>
+                    <div class="mt-auto inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-rose-700">↓ -1.7 <span class="text-slate-400 normal-case tracking-normal">vs 2024</span></div>
+                    <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">15 pts above target</div>
+                  </div>
+                </div>
+
+                <!-- Card 03 · Truck TT reliability index (meets · lower-is-better) -->
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-truck">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 self-start font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>meets target</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Truck TT reliability index</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">1.42</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">4-yr target <span class="font-proxima normal-case tracking-normal text-[#0f1722] font-medium">≤ 2.00</span></div>
+                    <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <!-- lower-is-better: scale 1.0–2.2; value 1.42 → 35%, target 2.0 → 83% -->
+                      <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:35%"></div>
+                      <div class="absolute top-0 bottom-0 w-px bg-[#0f1722]" style="left:83%"></div>
+                      <div class="absolute -top-1 size-3 rounded-full bg-white border-2 border-[#0f1722]" style="left:calc(83% - 6px)"></div>
+                    </div>
+                    <div class="mt-auto inline-flex items-center gap-1 font-mono text-[12px] tabular-nums font-medium text-emerald-700">↓ -0.02 <span class="text-slate-400 normal-case tracking-normal">vs 2024</span></div>
+                    <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">Well within target</div>
+                  </div>
+                </div>
+
+                <!-- Card 04 · PHED context (UZA-level measure — not a statewide target) -->
+                <div class="col-span-12 md:col-span-6 lg:col-span-3" data-dms-section="kpi-phed">
+                  <div class="rounded-[8px] border border-dashed border-zinc-950/15 bg-slate-50/60 p-5 flex flex-col gap-3 h-full">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-slate-300 bg-white self-start font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500"><span class="size-1.5 rounded-full bg-slate-400"></span>UZA measure</span>
+                    <div class="font-display font-medium text-[15px] text-[#0f1722] leading-tight">Peak-hour excessive delay</div>
+                    <div class="font-display font-semibold text-[28px] leading-[1.1] tracking-tight tabular-nums text-[#0F1722]">366,000,000<span class="text-[14px] font-medium tracking-normal text-slate-500 ml-1">hr/yr</span></div>
+                    <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">PHED targets are <span class="text-[#0f1722] font-medium">per-capita, per UZA</span> — set only for New York-Newark and Poughkeepsie-Newburgh.</div>
+                    <a href="#urban-congestion" class="mt-auto inline-flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">Urban congestion below <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 02 · RELIABILITY OVER TIME · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" id="trends" data-dms-section="trends-intro">
+              <div class="flex items-end justify-between mb-2">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Reliability over time · 2016–2025</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Ten-year trajectory against the federal target.</h2>
+                </div>
+                <div class="flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">
+                  <span class="inline-flex items-center gap-1.5"><span class="h-0.5 w-4 bg-[#10B981]"></span>annual value</span>
+                  <span class="inline-flex items-center gap-1.5"><span class="h-px w-4 border-t border-dashed border-[#CA8A04]"></span>FHWA target</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trend · Interstate reliability -->
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 mt-4" id="lottr-i" data-dms-section="trend-interstate">
+              <div class="bg-white border border-zinc-950/10 rounded-[8px] shadow-sm p-7">
+                <div class="flex items-end justify-between gap-8 mb-2">
+                  <div>
+                    <div class="flex items-center gap-3 mb-1.5">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">LOTTR · Interstate</span>
+                      <span class="font-mono text-[10px] text-slate-400 tabular-nums">· target ≥ 75% reliable (2022–25)</span>
+                    </div>
+                    <h3 class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">% of Interstate person-miles that are reliable</h3>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">CY 2025</div>
+                    <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#0F1722]">79.8%</div>
+                    <div class="mt-1 inline-flex items-center gap-1.5 text-[11px]"><span class="size-2 rounded-full bg-emerald-500"></span><span class="text-emerald-700">meets target</span></div>
+                  </div>
+                </div>
+                <div class="border-t border-zinc-950/05 -mx-7 -mb-7 px-7 pt-2 pb-3 bg-slate-50/40 rounded-b-[8px]">
+                  <!-- decorative --><svg viewBox="0 0 1320 280" class="w-full">
+                    <defs><linearGradient id="g-i" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.18"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs>
+                    <g stroke="#e2e8f0" stroke-width="1"><line x1="56" x2="1300" y1="28" y2="28"/><line x1="56" x2="1300" y1="71.2" y2="71.2"/><line x1="56" x2="1300" y1="114.4" y2="114.4"/><line x1="56" x2="1300" y1="157.6" y2="157.6"/><line x1="56" x2="1300" y1="200.8" y2="200.8"/><line x1="56" x2="1300" y1="244" y2="244"/></g>
+                    <!-- stepped FHWA target: 73.1 (P1, 2016–21) → 75.0 (P2, 2022–25) -->
+                    <path d="M 56,149.68 L 749.3,149.68 L 749.3,136 L 1300,136" fill="none" stroke="#CA8A04" stroke-width="1.25" stroke-dasharray="5 4"/>
+                    <rect x="1180" y="120" width="120" height="14" fill="#fff"/>
+                    <text x="1300" y="132" font-family="ui-monospace" font-size="10" fill="#CA8A04" text-anchor="end" letter-spacing="0.5">TARGET · ≥ 75%</text>
+                    <g font-family="ui-monospace" font-size="10" fill="#94a3b8" text-anchor="end"><text x="48" y="31">90%</text><text x="48" y="74.2">84%</text><text x="48" y="117.4">78%</text><text x="48" y="160.6">72%</text><text x="48" y="203.8">66%</text><text x="48" y="247">60%</text></g>
+                    <g font-family="ui-monospace" font-size="10.5" fill="#94a3b8" text-anchor="middle" class="tabular-nums"><text x="56" y="262">2016</text><text x="194.7" y="262">2017</text><text x="333.3" y="262">2018</text><text x="472" y="262">2019</text><text x="610.7" y="262">2020</text><text x="749.3" y="262">2021</text><text x="888" y="262">2022</text><text x="1026.7" y="262">2023</text><text x="1165.3" y="262">2024</text><text x="1300" y="262">2025</text></g>
+                    <path d="M 56,244 L 56,88.48 L 194.7,98.56 L 333.3,106.48 L 472,108.64 L 610.7,50.32 L 749.3,89.2 L 888,106.48 L 1026.7,107.2 L 1165.3,110.8 L 1300,101.44 L 1300,244 Z" fill="url(#g-i)"/>
+                    <path d="M 56,88.48 L 194.7,98.56 L 333.3,106.48 L 472,108.64 L 610.7,50.32 L 749.3,89.2 L 888,106.48 L 1026.7,107.2 L 1165.3,110.8 L 1300,101.44" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <circle cx="56" cy="88.48" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="194.7" cy="98.56" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="333.3" cy="106.48" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="472" cy="108.64" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="610.7" cy="50.32" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="749.3" cy="89.2" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="888" cy="106.48" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="1026.7" cy="107.2" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="1165.3" cy="110.8" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/>
+                    <circle cx="1300" cy="101.44" r="5" fill="#fff" stroke="#10B981" stroke-width="2.5"/>
+                    <g transform="translate(1300, 101.44)"><rect x="-88" y="-26" width="78" height="22" rx="3" fill="#0a0e13"/><text x="-49" y="-11" font-family="ui-monospace" font-size="11" font-weight="600" fill="#fff" text-anchor="middle" class="tabular-nums">2025 · 79.8%</text></g>
+                    <line x1="610.7" x2="610.7" y1="28" y2="244" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 3" opacity="0.5"/>
+                    <text x="610.7" y="22" font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="middle" letter-spacing="0.5">2020 · COVID</text>
+                    <line x1="818.65" x2="818.65" y1="28" y2="244" stroke="#1F3F8F" stroke-width="1" stroke-dasharray="1 3" opacity="0.45"/>
+                    <text x="818.65" y="22" font-family="ui-monospace" font-size="9" fill="#1F3F8F" text-anchor="middle" letter-spacing="0.5">P2 begins · 2022</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trend · Non-Interstate NHS reliability -->
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 mt-6" id="lottr-n" data-dms-section="trend-nonint">
+              <div class="bg-white border border-zinc-950/10 rounded-[8px] shadow-sm p-7">
+                <div class="flex items-end justify-between gap-8 mb-2">
+                  <div>
+                    <div class="flex items-center gap-3 mb-1.5">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">LOTTR · Non-Interstate NHS</span>
+                      <span class="font-mono text-[10px] text-slate-400 tabular-nums">· target ≥ 70% reliable (2022–25)</span>
+                    </div>
+                    <h3 class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">% of non-Interstate NHS person-miles that are reliable</h3>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">CY 2025</div>
+                    <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#0F1722]">85.0%</div>
+                    <div class="mt-1 inline-flex items-center gap-1.5 text-[11px]"><span class="size-2 rounded-full bg-emerald-500"></span><span class="text-emerald-700">meets target</span></div>
+                  </div>
+                </div>
+                <div class="border-t border-zinc-950/05 -mx-7 -mb-7 px-7 pt-2 pb-3 bg-slate-50/40 rounded-b-[8px]">
+                  <!-- decorative --><svg viewBox="0 0 1320 280" class="w-full">
+                    <defs><linearGradient id="g-n" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.18"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs>
+                    <g stroke="#e2e8f0" stroke-width="1"><line x1="56" x2="1300" y1="28" y2="28"/><line x1="56" x2="1300" y1="71.2" y2="71.2"/><line x1="56" x2="1300" y1="114.4" y2="114.4"/><line x1="56" x2="1300" y1="157.6" y2="157.6"/><line x1="56" x2="1300" y1="200.8" y2="200.8"/><line x1="56" x2="1300" y1="244" y2="244"/></g>
+                    <!-- stepped target: 63.4 (P1) → 70.0 (P2) -->
+                    <path d="M 56,219.52 L 749.3,219.52 L 749.3,172 L 1300,172" fill="none" stroke="#CA8A04" stroke-width="1.25" stroke-dasharray="5 4"/>
+                    <rect x="1180" y="156" width="120" height="14" fill="#fff"/>
+                    <text x="1300" y="168" font-family="ui-monospace" font-size="10" fill="#CA8A04" text-anchor="end" letter-spacing="0.5">TARGET · ≥ 70%</text>
+                    <g font-family="ui-monospace" font-size="10" fill="#94a3b8" text-anchor="end"><text x="48" y="31">90%</text><text x="48" y="74.2">84%</text><text x="48" y="117.4">78%</text><text x="48" y="160.6">72%</text><text x="48" y="203.8">66%</text><text x="48" y="247">60%</text></g>
+                    <g font-family="ui-monospace" font-size="10.5" fill="#94a3b8" text-anchor="middle" class="tabular-nums"><text x="56" y="262">2016</text><text x="194.7" y="262">2017</text><text x="333.3" y="262">2018</text><text x="472" y="262">2019</text><text x="610.7" y="262">2020</text><text x="749.3" y="262">2021</text><text x="888" y="262">2022</text><text x="1026.7" y="262">2023</text><text x="1165.3" y="262">2024</text><text x="1300" y="262">2025</text></g>
+                    <path d="M 56,244 L 56,125.92 L 194.7,122.32 L 333.3,115.12 L 472,99.28 L 610.7,51.76 L 749.3,61.12 L 888,64 L 1026.7,71.2 L 1165.3,51.76 L 1300,64 L 1300,244 Z" fill="url(#g-n)"/>
+                    <path d="M 56,125.92 L 194.7,122.32 L 333.3,115.12 L 472,99.28 L 610.7,51.76 L 749.3,61.12 L 888,64 L 1026.7,71.2 L 1165.3,51.76 L 1300,64" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <circle cx="56" cy="125.92" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="194.7" cy="122.32" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="333.3" cy="115.12" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="472" cy="99.28" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="610.7" cy="51.76" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="749.3" cy="61.12" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="888" cy="64" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="1026.7" cy="71.2" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="1165.3" cy="51.76" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/>
+                    <circle cx="1300" cy="64" r="5" fill="#fff" stroke="#10B981" stroke-width="2.5"/>
+                    <g transform="translate(1300, 64)"><rect x="-88" y="-26" width="78" height="22" rx="3" fill="#0a0e13"/><text x="-49" y="-11" font-family="ui-monospace" font-size="11" font-weight="600" fill="#fff" text-anchor="middle" class="tabular-nums">2025 · 85.0%</text></g>
+                    <line x1="610.7" x2="610.7" y1="28" y2="244" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 3" opacity="0.5"/>
+                    <text x="610.7" y="22" font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="middle" letter-spacing="0.5">2020 · COVID</text>
+                    <line x1="818.65" x2="818.65" y1="28" y2="244" stroke="#1F3F8F" stroke-width="1" stroke-dasharray="1 3" opacity="0.45"/>
+                    <text x="818.65" y="22" font-family="ui-monospace" font-size="9" fill="#1F3F8F" text-anchor="middle" letter-spacing="0.5">P2 begins · 2022</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trend · Truck TTTR -->
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 mt-6" id="tttr" data-dms-section="trend-truck">
+              <div class="bg-white border border-zinc-950/10 rounded-[8px] shadow-sm p-7">
+                <div class="flex items-end justify-between gap-8 mb-2">
+                  <div>
+                    <div class="flex items-center gap-3 mb-1.5">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">TTTR · Interstate freight</span>
+                      <span class="font-mono text-[10px] text-slate-400 tabular-nums">· target ≤ 2.00 (lower is better)</span>
+                    </div>
+                    <h3 class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Truck travel-time reliability index</h3>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">CY 2025</div>
+                    <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#0F1722]">1.42</div>
+                    <div class="mt-1 inline-flex items-center gap-1.5 text-[11px]"><span class="size-2 rounded-full bg-emerald-500"></span><span class="text-emerald-700">meets target</span></div>
+                  </div>
+                </div>
+                <div class="border-t border-zinc-950/05 -mx-7 -mb-7 px-7 pt-2 pb-3 bg-slate-50/40 rounded-b-[8px]">
+                  <!-- decorative --><svg viewBox="0 0 1320 280" class="w-full">
+                    <defs><linearGradient id="g-t" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.16"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs>
+                    <g stroke="#e2e8f0" stroke-width="1"><line x1="56" x2="1300" y1="28" y2="28"/><line x1="56" x2="1300" y1="71.2" y2="71.2"/><line x1="56" x2="1300" y1="114.4" y2="114.4"/><line x1="56" x2="1300" y1="157.6" y2="157.6"/><line x1="56" x2="1300" y1="200.8" y2="200.8"/><line x1="56" x2="1300" y1="244" y2="244"/></g>
+                    <!-- stepped target: 2.10 (P1 4-yr) → 2.00 (P2). Lower line = stricter; values sit well below = good. -->
+                    <path d="M 56,28 L 749.3,28 L 749.3,52 L 1300,52" fill="none" stroke="#CA8A04" stroke-width="1.25" stroke-dasharray="5 4"/>
+                    <rect x="1184" y="36" width="116" height="14" fill="#fff"/>
+                    <text x="1300" y="48" font-family="ui-monospace" font-size="10" fill="#CA8A04" text-anchor="end" letter-spacing="0.5">TARGET · ≤ 2.00</text>
+                    <g font-family="ui-monospace" font-size="10" fill="#94a3b8" text-anchor="end"><text x="48" y="31">2.10</text><text x="48" y="74.2">1.92</text><text x="48" y="117.4">1.74</text><text x="48" y="160.6">1.56</text><text x="48" y="203.8">1.38</text><text x="48" y="247">1.20</text></g>
+                    <g font-family="ui-monospace" font-size="10.5" fill="#94a3b8" text-anchor="middle" class="tabular-nums"><text x="56" y="262">2016</text><text x="194.7" y="262">2017</text><text x="333.3" y="262">2018</text><text x="472" y="262">2019</text><text x="610.7" y="262">2020</text><text x="749.3" y="262">2021</text><text x="888" y="262">2022</text><text x="1026.7" y="262">2023</text><text x="1165.3" y="262">2024</text><text x="1300" y="262">2025</text></g>
+                    <path d="M 56,244 L 56,191.2 L 194.7,188.8 L 333.3,181.6 L 472,179.2 L 610.7,212.8 L 749.3,198.4 L 888,193.6 L 1026.7,196 L 1165.3,186.4 L 1300,191.2 L 1300,244 Z" fill="url(#g-t)"/>
+                    <path d="M 56,191.2 L 194.7,188.8 L 333.3,181.6 L 472,179.2 L 610.7,212.8 L 749.3,198.4 L 888,193.6 L 1026.7,196 L 1165.3,186.4 L 1300,191.2" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <circle cx="56" cy="191.2" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="194.7" cy="188.8" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="333.3" cy="181.6" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="472" cy="179.2" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="610.7" cy="212.8" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="749.3" cy="198.4" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="888" cy="193.6" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="1026.7" cy="196" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/><circle cx="1165.3" cy="186.4" r="3.5" fill="#fff" stroke="#10B981" stroke-width="1.5"/>
+                    <circle cx="1300" cy="191.2" r="5" fill="#fff" stroke="#10B981" stroke-width="2.5"/>
+                    <g transform="translate(1300, 191.2)"><rect x="-78" y="-26" width="68" height="22" rx="3" fill="#0a0e13"/><text x="-44" y="-11" font-family="ui-monospace" font-size="11" font-weight="600" fill="#fff" text-anchor="middle" class="tabular-nums">2025 · 1.42</text></g>
+                    <line x1="610.7" x2="610.7" y1="28" y2="244" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 3" opacity="0.5"/>
+                    <text x="610.7" y="22" font-family="ui-monospace" font-size="9" fill="#94a3b8" text-anchor="middle" letter-spacing="0.5">2020 · COVID</text>
+                    <line x1="818.65" x2="818.65" y1="28" y2="244" stroke="#1F3F8F" stroke-width="1" stroke-dasharray="1 3" opacity="0.45"/>
+                    <text x="818.65" y="22" font-family="ui-monospace" font-size="9" fill="#1F3F8F" text-anchor="middle" letter-spacing="0.5">P2 begins · 2022</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · HOW MAP-21 TARGETS WORK · LayoutGroup `content_tint` ═════════ -->
+          <div class="w-full bg-[#1F3F8F]/[0.04] border-b border-zinc-950/05 py-12" data-dms-group="content_tint">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" id="how-targets" data-dms-section="how-targets-work">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">How MAP-21 targets work</span>
+              </div>
+              <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mb-6">Reading "met" the way FHWA does.</h2>
+
+              <div class="grid grid-cols-12 gap-6">
+                <!-- Two-prong significant-progress test -->
+                <div class="col-span-12 lg:col-span-7 rounded-[8px] border border-zinc-950/10 bg-white p-6">
+                  <div class="font-display uppercase text-[13px] tracking-[0.06em] text-[#0F1722] font-semibold mb-3">Significant progress = a two-prong test</div>
+                  <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mb-4">FHWA counts a measure as making significant progress if <span class="text-[#0f1722] font-medium">either</span> condition holds — not target alone:</p>
+                  <div class="flex flex-col gap-3">
+                    <div class="flex items-start gap-3">
+                      <span class="mt-0.5 size-6 flex-shrink-0 rounded-full bg-emerald-500/15 text-emerald-700 inline-flex items-center justify-center font-mono text-[11px] font-bold">A</span>
+                      <p class="font-proxima text-[13px] leading-[1.55] text-slate-700"><span class="font-medium text-[#0f1722]">Meets or beats the target</span> — actual is at least as good as the 2-yr / 4-yr target.</p>
+                    </div>
+                    <div class="flex items-start gap-3">
+                      <span class="mt-0.5 size-6 flex-shrink-0 rounded-full bg-amber-500/15 text-amber-700 inline-flex items-center justify-center font-mono text-[11px] font-bold">B</span>
+                      <p class="font-proxima text-[13px] leading-[1.55] text-slate-700"><span class="font-medium text-[#0f1722]">Better than baseline</span> — actual improved over the period's baseline year, even if short of target (TTTR: by ≥ 0.01).</p>
+                    </div>
+                  </div>
+                  <div class="mt-5 pt-4 border-t border-zinc-950/05 flex flex-wrap items-center gap-4 font-mono text-[10.5px] uppercase tracking-[0.16em]">
+                    <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-emerald-500"></span><span class="text-slate-600">Met target</span></span>
+                    <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-amber-500"></span><span class="text-slate-600">Significant progress</span></span>
+                    <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-rose-500"></span><span class="text-slate-600">Not meeting</span></span>
+                  </div>
+                </div>
+
+                <!-- Periods + adoption + applicability -->
+                <div class="col-span-12 lg:col-span-5 flex flex-col gap-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white p-5">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1.5">Performance periods</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">Four-year periods with a <span class="text-[#0f1722] font-medium">2-yr midpoint check</span> and a <span class="text-[#0f1722] font-medium">4-yr final check</span>. Current period <span class="font-mono tabular-nums text-[#0f1722]">P2 · 2022–2025</span>; next <span class="font-mono tabular-nums text-[#0f1722]">P3 · 2026–2029</span>.</p>
+                  </div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white p-5">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1.5">MPO adoption · 180 days</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">Within 180 days of the State setting a target, each MPO either <span class="text-[#0f1722] font-medium">supports the State target</span> or sets its own. NY MPOs support the statewide targets.</p>
+                  </div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white p-5">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1.5">Urban congestion is UZA-only</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">PHED and Non-SOV apply only to large UZAs in nonattainment/maintenance — in NY, <span class="text-[#0f1722] font-medium">New York-Newark</span> and <span class="text-[#0f1722] font-medium">Poughkeepsie-Newburgh</span>.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 04 · REGIONAL (MPO · County) · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" id="regional" data-dms-section="regional" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <div class="flex items-end justify-between mb-4">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Regional · MPO · County · CY 2025</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Who meets which target, region by region?</h2>
+                </div>
+                <div class="flex items-center gap-4 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">
+                  <span class="flex items-center gap-1.5"><span class="size-2 bg-emerald-500 rounded-full"></span>meets state target</span>
+                  <span class="flex items-center gap-1.5"><span class="size-2 bg-red-500 rounded-full"></span>below</span>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3 mb-4">
+                <div class="inline-flex items-center rounded-[6px] bg-white border border-zinc-950/10 p-0.5 gap-0.5">
+                  <button class="h-8 px-3.5 inline-flex items-center gap-1.5 rounded text-[11px] font-mono uppercase tracking-[0.16em] bg-[#1F3F8F] text-white"><!-- icon: MapLayers --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25m0-4.5 5.57 3 5.57-3m-11.14 0L2.25 7.5 12 2.25l9.75 5.25-4.18 2.25"/></svg>MPO</button>
+                  <button class="h-8 px-3.5 inline-flex items-center gap-1.5 rounded text-[11px] font-mono uppercase tracking-[0.16em] text-slate-500 hover:bg-slate-100"><!-- icon: MapPin --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>County</button>
+                </div>
+                <span class="font-proxima text-[12px] text-slate-500">MPOs adopt the statewide targets — each is scored against the <span class="text-[#0f1722] font-medium">state</span> target. PHED columns are <span class="italic">diagnostic</span> (no MPO target).</span>
+              </div>
+
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 border-b border-zinc-950/10 bg-slate-50/60">
+                      <th class="px-4 py-2.5 font-normal w-10">#</th>
+                      <th class="px-4 py-2.5 font-normal">MPO</th>
+                      <th class="px-4 py-2.5 font-normal text-right"><span class="inline-flex items-center gap-1 justify-end">Interstate <span class="text-slate-400 normal-case">≥75%</span><!-- icon: CaretDown --><svg class="size-3 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span></th>
+                      <th class="px-4 py-2.5 font-normal text-right">Non-Int <span class="text-slate-400 normal-case">≥70%</span></th>
+                      <th class="px-4 py-2.5 font-normal text-right">TTTR <span class="text-slate-400 normal-case">≤2.0</span></th>
+                      <th class="px-4 py-2.5 font-normal text-right">PHED tot <span class="text-slate-400 normal-case">diag.</span></th>
+                      <th class="px-4 py-2.5 font-normal text-right">PHED /cap <span class="text-slate-400 normal-case">diag.</span></th>
+                      <th class="px-4 py-2.5 font-normal text-center w-16">Met</th>
+                    </tr>
+                  </thead>
+                  <tbody class="font-proxima text-[13px] text-slate-700">
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">01</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">CDTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Capital District</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>88.2</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>86.0</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.31</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">4,180,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">3.2</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-emerald-700">3/3</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">02</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">GBNRTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Buffalo-Niagara</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>84.4</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>83.5</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.45</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">6,810,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">4.1</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-emerald-700">3/3</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">03</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">AGFTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Glens Falls</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>83.0</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>81.0</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.28</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">310,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">1.0</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-emerald-700">3/3</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">04</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">GTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Genesee-Rochester</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>81.1</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>84.2</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.39</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">3,510,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">2.8</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-emerald-700">3/3</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">05</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">HOCTS <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Utica-Rome</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>80.2</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>79.8</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.52</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">820,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">1.5</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-emerald-700">3/3</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">06</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">SMTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Syracuse</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>79.0</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>77.4</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.61</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">1,600,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">2.1</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-emerald-700">3/3</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">07</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">BMTS <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Binghamton</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>77.5</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>72.1</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.44</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">470,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">1.2</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-emerald-700">3/3</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">08</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">PDCTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Poughkeepsie-Dutchess</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums font-semibold text-[#991B1B]"><span class="size-1.5 rounded-full bg-red-500"></span>74.2</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>80.5</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.66</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">3,140,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">6.0</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-amber-700">2/3</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">09</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">OCTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">Orange County</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums font-semibold text-[#991B1B]"><span class="size-1.5 rounded-full bg-red-500"></span>73.0</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>78.0</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.72</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">2,420,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">5.5</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-amber-700">2/3</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">10</td>
+                      <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">NYMTC <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">New York metro</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums font-semibold text-[#991B1B]"><span class="size-1.5 rounded-full bg-red-500"></span>71.8</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>82.1</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>1.58</span></td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">341,800,000</td>
+                      <td class="px-4 py-2.5 text-right tabular-nums text-slate-500">19.5</td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-amber-700">2/3</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="px-4 py-3 border-t border-zinc-950/05 bg-slate-50/40 font-proxima text-[12px] text-slate-500">
+                  Reliability columns scored vs the statewide target (Interstate ≥75%, Non-Int ≥70%, TTTR ≤2.0). <span class="text-[#0f1722] font-medium">PHED total</span> (annual hrs) and <span class="text-[#0f1722] font-medium">per capita</span> are diagnostics — PHED has no MPO target (it's a UZA measure, see Urban below). Switch to <span class="text-[#0f1722] font-medium">County</span> for sub-MPO drilldown; county rows carry no verdict (no federal county target).
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 05 · URBAN CONGESTION (CMAQ · UZA) · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" id="urban-congestion" data-dms-section="urban-congestion" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <div class="flex items-end justify-between mb-2">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Urban congestion · CMAQ · per UZA</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Peak-hour delay &amp; non-SOV travel — the two CMAQ measures.</h2>
+                </div>
+                <div class="flex items-baseline gap-2 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">
+                  <span class="font-display font-semibold text-[20px] tabular-nums text-[#0F1722] normal-case tracking-normal">2/13</span><span>UZAs report</span>
+                </div>
+              </div>
+              <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 max-w-[820px] mb-5">These apply only to UZAs over <span class="text-[#0f1722] font-medium">200k population</span> in CMAQ <span class="text-[#0f1722] font-medium">nonattainment/maintenance</span>, against per-UZA targets. PHED is <span class="text-[#0f1722] font-medium">per capita</span> (total hours ÷ UZA population, joined at build time).</p>
+
+              <!-- Reporting UZAs -->
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden mb-4">
+                <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                  <span class="font-display font-medium text-[13px] text-[#2D3E4C] flex-1">Reporting UZAs · CY 2025 · vs per-UZA target</span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 flex items-center gap-3"><span class="inline-flex items-center gap-1.5"><span class="size-2 bg-emerald-500 rounded-full"></span>meets</span><span class="inline-flex items-center gap-1.5"><span class="size-2 bg-red-500 rounded-full"></span>below</span></span>
+                </div>
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 border-b border-zinc-950/05">
+                      <th class="px-4 py-2.5 font-normal w-10">#</th><th class="px-4 py-2.5 font-normal">Urbanized area</th><th class="px-4 py-2.5 font-normal">MPO</th>
+                      <th class="px-4 py-2.5 font-normal text-right">PHED <span class="text-slate-400 normal-case">/cap · ≤ tgt</span></th><th class="px-4 py-2.5 font-normal text-right">Non-SOV <span class="text-slate-400 normal-case">≥ tgt</span></th><th class="px-4 py-2.5 font-normal text-center w-16">Met</th>
+                    </tr>
+                  </thead>
+                  <tbody class="font-proxima text-[13px] text-slate-700">
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">01</td>
+                      <td class="px-4 py-2.5"><div class="font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">New York-Newark</div><div class="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-400">UC 63217</div></td>
+                      <td class="px-4 py-2.5 font-proxima text-[12.5px] text-slate-600">NYMTC</td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>19.5</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>53.1%</span></td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-emerald-700">2/2</td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">02</td>
+                      <td class="px-4 py-2.5"><div class="font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">Poughkeepsie-Newburgh</div><div class="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-400">UC 71803</div></td>
+                      <td class="px-4 py-2.5 font-proxima text-[12.5px] text-slate-600">PDCTC · OCTC</td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>6.0</span></td>
+                      <td class="px-4 py-2.5 text-right"><span class="inline-flex items-center gap-1.5 justify-end tabular-nums"><span class="size-1.5 rounded-full bg-emerald-500"></span>26.8%</span></td>
+                      <td class="px-4 py-2.5 text-center font-mono text-[12px] tabular-nums font-medium text-emerald-700">2/2</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Non-reporting (compact) -->
+              <div class="rounded-[8px] border border-dashed border-zinc-950/15 bg-slate-50/50 px-4 py-3">
+                <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 mb-1">Not required to report &middot; 11 other NY UZAs</div>
+                <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">Buffalo, Rochester, Albany-Schenectady &amp; Syracuse clear 200k but are in <span class="text-[#0f1722] font-medium">attainment</span>; the rest (Binghamton, Utica, Saratoga Springs, Kingston, Glens Falls, Ithaca, Elmira) are <span class="text-[#0f1722] font-medium">below 200k</span> — none report PHED or Non-SOV.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 06 · ANNUAL DATA DOWNLOAD · LayoutGroup `content` ═════════ -->
+          <div class="w-full bg-[#ECEEF2] border-b border-zinc-950/05 py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" id="download" data-dms-section="download">
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Annual data · HPMS Travel Time Metrics</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Download the year's submission file.</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="h-9 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 hover:border-zinc-950/20 pl-3 pr-2">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Year</span>
+                    <span class="font-mono tabular-nums text-[13px] text-[#0F1722] font-medium">2025</span>
+                    <!-- icon: CaretDown --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                  </div>
+                  <button class="tny-press h-9 inline-flex items-center gap-2 px-4 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[11.5px] tracking-[0.12em] rounded-[6px]">
+                    <!-- icon: Export --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                    Download CSV
+                  </button>
+                </div>
+              </div>
+
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                <div class="h-11 px-4 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                  <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">NYS · Travel Time Metrics · CY 2025 · statewide rollup</span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">source 2001 · view 3394 · npmrds2</span>
+                </div>
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 border-b border-zinc-950/05">
+                      <th class="px-4 py-2.5 font-normal">Measure</th>
+                      <th class="px-4 py-2.5 font-normal text-right">CY 2025</th>
+                      <th class="px-4 py-2.5 font-normal text-right">4-yr target</th>
+                      <th class="px-4 py-2.5 font-normal text-right">Δ vs 2024</th>
+                      <th class="px-4 py-2.5 font-normal">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="font-proxima text-[13px] text-slate-700 tabular-nums">
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-medium text-[#0f1722]">LOTTR · Interstate reliable (%)</td>
+                      <td class="px-4 py-2.5 text-right">79.8</td>
+                      <td class="px-4 py-2.5 text-right text-slate-500">≥ 75.0</td>
+                      <td class="px-4 py-2.5 text-right text-emerald-700">+1.3</td>
+                      <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-emerald-500"></span>Met target</span></td>
+                    </tr>
+                    <tr class="border-b border-zinc-950/05">
+                      <td class="px-4 py-2.5 font-medium text-[#0f1722]">LOTTR · Non-Interstate NHS reliable (%)</td>
+                      <td class="px-4 py-2.5 text-right">85.0</td>
+                      <td class="px-4 py-2.5 text-right text-slate-500">≥ 70.0</td>
+                      <td class="px-4 py-2.5 text-right text-rose-700">−1.7</td>
+                      <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-emerald-500"></span>Met target</span></td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-2.5 font-medium text-[#0f1722]">TTTR · Interstate freight index</td>
+                      <td class="px-4 py-2.5 text-right">1.42</td>
+                      <td class="px-4 py-2.5 text-right text-slate-500">≤ 2.00</td>
+                      <td class="px-4 py-2.5 text-right text-emerald-700">−0.02</td>
+                      <td class="px-4 py-2.5"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-emerald-500"></span>Met target</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="px-4 py-3 border-t border-zinc-950/05 bg-slate-50/40 font-proxima text-[12px] text-slate-500">
+                  The downloadable file is New York's HPMS Travel Time Metrics submission (23 CFR 490, filed annually by June 15) — one row per reporting TMC segment, both directions. Use the Year selector to switch the file.
+                </div>
+              </div>
+            </div>
+          </div>
+
+            </div>
+            <!-- sticky in-page TOC rail (getting-started pattern: sticky top-4 self-start) -->
+            <aside class="hidden xl:block sticky top-4 self-start pt-12" data-dms-section="toc">
+              <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4 shadow-sm">
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-2">on this page</div>
+                <a href="#snapshot" class="tny-toc-item active">Compliance snapshot</a>
+                <a href="#trends" class="tny-toc-item">Reliability trends</a>
+                <a href="#how-targets" class="tny-toc-item">How targets work</a>
+                <a href="#regional" class="tny-toc-item">Regional · MPO · County</a>
+                <a href="#urban-congestion" class="tny-toc-item">Urban congestion</a>
+                <a href="#download" class="tny-toc-item">Annual download</a>
+              </div>
+              <div class="mt-4 rounded-[8px] border border-zinc-950/10 bg-white p-4 shadow-sm">
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-2">related</div>
+                <a href="map-21.html" class="block py-1 font-proxima text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ Per-year detail</a>
+                <a href="getting-started.html" class="block py-1 font-proxima text-[12.5px] text-[#37576B] hover:text-[#1f3450]">→ Getting started</a>
+              </div>
+            </aside>
+          </div>
+
+          <!-- ═════════ FOOTER · LayoutGroup `footer` ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-5">
+              <div class="flex items-start gap-6">
+                <div class="size-9 rounded flex-shrink-0 flex items-center justify-center bg-[#1F3F8F]/10 text-[#1F3F8F]">
+                  <!-- icon: Pages --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Source &amp; methodology</div>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1 max-w-[900px]">Measures computed from NPMRDS probe data, submitted as NY's HPMS Travel Time Metrics file per 23 CFR 490. Statewide targets (LOTTR-I ≥ 75%, LOTTR-N ≥ 70%, TTTR ≤ 2.0) adopted by NYSDOT for performance period 2022–2025; see NYSDOT TMP Appendix C. 2020 values reflect pandemic travel and are excluded from FHWA trend-setting.</p>
+                  <div class="mt-3 flex flex-wrap gap-6 font-mono text-[10.5px] uppercase tracking-[0.18em]">
+                    <a class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">FHWA 23 CFR 490 <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                    <a class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">NYSDOT TMP Appendix C <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                    <a href="map-21.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">per-year detail <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                  </div>
+                </div>
+                <span class="font-mono text-[11px] text-slate-500 flex-shrink-0 self-end">© NYSDOT · TransportNY DMS v0.2</span>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

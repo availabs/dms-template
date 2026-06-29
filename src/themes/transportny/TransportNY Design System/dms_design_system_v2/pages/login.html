@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Sign in · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+
+
+<!-- LAYOUT · app · compact sidenav variant
+     The "minimal sidenav" of the design system — 64-px icon-only rail
+     (theme.sidenav style: "compact"). Pairs with a single centered form
+     pane; no two-column aside, no system-status card. -->
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full">
+
+    <!-- COMPACT SIDENAV · 64-px icon rail, signed-out variant -->
+    <aside class="fixed inset-y-0 left-0 w-16 z-30 max-lg:hidden">
+      <div class="flex flex-col w-16 h-full bg-[#12181F] border-r border-[#2a3545] items-center">
+        <!-- logo block -->
+        <div class="w-full h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center justify-center">
+          <div class="w-9 h-9 bg-[#1F3F8F] rounded text-white font-display font-bold text-[12px] flex items-center justify-center">NY</div>
+        </div>
+        <!-- icon nav (inactive — signed-out preview) -->
+        <div class="flex-1 w-full py-3 flex flex-col items-center gap-1.5">
+          <div class="size-9 rounded text-slate-400 flex items-center justify-center" title="Home"><!-- icon: Pages --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25"/></svg></div>
+          <div class="size-9 rounded text-slate-400 flex items-center justify-center" title="Routes"><!-- icon: MapLayers --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25m0-4.5 5.57 3 5.57-3m-11.14 0L2.25 7.5 12 2.25l9.75 5.25-4.18 2.25"/></svg></div>
+          <div class="size-9 rounded text-slate-400 flex items-center justify-center" title="PM3"><!-- icon: Activity --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+          <div class="size-9 rounded text-slate-400 flex items-center justify-center" title="Batch report"><!-- icon: Database --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 12C20 13.657 16.418 15 12 15C7.582 15 4 13.657 4 12"/><path d="M20 5V19C20 20.657 16.418 22 12 22C7.582 22 4 20.657 4 19V5"/></svg></div>
+        </div>
+        <!-- bottom: sign-in glyph (this is the page the user is on) -->
+        <div class="w-full border-t border-[#2a3545] py-3 flex items-center justify-center">
+          <div class="size-9 rounded bg-[#1e2530] border border-[#2a3545] flex items-center justify-center text-slate-300 ring-1 ring-[#FACC15]/30" title="Sign in">
+            <!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18.5 20V17.97C18.5 16.73 17.94 15.51 16.81 14.99C15.43 14.37 13.78 14 12 14C10.22 14 8.57 14.37 7.19 14.99C6.06 15.51 5.5 16.73 5.5 17.97V20"/><circle cx="12" cy="7.5" r="3.5"/></svg>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER PANE · single-column, generous whitespace, no chrome -->
+    <div class="flex-1 flex flex-col min-h-screen lg:ml-16 bg-[#ECEEF2]">
+
+      <!-- AUTH LayoutGroup — the form is the only thing here -->
+      <main class="flex-1 flex items-center justify-center px-6" data-dms-group="auth">
+        <div class="w-full max-w-[400px]" data-dms-section="login-form">
+
+          <!-- Brand line — restrained, just the mark + product wordmark -->
+          <div class="flex items-center gap-2.5 mb-10">
+            <div class="size-7 bg-[#1F3F8F] rounded text-white font-display font-bold text-[11px] flex items-center justify-center">NY</div>
+            <span class="font-display uppercase text-[#0F1722] text-[13px] tracking-[0.14em]">TransportNY</span>
+          </div>
+
+          <!-- Title block — same accent rhythm as other pages, smaller cap -->
+          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// SIGN IN</span>
+          <h1 class="mt-2 font-display font-semibold text-[32px] leading-[1.05] tracking-tight text-[#0F1722]">Welcome back<span class="text-[#CA8A04]">.</span></h1>
+          <p class="mt-2.5 font-proxima text-[13.5px] leading-[1.55] text-slate-600">Public dashboards don't require an account. Sign in to save reports and configure alerts.</p>
+
+          <!-- Form — borderless, sits on the pane directly -->
+          <form class="flex flex-col gap-4 mt-8">
+            <div class="flex flex-col gap-1.5">
+              <label class="font-display uppercase text-[10.5px] tracking-[0.16em] text-slate-600">Email</label>
+              <input type="email" placeholder="you@nysdot.gov" class="w-full block rounded-[6px] px-3.5 h-11 text-[14px] text-[#0F1722] border border-zinc-950/15 bg-white focus:outline-none focus:border-[#1F3F8F] focus:ring-2 focus:ring-[#1F3F8F]/15"/>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <label class="font-display uppercase text-[10.5px] tracking-[0.16em] text-slate-600">Password</label>
+                <a class="font-proxima text-[11.5px] text-[#1F3F8F] hover:text-[#16307A] cursor-pointer">Forgot?</a>
+              </div>
+              <input type="password" placeholder="••••••••" class="w-full block rounded-[6px] px-3.5 h-11 text-[14px] text-[#0F1722] border border-zinc-950/15 bg-white focus:outline-none focus:border-[#1F3F8F] focus:ring-2 focus:ring-[#1F3F8F]/15"/>
+            </div>
+
+            <button type="submit" class="tny-press mt-2 w-full px-4 h-11 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]">Sign in</button>
+          </form>
+
+          <!-- SSO divider (single secondary option, no card chrome) -->
+          <div class="flex items-center gap-3 my-6 text-[10.5px] font-mono uppercase tracking-[0.18em] text-slate-400">
+            <span class="flex-1 h-px bg-zinc-950/10"></span>or<span class="flex-1 h-px bg-zinc-950/10"></span>
+          </div>
+          <button class="w-full h-11 inline-flex items-center justify-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white hover:bg-slate-50 font-proxima text-[13.5px] text-slate-800">
+            <span class="inline-flex size-5 rounded bg-[#1F3F8F] text-white font-display font-bold text-[10px] items-center justify-center">NY</span>
+            Continue with NY.gov ID
+          </button>
+
+          <!-- Trailing utility row — small, mono, no card -->
+          <div class="mt-8 flex items-center justify-between font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+            <a href="landing.html" class="hover:text-slate-900">browse without account →</a>
+            <a class="hover:text-slate-900 cursor-pointer">request access</a>
+          </div>
+
+        </div>
+      </main>
+
+      <!-- FOOTER — single line, mono, no card chrome -->
+      <footer class="w-full" data-dms-group="footer">
+        <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+          <div class="flex gap-6">
+            <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+            <a href="getting-started.html" class="hover:text-slate-900">getting-started</a>
+            <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+          </div>
+          <span>© NYSDOT · TransportNY DMS v0.2</span>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

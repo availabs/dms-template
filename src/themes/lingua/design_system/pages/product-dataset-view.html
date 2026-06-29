@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscribers · The Drift · Lingua Example</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ----- Page-specific styling ----- */
+
+    /* Page header breadcrumb + stats row */
+    .ds-breadcrumb {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-bottom: var(--space-4);
+    }
+    .ds-breadcrumb a { color: var(--color-mute); text-decoration: none; }
+    .ds-breadcrumb a:hover { color: var(--color-accent); }
+    .ds-breadcrumb .sep { color: var(--color-border-strong); }
+    .ds-breadcrumb .here { color: var(--color-ink-soft); }
+
+    .ds-stats {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+      margin-top: var(--space-5);
+      flex-wrap: wrap;
+    }
+    .ds-stats .sep { color: var(--color-border-strong); }
+    .ds-stats .badge {
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border: 1px solid rgba(59, 91, 255, 0.20);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .ds-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      margin-top: var(--space-6);
+    }
+
+    /* The "frame" that wraps tabs + filter + table + pagination */
+    .ds-frame {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .ds-frame__tabs {
+      padding: 0 var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+    .ds-frame__tabs .ling-tabs { border-bottom: 0; }
+
+    /* Filter row */
+    .ds-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-surface-soft);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .ds-filter-row .spacer { flex: 1; }
+    .ds-filter-row .search-wrap {
+      position: relative;
+      width: 240px;
+    }
+    .ds-filter-row .search-wrap input { padding-left: 32px; padding-top: 6px; padding-bottom: 6px; font-size: 13px; }
+    .ds-filter-row .search-wrap svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px; height: 14px;
+      stroke: var(--color-mute);
+      stroke-width: 1.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .ds-ms-token-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: var(--radius-pill);
+      margin-left: 4px;
+    }
+    .ms-trigger-active { border-color: var(--color-accent); background: var(--color-accent-soft); color: var(--color-accent); }
+    .ms-trigger-active .caret { color: var(--color-accent); }
+
+    .add-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-mute);
+      background: transparent;
+      border: 1px dashed var(--color-border-strong);
+      padding: 6px 10px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: color var(--dur-snap) var(--ease-snap),
+                  border-color var(--dur-snap) var(--ease-snap);
+    }
+    .add-filter:hover { color: var(--color-accent); border-color: var(--color-accent); }
+
+    /* Chips row */
+    .ds-chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+    .ds-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border: 1px solid rgba(59, 91, 255, 0.20);
+      padding: 3px 4px 3px 10px;
+      border-radius: var(--radius-pill);
+    }
+    .ds-chip .field {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 10px;
+      font-weight: 500;
+      opacity: 0.7;
+    }
+    .ds-chip .op {
+      color: var(--color-accent);
+      opacity: 0.6;
+      font-size: 11px;
+    }
+    .ds-chip .val { font-weight: 500; }
+    .ds-chip .x {
+      width: 18px;
+      height: 18px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(59, 91, 255, 0.12);
+      color: var(--color-accent);
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      cursor: pointer;
+      border: 0;
+      padding: 0;
+      line-height: 1;
+    }
+    .ds-chip .x:hover { background: var(--color-accent); color: var(--color-accent-ink); }
+    .ds-chips-meta {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .ds-chips-meta .clear { color: var(--color-signal); text-decoration: none; font-weight: 500; }
+    .ds-chips-meta .clear:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    /* Table refinements */
+    .ds-table-wrap { overflow-x: auto; }
+    .ds-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink);
+    }
+    .ds-table thead th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+      color: var(--color-mute);
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--color-surface-soft);
+      border-bottom: 1px solid var(--color-border-strong);
+      white-space: nowrap;
+    }
+    .ds-table thead th.num { text-align: right; }
+    .ds-table thead th.sortable {
+      color: var(--color-accent);
+      cursor: pointer;
+      background: var(--color-accent-soft);
+    }
+    .ds-table thead th .caret {
+      display: inline-block;
+      margin-left: 4px;
+      color: var(--color-accent);
+    }
+    .ds-table tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      vertical-align: middle;
+      font-variant-numeric: tabular-nums;
+    }
+    .ds-table tbody tr:last-child td { border-bottom: 0; }
+    .ds-table tbody tr:hover td { background: var(--color-surface-soft); }
+    .ds-table tbody tr.is-selected td { background: var(--color-accent-soft); }
+    .ds-table tbody tr.is-selected td:first-child { box-shadow: inset 3px 0 0 var(--color-accent); }
+    .ds-table tbody tr.is-margin td { background: var(--color-margin-soft); }
+    .ds-table tbody tr.is-margin td:first-child { box-shadow: inset 3px 0 0 var(--color-margin); }
+
+    .ds-table .id-cell { font-family: var(--font-mono); font-size: 12px; color: var(--color-mute); }
+    .ds-table .name-cell { font-weight: 500; color: var(--color-ink); }
+    .ds-table .email-cell {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .ds-table .email-cell.is-bounced { color: var(--color-signal); }
+    .ds-table .email-cell .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--color-signal);
+      display: inline-block;
+    }
+    .ds-table .date-cell { font-family: var(--font-mono); font-size: 12px; color: var(--color-ink-soft); }
+    .ds-table .num-cell { text-align: right; font-family: var(--font-mono); font-size: 13px; color: var(--color-ink); }
+    .ds-table .check-cell { width: 36px; }
+    .ds-table .check-cell input { accent-color: var(--color-accent); }
+    .ds-table tr.is-margin .badge-founding {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #946A00;
+      font-weight: 500;
+      margin-left: var(--space-2);
+    }
+
+    /* Pagination row */
+    .ds-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+    }
+    .ds-pager .info {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+    }
+    .ds-pager .pages {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .ds-pager .pages a, .ds-pager .pages button {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 28px; height: 28px;
+      padding: 0 8px;
+      color: var(--color-ink-soft);
+      text-decoration: none;
+      cursor: pointer;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: inherit;
+    }
+    .ds-pager .pages a:hover { background: var(--color-surface-soft); color: var(--color-ink); }
+    .ds-pager .pages a.is-current {
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      border-color: var(--color-accent);
+      font-weight: 500;
+    }
+    .ds-pager .pages .gap { color: var(--color-mute-soft); padding: 0 4px; }
+    .ds-pager .pages .nav { color: var(--color-mute); }
+    .ds-pager .per-page {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+    }
+    .ds-pager .per-page select {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-md);
+      padding: 4px 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-ink);
+      cursor: pointer;
+    }
+
+    /* Schema table */
+    .schema-required-yes {
+      color: var(--color-success);
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .schema-required-no {
+      color: var(--color-signal);
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .schema-default {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+    }
+    .schema-default code {
+      background: var(--color-surface-soft);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+      color: var(--color-ink-soft);
+    }
+    .schema-type {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-accent);
+    }
+    .schema-col-name {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--color-ink);
+      font-weight: 500;
+    }
+
+    /* Used-in cards */
+    .used-in-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (max-width: 1024px) { .used-in-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 700px)  { .used-in-grid { grid-template-columns: 1fr; } }
+    .used-in-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      transition: border-color var(--dur-snap) var(--ease-snap),
+                  box-shadow var(--dur-snap) var(--ease-snap);
+    }
+    .used-in-card:hover { border-color: var(--color-border-strong); box-shadow: var(--shadow-md); }
+    .used-in-card .crumb {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: lowercase;
+      letter-spacing: 0;
+    }
+    .used-in-card .title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-ink);
+      letter-spacing: -0.01em;
+    }
+    .used-in-card .body {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink-soft);
+      line-height: 1.5;
+    }
+    .used-in-card .foot {
+      margin-top: auto;
+      padding-top: var(--space-3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .used-in-card .foot a {
+      color: var(--color-accent);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .used-in-card .foot a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .used-in-card .pill-comp {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* User widget in topnav */
+    .ds-user {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 4px 8px 4px 4px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      background: var(--color-surface);
+      cursor: pointer;
+      transition: border-color var(--dur-snap) var(--ease-snap);
+    }
+    .ds-user:hover { border-color: var(--color-border-strong); }
+    .ds-user .av {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .ds-user .name { font-family: var(--font-sans); font-size: 13px; color: var(--color-ink-soft); font-weight: 500; }
+    .ds-user .caret { color: var(--color-mute); font-size: 10px; }
+
+    /* Topnav breadcrumb */
+    .ds-topnav-crumb {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-mute);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ds-topnav-crumb a { color: var(--color-mute); text-decoration: none; }
+    .ds-topnav-crumb a:hover { color: var(--color-accent); }
+    .ds-topnav-crumb .sep { color: var(--color-border-strong); }
+    .ds-topnav-crumb .here { color: var(--color-ink); font-weight: 500; }
+
+    /* Subtle SideNav variant for the dataset list — sources */
+    .src-item-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .src-item-row .count {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-mute);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+    }
+    .dms-sidenav-item--active .count { color: var(--color-accent); border-color: rgba(59, 91, 255, 0.20); background: rgba(255,255,255,0.6); }
+  </style>
+</head>
+<body>
+
+<!-- META-NAV STRIP — required per skill §7.0 -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="../design-system/theme.html">theme</a>
+    <a class="lingua-metanav__link" href="../design-system/layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="../design-system/grid.html">grid</a>
+    <a class="lingua-metanav__link" href="../design-system/components.html">components</a>
+    <a class="lingua-metanav__link" href="../design-system/patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link" href="marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav — Lingua brand + breadcrumb + user widget -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="../design-system/theme.html" class="dms-topnav-brand">
+              L<span class="diacritic">ī</span>ngua
+              <span class="designator">Admin</span>
+            </a>
+            <div class="ds-topnav-crumb">
+              <a href="#">the-drift</a>
+              <span class="sep">/</span>
+              <a href="#">Datasets</a>
+              <span class="sep">/</span>
+              <span class="here">Subscribers</span>
+            </div>
+          </div>
+          <div class="dms-topnav-right">
+            <span style="font-family:var(--font-mono); font-size:11px; color:var(--color-mute);">env:</span>
+            <span class="ling-pill ling-pill--accent" style="font-size:10px; padding:2px 7px;">prod</span>
+            <span style="color:var(--color-border)">·</span>
+            <button class="ling-btn ling-btn--ghost ling-btn--sm" aria-label="Notifications">
+              <!-- icon: Bell -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </button>
+            <span class="ds-user">
+              <span class="av">MH</span>
+              <span class="name">Margarethe</span>
+              <span class="caret">▾</span>
+            </span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav — Sources (dataset list, Subscribers active) + Saved views -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">site</div>
+            <a class="dms-sidenav-item" href="product-site-overview.html">
+              <span>Overview</span>
+            </a>
+            <a class="dms-sidenav-item" href="product-page-editor.html">
+              <span>Pages</span>
+            </a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="product-dataset-view.html">
+              <span>Datasets</span>
+            </a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">sources &middot; the_drift</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">
+              <span class="src-item-row"><span>Issues</span><span class="count">38</span></span>
+            </a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">
+              <span class="src-item-row"><span>Essays</span><span class="count">212</span></span>
+            </a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">
+              <span class="src-item-row"><span>Contributors</span><span class="count">186</span></span>
+            </a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub dms-sidenav-item--active" href="#">
+              <span class="src-item-row"><span>Subscribers</span><span class="count">2,847</span></span>
+            </a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">
+              <span class="src-item-row"><span>Sales orders</span><span class="count">1,402</span></span>
+            </a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">
+              <span class="src-item-row"><span>Events</span><span class="count">24</span></span>
+            </a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">
+              <span class="src-item-row"><span>Bookstores</span><span class="count">71</span></span>
+            </a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">
+              <span class="src-item-row"><span>Newsletter sends</span><span class="count">96</span></span>
+            </a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">saved views &middot; subscribers</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">All-time</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">Active &mdash; last 90d</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">Founding members</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#">Bounced</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#data">Data</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#schema">Schema</a>
+            <a class="dms-sidenav-item dms-sidenav-item--sub" href="#used-in">Used in</a>
+          </div>
+        </aside>
+
+        <!-- childWrapper -->
+        <div class="dms-layout-child">
+
+          <!-- LayoutGroup "header" -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+
+              <div class="ds-breadcrumb">
+                <a href="#">Datasets</a>
+                <span class="sep">/</span>
+                <span class="here">Subscribers</span>
+              </div>
+
+              <h1 class="l-displayLG" style="margin: 0 0 var(--space-4); max-width: 22ch;">Subscribers</h1>
+
+              <p class="l-proseLG ink-soft" style="margin: 0; max-width: 64ch;">
+                All-time subscribers across hosted and exported tiers.
+              </p>
+
+              <div class="ds-stats">
+                <span class="tabular"><strong style="color:var(--color-ink); font-weight:600;">2,847</strong> rows</span>
+                <span class="sep">·</span>
+                <span class="tabular"><strong style="color:var(--color-ink); font-weight:600;">8</strong> columns</span>
+                <span class="sep">·</span>
+                <span>last fetched <span style="color:var(--color-ink-soft);">04:21 UTC</span></span>
+                <span class="sep">·</span>
+                <span>view <span class="badge">#v1 &middot; all-time</span></span>
+              </div>
+
+              <div class="ds-actions">
+                <button class="ling-btn ling-btn--primary">
+                  <!-- icon: Plus -->
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add row
+                </button>
+                <button class="ling-btn ling-btn--secondary">
+                  <!-- icon: Download -->
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Export CSV
+                </button>
+                <button class="ling-btn ling-btn--ghost">
+                  Schema
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+                <button class="ling-btn ling-btn--ghost">
+                  Open in API
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </button>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — DATA (tabs + filters + table + pagination) -->
+          <section id="data" class="dms-group-content">
+            <div class="dms-group-content-inner" style="padding: var(--space-5);">
+
+              <div class="ds-frame">
+
+                <!-- Tabs -->
+                <div class="ds-frame__tabs">
+                  <div class="ling-tabs">
+                    <a class="ling-tab ling-tab--active" href="#">Data <span class="count">2,847</span></a>
+                    <a class="ling-tab" href="#">Map</a>
+                    <a class="ling-tab" href="#">Chart</a>
+                    <a class="ling-tab" href="#">Schema</a>
+                  </div>
+                </div>
+
+                <!-- Filter chrome row -->
+                <div class="ds-filter-row">
+                  <span class="ling-multiselect ms-trigger-active" role="button" tabindex="0" style="min-width: 0;">
+                    <span>Status</span>
+                    <span style="opacity:0.5;">·</span>
+                    <span>2 selected</span>
+                    <span class="ds-ms-token-count">2</span>
+                    <span class="caret">▾</span>
+                  </span>
+
+                  <span class="ling-multiselect" role="button" tabindex="0" style="min-width: 0;">
+                    <span style="color: var(--color-mute);">Plan</span>
+                    <span style="opacity:0.5; color: var(--color-mute);">·</span>
+                    <span style="color: var(--color-mute);">all</span>
+                    <span class="caret">▾</span>
+                  </span>
+
+                  <span class="ling-multiselect ms-trigger-active" role="button" tabindex="0" style="min-width: 0;">
+                    <span>Joined</span>
+                    <span style="opacity:0.5;">·</span>
+                    <span>last 90d</span>
+                    <span class="caret">▾</span>
+                  </span>
+
+                  <button class="add-filter">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add filter
+                  </button>
+
+                  <span class="spacer"></span>
+
+                  <span class="search-wrap">
+                    <!-- icon: Search -->
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" class="ling-input" placeholder="Search subscribers…">
+                  </span>
+
+                  <button class="ling-btn ling-btn--ghost ling-btn--sm">
+                    <!-- icon: Bookmark -->
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    Save view
+                  </button>
+                </div>
+
+                <!-- Active filter chips row -->
+                <div class="ds-chips-row">
+                  <span class="ds-chip">
+                    <span class="field">status</span>
+                    <span class="op">in</span>
+                    <span class="val">active, lapsed</span>
+                    <button class="x" aria-label="Remove filter">×</button>
+                  </span>
+                  <span class="ds-chip">
+                    <span class="field">plan</span>
+                    <span class="op">≠</span>
+                    <span class="val">comp</span>
+                    <button class="x" aria-label="Remove filter">×</button>
+                  </span>
+                  <span class="ds-chip">
+                    <span class="field">joined</span>
+                    <span class="op">≥</span>
+                    <span class="val">2026-02-23</span>
+                    <button class="x" aria-label="Remove filter">×</button>
+                  </span>
+                  <span class="ds-chip">
+                    <span class="field">last_open</span>
+                    <span class="op">within</span>
+                    <span class="val">30d</span>
+                    <button class="x" aria-label="Remove filter">×</button>
+                  </span>
+                  <span class="ds-chips-meta">
+                    <span>4 active</span>
+                    <span style="color:var(--color-border-strong)">·</span>
+                    <a href="#" class="clear">Clear all</a>
+                  </span>
+                </div>
+
+                <!-- Table -->
+                <div class="ds-table-wrap">
+                  <table class="ds-table">
+                    <thead>
+                      <tr>
+                        <th class="check-cell"><input type="checkbox" aria-label="Select all"></th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Plan</th>
+                        <th class="sortable">Joined <span class="caret">▼</span></th>
+                        <th>Last open</th>
+                        <th class="num">Articles read</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Row 1 — founding member highlight (margin tint) -->
+                      <tr class="is-margin">
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00041</td>
+                        <td>
+                          <span class="name-cell">Margarethe Holm</span>
+                          <span class="badge-founding">★ founding</span>
+                        </td>
+                        <td><span class="email-cell">margarethe@havnpost.dk</span></td>
+                        <td><span class="ling-pill ling-pill--ink">founding</span></td>
+                        <td class="date-cell">2023-09-04</td>
+                        <td class="date-cell">2026-05-23</td>
+                        <td class="num-cell">412</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 2 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00188</td>
+                        <td><span class="name-cell">Wole Adebayo</span></td>
+                        <td><span class="email-cell">wole.adebayo@lagosmail.ng</span></td>
+                        <td><span class="ling-pill ling-pill--accent">yearly</span></td>
+                        <td class="date-cell">2024-01-17</td>
+                        <td class="date-cell">2026-05-22</td>
+                        <td class="num-cell">278</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 3 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00204</td>
+                        <td><span class="name-cell">Isadora Vaerel</span></td>
+                        <td><span class="email-cell">isadora.vaerel@kraken.is</span></td>
+                        <td><span class="ling-pill ling-pill--accent">yearly</span></td>
+                        <td class="date-cell">2024-02-29</td>
+                        <td class="date-cell">2026-05-20</td>
+                        <td class="num-cell">312</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 4 — selected row -->
+                      <tr class="is-selected">
+                        <td class="check-cell"><input type="checkbox" checked></td>
+                        <td class="id-cell">sub_00297</td>
+                        <td><span class="name-cell">Naoko Sugihara</span></td>
+                        <td><span class="email-cell">n.sugihara@yokomail.jp</span></td>
+                        <td><span class="ling-pill">monthly</span></td>
+                        <td class="date-cell">2024-04-11</td>
+                        <td class="date-cell">2026-05-24</td>
+                        <td class="num-cell">198</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 5 — bounced email (signal dot) -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00318</td>
+                        <td><span class="name-cell">Anneliese Brückner</span></td>
+                        <td><span class="email-cell is-bounced"><span class="dot"></span>a.brueckner@altestadt.de</span></td>
+                        <td><span class="ling-pill">monthly</span></td>
+                        <td class="date-cell">2024-05-03</td>
+                        <td class="date-cell">2026-04-12</td>
+                        <td class="num-cell">42</td>
+                        <td><span class="ling-pill ling-pill--signal ling-pill--dot">bounced</span></td>
+                      </tr>
+
+                      <!-- Row 6 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00402</td>
+                        <td><span class="name-cell">Tomás Echeverría</span></td>
+                        <td><span class="email-cell">t.echeverria@correo.cl</span></td>
+                        <td><span class="ling-pill ling-pill--accent">yearly</span></td>
+                        <td class="date-cell">2024-06-22</td>
+                        <td class="date-cell">2026-05-19</td>
+                        <td class="num-cell">221</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 7 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00471</td>
+                        <td><span class="name-cell">Priya Ramaswamy</span></td>
+                        <td><span class="email-cell">priya.r@chennaimail.in</span></td>
+                        <td><span class="ling-pill ling-pill--accent">yearly</span></td>
+                        <td class="date-cell">2024-08-14</td>
+                        <td class="date-cell">2026-05-21</td>
+                        <td class="num-cell">309</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 8 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00529</td>
+                        <td><span class="name-cell">Joaquim Tavares</span></td>
+                        <td><span class="email-cell">joaquim@porto.pt</span></td>
+                        <td><span class="ling-pill">monthly</span></td>
+                        <td class="date-cell">2024-09-09</td>
+                        <td class="date-cell">2026-05-15</td>
+                        <td class="num-cell">144</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 9 — lapsed -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00603</td>
+                        <td><span class="name-cell">Mei-Lin Cho</span></td>
+                        <td><span class="email-cell">meilin.cho@taipei.tw</span></td>
+                        <td><span class="ling-pill">monthly</span></td>
+                        <td class="date-cell">2024-10-28</td>
+                        <td class="date-cell">2026-02-04</td>
+                        <td class="num-cell">87</td>
+                        <td><span class="ling-pill ling-pill--margin ling-pill--dot">lapsed</span></td>
+                      </tr>
+
+                      <!-- Row 10 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00712</td>
+                        <td><span class="name-cell">Aleksander Wójcik</span></td>
+                        <td><span class="email-cell">a.wojcik@krakowmail.pl</span></td>
+                        <td><span class="ling-pill ling-pill--accent">yearly</span></td>
+                        <td class="date-cell">2024-12-03</td>
+                        <td class="date-cell">2026-05-18</td>
+                        <td class="num-cell">256</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 11 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00798</td>
+                        <td><span class="name-cell">Fátima Belkacem</span></td>
+                        <td><span class="email-cell">fatima.belkacem@maghreb.ma</span></td>
+                        <td><span class="ling-pill ling-pill--accent">yearly</span></td>
+                        <td class="date-cell">2025-01-15</td>
+                        <td class="date-cell">2026-05-22</td>
+                        <td class="num-cell">183</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 12 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00854</td>
+                        <td><span class="name-cell">Sebastián Cortázar</span></td>
+                        <td><span class="email-cell">s.cortazar@buenosaires.ar</span></td>
+                        <td><span class="ling-pill">monthly</span></td>
+                        <td class="date-cell">2025-02-08</td>
+                        <td class="date-cell">2026-05-17</td>
+                        <td class="num-cell">112</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 13 — comp -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_00912</td>
+                        <td><span class="name-cell">Yusuf Demir</span></td>
+                        <td><span class="email-cell">yusuf.demir@istanbulposta.tr</span></td>
+                        <td><span class="ling-pill">comp</span></td>
+                        <td class="date-cell">2025-03-14</td>
+                        <td class="date-cell">2026-05-09</td>
+                        <td class="num-cell">68</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 14 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_01023</td>
+                        <td><span class="name-cell">Ingeborg Lindqvist</span></td>
+                        <td><span class="email-cell">ingeborg.lindqvist@malmo.se</span></td>
+                        <td><span class="ling-pill ling-pill--accent">yearly</span></td>
+                        <td class="date-cell">2025-04-26</td>
+                        <td class="date-cell">2026-05-23</td>
+                        <td class="num-cell">204</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 15 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_01156</td>
+                        <td><span class="name-cell">Olamide Okafor</span></td>
+                        <td><span class="email-cell">olamide.okafor@abuja.ng</span></td>
+                        <td><span class="ling-pill">monthly</span></td>
+                        <td class="date-cell">2025-06-07</td>
+                        <td class="date-cell">2026-05-20</td>
+                        <td class="num-cell">129</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+
+                      <!-- Row 16 -->
+                      <tr>
+                        <td class="check-cell"><input type="checkbox"></td>
+                        <td class="id-cell">sub_01284</td>
+                        <td><span class="name-cell">Renata Aleixo</span></td>
+                        <td><span class="email-cell">r.aleixo@saopaulo.br</span></td>
+                        <td><span class="ling-pill ling-pill--accent">yearly</span></td>
+                        <td class="date-cell">2025-07-19</td>
+                        <td class="date-cell">2026-05-24</td>
+                        <td class="num-cell">231</td>
+                        <td><span class="ling-pill ling-pill--success ling-pill--dot">active</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Pagination row -->
+                <div class="ds-pager">
+                  <div class="info tabular">Showing <span style="color:var(--color-ink-soft);">1&ndash;16</span> of <span style="color:var(--color-ink); font-weight:500;">2,847</span></div>
+                  <div class="pages">
+                    <a href="#" class="nav" aria-label="Previous page">‹</a>
+                    <a href="#" class="is-current">1</a>
+                    <a href="#">2</a>
+                    <a href="#">3</a>
+                    <a href="#">4</a>
+                    <a href="#">5</a>
+                    <span class="gap">…</span>
+                    <a href="#">178</a>
+                    <a href="#" class="nav" aria-label="Next page">›</a>
+                  </div>
+                  <div class="per-page">
+                    <select aria-label="Rows per page">
+                      <option>16 / page</option>
+                      <option>32 / page</option>
+                      <option>64 / page</option>
+                      <option>128 / page</option>
+                    </select>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — SCHEMA -->
+          <section id="schema" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Schema</div>
+                <h2 class="dms-section-title">Schema &mdash; the row shape, declared.</h2>
+                <p class="dms-section-lede">
+                  Every row in this dataset is a typed object. The schema is the contract the rest of the site reads against &mdash; any page, chart, or map that consumes <code style="font-family:var(--font-mono); font-size:13px; color:var(--color-accent); background:var(--color-accent-soft); padding:1px 6px; border-radius:4px;">subscribers</code> sees the columns below.
+                </p>
+
+                <div class="ling-card" style="padding: 0; margin-top: var(--space-5);">
+                  <div style="padding: var(--space-5) var(--space-6); display:flex; align-items:baseline; justify-content:space-between; gap:var(--space-3); border-bottom: 1px solid var(--color-border-subtle);">
+                    <div>
+                      <h3 class="l-h3" style="margin: 0;">Columns</h3>
+                      <div class="l-monoSM" style="margin-top: 4px;">8 columns &middot; <span style="color:var(--color-success);">2 required</span> &middot; primary key: <span style="color:var(--color-accent);">id</span></div>
+                    </div>
+                    <div style="display:flex; gap:var(--space-2);">
+                      <button class="ling-btn ling-btn--ghost ling-btn--sm">Edit schema</button>
+                      <button class="ling-btn ling-btn--secondary ling-btn--sm">Add column</button>
+                    </div>
+                  </div>
+
+                  <div style="overflow-x:auto;">
+                    <table class="ling-table" style="font-size: 13px;">
+                      <thead>
+                        <tr>
+                          <th>Column</th>
+                          <th>Type</th>
+                          <th>Required</th>
+                          <th>Default</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><span class="schema-col-name">id</span></td>
+                          <td><span class="schema-type">text · pk</span></td>
+                          <td><span class="schema-required-yes">✓</span></td>
+                          <td class="schema-default"><code>auto</code></td>
+                          <td>Stable subscriber identifier. Format: <code style="font-family:var(--font-mono); font-size:11px; color:var(--color-mute);">sub_NNNNN</code>.</td>
+                        </tr>
+                        <tr>
+                          <td><span class="schema-col-name">name</span></td>
+                          <td><span class="schema-type">text</span></td>
+                          <td><span class="schema-required-yes">✓</span></td>
+                          <td class="schema-default"><span style="color:var(--color-mute-soft);">—</span></td>
+                          <td>Subscriber's display name as entered at signup. UTF-8.</td>
+                        </tr>
+                        <tr>
+                          <td><span class="schema-col-name">email</span></td>
+                          <td><span class="schema-type">text · unique</span></td>
+                          <td><span class="schema-required-yes">✓</span></td>
+                          <td class="schema-default"><span style="color:var(--color-mute-soft);">—</span></td>
+                          <td>Validated email address. Unique across the dataset.</td>
+                        </tr>
+                        <tr>
+                          <td><span class="schema-col-name">plan</span></td>
+                          <td><span class="schema-type">enum(4)</span></td>
+                          <td><span class="schema-required-yes">✓</span></td>
+                          <td class="schema-default"><code>"monthly"</code></td>
+                          <td>One of <code style="font-family:var(--font-mono); font-size:11px;">monthly</code>, <code style="font-family:var(--font-mono); font-size:11px;">yearly</code>, <code style="font-family:var(--font-mono); font-size:11px;">founding</code>, <code style="font-family:var(--font-mono); font-size:11px;">comp</code>.</td>
+                        </tr>
+                        <tr>
+                          <td><span class="schema-col-name">joined</span></td>
+                          <td><span class="schema-type">date</span></td>
+                          <td><span class="schema-required-yes">✓</span></td>
+                          <td class="schema-default"><code>now()</code></td>
+                          <td>ISO date the subscription started. Used for cohort grouping.</td>
+                        </tr>
+                        <tr>
+                          <td><span class="schema-col-name">last_open</span></td>
+                          <td><span class="schema-type">date · null</span></td>
+                          <td><span class="schema-required-no">×</span></td>
+                          <td class="schema-default"><code>null</code></td>
+                          <td>Most recent email-open or web-read event. Updated by the open-tracker pipeline.</td>
+                        </tr>
+                        <tr>
+                          <td><span class="schema-col-name">articles_read</span></td>
+                          <td><span class="schema-type">int</span></td>
+                          <td><span class="schema-required-no">×</span></td>
+                          <td class="schema-default"><code>0</code></td>
+                          <td>Lifetime count of unique essays read. Recomputed nightly.</td>
+                        </tr>
+                        <tr>
+                          <td><span class="schema-col-name">status</span></td>
+                          <td><span class="schema-type">enum(3)</span></td>
+                          <td><span class="schema-required-no">×</span></td>
+                          <td class="schema-default"><code>"active"</code></td>
+                          <td>Derived state: <code style="font-family:var(--font-mono); font-size:11px;">active</code> / <code style="font-family:var(--font-mono); font-size:11px;">lapsed</code> / <code style="font-family:var(--font-mono); font-size:11px;">bounced</code>.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <p class="l-prose ink-soft" style="margin-top: var(--space-7); margin-bottom: var(--space-4); max-width: 64ch;">
+                  Same shape, expressed as the row format Lingua actually stores. Any page that reads <code style="font-family:var(--font-mono); font-size:13px; color:var(--color-accent); background:var(--color-accent-soft); padding:1px 6px; border-radius:4px;">subscribers</code> sees this declaration; any plugin can compose against it.
+                </p>
+
+                <div class="ling-code">
+                  <div class="ling-code__chrome">
+                    <span class="filename">the-drift/sources/subscribers.schema.js</span>
+                    <div class="actions">
+                      <button>Copy</button>
+                      <button>Open</button>
+                    </div>
+                  </div>
+                  <div class="ling-code__body">
+<pre><span class="tk-com">// every row, everywhere, has the same shape</span>
+<span class="tk-kw">export const</span> <span class="tk-fn">subscribers</span> <span class="tk-punc">=</span> <span class="tk-punc">{</span>
+  <span class="tk-prop">app</span><span class="tk-punc">:</span>      <span class="tk-str">"the-drift"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">type</span><span class="tk-punc">:</span>     <span class="tk-str">"the_drift_env|subscribers:source"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">parent</span><span class="tk-punc">:</span>   <span class="tk-str">"the_drift_env:dmsenv"</span><span class="tk-punc">,</span>
+  <span class="tk-prop">data</span><span class="tk-punc">:</span> <span class="tk-punc">{</span>
+    <span class="tk-prop">title</span><span class="tk-punc">:</span>       <span class="tk-str">"Subscribers"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">description</span><span class="tk-punc">:</span> <span class="tk-str">"All-time subscribers across hosted and exported tiers."</span><span class="tk-punc">,</span>
+    <span class="tk-prop">primaryKey</span><span class="tk-punc">:</span>  <span class="tk-str">"id"</span><span class="tk-punc">,</span>
+    <span class="tk-prop">columns</span><span class="tk-punc">:</span> <span class="tk-punc">[</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"id"</span><span class="tk-punc">,</span>            <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"text"</span><span class="tk-punc">,</span>  <span class="tk-prop">required</span><span class="tk-punc">:</span> <span class="tk-kw">true</span><span class="tk-punc">,</span>  <span class="tk-prop">default</span><span class="tk-punc">:</span> <span class="tk-str">"auto"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"name"</span><span class="tk-punc">,</span>          <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"text"</span><span class="tk-punc">,</span>  <span class="tk-prop">required</span><span class="tk-punc">:</span> <span class="tk-kw">true</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"email"</span><span class="tk-punc">,</span>         <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"text"</span><span class="tk-punc">,</span>  <span class="tk-prop">required</span><span class="tk-punc">:</span> <span class="tk-kw">true</span><span class="tk-punc">,</span>  <span class="tk-prop">unique</span><span class="tk-punc">:</span> <span class="tk-kw">true</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"plan"</span><span class="tk-punc">,</span>          <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"enum"</span><span class="tk-punc">,</span>  <span class="tk-prop">required</span><span class="tk-punc">:</span> <span class="tk-kw">true</span><span class="tk-punc">,</span>
+        <span class="tk-prop">values</span><span class="tk-punc">:</span> <span class="tk-punc">[</span><span class="tk-str">"monthly"</span><span class="tk-punc">,</span> <span class="tk-str">"yearly"</span><span class="tk-punc">,</span> <span class="tk-str">"founding"</span><span class="tk-punc">,</span> <span class="tk-str">"comp"</span><span class="tk-punc">]</span><span class="tk-punc">,</span>
+        <span class="tk-prop">default</span><span class="tk-punc">:</span> <span class="tk-str">"monthly"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"joined"</span><span class="tk-punc">,</span>        <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"date"</span><span class="tk-punc">,</span>  <span class="tk-prop">required</span><span class="tk-punc">:</span> <span class="tk-kw">true</span><span class="tk-punc">,</span>  <span class="tk-prop">default</span><span class="tk-punc">:</span> <span class="tk-str">"now()"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"last_open"</span><span class="tk-punc">,</span>     <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"date"</span><span class="tk-punc">,</span>  <span class="tk-prop">required</span><span class="tk-punc">:</span> <span class="tk-kw">false</span><span class="tk-punc">,</span> <span class="tk-prop">nullable</span><span class="tk-punc">:</span> <span class="tk-kw">true</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"articles_read"</span><span class="tk-punc">,</span> <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"int"</span><span class="tk-punc">,</span>   <span class="tk-prop">required</span><span class="tk-punc">:</span> <span class="tk-kw">false</span><span class="tk-punc">,</span> <span class="tk-prop">default</span><span class="tk-punc">:</span> <span class="tk-num">0</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+      <span class="tk-punc">{</span> <span class="tk-prop">name</span><span class="tk-punc">:</span> <span class="tk-str">"status"</span><span class="tk-punc">,</span>        <span class="tk-prop">type</span><span class="tk-punc">:</span> <span class="tk-str">"enum"</span><span class="tk-punc">,</span>  <span class="tk-prop">required</span><span class="tk-punc">:</span> <span class="tk-kw">false</span><span class="tk-punc">,</span>
+        <span class="tk-prop">values</span><span class="tk-punc">:</span> <span class="tk-punc">[</span><span class="tk-str">"active"</span><span class="tk-punc">,</span> <span class="tk-str">"lapsed"</span><span class="tk-punc">,</span> <span class="tk-str">"bounced"</span><span class="tk-punc">]</span><span class="tk-punc">,</span>
+        <span class="tk-prop">default</span><span class="tk-punc">:</span> <span class="tk-str">"active"</span> <span class="tk-punc">}</span><span class="tk-punc">,</span>
+    <span class="tk-punc">]</span><span class="tk-punc">,</span>
+  <span class="tk-punc">}</span><span class="tk-punc">,</span>
+<span class="tk-punc">}</span><span class="tk-punc">;</span></pre>
+                  </div>
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-6);">
+                  <span class="key">contract &rarr;</span> The row format is the lingua franca. The schema above is what every page, chart, plugin, and export negotiates against &mdash; change a column here and the downstream surfaces below see the change on next fetch.
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "content" — USED IN -->
+          <section id="used-in" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Downstream</div>
+                <h2 class="dms-section-title">Used in</h2>
+                <p class="dms-section-lede">
+                  Six pages, sections, and KPIs across the site read this dataset. Open one to see the columns it consumes, the filters it applies, and the cards or charts it renders.
+                </p>
+
+                <div class="used-in-grid" style="margin-top: var(--space-6);">
+
+                  <div class="used-in-card">
+                    <div class="crumb">the-drift &middot; pages &middot; issues|page</div>
+                    <div class="title">Issue archive</div>
+                    <div class="body">
+                      Renders a grid of subscriber-visible issues. Reads <code style="font-family:var(--font-mono); font-size:11px; color:var(--color-ink-soft);">status, plan</code> for gating.
+                    </div>
+                    <div class="foot">
+                      <span class="pill-comp">Card &middot; grid</span>
+                      <a href="#">View →</a>
+                    </div>
+                  </div>
+
+                  <div class="used-in-card">
+                    <div class="crumb">the-drift &middot; pages &middot; dashboard|page</div>
+                    <div class="title">Subscriber dashboard</div>
+                    <div class="body">
+                      Logged-in subscribers see their plan, last open, and article history. Reads the full row keyed by <code style="font-family:var(--font-mono); font-size:11px; color:var(--color-ink-soft);">id</code>.
+                    </div>
+                    <div class="foot">
+                      <span class="pill-comp">Card &middot; row</span>
+                      <a href="#">View →</a>
+                    </div>
+                  </div>
+
+                  <div class="used-in-card">
+                    <div class="crumb">the-drift &middot; components &middot; author_bio</div>
+                    <div class="title">Author bio</div>
+                    <div class="body">
+                      Inline byline component &mdash; checks <code style="font-family:var(--font-mono); font-size:11px; color:var(--color-ink-soft);">status</code> before rendering the "thanks to our subscribers" footer note.
+                    </div>
+                    <div class="foot">
+                      <span class="pill-comp">Lexical &middot; partial</span>
+                      <a href="#">View →</a>
+                    </div>
+                  </div>
+
+                  <div class="used-in-card">
+                    <div class="crumb">the-drift &middot; pages &middot; admin|cohort</div>
+                    <div class="title">Retention cohorts</div>
+                    <div class="body">
+                      Heatmap of <code style="font-family:var(--font-mono); font-size:11px; color:var(--color-ink-soft);">joined × last_open</code> by month. Identifies the cohorts most likely to lapse.
+                    </div>
+                    <div class="foot">
+                      <span class="pill-comp">Graph &middot; heatmap</span>
+                      <a href="#">View →</a>
+                    </div>
+                  </div>
+
+                  <div class="used-in-card">
+                    <div class="crumb">the-drift &middot; pages &middot; marketing|page</div>
+                    <div class="title">Subscriber count KPI</div>
+                    <div class="body">
+                      Public-facing "2,847 subscribers and counting" callout on the marketing homepage. Caches every 6h.
+                    </div>
+                    <div class="foot">
+                      <span class="pill-comp">Card &middot; KPI</span>
+                      <a href="#">View →</a>
+                    </div>
+                  </div>
+
+                  <div class="used-in-card">
+                    <div class="crumb">the-drift &middot; pages &middot; about|founding</div>
+                    <div class="title">Founding members</div>
+                    <div class="body">
+                      Wall of names filtered by <code style="font-family:var(--font-mono); font-size:11px; color:var(--color-ink-soft);">plan = "founding"</code>. Sorted by <code style="font-family:var(--font-mono); font-size:11px; color:var(--color-ink-soft);">joined</code>, ascending.
+                    </div>
+                    <div class="foot">
+                      <span class="pill-comp">Card &middot; grid</span>
+                      <a href="#">View →</a>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">tip &rarr;</span> Renaming or removing a column above is a breaking change for every card on this list. Lingua will warn at edit time and let you preview which pages will break before you save.
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- LayoutGroup "footer" — admin footer + deliverable link block -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+
+              <div class="dms-grid dms-grid-3" style="gap: var(--space-7);">
+                <div>
+                  <div class="ling-logo" style="font-size:20px;">L<span class="diacritic">ī</span>ngua</div>
+                  <div class="l-proseSM ink-soft" style="margin-top: var(--space-3); max-width: 36ch;">
+                    Dataset surface for <strong>the-drift</strong> &middot; v1.3.0 &middot; rendered from <code style="font-family:var(--font-mono); font-size:12px; color:var(--color-ink-soft);">the_drift_env|subscribers:source</code>.
+                  </div>
+                  <div class="l-monoSM" style="margin-top: var(--space-3);">
+                    <span style="color:var(--color-mute);">build</span> <span style="color:var(--color-ink-soft);">2026-05-24 04:21 UTC</span> &middot;
+                    <span style="color:var(--color-mute);">node</span> <span style="color:var(--color-ink-soft);">us-east-1a</span> &middot;
+                    <a href="#" style="color:var(--color-accent); text-decoration:none;">status</a>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Admin</div>
+                  <div style="display:flex; flex-direction:column; gap: 6px;">
+                    <a href="product-site-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Site overview</a>
+                    <a href="product-page-editor.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Page editor</a>
+                    <a href="product-dataset-view.html" class="l-proseSM" style="color:var(--color-accent); text-decoration:none; font-weight:500;">Datasets</a>
+                    <a href="#" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Themes</a>
+                    <a href="#" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">API keys</a>
+                    <a href="#" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Members</a>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Design system &middot; deliverable</div>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 6px var(--space-4);">
+                    <a href="../design-system/theme.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theme</a>
+                    <a href="../design-system/layouts.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Layouts</a>
+                    <a href="../design-system/grid.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Grid</a>
+                    <a href="../design-system/components.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Components</a>
+                    <a href="../design-system/patterns.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Patterns</a>
+                    <a href="marketing-homepage.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Home</a>
+                    <a href="marketing-comparison.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Compare</a>
+                    <a href="marketing-theory.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Theory</a>
+                    <a href="docs-page.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Docs</a>
+                    <a href="civic-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Civic</a>
+                    <a href="product-site-overview.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Site</a>
+                    <a href="product-page-editor.html" class="l-proseSM" style="color:var(--color-ink-soft); text-decoration:none;">Editor</a>
+                    <a href="product-dataset-view.html" class="l-proseSM" style="color:var(--color-accent); text-decoration:none; font-weight:500;">Dataset</a>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="ling-rule-soft" style="margin: var(--space-6) 0 var(--space-4);">
+
+              <div style="display:flex; align-items:center; justify-content:space-between; gap: var(--space-4); flex-wrap: wrap;">
+                <div class="l-monoSM" style="color:var(--color-mute);">
+                  Lingua design system &middot; v0.2 &middot; 2026-05-24
+                </div>
+                <div class="l-monoSM" style="color:var(--color-mute);">
+                  <a href="../design-system/theme.html" style="color:var(--color-mute); text-decoration:none;">tokens</a> &middot;
+                  <a href="../design-system/components.html" style="color:var(--color-mute); text-decoration:none;">primitives</a> &middot;
+                  <a href="../design-system/patterns.html" style="color:var(--color-mute); text-decoration:none;">patterns</a>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

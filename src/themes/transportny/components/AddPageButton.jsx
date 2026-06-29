@@ -1,8 +1,8 @@
 import React, {useContext, useEffect, useState, useRef} from "react";
 import {NavLink, useSubmit, useLocation, useNavigate} from "react-router";
-import {ComponentContext} from "~/dms/packages/dms/src/patterns/page/context";
-import { CMSContext } from '~/dms/packages/dms/src'
-import { ThemeContext } from '~/dms/packages/dms/src/ui/useTheme'
+import {ComponentContext} from "../../../dms/packages/dms/src/patterns/page/context";
+import { CMSContext } from '../../../dms/packages/dms/src'
+import { ThemeContext } from '../../../dms/packages/dms/src/ui/useTheme'
 
 const customTheme = {
     nav: {

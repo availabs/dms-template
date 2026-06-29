@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Design System — Patterns</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-grn': '#54B99B', 'mny-ora': '#EA8954',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    .pattern-label { font-family: "Oswald", sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; color: #6D96AE; letter-spacing: 0.1em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid #E0EBF0; }
+    .state-label { font-family: "Source Sans 3", sans-serif; font-size: 11px; color: #6D96AE; margin-bottom: 4px; }
+    .callout { background: #FCF6EC; border-left: 3px solid #EAAD43; padding: 10px 14px; border-radius: 0 8px 8px 0; }
+    .callout p { font-family: "Source Sans 3", sans-serif; font-size: 13px; color: #37576B; margin: 0; line-height: 1.5; }
+    .callout strong { color: #2D3E4C; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .ref-table th { background: #F3F8F9; padding: 6px 8px; text-align: left; font-family: "Oswald", sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; color: #37576B; border-bottom: 2px solid #E0EBF0; }
+    .ref-table td { padding: 6px 8px; border-bottom: 1px solid #F3F8F9; font-family: "Source Sans 3", sans-serif; color: #37576B; vertical-align: top; }
+    .ref-table tr:last-child td { border-bottom: 0; }
+    .ref-table code { font-family: monospace; font-size: 11px; background: #F3F8F9; padding: 1px 3px; border-radius: 3px; color: #2D3E4C; }
+    .breadcrumb-sep { color: #6D96AE; font-size: 12px; padding: 0 4px; }
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto">
+  <div class="flex flex-col">
+
+    <!-- TopNav -->
+    <div class="sticky top-0 z-20 px-4 pt-8 xl:px-[64px] pointer-events-none">
+      <nav class="px-6 py-4 w-full bg-white h-20 flex items-center rounded-lg pointer-events-auto"
+           style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06)">
+        <div class="flex items-center w-full">
+          <div class="h-12 pl-3 pr-2 flex items-center flex-shrink-0">
+            <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-10">
+          </div>
+          <span class="hidden md:block font-display text-[13px] font-[500] text-[#6D96AE] uppercase tracking-wider ml-3 mr-5 border-l border-[#E0EBF0] pl-5">Design System</span>
+          <div class="hidden md:flex items-center flex-1 h-full gap-1">
+            <a href="theme.html" class="dms-ds-toplink">Theme</a>
+            <a href="layouts.html" class="dms-ds-toplink">Layouts</a>
+            <a href="grid.html" class="dms-ds-toplink">Grid</a>
+            <a href="components.html" class="dms-ds-toplink">Components</a>
+            <a href="patterns.html" class="dms-ds-toplink active">Patterns</a>
+          </div>
+          <span class="hidden md:block font-proxima text-[11px] text-[#C5D7E0] tracking-wider ml-auto">5 / 5</span>
+        </div>
+      </nav>
+    </div>
+
+    <!-- PAGE CONTENT -->
+    <div data-dms="layoutGroup" data-name="header" class="pt-[50px]">
+      <div class="px-4 xl:px-[64px] py-12 mr-auto max-w-[1020px]">
+        <div class="font-display text-[13px] font-[500] uppercase text-[#6D96AE] tracking-widest mb-3">Design System — Patterns</div>
+        <h1 class="font-display text-[36px] font-[500] uppercase text-[#2D3E4C] leading-none mb-4"
+            style="text-decoration: underline; text-decoration-color: #EAAD43; text-underline-offset: 8px;">Composed Patterns</h1>
+        <p class="font-proxima text-[18px] text-[#37576B] leading-[1.5] max-w-[640px]">
+          Multi-primitive assemblies that recur across MitigateNY pages. Each pattern names the DMS section types, LayoutGroup variant, and component tokens involved so the same composition can be reproduced reliably on any page.
+        </p>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 1 — PAGE HEADER WITH ACTION PAIR
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-8 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 01 — Page Header + Action Pair</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          The recurring top-of-page pattern: eyebrow breadcrumb, H1 with yellow underline, lead paragraph, and a right-anchored action row (Browse All + Export). Lives in a <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">header</code> LayoutGroup variant with <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">clearCentered</code> background.
+        </p>
+
+        <!-- Demo -->
+        <div class="rounded-[12px] overflow-hidden" style="background: linear-gradient(0deg, rgba(244,244,244,0.96) 0%, rgba(244,244,244,0.85) 100%), url('../theme/topolines.png') center/500px;">
+          <div class="px-8 py-10">
+            <!-- breadcrumb -->
+            <div class="flex items-center mb-3">
+              <span class="font-proxima text-[13px] text-[#6D96AE]">Home</span>
+              <span class="breadcrumb-sep">/</span>
+              <span class="font-proxima text-[13px] text-[#6D96AE]">Hazards &amp; Disasters</span>
+              <span class="breadcrumb-sep">/</span>
+              <span class="font-proxima text-[13px] font-semibold text-[#37576B]">Hurricanes</span>
+            </div>
+
+            <div class="flex items-start justify-between gap-6 flex-wrap">
+              <div class="flex-1 min-w-[280px]">
+                <!-- eyebrow -->
+                <div class="font-display text-[12px] font-[500] uppercase text-[#6D96AE] tracking-widest mb-2">Hazard Profile</div>
+                <!-- H1 -->
+                <h1 class="font-display text-[36px] font-[500] uppercase text-[#2D3E4C] leading-none mb-4"
+                    style="text-decoration: underline; text-decoration-color: #EAAD43; text-underline-offset: 8px;">
+                  Hurricanes &amp; Tropical Storms
+                </h1>
+                <!-- lead -->
+                <p class="font-proxima text-[16px] text-[#37576B] leading-[1.5] max-w-[540px]">
+                  Tropical cyclones affecting New York State, including direct landfalls, nor'easter-hybrid events, and inland flooding caused by remnant systems.
+                </p>
+              </div>
+
+              <!-- Action pair -->
+              <div class="flex items-start gap-3 pt-2">
+                <button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#C5D7E0] font-proxima text-[14px] font-semibold text-[#37576B]"
+                        style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+                  Browse All
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#6D96AE]" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"/></svg>
+                </button>
+                <button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#EAAD43] font-proxima text-[14px] font-semibold text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                  Export Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <div class="callout">
+            <p><strong>DMS sections:</strong> Lexical (eyebrow + H1 + lead) + sectionArray col-12 for the action row, or a single Card section with a chrome column type for the CTA buttons.</p>
+          </div>
+          <div class="callout">
+            <p><strong>LayoutGroup:</strong> <code>header</code> variant — <code>clearCentered</code> background, topo texture, <code>mr-auto</code> wrapper, <code>pt-[118px]</code> top offset from floating nav.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 2 — RISK METADATA STRIP
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 02 — Risk Metadata Strip</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          Compact horizontal band beneath the page header summarising the key risk metrics for a hazard or county. Composed of stat-chip pills. Rendered as a Card section with a row-layout <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">cardHint</code>.
+        </p>
+
+        <!-- Demo -->
+        <div class="bg-[#F3F8F9] rounded-[12px] px-6 py-4 flex flex-wrap items-center gap-x-8 gap-y-3">
+          <!-- stat chips -->
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#DD524C] flex-shrink-0"></span>
+            <div>
+              <div class="font-display text-[10px] font-[500] uppercase text-[#6D96AE] tracking-widest leading-none">Risk Level</div>
+              <div class="font-display text-[16px] font-[500] uppercase text-[#2D3E4C] leading-tight">High</div>
+            </div>
+          </div>
+          <div class="w-px h-8 bg-[#E0EBF0]"></div>
+          <div>
+            <div class="font-display text-[10px] font-[500] uppercase text-[#6D96AE] tracking-widest leading-none">Annualized Loss (EAL)</div>
+            <div class="font-display text-[16px] font-[500] uppercase text-[#2D3E4C] leading-tight">$91.52M</div>
+          </div>
+          <div class="w-px h-8 bg-[#E0EBF0]"></div>
+          <div>
+            <div class="font-display text-[10px] font-[500] uppercase text-[#6D96AE] tracking-widest leading-none">Properties at Risk</div>
+            <div class="font-display text-[16px] font-[500] uppercase text-[#2D3E4C] leading-tight">24,310</div>
+          </div>
+          <div class="w-px h-8 bg-[#E0EBF0]"></div>
+          <div>
+            <div class="font-display text-[10px] font-[500] uppercase text-[#6D96AE] tracking-widest leading-none">County Rank</div>
+            <div class="font-display text-[16px] font-[500] uppercase text-[#2D3E4C] leading-tight">#3 of 62</div>
+          </div>
+          <div class="w-px h-8 bg-[#E0EBF0]"></div>
+          <div>
+            <div class="font-display text-[10px] font-[500] uppercase text-[#6D96AE] tracking-widest leading-none">FEMA Declarations</div>
+            <div class="font-display text-[16px] font-[500] uppercase text-[#2D3E4C] leading-tight">18 since 1953</div>
+          </div>
+          <div class="w-px h-8 bg-[#E0EBF0]"></div>
+          <div>
+            <div class="font-display text-[10px] font-[500] uppercase text-[#6D96AE] tracking-widest leading-none">Last Major Event</div>
+            <div class="font-display text-[16px] font-[500] uppercase text-[#2D3E4C] leading-tight">Sandy, 2012</div>
+          </div>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>DMS sections:</strong> Card section, <code>cardsGridSize: 1</code> (single row), each stat is a cell with <code>type: 'text'</code>, <code>valueFontStyle: 'metaMD'</code> for value and <code>metaXS</code> for label. Risk dot uses a theme-registered <code>risk_dot</code> column type. Separator lines are a theme CSS override on the card container.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 3 — FILTER BAR + TABLE + PAGINATION
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 03 — Filter Bar + Table + Pagination</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          The standard data-browser pattern. A filter chrome row (section toolbar) lives above the table section; pagination lives below. All three are separate DMS sections within the same LayoutGroup.
+        </p>
+
+        <!-- Filter bar -->
+        <div class="mb-3">
+          <div class="state-label">Filter chrome (sectionArray col-12)</div>
+          <div class="flex flex-wrap items-center gap-2 bg-[#F3F8F9] rounded-[12px] px-4 py-3 border border-[#E0EBF0]">
+            <!-- Search input -->
+            <div class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-[#C5D7E0] flex-1 min-w-[180px] max-w-[280px]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#6D96AE]" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+              <span class="font-proxima text-[13px] text-[#6D96AE]">Search counties…</span>
+            </div>
+            <!-- MultiSelect filter -->
+            <div class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-[#C5D7E0]">
+              <span class="font-proxima text-[13px] text-[#37576B]">Hazard Type</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+            </div>
+            <!-- Active token -->
+            <div class="flex items-center gap-1 bg-[#C5D7E0] rounded-full px-2.5 py-1 text-[12px] font-proxima text-[#37576B]">
+              Flood
+              <button class="ml-0.5 text-[#6D96AE] hover:text-[#37576B]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>
+              </button>
+            </div>
+            <div class="flex items-center gap-1 bg-[#C5D7E0] rounded-full px-2.5 py-1 text-[12px] font-proxima text-[#37576B]">
+              Hurricane
+              <button class="ml-0.5 text-[#6D96AE] hover:text-[#37576B]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>
+              </button>
+            </div>
+            <!-- Sort -->
+            <div class="ml-auto flex items-center gap-1 bg-white rounded-full px-3 py-1.5 border border-[#C5D7E0]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#6D96AE]" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5"/></svg>
+              <span class="font-proxima text-[13px] text-[#37576B]">EAL ↓</span>
+            </div>
+            <!-- Result count -->
+            <span class="font-proxima text-[12px] text-[#6D96AE]">44 results</span>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="state-label">Table section</div>
+        <div class="rounded-[12px] overflow-hidden border border-[#E0EBF0] mb-3">
+          <table class="w-full">
+            <thead>
+              <tr>
+                <th class="px-4 py-3 text-left bg-[#F3F8F9] font-display text-[11px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0]">County</th>
+                <th class="px-4 py-3 text-left bg-[#F3F8F9] font-display text-[11px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0]">Hazard</th>
+                <th class="px-4 py-3 text-right bg-[#F3F8F9] font-display text-[11px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0]">EAL</th>
+                <th class="px-4 py-3 text-left bg-[#F3F8F9] font-display text-[11px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0]">Risk Level</th>
+                <th class="px-4 py-3 text-right bg-[#F3F8F9] font-display text-[11px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0]">Properties</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-[#F3F8F9]">
+                <td class="px-4 py-3 font-proxima text-[14px] font-semibold text-[#2D3E4C]">Suffolk</td>
+                <td class="px-4 py-3 font-proxima text-[14px] text-[#37576B]">Hurricane</td>
+                <td class="px-4 py-3 font-proxima text-[14px] text-[#37576B] text-right tabular-nums">$91.52M</td>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-[#DD524C]"></span>
+                    <span class="font-proxima text-[13px] text-[#37576B]">High</span>
+                  </span>
+                </td>
+                <td class="px-4 py-3 font-proxima text-[14px] text-[#37576B] text-right tabular-nums">24,310</td>
+              </tr>
+              <tr class="border-b border-[#F3F8F9] bg-[#FAFCFD]">
+                <td class="px-4 py-3 font-proxima text-[14px] font-semibold text-[#2D3E4C]">Nassau</td>
+                <td class="px-4 py-3 font-proxima text-[14px] text-[#37576B]">Flood</td>
+                <td class="px-4 py-3 font-proxima text-[14px] text-[#37576B] text-right tabular-nums">$64.18M</td>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-[#EA8954]"></span>
+                    <span class="font-proxima text-[13px] text-[#37576B]">Medium-High</span>
+                  </span>
+                </td>
+                <td class="px-4 py-3 font-proxima text-[14px] text-[#37576B] text-right tabular-nums">18,742</td>
+              </tr>
+              <tr class="border-b border-[#F3F8F9]">
+                <td class="px-4 py-3 font-proxima text-[14px] font-semibold text-[#2D3E4C]">Westchester</td>
+                <td class="px-4 py-3 font-proxima text-[14px] text-[#37576B]">Hurricane</td>
+                <td class="px-4 py-3 font-proxima text-[14px] text-[#37576B] text-right tabular-nums">$48.03M</td>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-[#EA8954]"></span>
+                    <span class="font-proxima text-[13px] text-[#37576B]">Medium-High</span>
+                  </span>
+                </td>
+                <td class="px-4 py-3 font-proxima text-[14px] text-[#37576B] text-right tabular-nums">12,905</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="state-label">Pagination</div>
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <span class="font-proxima text-[13px] text-[#6D96AE]">Showing 1–10 of 44 results</span>
+          <div class="flex items-center gap-1 bg-white rounded-[8px] border border-[#E0EBF0] p-1">
+            <button class="w-8 h-8 flex items-center justify-center rounded-[6px] text-[#6D96AE]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+            </button>
+            <button class="w-8 h-8 flex items-center justify-center rounded-[6px] bg-[#2D3E4C] font-display text-[12px] font-[500] text-white uppercase">1</button>
+            <button class="w-8 h-8 flex items-center justify-center rounded-[6px] font-display text-[12px] font-[500] text-[#37576B] uppercase">2</button>
+            <button class="w-8 h-8 flex items-center justify-center rounded-[6px] font-display text-[12px] font-[500] text-[#37576B] uppercase">3</button>
+            <span class="px-1 font-proxima text-[13px] text-[#6D96AE]">…</span>
+            <button class="w-8 h-8 flex items-center justify-center rounded-[6px] font-display text-[12px] font-[500] text-[#37576B] uppercase">5</button>
+            <button class="w-8 h-8 flex items-center justify-center rounded-[6px] text-[#6D96AE]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>DMS composition:</strong> Three sequential DMS sections in a <code>content</code> LayoutGroup. Section 1: sectionArray col-12 with a <code>filters</code> component registration. Section 2: <code>table</code> type section. Section 3: sectionArray col-12 with a <code>pagination</code> registration. All share the same dataset source.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 4 — HAZARD CARD GRID
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 04 — Hazard Card Grid</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          4-up (or 3-up) grid of hazard summary cards. Each card: hazard icon, name, risk dot + level, EAL value, and a "View Details" CTA. Rendered as a single Card section with <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">cardsGridSize: 4</code>.
+        </p>
+
+        <!-- 4-up card grid demo -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <!-- Hurricane card -->
+          <div class="bg-white rounded-[12px] border border-[#E0EBF0] p-4 flex flex-col gap-3" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+            <div class="w-10 h-10 rounded-full bg-[#F3F8F9] flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/></svg>
+            </div>
+            <div>
+              <div class="font-display text-[14px] font-[500] uppercase text-[#2D3E4C] leading-tight mb-1">Hurricane</div>
+              <div class="flex items-center gap-1.5 mb-2">
+                <span class="w-2 h-2 rounded-full bg-[#DD524C]"></span>
+                <span class="font-proxima text-[12px] text-[#37576B]">High Risk</span>
+              </div>
+              <div class="font-display text-[18px] font-[500] uppercase text-[#2D3E4C]">$91.52M</div>
+              <div class="font-proxima text-[11px] text-[#6D96AE] uppercase tracking-widest">EAL / Year</div>
+            </div>
+            <button class="mt-auto w-full py-2 rounded-full bg-[#F3F8F9] font-proxima text-[13px] font-semibold text-[#37576B] border border-[#E0EBF0]">View Details</button>
+          </div>
+
+          <!-- Flood card -->
+          <div class="bg-white rounded-[12px] border border-[#E0EBF0] p-4 flex flex-col gap-3" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+            <div class="w-10 h-10 rounded-full bg-[#F3F8F9] flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg>
+            </div>
+            <div>
+              <div class="font-display text-[14px] font-[500] uppercase text-[#2D3E4C] leading-tight mb-1">Flood</div>
+              <div class="flex items-center gap-1.5 mb-2">
+                <span class="w-2 h-2 rounded-full bg-[#EA8954]"></span>
+                <span class="font-proxima text-[12px] text-[#37576B]">Medium-High</span>
+              </div>
+              <div class="font-display text-[18px] font-[500] uppercase text-[#2D3E4C]">$64.18M</div>
+              <div class="font-proxima text-[11px] text-[#6D96AE] uppercase tracking-widest">EAL / Year</div>
+            </div>
+            <button class="mt-auto w-full py-2 rounded-full bg-[#F3F8F9] font-proxima text-[13px] font-semibold text-[#37576B] border border-[#E0EBF0]">View Details</button>
+          </div>
+
+          <!-- Winter Storm card -->
+          <div class="bg-white rounded-[12px] border border-[#E0EBF0] p-4 flex flex-col gap-3" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+            <div class="w-10 h-10 rounded-full bg-[#F3F8F9] flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1.5M12 19.5V21M4.22 4.22l1.06 1.06M18.72 18.72l1.06 1.06M3 12h1.5M19.5 12H21M4.22 19.78l1.06-1.06M18.72 5.28l1.06-1.06M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z"/></svg>
+            </div>
+            <div>
+              <div class="font-display text-[14px] font-[500] uppercase text-[#2D3E4C] leading-tight mb-1">Winter Storm</div>
+              <div class="flex items-center gap-1.5 mb-2">
+                <span class="w-2 h-2 rounded-full bg-[#F1CA87]"></span>
+                <span class="font-proxima text-[12px] text-[#37576B]">Medium</span>
+              </div>
+              <div class="font-display text-[18px] font-[500] uppercase text-[#2D3E4C]">$27.40M</div>
+              <div class="font-proxima text-[11px] text-[#6D96AE] uppercase tracking-widest">EAL / Year</div>
+            </div>
+            <button class="mt-auto w-full py-2 rounded-full bg-[#F3F8F9] font-proxima text-[13px] font-semibold text-[#37576B] border border-[#E0EBF0]">View Details</button>
+          </div>
+
+          <!-- Drought card -->
+          <div class="bg-white rounded-[12px] border border-[#E0EBF0] p-4 flex flex-col gap-3" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+            <div class="w-10 h-10 rounded-full bg-[#F3F8F9] flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-[#37576B]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/></svg>
+            </div>
+            <div>
+              <div class="font-display text-[14px] font-[500] uppercase text-[#2D3E4C] leading-tight mb-1">Drought</div>
+              <div class="flex items-center gap-1.5 mb-2">
+                <span class="w-2 h-2 rounded-full bg-[#54B99B]"></span>
+                <span class="font-proxima text-[12px] text-[#37576B]">Low</span>
+              </div>
+              <div class="font-display text-[18px] font-[500] uppercase text-[#2D3E4C]">$4.22M</div>
+              <div class="font-proxima text-[11px] text-[#6D96AE] uppercase tracking-widest">EAL / Year</div>
+            </div>
+            <button class="mt-auto w-full py-2 rounded-full bg-[#F3F8F9] font-proxima text-[13px] font-semibold text-[#37576B] border border-[#E0EBF0]">View Details</button>
+          </div>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>DMS section:</strong> Card section, <code>cardsGridSize: 4</code> (3 on tablet, 2 on mobile). Columns: icon (<code>type: 'image'</code> with SVG src or theme-registered icon column), name (<code>metaMD</code>), risk dot + level (<code>risk_dot</code> theme column), EAL (<code>metaLG</code>), CTA (<code>link_cta</code> chrome column). Row height normalised via <code>cardHints.equalHeight: true</code>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 5 — FORM LAYOUT
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 05 — Form Layout (FieldSet + Submit/Cancel)</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          Standard admin/auth form. FieldSets group related inputs. Submit/Cancel pair at the bottom right. Lives in a <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">content</code> LayoutGroup with max-w-[640px] column constraint.
+        </p>
+
+        <!-- Form demo -->
+        <div class="max-w-[640px]">
+          <!-- FieldSet 1 -->
+          <fieldset class="mb-6">
+            <legend class="font-display text-[14px] font-[500] uppercase text-[#2D3E4C] tracking-wider mb-4 pb-2 border-b border-[#E0EBF0] w-full">Profile Information</legend>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block font-display text-[11px] font-[500] uppercase text-[#6D96AE] tracking-widest mb-1.5">First Name</label>
+                <input type="text" value="Sarah" class="w-full px-4 py-2.5 rounded-[12px] border border-[#C5D7E0] font-proxima text-[14px] text-[#37576B] bg-white focus:outline-none focus:border-[#37576B]">
+              </div>
+              <div>
+                <label class="block font-display text-[11px] font-[500] uppercase text-[#6D96AE] tracking-widest mb-1.5">Last Name</label>
+                <input type="text" value="Johnson" class="w-full px-4 py-2.5 rounded-[12px] border border-[#C5D7E0] font-proxima text-[14px] text-[#37576B] bg-white focus:outline-none focus:border-[#37576B]">
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="block font-display text-[11px] font-[500] uppercase text-[#6D96AE] tracking-widest mb-1.5">Email</label>
+              <input type="email" value="sjohnson@suffolkcounty.gov" class="w-full px-4 py-2.5 rounded-[12px] border border-[#C5D7E0] font-proxima text-[14px] text-[#37576B] bg-white focus:outline-none focus:border-[#37576B]">
+            </div>
+          </fieldset>
+
+          <!-- FieldSet 2 -->
+          <fieldset class="mb-6">
+            <legend class="font-display text-[14px] font-[500] uppercase text-[#2D3E4C] tracking-wider mb-4 pb-2 border-b border-[#E0EBF0] w-full">Preferences</legend>
+            <div class="mb-4">
+              <label class="block font-display text-[11px] font-[500] uppercase text-[#6D96AE] tracking-widest mb-1.5">County</label>
+              <div class="w-full px-4 py-2.5 rounded-[12px] border border-[#C5D7E0] bg-white flex items-center justify-between cursor-pointer">
+                <span class="font-proxima text-[14px] text-[#37576B]">Suffolk County</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="block font-display text-[11px] font-[500] uppercase text-[#6D96AE] tracking-widest mb-1.5">Hazard Interests</label>
+              <div class="w-full px-3 py-2 rounded-[12px] border border-[#37576B] bg-white flex flex-wrap gap-1.5 items-center min-h-[44px]">
+                <span class="flex items-center gap-1 bg-[#C5D7E0] rounded-full px-2.5 py-0.5 font-proxima text-[13px] text-[#37576B]">
+                  Hurricane
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>
+                </span>
+                <span class="flex items-center gap-1 bg-[#C5D7E0] rounded-full px-2.5 py-0.5 font-proxima text-[13px] text-[#37576B]">
+                  Flood
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#6D96AE]" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>
+                </span>
+                <span class="font-proxima text-[13px] text-[#6D96AE]">Add more…</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between py-2">
+              <div>
+                <div class="font-display text-[12px] font-[500] uppercase text-[#2D3E4C] tracking-wider">Email Notifications</div>
+                <div class="font-proxima text-[12px] text-[#6D96AE]">Receive updates for your watched hazards</div>
+              </div>
+              <!-- Toggle on -->
+              <button class="relative w-10 h-5 rounded-full bg-[#37576B] flex items-center">
+                <span class="absolute right-0.5 w-4 h-4 rounded-full bg-white shadow-sm"></span>
+              </button>
+            </div>
+          </fieldset>
+
+          <!-- Submit/Cancel -->
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#E0EBF0]">
+            <button class="px-6 py-2.5 rounded-full border border-[#C5D7E0] bg-white font-proxima text-[14px] font-semibold text-[#37576B]">Cancel</button>
+            <button class="px-6 py-2.5 rounded-full bg-[#EAAD43] font-proxima text-[14px] font-semibold text-white">Save Changes</button>
+          </div>
+        </div>
+
+        <div class="mt-6 callout">
+          <p><strong>DMS composition:</strong> DMS <code>forms</code> pattern. FieldSets map to logical section groups within the form pattern. Each field is a registered form input type. Submit/Cancel buttons are rendered by the form pattern's action bar. The yellow Save button maps to <code>theme.button.primary</code>; Cancel to <code>theme.button.secondary</code>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 6 — AUTH / SIGN-IN
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 06 — Auth / Sign-In Page</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          Full-screen centred card on topo-textured canvas. Uses the <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">auth</code> Layout variant (no TopNav, no SideNav) with the <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">auth</code> LayoutGroup variant (<code>mx-auto</code>, vertically centred).
+        </p>
+
+        <!-- Auth card demo (scaled down) -->
+        <div class="rounded-[12px] overflow-hidden flex items-center justify-center py-12 px-4"
+             style="background: linear-gradient(0deg, rgba(244,244,244,0.96) 0%, rgba(244,244,244,0.85) 100%), url('../theme/topolines.png') center/500px; min-height: 440px;">
+          <div class="bg-white rounded-[12px] p-8 w-full max-w-[400px]"
+               style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06)">
+            <!-- Logo -->
+            <div class="flex justify-center mb-6">
+              <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-10">
+            </div>
+            <h1 class="font-display text-[24px] font-[500] uppercase text-center text-[#2D3E4C] mb-1">Sign In</h1>
+            <p class="font-proxima text-[14px] text-center text-[#6D96AE] mb-6">Access the MitigateNY platform</p>
+
+            <div class="mb-4">
+              <label class="block font-display text-[10px] font-[500] uppercase text-[#6D96AE] tracking-widest mb-1.5">Email</label>
+              <input type="email" placeholder="you@agency.gov" class="w-full px-4 py-2.5 rounded-[12px] border border-[#C5D7E0] font-proxima text-[14px] text-[#37576B] bg-white focus:outline-none">
+            </div>
+            <div class="mb-6">
+              <label class="block font-display text-[10px] font-[500] uppercase text-[#6D96AE] tracking-widest mb-1.5">Password</label>
+              <input type="password" placeholder="••••••••" class="w-full px-4 py-2.5 rounded-[12px] border border-[#C5D7E0] font-proxima text-[14px] text-[#37576B] bg-white focus:outline-none">
+            </div>
+
+            <button class="w-full py-3 rounded-full bg-[#EAAD43] font-proxima text-[15px] font-semibold text-white mb-4">Sign In</button>
+            <div class="text-center">
+              <span class="font-proxima text-[13px] text-[#6D96AE]">Forgot your password? </span>
+              <a href="#" class="font-proxima text-[13px] font-semibold text-[#37576B] underline" style="text-decoration-color:#EAAD43">Reset it</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>DMS layout:</strong> <code>auth</code> Layout (no nav). Single <code>auth</code> LayoutGroup, <code>mx-auto</code> wrapper, vertically centred. The card uses <code>mny-shadow-md</code>. Form fields and submit button render via the DMS <code>auth</code> pattern's built-in sign-in form.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 7 — STATE INDICATORS (EMPTY / LOADING / ERROR)
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 07 — Section State Indicators</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          How each section type communicates empty, loading, and error states to the user. These are theme-overrideable via <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">theme.statusIndicators</code>.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Empty state -->
+          <div>
+            <div class="state-label">Empty state</div>
+            <div class="rounded-[12px] border border-[#E0EBF0] bg-[#F3F8F9] flex flex-col items-center justify-center py-12 px-6 text-center">
+              <div class="w-12 h-12 rounded-full bg-[#E0EBF0] flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-[#6D96AE]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776"/></svg>
+              </div>
+              <div class="font-display text-[14px] font-[500] uppercase text-[#2D3E4C] mb-1">No Data Found</div>
+              <div class="font-proxima text-[13px] text-[#6D96AE] leading-snug">Try adjusting your filters or search criteria.</div>
+            </div>
+          </div>
+
+          <!-- Loading state -->
+          <div>
+            <div class="state-label">Loading state</div>
+            <div class="rounded-[12px] border border-[#E0EBF0] bg-white flex flex-col gap-3 py-6 px-4">
+              <div class="h-4 bg-[#E0EBF0] rounded-full animate-pulse w-3/4"></div>
+              <div class="h-4 bg-[#E0EBF0] rounded-full animate-pulse w-full"></div>
+              <div class="h-4 bg-[#E0EBF0] rounded-full animate-pulse w-5/6"></div>
+              <div class="h-4 bg-[#E0EBF0] rounded-full animate-pulse w-2/3"></div>
+              <div class="h-4 bg-[#E0EBF0] rounded-full animate-pulse w-full"></div>
+              <div class="h-4 bg-[#E0EBF0] rounded-full animate-pulse w-3/5"></div>
+            </div>
+          </div>
+
+          <!-- Error state -->
+          <div>
+            <div class="state-label">Error state</div>
+            <div class="rounded-[12px] border border-[#DD524C] bg-white flex flex-col items-center justify-center py-12 px-6 text-center">
+              <div class="w-12 h-12 rounded-full bg-[#FCF0F0] flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-6 text-[#DD524C]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
+              </div>
+              <div class="font-display text-[14px] font-[500] uppercase text-[#AA2E26] mb-1">Unable to Load</div>
+              <div class="font-proxima text-[13px] text-[#6D96AE] leading-snug mb-3">There was a problem fetching this data.</div>
+              <button class="px-4 py-1.5 rounded-full border border-[#C5D7E0] bg-white font-proxima text-[13px] font-semibold text-[#37576B]">Try Again</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>Token references:</strong> Empty: icon <code>#6D96AE</code> (blue-400), bg <code>#F3F8F9</code> (blue-50). Loading: skeleton bars <code>#E0EBF0</code> (blue-100) with CSS <code>animate-pulse</code>. Error: border + icon <code>#DD524C</code> (red-500), bg tint <code>#FCF0F0</code>, text <code>#AA2E26</code> (red-700).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 8 — SECTION EDIT-MODE TOOLBAR
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 08 — Section Edit-Mode Toolbar (Admin Chrome)</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          The overlay chrome that appears on a section when an admin is in edit mode. A top bar identifies the section type; a bottom-right action cluster handles move/delete/settings. The section itself shows an edit-mode tint ring.
+        </p>
+
+        <!-- Section in edit mode demo -->
+        <div class="relative rounded-[12px] border-2 border-[#37576B]">
+          <!-- Edit-mode top bar -->
+          <div class="absolute -top-px left-0 right-0 flex items-center justify-between px-3 py-1.5 bg-[#37576B] rounded-t-[11px]">
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-white opacity-60" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Zm0 5.25a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd"/></svg>
+              <span class="font-display text-[11px] font-[500] uppercase text-white tracking-widest opacity-80">Card Section</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button class="px-2 py-0.5 rounded bg-white/20 font-proxima text-[11px] text-white">Edit</button>
+              <button class="px-2 py-0.5 rounded bg-white/10 font-proxima text-[11px] text-white/70">Move</button>
+              <button class="w-5 h-5 flex items-center justify-center rounded bg-[#DD524C]/80">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mock section content (table) with edit tint -->
+          <div class="pt-7 pb-2 px-4 bg-[#F3F8F9]/40">
+            <table class="w-full opacity-70">
+              <thead>
+                <tr>
+                  <th class="px-3 py-2 text-left bg-[#F3F8F9] font-display text-[10px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0] rounded-tl-[8px]">County</th>
+                  <th class="px-3 py-2 text-right bg-[#F3F8F9] font-display text-[10px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0]">EAL</th>
+                  <th class="px-3 py-2 text-left bg-[#F3F8F9] font-display text-[10px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0] rounded-tr-[8px]">Risk</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-[#F3F8F9]">
+                  <td class="px-3 py-2 font-proxima text-[13px] text-[#2D3E4C]">Suffolk</td>
+                  <td class="px-3 py-2 font-proxima text-[13px] text-[#37576B] text-right tabular-nums">$91.52M</td>
+                  <td class="px-3 py-2"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#DD524C]"></span><span class="font-proxima text-[12px] text-[#37576B]">High</span></span></td>
+                </tr>
+                <tr>
+                  <td class="px-3 py-2 font-proxima text-[13px] text-[#2D3E4C]">Nassau</td>
+                  <td class="px-3 py-2 font-proxima text-[13px] text-[#37576B] text-right tabular-nums">$64.18M</td>
+                  <td class="px-3 py-2"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#EA8954]"></span><span class="font-proxima text-[12px] text-[#37576B]">Med-High</span></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Section type badge (bottom) -->
+          <div class="flex items-center justify-end gap-2 px-3 py-2 border-t border-[#E0EBF0]/40">
+            <button class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#37576B] font-proxima text-[11px] font-semibold text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              Add Section Below
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>Admin chrome tokens:</strong> Edit-mode ring: <code>border-2 border-[#37576B]</code>. Top bar bg: <code>#37576B</code> (blue-700). Section type label: <code>metaXS</code> white. Action buttons: white/20 tint for safe actions, <code>#DD524C</code> (red-500) for delete. "Add Section Below" uses primary button style in dark context.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 9 — MAP WORKBENCH LAYOUT
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 09 — Map Workbench Layout</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          Full-height map surface with a floating control panel on the left. Uses the <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">app</code> Layout variant (with sidenav) and a <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">clearCentered</code> LayoutGroup. The map canvas is fullwidth; the panel is an absolutely-positioned white card.
+        </p>
+
+        <!-- Map workbench demo -->
+        <div class="rounded-[12px] overflow-hidden relative" style="height: 380px; background: #C5D7E0;">
+          <!-- Fake map tiles -->
+          <div class="absolute inset-0 opacity-30" style="background-image: repeating-linear-gradient(0deg, #37576B 0, #37576B 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #37576B 0, #37576B 1px, transparent 1px, transparent 40px); background-size: 40px 40px;"></div>
+          <!-- Topo contours hint -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="text-center">
+              <div class="font-display text-[13px] font-[500] uppercase text-[#37576B] opacity-40 tracking-widest">MapLibre GL Canvas</div>
+              <div class="font-proxima text-[12px] text-[#6D96AE] opacity-40">Fullwidth / Full-height section</div>
+            </div>
+          </div>
+
+          <!-- Floating layer control panel -->
+          <div class="absolute top-4 left-4 w-[240px] bg-white rounded-[12px] overflow-hidden"
+               style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06)">
+            <div class="px-4 py-3 border-b border-[#E0EBF0] flex items-center justify-between">
+              <span class="font-display text-[13px] font-[500] uppercase text-[#2D3E4C] tracking-wider">Layers</span>
+              <button class="w-5 h-5 flex items-center justify-center text-[#6D96AE]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div class="px-4 py-3 space-y-3">
+              <!-- Layer row active -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-sm bg-[#DD524C]"></span>
+                  <span class="font-proxima text-[13px] text-[#37576B]">Flood Zones</span>
+                </div>
+                <button class="relative w-9 h-5 rounded-full bg-[#37576B]">
+                  <span class="absolute right-0.5 top-0.5 w-4 h-4 rounded-full bg-white shadow-sm"></span>
+                </button>
+              </div>
+              <!-- Layer row inactive -->
+              <div class="flex items-center justify-between opacity-60">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-sm bg-[#EA8954]"></span>
+                  <span class="font-proxima text-[13px] text-[#37576B]">NFIP Claims</span>
+                </div>
+                <button class="relative w-9 h-5 rounded-full bg-[#E0EBF0]">
+                  <span class="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-white shadow-sm"></span>
+                </button>
+              </div>
+              <!-- Layer row active -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-sm bg-[#37576B]"></span>
+                  <span class="font-proxima text-[13px] text-[#37576B]">County Boundaries</span>
+                </div>
+                <button class="relative w-9 h-5 rounded-full bg-[#37576B]">
+                  <span class="absolute right-0.5 top-0.5 w-4 h-4 rounded-full bg-white shadow-sm"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Map zoom controls -->
+          <div class="absolute bottom-4 right-4 flex flex-col gap-1">
+            <button class="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-proxima text-[16px] text-[#37576B] font-bold"
+                    style="box-shadow: 0px 2px 4px rgba(0,0,0,.1)">+</button>
+            <button class="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-proxima text-[16px] text-[#37576B] font-bold"
+                    style="box-shadow: 0px 2px 4px rgba(0,0,0,.1)">−</button>
+          </div>
+
+          <!-- Location chip -->
+          <div class="absolute bottom-4 left-4 flex items-center gap-2 bg-white/90 rounded-full px-3 py-1.5"
+               style="box-shadow: 0px 2px 4px rgba(0,0,0,.1)">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-[#EAAD43]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 1 0 3 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 0 0 2.273 1.765 11.842 11.842 0 0 0 .976.544l.062.029.018.008.006.003ZM10 11.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z" clip-rule="evenodd"/></svg>
+            <span class="font-proxima text-[12px] font-semibold text-[#37576B]">Suffolk County, NY</span>
+          </div>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>DMS layout:</strong> <code>app</code> Layout (floating TopNav + compact SideNav). Map is a registered <code>MapSection</code> component with <code>fullwidth: true</code>. The layer panel is rendered inside the map component's control slot — not a separate DMS section. Zoom/location chrome is internal to the MapSection.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 10 — FOOTER
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-8" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 10 — Site Footer</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          Full-bleed dark section (<code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">darkSection</code> LayoutGroup variant) with a 4-column sitemap grid above a copyright/credit bar. Uses <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">text-white</code> / <code class="font-mono text-xs bg-[#F3F8F9] px-1 rounded">text-white/60</code> on the dark canvas.
+        </p>
+
+        <!-- Footer demo (dark bg) -->
+        <div class="rounded-[12px] overflow-hidden bg-[#2D3E4C]"
+             style="background: linear-gradient(0deg, rgba(45,62,76,0.97) 0%, rgba(45,62,76,0.93) 100%), url('../theme/topolines.png') center/500px;">
+          <!-- Main footer grid -->
+          <div class="px-8 pt-10 pb-8 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <!-- Col 1: Brand -->
+            <div class="col-span-2 md:col-span-1">
+              <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-8 mb-4 brightness-0 invert opacity-90">
+              <p class="font-proxima text-[13px] text-white/60 leading-snug">New York State's hazard mitigation planning platform for emergency managers and county planners.</p>
+            </div>
+            <!-- Col 2 -->
+            <div>
+              <div class="font-display text-[11px] font-[500] uppercase text-white/40 tracking-widest mb-3">Risk Environment</div>
+              <ul class="space-y-2">
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">Hazard Profiles</a></li>
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">County Risk Maps</a></li>
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">Loss Statistics</a></li>
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">NFIP Claims</a></li>
+              </ul>
+            </div>
+            <!-- Col 3 -->
+            <div>
+              <div class="font-display text-[11px] font-[500] uppercase text-white/40 tracking-widest mb-3">Mitigation</div>
+              <ul class="space-y-2">
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">Hazard Mitigation Plans</a></li>
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">Grant Programs</a></li>
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">Projects Database</a></li>
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">Resources</a></li>
+              </ul>
+            </div>
+            <!-- Col 4 -->
+            <div>
+              <div class="font-display text-[11px] font-[500] uppercase text-white/40 tracking-widest mb-3">Agency</div>
+              <ul class="space-y-2">
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">About MitigateNY</a></li>
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">Contact</a></li>
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">Accessibility</a></li>
+                <li><a href="#" class="font-proxima text-[13px] text-white/70 hover:text-white">Privacy Policy</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Copyright bar -->
+          <div class="px-8 py-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-4">
+              <span class="font-proxima text-[12px] text-white/40">© 2025 New York State Division of Homeland Security and Emergency Services</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-proxima text-[11px] text-white/30">Powered by</span>
+              <span class="font-display text-[11px] font-[500] uppercase text-[#EAAD43] tracking-wider">AVAIL DMS</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>DMS composition:</strong> <code>darkSection</code> LayoutGroup variant (full-bleed <code>#2D3E4C</code> with topo overlay). Two sectionArray sections: (1) 4-column card grid with Lexical nav lists, <code>col-span-3</code>; (2) full-row copyright Lexical row, <code>col-span-12</code>, <code>border-t border-white/10</code> via inner-box. All text uses white/40 and white/60 modifier axes from the type token system.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN REFERENCE TABLE
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-12" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern Reference Summary</div>
+        <table class="ref-table mt-3">
+          <thead>
+            <tr>
+              <th style="width:30px">#</th>
+              <th>Pattern</th>
+              <th>Layout</th>
+              <th>LayoutGroup</th>
+              <th>Key DMS Sections</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-[#6D96AE]">01</td>
+              <td><strong>Page Header + Action Pair</strong></td>
+              <td><code>default</code></td>
+              <td><code>header</code></td>
+              <td>Lexical + sectionArray (CTA)</td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">02</td>
+              <td><strong>Risk Metadata Strip</strong></td>
+              <td><code>default</code></td>
+              <td><code>lightCentered</code></td>
+              <td>Card (1 row, stat cells + <code>risk_dot</code>)</td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">03</td>
+              <td><strong>Filter Bar + Table + Pagination</strong></td>
+              <td><code>default</code></td>
+              <td><code>content</code></td>
+              <td>sectionArray (filters) + table + sectionArray (pagination)</td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">04</td>
+              <td><strong>Hazard Card Grid</strong></td>
+              <td><code>default</code></td>
+              <td><code>content</code></td>
+              <td>Card (<code>cardsGridSize: 4</code>, <code>equalHeight</code>)</td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">05</td>
+              <td><strong>Form Layout</strong></td>
+              <td><code>default</code></td>
+              <td><code>content</code></td>
+              <td>DMS <code>forms</code> pattern (FieldSets + action bar)</td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">06</td>
+              <td><strong>Auth / Sign-In</strong></td>
+              <td><code>auth</code></td>
+              <td><code>auth</code></td>
+              <td>DMS <code>auth</code> pattern (sign-in form)</td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">07</td>
+              <td><strong>State Indicators</strong></td>
+              <td>any</td>
+              <td>any</td>
+              <td><code>theme.statusIndicators</code> (empty / loading / error)</td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">08</td>
+              <td><strong>Edit-Mode Toolbar</strong></td>
+              <td>any</td>
+              <td>any</td>
+              <td>Admin chrome overlay — <code>border-2 border-[#37576B]</code></td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">09</td>
+              <td><strong>Map Workbench</strong></td>
+              <td><code>app</code></td>
+              <td><code>clearCentered</code></td>
+              <td>MapSection (fullwidth) with internal control panel</td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">10</td>
+              <td><strong>Site Footer</strong></td>
+              <td><code>default</code></td>
+              <td><code>darkSection</code></td>
+              <td>sectionArray 4-col nav grid + full-row copyright bar</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /flex col -->
+</div><!-- /layout -->
+
+<!-- Floating design-system nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+  
+    <a href="../pages/actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize Actions</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "type": "commonjs",
+  "scripts": {
+    "test": "node run-tests.js",
+    "test:unit": "node run-tests.js --unit",
+    "test:integration": "node run-tests.js --integration"
+  }
+}

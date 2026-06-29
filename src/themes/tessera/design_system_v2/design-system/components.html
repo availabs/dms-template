@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tessera — Design System / Components</title>
+  <link rel="stylesheet" href="_dms-page.css">
+  <style>
+    /* Sub-section header inside each major section.
+       Typography comes from the t-metaSM token applied on the element.
+       This rule carries only layout + accent overrides. */
+    .sub-eyebrow {
+      color: var(--color-fog);
+      margin-bottom: var(--space-3);
+      margin-top: var(--space-6);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .sub-eyebrow:first-child { margin-top: 0; }
+    .sub-eyebrow .name { color: var(--color-slate); }
+
+    /* Demo container — frames a live primitive */
+    .demo {
+      background: var(--color-bone);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-5);
+      margin-bottom: var(--space-3);
+    }
+    .demo.small { padding: var(--space-4); }
+    .demo-row { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
+    .demo-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+    .demo-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+    /* Typography comes from the t-metaSM token applied on the element. */
+    .demo-caption {
+      color: var(--color-fog);
+      margin-top: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    /* Sample data for dataCard demo */
+    .dc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+    .dc-card { background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); }
+    .dc-cells { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-3); }
+    .dc-cell { display: flex; flex-direction: column; gap: 2px; }
+    /* dc-header carries the t-metaXS token on the element; this rule
+       tints it down to graphite (vs. token default of graphite — kept for clarity). */
+    .dc-header { color: var(--color-graphite); }
+    /* dc-value carries t-proseSM on the element. */
+    .dc-value { color: var(--color-slate); }
+    /* num variant: tabular display rendering. The token .t-metaMD plus the
+       .weight-500 modifier is applied on the element; this rule just handles
+       alignment. */
+    .dc-value.num { text-align: right; }
+    /* dc-image carries the t-metaXS token. */
+    .dc-image { background: var(--color-limestone); border: 1px solid var(--color-grout-light); aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; color: var(--color-fog); }
+
+    /* TopNav mockup. Typography comes from tokens applied on the elements. */
+    .mock-topnav { background: var(--color-bone); border: 1px solid var(--color-grout-light); }
+    .mock-topnav .inner { display:flex; align-items:center; justify-content: space-between; padding: 0 var(--space-4); height: 56px; }
+    .mock-topnav .left, .mock-topnav .right { display: flex; align-items: center; gap: var(--space-4); }
+    .mock-topnav .item { color: var(--color-graphite); padding: var(--space-2) var(--space-3); cursor: pointer; }
+    .mock-topnav .item:hover { color: var(--color-slate); }
+    .mock-topnav .item.active { color: var(--color-slate); border-bottom: 2px solid var(--color-slate); margin-bottom: -1px; padding-bottom: calc(var(--space-2) - 1px); }
+
+    /* SideNav mockup. Typography comes from tokens applied on the elements. */
+    .mock-sidenav { background: var(--color-bone); border: 1px solid var(--color-grout-light); width: 220px; }
+    .mock-sidenav .section { padding: var(--space-3); border-bottom: 1px solid var(--color-grout-light); }
+    .mock-sidenav .section:last-child { border-bottom: 0; }
+    .mock-sidenav .eye { color: var(--color-fog); padding: 0 var(--space-2); margin-bottom: var(--space-2); }
+    .mock-sidenav .item { display:flex; align-items: center; gap: var(--space-2); padding: 8px 12px; color: var(--color-graphite); cursor: pointer; }
+    .mock-sidenav .item:hover { color: var(--color-slate); background: var(--color-limestone); }
+    .mock-sidenav .item.active { color: var(--color-slate); background: var(--color-limestone); border-left: 2px solid var(--color-oxide); margin-left: -1px; }
+    .mock-sidenav .item.l2 { padding-left: 24px; }
+    .mock-sidenav .item.l3 { padding-left: 36px; color: var(--color-fog); }
+
+    /* Inputs */
+    .demo input, .demo textarea, .demo select { max-width: 360px; }
+
+    /* MultiSelect token. Typography comes from tokens applied on the elements. */
+    .ms-trigger { display: flex; align-items: center; gap: var(--space-2); padding: 8px 32px 8px 12px; min-height: 36px; background: var(--color-parchment); border: 1px solid var(--color-grout-light); border-radius: 2px; cursor: pointer; max-width: 360px; position: relative; }
+    .ms-trigger .caret { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--color-graphite); }
+    .ms-token { display: inline-flex; align-items: center; gap: 6px; padding: 2px 6px; background: var(--color-limestone); border: 1px solid var(--color-grout-light); color: var(--color-slate); border-radius: 2px; }
+    .ms-token .x { color: var(--color-fog); cursor: pointer; }
+    .ms-menu { width: 360px; padding: 4px; background: var(--color-parchment); border: 1px solid var(--color-grout-light); box-shadow: 0 1px 2px rgba(42,47,54,0.04); }
+    .ms-menu input { width: 100%; padding: 6px 8px; background: transparent; border: 0; border-bottom: 1px solid var(--color-grout-light); }
+    .ms-menu input:focus { outline: none; border-bottom-color: var(--color-slate); }
+    .ms-option { padding: 6px 8px; color: var(--color-slate); cursor: pointer; }
+    .ms-option:hover { background: var(--color-limestone); }
+    .ms-option.selected { color: var(--color-slate); }
+    .ms-option.selected::after { content: '✓'; float: right; color: var(--color-oxide); }
+
+    /* Switch. Label typography comes from token applied on the element. */
+    .switch { display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; }
+    .switch .track { width: 36px; height: 20px; background: var(--color-limestone); border: 1px solid var(--color-grout-light); border-radius: 999px; position: relative; transition: background var(--dur-snap) var(--ease-snap); }
+    .switch .thumb { position: absolute; top: 1px; left: 1px; width: 14px; height: 14px; background: var(--color-parchment); border-radius: 50%; transition: transform var(--dur-snap) var(--ease-snap); }
+    .switch.on .track { background: var(--color-slate); border-color: var(--color-slate); }
+    .switch.on .thumb { transform: translateX(16px); }
+    .switch .label { color: var(--color-slate); }
+
+    /* Tabs. Typography comes from tokens applied on the elements. */
+    .tabs { border-bottom: 1px solid var(--color-grout-light); display: flex; }
+    .tabs .tab { padding: 10px 16px; color: var(--color-graphite); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .tabs .tab:hover { color: var(--color-slate); }
+    .tabs .tab.active { color: var(--color-slate); border-bottom-color: var(--color-slate); }
+
+    /* Dialog mock. Heading & body text use tokens applied on the elements. */
+    .mock-dialog { background: rgba(42, 47, 54, 0.40); padding: var(--space-5); display: flex; align-items: center; justify-content: center; min-height: 280px; }
+    .mock-dialog-panel { background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-6); max-width: 480px; width: 100%; box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04); }
+    .mock-dialog-panel h3 { color: var(--color-slate); margin: 0 0 var(--space-2); }
+    .mock-dialog-panel p { color: var(--color-graphite); margin: 0 0 var(--space-4); }
+
+    /* Pills. Typography from t-proseXS + weight-500 modifier applied on the elements. */
+    .pill-base { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; }
+    .pill-neutral { background: var(--color-limestone); color: var(--color-graphite); border: 1px solid var(--color-grout-light); }
+    .pill-verdigris { color: var(--color-verdigris); border: 1px solid var(--color-verdigris); background: transparent; }
+    .pill-oxide { color: var(--color-oxide); border: 1px solid var(--color-oxide); background: transparent; }
+    .pill-ochre { color: var(--color-ochre); border: 1px solid var(--color-ochre); background: transparent; }
+    .pill-slate { background: var(--color-slate); color: var(--color-parchment); border: 1px solid var(--color-slate); }
+
+    /* Pagination. Typography from t-proseSM token on the wrapper; .num uses t-metaMD on the spans. */
+    .pagination { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-graphite); }
+    .pagination .num { color: var(--color-slate); }
+
+    /* Graph mockup — pure CSS. Axis label typography from t-metaXS on the element. */
+    .graph { background: var(--color-parchment); border: 1px solid var(--color-grout-light); padding: var(--space-5); }
+    .bar { display: flex; align-items: flex-end; gap: 8px; height: 140px; margin-bottom: var(--space-2); }
+    .bar .b { flex: 1; background: var(--color-oxide); }
+    .bar .b:nth-child(2) { background: var(--color-verdigris); }
+    .bar .b:nth-child(3) { background: var(--color-slate); }
+    .bar .b:nth-child(4) { background: var(--color-ochre); }
+    .bar .b:nth-child(5) { background: var(--color-tile); }
+    .graph-axis { color: var(--color-fog); display: flex; justify-content: space-between; }
+
+    /* Logo mockup. .word uses t-displayMD (28px display) on the element;
+       .word-sm overrides font-size only (an authorised micro-tweak between
+       displaySM and displayMD that we keep inline). */
+    .logo-mockup { display: inline-flex; align-items: baseline; gap: var(--space-2); }
+    .logo-mockup .mark-tile { width: 16px; height: 16px; background: var(--color-oxide); display: inline-block; transform: translateY(-1px); }
+    .logo-mockup .word { color: var(--color-slate); }
+    .logo-mockup .word-sm { font-size: 18px; }
+    .logo-mockup.stacked { flex-direction: column; align-items: center; gap: 4px; }
+    .logo-mockup.stacked .mark-tile { width: 40px; height: 40px; }
+
+    /* NavigableMenu. Typography from tokens applied on the elements. */
+    .nav-menu { width: 260px; background: var(--color-parchment); border: 1px solid var(--color-grout-light); box-shadow: 0 1px 2px rgba(42,47,54,0.04); padding: 4px; }
+    .nav-menu-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; color: var(--color-slate); cursor: pointer; }
+    .nav-menu-item:hover { background: var(--color-limestone); }
+    .nav-menu-item .val { padding: 2px 6px; background: var(--color-limestone); color: var(--color-graphite); border: 1px solid var(--color-grout-light); }
+    .nav-menu-sep { border-top: 1px solid var(--color-grout-light); margin: 4px 0; }
+
+    /* Lexical mockup. Element-level rules below carry the appropriate token
+       so all rendered text in .lex picks up the typography from the token system. */
+    .lex { color: var(--color-slate); }
+    .lex h1 { margin: 0 0 var(--space-4); }
+    .lex h2 { margin: var(--space-5) 0 var(--space-3); }
+    .lex p  { margin: 0 0 var(--space-3); }
+    .lex blockquote { border-left: 2px solid var(--color-oxide); padding-left: var(--space-3); color: var(--color-graphite); margin: var(--space-3) 0; }
+    .lex code { background: var(--color-limestone); padding: 0.06em 0.32em; border: 1px solid var(--color-grout-light); border-radius: 2px; }
+    .lex ul { padding-left: var(--space-5); margin: 0 0 var(--space-3); }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="../../Tessera Design System/" class="dms-topnav-brand">
+              <span class="mark">Tessera</span>
+              <span class="designator">Design System v0.1</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right">
+            <span><a href="theme.html" style="color:inherit; text-decoration:none">theme</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span><a href="layouts.html" style="color:inherit; text-decoration:none">layouts</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span><a href="grid.html" style="color:inherit; text-decoration:none">grid</a></span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span>components</span>
+            <span style="color:var(--color-grout-light)">·</span>
+            <span><a href="patterns.html" style="color:inherit; text-decoration:none">patterns</a></span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">design system</div>
+            <a class="dms-sidenav-item" href="theme.html"><span class="dms-sidenav-item-mark"></span>theme</a>
+            <a class="dms-sidenav-item" href="layouts.html"><span class="dms-sidenav-item-mark"></span>layouts</a>
+            <a class="dms-sidenav-item" href="grid.html"><span class="dms-sidenav-item-mark"></span>grid</a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="components.html"><span class="dms-sidenav-item-mark"></span>components</a>
+            <a class="dms-sidenav-item" href="patterns.html"><span class="dms-sidenav-item-mark"></span>patterns</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">pages</div>
+            <a class="dms-sidenav-item" href="../pages/civic-overview.html"><span class="dms-sidenav-item-mark"></span>civic overview</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item" href="#nav">navigation</a>
+            <a class="dms-sidenav-item" href="#form">form &amp; interaction</a>
+            <a class="dms-sidenav-item" href="#overlay">overlays</a>
+            <a class="dms-sidenav-item" href="#container">containers &amp; atoms</a>
+            <a class="dms-sidenav-item" href="#rich">rich content</a>
+          </div>
+        </aside>
+
+        <div class="dms-layout-child">
+
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span>design system</span>
+                <span class="sep">/</span>
+                <span>components</span>
+              </div>
+              <h1 class="dms-page-title">Components — every UI primitive, themed.</h1>
+              <p class="dms-page-lede">
+                The primitives DMS ships are stable; the theme styles them. Each primitive appears here in its default style and any named variants Tessera adds. If a live render disagrees with this page, either the theme or this page is out of date — they're meant to match.
+              </p>
+            </div>
+          </section>
+
+          <!-- NAVIGATION -->
+          <section id="nav" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · NAVIGATION</div>
+                <h2 class="dms-section-title">Navigation primitives.</h2>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">topnav</span> — horizontal page chrome</div>
+                <div class="demo small">
+                  <div class="mock-topnav">
+                    <div class="inner">
+                      <div class="left">
+                        <span class="logo-mockup"><span class="mark-tile"></span><span class="word t-displayMD word-sm">Tessera</span></span>
+                        <span class="item t-proseSM weight-500 active">Sites</span>
+                        <span class="item t-proseSM weight-500">Datasets</span>
+                        <span class="item t-proseSM weight-500">Themes</span>
+                      </div>
+                      <div class="right">
+                        <span class="item t-proseSM weight-500">Help</span>
+                        <button class="btn btn-secondary btn-sm t-proseSM weight-500">Sign in</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.topnav.styles[0] · {wrapper, inner, leftMenu, rightMenu, menu, menuItem, menuItemActive}</div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">sidenav</span> — vertical page chrome with depth</div>
+                <div class="demo small">
+                  <div class="mock-sidenav">
+                    <div class="section">
+                      <div class="eye t-metaXS">workspace</div>
+                      <div class="item t-proseSM weight-500 active"><span style="width:6px;height:6px;background:var(--color-oxide);display:inline-block;"></span>Sites</div>
+                      <div class="item t-proseSM weight-500"><span style="width:6px;height:6px;background:var(--color-fog);display:inline-block;"></span>Patterns</div>
+                      <div class="item t-proseSM l2">page</div>
+                      <div class="item t-proseSM l2">datasets</div>
+                      <div class="item t-proseSM l3">internal_table</div>
+                      <div class="item t-proseSM weight-500"><span style="width:6px;height:6px;background:var(--color-fog);display:inline-block;"></span>Themes</div>
+                    </div>
+                    <div class="section">
+                      <div class="eye t-metaXS">account</div>
+                      <div class="item t-proseSM">am3081@gmail.com</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.sidenav.styles[0] · {wrapper, topMenu, bottomMenu, menuItem, menuItemActive, item_level_1, item_level_2, item_level_3}</div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">navigableMenu</span> — dropdown / popover menu</div>
+                <div class="demo small">
+                  <div class="nav-menu">
+                    <div class="nav-menu-item t-proseSM">View source<span class="val t-metaSM">⌘\</span></div>
+                    <div class="nav-menu-item t-proseSM">Duplicate page<span class="val t-metaSM">⌘D</span></div>
+                    <div class="nav-menu-item t-proseSM">Publish<span class="val t-metaSM">⌘↵</span></div>
+                    <div class="nav-menu-sep"></div>
+                    <div class="nav-menu-item t-proseSM">Permissions…</div>
+                    <div class="nav-menu-item t-proseSM" style="color: var(--color-oxide);">Delete page…</div>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.navigableMenu.styles[0] · used inside section toolbars, column-config popovers, and admin chrome</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- FORM & INTERACTION -->
+          <section id="form" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · FORM &amp; INTERACTION</div>
+                <h2 class="dms-section-title">Form &amp; interaction primitives.</h2>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">button</span> — 4 named styles × states</div>
+                <div class="demo">
+                  <div class="demo-row">
+                    <button class="btn btn-primary t-proseSM weight-500">Compose page</button>
+                    <button class="btn btn-secondary t-proseSM weight-500">View source</button>
+                    <button class="btn btn-tertiary t-proseSM weight-500">Cancel</button>
+                    <button class="btn btn-danger t-proseSM weight-500">Delete row</button>
+                  </div>
+                  <div class="demo-row" style="margin-top: var(--space-3);">
+                    <button class="btn btn-primary btn-sm t-proseSM weight-500">Small</button>
+                    <button class="btn btn-secondary btn-sm t-proseSM weight-500">Small</button>
+                    <button class="btn btn-primary btn-lg t-proseSM weight-500">Large</button>
+                    <button class="btn btn-secondary t-proseSM weight-500" disabled style="opacity:0.5; cursor:not-allowed;">Disabled</button>
+                    <button class="btn btn-primary t-proseSM weight-500" style="box-shadow: var(--focus-ring);">Focused</button>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.button.styles[0..3] · default · plain · active · danger · 4 named variants</div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">input</span> — single-line, textarea</div>
+                <div class="demo">
+                  <div style="display: flex; flex-direction: column; gap: var(--space-3); max-width: 360px;">
+                    <input type="text" placeholder="Page title">
+                    <input type="text" value="Demos" />
+                    <textarea rows="3" placeholder="Description…"></textarea>
+                    <input type="text" aria-invalid="true" value="invalid-slug" style="border-color: var(--color-oxide);">
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.input · flat shape · {input, inputContainer, textarea, edit/cancel/confirm button states}</div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">multiselect</span> — the canonical selection primitive</div>
+                <div class="demo">
+                  <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                    <div>
+                      <div class="ms-trigger">
+                        <span class="t-proseSM" style="color: var(--color-slate);">practice_recordings</span>
+                        <span class="caret t-metaXS">▾</span>
+                      </div>
+                      <div class="demo-caption t-metaSM" style="margin-top: var(--space-1);">single-select trigger</div>
+                    </div>
+                    <div>
+                      <div class="ms-trigger">
+                        <span class="ms-token t-metaSM">on_air <span class="x">×</span></span>
+                        <span class="ms-token t-metaSM">show_name <span class="x">×</span></span>
+                        <span class="ms-token t-metaSM">genre <span class="x">×</span></span>
+                        <span class="caret t-metaXS">▾</span>
+                      </div>
+                      <div class="demo-caption t-metaSM" style="margin-top: var(--space-1);">multi-select with tokens</div>
+                    </div>
+                    <div>
+                      <div class="ms-menu">
+                        <input class="t-proseSM" type="text" placeholder="Search columns…" />
+                        <div class="ms-option t-proseSM selected">show_name</div>
+                        <div class="ms-option t-proseSM selected">on_air_name</div>
+                        <div class="ms-option t-proseSM">start_time</div>
+                        <div class="ms-option t-proseSM">end_time</div>
+                        <div class="ms-option t-proseSM">genre_description</div>
+                        <div class="ms-option t-proseSM">icon_url</div>
+                      </div>
+                      <div class="demo-caption t-metaSM" style="margin-top: var(--space-1);">open menu with search + selection state</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.multiselect.styles[0] · the largest single primitive theme · ~25 keys</div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">tabs</span> · <span class="name">switch</span></div>
+                <div class="demo">
+                  <div class="tabs" style="margin-bottom: var(--space-4);">
+                    <span class="tab t-proseSM weight-500 active">Overview</span>
+                    <span class="tab t-proseSM weight-500">Sections</span>
+                    <span class="tab t-proseSM weight-500">Permissions</span>
+                    <span class="tab t-proseSM weight-500">History</span>
+                  </div>
+                  <div class="demo-row">
+                    <span class="switch on"><span class="track"><span class="thumb"></span></span><span class="label t-proseSM">Published</span></span>
+                    <span class="switch"><span class="track"><span class="thumb"></span></span><span class="label t-proseSM">Draft only</span></span>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.tabs.styles[0] · theme.switch.styles[0] · sentence-case labels, no exclamation marks</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- OVERLAYS -->
+          <section id="overlay" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · OVERLAYS</div>
+                <h2 class="dms-section-title">Overlays — dialog, modal.</h2>
+                <p class="dms-section-lede">
+                  Solid backdrops (40% slate), no blur. Modals get square corners, the single lifted treatment, and a hairline frame.
+                </p>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">dialog</span> — snapshot of a published page warning</div>
+                <div class="demo">
+                  <div class="mock-dialog">
+                    <div class="mock-dialog-panel">
+                      <h3 class="t-displaySM">Delete page “demos”?</h3>
+                      <p class="t-proseSM">The page and its 3 sections will be removed from the songs pattern. This cannot be undone. To confirm, type the page slug below.</p>
+                      <input class="t-proseSM" type="text" placeholder="Type 'demos' to confirm" style="margin-bottom: var(--space-4); width: 100%;">
+                      <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+                        <button class="btn btn-tertiary t-proseSM weight-500">Cancel</button>
+                        <button class="btn btn-danger t-proseSM weight-500" disabled style="opacity:0.5;">Delete page</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.dialog · {dialogContainer, backdrop, dialogPanel, sizes.{xs..5xl}}</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- CONTAINERS & ATOMS -->
+          <section id="container" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · CONTAINERS &amp; ATOMS</div>
+                <h2 class="dms-section-title">Containers &amp; atoms.</h2>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">dataCard</span> — the workhorse Card section</div>
+                <div class="demo">
+                  <div class="dc-grid">
+
+                    <div class="dc-card">
+                      <div class="dc-image t-metaXS">album art</div>
+                      <div style="margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2);">
+                        <div>
+                          <div class="dc-header t-metaXS">title</div>
+                          <div class="dc-value t-prose weight-500">The way you're movin'</div>
+                        </div>
+                        <div>
+                          <div class="dc-header t-metaXS">artist</div>
+                          <div class="dc-value t-proseSM ink-graphite">b3nson</div>
+                        </div>
+                        <div class="dc-cells">
+                          <div class="dc-cell" style="grid-column: span 4;">
+                            <div class="dc-header t-metaXS">first aired</div>
+                            <div class="dc-value t-metaMD">2026-04-09</div>
+                          </div>
+                          <div class="dc-cell" style="grid-column: span 2;">
+                            <div class="dc-header t-metaXS">length</div>
+                            <div class="dc-value num t-metaMD weight-500">3:42</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="dc-card">
+                      <div class="dc-image t-metaXS">album art</div>
+                      <div style="margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2);">
+                        <div>
+                          <div class="dc-header t-metaXS">title</div>
+                          <div class="dc-value t-prose weight-500">Breakout</div>
+                        </div>
+                        <div>
+                          <div class="dc-header t-metaXS">artist</div>
+                          <div class="dc-value t-proseSM ink-graphite">b3nson</div>
+                        </div>
+                        <div class="dc-cells">
+                          <div class="dc-cell" style="grid-column: span 4;">
+                            <div class="dc-header t-metaXS">first aired</div>
+                            <div class="dc-value t-metaMD">2026-04-23</div>
+                          </div>
+                          <div class="dc-cell" style="grid-column: span 2;">
+                            <div class="dc-header t-metaXS">length</div>
+                            <div class="dc-value num t-metaMD weight-500">4:08</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="dc-card">
+                      <div class="dc-image t-metaXS">album art</div>
+                      <div style="margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2);">
+                        <div>
+                          <div class="dc-header t-metaXS">title</div>
+                          <div class="dc-value t-prose weight-500">Golden Dawn</div>
+                        </div>
+                        <div>
+                          <div class="dc-header t-metaXS">artist</div>
+                          <div class="dc-value t-proseSM ink-graphite">b3nson</div>
+                        </div>
+                        <div class="dc-cells">
+                          <div class="dc-cell" style="grid-column: span 4;">
+                            <div class="dc-header t-metaXS">first aired</div>
+                            <div class="dc-value t-metaMD">2026-04-23</div>
+                          </div>
+                          <div class="dc-cell" style="grid-column: span 2;">
+                            <div class="dc-header t-metaXS">length</div>
+                            <div class="dc-value num t-metaMD weight-500">2:54</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.dataCard.styles[0] · cardsGrid + cellsGrid + per-cell headerValueWrapper · the most-used primitive — budget time accordingly</div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">card</span> · <span class="name">pill</span></div>
+                <div class="demo">
+                  <div class="card" style="margin-bottom: var(--space-4);">
+                    <div class="t-displaySM" style="margin-bottom: var(--space-2);">Card surface</div>
+                    <p class="t-proseSM ink-graphite" style="margin: 0;">
+                      The generic Card primitive — parchment background, hairline frame, square corners, no shadow at rest. Used as a container in admin chrome, dialogs, and section bodies that aren't dataCards.
+                    </p>
+                  </div>
+                  <div class="demo-row">
+                    <span class="pill-base pill-neutral t-proseXS weight-500">draft</span>
+                    <span class="pill-base pill-verdigris t-proseXS weight-500">published</span>
+                    <span class="pill-base pill-oxide t-proseXS weight-500">deleted</span>
+                    <span class="pill-base pill-ochre t-proseXS weight-500">warning</span>
+                    <span class="pill-base pill-slate t-proseXS weight-500">v2</span>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.card · theme.pill.styles[0] · pills are the one place we use the full pill radius</div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">pagination</span></div>
+                <div class="demo">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div class="pagination t-proseSM">Showing <span class="num t-metaMD">1</span>–<span class="num t-metaMD">10</span> of <span class="num t-metaMD">247</span></div>
+                    <div class="pagination t-proseSM">
+                      <button class="btn btn-tertiary btn-sm t-proseSM weight-500" disabled>← Previous</button>
+                      <span class="num t-metaMD">1</span>
+                      <span style="color: var(--color-fog);">·</span>
+                      <span style="color: var(--color-fog);">2</span>
+                      <span style="color: var(--color-fog);">3</span>
+                      <span style="color: var(--color-fog);">…</span>
+                      <span style="color: var(--color-fog);">25</span>
+                      <button class="btn btn-tertiary btn-sm t-proseSM weight-500">Next →</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">logo</span> — three lockups</div>
+                <div class="demo">
+                  <div class="demo-row" style="gap: var(--space-7);">
+                    <span class="logo-mockup"><span class="mark-tile"></span><span class="word t-displayMD">Tessera</span></span>
+                    <span class="logo-mockup"><span class="mark-tile"></span><span class="word t-displayMD word-sm">Tessera</span></span>
+                    <span class="logo-mockup stacked"><span class="mark-tile"></span><span class="word t-displayMD word-sm">Tessera</span></span>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.logo.styles[0..2] · default · compact · stacked</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- RICH CONTENT -->
+          <section id="rich" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · RICH CONTENT</div>
+                <h2 class="dms-section-title">Rich content primitives.</h2>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">table</span> — the data grid</div>
+                <div class="demo">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>show name</th>
+                        <th>on air</th>
+                        <th>start day</th>
+                        <th class="num" style="text-align: right;">duration</th>
+                        <th>genre</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Morning Drift</td>
+                        <td>DJ Aves</td>
+                        <td>Monday</td>
+                        <td class="num">2:00</td>
+                        <td>ambient</td>
+                      </tr>
+                      <tr>
+                        <td>The Long Run</td>
+                        <td>DJ Pelagic</td>
+                        <td>Monday</td>
+                        <td class="num">3:30</td>
+                        <td>jazz</td>
+                      </tr>
+                      <tr>
+                        <td>Half Time</td>
+                        <td>DJ Crater</td>
+                        <td>Tuesday</td>
+                        <td class="num">1:00</td>
+                        <td>indie</td>
+                      </tr>
+                      <tr>
+                        <td>Evening Edition</td>
+                        <td>DJ Stratus</td>
+                        <td>Tuesday</td>
+                        <td class="num">2:00</td>
+                        <td>spoken word</td>
+                      </tr>
+                      <tr>
+                        <td>Late Set</td>
+                        <td>DJ Lumen</td>
+                        <td>Wednesday</td>
+                        <td class="num">2:30</td>
+                        <td>electronic</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="demo-caption t-metaSM">theme.table.styles[0] · tabular figures · hairline rules between rows · alternating bone tints</div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">lexical</span> — rich text rendering</div>
+                <div class="demo">
+                  <div class="lex">
+                    <h1 class="t-displayLG">The shape of your data is the shape of your site</h1>
+                    <p class="t-prose">
+                      A <em class="italic">tessera</em> is a single tile in a Roman or Byzantine mosaic — the smallest unit of a deliberately composed surface. Roman craftsmen spent careers placing tesserae one at a time into floors and ceilings that lasted millennia.
+                    </p>
+                    <h2 class="t-displaySM">One representation, many renderings</h2>
+                    <p class="t-prose">
+                      Every page, every section, every row, every chart is a tessera — small, typed, ordinary on its own. The site is the mosaic that emerges when many of them compose against a shared form.
+                    </p>
+                    <blockquote class="t-displayItalicMD ink-graphite">
+                      A page is a row. A chart is a row. A map is a row. There is nothing else to learn.
+                    </blockquote>
+                    <p class="t-prose">
+                      The closest intellectual parallel is Excel — not in the spreadsheet sense, but in the representation-primacy sense. Excel's power isn't its formula language; it's that it has only sheets, columns, rows, and cells. Reference it as <code class="t-metaMD">data_items</code>.
+                    </p>
+                    <ul class="t-prose">
+                      <li>A theme is a row whose data is style.</li>
+                      <li>A page is a row whose children are sections.</li>
+                      <li>A section is a row.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.lexical · h1..h6 inherit from textSettings; paragraph / list / blockquote / code rendered here</div>
+
+                <div class="sub-eyebrow t-metaSM"><span class="name">graph</span> · <span class="name">avlGraph</span> — bar chart with the 5-series accent palette</div>
+                <div class="demo">
+                  <div class="graph">
+                    <div class="t-displaySM" style="margin-bottom: var(--space-3);">Listenership by day · last 14 days</div>
+                    <div class="bar">
+                      <div class="b" style="height: 60%;"></div>
+                      <div class="b" style="height: 80%;"></div>
+                      <div class="b" style="height: 45%;"></div>
+                      <div class="b" style="height: 92%;"></div>
+                      <div class="b" style="height: 70%;"></div>
+                      <div class="b" style="height: 35%;"></div>
+                      <div class="b" style="height: 50%;"></div>
+                      <div class="b" style="height: 65%;"></div>
+                      <div class="b" style="height: 88%;"></div>
+                      <div class="b" style="height: 72%;"></div>
+                      <div class="b" style="height: 40%;"></div>
+                      <div class="b" style="height: 55%;"></div>
+                      <div class="b" style="height: 78%;"></div>
+                      <div class="b" style="height: 95%;"></div>
+                    </div>
+                    <div class="graph-axis t-metaXS">
+                      <span>05-09</span><span>05-11</span><span>05-13</span><span>05-15</span><span>05-17</span><span>05-19</span><span>05-21</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-caption t-metaSM">theme.graph.styles[0] · palette: oxide · verdigris · slate · ochre · tile — never rainbow, capped at 5 series</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div style="display:flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
+                <div>
+                  <div class="designator">Tessera · Design System</div>
+                  <div class="t-proseSM ink-graphite" style="margin-top: var(--space-2);">v0.1 · 2026-05-22</div>
+                </div>
+                <div class="t-metaSM ink-fog">
+                  <a href="theme.html" style="color:inherit;">theme</a> · <a href="layouts.html" style="color:inherit;">layouts</a> · <a href="grid.html" style="color:inherit;">grid</a> · components · <a href="patterns.html" style="color:inherit;">patterns</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

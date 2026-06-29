@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Datasets · Files</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50':  '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-grn': '#54B99B', 'mny-ora': '#EA8954',
+          },
+          fontFamily: {
+            display:  ['"Oswald"', 'sans-serif'],
+            proxima:  ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; background: #F4F4F4; }
+
+    /* Topo background texture */
+    .topo-bg {
+      background: linear-gradient(0deg,rgba(244,244,244,0.97),rgba(244,244,244,0.97)),
+                  url('../assets/mny/topolines.png');
+      background-size: 500px;
+    }
+
+    /* Cards */
+    .card { background: white; border-radius: 12px; box-shadow: 0px 0px 6px 0px rgba(0,0,0,.02), 0px 2px 4px 0px rgba(0,0,0,.08); }
+    .card-md { background: white; border-radius: 12px; box-shadow: 0px 0px 4px 0px rgba(0,0,0,.04), 0px 4px 8px 0px rgba(0,0,0,.06); }
+
+    /* Table */
+    .mgmt-table { width: 100%; border-collapse: collapse; }
+    .mgmt-table thead tr { background: #F3F8F9; border-bottom: 2px solid #C5D7E0; }
+    .mgmt-table thead th {
+      font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.08em; color: #6D96AE;
+      padding: 10px 12px; text-align: left; white-space: nowrap;
+    }
+    .mgmt-table tbody tr { border-bottom: 1px solid #E0EBF0; transition: background 0.1s; }
+    .mgmt-table tbody tr:hover { background: #F3F8F9; cursor: pointer; }
+    .mgmt-table tbody tr:last-child { border-bottom: none; }
+    .mgmt-table td { padding: 9px 12px; font-size: 13.5px; color: #37576B; vertical-align: middle; }
+
+    /* Pills */
+    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 9999px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
+    .pill-blue  { background: #E0EBF0; color: #37576B; }
+    .pill-amber { background: #FCF6EC; color: #B8831A; }
+    .pill-green { background: #E8F7F2; color: #3A9E86; }
+    .pill-gray  { background: #ECEFF1; color: #78909C; }
+    .pill-red   { background: #FAEAEA; color: #C04040; }
+    .pill-purple{ background: #EDE9FE; color: #5B21B6; }
+
+    /* Type filter pills (toggle) */
+    .filter-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 14px; border-radius: 9999px;
+      font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      background: white; border: 1.5px solid #C5D7E0; color: #6D96AE;
+      cursor: pointer; transition: all 0.12s;
+    }
+    .filter-pill:hover { border-color: #6D96AE; color: #37576B; }
+    .filter-pill.active { background: #2D3E4C; border-color: #2D3E4C; color: white; }
+    .filter-pill .count { font-family: 'Source Sans 3', sans-serif; font-size: 11px; font-weight: 700; opacity: 0.6; }
+
+    /* Tabs */
+    .tab-btn {
+      font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 500;
+      letter-spacing: 0.07em; text-transform: uppercase; padding: 13px 18px;
+      border-bottom: 2px solid transparent; color: #6D96AE; cursor: pointer;
+      transition: color 0.12s, border-color 0.12s; background: none;
+      border-top: none; border-left: none; border-right: none;
+    }
+    .tab-btn:hover  { color: #37576B; border-color: #C5D7E0; }
+    .tab-btn.active { color: #2D3E4C; border-color: #EAAD43; }
+
+    /* Dataset list sidenav */
+    .ds-nav-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 12px; border-radius: 8px; cursor: pointer;
+      font-size: 13.5px; color: #37576B; transition: background 0.1s;
+    }
+    .ds-nav-item:hover { background: #F3F8F9; }
+    .ds-nav-item.active { background: #E0EBF0; color: #2D3E4C; font-weight: 600; }
+    .ds-nav-item .count {
+      font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+      background: #E0EBF0; color: #6D96AE; padding: 1px 7px;
+      border-radius: 9999px; letter-spacing: 0.04em;
+    }
+    .ds-nav-item.active .count { background: #C5D7E0; color: #37576B; }
+
+    /* File card (grid) */
+    .file-card {
+      background: white; border-radius: 12px;
+      border: 1.5px solid #E0EBF0;
+      overflow: hidden; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .file-card:hover { border-color: #6D96AE; box-shadow: 0 4px 16px rgba(45,62,76,0.09); }
+    .file-card-thumb {
+      height: 140px; display: flex; align-items: center; justify-content: center;
+      background: #F3F8F9; position: relative; overflow: hidden;
+    }
+    .file-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .file-card-thumb.pdf { background: linear-gradient(135deg, #FEF3F2 0%, #FDDCDA 100%); }
+    .file-card-thumb.doc { background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); }
+    .file-card-thumb.csv { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); }
+    .file-card-thumb.zip { background: linear-gradient(135deg, #FAFAF9 0%, #E7E5E4 100%); }
+    .file-card-thumb.shp { background: linear-gradient(135deg, #F0FFFE 0%, #CCFBF1 100%); }
+    .file-card-body { padding: 12px 14px 14px; }
+    .file-card-name { font-size: 13px; font-weight: 600; color: #2D3E4C; line-height: 1.3; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-card-meta { font-size: 11.5px; color: #6D96AE; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .file-card-actions {
+      display: flex; align-items: center; gap: 4px;
+      padding: 8px 14px; border-top: 1px solid #F3F8F9;
+    }
+    .file-card-action-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 6px;
+      background: none; border: none; color: #6D96AE;
+      cursor: pointer; transition: background 0.1s, color 0.1s;
+    }
+    .file-card-action-btn:hover { background: #E0EBF0; color: #37576B; }
+    .file-card-action-btn.danger:hover { background: #FAEAEA; color: #DD524C; }
+    .file-card-type-badge {
+      position: absolute; top: 8px; right: 8px;
+      font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 600;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 4px;
+    }
+
+    /* Upload dropzone */
+    .dropzone {
+      border: 2px dashed #C5D7E0; border-radius: 12px;
+      background: white; padding: 28px; text-align: center;
+      transition: border-color 0.15s, background 0.15s; cursor: pointer;
+    }
+    .dropzone:hover { border-color: #6D96AE; background: #F3F8F9; }
+
+    /* View toggle */
+    .view-toggle-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      background: none; border: 1.5px solid #C5D7E0; color: #6D96AE;
+      cursor: pointer; transition: all 0.1s;
+    }
+    .view-toggle-btn:hover { background: #E0EBF0; color: #37576B; }
+    .view-toggle-btn.active { background: #2D3E4C; border-color: #2D3E4C; color: white; }
+
+    /* Input / search */
+    .search-input {
+      height: 36px; padding: 0 12px 0 36px;
+      border: 1.5px solid #C5D7E0; border-radius: 9999px;
+      font-size: 13.5px; color: #37576B; background: white;
+      font-family: 'Source Sans 3', sans-serif; outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input:focus { border-color: #6D96AE; }
+    .search-input::placeholder { color: #B0C4CF; }
+
+    /* Select */
+    .mny-select {
+      height: 36px; padding: 0 30px 0 12px;
+      border: 1.5px solid #C5D7E0; border-radius: 9999px;
+      font-size: 13px; color: #37576B; background: white;
+      font-family: 'Oswald', sans-serif; font-weight: 500; letter-spacing: 0.04em;
+      text-transform: uppercase; appearance: none; outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236D96AE' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      cursor: pointer;
+    }
+
+    /* Stat chip */
+    .stat-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 14px; border-radius: 9999px;
+      background: white; border: 1.5px solid #E0EBF0;
+    }
+    .stat-chip .label {
+      font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+      letter-spacing: 0.07em; text-transform: uppercase; color: #6D96AE;
+    }
+    .stat-chip .value {
+      font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 600; color: #2D3E4C;
+    }
+    .stat-chip .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Directory breadcrumb */
+    .dir-crumb {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; color: #6D96AE;
+    }
+    .dir-crumb span { color: #B0C4CF; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 48px 24px; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #C5D7E0; border-radius: 3px; }
+  </style>
+</head>
+<body class="topo-bg min-h-screen">
+
+<!-- ── Floating Topnav ──────────────────────────────────────────────────── -->
+<div class="px-4 xl:px-16 pt-4 sticky top-4 z-50">
+  <nav class="card-md flex items-center gap-4 px-5 h-[68px]">
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-3 flex-shrink-0">
+      <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-8" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+      <div style="display:none" class="items-center gap-2">
+        <div class="w-7 h-7 rounded-sm bg-mny-900 flex items-center justify-center">
+          <span class="font-display text-white text-xs font-bold">M</span>
+        </div>
+        <span class="font-display font-semibold text-mny-900 text-base tracking-wide">MITIGATENY</span>
+      </div>
+    </a>
+
+    <div class="w-px h-6 bg-mny-100 flex-shrink-0 mx-1"></div>
+
+    <!-- Nav links -->
+    <div class="flex items-center gap-1 flex-1">
+      <a href="#" class="font-display text-[13px] font-medium uppercase tracking-[0.07em] text-mny-400 hover:text-mny-700 px-3 py-2 rounded-lg hover:bg-mny-50 transition-colors">Home</a>
+      <a href="#" class="font-display text-[13px] font-medium uppercase tracking-[0.07em] text-mny-400 hover:text-mny-700 px-3 py-2 rounded-lg hover:bg-mny-50 transition-colors">Maps</a>
+      <a href="#" class="font-display text-[13px] font-medium uppercase tracking-[0.07em] text-mny-700 px-3 py-2 rounded-lg bg-mny-50 transition-colors">Datasets</a>
+      <a href="#" class="font-display text-[13px] font-medium uppercase tracking-[0.07em] text-mny-400 hover:text-mny-700 px-3 py-2 rounded-lg hover:bg-mny-50 transition-colors">Actions</a>
+      <a href="#" class="font-display text-[13px] font-medium uppercase tracking-[0.07em] text-mny-400 hover:text-mny-700 px-3 py-2 rounded-lg hover:bg-mny-50 transition-colors">Admin</a>
+    </div>
+
+    <!-- Right -->
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-mny-400" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search..." class="search-input w-44">
+      </div>
+      <div class="w-8 h-8 rounded-full bg-mny-900 flex items-center justify-center text-white font-display text-xs font-semibold cursor-pointer">JD</div>
+    </div>
+  </nav>
+</div>
+
+<!-- ── Page body ────────────────────────────────────────────────────────── -->
+<div class="max-w-[1440px] mx-auto px-4 xl:px-16 pt-6 pb-16">
+  <div class="flex gap-6 items-start">
+
+    <!-- ── Left: Dataset categories sidenav ────────────────────────────── -->
+    <aside class="w-56 flex-shrink-0 card p-4 sticky top-[94px]">
+      <div class="font-display text-[11px] font-500 uppercase tracking-[0.09em] text-mny-400 px-2 mb-2">All Datasets</div>
+
+      <div class="ds-nav-item">
+        <span class="flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 5.5h8M4 8h8M4 10.5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          All types
+        </span>
+        <span class="count">142</span>
+      </div>
+
+      <div class="mt-3 mb-1">
+        <div class="font-display text-[10px] font-500 uppercase tracking-[0.09em] text-mny-200 px-2 mb-1">By type</div>
+      </div>
+
+      <div class="ds-nav-item">
+        <span class="flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 2h7l3 3v9a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 2v4h4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4 8h5M4 10.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          CSV / Table
+        </span>
+        <span class="count">58</span>
+      </div>
+      <div class="ds-nav-item">
+        <span class="flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 2c-2 2-2 10 0 12M2 8c2-2 10-2 12 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          GIS / Geospatial
+        </span>
+        <span class="count">37</span>
+      </div>
+      <div class="ds-nav-item">
+        <span class="flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3.5" width="13" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M5 3.5V2.5M11 3.5V2.5M1.5 7h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Internal table
+        </span>
+        <span class="count">24</span>
+      </div>
+      <div class="ds-nav-item active">
+        <span class="flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2 4v3.5c0 3.5 2.5 6 6 7 3.5-1 6-3.5 6-7V4L8 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 8l1.5 1.5 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Files
+        </span>
+        <span class="count">23</span>
+      </div>
+
+      <div class="my-3 border-t border-mny-100"></div>
+      <div class="font-display text-[10px] font-500 uppercase tracking-[0.09em] text-mny-200 px-2 mb-1">By category</div>
+
+      <div class="ds-nav-item">
+        <span>Flooding</span>
+        <span class="count">31</span>
+      </div>
+      <div class="ds-nav-item">
+        <span>Wind / Storm</span>
+        <span class="count">18</span>
+      </div>
+      <div class="ds-nav-item">
+        <span>Infrastructure</span>
+        <span class="count">29</span>
+      </div>
+      <div class="ds-nav-item">
+        <span>Census / Demographics</span>
+        <span class="count">22</span>
+      </div>
+      <div class="ds-nav-item">
+        <span>FEMA Programs</span>
+        <span class="count">14</span>
+      </div>
+    </aside>
+
+    <!-- ── Main content ─────────────────────────────────────────────────── -->
+    <main class="flex-1 min-w-0 flex flex-col gap-5">
+
+      <!-- Page header -->
+      <div class="flex items-start justify-between">
+        <div>
+          <h1 class="font-display text-[30px] font-[600] text-mny-900 uppercase tracking-[-0.02em] leading-none mb-1"
+              style="text-decoration: underline; text-decoration-color: #EAAD43; text-decoration-thickness: 3px; text-underline-offset: 6px;">
+            Files
+          </h1>
+          <p class="text-mny-400 text-[13.5px] mt-2">Images, documents, and attachments across all dataset sources</p>
+        </div>
+        <button class="flex items-center gap-2 bg-mny-y700 hover:bg-[#D49B35] text-white font-proxima font-bold text-[13px] uppercase tracking-wider px-5 py-2.5 rounded-full transition-colors">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Upload File
+        </button>
+      </div>
+
+      <!-- Stats row -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="stat-chip">
+          <span class="dot bg-mny-700"></span>
+          <span class="label">Total</span>
+          <span class="value">23 files</span>
+        </div>
+        <div class="stat-chip">
+          <span class="dot bg-mny-400"></span>
+          <span class="label">Size</span>
+          <span class="value">284 MB</span>
+        </div>
+        <div class="stat-chip">
+          <span class="dot" style="background:#DD524C"></span>
+          <span class="label">PDFs</span>
+          <span class="value">9</span>
+        </div>
+        <div class="stat-chip">
+          <span class="dot" style="background:#6D96AE"></span>
+          <span class="label">Images</span>
+          <span class="value">8</span>
+        </div>
+        <div class="stat-chip">
+          <span class="dot" style="background:#54B99B"></span>
+          <span class="label">Docs</span>
+          <span class="value">4</span>
+        </div>
+        <div class="stat-chip">
+          <span class="dot" style="background:#EAAD43"></span>
+          <span class="label">Other</span>
+          <span class="value">2</span>
+        </div>
+      </div>
+
+      <!-- Upload dropzone -->
+      <div class="dropzone">
+        <div class="flex flex-col items-center gap-2">
+          <div class="w-10 h-10 rounded-full bg-mny-50 flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="text-mny-400"><path d="M12 15V3m0 0L8 7m4-4l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17v1a3 3 0 003 3h12a3 3 0 003-3v-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <span class="font-display text-[13px] font-500 uppercase tracking-[0.07em] text-mny-700">Drop files here</span>
+            <span class="text-mny-400 text-[13px]"> or </span>
+            <span class="font-display text-[13px] font-500 uppercase tracking-[0.07em] text-mny-y700 cursor-pointer hover:underline">Browse</span>
+          </div>
+          <p class="text-mny-400 text-[12px]">Images · PDFs · Documents · Any file type up to 500 MB</p>
+        </div>
+      </div>
+
+      <!-- Toolbar: filter + search + view toggle -->
+      <div class="card px-4 py-3 flex items-center gap-3 flex-wrap">
+        <!-- Type filters -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="filter-pill active">
+            All
+            <span class="count">23</span>
+          </button>
+          <button class="filter-pill">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2" width="13" height="12" rx="1" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M1.5 6h13" stroke="currentColor" stroke-width="1.3"/><path d="M6 2v12" stroke="currentColor" stroke-width="1.3"/></svg>
+            PDFs
+            <span class="count">9</span>
+          </button>
+          <button class="filter-pill">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0" stroke="currentColor" stroke-width="1.3"/></svg>
+            Images
+            <span class="count">8</span>
+          </button>
+          <button class="filter-pill">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 2h8l3 3v9H2V2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 2v4h4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            Docs
+            <span class="count">4</span>
+          </button>
+          <button class="filter-pill">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 2h8l3 3v9H2V2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5 7h5M5 9.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Other
+            <span class="count">2</span>
+          </button>
+        </div>
+
+        <div class="ml-auto flex items-center gap-3">
+          <!-- Search -->
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-mny-400" width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search files..." class="search-input w-48">
+          </div>
+
+          <!-- Sort -->
+          <select class="mny-select pr-8">
+            <option>Newest first</option>
+            <option>Oldest first</option>
+            <option>A → Z</option>
+            <option>Largest</option>
+          </select>
+
+          <!-- View toggle -->
+          <div class="flex items-center gap-1">
+            <button class="view-toggle-btn active" title="Grid view">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+            </button>
+            <button class="view-toggle-btn" title="List view">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4h8M4 8h8M4 12h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="1.5" cy="4" r="1" fill="currentColor"/><circle cx="1.5" cy="8" r="1" fill="currentColor"/><circle cx="1.5" cy="12" r="1" fill="currentColor"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Directory breadcrumb -->
+      <div class="flex items-center gap-2">
+        <div class="dir-crumb">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M1.5 7V13.5h13V5.5H7.5L5.5 3h-4V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <a href="#" class="hover:text-mny-700">root</a>
+          <span>/</span>
+        </div>
+        <span class="text-[12px] text-mny-400">All directories shown</span>
+        <button class="ml-1 text-[11.5px] font-display font-500 uppercase tracking-[0.06em] text-mny-y700 hover:underline">Browse by folder</button>
+      </div>
+
+      <!-- File grid -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+        <!-- Image file -->
+        <div class="file-card">
+          <div class="file-card-thumb">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#D1E8F0 0%,#A8C8D8 50%,#7FB0C5 100%);display:flex;align-items:center;justify-content:center;">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="opacity-30"><rect x="2" y="2" width="28" height="28" rx="4" stroke="white" stroke-width="2"/><circle cx="10" cy="10" r="3" stroke="white" stroke-width="2"/><path d="M2 22l8-8 5 5 4-4 9 9" stroke="white" stroke-width="2" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="file-card-type-badge bg-mny-100 text-mny-700">PNG</div>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name">ny_counties_overview.png</div>
+            <div class="file-card-meta">
+              <span>2.4 MB</span>
+              <span class="text-mny-200">·</span>
+              <span>Jun 3, 2025</span>
+            </div>
+            <div class="dir-crumb mt-1.5">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M1.5 7V13.5h13V5.5H7.5L5.5 3h-4V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              maps/
+            </div>
+          </div>
+          <div class="file-card-actions">
+            <button class="file-card-action-btn" title="Download">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+            <button class="file-card-action-btn" title="Copy URL">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </button>
+            <button class="file-card-action-btn" title="Replace">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 116 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2 8V5M2 8H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="file-card-action-btn danger ml-auto" title="Delete">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- PDF -->
+        <div class="file-card">
+          <div class="file-card-thumb pdf flex-col gap-2">
+            <svg width="32" height="38" viewBox="0 0 32 38" fill="none"><rect x="1" y="1" width="30" height="36" rx="3" stroke="#DD524C" stroke-width="1.5"/><path d="M8 5h16M8 13h11" stroke="#DD524C" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/><path d="M8 9h16M8 17h7" stroke="#DD524C" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/><rect x="7" y="23" width="18" height="9" rx="2" fill="#DD524C" opacity="0.15"/><text x="16" y="30.5" text-anchor="middle" font-family="Oswald,sans-serif" font-size="7" font-weight="600" fill="#DD524C" letter-spacing="0.5">PDF</text></svg>
+            <div class="file-card-type-badge bg-red-50 text-red-600">PDF</div>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name">FEMA_BRIC_Guidance_2024.pdf</div>
+            <div class="file-card-meta">
+              <span>8.7 MB</span>
+              <span class="text-mny-200">·</span>
+              <span>May 18, 2025</span>
+            </div>
+            <div class="dir-crumb mt-1.5">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M1.5 7V13.5h13V5.5H7.5L5.5 3h-4V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              docs/fema/
+            </div>
+          </div>
+          <div class="file-card-actions">
+            <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Replace"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 116 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2 8V5M2 8H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="file-card-action-btn danger ml-auto" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Image file 2 -->
+        <div class="file-card">
+          <div class="file-card-thumb">
+            <div style="width:100%;height:100%;background:linear-gradient(160deg,#A8C8A0 0%,#7AAF70 60%,#5A9050 100%);display:flex;align-items:center;justify-content:center;">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="opacity-30"><rect x="2" y="2" width="28" height="28" rx="4" stroke="white" stroke-width="2"/><circle cx="10" cy="10" r="3" stroke="white" stroke-width="2"/><path d="M2 22l8-8 5 5 4-4 9 9" stroke="white" stroke-width="2" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="file-card-type-badge bg-mny-100 text-mny-700">JPG</div>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name">floodplain_zones_render.jpg</div>
+            <div class="file-card-meta">
+              <span>1.1 MB</span>
+              <span class="text-mny-200">·</span>
+              <span>Apr 29, 2025</span>
+            </div>
+            <div class="dir-crumb mt-1.5"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M1.5 7V13.5h13V5.5H7.5L5.5 3h-4V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>maps/flooding/</div>
+          </div>
+          <div class="file-card-actions">
+            <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Replace"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 116 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2 8V5M2 8H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="file-card-action-btn danger ml-auto" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Word doc -->
+        <div class="file-card">
+          <div class="file-card-thumb doc flex-col gap-2">
+            <svg width="32" height="38" viewBox="0 0 32 38" fill="none"><rect x="1" y="1" width="30" height="36" rx="3" stroke="#1D4ED8" stroke-width="1.5"/><path d="M8 5h16M8 13h11" stroke="#1D4ED8" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/><path d="M8 9h16M8 17h7" stroke="#1D4ED8" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/><rect x="7" y="23" width="18" height="9" rx="2" fill="#1D4ED8" opacity="0.15"/><text x="16" y="30.5" text-anchor="middle" font-family="Oswald,sans-serif" font-size="7" font-weight="600" fill="#1D4ED8" letter-spacing="0.5">DOCX</text></svg>
+            <div class="file-card-type-badge bg-blue-50 text-blue-700">DOCX</div>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name">HMP_Annex_Suffolk_County_2025.docx</div>
+            <div class="file-card-meta"><span>3.2 MB</span><span class="text-mny-200">·</span><span>Jun 10, 2025</span></div>
+            <div class="dir-crumb mt-1.5"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M1.5 7V13.5h13V5.5H7.5L5.5 3h-4V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>docs/hmp/</div>
+          </div>
+          <div class="file-card-actions">
+            <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Replace"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 116 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2 8V5M2 8H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="file-card-action-btn danger ml-auto" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+
+        <!-- PDF 2 -->
+        <div class="file-card">
+          <div class="file-card-thumb pdf">
+            <svg width="32" height="38" viewBox="0 0 32 38" fill="none"><rect x="1" y="1" width="30" height="36" rx="3" stroke="#DD524C" stroke-width="1.5"/><path d="M8 5h16M8 13h11" stroke="#DD524C" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/><path d="M8 9h16M8 17h7" stroke="#DD524C" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/><rect x="7" y="23" width="18" height="9" rx="2" fill="#DD524C" opacity="0.15"/><text x="16" y="30.5" text-anchor="middle" font-family="Oswald,sans-serif" font-size="7" font-weight="600" fill="#DD524C" letter-spacing="0.5">PDF</text></svg>
+            <div class="file-card-type-badge bg-red-50 text-red-600">PDF</div>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name">NFIP_ClaimsReport_2023.pdf</div>
+            <div class="file-card-meta"><span>12.1 MB</span><span class="text-mny-200">·</span><span>Mar 7, 2025</span></div>
+            <div class="dir-crumb mt-1.5"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M1.5 7V13.5h13V5.5H7.5L5.5 3h-4V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>docs/nfip/</div>
+          </div>
+          <div class="file-card-actions">
+            <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Replace"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 116 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2 8V5M2 8H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="file-card-action-btn danger ml-auto" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+
+        <!-- SVG / logo -->
+        <div class="file-card">
+          <div class="file-card-thumb" style="background:#F8F4FF;">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="6" y="6" width="32" height="32" rx="6" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="3 2"/><text x="22" y="27" text-anchor="middle" font-family="Oswald,sans-serif" font-size="11" font-weight="600" fill="#7C3AED">SVG</text></svg>
+            <div class="file-card-type-badge bg-purple-50 text-purple-700">SVG</div>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name">mny_logo_primary.svg</div>
+            <div class="file-card-meta"><span>18 KB</span><span class="text-mny-200">·</span><span>Jan 12, 2025</span></div>
+            <div class="dir-crumb mt-1.5"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M1.5 7V13.5h13V5.5H7.5L5.5 3h-4V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>brand/</div>
+          </div>
+          <div class="file-card-actions">
+            <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Replace"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 116 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2 8V5M2 8H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="file-card-action-btn danger ml-auto" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+
+        <!-- GIS zip -->
+        <div class="file-card">
+          <div class="file-card-thumb shp">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="14" stroke="#0F766E" stroke-width="1.5"/><path d="M22 8c-4 4-4 24 0 28M8 22c4-4 24-4 28 0" stroke="#0F766E" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><circle cx="22" cy="22" r="4" fill="#0F766E" opacity="0.25"/><text x="22" y="38" text-anchor="middle" font-family="Oswald,sans-serif" font-size="7" font-weight="600" fill="#0F766E" letter-spacing="0.5">SHP</text></svg>
+            <div class="file-card-type-badge" style="background:#CCFBF1;color:#0F766E;">SHP</div>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name">ny_parcels_2024_Q1.zip</div>
+            <div class="file-card-meta"><span>44.8 MB</span><span class="text-mny-200">·</span><span>Feb 20, 2025</span></div>
+            <div class="dir-crumb mt-1.5"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M1.5 7V13.5h13V5.5H7.5L5.5 3h-4V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>gis/parcels/</div>
+          </div>
+          <div class="file-card-actions">
+            <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Replace"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 116 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2 8V5M2 8H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="file-card-action-btn danger ml-auto" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Image 3 -->
+        <div class="file-card">
+          <div class="file-card-thumb">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#F0D0A0 0%,#D4A860 50%,#B88030 100%);display:flex;align-items:center;justify-content:center;">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="opacity-30"><rect x="2" y="2" width="28" height="28" rx="4" stroke="white" stroke-width="2"/><circle cx="10" cy="10" r="3" stroke="white" stroke-width="2"/><path d="M2 22l8-8 5 5 4-4 9 9" stroke="white" stroke-width="2" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="file-card-type-badge bg-mny-100 text-mny-700">PNG</div>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name">hazard_risk_map_statewide.png</div>
+            <div class="file-card-meta"><span>5.6 MB</span><span class="text-mny-200">·</span><span>Jun 1, 2025</span></div>
+            <div class="dir-crumb mt-1.5"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M1.5 7V13.5h13V5.5H7.5L5.5 3h-4V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>maps/hazard/</div>
+          </div>
+          <div class="file-card-actions">
+            <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            <button class="file-card-action-btn" title="Replace"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 116 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2 8V5M2 8H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="file-card-action-btn danger ml-auto" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+
+      </div><!-- /grid -->
+
+      <!-- ── List view (alternate — show when toggle active) ─────────────── -->
+      <div class="card overflow-hidden mt-2">
+        <div class="flex items-center justify-between px-5 py-3 border-b border-mny-100">
+          <span class="font-display text-[12px] font-500 uppercase tracking-[0.08em] text-mny-400">List View — All Files</span>
+          <span class="text-[12px] text-mny-400">23 files · 284 MB total</span>
+        </div>
+        <table class="mgmt-table">
+          <thead>
+            <tr>
+              <th class="w-8"></th>
+              <th>File name</th>
+              <th>Type</th>
+              <th>Size</th>
+              <th>Directory</th>
+              <th>Source dataset</th>
+              <th>Uploaded</th>
+              <th class="w-28">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-center">
+                <div class="w-7 h-7 rounded flex items-center justify-center bg-red-50 mx-auto"><span class="text-red-600 font-display text-[9px] font-600 uppercase tracking-wide">PDF</span></div>
+              </td>
+              <td class="font-medium text-mny-900">FEMA_BRIC_Guidance_2024.pdf</td>
+              <td><span class="pill pill-red">application/pdf</span></td>
+              <td class="tabular-nums">8.7 MB</td>
+              <td class="text-mny-400 font-proxima text-[12.5px]">docs/fema/</td>
+              <td><a href="#" class="text-mny-700 hover:underline">FEMA Program Docs</a></td>
+              <td class="text-mny-400">May 18, 2025</td>
+              <td>
+                <div class="flex items-center gap-1">
+                  <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                  <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+                  <button class="file-card-action-btn danger" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="text-center">
+                <div class="w-7 h-7 rounded bg-mny-50 flex items-center justify-center mx-auto"><span class="text-mny-700 font-display text-[9px] font-600 uppercase tracking-wide">PNG</span></div>
+              </td>
+              <td class="font-medium text-mny-900">ny_counties_overview.png</td>
+              <td><span class="pill pill-blue">image/png</span></td>
+              <td class="tabular-nums">2.4 MB</td>
+              <td class="text-mny-400 font-proxima text-[12.5px]">maps/</td>
+              <td><a href="#" class="text-mny-700 hover:underline">County Map Assets</a></td>
+              <td class="text-mny-400">Jun 3, 2025</td>
+              <td>
+                <div class="flex items-center gap-1">
+                  <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                  <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+                  <button class="file-card-action-btn danger" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="text-center">
+                <div class="w-7 h-7 rounded bg-blue-50 flex items-center justify-center mx-auto"><span class="text-blue-700 font-display text-[9px] font-600 uppercase tracking-wide">DOC</span></div>
+              </td>
+              <td class="font-medium text-mny-900">HMP_Annex_Suffolk_County_2025.docx</td>
+              <td><span class="pill pill-blue">application/docx</span></td>
+              <td class="tabular-nums">3.2 MB</td>
+              <td class="text-mny-400 font-proxima text-[12.5px]">docs/hmp/</td>
+              <td><a href="#" class="text-mny-700 hover:underline">HMP Annexes 2025</a></td>
+              <td class="text-mny-400">Jun 10, 2025</td>
+              <td>
+                <div class="flex items-center gap-1">
+                  <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                  <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+                  <button class="file-card-action-btn danger" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="text-center">
+                <div class="w-7 h-7 rounded" style="background:#CCFBF1;display:flex;align-items:center;justify-content:center;margin:auto;"><span style="color:#0F766E" class="font-display text-[9px] font-600 uppercase tracking-wide">SHP</span></div>
+              </td>
+              <td class="font-medium text-mny-900">ny_parcels_2024_Q1.zip</td>
+              <td><span class="pill" style="background:#CCFBF1;color:#0F766E;">application/zip</span></td>
+              <td class="tabular-nums">44.8 MB</td>
+              <td class="text-mny-400 font-proxima text-[12.5px]">gis/parcels/</td>
+              <td><a href="#" class="text-mny-700 hover:underline">NY Parcel Boundaries</a></td>
+              <td class="text-mny-400">Feb 20, 2025</td>
+              <td>
+                <div class="flex items-center gap-1">
+                  <button class="file-card-action-btn" title="Download"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                  <button class="file-card-action-btn" title="Copy URL"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L5 11a3 3 0 104.24 4.24l2-2A3 3 0 009 9.5M9.5 6.5L11 5a3 3 0 10-4.24-4.24l-2 2A3 3 0 007 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+                  <button class="file-card-action-btn danger" title="Delete"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5.5 4l.5 9h4l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Pagination -->
+        <div class="flex items-center justify-between px-5 py-3 border-t border-mny-100 bg-mny-50">
+          <span class="text-[12px] text-mny-400">Showing 4 of 23 files</span>
+          <div class="flex items-center gap-1">
+            <button class="px-3 py-1 rounded-full text-[12px] font-display font-500 uppercase tracking-[0.06em] text-mny-400 border border-mny-200 hover:bg-mny-100 transition-colors">Prev</button>
+            <button class="px-3 py-1 rounded-full text-[12px] font-display font-500 uppercase tracking-[0.06em] bg-mny-900 text-white">1</button>
+            <button class="px-3 py-1 rounded-full text-[12px] font-display font-500 uppercase tracking-[0.06em] text-mny-400 border border-mny-200 hover:bg-mny-100 transition-colors">2</button>
+            <button class="px-3 py-1 rounded-full text-[12px] font-display font-500 uppercase tracking-[0.06em] text-mny-400 border border-mny-200 hover:bg-mny-100 transition-colors">3</button>
+            <button class="px-3 py-1 rounded-full text-[12px] font-display font-500 uppercase tracking-[0.06em] text-mny-400 border border-mny-200 hover:bg-mny-100 transition-colors">Next</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

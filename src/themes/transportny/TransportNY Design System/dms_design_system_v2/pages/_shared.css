@@ -1,0 +1,184 @@
+/* TransportNY · global CSS additions (v2)
+ *
+ * Append to the consuming project's index.css. Provides:
+ *   - @font-face for the two brand families (Oswald + Source Sans 3)
+ *   - .tny-pane / .tny-pane-tint / .tny-card / .tny-card-tint /
+ *     .tny-card-bone / .tny-card-ink — surface utilities referenced
+ *     by name in theme.js layoutGroup styles.
+ *   - .tny-press — tone-bar button press effect (margin-shift on
+ *     :active that can't be expressed as a single Tailwind class).
+ *   - .tny-active-bar — sidebar amber left-rail.
+ *   - .tny-bluebar / .tny-bluebar-dark — saturated NYS-blue tone
+ *     strips.
+ *   - .tny-hero-topo / .tny-map / .tny-map-dark — background
+ *     textures (stacked gradients).
+ *   - .tny-link / .tny-mono / .tny-menu / .tny-toc-item / .dot-pulse
+ *     — small helpers used inside primitives.
+ *
+ * Why these aren't pure Tailwind class strings: stacked gradients
+ * (.tny-hero-topo, .tny-map), margin-shift on :active (.tny-press),
+ * variable-font @font-face declarations. Keeping them as CSS classes
+ * is the smallest legible surface.
+ *
+ * For Tailwind v4 projects, this file can also be co-located with the
+ * theme's `fonts` array entries — but those entries only handle the
+ * @font-face + @theme directives; the surface utilities below still
+ * need to live in regular CSS.
+ */
+
+@font-face {
+  font-family: "Oswald";
+  src: url("./fonts/Oswald-Variable.woff2") format("woff2-variations");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Proxima Nova";
+  /* Source Sans 3 is the open-source substitute with very similar metrics.
+   * If you license Proxima Nova, swap to ProximaNova-Variable.woff2. */
+  src: url("./fonts/SourceSans3-Variable.woff2") format("woff2-variations");
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+body {
+  font-family: "Proxima Nova", "Source Sans 3", system-ui, sans-serif;
+  background: #ECEEF2;
+}
+
+/* ── Font-family utility classes ──────────────────────────────────────
+ * Without these, only theme.html's inline `tailwind.config` block
+ * resolved `font-display` / `font-proxima` to the brand families;
+ * every other mockup fell back to system sans. These plain CSS classes
+ * work on every page regardless of any inline Tailwind config.
+ */
+.font-display, .font-oswald { font-family: "Oswald", "Bebas Neue", sans-serif; }
+.font-proxima               { font-family: "Proxima Nova", "Source Sans 3", system-ui, sans-serif; }
+
+/* ── Surface utilities (cards-on-pane) ─────────────────────────────── */
+.tny-pane       { background: #ECEEF2; }
+.tny-pane-tint  { background: #E4E8EE; }
+.tny-card {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+}
+.tny-card-tint  { background: #FAFBFC; }
+.tny-card-bone  { background: #F5F1E8; }
+.tny-card-ink   { background: #0F2D4D; color: #fff; }
+
+/* ── Tone-bar press effect ────────────────────────────────────────── */
+.tny-press            { border-bottom-width: 4px; transition: all 0.08s; }
+.tny-press:active     { border-bottom-width: 2px; margin-bottom: 2px; }
+
+/* ── Sidebar amber active-rail ────────────────────────────────────── */
+.tny-active-bar       { border-left: 3px solid #FACC15; }
+
+/* ── Saturated NYS-blue tone bars (filter strips) ────────────────── */
+.tny-bluebar          { background: #1F3F8F; color: #fff; }
+.tny-bluebar-dark     { background: #16307A; color: #fff; }
+
+/* ── Soft topo hero background ────────────────────────────────────── */
+.tny-hero-topo {
+  background:
+    radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+    radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+    repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+    repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+    #EEF1F3;
+}
+
+/* ── Placeholder map texture (no real tiles) ─────────────────────── */
+.tny-map {
+  background:
+    radial-gradient(ellipse 30% 30% at 65% 55%, rgba(186, 213, 232, 0.7) 0%, transparent 70%),
+    radial-gradient(ellipse 18% 18% at 30% 30%, rgba(186, 213, 232, 0.4) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent 0 38px, rgba(120, 140, 120, 0.06) 38px 39px),
+    repeating-linear-gradient(90deg, transparent 0 44px, rgba(120, 140, 120, 0.06) 44px 45px),
+    #E8E4D2;
+}
+.tny-map-dark {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 50px, rgba(255, 255, 255, 0.04) 50px 51px),
+    repeating-linear-gradient(90deg, transparent 0 60px, rgba(255, 255, 255, 0.04) 60px 61px),
+    #2E384A;
+}
+
+/* ── Inline link / inline code / dropdown menu ────────────────────── */
+.tny-link            { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+.tny-link:hover      { color: #16307A; }
+.tny-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  padding: 1px 5px;
+  background: rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 3px;
+  color: #37576B;
+  white-space: nowrap;
+}
+.tny-menu {
+  background: #fff;
+  border: 1px solid rgba(9, 9, 11, 0.10);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.18);
+  border-radius: 8px;
+}
+
+/* ── TOC anchor ───────────────────────────────────────────────────── */
+.tny-toc-item        { display: flex; align-items: center; gap: 8px; padding: 4px 0 4px 10px; font-size: 13px; color: #475569; border-left: 2px solid #e2e8f0; }
+.tny-toc-item.active { color: #0f172a; font-weight: 600; border-left-color: #EAAD43; }
+.tny-toc-item:hover  { color: #0f172a; }
+
+/* ── Pulsing status dot ───────────────────────────────────────────── */
+@keyframes tnyPulse  { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.dot-pulse           { animation: tnyPulse 2.4s ease-in-out infinite; }
+
+/* ── Meta-nav strip (documentation chrome) ────────────────────────────
+ * Used only on design-system/ and pages/ mockup pages — NOT on real
+ * DMS sites. Provides one-click navigation across the deliverable per
+ * skill §7.0. Kept distinct from the in-product chrome (mono font,
+ * hairline separators, ink background).
+ */
+.tny-meta-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #94a3b8;
+  background: #0F1722;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.tny-meta-nav__label  { padding: 7px 14px; color: #FACC15; border-right: 1px solid rgba(255, 255, 255, 0.08); }
+.tny-meta-nav__group  { padding: 0 10px; color: #64748b; border-right: 1px solid rgba(255, 255, 255, 0.05); }
+.tny-meta-nav__link   { padding: 7px 10px; color: #cbd5e1; text-decoration: none; }
+.tny-meta-nav__link:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
+.tny-meta-nav__link.is-active { color: #fff; background: rgba(250, 204, 21, 0.10); border-bottom: 2px solid #FACC15; }
+
+/* ── DMS structural annotations (toggle via <body class="dms-annotated">) ──
+ * Reveals LAYOUT / GROUP / SECTION badges on data-dms-* wrappers so
+ * a reader can see the structural shape. Default off on pages/ so the
+ * mockups look like real product surfaces.
+ */
+body.dms-annotated [data-dms-layout]::before,
+body.dms-annotated [data-dms-group]::before,
+body.dms-annotated [data-dms-section]::before {
+  position: absolute;
+  z-index: 60;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+body.dms-annotated [data-dms-layout]  { position: relative; outline: 1px dashed rgba(31, 63, 143, 0.4); }
+body.dms-annotated [data-dms-layout]::before  { content: "LAYOUT · " attr(data-dms-layout);   top: 2px; left: 2px; background: rgba(31, 63, 143, 0.9); color: #fff; }
+body.dms-annotated [data-dms-group]   { position: relative; outline: 1px dashed rgba(250, 204, 21, 0.5); outline-offset: -1px; }
+body.dms-annotated [data-dms-group]::before   { content: "GROUP · "  attr(data-dms-group);    top: 2px; left: 2px; background: rgba(202, 138, 4, 0.9);  color: #fff; }
+body.dms-annotated [data-dms-section] { position: relative; outline: 1px dashed rgba(15, 23, 42, 0.2); outline-offset: -1px; }
+body.dms-annotated [data-dms-section]::before { content: "SECTION · " attr(data-dms-section); top: 2px; right: 2px; background: rgba(55, 87, 107, 0.85); color: #fff; }

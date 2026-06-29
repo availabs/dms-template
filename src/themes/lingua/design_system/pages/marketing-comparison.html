@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingua — Hosted, or self-host. Same row format.</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* =========================================================================
+       Page-specific composition for marketing-comparison.html
+       Almost everything is in _shared.css + _dms-page.css; this file adds:
+         - the hero-claim pill (matched to theme.html / homepage)
+         - the side-by-side compare-card pattern (with accent corner)
+         - the architecture diagram layout for two 3- and 5-node graphs
+         - the capability-matrix row/header conventions
+         - the plan-card pair (hosted price · self-host $0)
+         - the FAQ grid
+       ========================================================================= */
+
+    /* ----- Hero claim pill (shared device with other marketing pages) ----- */
+    .hero-claim {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 4px 4px 4px 12px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-mute);
+      margin-bottom: var(--space-5);
+    }
+    .hero-claim .badge {
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    /* ----- The two compare cards (left = Hosted, right = Self-host) ------ */
+    .cmp-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-7);
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+    .cmp-card--accent::before {
+      content: "";
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      width: 96px;
+      height: 96px;
+      border-top: 3px solid var(--color-accent);
+      border-left: 3px solid var(--color-accent);
+      border-top-left-radius: var(--radius-xl);
+      pointer-events: none;
+    }
+    .cmp-card__hd {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+    .cmp-card__hd-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.018em;
+      color: var(--color-ink);
+      margin: 0;
+    }
+    .cmp-card__hd-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+    }
+    .cmp-card__lede {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--color-ink-soft);
+      margin: 0;
+      max-width: 48ch;
+    }
+
+    /* ----- Architecture diagram interior (vertical 3- or 5-node graph) --- */
+    .arch-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: var(--space-5) var(--space-3);
+    }
+    .arch-tier {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      gap: var(--space-3);
+      position: relative;
+    }
+    .arch-tier-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      margin-bottom: 6px;
+      text-align: center;
+      font-weight: 500;
+    }
+    .arch-node-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      flex: 1;
+      min-width: 0;
+    }
+    .arch-node {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-ink);
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      line-height: 1.3;
+    }
+    .arch-node .sub {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      margin-top: 2px;
+      font-weight: 400;
+    }
+    .arch-node--accent {
+      background: var(--color-accent-soft);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+    .arch-node--accent .sub { color: var(--color-accent); opacity: 0.75; }
+    .arch-node--dark {
+      background: var(--color-ink);
+      border-color: var(--color-ink);
+      color: var(--color-surface);
+    }
+    .arch-node--dark .sub { color: var(--color-mute-soft); }
+    .arch-node--soft {
+      background: var(--color-surface-soft);
+      border-color: var(--color-border);
+      color: var(--color-ink-soft);
+    }
+
+    /* Connecting flow between tiers — a thin accent line + arrowhead */
+    .arch-flow {
+      height: 28px;
+      width: 100%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+    .arch-flow::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 6px;
+      left: 50%;
+      width: 1.5px;
+      background: var(--color-border-strong);
+    }
+    .arch-flow::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 6px;
+      height: 6px;
+      border-right: 1.5px solid var(--color-border-strong);
+      border-bottom: 1.5px solid var(--color-border-strong);
+    }
+    .arch-flow--accent::before { background: var(--color-accent); }
+    .arch-flow--accent::after  { border-color: var(--color-accent); }
+
+    /* Container around the diagram inside a cmp-card */
+    .arch-frame {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+
+    /* Annotation row under the diagram */
+    .arch-notes {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-3) var(--space-4);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-ink-soft);
+      line-height: 1.5;
+    }
+    .arch-notes dt {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-accent);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding-top: 1px;
+    }
+    .arch-notes dd { margin: 0; }
+
+    /* ----- Capability matrix table -------------------------------------- */
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+      font-size: 14px;
+    }
+    .matrix-table th, .matrix-table td {
+      text-align: left;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      vertical-align: middle;
+    }
+    .matrix-table thead th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-mute);
+      font-weight: 500;
+      background: var(--color-surface-soft);
+      border-bottom: 1px solid var(--color-border-strong);
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+    .matrix-table thead th.col-cap { width: 36%; }
+    .matrix-table thead th.col-x   { width: 32%; }
+    .matrix-table tbody td.cell-cap {
+      font-weight: 500;
+      color: var(--color-ink);
+    }
+    .matrix-table tbody td.cell-cap .note {
+      display: block;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--color-mute);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+    .matrix-table tr.cat-row td {
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border-strong);
+      border-bottom: 1px solid var(--color-border-subtle);
+      padding-top: 18px;
+      padding-bottom: 10px;
+    }
+    .matrix-table tr.cat-row .cat {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-accent);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .matrix-table tr.cat-row .cat .mark {
+      width: 6px; height: 6px;
+      background: var(--color-accent);
+      border-radius: var(--radius-sm);
+    }
+    .matrix-table tr:hover td:not(.cat) { background: var(--color-surface-tint); }
+
+    .yes-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink);
+    }
+    .yes-dot::before {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--color-success-soft);
+      box-shadow: inset 0 0 0 1px var(--color-success);
+      background-image: linear-gradient(135deg, transparent 35%, var(--color-success) 35%, var(--color-success) 45%, transparent 45%, transparent 50%, var(--color-success) 50%, var(--color-success) 70%, transparent 70%);
+      background-size: 100% 100%;
+    }
+    .yes-simple {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink);
+    }
+    .yes-simple .check {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--color-success);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .no-dash {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-mute);
+    }
+    .no-dash .dash {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border-strong);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--color-mute);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .with-effort {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    .with-effort .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--color-margin-soft);
+      color: #946A00;
+      border: 1px solid rgba(255, 200, 61, 0.40);
+    }
+    .with-effort .pill::before {
+      content: "";
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--color-margin);
+    }
+    .with-effort .voice {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--color-mute);
+      max-width: 32ch;
+      line-height: 1.4;
+    }
+
+    /* ----- Pricing-summary plan cards (hosted vs self-host) -------------- */
+    .plan-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .plan-card--accent {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 1px var(--color-accent), var(--shadow-md);
+    }
+    .plan-card__eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-accent);
+      display: flex; align-items: center; gap: var(--space-2);
+    }
+    .plan-card__eyebrow .mark {
+      width: 6px; height: 6px;
+      background: var(--color-accent);
+      border-radius: var(--radius-sm);
+    }
+    .plan-card__name {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--color-ink);
+      margin: 0;
+    }
+    .plan-card__price {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-3);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      color: var(--color-ink);
+    }
+    .plan-card__price .num {
+      font-size: 64px;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .plan-card__price .per {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      color: var(--color-mute);
+      font-weight: 400;
+    }
+    .plan-card__sub {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink-soft);
+      max-width: 40ch;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .plan-card__bullets {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .plan-card__bullets li {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--color-ink);
+    }
+    .plan-card__bullets li::before {
+      content: "";
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+      margin-top: 4px;
+      background: var(--color-accent-soft);
+      border-radius: 50%;
+      background-image:
+        linear-gradient(135deg, transparent 30%, var(--color-accent) 30%, var(--color-accent) 40%, transparent 40%, transparent 48%, var(--color-accent) 48%, var(--color-accent) 64%, transparent 64%);
+    }
+    .plan-card__divider {
+      border: 0;
+      border-top: 1px solid var(--color-border-subtle);
+      margin: 0;
+    }
+    .plan-card__cta {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .plan-card__fine {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ----- Pluralism band (narrower content) ---------------------------- */
+    .pluralism-narrow {
+      max-width: 820px;
+      margin-inline: auto;
+    }
+    .pluralism-narrow .l-displayLG {
+      text-wrap: balance;
+    }
+
+    /* ----- FAQ grid ---------------------------------------------------- */
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-5);
+    }
+    @media (max-width: 900px) {
+      .faq-grid { grid-template-columns: 1fr; }
+    }
+    .faq-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .faq-card__q {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: -0.008em;
+      color: var(--color-ink);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .faq-card__q .q-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-accent);
+      background: var(--color-accent-soft);
+      border-radius: var(--radius-sm);
+      padding: 2px 7px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .faq-card__a {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--color-ink-soft);
+      margin: 0;
+    }
+    .faq-card__a code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--color-surface-sunken);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      color: var(--color-ink);
+      border: 1px solid var(--color-border);
+    }
+
+    /* ----- Two-up grid utility for major bands -------------------------- */
+    .two-up {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-6);
+    }
+    @media (max-width: 900px) {
+      .two-up { grid-template-columns: 1fr; }
+    }
+
+    /* CTAs sit inline */
+    .hero-ctas {
+      display: flex; gap: var(--space-3); margin-top: var(--space-7);
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+<!-- =============================================================================
+     META-NAV STRIP — required on every page per design system skill §7.0
+     "compare" is the active link.
+     ============================================================================= -->
+<div class="lingua-metanav">
+  <div class="lingua-metanav__inner">
+    <span class="lingua-metanav__brand">L<span class="diacritic">ī</span>ngua<span class="tag">design system v0.2</span></span>
+    <span class="lingua-metanav__group">system</span>
+    <a class="lingua-metanav__link" href="../design-system/theme.html">theme</a>
+    <a class="lingua-metanav__link" href="../design-system/layouts.html">layouts</a>
+    <a class="lingua-metanav__link" href="../design-system/grid.html">grid</a>
+    <a class="lingua-metanav__link" href="../design-system/components.html">components</a>
+    <a class="lingua-metanav__link" href="../design-system/patterns.html">patterns</a>
+    <span class="lingua-metanav__sep">·</span>
+    <span class="lingua-metanav__group">pages</span>
+    <a class="lingua-metanav__link" href="marketing-homepage.html">home</a>
+    <a class="lingua-metanav__link lingua-metanav__link--active" href="marketing-comparison.html">compare</a>
+    <a class="lingua-metanav__link" href="marketing-theory.html">theory</a>
+    <a class="lingua-metanav__link" href="docs-page.html">docs</a>
+    <a class="lingua-metanav__link" href="civic-overview.html">civic</a>
+    <a class="lingua-metanav__link" href="product-site-overview.html">site</a>
+    <a class="lingua-metanav__link" href="product-page-editor.html">editor</a>
+    <a class="lingua-metanav__link" href="product-dataset-view.html">dataset</a>
+    <span class="lingua-metanav__spacer"></span>
+    <span class="lingua-metanav__link" style="opacity:0.5; pointer-events:none;">2026-05-24</span>
+  </div>
+</div>
+
+<!-- =============================================================================
+     LAYOUT — "default" (marketing layout, no SideNav)
+     Site → Layout(default) > TopNav > childWrapper > LayoutGroups
+     ============================================================================= -->
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav — marketing variant (same shape as the homepage TopNav) -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="marketing-homepage.html" class="dms-topnav-brand">
+              L<span class="diacritic">ī</span>ngua
+            </a>
+            <div class="dms-topnav-links">
+              <a href="marketing-homepage.html">Product</a>
+              <a href="marketing-comparison.html" class="active">Pricing</a>
+              <a href="docs-page.html">Docs</a>
+              <a href="marketing-theory.html">Theory</a>
+              <a href="#" >Customers</a>
+              <a href="#" >Changelog</a>
+            </div>
+          </div>
+          <div class="dms-topnav-right">
+            <a href="#" style="color:var(--color-ink-soft); text-decoration:none; font-family:var(--font-sans); font-size:14px; font-weight:500;">Sign in</a>
+            <a href="#" class="ling-btn ling-btn--primary ling-btn--sm" style="margin-left:8px;">Start hosted →</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+        <!-- No SideNav on the marketing default layout -->
+
+        <!-- childWrapper -->
+        <div class="dms-layout-child">
+
+          <!-- ===================================================================
+               LayoutGroup "header" — Hero
+               =================================================================== -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="hero-claim">
+                <span class="badge">v0.2</span>
+                <span>two ways &middot; one product</span>
+              </div>
+              <h1 class="dms-page-title">Hosted, or self-host. Same row <span class="accent">format.</span></h1>
+              <p class="dms-page-lede">
+                Lingua isn't two products. It's one open-source platform that you can either run on your own infrastructure or let us run for you. The vocabulary, the editor, the row format, the plugin API &mdash; identical. The difference is who owns the servers, and which trade-offs come with that choice.
+              </p>
+              <div class="hero-ctas">
+                <a href="#pricing" class="ling-btn ling-btn--primary ling-btn--lg">Start hosted →</a>
+                <a href="#self-host-guide" class="ling-btn ling-btn--secondary ling-btn--lg">Read the self-host guide</a>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================================================
+               LayoutGroup "content" — Architecture diagrams comparison
+               The centerpiece. 2-col compare cards with Warpstream-style diagrams.
+               =================================================================== -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Architecture</div>
+                <h2 class="dms-section-title">How each one composes a site.</h2>
+                <p class="dms-section-lede">
+                  Same logical shape, different infrastructure surface. Your content goes in one end, your readers come out the other. The middle is the part you either rent or run.
+                </p>
+
+                <div class="two-up" style="margin-top: var(--space-7);">
+
+                  <!-- LEFT: Hosted (accent corner) -->
+                  <article class="cmp-card cmp-card--accent">
+                    <header class="cmp-card__hd">
+                      <h3 class="cmp-card__hd-title">Hosted</h3>
+                      <span class="cmp-card__hd-tag">lingua.com</span>
+                    </header>
+                    <p class="cmp-card__lede">
+                      Three boxes. We run the middle one. Your content, our infrastructure, your readers &mdash; with backups, CDN, auth, and updates handled.
+                    </p>
+
+                    <div class="arch-frame">
+                      <div class="arch-stack">
+                        <div class="arch-tier">
+                          <div class="arch-node-wrap">
+                            <div class="arch-tier-label">Source</div>
+                            <div class="arch-node arch-node--soft">your-content<span class="sub">pages · datasets · plugins</span></div>
+                          </div>
+                        </div>
+                        <div class="arch-flow arch-flow--accent"></div>
+                        <div class="arch-tier">
+                          <div class="arch-node-wrap">
+                            <div class="arch-tier-label">Run by Lingua</div>
+                            <div class="arch-node arch-node--accent">Lingua Hosted<span class="sub">api · cdn · auth · backup</span></div>
+                          </div>
+                        </div>
+                        <div class="arch-flow arch-flow--accent"></div>
+                        <div class="arch-tier">
+                          <div class="arch-node-wrap">
+                            <div class="arch-tier-label">Reader</div>
+                            <div class="arch-node arch-node--soft">your-readers<span class="sub">your-domain.com</span></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <dl class="arch-notes">
+                      <dt>Setup</dt>
+                      <dd>60 seconds from sign-up to first published page. No infrastructure to provision.</dd>
+                      <dt>Updates</dt>
+                      <dd>Continuous &mdash; new editor features, new column types, new themes appear without an upgrade step.</dd>
+                      <dt>Trade-off</dt>
+                      <dd>Your data sits in our database. Export is one command; we believe portability is non-negotiable.</dd>
+                    </dl>
+                  </article>
+
+                  <!-- RIGHT: Self-host -->
+                  <article class="cmp-card">
+                    <header class="cmp-card__hd">
+                      <h3 class="cmp-card__hd-title">Self-host</h3>
+                      <span class="cmp-card__hd-tag">github.com/lingua/lingua</span>
+                    </header>
+                    <p class="cmp-card__lede">
+                      Same three boxes, except the middle one explodes into the operational components you now own: app server, database, CDN, auth provider, backups. More surface area, fewer dependencies.
+                    </p>
+
+                    <div class="arch-frame">
+                      <div class="arch-stack">
+                        <div class="arch-tier">
+                          <div class="arch-node-wrap">
+                            <div class="arch-tier-label">Source</div>
+                            <div class="arch-node arch-node--soft">your-content<span class="sub">pages · datasets · plugins</span></div>
+                          </div>
+                        </div>
+                        <div class="arch-flow"></div>
+                        <div class="arch-tier-label" style="margin-bottom: 4px;">Run by you</div>
+                        <div class="arch-tier" style="gap: 8px;">
+                          <div class="arch-node-wrap">
+                            <div class="arch-node arch-node--dark">lingua-server<span class="sub">node · oss</span></div>
+                          </div>
+                          <div class="arch-node-wrap">
+                            <div class="arch-node arch-node--dark">postgres<span class="sub">data_items</span></div>
+                          </div>
+                          <div class="arch-node-wrap">
+                            <div class="arch-node arch-node--dark">cdn / nginx<span class="sub">static + cache</span></div>
+                          </div>
+                        </div>
+                        <div class="arch-tier" style="gap: 8px; margin-top: var(--space-3);">
+                          <div class="arch-node-wrap">
+                            <div class="arch-node arch-node--soft">auth provider<span class="sub">oidc · saml</span></div>
+                          </div>
+                          <div class="arch-node-wrap">
+                            <div class="arch-node arch-node--soft">backups<span class="sub">pg_dump · s3</span></div>
+                          </div>
+                        </div>
+                        <div class="arch-flow"></div>
+                        <div class="arch-tier">
+                          <div class="arch-node-wrap">
+                            <div class="arch-tier-label">Reader</div>
+                            <div class="arch-node arch-node--soft">your-readers<span class="sub">your-domain.com</span></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <dl class="arch-notes">
+                      <dt>Setup</dt>
+                      <dd><code style="font-family:var(--font-mono);font-size:12px;background:var(--color-surface-sunken);padding:1px 5px;border-radius:4px;">docker compose up</code> from the starter repo, plus a domain, a DB, and a TLS cert. 1&ndash;2 hours for a first deploy.</dd>
+                      <dt>Updates</dt>
+                      <dd>You pull releases when you're ready. Skip versions, pin LTS, run a fork &mdash; up to you.</dd>
+                      <dt>Trade-off</dt>
+                      <dd>Operational ownership: when Postgres needs vacuuming or TLS rotates, that's on you.</dd>
+                    </dl>
+                  </article>
+
+                </div>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">point of the diagram &rarr;</span> The boxes <em>your-content</em> and <em>your-readers</em> are identical in both pictures. The vocabulary doesn't change with the deployment. A page authored on hosted opens unchanged in a self-host install; a plugin written for self-host runs unchanged on hosted. The fork is operational, not semantic.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================================================
+               LayoutGroup "content" — Pluralism band (narrower)
+               =================================================================== -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="pluralism-narrow">
+                <div class="dms-section-eyebrow"><span class="mark"></span>One product</div>
+                <h2 class="l-displayLG" style="margin: var(--space-3) 0 var(--space-6);">
+                  There's no upgrade path because they're the same product.
+                </h2>
+
+                <p class="l-proseLG" style="color: var(--color-ink-soft); max-width: 64ch;">
+                  Most platforms with a hosted tier and an open-source tier treat one as the &ldquo;real&rdquo; product and the other as a feature-limited preview. Lingua is built the opposite way: the OSS repo and the hosted service share the same code, the same row format, and the same release pipeline. The hosted product is the OSS product with someone else running the servers.
+                </p>
+
+                <p class="l-proseLG" style="color: var(--color-ink-soft); max-width: 64ch; margin-top: var(--space-5);">
+                  That means there's nothing to migrate <em>to</em>. A site you author on hosted exports as a single archive that boots on a self-host install. A site you outgrew running on a 1&nbsp;GB VPS imports into hosted the same way. Move when it suits you, move back when it doesn't, run both side by side &mdash; the choice belongs to the person paying the bills, not the vendor.
+                </p>
+
+                <div class="ling-terminal" style="margin-top: var(--space-7);">
+                  <div class="ling-terminal__chrome">
+                    <span class="dot" style="background:#FF5F57;"></span>
+                    <span class="dot" style="background:#FEBC2E;"></span>
+                    <span class="dot" style="background:#28C840;"></span>
+                    <span class="title">~/sites/county-budget &middot; portability demo</span>
+                  </div>
+                  <div class="ling-terminal__body">
+<pre><span class="dim"># export a hosted site to a local archive</span>
+<span class="prompt">lingua export --site county-budget --out ./county-budget.tar.zst</span>
+<span class="dim">  pulling pages, sections, components&hellip; 142 rows</span>
+<span class="dim">  pulling datasets&hellip; 8 sources &middot; 2,847,109 rows &middot; 412 MB</span>
+<span class="dim">  pulling themes &amp; plugins&hellip; 1 theme &middot; 3 plugins</span>
+<span class="ok">&#10003; wrote county-budget.tar.zst</span> <span class="dim">&middot; 38.4 MB &middot; 9.2s</span>
+
+<span class="dim"># boot a self-host instance and import it</span>
+<span class="prompt">docker compose up -d</span>
+<span class="dim">  lingua-server     ready on :4444</span>
+<span class="dim">  postgres-15       ready on :5432</span>
+<span class="ok">&#10003; stack up in 4.1s</span>
+
+<span class="prompt">lingua import ./county-budget.tar.zst --host http://localhost:4444</span>
+<span class="dim">  restoring rows&hellip; 142 + 2,847,109</span>
+<span class="dim">  validating row format v3.1&hellip; ok</span>
+<span class="dim">  rebuilding indexes&hellip; ok</span>
+<span class="ok">&#10003; site available at http://localhost:4444/county-budget</span>
+<span class="dim">  &middot; reverse the direction with <span class="warn">lingua push --site county-budget --to https://lingua.com</span></span>
+<span class="prompt"></span><span class="cursor"></span></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================================================
+               LayoutGroup "content" — Capability matrix
+               14 rows across 4 category headers
+               =================================================================== -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Capabilities</div>
+                <h2 class="dms-section-title">What each one ships, what each one asks of you.</h2>
+                <p class="dms-section-lede">
+                  Same product, different operational division of labor. &ldquo;With effort&rdquo; means the capability isn't built in, but the platform exposes the hooks needed to add it. Be honest with yourself about which effort you're willing to take on.
+                </p>
+
+                <table class="matrix-table" style="margin-top: var(--space-6);">
+                  <thead>
+                    <tr>
+                      <th class="col-cap">Capability</th>
+                      <th class="col-x">Hosted</th>
+                      <th class="col-x">Self-host</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                    <!-- CATEGORY: Authoring -->
+                    <tr class="cat-row">
+                      <td colspan="3"><span class="cat"><span class="mark"></span>Authoring</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Visual editor<span class="note">the page-builder canvas, drag-to-rearrange, live preview</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Built in</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Built in</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Drafts &amp; revision history<span class="note">named versions, diff, restore</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Built in</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Built in</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Real-time collaboration<span class="note">two authors editing the same page</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Built in</span></td>
+                      <td>
+                        <div class="with-effort">
+                          <span class="pill">With effort</span>
+                          <span class="voice">yes &mdash; if you run the optional <code style="font-family:var(--font-mono);">lingua-presence</code> sidecar and a Redis instance.</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Custom approval workflows<span class="note">multi-step review before publish</span></td>
+                      <td>
+                        <div class="with-effort">
+                          <span class="pill">With effort</span>
+                          <span class="voice">configurable in the workflow editor (admin UI), three preset templates ship.</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="with-effort">
+                          <span class="pill">With effort</span>
+                          <span class="voice">same editor, plus you can hook the publish event to anything &mdash; webhook, queue, your CI.</span>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- CATEGORY: Data & integrations -->
+                    <tr class="cat-row">
+                      <td colspan="3"><span class="cat"><span class="mark"></span>Data &amp; integrations</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Dataset hosting<span class="note">tables, views, pagination, indexes</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Up to 50 GB / site</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Limited by your Postgres</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Custom data sources<span class="note">read from your warehouse, API, file store</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>11 connectors ship</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Same 11, plus write your own</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Scheduled imports<span class="note">refresh a dataset on a cron</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Built in scheduler</span></td>
+                      <td>
+                        <div class="with-effort">
+                          <span class="pill">With effort</span>
+                          <span class="voice">yes &mdash; write a Python script and a crontab line, or run the bundled scheduler.</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Custom plugins<span class="note">your own column type, page section, or data source</span></td>
+                      <td>
+                        <div class="with-effort">
+                          <span class="pill">With effort</span>
+                          <span class="voice">via the marketplace &mdash; plugins are reviewed before install. Private plugins on Pro tier.</span>
+                        </div>
+                      </td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Drop them into <code style="font-family:var(--font-mono);">/plugins</code></span></td>
+                    </tr>
+
+                    <!-- CATEGORY: Theming -->
+                    <tr class="cat-row">
+                      <td colspan="3"><span class="cat"><span class="mark"></span>Theming</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Shipped themes<span class="note">production-ready brands you can switch to in one click</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>6 themes, 4 in beta</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Same 6 + 4</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Custom themes<span class="note">fork a theme or write your own</span></td>
+                      <td>
+                        <div class="with-effort">
+                          <span class="pill">With effort</span>
+                          <span class="voice">edit class strings in the admin theme editor; full JS overrides require the Pro tier.</span>
+                        </div>
+                      </td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Edit any file in <code style="font-family:var(--font-mono);">/themes</code></span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Theme marketplace<span class="note">install community themes by URL</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>One-click install</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span><code style="font-family:var(--font-mono);">lingua theme add</code></span></td>
+                    </tr>
+
+                    <!-- CATEGORY: Operations -->
+                    <tr class="cat-row">
+                      <td colspan="3"><span class="cat"><span class="mark"></span>Operations</span></td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Backups<span class="note">point-in-time restore</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Hourly, 30-day retention</span></td>
+                      <td>
+                        <div class="with-effort">
+                          <span class="pill">With effort</span>
+                          <span class="voice"><code style="font-family:var(--font-mono);">pg_dump</code> on a cron, your retention policy, your storage bill.</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">Custom domains &amp; TLS<span class="note">your-domain.com with HTTPS</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>Provisioned automatically</span></td>
+                      <td>
+                        <div class="with-effort">
+                          <span class="pill">With effort</span>
+                          <span class="voice">caddy or nginx in front, Let&rsquo;s Encrypt for the cert, your DNS.</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="cell-cap">SSO / SAML &amp; audit log<span class="note">enterprise auth + compliance trail</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>On Pro and Enterprise</span></td>
+                      <td><span class="yes-simple"><span class="check">&#10003;</span>OIDC + SAML connectors ship in OSS</span></td>
+                    </tr>
+
+                  </tbody>
+                </table>
+
+                <div class="dms-annotation-block" style="margin-top: var(--space-7);">
+                  <span class="key">how to read this &rarr;</span> Almost every row has a check on both sides. The differences are <em>how</em> the capability is delivered, not whether it exists. &ldquo;With effort&rdquo; on the hosted side usually means a UI configuration step; on the self-host side it usually means writing a script and putting it on a cron. Pick the kind of effort you'd rather spend.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================================================
+               LayoutGroup "content" — Pricing summary (2 plan cards)
+               =================================================================== -->
+          <section id="pricing" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>Pricing</div>
+                <h2 class="dms-section-title">Two prices for the same product.</h2>
+                <p class="dms-section-lede">
+                  One is a subscription that buys you not having to run servers. The other is the cost of running servers. Both buy you the same software.
+                </p>
+
+                <div class="two-up" style="margin-top: var(--space-7);">
+
+                  <!-- LEFT: Hosted (accent) -->
+                  <article class="plan-card plan-card--accent">
+                    <div class="plan-card__eyebrow"><span class="mark"></span>Hosted &middot; Pro</div>
+                    <h3 class="plan-card__name">Hosted</h3>
+                    <div class="plan-card__price">
+                      <span class="num">$29</span>
+                      <span class="per">/ site / month &middot; billed annually</span>
+                    </div>
+                    <p class="plan-card__sub">Everything you need to ship a real site without a server engineer on staff. Free trial &mdash; no card &mdash; for 14 days.</p>
+                    <hr class="plan-card__divider">
+                    <ul class="plan-card__bullets">
+                      <li>Up to 50 GB of dataset storage, included.</li>
+                      <li>Custom domain with managed TLS, included.</li>
+                      <li>Hourly backups, 30-day point-in-time restore.</li>
+                      <li>Continuous updates &mdash; new features ship to your site without an upgrade step.</li>
+                      <li>SSO / SAML, audit log, and unlimited collaborators on Enterprise.</li>
+                    </ul>
+                    <hr class="plan-card__divider">
+                    <div class="plan-card__cta">
+                      <a href="#" class="ling-btn ling-btn--primary ling-btn--lg">Start a 14-day trial →</a>
+                      <span class="plan-card__fine">no card &middot; export anytime &middot; cancel anytime</span>
+                    </div>
+                  </article>
+
+                  <!-- RIGHT: Self-host -->
+                  <article class="plan-card">
+                    <div class="plan-card__eyebrow" style="color: var(--color-mute);"><span class="mark" style="background: var(--color-mute);"></span>Self-host &middot; OSS</div>
+                    <h3 class="plan-card__name">Self-host</h3>
+                    <div class="plan-card__price">
+                      <span class="num">$0</span>
+                      <span class="per">/ site / month &middot; you bring the servers</span>
+                    </div>
+                    <p class="plan-card__sub">The same Lingua, AGPL-3.0, runs on your hardware. Plan on a few hours to set up and an ongoing operator who knows how to read Postgres logs.</p>
+                    <hr class="plan-card__divider">
+                    <ul class="plan-card__bullets">
+                      <li>The full editor, plugin system, and theme system &mdash; no feature gating.</li>
+                      <li>Bring your own Postgres, your own storage, your own auth provider.</li>
+                      <li>You decide when to upgrade, which release to pin, and whether to fork.</li>
+                      <li>Backups, CDN, custom domains, and TLS are <em>your</em> responsibility &mdash; pg_dump, S3, caddy, certbot.</li>
+                      <li>Optional paid support contract for SLA-backed help, when the time comes.</li>
+                    </ul>
+                    <hr class="plan-card__divider">
+                    <div class="plan-card__cta" id="self-host-guide">
+                      <a href="docs-page.html" class="ling-btn ling-btn--secondary ling-btn--lg">Read the self-host guide →</a>
+                      <span class="plan-card__fine">github.com/lingua/lingua &middot; v1.3.0 &middot; agpl-3.0</span>
+                    </div>
+                  </article>
+
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================================================
+               LayoutGroup "content" — FAQ
+               6 cards, two columns
+               =================================================================== -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>FAQ</div>
+                <h2 class="dms-section-title">Common questions, plainly answered.</h2>
+                <p class="dms-section-lede">
+                  The decision isn't permanent and the differences are smaller than they look. Here are the questions teams ask before they pick a door.
+                </p>
+
+                <div class="faq-grid" style="margin-top: var(--space-6);">
+
+                  <article class="faq-card">
+                    <h3 class="faq-card__q"><span class="q-num">01</span>Can I migrate from hosted to self-host?</h3>
+                    <p class="faq-card__a">
+                      Yes, both directions, no asterisks. <code>lingua export</code> produces a single compressed archive containing your pages, sections, datasets, themes, plugins, and history. <code>lingua import</code> reads it on the other end. The row format is versioned and the importer validates compatibility before writing anything &mdash; if a version mismatch would lose data, the import refuses and tells you what to upgrade.
+                    </p>
+                  </article>
+
+                  <article class="faq-card">
+                    <h3 class="faq-card__q"><span class="q-num">02</span>Does hosted run my custom plugins?</h3>
+                    <p class="faq-card__a">
+                      Public plugins from the marketplace: yes, one-click install on every tier. Private plugins of your own: yes on the Pro tier, with a review step before each new version is enabled &mdash; we read the code, because we share the runtime with every other hosted customer. Self-host has no such gate; if you trust the code, you can drop it into <code>/plugins</code> and restart.
+                    </p>
+                  </article>
+
+                  <article class="faq-card">
+                    <h3 class="faq-card__q"><span class="q-num">03</span>What's the real cost difference?</h3>
+                    <p class="faq-card__a">
+                      Hosted is $29 / site / month. Self-host is the cost of a small VPS ($5&ndash;$20 / month for most sites), a managed Postgres (free up to ~10 GB on several providers, ~$15&ndash;$50 / month after that), and your operator's time. Below 10 GB and one site, hosted is usually cheaper once you price the operator hours. Above 10 sites or with an in-house ops team, self-host wins quickly.
+                    </p>
+                  </article>
+
+                  <article class="faq-card">
+                    <h3 class="faq-card__q"><span class="q-num">04</span>Is the data format compatible across versions?</h3>
+                    <p class="faq-card__a">
+                      Yes. The row format follows semver. Minor and patch releases are fully backward-compatible. Major releases ship a one-shot migration in the importer; a v3 archive imports cleanly into a v4 instance. We have not yet shipped a major that broke compatibility for already-published sites and we don't plan to start.
+                    </p>
+                  </article>
+
+                  <article class="faq-card">
+                    <h3 class="faq-card__q"><span class="q-num">05</span>Who maintains the OSS version?</h3>
+                    <p class="faq-card__a">
+                      Lingua the company is the primary maintainer. The hosted product is built on the same repo &mdash; we don't keep a private fork &mdash; so the OSS gets the same attention the hosted product does, because they're the same code. External contributors merge ~30% of the commits in any given release; the maintainer team triages the rest.
+                    </p>
+                  </article>
+
+                  <article class="faq-card">
+                    <h3 class="faq-card__q"><span class="q-num">06</span>What about enterprise contracts?</h3>
+                    <p class="faq-card__a">
+                      Hosted Enterprise covers SSO/SAML, audit logging, custom data residency (US / EU / your-region), a signed BAA, and an SLA on uptime and support response. Self-host Enterprise is a paid support contract on top of the OSS &mdash; the software is still free; you're paying for an SLA-backed line to the maintainers. Either way, talk to sales: enterprise@lingua.com.
+                    </p>
+                  </article>
+
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===================================================================
+               LayoutGroup "footer" — marketing footer + deliverable link block
+               =================================================================== -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+
+              <!-- Top: marketing footer -->
+              <div class="dms-grid dms-grid-4" style="gap: var(--space-7);">
+                <div>
+                  <div class="ling-logo" style="font-size: 22px;">L<span class="diacritic">ī</span>ngua</div>
+                  <p class="l-proseSM ink-soft" style="margin-top: var(--space-3); max-width: 32ch;">
+                    One row format. Pages, data, charts, and maps speak it. Open-source. Hosted available.
+                  </p>
+                  <div style="display:flex; gap: var(--space-2); margin-top: var(--space-4);">
+                    <span class="ling-pill ling-pill--success ling-pill--dot">v1.3.0 &middot; stable</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Product</div>
+                  <div style="display:flex; flex-direction: column; gap: 6px;">
+                    <a href="marketing-homepage.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Overview</a>
+                    <a href="marketing-comparison.html" class="l-proseSM" style="color: var(--color-accent); text-decoration: none; font-weight: 500;">Hosted vs self-host</a>
+                    <a href="#" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Themes</a>
+                    <a href="#" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Plugins</a>
+                    <a href="#" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Changelog</a>
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Resources</div>
+                  <div style="display:flex; flex-direction: column; gap: 6px;">
+                    <a href="docs-page.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Docs</a>
+                    <a href="marketing-theory.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Theory</a>
+                    <a href="#" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Tutorials</a>
+                    <a href="#" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Self-host guide</a>
+                    <a href="#" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">GitHub</a>
+                  </div>
+                </div>
+                <div>
+                  <div class="l-monoXS" style="margin-bottom: var(--space-3);">Company</div>
+                  <div style="display:flex; flex-direction: column; gap: 6px;">
+                    <a href="#" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">About</a>
+                    <a href="#" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Customers</a>
+                    <a href="#" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">Careers</a>
+                    <a href="mailto:hi@lingua.com" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">hi@lingua.com</a>
+                    <a href="mailto:enterprise@lingua.com" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">enterprise@lingua.com</a>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="ling-rule" style="margin: var(--space-5) 0;">
+
+              <!-- Bottom: deliverable link block (meta-nav repeat) -->
+              <div>
+                <div class="l-monoXS" style="margin-bottom: var(--space-3);">Design system v0.2 &middot; deliverable index</div>
+                <div class="dms-grid dms-grid-2" style="gap: var(--space-6);">
+                  <div>
+                    <div class="l-monoXS ink-mute" style="margin-bottom: var(--space-2);">system</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-5);">
+                      <a href="../design-system/theme.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">theme</a>
+
+                      <a href="../design-system/layouts.html">layouts</a>
+                      <a href="../design-system/grid.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">grid</a>
+                      <a href="../design-system/components.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">components</a>
+                      <a href="../design-system/patterns.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">patterns</a>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="l-monoXS ink-mute" style="margin-bottom: var(--space-2);">pages</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-5);">
+                      <a href="marketing-homepage.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">home</a>
+                      <a href="marketing-comparison.html" class="l-proseSM" style="color: var(--color-accent); text-decoration: none; font-weight: 500;">compare</a>
+                      <a href="marketing-theory.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">theory</a>
+                      <a href="docs-page.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">docs</a>
+                      <a href="civic-overview.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">civic</a>
+                      <a href="product-site-overview.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">site</a>
+                      <a href="product-page-editor.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">editor</a>
+                      <a href="product-dataset-view.html" class="l-proseSM" style="color: var(--color-ink-soft); text-decoration: none;">dataset</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--color-border);">
+                <span class="l-monoXS ink-mute">&copy; 2026 Lingua &middot; AGPL-3.0 &middot; v1.3.0</span>
+                <span class="l-monoXS ink-mute">design system v0.2 &middot; 2026-05-24</span>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

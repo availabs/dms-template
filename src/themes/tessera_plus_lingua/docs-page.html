@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tessera ✕ Lingua — Docs Page</title>
+  <link rel="stylesheet" href="_shared.css">
+  <style>
+    /* ── Page chrome ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--color-bone);
+      color: var(--color-slate);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    /* ── Top nav ──────────────────────────────────────────────────────── */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      height: 56px;
+      background: #263524;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 24px;
+    }
+    .topnav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .topnav-brand .tile-mark {
+      display: inline-grid;
+      grid-template-columns: repeat(3,1fr);
+      grid-template-rows: repeat(3,1fr);
+      gap: 1.5px;
+      width: 20px;
+      height: 20px;
+    }
+    .topnav-brand .tile-mark span {
+      border-radius: 1px;
+      background: rgba(255,255,255,0.2);
+    }
+    .topnav-brand .tile-mark span:nth-child(3)  { background: var(--color-accent); }
+    .topnav-brand .tile-mark span:nth-child(6)  { background: var(--color-oxide); }
+    .topnav-brand .tile-mark span:nth-child(2),
+    .topnav-brand .tile-mark span:nth-child(4),
+    .topnav-brand .tile-mark span:nth-child(9)  { background: rgba(255,255,255,0.65); }
+    .topnav-brand .wordmark {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+
+    .topnav-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.12); flex-shrink: 0; }
+
+    .topnav-section-label {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .topnav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+      list-style: none;
+    }
+    .topnav-links a {
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      transition: color 0.15s, background 0.15s;
+    }
+    .topnav-links a:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .topnav-links a.active { color: #fff; }
+
+    .topnav-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      height: 32px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+      width: 200px;
+      flex-shrink: 0;
+    }
+    .topnav-search kbd {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 2px 5px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ── Docs layout ──────────────────────────────────────────────────── */
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr 220px;
+      min-height: calc(100vh - 56px);
+    }
+
+    /* ── Left sidenav ─────────────────────────────────────────────────── */
+    .docs-sidenav {
+      border-right: 1px solid var(--color-limestone);
+      padding: 28px 0;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    .sidenav-section {
+      margin-bottom: 28px;
+      padding: 0 16px;
+    }
+    .sidenav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-fog);
+      padding: 0 8px;
+      margin-bottom: 4px;
+    }
+    .sidenav-links { list-style: none; }
+    .sidenav-links li a {
+      display: block;
+      padding: 5px 8px;
+      font-size: 13.5px;
+      color: var(--color-graphite);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s, background 0.15s;
+      line-height: 1.4;
+    }
+    .sidenav-links li a:hover { color: var(--color-slate); background: var(--color-limestone); }
+    .sidenav-links li a.active {
+      color: var(--color-accent);
+      background: var(--color-accent-soft);
+      font-weight: 500;
+    }
+    .sidenav-links li a .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      background: var(--color-oxide);
+      color: #fff;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .sidenav-links li a .badge.new {
+      background: var(--color-accent);
+    }
+
+    /* sub-items */
+    .sidenav-sub { list-style: none; padding-left: 12px; }
+    .sidenav-sub li a {
+      display: block;
+      padding: 3px 8px;
+      font-size: 13px;
+      color: var(--color-fog);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s, background 0.15s;
+    }
+    .sidenav-sub li a:hover { color: var(--color-graphite); }
+    .sidenav-sub li a.active { color: var(--color-accent); }
+
+    /* ── Main content ─────────────────────────────────────────────────── */
+    .docs-main {
+      padding: 48px 56px 80px;
+      max-width: 760px;
+    }
+
+    .docs-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--color-fog);
+      margin-bottom: 28px;
+      font-family: var(--font-sans);
+    }
+    .docs-breadcrumb a { color: var(--color-fog); text-decoration: none; }
+    .docs-breadcrumb a:hover { color: var(--color-graphite); }
+    .docs-breadcrumb .sep { color: var(--color-limestone); }
+    .docs-breadcrumb .current { color: var(--color-graphite); }
+
+    .docs-page-title {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--color-slate);
+      margin-bottom: 12px;
+    }
+    .docs-subtitle {
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--color-graphite);
+      margin-bottom: 32px;
+      max-width: 580px;
+    }
+
+    /* ── Pill tags row ─────────────────────────────────────────────────── */
+    .docs-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      border: 1px solid var(--color-limestone);
+      color: var(--color-graphite);
+      background: var(--color-parchment);
+    }
+    .tag.accent {
+      background: var(--color-accent-soft);
+      border-color: transparent;
+      color: var(--color-accent);
+    }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ── Callout / alert box ──────────────────────────────────────────── */
+    .callout {
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--color-accent);
+      background: var(--color-accent-soft);
+      margin: 28px 0;
+      font-size: 14.5px;
+      color: var(--color-slate);
+      line-height: 1.6;
+    }
+    .callout strong { color: var(--color-accent); }
+    .callout.warning {
+      border-left-color: var(--color-oxide);
+      background: #FDF4F1;
+    }
+    .callout.warning strong { color: var(--color-oxide); }
+
+    /* ── Prose typography ─────────────────────────────────────────────── */
+    .prose h2 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      line-height: 1.3;
+      color: var(--color-slate);
+      margin: 48px 0 14px;
+      padding-top: 48px;
+      border-top: 1px solid var(--color-limestone);
+    }
+    .prose h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+    .prose h3 {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-slate);
+      margin: 28px 0 10px;
+    }
+    .prose p {
+      font-size: 15.5px;
+      line-height: 1.72;
+      color: var(--color-graphite);
+      margin-bottom: 18px;
+    }
+    .prose p strong { color: var(--color-slate); font-weight: 600; }
+    .prose a { color: var(--color-accent); text-decoration: underline; text-decoration-color: rgba(59,91,255,0.3); }
+    .prose a:hover { text-decoration-color: var(--color-accent); }
+    .prose ul, .prose ol {
+      padding-left: 20px;
+      margin-bottom: 18px;
+    }
+    .prose li {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--color-graphite);
+      margin-bottom: 6px;
+    }
+
+    /* ── Inline code + code blocks ───────────────────────────────────── */
+    .prose code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--color-limestone);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--color-slate);
+    }
+
+    .code-block {
+      background: var(--color-code-bg);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin: 24px 0;
+      box-shadow: var(--shadow-md);
+    }
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .code-block-lang {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .code-block-copy {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      background: none;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 3px;
+      padding: 3px 8px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: color 0.15s;
+    }
+    .code-block-copy:hover { color: rgba(255,255,255,0.7); }
+    .code-block pre {
+      padding: 20px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      color: #E8E2D5;
+    }
+    .code-block .kw  { color: #7BAEFF; }
+    .code-block .str { color: #ADDB67; }
+    .code-block .cm  { color: #6B7280; font-style: italic; }
+    .code-block .nm  { color: #E07B53; }
+    .code-block .op  { color: #C792EA; }
+
+    /* ── Properties / API table ──────────────────────────────────────── */
+    .prop-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 13.5px;
+    }
+    .prop-table thead th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-fog);
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--color-limestone);
+    }
+    .prop-table tbody tr {
+      border-bottom: 1px solid var(--color-limestone);
+    }
+    .prop-table tbody tr:hover td { background: var(--color-parchment); }
+    .prop-table tbody td {
+      padding: 10px 12px;
+      vertical-align: top;
+      color: var(--color-graphite);
+    }
+    .prop-table tbody td:first-child {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--color-accent);
+      white-space: nowrap;
+    }
+    .prop-table tbody td .type-pill {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 3px;
+      background: var(--color-limestone);
+      color: var(--color-graphite);
+    }
+    .prop-table tbody td .required {
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: var(--radius-pill);
+      background: rgba(181,83,44,0.1);
+      color: var(--color-oxide);
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin-left: 4px;
+    }
+
+    /* ── Step list ────────────────────────────────────────────────────── */
+    .step-list { list-style: none; padding: 0; margin: 24px 0; }
+    .step-list li {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .step-content { flex: 1; }
+    .step-content strong {
+      display: block;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--color-slate);
+      margin-bottom: 4px;
+    }
+    .step-content p {
+      font-size: 14px;
+      color: var(--color-graphite);
+      margin: 0;
+    }
+
+    /* ── Version / changelog banner ──────────────────────────────────── */
+    .version-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--color-parchment);
+      border: 1px solid var(--color-limestone);
+      border-radius: var(--radius-md);
+      margin-bottom: 36px;
+      font-size: 13px;
+    }
+    .version-banner .label { color: var(--color-fog); }
+    .version-banner .version-tag {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-accent);
+      background: var(--color-accent-soft);
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .version-banner .changelog-link {
+      font-size: 12.5px;
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    .version-banner .changelog-link:hover { text-decoration: underline; }
+
+    /* ── Page nav footer ─────────────────────────────────────────────── */
+    .page-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: 1px solid var(--color-limestone);
+    }
+    .page-nav-link {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      text-decoration: none;
+      padding: 14px 18px;
+      border: 1px solid var(--color-limestone);
+      border-radius: var(--radius-md);
+      background: var(--color-parchment);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      max-width: 200px;
+    }
+    .page-nav-link:hover { border-color: var(--color-accent); box-shadow: var(--shadow-sm); }
+    .page-nav-link .dir {
+      font-size: 11px;
+      color: var(--color-fog);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .page-nav-link .title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-slate);
+    }
+    .page-nav-link.next { text-align: right; margin-left: auto; }
+
+    /* ── Right TOC ───────────────────────────────────────────────────── */
+    .docs-toc {
+      padding: 48px 24px 48px 16px;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    .toc-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-fog);
+      margin-bottom: 12px;
+    }
+    .toc-list { list-style: none; }
+    .toc-list li { margin-bottom: 6px; }
+    .toc-list a {
+      font-size: 13px;
+      color: var(--color-fog);
+      text-decoration: none;
+      transition: color 0.15s;
+      line-height: 1.4;
+      display: block;
+    }
+    .toc-list a:hover { color: var(--color-graphite); }
+    .toc-list a.active { color: var(--color-accent); font-weight: 500; }
+    .toc-list .sub {
+      padding-left: 10px;
+      border-left: 1px solid var(--color-limestone);
+      margin-top: 4px;
+      margin-bottom: 6px;
+    }
+    .toc-list .sub a { font-size: 12px; }
+
+    .toc-divider {
+      margin: 20px 0;
+      border: none;
+      border-top: 1px solid var(--color-limestone);
+    }
+
+    .toc-action-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--color-fog);
+      text-decoration: none;
+      margin-bottom: 8px;
+      transition: color 0.15s;
+    }
+    .toc-action-link:hover { color: var(--color-accent); }
+    .toc-action-link svg { opacity: 0.5; }
+
+    /* ── Tabbed interface for code examples ──────────────────────────── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--color-limestone);
+      margin-bottom: 0;
+    }
+    .tab-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      color: var(--color-fog);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab-btn.active { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+    .tab-btn:hover:not(.active) { color: var(--color-graphite); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tab-panel .code-block { border-radius: 0 var(--radius-md) var(--radius-md) var(--radius-md); margin-top: 0; }
+  </style>
+</head>
+<body>
+
+<!-- ── Top nav ───────────────────────────────────────────────────────── -->
+<nav class="topnav">
+  <a href="marketing-homepage.html" class="topnav-brand">
+    <div class="tile-mark">
+      <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
+    </div>
+    <span class="wordmark">Tessera</span>
+  </a>
+
+  <div class="topnav-divider"></div>
+  <span class="topnav-section-label">Documentation</span>
+
+  <ul class="topnav-links">
+    <li><a href="#" class="active">Docs</a></li>
+    <li><a href="#">API</a></li>
+    <li><a href="#">Guides</a></li>
+    <li><a href="#">Changelog</a></li>
+    <li><a href="#">Community</a></li>
+  </ul>
+
+  <div class="topnav-search">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Search docs...
+    <kbd>⌘K</kbd>
+  </div>
+</nav>
+
+<!-- ── Three-column layout ─────────────────────────────────────────── -->
+<div class="docs-layout">
+
+  <!-- Left sidenav -->
+  <aside class="docs-sidenav">
+    <div class="sidenav-section">
+      <div class="sidenav-section-label">Getting started</div>
+      <ul class="sidenav-links">
+        <li><a href="#">Introduction</a></li>
+        <li><a href="#">Installation</a></li>
+        <li><a href="#">Quick start</a></li>
+        <li><a href="#">Project structure</a></li>
+      </ul>
+    </div>
+
+    <div class="sidenav-section">
+      <div class="sidenav-section-label">Core concepts</div>
+      <ul class="sidenav-links">
+        <li><a href="#">Pages &amp; routing</a></li>
+        <li>
+          <a href="#" class="active">Sections &amp; cards</a>
+          <ul class="sidenav-sub">
+            <li><a href="#" class="active">Card layout</a></li>
+            <li><a href="#">Column types</a></li>
+            <li><a href="#">formatFn reference</a></li>
+            <li><a href="#">cardHints</a></li>
+          </ul>
+        </li>
+        <li><a href="#">Data sources</a></li>
+        <li><a href="#">Datasets</a></li>
+        <li><a href="#">Auth &amp; permissions</a></li>
+      </ul>
+    </div>
+
+    <div class="sidenav-section">
+      <div class="sidenav-section-label">Theming</div>
+      <ul class="sidenav-links">
+        <li><a href="#">Theme structure</a></li>
+        <li><a href="#">Design tokens</a></li>
+        <li><a href="#">Custom column types</a></li>
+        <li><a href="#">Registering components <span class="badge">NEW</span></a></li>
+      </ul>
+    </div>
+
+    <div class="sidenav-section">
+      <div class="sidenav-section-label">Deployment</div>
+      <ul class="sidenav-links">
+        <li><a href="#">Netlify</a></li>
+        <li><a href="#">Self-hosted</a></li>
+        <li><a href="#">Environment variables</a></li>
+        <li><a href="#">Multi-tenant <span class="badge">BETA</span></a></li>
+      </ul>
+    </div>
+
+    <div class="sidenav-section">
+      <div class="sidenav-section-label">Reference</div>
+      <ul class="sidenav-links">
+        <li><a href="#">CLI reference</a></li>
+        <li><a href="#">API reference</a></li>
+        <li><a href="#">Changelog</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="docs-main">
+    <div class="docs-breadcrumb">
+      <a href="#">Docs</a>
+      <span class="sep">/</span>
+      <a href="#">Core concepts</a>
+      <span class="sep">/</span>
+      <span class="current">Sections &amp; cards</span>
+    </div>
+
+    <h1 class="docs-page-title">Card Layout</h1>
+    <p class="docs-subtitle">The Card section is the primary layout primitive in Tessera. It turns a data source into a grid of styled cells — no custom code required.</p>
+
+    <div class="docs-meta">
+      <span class="tag accent"><span class="dot"></span>Core concept</span>
+      <span class="tag">Admin UI</span>
+      <span class="tag">v2.4+</span>
+    </div>
+
+    <div class="version-banner">
+      <span class="label">Latest stable</span>
+      <span class="version-tag">v2.4.1</span>
+      <a href="#" class="changelog-link">View changelog →</a>
+    </div>
+
+    <div class="callout">
+      <strong>Author empowerment first.</strong> Before writing a custom component, check if the Card's existing knobs can express what you need. The goal is to make the platform richer, not to build one-off solutions.
+    </div>
+
+    <article class="prose">
+      <h2>How Card sections work</h2>
+
+      <p>A Card section binds to a <strong>data source</strong> — a dataset, a CMS type, or a computed view — and renders each row as a styled "card." The page author controls which columns appear, their visual style, their grid position, and a dozen other properties, all from the admin toolbar.</p>
+
+      <p>The key insight is that <strong>most layout decisions belong to the author, not the developer.</strong> Fonts, image sizes, column spans, grid density — these are configuration, not code.</p>
+
+      <h3>The rendering pipeline</h3>
+      <p>When a Card section loads, it runs three stages:</p>
+
+      <ol>
+        <li>Fetch rows from the bound data source (respecting auth filters)</li>
+        <li>Apply <code>formatFn</code> transforms to each column value</li>
+        <li>Render each column value using its registered column type's <code>ViewComp</code></li>
+      </ol>
+
+      <h2>Grid configuration</h2>
+
+      <p>Cards live inside a two-level grid. The <strong>cards grid</strong> controls how many card columns exist across the section. The <strong>cells grid</strong> controls the internal layout of columns within a single card.</p>
+
+      <div class="tab-bar">
+        <button class="tab-btn active">JSON config</button>
+        <button class="tab-btn">Admin toolbar</button>
+        <button class="tab-btn">CSS output</button>
+      </div>
+      <div class="tab-panel active">
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-block-lang">JSON</span>
+            <button class="code-block-copy">Copy</button>
+          </div>
+          <pre><span class="cm">// Section config (stored in DMS, editable via toolbar)</span>
+{
+  <span class="str">"cardsGridSize"</span>: <span class="nm">3</span>,        <span class="cm">// 3-column cards grid</span>
+  <span class="str">"cellsGridSize"</span>: <span class="nm">12</span>,       <span class="cm">// 12-col inner grid per card</span>
+  <span class="str">"columns"</span>: [
+    {
+      <span class="str">"col"</span>: <span class="str">"thumbnail"</span>,
+      <span class="str">"type"</span>: <span class="str">"image"</span>,
+      <span class="str">"cellSpan"</span>: <span class="nm">12</span>,          <span class="cm">// full width image</span>
+      <span class="str">"imageSize"</span>: <span class="str">"cover"</span>,
+      <span class="str">"imageLocation"</span>: <span class="str">"top"</span>
+    },
+    {
+      <span class="str">"col"</span>: <span class="str">"title"</span>,
+      <span class="str">"type"</span>: <span class="str">"text"</span>,
+      <span class="str">"cellSpan"</span>: <span class="nm">12</span>,
+      <span class="str">"valueFontStyle"</span>: <span class="str">"displayMD"</span>
+    },
+    {
+      <span class="str">"col"</span>: <span class="str">"category"</span>,
+      <span class="str">"type"</span>: <span class="str">"text"</span>,
+      <span class="str">"cellSpan"</span>: <span class="nm">6</span>,
+      <span class="str">"valueFontStyle"</span>: <span class="str">"proseSM"</span>,
+      <span class="str">"formatFn"</span>: <span class="str">"upper"</span>
+    }
+  ]
+}</pre>
+        </div>
+      </div>
+
+      <h2>Column types</h2>
+
+      <p>Every cell in a card renders through a <strong>column type</strong>. Built-in types cover images, text, links, and dates. Themes can register additional types for domain-specific chrome (play buttons, status pills, etc.).</p>
+
+      <table class="prop-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Key config</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>text</td>
+            <td>Renders any value as styled text. Respects <code>valueFontStyle</code> and <code>formatFn</code>.</td>
+            <td><span class="type-pill">valueFontStyle</span> <span class="type-pill">formatFn</span></td>
+          </tr>
+          <tr>
+            <td>image</td>
+            <td>Renders an image URL as a responsive image cell. Controls aspect ratio and crop.</td>
+            <td><span class="type-pill">imageSize</span> <span class="type-pill">imageLocation</span></td>
+          </tr>
+          <tr>
+            <td>link</td>
+            <td>Wraps value as a navigable link. Can target internal DMS pages or external URLs.</td>
+            <td><span class="type-pill">linkCol</span> <span class="type-pill">openExternal</span></td>
+          </tr>
+          <tr>
+            <td>date</td>
+            <td>Parses an ISO date string and formats it using locale-aware format strings.</td>
+            <td><span class="type-pill">dateFormat</span></td>
+          </tr>
+          <tr>
+            <td><em>theme-registered</em></td>
+            <td>Custom types registered by themes for domain-specific chrome elements. <span class="required">theme</span></td>
+            <td>Per-type <code>cardHints</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>formatFn transforms</h2>
+
+      <p>A <code>formatFn</code> is a pure function applied to a column value before it reaches the renderer. It's the right place for display-layer concerns: formatting numbers, uppercasing strings, combining two fields into one display value.</p>
+
+      <div class="callout warning">
+        <strong>Don't reach for a custom component</strong> when a <code>formatFn</code> will do. If you need to display <code>album · year</code> from two fields, write a combining formatter — not a new column type.
+      </div>
+
+      <h3>Built-in formatFns</h3>
+      <ul>
+        <li><code>comma</code> — Format number with comma separators: <code>1234567</code> → <code>1,234,567</code></li>
+        <li><code>abbreviate</code> — Compact notation: <code>1200000</code> → <code>1.2M</code></li>
+        <li><code>date</code> — ISO date → locale string</li>
+        <li><code>time</code> — ISO datetime → HH:MM</li>
+        <li><code>upper</code> — Uppercase transform</li>
+        <li><code>dollar</code> — Prepend $ + comma format</li>
+        <li><code>percent</code> — Multiply by 100, append %</li>
+      </ul>
+
+      <h2>Getting started: your first Card section</h2>
+
+      <ol class="step-list">
+        <li>
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <strong>Add a section to your page</strong>
+            <p>In the page editor, click <strong>+ Add Section</strong> and choose <em>Card</em> from the section type list.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <strong>Bind a data source</strong>
+            <p>Use the Source picker in the toolbar to connect the section to a dataset or CMS type. All available columns will appear in the column list.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <strong>Configure columns</strong>
+            <p>Toggle columns on, set their spans, pick a type and font style for each. Changes preview live on the canvas.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <strong>Set grid sizes</strong>
+            <p>Use the <em>Cards grid</em> slider to set how many columns of cards appear across the section. Use <em>Cells grid</em> for fine-grained internal column control.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <strong>Publish</strong>
+            <p>Click <strong>Save</strong> in the top bar. The section is live immediately — no build step required.</p>
+          </div>
+        </li>
+      </ol>
+
+    </article>
+
+    <!-- Page navigation -->
+    <div class="page-nav">
+      <a href="#" class="page-nav-link prev">
+        <span class="dir">← Previous</span>
+        <span class="title">Pages &amp; routing</span>
+      </a>
+      <a href="#" class="page-nav-link next">
+        <span class="dir">Next →</span>
+        <span class="title">Column types</span>
+      </a>
+    </div>
+  </main>
+
+  <!-- Right TOC -->
+  <aside class="docs-toc">
+    <div class="toc-label">On this page</div>
+    <ul class="toc-list">
+      <li><a href="#" class="active">How Card sections work</a>
+        <ul class="sub">
+          <li><a href="#">Rendering pipeline</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Grid configuration</a></li>
+      <li><a href="#">Column types</a></li>
+      <li><a href="#">formatFn transforms</a>
+        <ul class="sub">
+          <li><a href="#">Built-in formatFns</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Getting started</a></li>
+    </ul>
+
+    <hr class="toc-divider">
+
+    <a href="#" class="toc-action-link">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Edit this page
+    </a>
+    <a href="#" class="toc-action-link">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v4M8 11v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Report an issue
+    </a>
+  </aside>
+
+</div><!-- /docs-layout -->
+
+</body>
+</html>

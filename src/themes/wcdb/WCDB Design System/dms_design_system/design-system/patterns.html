@@ -1,0 +1,1825 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Patterns — Multi-primitive compositions</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body class="dms-annotated">
+
+<!-- ============================================================
+     META-NAV — documentation chrome, NOT part of the DMS theme
+     ============================================================ -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="./theme.html">theme</a>
+    <a href="./layouts.html">layouts</a>
+    <a href="./grid.html">grid</a>
+    <a href="./components.html">components</a>
+    <a href="./patterns.html" data-active="true">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="../pages/home.html">home</a>
+    <a href="../pages/listen.html">listen</a>
+    <a href="../pages/schedule.html">schedule</a>
+    <a href="../pages/show.html">show</a>
+    <a href="../pages/djs.html">djs</a>
+    <a href="../pages/spins.html">spins</a>
+    <a href="../pages/blog.html">blog</a>
+    <a href="../pages/events.html">events</a>
+    <a href="../pages/login.html">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default (theme.js layout.styles[0])
+     Single-column doc page: the cutaway grid collapses because we
+     only ship a `content` LayoutGroup here.
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)] min-h-svh">
+
+  <!-- LAYOUT.wrapper2 — TopNav lives here -->
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+
+    <!-- ============================================================
+         TOPNAV — theme.topnav.styles[0] "wcdb"
+         ============================================================ -->
+    <header class="w-full h-14 flex items-center bg-[var(--page-bg)]">
+      <div class="flex items-center h-14 px-4">
+        <div class="font-[family-name:var(--font-display)] italic text-[22px] tracking-[-0.02em] text-[color:var(--ink-1)]">
+          WCDB
+        </div>
+        <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                     font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase
+                     text-[color:var(--ink-3)]">
+          90.9 FM
+        </span>
+      </div>
+      <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2">
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Theme</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Layouts</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Grid</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-2)]">Components</a>
+        <a class="wcdb-navitem px-3 py-2 text-[14px] font-medium text-[color:var(--ink-1)]" data-active="true">Patterns</a>
+      </div>
+      <div class="hidden md:flex h-full items-center pr-4 gap-2">
+        <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center
+                       text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]"
+                title="Toggle theme mode">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="flex flex-1 items-start">
+      <div data-dms-layout-childwrapper class="flex-1 flex flex-col">
+
+        <!-- ============================================================
+             LAYOUTGROUP · content
+             Single-column doc body that scrolls on page bg.
+             ============================================================ -->
+        <div data-dms-group="content"
+             class="w-full flex-1 flex flex-row p-2">
+          <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-[1280px] mr-auto">
+
+            <!-- ============================================================
+                 SECTION · Page header (Lexical)
+                 Italic-display H1 + mono eyebrow — the canonical WCDB
+                 page-header recipe documented further down.
+                 ============================================================ -->
+            <section data-dms-section="lexical:page-header" class="pt-10 pb-6">
+              <div class="wcdb-eyebrow mb-4">Compositions · patterns · v0.1</div>
+              <h1 class="font-[family-name:var(--font-display)] italic
+                         text-[clamp(56px,8vw,108px)] leading-[0.95] tracking-[-0.03em]
+                         text-[color:var(--ink-1)] m-0">
+                Patterns.
+              </h1>
+              <p class="mt-6 max-w-[680px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                The multi-primitive compositions that recur across WCDB. Each
+                pattern below is a Section (or a small chain of Sections)
+                authored by configuring Card cells — never a custom
+                component. The first block documents the standard DMS
+                patterns; the second transcribes the brand-specific
+                compositions from the handoff.
+              </p>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Empty state — "No spins yet."
+                 ============================================================ -->
+            <section data-dms-section="card:empty-state" class="py-6">
+              <div class="wcdb-eyebrow mb-3">01 — Empty state</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Quiet on the air.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                Data sections with no rows render an icon, an editorial
+                italic-display message, and a single call-to-action. Kept
+                monochrome — never the on-air red.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
+                <div class="flex flex-col items-center text-center max-w-[440px] mx-auto py-10">
+                  <!-- Icon · Search -->
+                  <div class="size-12 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] mb-5">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
+                      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+                    </svg>
+                  </div>
+                  <div class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] mb-3">
+                    No spins yet.
+                  </div>
+                  <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-3)] mb-6">
+                    Tonight's playlist hasn't started logging. The DJ goes
+                    live at 11&nbsp;pm — check back then or browse last
+                    week's spins.
+                  </p>
+                  <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+                                 bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                 font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                    Browse archive
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Loading state — skeleton shimmer
+                 ============================================================ -->
+            <section data-dms-section="card:loading-state" class="py-6">
+              <div class="wcdb-eyebrow mb-3">02 — Loading state</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Tuning the dial.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                A Card outline with grey-shimmer row placeholders. Alternating
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">--bg-2</code>
+                /
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">--bg-3</code>
+                so the rhythm reads even before content arrives.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                <!-- Skeleton header -->
+                <div class="flex items-baseline justify-between mb-6">
+                  <div class="flex-1 max-w-[280px]">
+                    <div class="h-3 w-24 bg-[var(--bg-2)] rounded-sm mb-3"></div>
+                    <div class="h-6 w-56 bg-[var(--bg-3)] rounded-sm"></div>
+                  </div>
+                  <div class="h-3 w-20 bg-[var(--bg-2)] rounded-sm"></div>
+                </div>
+
+                <!-- Skeleton rows -->
+                <div class="space-y-0">
+                  <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                    <div class="h-3 w-10 bg-[var(--bg-2)] rounded-sm"></div>
+                    <div class="size-12 rounded-[6px] bg-[var(--bg-3)]"></div>
+                    <div>
+                      <div class="h-4 w-48 bg-[var(--bg-3)] rounded-sm mb-2"></div>
+                      <div class="h-3 w-32 bg-[var(--bg-2)] rounded-sm"></div>
+                    </div>
+                    <div class="h-3 w-14 bg-[var(--bg-2)] rounded-sm"></div>
+                  </div>
+                  <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                    <div class="h-3 w-10 bg-[var(--bg-3)] rounded-sm"></div>
+                    <div class="size-12 rounded-[6px] bg-[var(--bg-2)]"></div>
+                    <div>
+                      <div class="h-4 w-60 bg-[var(--bg-2)] rounded-sm mb-2"></div>
+                      <div class="h-3 w-40 bg-[var(--bg-3)] rounded-sm"></div>
+                    </div>
+                    <div class="h-3 w-14 bg-[var(--bg-3)] rounded-sm"></div>
+                  </div>
+                  <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                    <div class="h-3 w-10 bg-[var(--bg-2)] rounded-sm"></div>
+                    <div class="size-12 rounded-[6px] bg-[var(--bg-3)]"></div>
+                    <div>
+                      <div class="h-4 w-44 bg-[var(--bg-3)] rounded-sm mb-2"></div>
+                      <div class="h-3 w-36 bg-[var(--bg-2)] rounded-sm"></div>
+                    </div>
+                    <div class="h-3 w-14 bg-[var(--bg-2)] rounded-sm"></div>
+                  </div>
+                  <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                    <div class="h-3 w-10 bg-[var(--bg-3)] rounded-sm"></div>
+                    <div class="size-12 rounded-[6px] bg-[var(--bg-2)]"></div>
+                    <div>
+                      <div class="h-4 w-52 bg-[var(--bg-2)] rounded-sm mb-2"></div>
+                      <div class="h-3 w-28 bg-[var(--bg-3)] rounded-sm"></div>
+                    </div>
+                    <div class="h-3 w-14 bg-[var(--bg-3)] rounded-sm"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Error state — "Couldn't reach the studio."
+                 ============================================================ -->
+            <section data-dms-section="card:error-state" class="py-6">
+              <div class="wcdb-eyebrow mb-3">03 — Error state</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Dead air, briefly.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                Errors stay monochrome — the on-air red is reserved for live
+                broadcast signals. Diagnostic detail rides in
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">metaXS</code>
+                under the message.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
+                <div class="flex flex-col items-center text-center max-w-[440px] mx-auto py-10">
+                  <div class="size-12 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] mb-5">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6">
+                      <path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    </svg>
+                  </div>
+                  <div class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] mb-3">
+                    Couldn't reach the studio.
+                  </div>
+                  <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-3)] mb-2">
+                    The spins feed didn't respond. Try again in a moment —
+                    we're usually back within thirty seconds.
+                  </p>
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] mb-6">
+                    Err · WCDB-504 · upstream timeout · 18:42 EST
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+                                   bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                   font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
+                      Retry
+                    </button>
+                    <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+                                   border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
+                                   font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                      Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Stale-data state — refresh banner over a table
+                 ============================================================ -->
+            <section data-dms-section="card:stale-state" class="py-6">
+              <div class="wcdb-eyebrow mb-3">04 — Stale-data state</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Last refresh, 14 min ago.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                A soft hairline banner above stale tabular data. The metadata
+                rides in the mono eyebrow voice; refresh sits flush right as
+                a quiet pill button.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                <!-- Stale banner -->
+                <div class="flex items-center justify-between gap-4 mb-4 pb-4 border-b border-[var(--line-1)]">
+                  <div class="flex items-center gap-3">
+                    <div class="size-7 rounded-full bg-[var(--bg-3)] grid place-items-center text-[color:var(--ink-3)]">
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    </div>
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                        Last refresh · 14 min ago
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)] mt-0.5">
+                        Spins feed · auto-refresh every 5 min · paused since 19:18
+                      </div>
+                    </div>
+                  </div>
+                  <button class="inline-flex items-center gap-2 px-4 py-2 rounded-full
+                                 border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
+                                 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
+                    Refresh
+                  </button>
+                </div>
+
+                <!-- Stale rows -->
+                <div>
+                  <div class="grid grid-cols-[60px_1fr_auto] gap-4 items-center py-3 border-t border-[var(--line-1)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">19:18</span>
+                    <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-2)]">Pulnoc — Vepřo Knedlo Zelo</div>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Late Modernism</span>
+                  </div>
+                  <div class="grid grid-cols-[60px_1fr_auto] gap-4 items-center py-3 border-t border-[var(--line-1)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">19:12</span>
+                    <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-2)]">The Microphones — The Glow Pt. 2</div>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Late Modernism</span>
+                  </div>
+                  <div class="grid grid-cols-[60px_1fr_auto] gap-4 items-center py-3 border-t border-[var(--line-1)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">19:08</span>
+                    <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-2)]">Cluster — Sowiesoso</div>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">Late Modernism</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Data section with filters
+                 Header + segmented control + search input + table + pagination
+                 ============================================================ -->
+            <section data-dms-section="card:filtered-data" class="py-6">
+              <div class="wcdb-eyebrow mb-3">05 — Data section with filters</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Filter chrome over a borderless table.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                The standard composition for a filterable list view: eyebrow +
+                italic-display title, a segmented control, a bordered search
+                input, a borderless table with mono uppercase headers, and
+                pagination below.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                <!-- Card header -->
+                <div class="flex items-baseline justify-between mb-5">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                      Archive · all shows
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">
+                      Find a broadcast
+                    </h3>
+                  </div>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                    1,284 results
+                  </span>
+                </div>
+
+                <!-- Filter chrome -->
+                <div class="flex flex-wrap items-center gap-3 mb-5">
+                  <!-- Segmented control -->
+                  <div class="inline-flex rounded-full border border-[var(--line-2)] bg-[var(--bg-2)] p-1">
+                    <button class="px-3.5 py-1.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                   font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase">All</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]
+                                   font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase">Music</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]
+                                   font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase">Talk</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]
+                                   font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase">Sports</button>
+                  </div>
+                  <!-- Search input · bordered variant -->
+                  <div class="relative flex-1 min-w-[200px] max-w-[320px]">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"
+                         class="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]">
+                      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+                    </svg>
+                    <input type="text" placeholder="Search shows, DJs, tracks…"
+                           class="w-full rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                  pl-9 pr-3 py-2.5 font-[family-name:var(--font-sans)] text-[14px]
+                                  text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none
+                                  focus:border-[color:var(--ink-3)]">
+                  </div>
+                  <button class="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-full
+                                 border border-[var(--line-2)] text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]
+                                 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+                    Sort · newest
+                  </button>
+                </div>
+
+                <!-- Table · borderless rows, mono uppercase headers -->
+                <div class="overflow-x-auto">
+                  <div class="grid grid-cols-[80px_1fr_180px_120px] gap-3 px-3 py-2
+                              font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase
+                              text-[color:var(--ink-3)] border-b border-[var(--line-2)]">
+                    <span>Date</span>
+                    <span>Show</span>
+                    <span>DJ</span>
+                    <span class="text-right">Length</span>
+                  </div>
+                  <div class="grid grid-cols-[80px_1fr_180px_120px] gap-3 items-center px-3 py-3 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">Mar 04</span>
+                    <span class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Late Modernism</span>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">DJ Halftone</span>
+                    <span class="text-right font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)]">2 h 04</span>
+                  </div>
+                  <div class="grid grid-cols-[80px_1fr_180px_120px] gap-3 items-center px-3 py-3 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">Mar 03</span>
+                    <span class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Off-Year Pop</span>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">Jada R.</span>
+                    <span class="text-right font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)]">1 h 58</span>
+                  </div>
+                  <div class="grid grid-cols-[80px_1fr_180px_120px] gap-3 items-center px-3 py-3 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">Mar 03</span>
+                    <span class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Insomnia Hour</span>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">Glass &amp; Smith</span>
+                    <span class="text-right font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)]">3 h 12</span>
+                  </div>
+                  <div class="grid grid-cols-[80px_1fr_180px_120px] gap-3 items-center px-3 py-3 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">Mar 02</span>
+                    <span class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Punkthology</span>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">Sam P.</span>
+                    <span class="text-right font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)]">2 h 30</span>
+                  </div>
+                  <div class="grid grid-cols-[80px_1fr_180px_120px] gap-3 items-center px-3 py-3 border-t border-[var(--line-1)] hover:bg-[var(--bg-2)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">Mar 02</span>
+                    <span class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Capital Region Talk</span>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">A. Espinoza</span>
+                    <span class="text-right font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)]">0 h 58</span>
+                  </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-[var(--line-1)]">
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">
+                    1 – 5 of 1,284
+                  </span>
+                  <div class="flex items-center gap-1">
+                    <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 6l-6 6 6 6"/></svg>
+                    </button>
+                    <button class="size-8 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-mono)] text-[11px]">1</button>
+                    <button class="size-8 rounded-full text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] font-[family-name:var(--font-mono)] text-[11px]">2</button>
+                    <button class="size-8 rounded-full text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] font-[family-name:var(--font-mono)] text-[11px]">3</button>
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-4)] px-1">…</span>
+                    <button class="size-8 rounded-full text-[color:var(--ink-2)] hover:bg-[var(--accent-soft)] font-[family-name:var(--font-mono)] text-[11px]">257</button>
+                    <button class="size-8 rounded-full border border-[var(--line-2)] grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Card-grid section (cardsGridSize: 3)
+                 ============================================================ -->
+            <section data-dms-section="card:card-grid" class="py-6">
+              <div class="wcdb-eyebrow mb-3">06 — Card-grid section</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                One Card per record, three across.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                A Card section configured with
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">cardsGridSize: 3</code>
+                renders one tile per record. WCDB DJ tiles: gradient circular
+                avatar + italic-display name + mono uppercase handle.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                <div class="flex items-baseline justify-between mb-6">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                      The roster · spring 2026
+                    </div>
+                    <h3 class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">
+                      DJs on the air
+                    </h3>
+                  </div>
+                  <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                    Full roster →
+                  </a>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <!-- DJ tile · 1 -->
+                  <div class="rounded-[14px] bg-[var(--bg-2)] p-5 flex flex-col items-center text-center">
+                    <div class="size-20 rounded-full wcdb-art wcdb-art--ember mb-4 grid place-items-center">
+                      <span class="font-[family-name:var(--font-display)] italic text-[28px] leading-none text-[rgba(255,255,255,0.85)]">H</span>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">DJ Halftone</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">@halftone · Thu 11pm</div>
+                  </div>
+                  <!-- DJ tile · 2 -->
+                  <div class="rounded-[14px] bg-[var(--bg-2)] p-5 flex flex-col items-center text-center">
+                    <div class="size-20 rounded-full wcdb-art wcdb-art--cool mb-4 grid place-items-center">
+                      <span class="font-[family-name:var(--font-display)] italic text-[28px] leading-none text-[rgba(255,255,255,0.85)]">J</span>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Jada R.</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">@jadar · Fri 1am</div>
+                  </div>
+                  <!-- DJ tile · 3 -->
+                  <div class="rounded-[14px] bg-[var(--bg-2)] p-5 flex flex-col items-center text-center">
+                    <div class="size-20 rounded-full wcdb-art wcdb-art--violet mb-4 grid place-items-center">
+                      <span class="font-[family-name:var(--font-display)] italic text-[28px] leading-none text-[rgba(255,255,255,0.85)]">G</span>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Glass &amp; Smith</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">@glasssmith · Fri 3am</div>
+                  </div>
+                  <!-- DJ tile · 4 -->
+                  <div class="rounded-[14px] bg-[var(--bg-2)] p-5 flex flex-col items-center text-center">
+                    <div class="size-20 rounded-full wcdb-art wcdb-art--mono mb-4 grid place-items-center">
+                      <span class="font-[family-name:var(--font-display)] italic text-[28px] leading-none text-[rgba(255,255,255,0.85)]">S</span>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Sam P.</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">@sampunk · Sat 8pm</div>
+                  </div>
+                  <!-- DJ tile · 5 -->
+                  <div class="rounded-[14px] bg-[var(--bg-2)] p-5 flex flex-col items-center text-center">
+                    <div class="size-20 rounded-full wcdb-art mb-4 grid place-items-center">
+                      <span class="font-[family-name:var(--font-display)] italic text-[28px] leading-none text-[rgba(255,255,255,0.85)]">A</span>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">A. Espinoza</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">@espinoza · Sun 4pm</div>
+                  </div>
+                  <!-- DJ tile · 6 -->
+                  <div class="rounded-[14px] bg-[var(--bg-2)] p-5 flex flex-col items-center text-center">
+                    <div class="size-20 rounded-full wcdb-art wcdb-art--ember mb-4 grid place-items-center">
+                      <span class="font-[family-name:var(--font-display)] italic text-[28px] leading-none text-[rgba(255,255,255,0.85)]">M</span>
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Mira K.</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">@mirak · Sun 10pm</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Form layout
+                 FieldSets · bordered inputs · MultiSelect · Switch · pill buttons
+                 ============================================================ -->
+            <section data-dms-section="card:form-layout" class="py-6">
+              <div class="wcdb-eyebrow mb-3">07 — Form layout</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Submit a show proposal.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                Bordered inputs (the WCDB
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">wc-input--bordered</code>
+                variant), grouped in FieldSets with mono uppercase legends.
+                Submit/Cancel render as pill buttons.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
+                <form>
+                  <!-- FieldSet · Show -->
+                  <fieldset class="border-0 p-0 mb-7">
+                    <legend class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">
+                      About the show
+                    </legend>
+                    <div class="grid md:grid-cols-2 gap-4">
+                      <label class="block">
+                        <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">Show title</span>
+                        <input type="text" value="Late Modernism"
+                               class="w-full rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                      px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px]
+                                      text-[color:var(--ink-1)] outline-none focus:border-[color:var(--ink-3)]">
+                      </label>
+                      <label class="block">
+                        <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">DJ name</span>
+                        <input type="text" placeholder="DJ Halftone"
+                               class="w-full rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                      px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px]
+                                      text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)]">
+                      </label>
+                      <label class="block md:col-span-2">
+                        <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">Programme summary</span>
+                        <textarea rows="3" placeholder="One paragraph — what listeners hear when they tune in."
+                                  class="w-full rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                         px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px]
+                                         text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)] resize-y"></textarea>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <hr class="wcdb-hairline mb-7"/>
+
+                  <!-- FieldSet · Schedule + genres -->
+                  <fieldset class="border-0 p-0 mb-7">
+                    <legend class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">
+                      Schedule &amp; genres
+                    </legend>
+                    <div class="grid md:grid-cols-2 gap-4">
+                      <label class="block">
+                        <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">Preferred slot</span>
+                        <div class="relative">
+                          <select class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                         px-[14px] py-[12px] pr-10 font-[family-name:var(--font-sans)] text-[14px]
+                                         text-[color:var(--ink-1)] outline-none focus:border-[color:var(--ink-3)]">
+                            <option>Thursday · 11pm – 1am</option>
+                            <option>Friday · 1am – 3am</option>
+                            <option>Saturday · 8pm – 10pm</option>
+                          </select>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"
+                               class="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)] pointer-events-none">
+                            <path d="M6 9l6 6 6-6"/>
+                          </svg>
+                        </div>
+                      </label>
+                      <label class="block">
+                        <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">Length</span>
+                        <div class="relative">
+                          <select class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                         px-[14px] py-[12px] pr-10 font-[family-name:var(--font-sans)] text-[14px]
+                                         text-[color:var(--ink-1)] outline-none focus:border-[color:var(--ink-3)]">
+                            <option>2 hours</option>
+                            <option>1 hour</option>
+                            <option>3 hours</option>
+                          </select>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"
+                               class="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)] pointer-events-none">
+                            <path d="M6 9l6 6 6-6"/>
+                          </svg>
+                        </div>
+                      </label>
+                      <div class="md:col-span-2">
+                        <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">Genres · multi-select</span>
+                        <div class="rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] p-2 flex flex-wrap items-center gap-1.5">
+                          <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-3)] text-[color:var(--ink-1)]
+                                       px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase">
+                            Krautrock
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+                          </span>
+                          <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-3)] text-[color:var(--ink-1)]
+                                       px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase">
+                            Ambient
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+                          </span>
+                          <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-3)] text-[color:var(--ink-1)]
+                                       px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase">
+                            Post-punk
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+                          </span>
+                          <input type="text" placeholder="Add a genre…"
+                                 class="flex-1 min-w-[120px] bg-transparent px-2 py-1 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none">
+                        </div>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <hr class="wcdb-hairline mb-7"/>
+
+                  <!-- FieldSet · Permissions · switches -->
+                  <fieldset class="border-0 p-0 mb-7">
+                    <legend class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">
+                      Broadcast preferences
+                    </legend>
+                    <div class="space-y-3">
+                      <label class="flex items-center justify-between gap-4 py-2">
+                        <span>
+                          <span class="block font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)]">Archive episodes</span>
+                          <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">Episodes appear under your DJ profile after broadcast</span>
+                        </span>
+                        <span class="relative inline-flex w-11 h-6 rounded-full bg-[color:var(--ink-1)] transition-colors">
+                          <span class="absolute top-0.5 right-0.5 size-5 rounded-full bg-[var(--page-bg)] transition-transform"></span>
+                        </span>
+                      </label>
+                      <label class="flex items-center justify-between gap-4 py-2">
+                        <span>
+                          <span class="block font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)]">Email me spin reports</span>
+                          <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">Weekly digest of tracks logged on your show</span>
+                        </span>
+                        <span class="relative inline-flex w-11 h-6 rounded-full bg-[var(--bg-3)] transition-colors">
+                          <span class="absolute top-0.5 left-0.5 size-5 rounded-full bg-[color:var(--ink-3)] transition-transform"></span>
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <!-- Action row · pill buttons -->
+                  <div class="flex items-center justify-end gap-3 pt-4 border-t border-[var(--line-1)]">
+                    <button type="button" class="inline-flex items-center px-5 py-2.5 rounded-full
+                                                  border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
+                                                  font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                      Cancel
+                    </button>
+                    <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+                                                  bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                                  font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                      Submit proposal
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Modal-with-form (static snapshot)
+                 ============================================================ -->
+            <section data-dms-section="card:modal-form" class="py-6">
+              <div class="wcdb-eyebrow mb-3">08 — Modal with form</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                A focused two-field dialog.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                Static snapshot — a Modal centered over a faux page background.
+                Card sits at 18px radius; backdrop uses
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">rgba(0,0,0,0.6)</code>.
+              </p>
+
+              <!-- Faux page bg + modal -->
+              <div class="relative rounded-[18px] overflow-hidden h-[440px] bg-[var(--bg-1)] border border-[var(--line-1)]">
+                <!-- Faux page underneath -->
+                <div class="absolute inset-0 p-6 opacity-50">
+                  <div class="h-3 w-24 bg-[var(--bg-3)] rounded-sm mb-4"></div>
+                  <div class="h-8 w-72 bg-[var(--bg-3)] rounded-sm mb-3"></div>
+                  <div class="h-8 w-60 bg-[var(--bg-3)] rounded-sm mb-8"></div>
+                  <div class="grid grid-cols-3 gap-3">
+                    <div class="h-32 rounded-[14px] bg-[var(--bg-2)]"></div>
+                    <div class="h-32 rounded-[14px] bg-[var(--bg-2)]"></div>
+                    <div class="h-32 rounded-[14px] bg-[var(--bg-2)]"></div>
+                  </div>
+                </div>
+
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-[rgba(0,0,0,0.6)] grid place-items-center">
+                  <!-- Modal card -->
+                  <div class="w-[440px] max-w-[92%] bg-[var(--card-bg)] rounded-[18px] shadow-2xl">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between p-6 pb-4 border-b border-[var(--line-1)]">
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-1.5">Schedule edit</div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">
+                          Move Late Modernism
+                        </div>
+                      </div>
+                      <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+                      </button>
+                    </div>
+                    <!-- Body -->
+                    <div class="p-6 space-y-4">
+                      <label class="block">
+                        <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">New day</span>
+                        <input type="text" value="Thursday"
+                               class="w-full rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                      px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px]
+                                      text-[color:var(--ink-1)] outline-none focus:border-[color:var(--ink-3)]">
+                      </label>
+                      <label class="block">
+                        <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">New start time</span>
+                        <input type="text" value="11:00 PM"
+                               class="w-full rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                      px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px]
+                                      text-[color:var(--ink-1)] outline-none focus:border-[color:var(--ink-3)]">
+                      </label>
+                    </div>
+                    <!-- Footer -->
+                    <div class="flex items-center justify-end gap-3 p-6 pt-4 border-t border-[var(--line-1)]">
+                      <button class="px-4 py-2 rounded-full border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
+                                     font-[family-name:var(--font-sans)] text-[13px] font-medium">Cancel</button>
+                      <button class="px-4 py-2 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                     font-[family-name:var(--font-sans)] text-[13px] font-medium">Save</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Dataset overview (datasets.datasetsList chrome)
+                 ============================================================ -->
+            <section data-dms-section="card:dataset-overview" class="py-6">
+              <div class="wcdb-eyebrow mb-3">09 — Dataset overview</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Datasets — left nav, card grid.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                The
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">datasets.datasetsList</code>
+                pattern: a category sidebar on the left, dataset tiles on
+                the right. Tiles use the same italic-display + mono
+                eyebrow recipe.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                <div class="grid grid-cols-[180px_1fr] gap-6">
+                  <!-- Category nav -->
+                  <aside>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-3">Categories</div>
+                    <ul class="space-y-1">
+                      <li><a class="flex items-center justify-between rounded-[8px] px-3 py-2 bg-[var(--accent-soft)] text-[color:var(--ink-1)]
+                                  font-[family-name:var(--font-sans)] text-[13px]">All <span class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-3)]">4</span></a></li>
+                      <li><a class="flex items-center justify-between rounded-[8px] px-3 py-2 text-[color:var(--ink-2)] hover:bg-[var(--bg-2)]
+                                  font-[family-name:var(--font-sans)] text-[13px]">Broadcast <span class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-3)]">2</span></a></li>
+                      <li><a class="flex items-center justify-between rounded-[8px] px-3 py-2 text-[color:var(--ink-2)] hover:bg-[var(--bg-2)]
+                                  font-[family-name:var(--font-sans)] text-[13px]">People <span class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-3)]">1</span></a></li>
+                      <li><a class="flex items-center justify-between rounded-[8px] px-3 py-2 text-[color:var(--ink-2)] hover:bg-[var(--bg-2)]
+                                  font-[family-name:var(--font-sans)] text-[13px]">Events <span class="font-[family-name:var(--font-mono)] text-[10px] text-[color:var(--ink-3)]">1</span></a></li>
+                    </ul>
+                  </aside>
+
+                  <!-- Dataset cards -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <article class="rounded-[14px] bg-[var(--bg-2)] p-5">
+                      <div class="flex items-center justify-between mb-3">
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Broadcast</span>
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">CSV · 28 MB</span>
+                      </div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mb-2">Spins</div>
+                      <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-3)] mb-4">Every track logged on air since Jan 2018. 1.2M rows · daily refresh.</p>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                        Updated 14 min ago · 1,247,118 rows
+                      </div>
+                    </article>
+                    <article class="rounded-[14px] bg-[var(--bg-2)] p-5">
+                      <div class="flex items-center justify-between mb-3">
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Broadcast</span>
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">JSON · 1.4 MB</span>
+                      </div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mb-2">Shows</div>
+                      <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-3)] mb-4">Programme catalog — current and archived shows with metadata.</p>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                        Updated 2 days ago · 412 rows
+                      </div>
+                    </article>
+                    <article class="rounded-[14px] bg-[var(--bg-2)] p-5">
+                      <div class="flex items-center justify-between mb-3">
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">People</span>
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">JSON · 240 KB</span>
+                      </div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mb-2">DJs</div>
+                      <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-3)] mb-4">The roster — current DJs, their handles, and time slots.</p>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                        Updated last week · 38 rows
+                      </div>
+                    </article>
+                    <article class="rounded-[14px] bg-[var(--bg-2)] p-5">
+                      <div class="flex items-center justify-between mb-3">
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Events</span>
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]">CSV · 64 KB</span>
+                      </div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mb-2">Events</div>
+                      <p class="font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-3)] mb-4">Off-air events — shows the station co-hosts in the Capital Region.</p>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                        Updated 1 day ago · 24 rows
+                      </div>
+                    </article>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Auth login (layoutGroup: auth + form)
+                 ============================================================ -->
+            <section data-dms-section="card:auth-login" class="py-6">
+              <div class="wcdb-eyebrow mb-3">10 — Auth login</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                One card, centered.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                The
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">layoutGroup: auth</code>
+                wrapper applies
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">place-content-center</code>
+                so the form sits in the middle of the viewport. The card
+                uses the same recipe as everything else.
+              </p>
+
+              <!-- Faux viewport · auth LayoutGroup -->
+              <div class="rounded-[18px] bg-[var(--bg-1)] border border-[var(--line-1)] p-10 grid place-content-center min-h-[480px]">
+                <div class="w-[400px] max-w-full rounded-[18px] bg-[var(--card-bg)] p-8">
+                  <div class="text-center mb-7">
+                    <div class="font-[family-name:var(--font-display)] italic text-[32px] tracking-[-0.02em] text-[color:var(--ink-1)] leading-none mb-2">WCDB</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM · sign in</div>
+                  </div>
+
+                  <form class="space-y-4">
+                    <label class="block">
+                      <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">Email</span>
+                      <input type="email" placeholder="you@wcdbfm.org"
+                             class="w-full rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                    px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px]
+                                    text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)]">
+                    </label>
+                    <label class="block">
+                      <span class="block font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mb-2">Password</span>
+                      <input type="password" placeholder="••••••••"
+                             class="w-full rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)]
+                                    px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px]
+                                    text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)]">
+                    </label>
+
+                    <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full
+                                                  bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                                  font-[family-name:var(--font-sans)] text-[13px] font-medium mt-2">
+                      Sign in
+                    </button>
+
+                    <div class="text-center pt-2">
+                      <a class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                        Forgot password?
+                      </a>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Section toolbar (edit mode)
+                 ============================================================ -->
+            <section data-dms-section="card:section-toolbar" class="py-6">
+              <div class="wcdb-eyebrow mb-3">11 — Section toolbar · edit mode</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Chrome around an editable section.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                When an author enters edit mode, every Section gets a drag
+                handle, an editable title, a gear menu, and a column-config
+                toolbar above its cells. Labels stay in the
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">wcdb-eyebrow</code>
+                voice.
+              </p>
+
+              <!-- Section in edit-mode chrome -->
+              <div class="rounded-[18px] border border-dashed border-[var(--line-3)] bg-[var(--card-bg)] p-2">
+                <!-- Edit-mode toolbar -->
+                <div class="flex items-center justify-between px-5 py-2 border-b border-[var(--line-1)]">
+                  <div class="flex items-center gap-3">
+                    <!-- Drag handle -->
+                    <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] cursor-grab" title="Drag to reorder">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+                    </button>
+                    <span class="wcdb-eyebrow">Section · card</span>
+                    <!-- Editable title -->
+                    <input type="text" value="Latest spins"
+                           class="bg-transparent border-b border-dashed border-[var(--line-2)] focus:border-[color:var(--ink-3)] outline-none
+                                  font-[family-name:var(--font-display)] italic text-[18px] tracking-[-0.02em] text-[color:var(--ink-1)] px-1 py-0.5 min-w-[160px]">
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]" title="Duplicate">
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+                    </button>
+                    <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]" title="Section settings">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    </button>
+                    <button class="size-7 grid place-items-center text-[color:var(--ink-3)] hover:text-[color:var(--on-air)]" title="Delete section">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Column-config toolbar -->
+                <div class="flex items-center gap-1 px-5 py-2 border-b border-[var(--line-1)] bg-[var(--bg-2)]">
+                  <span class="wcdb-eyebrow mr-3">Columns</span>
+                  <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)]
+                                 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">
+                    Time
+                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                  </button>
+                  <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)]
+                                 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">
+                    Album art
+                  </button>
+                  <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)]
+                                 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">
+                    Title
+                  </button>
+                  <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)]
+                                 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">
+                    Show
+                  </button>
+                  <button class="size-7 ml-1 grid place-items-center rounded-full border border-dashed border-[var(--line-2)] text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]" title="Add column">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                  <div class="ml-auto flex items-center gap-2">
+                    <span class="wcdb-eyebrow">cardsGridSize</span>
+                    <div class="inline-flex rounded-full bg-[var(--card-bg)] border border-[var(--line-2)] p-0.5">
+                      <button class="px-2.5 py-1 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] font-[family-name:var(--font-mono)] text-[10px]">1</button>
+                      <button class="px-2.5 py-1 rounded-full text-[color:var(--ink-2)] font-[family-name:var(--font-mono)] text-[10px]">2</button>
+                      <button class="px-2.5 py-1 rounded-full text-[color:var(--ink-2)] font-[family-name:var(--font-mono)] text-[10px]">3</button>
+                      <button class="px-2.5 py-1 rounded-full text-[color:var(--ink-2)] font-[family-name:var(--font-mono)] text-[10px]">4</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section body (placeholder content rows) -->
+                <div class="p-5">
+                  <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-3 border-t border-[var(--line-1)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">11:47</span>
+                    <div class="size-12 rounded-[6px] wcdb-art wcdb-art--ember"></div>
+                    <div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Sowiesoso</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">Cluster · 1976</div>
+                    </div>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Late Modernism</span>
+                  </div>
+                  <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-3 border-t border-[var(--line-1)]">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">11:42</span>
+                    <div class="size-12 rounded-[6px] wcdb-art wcdb-art--cool"></div>
+                    <div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Vepřo Knedlo Zelo</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">Pulnoc · 2022</div>
+                    </div>
+                    <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Late Modernism</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Pattern-editor chrome (admin)
+                 Page tree + section popup + column toolbar
+                 ============================================================ -->
+            <section data-dms-section="card:pattern-editor" class="py-6">
+              <div class="wcdb-eyebrow mb-3">12 — Pattern-editor chrome · admin</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Admin shell — page tree, section menu, column toolbar.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                Thumbnail composition of the admin authoring surfaces. Both
+                side panels use
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">--bg-2</code>
+                so the editable card on the right reads as the focal surface.
+              </p>
+
+              <div class="rounded-[18px] overflow-hidden border border-[var(--line-1)] bg-[var(--bg-1)]">
+                <div class="grid grid-cols-[200px_1fr] min-h-[420px]">
+                  <!-- Page tree -->
+                  <aside class="bg-[var(--bg-2)] p-4 border-r border-[var(--line-1)]">
+                    <div class="wcdb-eyebrow mb-3">Page tree</div>
+                    <ul class="space-y-0.5 font-[family-name:var(--font-sans)] text-[13px]">
+                      <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+                        Home
+                      </li>
+                      <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] bg-[var(--accent-soft)] text-[color:var(--ink-1)]">
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M7 10l5 5 5-5"/></svg>
+                        Listen
+                      </li>
+                      <li class="flex items-center gap-1.5 pl-7 pr-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
+                        <span class="size-1.5 rounded-full bg-[var(--ink-3)]"></span>
+                        On now
+                      </li>
+                      <li class="flex items-center gap-1.5 pl-7 pr-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
+                        <span class="size-1.5 rounded-full bg-[var(--ink-3)]"></span>
+                        Latest spins
+                      </li>
+                      <li class="flex items-center gap-1.5 pl-7 pr-2 py-1.5 rounded-[6px] text-[color:var(--ink-1)] bg-[var(--bg-3)]">
+                        <span class="size-1.5 rounded-full bg-[color:var(--ink-1)]"></span>
+                        Up next
+                      </li>
+                      <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+                        Schedule
+                      </li>
+                      <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+                        DJs
+                      </li>
+                      <li class="flex items-center gap-1.5 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-2)]">
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+                        Spins
+                      </li>
+                    </ul>
+                  </aside>
+
+                  <!-- Canvas -->
+                  <div class="p-5 relative">
+                    <!-- Column-config toolbar on top of card -->
+                    <div class="flex items-center gap-1 px-3 py-2 mb-3 rounded-[10px] bg-[var(--bg-2)] border border-[var(--line-1)]">
+                      <span class="wcdb-eyebrow mr-2">Card · cells</span>
+                      <button class="px-2 py-1 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Image</button>
+                      <button class="px-2 py-1 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Title</button>
+                      <button class="px-2 py-1 rounded-full bg-[var(--card-bg)] border border-[var(--line-2)] font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Time</button>
+                      <button class="size-6 ml-1 grid place-items-center rounded-full border border-dashed border-[var(--line-2)] text-[color:var(--ink-3)]"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
+                    </div>
+
+                    <!-- The editable card -->
+                    <div class="rounded-[14px] bg-[var(--card-bg)] p-5 border border-dashed border-[var(--line-3)] relative">
+                      <span class="absolute -top-2.5 left-3 px-1.5 bg-[var(--bg-1)] wcdb-eyebrow">Selected · Card</span>
+                      <div class="wcdb-eyebrow mb-2">On now &amp; up next</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)] mb-4">
+                        Thursday programme
+                      </div>
+                      <div class="grid grid-cols-[60px_1fr_auto] gap-3 items-center py-2 border-t border-[var(--line-1)]">
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] uppercase text-[color:var(--ink-2)]">11 pm</span>
+                        <span class="font-[family-name:var(--font-display)] italic text-[16px] text-[color:var(--ink-1)]">Late Modernism</span>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)] px-2 py-0.5">
+                          <span class="wcdb-on-air-dot"></span>
+                          <span class="font-[family-name:var(--font-mono)] uppercase tracking-[0.14em] text-[9px]">Live</span>
+                        </span>
+                      </div>
+                      <div class="grid grid-cols-[60px_1fr_auto] gap-3 items-center py-2 border-t border-[var(--line-1)]">
+                        <span class="font-[family-name:var(--font-mono)] text-[11px] uppercase text-[color:var(--ink-2)]">1 am</span>
+                        <span class="font-[family-name:var(--font-display)] italic text-[16px] text-[color:var(--ink-1)]">Off-Year Pop</span>
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] uppercase text-[color:var(--ink-3)]">in 1h 13m</span>
+                      </div>
+                    </div>
+
+                    <!-- Section menu popup -->
+                    <div class="absolute right-6 top-20 w-[200px] rounded-[12px] bg-[var(--bg-2)] border border-[var(--line-2)] shadow-2xl p-1.5">
+                      <div class="wcdb-eyebrow px-2 py-1">Section</div>
+                      <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-1)] hover:bg-[var(--bg-3)] font-[family-name:var(--font-sans)] text-[13px]">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                        Change type…
+                      </button>
+                      <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-1)] hover:bg-[var(--bg-3)] font-[family-name:var(--font-sans)] text-[13px]">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                        Layout · height
+                      </button>
+                      <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-1)] hover:bg-[var(--bg-3)] font-[family-name:var(--font-sans)] text-[13px]">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+                        Data source…
+                      </button>
+                      <hr class="my-1 wcdb-hairline"/>
+                      <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-[color:var(--ink-1)] hover:bg-[var(--bg-3)] font-[family-name:var(--font-sans)] text-[13px]">
+                        Duplicate
+                      </button>
+                      <button class="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-[color:var(--on-air)] hover:bg-[var(--bg-3)] font-[family-name:var(--font-sans)] text-[13px]">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-10"/>
+
+            <!-- ============================================================
+                 §7.6.5 — BRAND-RECURRING PATTERNS
+                 SECTION · Lexical heading
+                 ============================================================ -->
+            <section data-dms-section="lexical:signature-patterns" class="pt-6 pb-2">
+              <div class="wcdb-eyebrow mb-4">§ 7.6.5 — Signature patterns</div>
+              <h2 class="font-[family-name:var(--font-display)] italic
+                         text-[clamp(48px,6vw,80px)] leading-[0.98] tracking-[-0.03em]
+                         text-[color:var(--ink-1)] m-0">
+                WCDB signature patterns.
+              </h2>
+              <p class="mt-5 max-w-[680px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)]">
+                Brand-specific compositions transcribed verbatim from
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">design_handoff_wcdb_design_system/README.md</code>.
+                These appear on multiple pages and define how WCDB feels
+                distinct from a generic editorial theme.
+              </p>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Bare-vs-carded mix (right column rhythm)
+                 ============================================================ -->
+            <section data-dms-section="card:bare-vs-carded" class="py-6">
+              <div class="wcdb-eyebrow mb-3">A — Bare-vs-carded mix</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                The right column breathes.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                Most design systems put every section in a card. WCDB deliberately
+                alternates bare sections (on the page bg, the typography carries
+                them) with carded sections (functional content earns a panel).
+                This is the brand's most distinctive composition rule.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                <div class="grid md:grid-cols-2 gap-5">
+                  <!-- Left · all carded -->
+                  <div>
+                    <div class="wcdb-eyebrow mb-3 text-[color:var(--ink-4)]">All carded · boring</div>
+                    <div class="space-y-3 rounded-[12px] bg-[var(--bg-1)] p-3">
+                      <div class="rounded-[10px] bg-[var(--card-bg)] p-3">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-2)]">Page hero</div>
+                      </div>
+                      <div class="rounded-[10px] bg-[var(--card-bg)] p-3">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-2)]">On now &amp; up next</div>
+                      </div>
+                      <div class="rounded-[10px] bg-[var(--card-bg)] p-3">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-2)]">Latest spins</div>
+                      </div>
+                      <div class="rounded-[10px] bg-[var(--card-bg)] p-3">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-2)]">Blog promo</div>
+                      </div>
+                      <div class="rounded-[10px] bg-[var(--card-bg)] p-3">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-2)]">Off the air · events</div>
+                      </div>
+                      <div class="rounded-[10px] bg-[var(--card-bg)] p-3">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-2)]">Stats strip</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right · WCDB rhythm -->
+                  <div>
+                    <div class="wcdb-eyebrow mb-3">WCDB rhythm · home.html</div>
+                    <div class="space-y-3 rounded-[12px] bg-[var(--bg-1)] p-3">
+                      <!-- Bare -->
+                      <div class="px-3 py-3 border-b border-dashed border-[var(--line-1)]">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Page hero</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Bare · typography carries it</div>
+                      </div>
+                      <!-- Carded -->
+                      <div class="rounded-[10px] bg-[var(--card-bg)] p-3">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">On now &amp; up next</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Carded · table benefits from panel</div>
+                      </div>
+                      <!-- Bare -->
+                      <div class="px-3 py-3 border-b border-dashed border-[var(--line-1)]">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Latest spins</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Bare · visual rhythm</div>
+                      </div>
+                      <!-- Carded -->
+                      <div class="rounded-[10px] bg-[var(--card-bg)] p-3">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Blog promo</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Carded · single click target</div>
+                      </div>
+                      <!-- Mixed -->
+                      <div class="px-3 py-3 border-b border-dashed border-[var(--line-1)]">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Off the air · events</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Bare header · card per event</div>
+                      </div>
+                      <!-- Carded -->
+                      <div class="rounded-[10px] bg-[var(--card-bg)] p-3">
+                        <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] text-[color:var(--ink-1)]">Stats strip</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-1">Carded · tabular data</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="mt-6 max-w-[760px] font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-3)]">
+                  Authoring note · the choice is per-Section. A Card section can be
+                  flagged
+                  <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">cardHints.fullBleed</code>
+                  (no card wrapper) to sit bare on the page background.
+                  Alternate every two-to-three sections for the WCDB rhythm.
+                </p>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Now-playing composition (the canonical pattern)
+                 ============================================================ -->
+            <section data-dms-section="card:now-playing-composition" class="py-6">
+              <div class="wcdb-eyebrow mb-3">B — Now-playing composition</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Six cells, one Card section.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                The single most important authoring pattern in WCDB. Every column
+                below sits in the same Card cells-grid — no custom section
+                component is needed.
+              </p>
+
+              <div class="grid md:grid-cols-[1fr_360px] gap-6 items-start">
+                <!-- The card itself -->
+                <div class="rounded-[18px] bg-[var(--card-bg)] overflow-hidden">
+                  <!-- portrait_banner -->
+                  <div class="wcdb-art relative h-[200px] flex items-end pl-6 pb-3">
+                    <div class="wcdb-initials" aria-hidden="true" style="font-size:120px">L.M.</div>
+                    <span class="absolute top-3 left-3 wcdb-eyebrow text-[color:rgba(255,255,255,0.7)]">portrait_banner</span>
+                  </div>
+                  <hr class="wcdb-hairline"/>
+                  <!-- Editorial caption -->
+                  <div class="px-6 pt-4 pb-3 relative">
+                    <span class="absolute -top-2 right-3 wcdb-eyebrow bg-[var(--card-bg)] px-1.5">text cell</span>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                      Late Modernism · w/ DJ Halftone · Mar 05
+                    </div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">
+                      Cluster, Harmonia, and the long winters
+                    </div>
+                  </div>
+                  <hr class="wcdb-hairline"/>
+                  <!-- Now-playing strip -->
+                  <div class="px-6 py-4 flex items-center gap-4 relative">
+                    <!-- 64px album art · image cell (imgFill) -->
+                    <div class="size-16 shrink-0 rounded-[8px] wcdb-art wcdb-art--ember overflow-hidden relative">
+                      <span class="absolute -top-2 left-0 wcdb-eyebrow bg-[var(--card-bg)] px-1 whitespace-nowrap">image · imgFill</span>
+                    </div>
+                    <div class="flex-1 min-w-0 relative">
+                      <span class="absolute -top-3 left-0 wcdb-eyebrow">now_indicator + title</span>
+                      <div class="flex items-center gap-2 mb-1 mt-1">
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)]" style="padding:2px 7px;">
+                          <span class="wcdb-on-air-dot"></span>
+                          <span class="font-[family-name:var(--font-mono)] uppercase tracking-[0.14em] font-medium" style="font-size:9px">On Air</span>
+                        </span>
+                        <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">NOW · 11:47 PM</span>
+                      </div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[18px] leading-[1.1] tracking-[-0.02em] text-[color:var(--ink-1)] truncate">
+                        Sowiesoso
+                      </div>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5 truncate">
+                        Cluster · 1976 · Sky Records
+                      </div>
+                    </div>
+                    <!-- stream_player -->
+                    <button aria-label="Play live stream"
+                            class="shrink-0 size-[52px] rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
+                                   grid place-items-center relative">
+                      <span class="absolute -top-3 left-1/2 -translate-x-1/2 wcdb-eyebrow whitespace-nowrap">stream_player</span>
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Annotation key -->
+                <aside class="rounded-[18px] bg-[var(--bg-2)] p-5">
+                  <div class="wcdb-eyebrow mb-4">Cells in this Card</div>
+                  <dl class="space-y-3">
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">portrait_banner</dt>
+                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">Hero art · spans full Card width, fills available height</dd>
+                    </div>
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">text · editorial caption</dt>
+                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">Eyebrow + show title · displayXS</dd>
+                    </div>
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">now_indicator</dt>
+                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">On-air pulse pill + timestamp · the only on-air-red use</dd>
+                    </div>
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">image · imgFill · 64px</dt>
+                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">Album art · uses dataCard.imgFill so it fills the cellWidth</dd>
+                    </div>
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">text · title</dt>
+                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">valueFontStyle: displayXS · the track name</dd>
+                    </div>
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">stream_player</dt>
+                      <dd class="font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)] leading-[1.4]">Round play button · cellSpan 1 · right-aligned by cellsGrid order</dd>
+                    </div>
+                  </dl>
+                </aside>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Inverted footer card (.wcdb-card-inv)
+                 ============================================================ -->
+            <section data-dms-section="card:inverted-footer" class="py-6">
+              <div class="wcdb-eyebrow mb-3">C — Inverted footer card</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                The Hanssen move.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                A full-width card with flipped bg + ink. Use
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">.wcdb-card-inv</code>
+                instead of any bg-utility classes — it flips correctly in
+                both modes.
+              </p>
+
+              <!-- The actual inverted footer card -->
+              <div class="wcdb-card-inv p-10">
+                <!-- Subscribe form -->
+                <div class="grid md:grid-cols-2 gap-8 items-end mb-10">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase wcdb-meta mb-3">Newsletter · weekly</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[48px] leading-[1.0] tracking-[-0.03em] m-0">
+                      Capital Region tonight, in your inbox Friday morning.
+                    </div>
+                  </div>
+                  <form class="flex gap-2 items-stretch">
+                    <input type="email" placeholder="you@wcdbfm.org"
+                           class="flex-1 rounded-[8px] border border-[var(--inv-line)] bg-transparent
+                                  px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px]
+                                  text-[color:var(--inv-ink)] placeholder:text-[color:var(--inv-ink-2)] outline-none">
+                    <button class="px-5 py-3 rounded-full bg-[color:var(--inv-ink)] text-[color:var(--inv-bg)]
+                                   font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                      Subscribe
+                    </button>
+                  </form>
+                </div>
+
+                <hr class="wcdb-hairline"/>
+
+                <!-- 4-col link grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 py-10">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase wcdb-meta mb-3">Listen</div>
+                    <ul class="space-y-1.5 font-[family-name:var(--font-sans)] text-[13px]">
+                      <li>Live stream</li>
+                      <li>Schedule</li>
+                      <li>Latest spins</li>
+                      <li>Archive</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase wcdb-meta mb-3">The station</div>
+                    <ul class="space-y-1.5 font-[family-name:var(--font-sans)] text-[13px]">
+                      <li>About</li>
+                      <li>DJs</li>
+                      <li>History</li>
+                      <li>Contact</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase wcdb-meta mb-3">Off the air</div>
+                    <ul class="space-y-1.5 font-[family-name:var(--font-sans)] text-[13px]">
+                      <li>Events</li>
+                      <li>Blog</li>
+                      <li>Volunteer</li>
+                      <li>Donate</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase wcdb-meta mb-3">Legal</div>
+                    <ul class="space-y-1.5 font-[family-name:var(--font-sans)] text-[13px]">
+                      <li>FCC filings</li>
+                      <li>EEO report</li>
+                      <li>Privacy</li>
+                      <li>Press kit</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <hr class="wcdb-hairline"/>
+
+                <!-- Meta row -->
+                <div class="pt-6 flex items-center justify-between font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase wcdb-meta">
+                  <span>WCDB 90.9 FM · SUNY Albany · est. 1978</span>
+                  <span>© 2026 WCDB Radio Inc.</span>
+                </div>
+              </div>
+
+              <p class="mt-4 max-w-[760px] font-[family-name:var(--font-sans)] text-[13px] leading-[1.45] text-[color:var(--ink-3)]">
+                Use
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">wcdb-card-inv</code>
+                class instead of bg utilities · flips bg + ink in both modes ·
+                hairlines pick up
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">--inv-line</code>
+                automatically.
+              </p>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Italic-display H1 + mono eyebrow pair
+                 ============================================================ -->
+            <section data-dms-section="card:eyebrow-h1-pair" class="py-6">
+              <div class="wcdb-eyebrow mb-3">D — Italic-display H1 + mono eyebrow pair</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Every page opens the same way.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                The recipe is mechanical: mono uppercase eyebrow over an
+                italic-display H1. Used on
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">home / listen / schedule / show / djs / spins / blog / events / login</code>
+                — every public page.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-10">
+                <!-- Example 1 -->
+                <div class="mb-10 pb-10 border-b border-[var(--line-1)]">
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-5">
+                    Tonight on 90.9 · Spring 2026 broadcast
+                  </div>
+                  <h3 class="font-[family-name:var(--font-display)] italic
+                             text-[clamp(56px,7vw,96px)] leading-[0.95] tracking-[-0.03em]
+                             text-[color:var(--ink-1)] m-0">
+                    Stereolab, somewhere in Albany,<br/>and an open midnight slot.
+                  </h3>
+                </div>
+
+                <!-- Example 2 · smaller scale -->
+                <div class="mb-10 pb-10 border-b border-[var(--line-1)]">
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-4">
+                    The roster · spring 2026
+                  </div>
+                  <h3 class="font-[family-name:var(--font-display)] italic
+                             text-[48px] leading-[1.0] tracking-[-0.03em]
+                             text-[color:var(--ink-1)] m-0">
+                    Everyone with a slot this season.
+                  </h3>
+                </div>
+
+                <!-- Recipe -->
+                <div>
+                  <div class="wcdb-eyebrow mb-3">Recipe</div>
+                  <dl class="grid md:grid-cols-2 gap-x-8 gap-y-3 font-[family-name:var(--font-sans)] text-[13px]">
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Eyebrow</dt>
+                      <dd class="text-[color:var(--ink-3)]">font-mono · 11px · tracking 0.12em · uppercase · ink-3</dd>
+                    </div>
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">H1</dt>
+                      <dd class="text-[color:var(--ink-3)]">font-display · italic · displayHero · leading 0.95 · tracking -0.03em · ink-1</dd>
+                    </div>
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Stack tokens</dt>
+                      <dd class="text-[color:var(--ink-3)]">metaXS (eyebrow) above displayHero / displayXL / displayLG</dd>
+                    </div>
+                    <div>
+                      <dt class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">Authoring</dt>
+                      <dd class="text-[color:var(--ink-3)]">Lexical section · h6 (eyebrow) + h1 (title). textSettings carries the style.</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Schedule row pattern
+                 ============================================================ -->
+            <section data-dms-section="card:schedule-row" class="py-6">
+              <div class="wcdb-eyebrow mb-3">E — Schedule row</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                <code class="font-[family-name:var(--font-mono)] text-[28px] not-italic tracking-[-0.01em]">[80px_1fr_auto]</code>
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                Used on
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">home.html</code>
+                and
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">schedule.html</code>.
+                Three columns: time (mono) · show name (italic display) ·
+                status (on-air pill or relative time). The live row gets
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">bg-[var(--on-air-soft)]</code>.
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                <!-- Live row · highlighted -->
+                <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-3 rounded-[8px] px-3 -mx-3 bg-[var(--on-air-soft)]">
+                  <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-1)]">11 pm</span>
+                  <div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Late Modernism</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ DJ Halftone</div>
+                  </div>
+                  <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)] px-2.5 py-1 border border-[rgba(255,59,47,0.25)]">
+                    <span class="wcdb-on-air-dot"></span>
+                    <span class="font-[family-name:var(--font-mono)] uppercase tracking-[0.14em] font-medium text-[10px]">Live</span>
+                  </span>
+                </div>
+                <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-3 border-t border-[var(--line-1)]">
+                  <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">1 am</span>
+                  <div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Off-Year Pop</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Jada R.</div>
+                  </div>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">in 1h 13m</span>
+                </div>
+                <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-3 border-t border-[var(--line-1)]">
+                  <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]">3 am</span>
+                  <div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em]">Insomnia Hour</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Glass &amp; Smith</div>
+                  </div>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">3h 13m</span>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Spin row pattern
+                 ============================================================ -->
+            <section data-dms-section="card:spin-row" class="py-6">
+              <div class="wcdb-eyebrow mb-3">F — Spin row</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                <code class="font-[family-name:var(--font-mono)] text-[28px] not-italic tracking-[-0.01em]">[60px_64px_1fr_auto]</code>
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                Used on
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">home.html</code>
+                and
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">spins.html</code>.
+                Four columns: time (mono) · 64px album art (image cell with
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">imageSize: 'imgFill'</code>)
+                · track meta (italic-display title + prose subtitle) ·
+                show label (mono uppercase).
+              </p>
+
+              <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                  <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">11:47</span>
+                  <div class="size-12 rounded-[6px] wcdb-art wcdb-art--ember"></div>
+                  <div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Sowiesoso</div>
+                    <div class="font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-3)] mt-0.5">Cluster · Sky Records · 1976</div>
+                  </div>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Late Modernism</span>
+                </div>
+                <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                  <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">11:42</span>
+                  <div class="size-12 rounded-[6px] wcdb-art wcdb-art--cool"></div>
+                  <div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Vepřo Knedlo Zelo</div>
+                    <div class="font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-3)] mt-0.5">Pulnoc · Mama Bear · 2022</div>
+                  </div>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Late Modernism</span>
+                </div>
+                <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                  <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">11:36</span>
+                  <div class="size-12 rounded-[6px] wcdb-art wcdb-art--violet"></div>
+                  <div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">The Glow Pt. 2</div>
+                    <div class="font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-3)] mt-0.5">The Microphones · K Records · 2001</div>
+                  </div>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Late Modernism</span>
+                </div>
+                <div class="grid grid-cols-[60px_64px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                  <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]">11:31</span>
+                  <div class="size-12 rounded-[6px] wcdb-art wcdb-art--mono"></div>
+                  <div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[20px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Heroes</div>
+                    <div class="font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-3)] mt-0.5">David Bowie · RCA · 1977</div>
+                  </div>
+                  <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]">Late Modernism</span>
+                </div>
+              </div>
+            </section>
+
+            <hr class="wcdb-hairline my-6"/>
+
+            <!-- ============================================================
+                 SECTION · Event tile pattern
+                 ============================================================ -->
+            <section data-dms-section="card:event-tile" class="py-6">
+              <div class="wcdb-eyebrow mb-3">G — Event tile</div>
+              <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0 mb-2">
+                Giant italic day number.
+              </h2>
+              <p class="max-w-[640px] font-[family-name:var(--font-sans)] text-[15px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)] mb-6">
+                Used on
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">home.html</code>
+                events section and
+                <code class="font-[family-name:var(--font-mono)] text-[11px] px-1 py-0.5 bg-[var(--bg-2)] rounded-sm">events.html</code>.
+                A giant italic day-of-month number anchors a mono eyebrow
+                date row + italic-display title + prose subtitle.
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-5">
+                <!-- Event tile · 1 -->
+                <article class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <div class="grid grid-cols-[auto_1fr] gap-6 items-start">
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,8vw,88px)] leading-[0.85] tracking-[-0.04em] text-[color:var(--ink-1)]">
+                      14
+                    </div>
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        Mar 14 · Friday · 9 pm
+                      </div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mb-2">
+                        WCDB presents · Pulnoc
+                      </div>
+                      <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-3)] mb-4">
+                        Czech post-punk legends play The Linda. WCDB members
+                        get free entry through the back door.
+                      </p>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                        The Linda · 339 Central Ave · $15
+                      </div>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Event tile · 2 -->
+                <article class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <div class="grid grid-cols-[auto_1fr] gap-6 items-start">
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,8vw,88px)] leading-[0.85] tracking-[-0.04em] text-[color:var(--ink-1)]">
+                      22
+                    </div>
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        Mar 22 · Saturday · 4 pm
+                      </div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mb-2">
+                        Record fair · Quad
+                      </div>
+                      <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-3)] mb-4">
+                        Annual spring record fair on the Uptown Quad — 40
+                        sellers, our DJs spinning between sets.
+                      </p>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                        SUNY Albany Quad · Free
+                      </div>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Event tile · 3 -->
+                <article class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <div class="grid grid-cols-[auto_1fr] gap-6 items-start">
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,8vw,88px)] leading-[0.85] tracking-[-0.04em] text-[color:var(--ink-1)]">
+                      05
+                    </div>
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        Apr 05 · Saturday · 8 pm
+                      </div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mb-2">
+                        48 hr broadcast marathon
+                      </div>
+                      <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-3)] mb-4">
+                        Spring pledge drive. 48 hours of continuous live DJs,
+                        guests, and prize draws.
+                      </p>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                        On 90.9 FM · 8 pm Apr 05 → 8 pm Apr 07
+                      </div>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Event tile · 4 -->
+                <article class="rounded-[18px] bg-[var(--card-bg)] p-7">
+                  <div class="grid grid-cols-[auto_1fr] gap-6 items-start">
+                    <div class="font-[family-name:var(--font-display)] italic text-[clamp(64px,8vw,88px)] leading-[0.85] tracking-[-0.04em] text-[color:var(--ink-1)]">
+                      19
+                    </div>
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        Apr 19 · Saturday · 11 pm
+                      </div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mb-2">
+                        DJ Halftone — live remote
+                      </div>
+                      <p class="font-[family-name:var(--font-sans)] text-[14px] leading-[1.45] text-[color:var(--ink-3)] mb-4">
+                        Late Modernism remote broadcast from No Fun in Troy.
+                        Live records, no requests.
+                      </p>
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-4)]">
+                        No Fun · 213 4th St, Troy · $5
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     META-FOOTER — documentation chrome, repeating meta-nav links
+     ============================================================ -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="./theme.html">theme</a></li>
+      <li><a href="./layouts.html">layouts</a></li>
+      <li><a href="./grid.html">grid</a></li>
+      <li><a href="./components.html">components</a></li>
+      <li><a href="./patterns.html" data-active="true">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · editorial</h3>
+    <ul>
+      <li><a href="../pages/home.html">home</a></li>
+      <li><a href="../pages/listen.html">listen</a></li>
+      <li><a href="../pages/blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · catalogue</h3>
+    <ul>
+      <li><a href="../pages/schedule.html">schedule</a></li>
+      <li><a href="../pages/show.html">show</a></li>
+      <li><a href="../pages/djs.html">djs</a></li>
+      <li><a href="../pages/spins.html">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · misc</h3>
+    <ul>
+      <li><a href="../pages/events.html">events</a></li>
+      <li><a href="../pages/login.html">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

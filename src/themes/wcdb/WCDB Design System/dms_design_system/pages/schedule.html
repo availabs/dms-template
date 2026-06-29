@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Schedule</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body>
+
+<!-- META-NAV — documentation chrome only -->
+<nav class="wcdb-meta-nav">
+  <span class="wcdb-meta-nav__brand">WCDB · DMS Design System</span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">design-system</span>
+    <a href="../design-system/theme.html">theme</a>
+    <a href="../design-system/layouts.html">layouts</a>
+    <a href="../design-system/grid.html">grid</a>
+    <a href="../design-system/components.html">components</a>
+    <a href="../design-system/patterns.html">patterns</a>
+  </span>
+  <span class="wcdb-meta-nav__group">
+    <span class="wcdb-meta-nav__group-label">pages</span>
+    <a href="./home.html">home</a>
+    <a href="./listen.html">listen</a>
+    <a href="./schedule.html" data-active="true">schedule</a>
+    <a href="./show.html">show</a>
+    <a href="./djs.html">djs</a>
+    <a href="./spins.html">spins</a>
+    <a href="./blog.html">blog</a>
+    <a href="./events.html">events</a>
+    <a href="./login.html">login</a>
+  </span>
+</nav>
+
+<!-- ============================================================
+     LAYOUT · default — single-column.
+     schedule.html is a single-column page, so we render only the
+     `content` LayoutGroup. The childWrapper's grid collapses to one
+     column because the second (header) group is absent. The top nav
+     sits at the page top (not floating over a sticky card).
+     ============================================================ -->
+<div data-dms-layout="default"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <!-- LAYOUT.wrapper -->
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+
+    <!-- LAYOUT.wrapper2 -->
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <!-- TOPNAV — top-of-page strip. Active state: Schedule. -->
+      <header class="w-full h-14 flex items-center bg-[var(--page-bg)] border-b border-[var(--line-1)]">
+        <div class="flex items-center bg-[var(--page-bg)] h-14 pl-4">
+          <div class="font-[family-name:var(--font-display)] italic text-[20px] tracking-[-0.02em] text-[color:var(--ink-1)]">WCDB</div>
+          <span class="ml-2 pl-2 border-l border-[var(--line-2)]
+                       font-[family-name:var(--font-mono)] text-[10px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">90.9 FM</span>
+        </div>
+        <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2 bg-[var(--page-bg)]">
+          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Listen</a>
+          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" data-active="true">Schedule</a>
+          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Shows</a>
+          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">DJs</a>
+          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Spins</a>
+          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Blog</a>
+          <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5">Events</a>
+        </div>
+        <div class="hidden md:flex h-full items-center pr-4 gap-2 bg-[var(--page-bg)]">
+          <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">am3081@gmail.com</span>
+        </div>
+      </header>
+
+      <!-- LAYOUT.wrapper3 -->
+      <div class="flex flex-1 items-start">
+
+        <!-- LAYOUT.childWrapper · single-column collapse -->
+        <div class="flex-1 flex flex-col md:grid md:grid-cols-2">
+
+          <!-- ============================================================
+               LAYOUTGROUP · content
+               ============================================================ -->
+          <div data-dms-group="content"
+               class="md:col-span-2 w-full flex-1 flex flex-row p-2">
+            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-[1080px] mx-auto">
+
+              <!-- ============================================================
+                   SECTION · lexical:page-header (BARE)
+                   ============================================================ -->
+              <section data-dms-section="lexical:page-header" class="pt-10 pb-12">
+                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-5">
+                  Week 23 · Spring broadcast · Mar 03 — Mar 09
+                </div>
+                <h1 class="font-[family-name:var(--font-display)] italic
+                           text-[clamp(56px,6vw,88px)] leading-[0.95] tracking-[-0.03em]
+                           text-[color:var(--ink-1)] m-0">
+                  This week's programme.
+                </h1>
+                <p class="mt-6 max-w-[560px] font-[family-name:var(--font-sans)] text-[18px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)]">
+                  Seven days, forty-three slots, twenty-eight DJs. The
+                  WCDB grid is built by hand every Sunday night; the
+                  late shifts are the ones to write home about.
+                </p>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:day-strip (CARDED)
+                   Mon–Sun horizontal pill row. Today (Friday) highlighted.
+                   ============================================================ -->
+              <section data-dms-section="card:day-strip" class="mb-12">
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-6">
+                  <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-5">
+                    Jump to a day
+                  </div>
+                  <div class="grid grid-cols-7 gap-2">
+
+                    <button class="rounded-[14px] bg-[var(--card-bg-soft)] hover:bg-[var(--bg-3)] p-4 text-left transition-colors">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Monday</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">6 shows</div>
+                    </button>
+
+                    <button class="rounded-[14px] bg-[var(--card-bg-soft)] hover:bg-[var(--bg-3)] p-4 text-left transition-colors">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Tuesday</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">7 shows</div>
+                    </button>
+
+                    <button class="rounded-[14px] bg-[var(--card-bg-soft)] hover:bg-[var(--bg-3)] p-4 text-left transition-colors">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Wednesday</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">6 shows</div>
+                    </button>
+
+                    <button class="rounded-[14px] bg-[var(--card-bg-soft)] hover:bg-[var(--bg-3)] p-4 text-left transition-colors">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Thursday</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">6 shows</div>
+                    </button>
+
+                    <!-- Today: Friday — highlighted with accent-soft bg + ink-1 text -->
+                    <button class="rounded-[14px] bg-[var(--accent-soft)] ring-1 ring-[var(--line-3)] p-4 text-left transition-colors">
+                      <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-1)] mb-1">Today</div>
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Friday</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-2)] mt-2">7 shows</div>
+                    </button>
+
+                    <button class="rounded-[14px] bg-[var(--card-bg-soft)] hover:bg-[var(--bg-3)] p-4 text-left transition-colors">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Saturday</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">8 shows</div>
+                    </button>
+
+                    <button class="rounded-[14px] bg-[var(--card-bg-soft)] hover:bg-[var(--bg-3)] p-4 text-left transition-colors">
+                      <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Sunday</div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">3 shows</div>
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:friday-shows (CARDED)
+                   The full Friday list. Currently-live row in --on-air-soft.
+                   ============================================================ -->
+              <section data-dms-section="card:friday-shows" class="mb-12">
+                <div class="rounded-[18px] bg-[var(--card-bg)] p-7">
+
+                  <div class="flex items-baseline justify-between mb-6">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                        Friday · Mar 07
+                      </div>
+                      <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">
+                        Today's shows
+                      </h2>
+                    </div>
+                    <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                      Subscribe iCal →
+                    </a>
+                  </div>
+
+                  <div>
+
+                    <!-- 09:00 — Morning Edition (Replay) -->
+                    <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-2)]">9 am</span>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Morning Edition</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Robin Cole · News &amp; talk</div>
+                      </div>
+                      <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">Replay</a>
+                    </div>
+
+                    <!-- 11:00 — Free Form -->
+                    <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-2)]">11 am</span>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Free Form</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Marisol N. · No format, no playlist</div>
+                      </div>
+                      <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">Replay</a>
+                    </div>
+
+                    <!-- 14:00 — Off-Year Pop (LIVE) — on-air-soft background -->
+                    <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)] bg-[var(--on-air-soft)] rounded-[8px] px-3 -mx-3">
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-1)]">2 pm</span>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Off-Year Pop</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-2)] mt-0.5">w/ Jada R. · Singles from in-between years</div>
+                      </div>
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--on-air-soft)] text-[var(--on-air)] px-2.5 py-1 ring-1 ring-[rgba(255,59,47,0.25)]">
+                        <span class="wcdb-on-air-dot"></span>
+                        <span class="font-[family-name:var(--font-mono)] uppercase tracking-[0.14em] font-medium text-[10px]">Live</span>
+                      </span>
+                    </div>
+
+                    <!-- 17:00 — News at Five (Coming up) -->
+                    <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-2)]">5 pm</span>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">News at Five</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Theo Park · Capital Region wrap</div>
+                      </div>
+                      <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">in 2h 47m</span>
+                    </div>
+
+                    <!-- 19:00 — Bandwidth -->
+                    <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-2)]">7 pm</span>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Bandwidth</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ DJ Sangtree · Local-band hour</div>
+                      </div>
+                      <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">in 4h 47m</span>
+                    </div>
+
+                    <!-- 21:00 — Late Modernism -->
+                    <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)]">
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-2)]">9 pm</span>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Late Modernism</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ DJ Halftone · Long-form ambient &amp; krautrock</div>
+                      </div>
+                      <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">in 6h 47m</span>
+                    </div>
+
+                    <!-- 00:00 — Insomnia Hour -->
+                    <div class="grid grid-cols-[80px_1fr_auto] gap-4 items-center py-4 border-t border-[var(--line-1)] border-b">
+                      <span class="font-[family-name:var(--font-mono)] text-[12px] tracking-[0.10em] uppercase text-[color:var(--ink-2)]">12 am</span>
+                      <div>
+                        <div class="font-[family-name:var(--font-display)] italic text-[22px] leading-[1.1] tracking-[-0.03em] text-[color:var(--ink-1)]">Insomnia Hour</div>
+                        <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-0.5">w/ Glass &amp; Smith · For the night shift</div>
+                      </div>
+                      <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">in 9h 47m</span>
+                    </div>
+
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:next-week (BARE w/ tile sub-cards)
+                   Three highlight shows in italic display + brief description.
+                   ============================================================ -->
+              <section data-dms-section="card:next-week" class="mb-12">
+                <div class="flex items-baseline justify-between mb-6">
+                  <div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mb-2">
+                      Looking ahead
+                    </div>
+                    <h2 class="font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">
+                      Next week's highlights
+                    </h2>
+                  </div>
+                  <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">
+                    Full week →
+                  </a>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                  <div class="rounded-[14px] bg-[var(--card-bg-soft)] p-6 flex flex-col">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Mon · Mar 10 · 11 pm</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mt-3">A guest in the studio</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">Special · 90 min</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mt-4">
+                      Albany-based composer Nina Ord drops in to walk
+                      through her new piece for ten tape machines and
+                      one Casio SK-1.
+                    </p>
+                  </div>
+
+                  <div class="rounded-[14px] bg-[var(--card-bg-soft)] p-6 flex flex-col">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Wed · Mar 12 · 9 pm</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mt-3">Tape music &amp; tape loops</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">Late Modernism · S03E22</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mt-4">
+                      Forty minutes on Steve Reich's <em class="font-[family-name:var(--font-display)] not-italic">It's
+                      Gonna Rain</em> and the long shadow it cast over
+                      college-radio late nights.
+                    </p>
+                  </div>
+
+                  <div class="rounded-[14px] bg-[var(--card-bg-soft)] p-6 flex flex-col">
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Sat · Mar 15 · 2 pm</div>
+                    <div class="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.05] tracking-[-0.03em] text-[color:var(--ink-1)] mt-3">Pledge drive · day one</div>
+                    <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] mt-2">Special · all day</div>
+                    <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] mt-4">
+                      Twelve hours of back-to-back guest DJs, plus the
+                      annual call-in marathon. Every dollar keeps the
+                      transmitter on for another month.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · card:footer (INVERTED CARD)
+                   ============================================================ -->
+              <section data-dms-section="card:footer" class="pb-4">
+                <div class="wcdb-card-inv p-10">
+                  <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-10">
+                    <div>
+                      <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-4">Weekly digest</div>
+                      <h2 class="font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--inv-ink)] m-0 mb-3">
+                        Get the grid each Sunday.
+                      </h2>
+                      <p class="font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] max-w-[440px] text-[#4a4a4a]">
+                        Once a week, when the new schedule posts. No
+                        spam, no algorithms — just the next seven days
+                        on 90.9.
+                      </p>
+
+                      <form class="mt-6 flex flex-col sm:flex-row gap-2 max-w-[520px]">
+                        <input type="email" placeholder="you@somewhere.edu"
+                               class="flex-1 px-4 py-3 rounded-full bg-transparent border border-[rgba(10,10,10,0.15)]
+                                      font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--inv-ink)]
+                                      placeholder:text-[#a0a0a0] focus:outline-none focus:border-[color:var(--inv-ink)]">
+                        <button class="px-6 py-3 rounded-full bg-[color:var(--inv-ink)] text-[color:var(--inv-bg)]
+                                       font-[family-name:var(--font-sans)] text-[13px] font-medium">
+                          Subscribe
+                        </button>
+                      </form>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Schedule</div>
+                        <ul class="space-y-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)]">
+                          <li>This week</li><li>Next week</li><li>By show</li><li>iCal feed</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Station</div>
+                        <ul class="space-y-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)]">
+                          <li>About</li><li>Pledge</li><li>Volunteer</li><li>Contact</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr class="wcdb-hairline my-8" style="background:rgba(10,10,10,0.10)"/>
+
+                  <div class="flex flex-wrap items-center justify-between gap-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a]">
+                    <span>WCDB · 90.9 FM · SUNY Albany</span>
+                    <span>© 1977–2026 · A student broadcast</span>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- META-FOOTER — duplicate of meta-nav for long-scroll navigation -->
+<footer class="wcdb-meta-footer">
+  <div>
+    <h3>Design system</h3>
+    <ul>
+      <li><a href="../design-system/theme.html">theme</a></li>
+      <li><a href="../design-system/layouts.html">layouts</a></li>
+      <li><a href="../design-system/grid.html">grid</a></li>
+      <li><a href="../design-system/components.html">components</a></li>
+      <li><a href="../design-system/patterns.html">patterns</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · editorial</h3>
+    <ul>
+      <li><a href="./home.html">home</a></li>
+      <li><a href="./listen.html">listen</a></li>
+      <li><a href="./blog.html">blog</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · catalogue</h3>
+    <ul>
+      <li><a href="./schedule.html" data-active="true">schedule</a></li>
+      <li><a href="./show.html">show</a></li>
+      <li><a href="./djs.html">djs</a></li>
+      <li><a href="./spins.html">spins</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Pages · misc</h3>
+    <ul>
+      <li><a href="./events.html">events</a></li>
+      <li><a href="./login.html">login</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>

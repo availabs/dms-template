@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>About TSMO · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  tsmo-about.html · TSMO SURFACE 9 of 10 — the program page: what TSMO is (6 CMM capability
+  dimensions), NYSDOT's Strategic-Plan framing, the dashboard guide, and the roadmap — Tier-3
+  measures stated honestly as planned work with the feed each needs (strategy §8: honest gaps).
+  Layout `app` · TSMO SideNav (About active) · sticky right-rail TOC + get-involved card,
+  mirroring freight-atlas-about.html (§7.6.5 recurring doc pattern). No new primitives. -->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ════════ SIDENAV · TSMO (About active) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <a href="tsmo-home.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">TS</div>
+              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">TSMO</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · TransportNY</div></div>
+            </a>
+            <div class="px-3 pt-3"><a href="tsmo-incident-search.html" class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] hover:border-[#3a4555] flex items-center gap-2 text-slate-400 hover:text-slate-300"><!-- icon: Search --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-proxima text-[13px] flex-1 text-left">Search 3.7M events</span></a></div>
+            <div class="flex-1 py-1 overflow-y-auto">
+              <a href="tsmo-home.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 mt-2 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: House --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Dashboards</div>
+              <a href="tsmo-congestion.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Gauge --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 14 8.5 8.5M4 14a8 8 0 1 1 16 0"/><path d="M3 18h18"/></svg><span class="flex-1">Congestion</span></a>
+              <a href="tsmo-reliability.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Clock --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg><span class="flex-1">Reliability</span></a>
+              <a href="tsmo-incidents.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Warning --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 2.5 19.5h19L12 3Z"/><path d="M12 10v4m0 3h.01"/></svg><span class="flex-1">Incidents</span></a>
+              <a href="tsmo-workzones.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Cone --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 3 6 17H6L12 3Z"/><path d="M9.5 10h5M8 15h8M3 20h18"/></svg><span class="flex-1">Work Zones</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Explorers</div>
+              <a href="tsmo-incident-search.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Search --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="flex-1">Incident Search</span></a>
+              <a href="tsmo-corridor.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Corridor --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h18M6 12V7m12 5V7M9 12v5m6-5v5"/></svg><span class="flex-1">Corridor View</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Program</div>
+              <a href="tsmo-about.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><!-- icon: Book --><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg><span class="flex-1">About TSMO</span></a>
+              <a href="tsmo-methodology.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Database --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data &amp; Methodology</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><!-- icon: View --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Public access</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">no login required</div></div>
+              <a href="login.html" class="font-mono text-[9.5px] uppercase tracking-wider text-[#FACC15] hover:text-[#EAAD43]">Sign in</a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ PAGE HEADER ═════════ -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-12" data-dms-section="page-header">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 mb-4"><a href="tsmo-home.html" class="hover:text-[#0f1722]">TSMO</a><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">About</span></nav>
+              <div class="flex items-center gap-3 mb-2"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// the nysdot tsmo program</span><span class="h-px w-10 bg-[#CA8A04]/50"></span></div>
+              <h1 class="font-display font-semibold text-[44px] leading-[1.05] tracking-tight text-[#0F1722]">Operating what we own, better<span class="text-[#CA8A04]">.</span></h1>
+              <p class="font-proxima text-[15px] leading-[1.65] text-slate-700 mt-3 max-w-[760px]">New York's highway network is largely built. The biggest near-term gains now come from operating it well — and from measuring whether we do. In 2024 New Yorkers lost 223 million vehicle-hours to excessive delay; 47% of it was non-recurrent — crashes, work zones, weather. That is the share operations can move, and it is what this section of TransportNY tracks.</p>
+            </div>
+          </div>
+
+          <!-- ═════════ CONTENT + TOC ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- MAIN -->
+              <div class="col-span-12 lg:col-span-8 space-y-10">
+
+                <!-- What is TSMO -->
+                <section id="what-is-tsmo" data-dms-section="what-is-tsmo">
+                  <div class="flex items-center gap-2 mb-4"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What is TSMO</h2></div>
+                  <p class="font-proxima text-[13.5px] text-slate-600 leading-[1.65] mb-4">Transportation Systems Management &amp; Operations is a family of strategies for getting the most out of infrastructure that already exists — clearing crashes faster, coordinating work zones, timing signals, informing travelers — rather than relying on new capacity alone. FHWA's Capability Maturity Model assesses agency operations across six dimensions; this site is the <strong>Performance Measurement</strong> dimension made public.</p>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><span class="size-2.5 rounded-full bg-[#1F3F8F] block mb-2"></span><div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Business Processes</div><p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Planning &amp; programming that treat operations as a core investment</p></div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><span class="size-2.5 rounded-full bg-[#37576B] block mb-2"></span><div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Systems &amp; Tech</div><p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">ITS devices, traffic management centers &amp; the data platforms behind them</p></div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><span class="size-2.5 rounded-full bg-[#E5A646] block mb-2"></span><div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Performance Measurement</div><p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Define measures, collect data, manage by it — these dashboards</p></div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><span class="size-2.5 rounded-full bg-emerald-500 block mb-2"></span><div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Culture</div><p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Leadership &amp; agency-wide understanding of the value of operations</p></div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><span class="size-2.5 rounded-full bg-rose-500 block mb-2"></span><div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Organization &amp; Workforce</div><p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Staff capacity, structure &amp; development for an operations mission</p></div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4"><span class="size-2.5 rounded-full bg-amber-500 block mb-2"></span><div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">Collaboration</div><p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Working across agencies — TRANSCOM, MPOs, responders, FHWA</p></div>
+                  </div>
+                </section>
+
+                <!-- NYSDOT program -->
+                <section id="program" data-dms-section="program">
+                  <div class="flex items-center gap-2 mb-4"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The NYSDOT program</h2></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                    <p class="font-proxima text-[14px] text-slate-700 leading-[1.7]">NYSDOT's <strong>TSMO Strategic Plan</strong> commits the Department to managing the existing system as deliberately as it builds new assets — and to <strong>enterprise performance reporting</strong> so the public can see how operations is doing. The Department operates through eleven regions, each with traffic management capability, HELP service patrols on major corridors, and a statewide partnership with TRANSCOM for real-time event data. These dashboards are the reporting commitment delivered: one statewide picture, drillable to every region and corridor.</p>
+                    <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3.5"><div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">pillar 01</div><div class="font-display uppercase text-[13.5px] tracking-tight text-[#0f1722]">Optimize before we build</div><p class="font-proxima text-[11.5px] text-slate-500 mt-1 leading-snug">Operations strategies first; capacity last</p></div>
+                      <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3.5"><div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">pillar 02</div><div class="font-display uppercase text-[13.5px] tracking-tight text-[#0f1722]">Measure everything</div><p class="font-proxima text-[11.5px] text-slate-500 mt-1 leading-snug">Enterprise reporting, with methods published</p></div>
+                      <div class="rounded-[6px] border border-zinc-950/10 bg-slate-50/60 p-3.5"><div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">pillar 03</div><div class="font-display uppercase text-[13.5px] tracking-tight text-[#0f1722]">Operate regionally</div><p class="font-proxima text-[11.5px] text-slate-500 mt-1 leading-snug">11 regions · TMCs · HELP patrols · TRANSCOM</p></div>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Dashboard guide -->
+                <section id="guide" data-dms-section="dashboard-guide">
+                  <div class="flex items-center gap-2 mb-4"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What each page answers</h2></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm divide-y divide-zinc-950/05">
+                    <a href="tsmo-congestion.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"><span class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F]"><!-- icon: Gauge --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 14 8.5 8.5M4 14a8 8 0 1 1 16 0"/><path d="M3 18h18"/></svg></span><span class="flex-1"><span class="font-proxima text-[13.5px] text-[#0f1722] block">Congestion — how much delay, where, and why</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">recurrent vs incident-driven · monetized · by region &amp; corridor</span></span><span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open</span></a>
+                    <a href="tsmo-reliability.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"><span class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F]"><!-- icon: Clock --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span><span class="flex-1"><span class="font-proxima text-[13.5px] text-[#0f1722] block">Reliability — how predictable is travel</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">federal PM3 · LOTTR · TTTR · PHED vs targets</span></span><span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open</span></a>
+                    <a href="tsmo-incidents.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"><span class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F]"><!-- icon: Warning --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 2.5 19.5h19L12 3Z"/><path d="M12 10v4m0 3h.01"/></svg></span><span class="flex-1"><span class="font-proxima text-[13.5px] text-[#0f1722] block">Incidents — what happens on the network &amp; how well we clear it</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">TRANSCOM landscape · durations · clearance measures coverage-badged</span></span><span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open</span></a>
+                    <a href="tsmo-workzones.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"><span class="size-9 rounded bg-[#1F3F8F]/10 flex items-center justify-center text-[#1F3F8F]"><!-- icon: Cone --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 3 6 17H6L12 3Z"/><path d="M9.5 10h5M8 15h8M3 20h18"/></svg></span><span class="flex-1"><span class="font-proxima text-[13.5px] text-[#0f1722] block">Work Zones — what construction costs drivers</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">our largest attributed-delay category · planned vs emergency</span></span><span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open</span></a>
+                    <a href="tsmo-incident-search.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"><span class="size-9 rounded bg-slate-100 flex items-center justify-center text-slate-500"><!-- icon: Search --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg></span><span class="flex-1"><span class="font-proxima text-[13.5px] text-[#0f1722] block">Incident Search — find any of 3.7M events since 2015</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">explorer · by place, date, category, facility, keyword</span></span><span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open</span></a>
+                    <a href="tsmo-corridor.html" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50"><span class="size-9 rounded bg-slate-100 flex items-center justify-center text-slate-500"><!-- icon: Corridor --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h18M6 12V7m12 5V7M9 12v5m6-5v5"/></svg></span><span class="flex-1"><span class="font-proxima text-[13.5px] text-[#0f1722] block">Corridor View — replay any corridor, any day</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">explorer · live probe × network join · 5-min time-space speed grid</span></span><span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">open</span></a>
+                  </div>
+                </section>
+
+                <!-- Roadmap -->
+                <section id="roadmap" data-dms-section="roadmap">
+                  <div class="flex items-center gap-2 mb-4"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The roadmap — measures we won't fake</h2></div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 mb-4">
+                    <p class="font-proxima text-[13px] text-slate-600 leading-[1.65]">Some measures every good TSMO program reports aren't on these pages yet — because the data feed isn't there, and we'd rather show a gap than a guess. Today's event feed timestamps illustrate why:</p>
+                    <div class="mt-3 space-y-2 text-[12.5px] text-slate-700">
+                      <div><div class="flex justify-between mb-1"><span>Lanes-open timestamp populated</span><span class="font-mono tabular-nums">42.7%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:42.7%;background:#E5A646"></div></div></div>
+                      <div><div class="flex justify-between mb-1"><span>Verified timestamp populated</span><span class="font-mono tabular-nums">20.1%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:20.1%;background:#E8843F"></div></div></div>
+                      <div><div class="flex justify-between mb-1"><span>Reported timestamp populated</span><span class="font-mono tabular-nums">10.6%</span></div><div class="h-2 rounded bg-slate-100 overflow-hidden"><div class="h-full" style="width:10.6%;background:#D6453B"></div></div></div>
+                    </div>
+                    <p class="mt-3 font-proxima text-[12px] text-slate-500 leading-[1.55]">Where coverage is partial, dashboards compute on the covered subset and say so. Where it's absent, the measure lives here — as planned work, with the feed that unlocks it.</p>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="rounded-[8px] border border-dashed border-[#1F3F8F]/40 bg-white shadow-sm p-4">
+                      <div class="flex items-center justify-between mb-2"><span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">planned</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">FHWA TIM #3</span></div>
+                      <div class="font-display font-medium text-[16px] leading-[1.25] text-[#0f1722]">Secondary crashes</div>
+                      <p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Crashes caused by the queue behind a first incident — the strongest argument for fast clearance.</p>
+                      <div class="mt-3 pt-2 border-t border-zinc-950/05 font-mono text-[10px] uppercase tracking-wider text-slate-500">unlocks with · crash-database link</div>
+                    </div>
+                    <div class="rounded-[8px] border border-dashed border-[#1F3F8F]/40 bg-white shadow-sm p-4">
+                      <div class="flex items-center justify-between mb-2"><span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">planned</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">asset uptime</span></div>
+                      <div class="font-display font-medium text-[16px] leading-[1.25] text-[#0f1722]">Device &amp; asset health</div>
+                      <p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Cameras, sensors, and message signs — what share of the ITS fleet is up and reporting.</p>
+                      <div class="mt-3 pt-2 border-t border-zinc-950/05 font-mono text-[10px] uppercase tracking-wider text-slate-500">unlocks with · ITS device telemetry</div>
+                    </div>
+                    <div class="rounded-[8px] border border-dashed border-[#1F3F8F]/40 bg-white shadow-sm p-4">
+                      <div class="flex items-center justify-between mb-2"><span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">planned</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">service patrol</span></div>
+                      <div class="font-display font-medium text-[16px] leading-[1.25] text-[#0f1722]">HELP patrol performance</div>
+                      <p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Assists, response times, and coverage for NYSDOT's Highway Emergency Local Patrol.</p>
+                      <div class="mt-3 pt-2 border-t border-zinc-950/05 font-mono text-[10px] uppercase tracking-wider text-slate-500">unlocks with · AVL / dispatch feed</div>
+                    </div>
+                    <div class="rounded-[8px] border border-dashed border-[#1F3F8F]/40 bg-white shadow-sm p-4">
+                      <div class="flex items-center justify-between mb-2"><span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">planned</span><span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-400">winter ops</span></div>
+                      <div class="font-display font-medium text-[16px] leading-[1.25] text-[#0f1722]">Winter operations</div>
+                      <p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Time to bare pavement and storm-by-storm recovery, the MnDOT model — vital in upstate NY.</p>
+                      <div class="mt-3 pt-2 border-t border-zinc-950/05 font-mono text-[10px] uppercase tracking-wider text-slate-500">unlocks with · plow AVL + RWIS feed</div>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Partners -->
+                <section id="partners" data-dms-section="partners">
+                  <div class="flex items-center gap-2 mb-4"><span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span><h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Partners</h2></div>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">TRANSCOM</div>
+                      <p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">The tri-state agency coalition whose data fusion engine supplies every event record here — 3.7M since 2015, filtered to New York.</p>
+                    </div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">MPOs</div>
+                      <p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">New York's metropolitan planning organizations use these measures for congestion management and PM3 target-setting in their regions.</p>
+                    </div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                      <div class="font-display uppercase text-[14px] tracking-tight text-[#0f1722]">FHWA</div>
+                      <p class="font-proxima text-[12px] text-slate-500 mt-1 leading-snug">Sets the PM3 reliability framework (LOTTR · TTTR · PHED) and the national TIM self-assessment our incident measures align to.</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <!-- TOC + Get involved (sticky) -->
+              <aside class="col-span-12 lg:col-span-4">
+                <div class="sticky top-4 space-y-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                    <a href="#what-is-tsmo" class="tny-toc-item active">What is TSMO</a>
+                    <a href="#program" class="tny-toc-item">The NYSDOT program</a>
+                    <a href="#guide" class="tny-toc-item">What each page answers</a>
+                    <a href="#roadmap" class="tny-toc-item">The roadmap</a>
+                    <a href="#partners" class="tny-toc-item">Partners</a>
+                  </div>
+                  <div class="rounded-[8px] border border-[#1F3F8F]/20 bg-white shadow-sm p-5">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">get involved</div>
+                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0f1722]">Have data, or a question about ours?</div>
+                    <div class="mt-3 space-y-2">
+                      <a class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Mail --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v16H4z"/><path d="m4 6 8 6 8-6"/></svg>Email the TSMO program</a>
+                      <a href="tsmo-methodology.html" class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Database --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>Read the methodology</a>
+                      <a class="flex items-center gap-2.5 px-3 h-10 rounded-[6px] border border-zinc-950/10 hover:bg-slate-50 font-proxima text-[13px] text-[#0f1722]"><!-- icon: Plus --><svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>Propose a measure or feed</a>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 font-proxima text-[11.5px] text-slate-500">Roadmap feeds (crash DB, ITS telemetry, HELP AVL, plow/RWIS) have a standing invitation.</div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

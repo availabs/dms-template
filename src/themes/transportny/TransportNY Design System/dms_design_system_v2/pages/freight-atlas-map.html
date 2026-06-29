@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Freight Atlas · Map · NYS Freight Atlas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  freight-atlas-map.html · SURFACE 2 of 6 — the flagship map, as a FULL-SCREEN workbench.
+  Layout `app` · COMPACT (minimized, icon-only) SideNav · LayoutGroup `workbench` (full-bleed,
+  drops max-w; group.full_width: 'show'). The Section is a single edge-to-edge Map that fills the
+  viewport, with two floating overlay panels — a map/layer selector and a legend — plus map controls.
+  No page header, breadcrumb, tabs, or other content. Real npmrds2 layer names + the 2021/2050 vintage. -->
+
+<div class="bg-[#0F2D4D] h-screen overflow-hidden" data-dms-layout="app">
+  <div class="relative isolate flex h-full w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col h-full lg:ml-16">
+      <div class="flex flex-1 items-start h-full">
+
+        <!-- ════════ SIDENAV · COMPACT (minimized · icon-only · 64px) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-16 max-lg:hidden z-30">
+          <div class="flex flex-col items-stretch w-16 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <a href="freight-atlas-home.html" title="NYS Freight Atlas" class="h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center justify-center">
+              <div class="w-9 h-9 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[13px]">FA</div>
+            </a>
+            <button title="Expand menu" class="h-11 flex items-center justify-center text-slate-400 hover:text-slate-200 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Menu --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+            <div class="flex-1 py-1 flex flex-col">
+              <a href="freight-atlas-home.html" title="Home" class="h-11 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: House --><svg class="size-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg></a>
+              <a href="freight-atlas-map.html" title="Freight Atlas (map)" class="h-11 flex items-center justify-center text-[#FACC15] bg-[#1e2530] border-l-[3px] border-[#FACC15]"><!-- icon: Atlas --><svg class="size-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg></a>
+              <a href="freight-atlas-gallery.html" title="Maps Gallery" class="h-11 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Grid --><svg class="size-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg></a>
+              <a href="freight-atlas-insights.html" title="Freight Insights" class="h-11 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: ChartLine --><svg class="size-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></a>
+              <a href="freight-atlas-data.html" title="Data &amp; Downloads" class="h-11 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Database --><svg class="size-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg></a>
+              <a href="freight-atlas-about.html" title="About &amp; The Plan" class="h-11 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Book --><svg class="size-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></a>
+            </div>
+            <a href="login.html" title="Public access · sign in" class="h-14 border-t border-[#2a3545] flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1e2530]"><!-- icon: View --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+          </div>
+        </aside>
+
+        <!-- ════════ MAP WORKBENCH · LayoutGroup `workbench` (full-bleed) ════════ -->
+        <div class="flex-1 h-full">
+          <div class="w-full h-full" data-dms-group="workbench">
+            <div class="relative w-full h-full tny-map" data-dms-section="map">
+
+              <!-- MAP CANVAS · network + overlays -->
+              <!-- decorative --><svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" class="absolute inset-0 w-full h-full">
+                <!-- I-90 Buffalo → Albany -->
+                <path d="M 120 360 L 360 350 L 560 360 L 760 360 L 940 340" stroke="#0F2D4D" stroke-width="6" fill="none"/>
+                <!-- I-87 Albany → NYC → border -->
+                <path d="M 940 340 L 955 500 L 985 650 L 1030 740" stroke="#0F2D4D" stroke-width="6" fill="none"/>
+                <!-- I-81 north-south -->
+                <path d="M 560 360 L 552 210 L 545 100" stroke="#1F3F8F" stroke-width="5" fill="none"/>
+                <path d="M 560 360 L 568 520 L 575 680" stroke="#1F3F8F" stroke-width="5" fill="none"/>
+                <!-- I-86 southern tier -->
+                <path d="M 170 520 L 400 505 L 600 520 L 800 525" stroke="#1F3F8F" stroke-width="5" fill="none"/>
+                <!-- NYC metro -->
+                <path d="M 985 650 L 1080 680 L 1095 730" stroke="#0F2D4D" stroke-width="6" fill="none"/>
+                <path d="M 1030 740 L 1095 730" stroke="#1F3F8F" stroke-width="5" fill="none"/>
+                <!-- reliability overlay accents (performance) -->
+                <path d="M 940 340 L 955 500" stroke="#EF4444" stroke-width="3" fill="none" stroke-dasharray="2 6" opacity="0.85"/>
+                <path d="M 120 360 L 360 350" stroke="#F59E0B" stroke-width="3" fill="none" stroke-dasharray="2 6" opacity="0.85"/>
+                <!-- bottlenecks -->
+                <circle cx="120" cy="360" r="9" fill="#EF4444" stroke="#fff" stroke-width="2.5"/>
+                <circle cx="940" cy="340" r="9" fill="#EF4444" stroke="#fff" stroke-width="2.5"/>
+                <circle cx="1080" cy="690" r="11" fill="#EF4444" stroke="#fff" stroke-width="2.5"/>
+                <circle cx="1095" cy="730" r="11" fill="#EF4444" stroke="#fff" stroke-width="2.5"/>
+                <!-- intermodal facilities -->
+                <circle cx="360" cy="350" r="6" fill="#1F3F8F" stroke="#fff" stroke-width="2"/>
+                <circle cx="760" cy="360" r="6" fill="#1F3F8F" stroke="#fff" stroke-width="2"/>
+                <circle cx="800" cy="525" r="6" fill="#1F3F8F" stroke="#fff" stroke-width="2"/>
+                <!-- port -->
+                <circle cx="1085" cy="710" r="7" fill="#37576B" stroke="#fff" stroke-width="2"/>
+              </svg>
+
+              <!-- city labels -->
+              <div class="absolute left-[7%] top-[42%] font-mono text-[10.5px] uppercase tracking-wider text-slate-700 pointer-events-none">Buffalo</div>
+              <div class="absolute left-[76%] top-[40%] font-mono text-[10.5px] uppercase tracking-wider text-slate-700 pointer-events-none">Albany</div>
+              <div class="absolute left-[86%] top-[88%] font-mono text-[10.5px] uppercase tracking-wider text-slate-700 pointer-events-none">NYC</div>
+              <div class="absolute left-[44%] top-[10%] font-mono text-[10.5px] uppercase tracking-wider text-slate-700 pointer-events-none">Watertown</div>
+              <div class="absolute left-[13%] top-[64%] font-mono text-[10.5px] uppercase tracking-wider text-slate-700 pointer-events-none">Southern Tier</div>
+
+              <!-- ── PANEL 1 · SELECT MAP / LAYERS (floating · top-left) ── -->
+              <div class="absolute top-4 left-4 w-72 max-w-[calc(100%-2rem)] rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden">
+                <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-[#0F2D4D]">
+                  <div class="w-6 h-6 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[10px]">FA</div>
+                  <span class="font-display uppercase text-white text-[13px] tracking-wide flex-1">Freight Atlas</span>
+                  <button class="size-6 inline-flex items-center justify-center rounded text-slate-300 hover:bg-white/10"><!-- icon: CaretUp --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                </div>
+                <div class="max-h-[calc(100vh-9rem)] overflow-y-auto">
+                  <!-- search -->
+                  <div class="p-3 border-b border-zinc-950/05">
+                    <div class="h-8 inline-flex w-full items-center gap-2 rounded-[6px] bg-slate-50 border border-zinc-950/10 px-2.5"><!-- icon: Search --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-proxima text-[12.5px] text-slate-400">Search layers &amp; places…</span></div>
+                  </div>
+                  <!-- vintage toggle -->
+                  <div class="p-3 border-b border-zinc-950/05">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">Vintage</div>
+                    <div class="inline-flex w-full items-center rounded-[6px] border border-[#37576B] ring-2 ring-[#37576B]/15 bg-white p-0.5">
+                      <button class="flex-1 h-7 rounded-[4px] bg-[#1F3F8F] text-white font-mono text-[11px] uppercase tracking-wider">2021 base</button>
+                      <button class="flex-1 h-7 rounded-[4px] text-slate-600 hover:bg-slate-100 font-mono text-[11px] uppercase tracking-wider">2050 forecast</button>
+                    </div>
+                  </div>
+                  <!-- mode filter -->
+                  <div class="p-3 border-b border-zinc-950/05">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">Mode</div>
+                    <div class="flex flex-wrap gap-1">
+                      <button class="px-2 h-6 rounded-full bg-[#1F3F8F] text-white font-display uppercase text-[10.5px] tracking-wide">Road</button>
+                      <button class="px-2 h-6 rounded-full border border-zinc-950/10 text-slate-600 font-display uppercase text-[10.5px] tracking-wide">Rail</button>
+                      <button class="px-2 h-6 rounded-full border border-zinc-950/10 text-slate-600 font-display uppercase text-[10.5px] tracking-wide">Maritime</button>
+                      <button class="px-2 h-6 rounded-full border border-zinc-950/10 text-slate-600 font-display uppercase text-[10.5px] tracking-wide">Air</button>
+                      <button class="px-2 h-6 rounded-full border border-zinc-950/10 text-slate-600 font-display uppercase text-[10.5px] tracking-wide">Pipeline</button>
+                    </div>
+                  </div>
+                  <!-- layer toggles -->
+                  <div class="p-3 border-b border-zinc-950/05 space-y-0.5">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-1">Layers · Road</div>
+                    <label class="flex items-center gap-2.5 py-1.5 cursor-pointer">
+                      <span class="relative inline-flex h-4 w-7 items-center rounded-full bg-[#1F3F8F]"><span class="inline-block size-3 translate-x-3.5 rounded-full bg-white"></span></span>
+                      <span class="flex-1 font-proxima text-[12.5px] text-[#0f1722]">Primary Freight Network</span>
+                      <span class="block w-4 h-1 rounded bg-[#1F3F8F]"></span>
+                    </label>
+                    <label class="flex items-center gap-2.5 py-1.5 cursor-pointer">
+                      <span class="relative inline-flex h-4 w-7 items-center rounded-full bg-[#1F3F8F]"><span class="inline-block size-3 translate-x-3.5 rounded-full bg-white"></span></span>
+                      <span class="flex-1 font-proxima text-[12.5px] text-[#0f1722]">Interstate (PHFS)</span>
+                      <span class="block w-4 h-1 rounded bg-[#0F2D4D]"></span>
+                    </label>
+                    <label class="flex items-center gap-2.5 py-1.5 cursor-pointer">
+                      <span class="relative inline-flex h-4 w-7 items-center rounded-full bg-[#1F3F8F]"><span class="inline-block size-3 translate-x-3.5 rounded-full bg-white"></span></span>
+                      <span class="flex-1 font-proxima text-[12.5px] text-[#0f1722]">Truck bottlenecks</span>
+                      <span class="size-2.5 rounded-full bg-rose-500"></span>
+                    </label>
+                    <label class="flex items-center gap-2.5 py-1.5 cursor-pointer opacity-70">
+                      <span class="relative inline-flex h-4 w-7 items-center rounded-full bg-slate-300"><span class="inline-block size-3 translate-x-0.5 rounded-full bg-white"></span></span>
+                      <span class="flex-1 font-proxima text-[12.5px] text-[#0f1722]">Intermodal facilities</span>
+                    </label>
+                    <label class="flex items-center gap-2.5 py-1.5 cursor-pointer opacity-70">
+                      <span class="relative inline-flex h-4 w-7 items-center rounded-full bg-slate-300"><span class="inline-block size-3 translate-x-0.5 rounded-full bg-white"></span></span>
+                      <span class="flex-1 font-proxima text-[12.5px] text-[#0f1722]">Truck parking</span>
+                    </label>
+                  </div>
+                  <!-- performance overlay -->
+                  <div class="p-3 border-b border-zinc-950/05">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">Performance overlay</div>
+                    <div class="flex flex-wrap gap-1">
+                      <button class="px-2 h-6 rounded-[4px] bg-[#1F3F8F] text-white font-mono text-[10px] uppercase tracking-wider">TTTR</button>
+                      <button class="px-2 h-6 rounded-[4px] border border-zinc-950/10 text-slate-600 font-mono text-[10px] uppercase tracking-wider">TED</button>
+                      <button class="px-2 h-6 rounded-[4px] border border-zinc-950/10 text-slate-600 font-mono text-[10px] uppercase tracking-wider">IRI</button>
+                      <button class="px-2 h-6 rounded-[4px] border border-zinc-950/10 text-slate-600 font-mono text-[10px] uppercase tracking-wider">Crashes</button>
+                    </div>
+                  </div>
+                  <!-- basemap -->
+                  <div class="p-3">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">Basemap</div>
+                    <div class="grid grid-cols-3 gap-2">
+                      <button class="h-11 rounded-[6px] tny-map border-2 border-[#1F3F8F]"></button>
+                      <button class="h-11 rounded-[6px] tny-map-dark border border-zinc-950/10"></button>
+                      <button class="h-11 rounded-[6px] bg-slate-200 border border-zinc-950/10"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── PANEL 2 · LEGEND (floating · top-right) ── -->
+              <div class="absolute top-4 right-4 w-64 max-w-[calc(100%-2rem)] rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden">
+                <div class="h-9 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/80">
+                  <span class="font-display font-medium text-[13px] text-[#2D3E4C] flex-1">Legend</span>
+                  <span class="font-mono text-[9.5px] uppercase tracking-wider text-slate-500">TTTR · 2021</span>
+                </div>
+                <div class="p-3 space-y-2.5">
+                  <div class="flex items-center gap-2.5"><span class="block w-6 h-1.5 rounded bg-[#0F2D4D]"></span><span class="font-proxima text-[12px] text-slate-700">PHFS / Interstate</span></div>
+                  <div class="flex items-center gap-2.5"><span class="block w-6 h-1.5 rounded bg-[#1F3F8F]"></span><span class="font-proxima text-[12px] text-slate-700">Freight Core Highway Network</span></div>
+                  <div class="pt-2 mt-1 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">Reliability · TTTR</div>
+                  <div class="flex items-center gap-2.5"><span class="size-3 rounded-full bg-emerald-500"></span><span class="font-proxima text-[12px] text-slate-700">Reliable (&le; 1.5)</span></div>
+                  <div class="flex items-center gap-2.5"><span class="size-3 rounded-full bg-amber-500"></span><span class="font-proxima text-[12px] text-slate-700">Borderline (1.5–2.0)</span></div>
+                  <div class="flex items-center gap-2.5"><span class="size-3 rounded-full bg-rose-500"></span><span class="font-proxima text-[12px] text-slate-700">Unreliable (&gt; 2.0)</span></div>
+                  <div class="pt-2 mt-1 border-t border-zinc-950/05 flex items-center gap-2.5"><span class="size-3 rounded-full bg-rose-500 ring-2 ring-white"></span><span class="font-proxima text-[12px] text-slate-700">Truck bottleneck (37)</span></div>
+                  <div class="flex items-center gap-2.5"><span class="size-3 rounded-full bg-[#1F3F8F] ring-2 ring-white"></span><span class="font-proxima text-[12px] text-slate-700">Intermodal facility</span></div>
+                </div>
+              </div>
+
+              <!-- ── MAP CONTROLS (floating · bottom-right) ── -->
+              <div class="absolute bottom-20 right-4 flex flex-col gap-2">
+                <div class="flex flex-col rounded-[8px] bg-white shadow-lg border border-zinc-950/10 overflow-hidden">
+                  <button class="size-9 inline-flex items-center justify-center text-slate-600 hover:bg-slate-50 border-b border-zinc-950/05"><!-- icon: Plus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4V20"/><path d="M4 12H20"/></svg></button>
+                  <button class="size-9 inline-flex items-center justify-center text-slate-600 hover:bg-slate-50"><!-- icon: Minus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14"/></svg></button>
+                </div>
+                <button class="size-9 inline-flex items-center justify-center rounded-[8px] bg-white shadow-lg border border-zinc-950/10 text-slate-600 hover:bg-slate-50"><!-- icon: Locate --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg></button>
+                <button class="size-9 inline-flex items-center justify-center rounded-[8px] bg-white shadow-lg border border-zinc-950/10 text-slate-600 hover:bg-slate-50"><!-- icon: Maximize --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg></button>
+              </div>
+
+              <!-- scale + attribution (bottom-right, clear of the docs widget) -->
+              <div class="absolute bottom-4 right-20 flex items-center gap-2 font-mono text-[9.5px] uppercase tracking-wider text-slate-600 bg-white/85 rounded px-2 py-1 shadow-sm">
+                <span class="block w-10 border-b-2 border-slate-600"></span>50 mi · © MapLibre · NYSDOT · npmrds2
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

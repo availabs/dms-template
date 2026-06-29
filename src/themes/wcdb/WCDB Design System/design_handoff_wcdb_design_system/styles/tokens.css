@@ -1,0 +1,203 @@
+/* WCDB Design System — Tokens
+ * Hanssen-faithful: minimal, near-monochrome, generous whitespace.
+ * Dark is primary; light parity provided.
+ */
+
+:root {
+  /* ───────────── Color — Dark (primary) ───────────── */
+  --bg-0: #0a0a0a;        /* deepest — page */
+  --bg-1: #0e1011;        /* surface — matches existing wcdb_theme outerWrapper */
+  --bg-2: #141618;        /* elevated card */
+  --bg-3: #1c1e20;        /* elevated card hover */
+  --bg-4: #1f2122;        /* matches existing wcdb_theme content card */
+  --bg-5: #2a2c2e;        /* hover / pressed */
+
+  /* Layout-specific */
+  --page-bg: #0e1011;     /* the *page* background behind cards */
+  --card-bg: #1f2122;     /* default card surface */
+  --card-bg-soft: #1a1c1d;/* lower-emphasis card */
+  --inv-bg: #f5f5f5;      /* inverted card surface (footer) */
+  --inv-ink: #0a0a0a;     /* text on inverted card */
+  --inv-ink-2: #4a4a4a;
+  --inv-line: rgba(10,10,10,0.10);
+
+  --line-1: rgba(255,255,255,0.06);  /* hairlines */
+  --line-2: rgba(255,255,255,0.10);
+  --line-3: rgba(255,255,255,0.18);
+
+  --ink-1: #f5f5f5;       /* primary text */
+  --ink-2: #c8c8c8;       /* secondary text */
+  --ink-3: #8a8a8a;       /* tertiary, meta */
+  --ink-4: #5a5a5a;       /* disabled, faintest */
+  --ink-inv: #0a0a0a;     /* on-light */
+
+  --accent: #f5f5f5;      /* monochrome accent — pure light */
+  --accent-ink: #0a0a0a;
+  --accent-soft: rgba(245,245,245,0.08);
+
+  --on-air: #ff3b2f;      /* one functional warning — used sparingly */
+  --on-air-soft: rgba(255,59,47,0.12);
+
+  /* ───────────── Type ───────────── */
+  --font-display: 'Instrument Serif', 'GT Sectra', 'Times New Roman', serif;
+  --font-sans: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  --tx-9xl: clamp(72px, 12vw, 200px);
+  --tx-8xl: clamp(56px, 8vw, 128px);
+  --tx-7xl: 80px;
+  --tx-6xl: 64px;
+  --tx-5xl: 48px;
+  --tx-4xl: 36px;
+  --tx-3xl: 28px;
+  --tx-2xl: 22px;
+  --tx-xl: 18px;
+  --tx-lg: 16px;
+  --tx-md: 14px;
+  --tx-sm: 12px;
+  --tx-xs: 11px;
+
+  --leading-tight: 1.0;
+  --leading-snug: 1.15;
+  --leading-normal: 1.4;
+  --leading-loose: 1.6;
+
+  --tracking-tight: -0.03em;
+  --tracking-normal: -0.01em;
+  --tracking-wide: 0.04em;
+  --tracking-mono: 0.02em;
+
+  /* ───────────── Spacing & radius ───────────── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+  --sp-9: 96px;
+  --sp-10: 128px;
+
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+  --r-xl: 18px;     /* matches existing rounded-[18px] in wcdb_theme */
+  --r-pill: 999px;
+
+  --shadow-1: 0 1px 0 rgba(255,255,255,0.04) inset;
+  --shadow-2: 0 12px 32px rgba(0,0,0,0.45);
+
+  /* ───────────── Density ───────────── */
+  --density-y: 14px;
+  --density-x: 18px;
+}
+
+/* Light mode — secondary */
+:root[data-mode="light"] {
+  --bg-0: #fafaf9;
+  --bg-1: #ffffff;
+  --bg-2: #f5f5f4;
+  --bg-3: #ececea;
+  --bg-4: #ffffff;
+  --bg-5: #e5e5e3;
+
+  --line-1: rgba(10,10,10,0.06);
+  --line-2: rgba(10,10,10,0.12);
+  --line-3: rgba(10,10,10,0.20);
+
+  --ink-1: #0a0a0a;
+  --ink-2: #2a2a2a;
+  --ink-3: #6a6a6a;
+  --ink-4: #a0a0a0;
+  --ink-inv: #fafaf9;
+
+  --accent: #0a0a0a;
+  --accent-ink: #fafaf9;
+  --accent-soft: rgba(10,10,10,0.06);
+
+  /* Layout: light page is white; cards are subtle off-white */
+  --page-bg: #fafaf9;
+  --card-bg: #ffffff;
+  --card-bg-soft: #f5f5f4;
+  --inv-bg: #0e1011;
+  --inv-ink: #f5f5f5;
+  --inv-ink-2: #c8c8c8;
+  --inv-line: rgba(255,255,255,0.10);
+
+  --shadow-1: 0 1px 0 rgba(0,0,0,0.03) inset;
+  --shadow-2: 0 12px 32px rgba(0,0,0,0.10);
+}
+
+/* Density compact */
+:root[data-density="compact"] {
+  --density-y: 8px;
+  --density-x: 12px;
+}
+:root[data-density="cozy"] {
+  --density-y: 12px;
+  --density-x: 16px;
+}
+:root[data-density="comfortable"] {
+  --density-y: 16px;
+  --density-x: 22px;
+}
+
+/* ───────────── Base ───────────── */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--page-bg);
+  color: var(--ink-1);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--ink-1); color: var(--bg-1); }
+
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+
+/* Hairline divider */
+.hairline { height: 1px; background: var(--line-1); width: 100%; }
+.hairline-v { width: 1px; background: var(--line-1); align-self: stretch; }
+
+/* Mono utility */
+.mono { font-family: var(--font-mono); letter-spacing: var(--tracking-mono); }
+.serif { font-family: var(--font-display); letter-spacing: var(--tracking-tight); }
+.sans { font-family: var(--font-sans); }
+.uppercase-meta {
+  font-family: var(--font-mono);
+  font-size: var(--tx-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Scrollbar — minimal */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--line-3); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Marquee animation for now-playing */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes equalizer {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}

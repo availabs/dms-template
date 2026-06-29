@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY Design System — Theme Tokens</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900':  '#2D3E4C',
+            'mny-700':  '#37576B',
+            'mny-400':  '#6D96AE',
+            'mny-200':  '#C5D7E0',
+            'mny-100':  '#E0EBF0',
+            'mny-50':   '#F3F8F9',
+            'mny-y700': '#EAAD43',
+            'mny-y500': '#F1CA87',
+            'mny-y50':  '#FCF6EC',
+            'mny-red':  '#DD524C',
+            'mny-redk': '#AA2E26',
+            'mny-ora':  '#EA8954',
+            'mny-grn':  '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', '"Bebas Neue"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', '"Proxima Nova"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    /* Swatch grid */
+    .swatch-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+    .swatch { border-radius: 4px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); min-width: 120px; flex: 1; max-width: 160px; }
+    .swatch-chip { height: 80px; }
+    .swatch-meta { padding: 8px 10px; background: white; }
+    .swatch-name { font-family: "Oswald", sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; color: #2D3E4C; letter-spacing: 0.04em; }
+    .swatch-hex  { font-family: "Source Sans 3", monospace; font-size: 11px; color: #6D96AE; margin-top: 2px; }
+    .swatch-role { font-family: "Source Sans 3", sans-serif; font-size: 10px; color: #6D96AE; letter-spacing: 0.02em; margin-top: 1px; }
+
+    /* Type specimen */
+    .type-row { display: grid; grid-template-columns: 200px 1fr; gap: 24px; padding: 16px 0; border-bottom: 1px solid #E0EBF0; align-items: baseline; }
+    .type-row:last-child { border-bottom: 0; }
+    .type-meta { font-family: "Source Sans 3", monospace; font-size: 11px; color: #6D96AE; }
+    .type-meta .token-name { display: block; font-weight: 700; color: #37576B; font-size: 12px; letter-spacing: 0.04em; margin-bottom: 4px; text-transform: uppercase; }
+    .type-meta .token-spec { display: block; line-height: 1.6; }
+
+    /* Spacing scale */
+    .spacing-row { display: grid; grid-template-columns: 56px 72px 1fr; gap: 16px; align-items: center; padding: 8px 0; border-bottom: 1px solid #F3F8F9; }
+    .spacing-row:last-child { border-bottom: 0; }
+    .spacing-token { font-family: "Oswald", sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase; color: #37576B; }
+    .spacing-px { font-family: "Source Sans 3", sans-serif; font-size: 12px; color: #6D96AE; }
+    .spacing-bar { background: #2D3E4C; height: 10px; border-radius: 2px; }
+
+    /* Icon grid */
+    .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 16px; }
+    @media (max-width: 600px) { .icon-grid { grid-template-columns: repeat(3,1fr); } }
+    .icon-cell { background: #F3F8F9; border-radius: 8px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .icon-cell svg { width: 24px; height: 24px; }
+    .icon-cell .icon-name { font-family: "Source Sans 3", sans-serif; font-size: 10px; color: #6D96AE; text-align: center; letter-spacing: 0.04em; }
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- DMS Layout — default style -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto">
+  <div class="flex flex-col">
+
+    <!-- TopNav -->
+    <div class="sticky top-0 z-20 px-4 pt-8 xl:px-[64px] pointer-events-none">
+      <nav class="px-6 py-4 w-full bg-white h-20 flex items-center rounded-lg pointer-events-auto"
+           style="box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06)">
+        <div class="flex items-center w-full">
+          <div class="h-12 pl-3 pr-2 flex items-center flex-shrink-0">
+            <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-10">
+          </div>
+          <span class="hidden md:block font-display text-[13px] font-[500] text-[#6D96AE] uppercase tracking-wider ml-3 mr-5 border-l border-[#E0EBF0] pl-5">Design System</span>
+          <div class="hidden md:flex items-center flex-1 h-full gap-1">
+            <a href="theme.html" class="dms-ds-toplink active">Theme</a>
+            <a href="layouts.html" class="dms-ds-toplink">Layouts</a>
+            <a href="grid.html" class="dms-ds-toplink">Grid</a>
+            <a href="components.html" class="dms-ds-toplink">Components</a>
+            <a href="patterns.html" class="dms-ds-toplink">Patterns</a>
+          </div>
+          <span class="hidden md:block font-proxima text-[11px] text-[#C5D7E0] tracking-wider ml-auto">1 / 5</span>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Layout wrapper3 + childWrapper -->
+    <div class="flex flex-1 md:px-4 xl:px-[64px] pb-8">
+      <div class="flex-1 pt-8">
+
+        <!-- ============================================================
+             LayoutGroup: header — page title band
+             wrapper1: w-full h-full flex-1 flex flex-row
+             wrapper2: flex flex-1 w-full flex-col relative min-h-[200px]
+             ============================================================ -->
+        <div data-dms="group" data-name="header" class="w-full mb-4">
+          <div class="flex flex-1 w-full flex-col py-6">
+            <div data-dms="section" data-name="lexical-header">
+              <p class="font-proxima text-[14px] font-[500] text-[#37576B] uppercase tracking-wider mb-2">1.0 Styles</p>
+              <h1 class="font-display text-[48px] font-[500] text-[#2D3E4C] uppercase leading-none mb-3"
+                  style="text-decoration: underline; text-decoration-color: #EAAD43; text-decoration-thickness: 4px; text-underline-offset: 8px;">
+                Design Tokens
+              </h1>
+              <p class="font-proxima text-[16px] text-[#37576B] leading-[1.6] max-w-[600px]">
+                The foundational vocabulary of the MitigateNY brand — colours, typography, iconography,
+                spacing, and shadows — from which every component and page is composed.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             LayoutGroup: content — COLORS
+             wrapper2: flex flex-1 w-full flex-col shadow-md bg-white rounded-lg p-4
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="colors">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Colors</h2>
+              <p class="font-proxima text-[14px] text-[#37576B] mb-6">WCAG-compliant palette. Blue is the primary family; amber-yellow is the sole warm accent.</p>
+
+              <!-- Blue family -->
+              <h3 class="font-display text-[14px] font-[500] text-[#6D96AE] uppercase tracking-wider mb-2">Blue Family — Primary</h3>
+              <div class="swatch-row mb-6">
+                <div class="swatch"><div class="swatch-chip" style="background:#2D3E4C"></div><div class="swatch-meta"><div class="swatch-name">Blue / 900</div><div class="swatch-hex">#2D3E4C</div><div class="swatch-role">ink · headings</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#37576B"></div><div class="swatch-meta"><div class="swatch-name">Blue / 700</div><div class="swatch-hex">#37576B</div><div class="swatch-role">body text · links</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#6D96AE"></div><div class="swatch-meta"><div class="swatch-name">Blue / 400</div><div class="swatch-hex">#6D96AE</div><div class="swatch-role">secondary · placeholder</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#C5D7E0"></div><div class="swatch-meta"><div class="swatch-name">Blue / 200</div><div class="swatch-hex">#C5D7E0</div><div class="swatch-role">borders · tag bg</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#E0EBF0"></div><div class="swatch-meta"><div class="swatch-name">Blue / 100</div><div class="swatch-hex">#E0EBF0</div><div class="swatch-role">hover tint · submenu bg</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#F3F8F9"></div><div class="swatch-meta"><div class="swatch-name">Blue / 50</div><div class="swatch-hex">#F3F8F9</div><div class="swatch-role">table header · subtle fill</div></div></div>
+              </div>
+
+              <!-- Yellow family -->
+              <h3 class="font-display text-[14px] font-[500] text-[#6D96AE] uppercase tracking-wider mb-2">Yellow Family — Accent</h3>
+              <div class="swatch-row mb-6">
+                <div class="swatch"><div class="swatch-chip" style="background:#EAAD43"></div><div class="swatch-meta"><div class="swatch-name">Yellow / 700</div><div class="swatch-hex">#EAAD43</div><div class="swatch-role">CTA · heading underline</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#F1CA87"></div><div class="swatch-meta"><div class="swatch-name">Yellow / 500</div><div class="swatch-hex">#F1CA87</div><div class="swatch-role">softer accent · save btn</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#FCF6EC"></div><div class="swatch-meta"><div class="swatch-name">Yellow / 50</div><div class="swatch-hex">#FCF6EC</div><div class="swatch-role">accent tint background</div></div></div>
+              </div>
+
+              <!-- Neutral / page -->
+              <h3 class="font-display text-[14px] font-[500] text-[#6D96AE] uppercase tracking-wider mb-2">Neutral &amp; Page</h3>
+              <div class="swatch-row mb-6">
+                <div class="swatch"><div class="swatch-chip" style="background:#ffffff; border:1px solid #E0EBF0"></div><div class="swatch-meta"><div class="swatch-name">White / 100</div><div class="swatch-hex">#FFFFFF</div><div class="swatch-role">cards · nav · overlays</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#F4F4F4"></div><div class="swatch-meta"><div class="swatch-name">Page BG</div><div class="swatch-hex">#F4F4F4</div><div class="swatch-role">canvas under topo texture</div></div></div>
+              </div>
+
+              <!-- Status / feedback -->
+              <h3 class="font-display text-[14px] font-[500] text-[#6D96AE] uppercase tracking-wider mb-2">Status &amp; Feedback</h3>
+              <div class="swatch-row">
+                <div class="swatch"><div class="swatch-chip" style="background:#AA2E26"></div><div class="swatch-meta"><div class="swatch-name">Red / 700</div><div class="swatch-hex">#AA2E26</div><div class="swatch-role">danger dark · very-high risk</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#DD524C"></div><div class="swatch-meta"><div class="swatch-name">Red / 500</div><div class="swatch-hex">#DD524C</div><div class="swatch-role">error · delete · cancel</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#EA8954"></div><div class="swatch-meta"><div class="swatch-name">Orange / 400</div><div class="swatch-hex">#EA8954</div><div class="swatch-role">warning · moderate risk</div></div></div>
+                <div class="swatch"><div class="swatch-chip" style="background:#54B99B"></div><div class="swatch-meta"><div class="swatch-name">Green / 700</div><div class="swatch-hex">#54B99B</div><div class="swatch-role">success · very-low risk</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             LayoutGroup: content — TYPE SPECIMEN
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="typography">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Typography</h2>
+              <p class="font-proxima text-[14px] text-[#37576B] mb-6">
+                Two-family system: <strong>Oswald</strong> (display — always uppercase) and <strong>Proxima Nova / Source Sans 3</strong> (prose).
+                14 named tokens; modifier axes (color, weight, italic, tabular-nums) are applied at the call site, not as separate tokens.
+              </p>
+
+              <!-- Display family -->
+              <h3 class="font-display text-[12px] font-[500] text-[#6D96AE] uppercase tracking-[0.08em] mb-1 mt-4">Display — Oswald, uppercase</h3>
+              <div style="border-top: 1px solid #E0EBF0">
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">displayHero</span><span class="token-spec">Oswald 500 · 96px · 95% lh · −0.02em</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-[95%] tracking-[-0.02em]" style="font-size:64px">New York</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">displayXL</span><span class="token-spec">Oswald 500 · 72px · 100% lh</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:52px">$1.39 Billion</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">displayLG</span><span class="token-spec">Oswald 500 · 60px · 100% lh</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:44px">Hazard Mitigation</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">displayMD</span><span class="token-spec">Oswald 500 · 48px · 100% lh</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:36px">Climate Change Overview</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">displaySM</span><span class="token-spec">Oswald 500 · 36px · 100% lh · −0.05em</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none tracking-[-0.05em]"
+                       style="font-size:30px; text-decoration: underline; text-decoration-color:#EAAD43; text-decoration-thickness:4px; text-underline-offset:6px">
+                    NYS Risk Environment
+                  </div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">displayXS</span><span class="token-spec">Oswald 500 · 30px · 100% lh · −0.05em</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none tracking-[-0.05em]" style="font-size:26px">Explore Hazard Profiles</div>
+                </div>
+              </div>
+
+              <!-- Meta family -->
+              <h3 class="font-display text-[12px] font-[500] text-[#6D96AE] uppercase tracking-[0.08em] mb-1 mt-6">Meta — Oswald, uppercase (labels, chrome, eyebrows)</h3>
+              <div style="border-top: 1px solid #E0EBF0">
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">metaLG</span><span class="token-spec">Oswald 500 · 24px · 100% lh</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:22px">Hazards &amp; Disasters</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">metaMD</span><span class="token-spec">Oswald 500 · 16px · 100% lh</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:16px">Table Header Label</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">metaSM</span><span class="token-spec">Oswald 500 · 14px · 100% lh</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:14px">Column Header · Attribution</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">metaXS</span><span class="token-spec">Oswald 500 · 12px · 100% lh</span></div>
+                  <div class="font-display font-[500] text-[#2D3E4C] uppercase leading-none" style="font-size:12px">Page 1 of 12 · 428 Records</div>
+                </div>
+              </div>
+
+              <!-- Prose family -->
+              <h3 class="font-display text-[12px] font-[500] text-[#6D96AE] uppercase tracking-[0.08em] mb-1 mt-6">Prose — Proxima Nova / Source Sans 3 (body, captions)</h3>
+              <div style="border-top: 1px solid #E0EBF0">
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">proseLG</span><span class="token-spec">Proxima Nova 400 · 20px · 140% lh</span></div>
+                  <div class="font-proxima font-[400] text-[#37576B] leading-[1.4]" style="font-size:18px">New York State faces diverse environments and natural hazards.</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">prose</span><span class="token-spec">Proxima Nova 400 · 16px · 140% lh · base body</span></div>
+                  <div class="font-proxima font-[400] text-[#37576B] leading-[1.4]" style="font-size:16px">MitigateNY showcases New York State's diverse environments, assesses risks from natural hazards, showcases local hazard problems, and explores how state agencies, local governments, and communities can achieve greater resilience.</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">proseSM</span><span class="token-spec">Proxima Nova 400 · 14px · 140% lh</span></div>
+                  <div class="font-proxima font-[400] text-[#37576B] leading-[1.4]" style="font-size:14px">Table cell text, captions, and secondary body copy throughout data-dense pages and dashboards.</div>
+                </div>
+                <div class="type-row">
+                  <div class="type-meta"><span class="token-name">proseXS</span><span class="token-spec">Proxima Nova 400 · 12px · 140% lh</span></div>
+                  <div class="font-proxima font-[400] text-[#37576B] leading-[1.4]" style="font-size:12px">Attribution · Data source: NYS DHSES State Hazard Mitigation Plan (2023)</div>
+                </div>
+              </div>
+
+              <!-- Modifier-axis note -->
+              <div class="mt-6 bg-[#F3F8F9] rounded-[8px] p-4">
+                <p class="font-proxima text-[13px] text-[#37576B] leading-[1.6]">
+                  <strong>Modifier axes — not separate tokens:</strong>
+                  <code class="bg-white px-1 rounded text-[11px]">color</code> (text-[#37576B] / text-white / text-[#EAAD43]),
+                  <code class="bg-white px-1 rounded text-[11px]">weight</code> (font-semibold / font-bold at call site),
+                  <code class="bg-white px-1 rounded text-[11px]">italic</code> (prose + italic),
+                  <code class="bg-white px-1 rounded text-[11px]">tabular-nums</code> (stat tables),
+                  <code class="bg-white px-1 rounded text-[11px]">uppercase</code> on display/meta is always on — not a modifier.
+                  H1 heading underline: decoration-4 decoration-[#EAAD43] underline-offset-8 — applied at call site on <code class="bg-white px-1 rounded text-[11px]">displaySM</code>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             LayoutGroup: content — ICONS
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="icons">
+              <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Icon Set</h2>
+              <p class="font-proxima text-[14px] text-[#37576B] mb-4">Icons are referenced by name in the theme registry and rendered via the <code class="bg-[#F3F8F9] px-1 rounded text-[12px]">Icon</code> primitive. Shown at 24px default. The brand uses a rounded, approachable style.</p>
+              <div class="icon-grid">
+                <!-- Navigation & UI -->
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  <!-- icon: ArrowRight -->
+                  <span class="icon-name">ArrowRight</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  <!-- icon: ArrowLeft -->
+                  <span class="icon-name">ArrowLeft</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  <!-- icon: ArrowDown -->
+                  <span class="icon-name">ArrowDown</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                  <!-- icon: ArrowUp -->
+                  <span class="icon-name">ArrowUp</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                  <!-- icon: BarsMenu -->
+                  <span class="icon-name">BarsMenu</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                  <!-- icon: XMark -->
+                  <span class="icon-name">XMark</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <!-- icon: Search -->
+                  <span class="icon-name">Search</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#37576B"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd"/></svg>
+                  <!-- icon: UserMenu -->
+                  <span class="icon-name">UserMenu</span>
+                </div>
+                <!-- Content / data -->
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"/><path d="M12 8v4l3 3"/></svg>
+                  <!-- icon: Clock -->
+                  <span class="icon-name">Clock</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                  <!-- icon: MapPin -->
+                  <span class="icon-name">MapPin</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18M3 15h18M9 3v18M15 3v18M3 3h18v18H3z"/></svg>
+                  <!-- icon: Table -->
+                  <span class="icon-name">Table</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m18 9-5 5-3-3-4 4"/></svg>
+                  <!-- icon: ChartLine -->
+                  <span class="icon-name">ChartLine</span>
+                </div>
+                <!-- Edit / admin -->
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg>
+                  <!-- icon: Edit -->
+                  <span class="icon-name">Edit</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  <!-- icon: Trash -->
+                  <span class="icon-name">Trash</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <!-- icon: Settings -->
+                  <span class="icon-name">Settings</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                  <!-- icon: Plus -->
+                  <span class="icon-name">Plus</span>
+                </div>
+                <div class="icon-cell">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#37576B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- icon: Check -->
+                  <span class="icon-name">Check</span>
+                </div>
+              </div>
+              <p class="font-proxima text-[12px] text-[#6D96AE] mt-4">Full icon registry: see <code class="bg-[#F3F8F9] px-1 rounded">src/themes/mny/icons.jsx</code>. All icons referenced by name string in theme keys (<code class="bg-[#F3F8F9] px-1 rounded">indicatorIcon: "ArrowDown"</code>).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             LayoutGroup: content — SPACING & RADIUS
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <div data-dms="section" data-name="spacing-radius" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Spacing -->
+              <div>
+                <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Spacing</h2>
+                <p class="font-proxima text-[13px] text-[#37576B] mb-4">4px base, multiplies of 4. Responsive reductions apply on mobile.</p>
+                <div>
+                  <div class="spacing-row"><span class="spacing-token">space-1</span><span class="spacing-px">4px</span><div class="spacing-bar" style="width:4px"></div></div>
+                  <div class="spacing-row"><span class="spacing-token">space-2</span><span class="spacing-px">8px</span><div class="spacing-bar" style="width:8px"></div></div>
+                  <div class="spacing-row"><span class="spacing-token">space-3</span><span class="spacing-px">12px</span><div class="spacing-bar" style="width:12px"></div></div>
+                  <div class="spacing-row"><span class="spacing-token">space-4</span><span class="spacing-px">16px</span><div class="spacing-bar" style="width:16px"></div></div>
+                  <div class="spacing-row"><span class="spacing-token">space-6</span><span class="spacing-px">24px</span><div class="spacing-bar" style="width:24px"></div></div>
+                  <div class="spacing-row"><span class="spacing-token">space-8</span><span class="spacing-px">32px</span><div class="spacing-bar" style="width:32px"></div></div>
+                  <div class="spacing-row"><span class="spacing-token">space-12</span><span class="spacing-px">48px</span><div class="spacing-bar" style="width:48px"></div></div>
+                  <div class="spacing-row"><span class="spacing-token">space-16</span><span class="spacing-px">64px</span><div class="spacing-bar" style="width:64px"></div></div>
+                  <div class="spacing-row"><span class="spacing-token">space-24</span><span class="spacing-px">96px</span><div class="spacing-bar" style="width:96px"></div></div>
+                </div>
+              </div>
+              <!-- Radius + Shadows -->
+              <div>
+                <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Radius &amp; Shadows</h2>
+                <p class="font-proxima text-[13px] text-[#37576B] mb-4">Three radii; two shadow levels. Consistency: buttons/inputs/tags are always rounded-full.</p>
+                <div class="flex flex-col gap-4 mt-2">
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-[#2D3E4C]" style="border-radius:2px"></div>
+                    <div>
+                      <div class="font-display text-[13px] font-[500] text-[#2D3E4C] uppercase">rounded-sm · 2px</div>
+                      <div class="font-proxima text-[12px] text-[#6D96AE]">tooltip chips, legend keys</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-[#2D3E4C]" style="border-radius:12px"></div>
+                    <div>
+                      <div class="font-display text-[13px] font-[500] text-[#2D3E4C] uppercase">rounded-[12px]</div>
+                      <div class="font-proxima text-[12px] text-[#6D96AE]">cards, nav panels, overlays, tables</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-[#2D3E4C] rounded-full"></div>
+                    <div>
+                      <div class="font-display text-[13px] font-[500] text-[#2D3E4C] uppercase">rounded-full · 1000px</div>
+                      <div class="font-proxima text-[12px] text-[#6D96AE]">buttons, pill tags, inputs, search</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-6 flex gap-4">
+                  <div class="flex-1 bg-white rounded-[12px] p-4 mny-shadow-sm border border-[#F3F8F9]">
+                    <div class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase mb-1">shadow-sm</div>
+                    <div class="font-proxima text-[11px] text-[#6D96AE]">0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)</div>
+                    <div class="font-proxima text-[11px] text-[#6D96AE] mt-0.5">cards · form elements</div>
+                  </div>
+                  <div class="flex-1 bg-white rounded-[12px] p-4 mny-shadow-md">
+                    <div class="font-display text-[12px] font-[500] text-[#2D3E4C] uppercase mb-1">shadow-md</div>
+                    <div class="font-proxima text-[11px] text-[#6D96AE]">0px 0px 4px rgba(0,0,0,.04), 0px 4px 8px rgba(0,0,0,.06)</div>
+                    <div class="font-proxima text-[11px] text-[#6D96AE] mt-0.5">layout panels · nav</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer link block -->
+        <div class="py-6 flex flex-wrap gap-4 justify-center">
+          <a href="theme.html" class="font-proxima text-[12px] font-[600] text-[#EAAD43] uppercase tracking-wider">Theme</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="layouts.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Layouts</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="grid.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Grid</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="components.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Components</a>
+          <span class="text-[#C5D7E0]">·</span>
+          <a href="patterns.html" class="font-proxima text-[12px] font-[600] text-[#37576B] hover:text-[#2D3E4C] uppercase tracking-wider">Patterns</a>
+        </div>
+
+      </div><!-- /childWrapper -->
+    </div><!-- /wrapper3 -->
+  </div><!-- /wrapper2 -->
+</div><!-- /layout -->
+
+<!-- Floating design-system nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+  
+    <a href="../pages/actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize Actions</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

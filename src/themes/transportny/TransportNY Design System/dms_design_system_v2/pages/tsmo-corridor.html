@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Corridor View · TSMO · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+  <style>
+    /* Time-space heatmap cells — 14 TMC rows × 68 15-min epochs. Kept as 5 bin
+       classes so the grid stays hand-inspectable; palette = the chart accent ramp. */
+    .tsg { display:flex; gap:2px; height:20px; margin-bottom:2px; }
+    .tsg div { flex:1 1 0%; border-radius:1px; }
+    .s5 { background:#4C9A57; } /* > 55 mph  */
+    .s4 { background:#94C24E; } /* 45–55     */
+    .s3 { background:#F2CB3D; } /* 35–45     */
+    .s2 { background:#E8843F; } /* 25–35     */
+    .s1 { background:#D6453B; } /* < 25      */
+  </style>
+</head>
+<body class="tny-pane">
+
+<!--
+  tsmo-corridor.html · TSMO SURFACE 8 of 10 — Corridor View (time-space explorer).
+  Layout `app` · TSMO SideNav, Corridor View active. Picker bar (county → tmclinear →
+  direction → date → measure → resolution) · time-space grid (TMC × 15-min, speed heat,
+  crash + work-zone + signal overlays) · strip map keyed to grid rows · corridor stat
+  cards · compare-vs-typical toggle · method-note → tsmo-methodology.html.
+  Data: CH npmrds 982 (speeds), npmrds_meta 984 (tmclinear/road_order), event_tmc 2799
+  (overlays), excessive_delay 2633 (delay totals). -->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ════════ SIDENAV · TSMO (Corridor View active) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <a href="tsmo-home.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">TSMO</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · Operations</div></div>
+            </a>
+            <div class="flex-1 py-1 overflow-y-auto">
+              <div class="px-4 pt-3 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Dashboards</div>
+              <a href="tsmo-congestion.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: ChartLine --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg><span class="flex-1">Congestion</span></a>
+              <a href="tsmo-reliability.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Gauge --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg><span class="flex-1">Reliability</span></a>
+              <a href="tsmo-incidents.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: AlertTriangle --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="flex-1">Incidents</span></a>
+              <a href="tsmo-workzones.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Cone --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 19 12 4.5 15.5 19"/><path d="M5 19h14"/><path d="M9.6 14.5h4.8"/></svg><span class="flex-1">Work Zones</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Explorers</div>
+              <a href="tsmo-incident-search.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Search --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5 22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="flex-1">Incident Search</span></a>
+              <a href="tsmo-corridor.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><!-- icon: Rows --><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="4" width="17" height="4" rx="1"/><rect x="3.5" y="10" width="17" height="4" rx="1"/><rect x="3.5" y="16" width="17" height="4" rx="1"/></svg><span class="flex-1">Corridor View</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Program</div>
+              <a href="tsmo-about.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Info --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 11v5"/></svg><span class="flex-1">About TSMO</span></a>
+              <a href="tsmo-methodology.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Database --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data &amp; Methodology</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><!-- icon: View --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Public access</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">no login required</div></div>
+              <a href="login.html" class="font-mono text-[9.5px] uppercase tracking-wider text-[#FACC15] hover:text-[#EAAD43]">Sign in</a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ HEADER ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10 flex items-end justify-between gap-8" data-dms-section="page-header">
+              <div>
+                <nav class="flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mb-3"><a href="tsmo-home.html" class="text-slate-500 hover:text-[#0f1722]">TSMO</a><span class="text-slate-300 px-1">/</span><span class="text-slate-500">Explorers</span><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Corridor View</span></nav>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// time-space explorer</span>
+                <h1 class="mt-2 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Corridor View<span class="text-[#CA8A04]">.</span></h1>
+                <div class="mt-3 flex items-center gap-2.5 flex-wrap">
+                  <span class="font-display font-medium text-[17px] text-[#0F1722]">I-495 Long Island Expwy — Eastbound</span>
+                  <span class="text-slate-300">·</span>
+                  <span class="font-proxima text-[14px] text-slate-600">Queens → Suffolk</span>
+                  <span class="text-slate-300">·</span>
+                  <span class="font-mono tabular-nums text-[13px] text-slate-700">Thu 2024-05-16</span>
+                  <span class="font-mono text-[10px] uppercase tracking-wider text-[#37576B] bg-slate-100 border border-zinc-950/10 rounded px-1.5 py-0.5">tmclinear 495</span>
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <div class="flex items-center gap-2">
+                  <div class="h-8 inline-flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-50 px-3"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span><span class="font-mono text-[10.5px] uppercase tracking-wider text-emerald-800">npmrds as of 2026-05-24</span></div>
+                  <button class="h-8 inline-flex items-center gap-1.5 px-3 rounded border border-zinc-950/15 bg-white text-slate-700 text-[12.5px]"><!-- icon: Export --><svg class="size-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 11.5C16.5 11.5 13.19 16 12 16C10.81 16 7.5 11.5 7.5 11.5M12 15V3"/></svg>Export</button>
+                </div>
+                <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">speeds · daily batch · ~2-week lag</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ TONE_BAR · corridor picker ═════════ -->
+          <div class="w-full bg-[#1F3F8F] text-white border-b border-black/10" data-dms-group="tone_bar">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 h-14 flex items-center gap-7" data-dms-section="picker-bar">
+              <div class="text-[12px]"><div class="text-white/70 leading-tight">County:</div><button class="flex items-center gap-1.5 font-semibold leading-tight">Queens <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px]"><div class="text-white/70 leading-tight">Corridor:</div><button class="flex items-center gap-1.5 font-semibold leading-tight">I-495 EB <span class="font-mono font-normal text-[10px] text-white/60">tmclinear 495</span> <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px]"><div class="text-white/70 leading-tight">Direction:</div><button class="flex items-center gap-1.5 font-semibold leading-tight">EB <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+              <div class="text-[12px]"><div class="text-white/70 leading-tight">Date:</div><button class="flex items-center gap-1.5 font-semibold leading-tight"><!-- icon: Calendar --><svg class="size-3.5 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="font-mono tabular-nums font-medium">2024-05-16</span></button></div>
+              <div class="flex items-center gap-2 text-[12px] ml-2">
+                <span class="text-white/70">Measure:</span>
+                <div class="flex rounded-[6px] border border-white/25 overflow-hidden h-8">
+                  <button class="px-3 bg-[#FACC15] text-[#0F1722] font-semibold text-[12px]">Travel time</button>
+                  <button class="px-3 text-white/85 hover:bg-white/10 border-l border-white/20 text-[12px]">Total delay</button>
+                  <button class="px-3 text-white/85 hover:bg-white/10 border-l border-white/20 text-[12px]">Recurrent</button>
+                  <button class="px-3 text-white/85 hover:bg-white/10 border-l border-white/20 text-[12px]">Non-recurrent</button>
+                </div>
+              </div>
+              <div class="text-[12px] ml-auto"><div class="text-white/70 leading-tight">Resolution:</div><button class="flex items-center gap-1.5 font-semibold leading-tight">15 min <!-- icon: CaretDown --><svg class="size-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+            </div>
+          </div>
+
+          <!-- ═════════ CONTENT ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- ── Daily pattern + time-space explorer (combined header, ONE white field, NO outer card) ── -->
+              <div class="col-span-12 bg-white px-6 py-5" data-dms-section="explorer">
+                  <!-- ONE combined header — implementation header style: kicker → metaSM → displaySM
+                       (matches the live section-header ladder in themev2 textSettings) -->
+                  <div class="mb-5">
+                    <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#CA8A04]">// npmrds 982 ⋈ meta 983</div>
+                    <div class="font-mono text-[11px] leading-[1.4] uppercase tracking-[0.18em] text-slate-500 mt-1.5">daily avg · this month  ·  speed heatmap · TMC (road order) × time of day</div>
+                    <div class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722] mt-1">Daily pattern &amp; time-space speed</div>
+                  </div>
+
+                  <!-- Month strip · daily average speed (click a day → drives the grid below) -->
+                  <div class="mb-5">
+                    <div class="flex items-center gap-2 mb-1 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                      <span>daily avg speed · May 2024</span><span class="text-slate-300">·</span><span>click a day to drive the grid ↓</span>
+                    </div>
+                    <div class="flex gap-[2px] h-7">
+                      <div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s2 outline outline-2 -outline-offset-2 outline-[#0F1722]"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s3"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s2"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s5"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s4"></div><div class="flex-1 rounded-[1px] s5"></div>
+                    </div>
+                    <div class="relative h-3 mt-1 font-mono text-[8px] tabular-nums text-slate-400">
+                      <span style="position:absolute;left:0%">May 1</span>
+                      <span style="position:absolute;left:48%;transform:translateX(-50%)">May 16</span>
+                      <span style="position:absolute;right:0%">May 31</span>
+                    </div>
+                  </div>
+
+                  <!-- selected date · ties the strip's active day to the grid below (the day driving the grid) -->
+                  <div class="flex items-center gap-3 mb-4">
+                    <span class="h-px flex-1 bg-zinc-950/10"></span>
+                    <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">grid showing</span>
+                    <span class="font-display font-medium text-[16px] leading-none tracking-tight text-[#0F1722]">Thursday · May 16, 2024</span>
+                    <span class="h-px flex-1 bg-zinc-950/10"></span>
+                  </div>
+
+                  <!-- Time-space grid (no card chrome; flows directly under the strip) -->
+                  <div class="pt-1">
+                    <div class="flex">
+                      <!-- row labels: cross-streets in road_order, Queens → Suffolk top → bottom -->
+                      <div class="w-48 shrink-0">
+                        <div class="h-6 flex items-end pb-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">segment · road order ↓</div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Maurice Ave</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05341</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Queens Blvd</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05342</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">108th St</span><span class="size-1.5 rounded-full bg-amber-400 shrink-0"></span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05343</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Grand Central Pkwy</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05344</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Main St</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05345</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Utopia Pkwy</span><span class="size-1.5 rounded-full bg-amber-400 shrink-0"></span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05346</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Clearview Expwy</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05347</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Francis Lewis Blvd</span><span class="size-1.5 rounded-full bg-amber-400 shrink-0"></span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05348</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Cross Island Pkwy</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05349</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Lakeville Rd</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05350</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Willis Ave</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05351</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">Glen Cove Rd</span><span class="size-1.5 rounded-full bg-amber-400 shrink-0"></span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05352</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">NY-106 / NY-107</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05353</span></div>
+                        <div class="h-[22px] flex items-center gap-1.5 pr-3"><span class="font-proxima text-[11.5px] text-[#0f1722] truncate">NY-110 · Suffolk</span><span class="ml-auto font-mono text-[9px] text-slate-400">120+05354</span></div>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="relative h-6 font-mono text-[9px] tabular-nums text-slate-400">
+                          <span style="position:absolute;left:0.000%;bottom:4px;">05:00</span>
+                          <span style="position:absolute;left:5.882%;bottom:4px;transform:translateX(-50%);">06:00</span>
+                          <span style="position:absolute;left:11.765%;bottom:4px;transform:translateX(-50%);">07:00</span>
+                          <span style="position:absolute;left:17.647%;bottom:4px;transform:translateX(-50%);">08:00</span>
+                          <span style="position:absolute;left:23.529%;bottom:4px;transform:translateX(-50%);">09:00</span>
+                          <span style="position:absolute;left:29.412%;bottom:4px;transform:translateX(-50%);">10:00</span>
+                          <span style="position:absolute;left:35.294%;bottom:4px;transform:translateX(-50%);">11:00</span>
+                          <span style="position:absolute;left:41.176%;bottom:4px;transform:translateX(-50%);">12:00</span>
+                          <span style="position:absolute;left:47.059%;bottom:4px;transform:translateX(-50%);">13:00</span>
+                          <span style="position:absolute;left:52.941%;bottom:4px;transform:translateX(-50%);">14:00</span>
+                          <span style="position:absolute;left:58.824%;bottom:4px;transform:translateX(-50%);">15:00</span>
+                          <span style="position:absolute;left:64.706%;bottom:4px;transform:translateX(-50%);">16:00</span>
+                          <span style="position:absolute;left:70.588%;bottom:4px;transform:translateX(-50%);">17:00</span>
+                          <span style="position:absolute;left:76.471%;bottom:4px;transform:translateX(-50%);">18:00</span>
+                          <span style="position:absolute;left:82.353%;bottom:4px;transform:translateX(-50%);">19:00</span>
+                          <span style="position:absolute;left:88.235%;bottom:4px;transform:translateX(-50%);">20:00</span>
+                          <span style="position:absolute;left:94.118%;bottom:4px;transform:translateX(-50%);">21:00</span>
+                          <span style="position:absolute;left:100.000%;bottom:4px;transform:translateX(-100%);">22:00</span>
+                        </div>
+                        <div class="relative">
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s5"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div></div>
+                          <div class="tsg"><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s5"></div><div class="s4"></div><div class="s5"></div><div class="s4"></div><div class="s4"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s2"></div><div class="s2"></div><div class="s1"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s3"></div><div class="s4"></div><div class="s4"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div><div class="s2"></div></div>
+                          <!-- overlay · crash marker (TRANSCOM event, 07:35 near 108th St) -->
+                          <div class="absolute z-10" style="left:15.2%;top:54px;transform:translate(-50%,-50%)" title="Crash · reported 07:35 · 108th St · TRANSCOM ORI-2024-118223">
+                            <span class="flex size-5 items-center justify-center rounded-full bg-white border-2 border-[#D6453B] shadow"><!-- icon: AlertTriangle --><svg class="size-3 text-[#D6453B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>
+                          </div>
+                          <!-- overlay · work-zone band (Construction event, 20:00–22:00, Suffolk end) -->
+                          <div class="absolute z-10 rounded-[3px] border-2 border-dashed border-[#0F1722]/50" style="left:88.24%;top:242px;width:11.76%;height:64px;background:repeating-linear-gradient(45deg,rgba(15,23,42,0.14) 0 4px,transparent 4px 8px)" title="Work zone · nightly lane closure 20:00–22:00 · Glen Cove Rd → NY-110">
+                            <span class="absolute -top-2.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-1.5 rounded bg-[#0F1722] text-white font-mono text-[8.5px] tracking-wider"><!-- icon: Wrench --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>WZ</span>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- ── Per-TMC daily-average strip (the rotated corridor strip: which segments run slow vs fast on the day) ── -->
+                      <div class="w-12 shrink-0 pl-3">
+                        <div class="h-6 flex items-end justify-center pb-0.5 font-mono text-[8px] uppercase tracking-wider text-slate-400 text-center leading-[1.05]">day<br>avg</div>
+                        <div title="daily average speed per TMC — which segments run slow vs fast on the selected day">
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s2"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s2"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s3"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s3"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s2"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s3"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s2"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s3"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s4"></div>
+                          <div class="h-5 mb-[2px] rounded-[2px] s5"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- legend strip · speed bins + overlay key (no card chrome) -->
+                  <div class="mt-3 pt-3 border-t border-zinc-950/10 flex items-center gap-5 flex-wrap font-mono text-[10px] text-slate-600">
+                    <span class="uppercase tracking-wider text-slate-400">speed</span>
+                    <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-[2px]" style="background:#4C9A57"></span>&gt; 55 mph</span>
+                    <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-[2px]" style="background:#94C24E"></span>45–55</span>
+                    <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-[2px]" style="background:#F2CB3D"></span>35–45</span>
+                    <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-[2px]" style="background:#E8843F"></span>25–35</span>
+                    <span class="flex items-center gap-1.5"><span class="h-2.5 w-4 rounded-[2px]" style="background:#D6453B"></span>&lt; 25</span>
+                    <span class="h-4 w-px bg-zinc-950/10"></span>
+                    <span class="flex items-center gap-1.5"><span class="h-3 w-4 rounded-[2px] outline outline-2 -outline-offset-2 outline-[#0F1722]" style="background:#E8843F"></span>active day (drives grid)</span>
+                    <span class="h-4 w-px bg-zinc-950/10"></span>
+                    <span class="uppercase tracking-wider text-slate-400">overlays</span>
+                    <span class="flex items-center gap-1.5"><span class="flex size-3.5 items-center justify-center rounded-full bg-white border border-[#D6453B]"><svg class="size-2 text-[#D6453B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg></span>crash (TRANSCOM)</span>
+                    <span class="flex items-center gap-1.5"><span class="h-3 w-5 rounded-[2px] border border-dashed border-[#0F1722]/50" style="background:repeating-linear-gradient(45deg,rgba(15,23,42,0.14) 0 3px,transparent 3px 6px)"></span>work zone</span>
+                    <span class="flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-amber-400"></span>signalized cross street</span>
+                  </div>
+              </div>
+
+              <!-- ── Corridor strip map (keyed to grid row order) ── -->
+              <div class="col-span-12" data-dms-section="strip-map">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Corridor strip map · Queens → Suffolk</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">ribbon = same row order as the grid · daily worst-2h speed</span>
+                  </div>
+                  <div class="relative tny-map h-32">
+                    <!-- decorative · placeholder polyline, west (Maurice Ave) → east (NY-110) -->
+                    <svg viewBox="0 0 1400 128" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                      <path d="M 30 84 L 180 78 L 330 68 L 470 72 L 610 60 L 760 54 L 900 58 L 1040 48 L 1190 44 L 1370 40" stroke="#0F1722" stroke-opacity="0.25" stroke-width="7" fill="none"/>
+                      <path d="M 30 84 L 180 78 L 330 68 L 470 72 L 610 60 L 760 54 L 900 58 L 1040 48 L 1190 44 L 1370 40" stroke="#1F3F8F" stroke-width="3.5" fill="none"/>
+                      <circle cx="30" cy="84" r="5" fill="#1F3F8F"/><circle cx="1370" cy="40" r="5" fill="#1F3F8F"/>
+                      <circle cx="212" cy="76" r="6" fill="#fff" stroke="#D6453B" stroke-width="2"/>
+                      <rect x="1240" y="32" width="100" height="14" rx="2" fill="rgba(15,23,42,0.12)" stroke="#0F1722" stroke-opacity="0.4" stroke-dasharray="4 3"/>
+                    </svg>
+                    <div class="absolute top-2 left-2 rounded bg-white/90 border border-zinc-950/10 px-2 py-1 font-mono text-[9.5px] uppercase tracking-wider text-slate-600">Queens · Maurice Ave</div>
+                    <div class="absolute top-2 right-2 rounded bg-white/90 border border-zinc-950/10 px-2 py-1 font-mono text-[9.5px] uppercase tracking-wider text-slate-600">Suffolk · NY-110</div>
+                  </div>
+                  <div class="px-4 py-3">
+                    <div class="tsg" style="height:14px;margin-bottom:0"><div class="s2" title="Maurice Ave · worst-2h avg 30 mph"></div><div class="s2" title="Queens Blvd · worst-2h avg 25 mph"></div><div class="s1" title="108th St · worst-2h avg 20 mph"></div><div class="s1" title="Grand Central Pkwy · worst-2h avg 24 mph"></div><div class="s2" title="Main St · worst-2h avg 26 mph"></div><div class="s1" title="Utopia Pkwy · worst-2h avg 25 mph"></div><div class="s1" title="Clearview Expwy · worst-2h avg 24 mph"></div><div class="s1" title="Francis Lewis Blvd · worst-2h avg 23 mph"></div><div class="s1" title="Cross Island Pkwy · worst-2h avg 24 mph"></div><div class="s1" title="Lakeville Rd · worst-2h avg 25 mph"></div><div class="s2" title="Willis Ave · worst-2h avg 26 mph"></div><div class="s2" title="Glen Cove Rd · worst-2h avg 28 mph"></div><div class="s2" title="NY-106 / NY-107 · worst-2h avg 28 mph"></div><div class="s2" title="NY-110 · Suffolk · worst-2h avg 27 mph"></div></div>
+                    <div class="mt-1.5 flex justify-between font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                      <span>Maurice Ave</span><span>Grand Central Pkwy</span><span>Cross Island Pkwy</span><span>Glen Cove Rd</span><span>NY-110 →</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Corridor stats ── -->
+              <div class="col-span-6 md:col-span-3" data-dms-section="stat-length">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">Corridor length</div>
+                  <div class="mt-1 font-mono text-[32px] font-medium tabular-nums text-[#0F1722]">22.4 <span class="text-[16px] text-slate-500">mi</span></div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">14 TMCs · tmclinear 495</div>
+                </div>
+              </div>
+              <div class="col-span-6 md:col-span-3" data-dms-section="stat-aadt">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">AADT</div>
+                  <div class="mt-1 font-mono text-[32px] font-medium tabular-nums text-[#0F1722]">184<span class="text-[16px] text-slate-500">k</span></div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">length-weighted · meta 2024</div>
+                </div>
+              </div>
+              <div class="col-span-6 md:col-span-3" data-dms-section="stat-worst-hour">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">Worst hour · 5–6 PM</div>
+                  <div class="mt-1 font-mono text-[32px] font-medium tabular-nums text-[#D6453B]">23 <span class="text-[16px] text-slate-500">mph</span></div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">corridor avg · 55 mph posted</div>
+                </div>
+              </div>
+              <div class="col-span-6 md:col-span-3" data-dms-section="stat-delay">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">Total delay · this date</div>
+                  <div class="mt-1 font-mono text-[32px] font-medium tabular-nums text-[#0F1722]">41,200</div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">veh-hrs · all causes</div>
+                </div>
+              </div>
+
+              <!-- ── Compare-date affordance ── -->
+              <div class="col-span-12 md:col-span-8" data-dms-section="compare-date">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                  <div class="flex items-center gap-4 flex-wrap">
+                    <button class="inline-flex items-center gap-2.5" aria-pressed="true">
+                      <span class="relative inline-flex h-5 w-9 items-center rounded-full bg-[#1F3F8F]"><span class="absolute right-0.5 size-4 rounded-full bg-white shadow"></span></span>
+                      <span class="font-display font-medium text-[14px] text-[#0F1722]">Compare · vs typical Thursday</span>
+                    </button>
+                    <span class="font-proxima text-[13px] text-slate-600">median of the prior 8 Thursdays, same corridor &amp; epochs</span>
+                  </div>
+                  <div class="mt-4 flex items-center gap-3 flex-wrap">
+                    <span class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-rose-50 border border-rose-600/20 font-mono text-[11px] text-rose-700">total delay <strong class="tabular-nums">+62%</strong> vs typical</span>
+                    <span class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-rose-50 border border-rose-600/20 font-mono text-[11px] text-rose-700">AM peak <strong class="tabular-nums">+3,100</strong> veh-hrs · crash @ 108th St</span>
+                    <span class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-slate-50 border border-zinc-950/10 font-mono text-[11px] text-slate-600">PM peak ≈ typical <strong class="tabular-nums">+4%</strong></span>
+                    <span class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-amber-50 border border-amber-600/20 font-mono text-[11px] text-amber-700">20:00–22:00 <strong class="tabular-nums">+480</strong> veh-hrs · work zone</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Method note ── -->
+              <div class="col-span-12 md:col-span-4" data-dms-section="method-note">
+                <div class="rounded-[8px] border border-zinc-950/10 tny-card-bone shadow-sm p-5 h-full">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1.5">// method note</div>
+                  <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700">Speeds are NPMRDS 5-min probe records averaged to 15-min epochs; segment order comes from the TMC network's <span class="tny-mono">tmclinear</span> + <span class="tny-mono">road_order</span>. Crash and work-zone overlays are TRANSCOM events joined by TMC and time; delay totals use the excessive-delay threshold.</p>
+                  <a href="tsmo-methodology.html" class="mt-3 inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-wider text-[#1F3F8F] hover:text-[#16307A]">Data &amp; Methodology <!-- icon: ChevronRight --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="tsmo-congestion.html" class="hover:text-slate-900">congestion</a>
+                <a href="tsmo-incident-search.html" class="hover:text-slate-900">incident-search</a>
+                <a href="tsmo-methodology.html" class="hover:text-slate-900">methodology</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

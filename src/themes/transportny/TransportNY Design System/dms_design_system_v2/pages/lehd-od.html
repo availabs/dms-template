@@ -1,0 +1,1700 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LEHD Origin-Destination Employment Flow Dashboard · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
+              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">NPMRDS</span>
+            </div>
+            <div class="px-3 pt-3">
+              <button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] flex items-center gap-2 text-slate-400">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+                <span class="font-proxima text-[13px]">Search</span>
+              </button>
+            </div>
+            <div class="flex-1 py-2">
+              <a href="getting-started.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Getting started</span></a>
+              <a href="map-21-system-performance.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">MAP-21 PM3</span></a>
+              <a href="floating-car.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Floating Car</span></a>
+              <a href="congestion.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Congestion</span></a>
+              <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]">
+                <svg class="size-[18px] text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 14h6M9 18h6"/></svg>
+                <span class="text-[13px] flex-1">Employment</span>
+                <svg class="size-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+              </a>
+              <div class="pl-4 bg-[#0d1117]">
+                <a href="employment-estimates.html" class="pl-5 py-1.5 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[12px]">Overview</span></a>
+                <a href="employment-estimates-mpo.html" class="pl-5 py-1.5 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[12px]">Regional + block detail</span></a>
+                <a class="pl-5 py-1.5 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><span class="text-[12px]">LEHD OD flows</span></a>
+              </div>
+              <a href="work-zones.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><span class="text-[13px]">Work zones</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white text-[11px] font-medium ring-1 ring-[#FACC15]/20">AM</div>
+              <div class="flex-1"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Alex Muro</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">Region 3</div></div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10" data-dms-section="page-header">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 mb-4">
+                <a href="getting-started.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a class="hover:text-[#0f1722]">Business &amp; employment</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">LEHD OD flows</span>
+              </nav>
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// planning dashboard</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">source 1967 · view 3354 · real postgres metrics</span>
+              </div>
+              <div class="flex items-end justify-between gap-8">
+                <div class="max-w-[780px]">
+                  <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">LEHD Origin-Destination Employment Flow Dashboard<span class="text-[#CA8A04]">.</span></h1>
+                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[720px]">A TransportNY dashboard showing where workers employed in New York live, how commuting patterns change by geography level, and how worker age, earnings, and broad industry composition vary across the statewide LEHD OD dataset.</p>
+                </div>
+                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                  <div class="flex items-center gap-2">
+                    <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 pl-2.5 pr-2">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">level</span>
+                      <span id="geo-chip" class="font-proxima text-[12px] text-[#0f1722] font-medium">County</span>
+                    </div>
+                    <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/10 pl-2.5 pr-2">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">filter</span>
+                      <span class="font-mono text-[10.5px] text-[#0f1722]">JT00 · main + aux</span>
+                    </div>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-2">
+                    <span>table</span><span class="text-[#0f1722]">gis_datasets.s1967_v3354_lehd_od</span>
+                    <span class="text-slate-300">·</span>
+                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>read only</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full bg-[#1F3F8F] text-white border-b border-black/10" data-dms-group="tone_bar">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 h-12 flex items-center gap-4 overflow-x-auto" data-dms-section="filters">
+              <div id="geo-switcher" class="flex items-center gap-2"></div>
+              <div class="flex-1"></div>
+              <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-white/80">workplace ↔ home worker flows</div>
+            </div>
+          </div>
+
+          <div class="w-full bg-[#16307A] text-white border-b border-black/20" data-dms-group="tone_bar_dark">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-3 grid grid-cols-12 gap-4" data-dms-section="summary-band">
+              <div class="col-span-12 md:col-span-4">
+                <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-white/60 mb-1">current geography</div>
+                <div id="summary-level" class="font-display font-semibold text-[40px] leading-none">County</div>
+                <div id="summary-copy" class="font-proxima text-[13px] text-white/80 mt-2 max-w-[420px]"></div>
+              </div>
+              <div class="col-span-6 md:col-span-2">
+                <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/55 mb-1">workers</div>
+                <div id="band-workers" class="font-display font-semibold text-[24px] leading-none tabular-nums"></div>
+                <div class="font-mono text-[10px] text-white/60 mt-1">SUM(s_000)</div>
+              </div>
+              <div class="col-span-6 md:col-span-2">
+                <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/55 mb-1">work geos</div>
+                <div id="band-workgeos" class="font-display font-semibold text-[24px] leading-none tabular-nums"></div>
+                <div class="font-mono text-[10px] text-white/60 mt-1">distinct workplace</div>
+              </div>
+              <div class="col-span-6 md:col-span-2">
+                <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/55 mb-1">same geo</div>
+                <div id="band-samepct" class="font-display font-semibold text-[24px] leading-none tabular-nums"></div>
+                <div id="band-sameworkers" class="font-mono text-[10px] text-white/60 mt-1"></div>
+              </div>
+              <div class="col-span-6 md:col-span-2">
+                <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/55 mb-1">top workplace</div>
+                <div id="band-topwork" class="font-display font-semibold text-[18px] leading-tight"></div>
+                <div id="band-topworkval" class="font-mono text-[10px] text-white/60 mt-1"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <section class="col-span-12" data-dms-section="executive-summary">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">executive summary</span>
+                  </div>
+                  <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-12 lg:col-span-8">
+                      <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What this geography view shows.</h2>
+                      <p id="exec-summary" class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3"></p>
+                    </div>
+                    <div class="col-span-12 lg:col-span-4">
+                      <div class="rounded-[8px] bg-[#F5F1E8] border border-[#e7dcc7] p-4">
+                        <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#9A6A18] mb-2">key findings</div>
+                        <ul id="key-findings" class="space-y-2 text-[13px] text-slate-700 list-disc pl-4"></ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="col-span-12" data-dms-section="kpi-cards">
+                <div class="grid grid-cols-12 gap-4" id="kpi-grid"></div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="file-type">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">file type breakdown</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Main versus aux workers.</h2>
+                  <div id="file-type-chart" class="mt-5 space-y-4"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="same-cross">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">same vs cross geography</span>
+                  </div>
+                  <h2 id="same-cross-title" class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]"></h2>
+                  <div class="grid grid-cols-12 gap-6 mt-5 items-center">
+                    <div class="col-span-12 md:col-span-5">
+                      <div id="donut" class="mx-auto size-[180px] rounded-full relative"></div>
+                    </div>
+                    <div id="same-cross-legend" class="col-span-12 md:col-span-7 space-y-3"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="col-span-12" data-dms-section="state-flow">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">state flow breakdown</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Where workers live relative to New York workplaces.</h2>
+                  <div id="state-flow-chart" class="mt-5 grid grid-cols-12 gap-4"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="top-workplace">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">top workplace geographies</span>
+                  </div>
+                  <h2 id="top-work-title" class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]"></h2>
+                  <div id="top-work-chart" class="mt-5 space-y-3"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="top-home">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">top home geographies</span>
+                  </div>
+                  <h2 id="top-home-title" class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]"></h2>
+                  <div id="top-home-chart" class="mt-5 space-y-3"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12" data-dms-section="top-flows">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 07</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">top geography-to-geography flows</span>
+                  </div>
+                  <h2 id="top-flow-title" class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]"></h2>
+                  <div id="top-flow-bars" class="mt-5 space-y-3"></div>
+                  <div class="mt-5 overflow-hidden rounded-[8px] border border-zinc-950/10">
+                    <table class="w-full text-[13px] text-slate-700">
+                      <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                        <tr>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600" id="flow-home-head"></th>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600" id="flow-work-head"></th>
+                          <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Workers</th>
+                          <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Share</th>
+                        </tr>
+                      </thead>
+                      <tbody id="top-flow-table"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              <section class="col-span-12" data-dms-section="derived-metrics">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">concentration and context</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How concentrated the biggest patterns are.</h2>
+                  <div id="derived-metrics-grid" class="mt-5 grid grid-cols-12 gap-4"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="flow-balance">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08A</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">flow balance</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Which places attract workers versus send them.</h2>
+                  <p id="flow-balance-copy" class="mt-2 font-proxima text-[13px] leading-[1.6] text-slate-700"></p>
+                  <div id="flow-balance-chart" class="mt-5 space-y-3"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="dumbbell-balance">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08A.1</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">workplace vs home</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Workplace versus home totals for the leading geographies.</h2>
+                  <p id="dumbbell-copy" class="mt-2 font-proxima text-[13px] leading-[1.6] text-slate-700"></p>
+                  <div id="dumbbell-chart" class="mt-5 space-y-4"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="concentration">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08B</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">concentration share</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How concentrated workers are in the biggest places.</h2>
+                  <p id="concentration-copy" class="mt-2 font-proxima text-[13px] leading-[1.6] text-slate-700"></p>
+                  <div id="concentration-grid" class="mt-5 grid grid-cols-12 gap-4"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12" data-dms-section="signals">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08C</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">planning signal cards</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What the current metrics are signaling.</h2>
+                  <div id="signals-grid" class="mt-5 grid grid-cols-12 gap-4"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-4" data-dms-section="age">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">age breakdown</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Age composition.</h2>
+                  <div id="age-chart" class="mt-5 space-y-3"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-4" data-dms-section="earnings">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">earnings breakdown</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Earnings composition.</h2>
+                  <div id="earnings-chart" class="mt-5 space-y-3"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-4" data-dms-section="industry">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">industry breakdown</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Broad industry mix.</h2>
+                  <div id="industry-chart" class="mt-5 space-y-3"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="questions">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">questions answered</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Planning questions answered with this geography view.</h2>
+                  <div id="question-cards" class="mt-5 space-y-3"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="takeaways">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">key takeaways</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What matters most for planning conversations.</h2>
+                  <ul id="takeaways-list" class="mt-4 space-y-2 list-disc pl-5 text-[13px] text-slate-700"></ul>
+                </div>
+              </section>
+
+              <section class="col-span-12" data-dms-section="how-to-use">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 09</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">how to use this geography level</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How to read, apply, and scale this view.</h2>
+                  <div class="mt-5 grid grid-cols-12 gap-4">
+                    <div class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] bg-slate-50/80 border border-zinc-950/10 p-4">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">How to read this level</div>
+                      <ul id="how-read-list" class="mt-3 space-y-2 list-disc pl-5 text-[13px] text-slate-700"></ul>
+                    </div>
+                    <div class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] bg-slate-50/80 border border-zinc-950/10 p-4">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">Best uses for this level</div>
+                      <ul id="best-uses-list" class="mt-3 space-y-2 list-disc pl-5 text-[13px] text-slate-700"></ul>
+                    </div>
+                    <div class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] bg-slate-50/80 border border-zinc-950/10 p-4">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">When to aggregate up</div>
+                      <ul id="aggregate-up-list" class="mt-3 space-y-2 list-disc pl-5 text-[13px] text-slate-700"></ul>
+                    </div>
+                    <div class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] bg-[#F5F1E8] border border-[#e7dcc7] p-4">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#9A6A18]">Planning caution</div>
+                      <ul id="planning-caution-list" class="mt-3 space-y-2 list-disc pl-5 text-[13px] text-slate-700"></ul>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="workflow">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">drill-down workflow</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How teams should move from broad signals to target areas.</h2>
+                  <div id="workflow-list" class="mt-5 grid grid-cols-12 gap-4"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="cross-level-selfcontainment">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">cross-level comparison</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How self-containment changes by geography level.</h2>
+                  <p class="mt-2 font-proxima text-[13px] leading-[1.6] text-slate-700">This comparison keeps all geography levels in one place so the audience can see how same-geography commuting drops as the geography becomes more detailed.</p>
+                  <div id="cross-level-chart" class="mt-5 space-y-4"></div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="map-spec">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">map-ready specification</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How this geography view can translate into maps.</h2>
+                  <p id="map-spec-copy" class="mt-2 font-proxima text-[13px] leading-[1.6] text-slate-700"></p>
+                  <div class="mt-5 overflow-hidden rounded-[8px] border border-zinc-950/10">
+                    <table class="w-full text-[13px] text-slate-700">
+                      <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                        <tr>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Map Concept</th>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Join / Key</th>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Metric</th>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Recommended Styling</th>
+                        </tr>
+                      </thead>
+                      <tbody id="map-spec-table"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="quality">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">data quality summary</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Structural checks on the filtered source table.</h2>
+                  <div class="mt-5 overflow-hidden rounded-[8px] border border-zinc-950/10">
+                    <table class="w-full text-[13px] text-slate-700">
+                      <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                        <tr>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Check</th>
+                          <th class="px-3 py-2 text-right font-display uppercase text-[11px] tracking-wide text-slate-600">Result</th>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Note</th>
+                        </tr>
+                      </thead>
+                      <tbody id="quality-table"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="compare-next">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">what to compare next</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Follow-up comparisons that strengthen interpretation.</h2>
+                  <ul id="compare-next-list" class="mt-4 space-y-2 list-disc pl-5 text-[13px] text-slate-700"></ul>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="dictionary">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">data dictionary</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Core fields used in the dashboard.</h2>
+                  <div class="mt-5 overflow-hidden rounded-[8px] border border-zinc-950/10">
+                    <table class="w-full text-[13px] text-slate-700">
+                      <thead class="bg-slate-50/80 border-b border-zinc-950/10">
+                        <tr>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Field</th>
+                          <th class="px-3 py-2 text-left font-display uppercase text-[11px] tracking-wide text-slate-600">Meaning</th>
+                        </tr>
+                      </thead>
+                      <tbody id="dictionary-table"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="methodology">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">methodology</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How the geography-level metrics are derived.</h2>
+                  <ul id="methodology-list" class="mt-4 space-y-2 list-disc pl-5 text-[13px] text-slate-700"></ul>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="limitations">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">interpretation caveats</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What should not be concluded from this dataset.</h2>
+                  <ul id="limitations-list" class="mt-4 space-y-2 list-disc pl-5 text-[13px] text-slate-700"></ul>
+                </div>
+              </section>
+
+              <section class="col-span-12 lg:col-span-6" data-dms-section="actions">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-1">recommended actions</div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How agencies can put this view to work.</h2>
+                  <ul id="actions-list" class="mt-4 space-y-2 list-disc pl-5 text-[13px] text-slate-700"></ul>
+                </div>
+              </section>
+
+            </div>
+          </div>
+
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="employment-estimates.html" class="hover:text-slate-900">employment-estimates</a>
+                <a href="employment-estimates-mpo.html" class="hover:text-slate-900">employment-estimates-mpo</a>
+                <a href="map-21-system-performance.html" class="hover:text-slate-900">map-21</a>
+                <a href="congestion.html" class="hover:text-slate-900">congestion</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COMMON = {
+  totalWorkers: 9411356,
+  odRecords: 8529759,
+  mainWorkers: 8578463,
+  auxWorkers: 832893,
+  mainPct: 91.15,
+  auxPct: 8.85,
+  nyToNyWorkers: 8578463,
+  nyToNyPct: 91.15,
+  outsideNyWorkers: 832893,
+  outsideNyPct: 8.85,
+  age: [
+    { label: "29 or younger", value: 2046435, pct: 21.74 },
+    { label: "30 to 54", value: 4999851, pct: 53.13 },
+    { label: "55 or older", value: 2365070, pct: 25.13 }
+  ],
+  earnings: [
+    { label: "$1,250/month or less", value: 1523465, pct: 16.19 },
+    { label: "$1,251 to $3,333/month", value: 2203465, pct: 23.41 },
+    { label: "More than $3,333/month", value: 5684426, pct: 60.40 }
+  ],
+  industry: [
+    { label: "Goods producing", value: 831997, pct: 8.84 },
+    { label: "Trade, transportation, utilities", value: 1486971, pct: 15.80 },
+    { label: "All other services", value: 7092388, pct: 75.36 }
+  ],
+  quality: [
+    { check: "Null or blank geocodes", value: 0, note: "No issues in filtered raw rows" },
+    { check: "Zero or null s_000 values", value: 0, note: "No issues in filtered raw rows" },
+    { check: "Duplicate raw block OD pairs", value: 0, note: "No duplicate raw block pairs found" },
+    { check: "Distinct non-JT00 job types in source table", value: 5, note: "Excluded from this analysis" },
+    { check: "Distinct file types outside main/aux", value: 0, note: "No unexpected file types found" }
+  ],
+  dictionary: [
+    { field: "w_geocode", meaning: "Workplace Census block" },
+    { field: "h_geocode", meaning: "Home/residence Census block" },
+    { field: "s_000", meaning: "Total workers/jobs in the OD flow" },
+    { field: "sa_01, sa_02, sa_03", meaning: "Workers age 29 or younger, 30 to 54, and 55 or older" },
+    { field: "se_01, se_02, se_03", meaning: "Workers in low, middle, and high monthly earnings groups" },
+    { field: "si_01, si_02, si_03", meaning: "Workers in goods, trade/transport/utilities, and other services groups" },
+    { field: "job_type", meaning: "Filtered to JT00 for all jobs" },
+    { field: "file_type", meaning: "Filtered to main and aux only" }
+  ]
+};
+
+const LEVELS = {
+  regional: {
+    label: "Regional",
+    shortSummary: "Regional is a derived statewide planning view built from New York workplace flows, in-state versus outside-NY homes, and major county-to-county labor corridors.",
+    summary: "The Regional tab is a derived planning layer rather than an official regional boundary view. It shows that 8,578,463 workers, or 91.15%, both live and work within New York, while 832,893 workers, or 8.85%, live outside New York but work in New York. County-to-county corridors anchored by Manhattan, Brooklyn, Queens, Long Island, and major upstate counties dominate the statewide labor market picture.",
+    workGeos: 62,
+    homeGeos: 2352,
+    sameWorkers: 8578463,
+    crossWorkers: 832893,
+    samePct: 91.15,
+    crossPct: 8.85,
+    topWork: [
+      { label: "36061 New York County (Manhattan)", value: 2504522, pct: 26.61 },
+      { label: "36047 Kings County (Brooklyn)", value: 883243, pct: 9.38 },
+      { label: "36081 Queens County", value: 728370, pct: 7.74 },
+      { label: "36103 Suffolk County", value: 646568, pct: 6.87 },
+      { label: "36059 Nassau County", value: 639475, pct: 6.79 },
+      { label: "36029 Erie County", value: 478475, pct: 5.08 },
+      { label: "36119 Westchester County", value: 396544, pct: 4.21 },
+      { label: "36055 Monroe County", value: 390979, pct: 4.15 },
+      { label: "36005 Bronx County", value: 340785, pct: 3.62 },
+      { label: "36067 Onondaga County", value: 255873, pct: 2.72 }
+    ],
+    topHome: [
+      { label: "36047 Kings County (Brooklyn)", value: 1149154, pct: 12.21 },
+      { label: "36081 Queens County", value: 942264, pct: 10.01 },
+      { label: "36103 Suffolk County", value: 751412, pct: 7.98 },
+      { label: "36061 New York County (Manhattan)", value: 723266, pct: 7.69 },
+      { label: "36059 Nassau County", value: 678692, pct: 7.21 },
+      { label: "36005 Bronx County", value: 546133, pct: 5.80 },
+      { label: "36029 Erie County", value: 429640, pct: 4.57 },
+      { label: "36119 Westchester County", value: 399476, pct: 4.24 },
+      { label: "36055 Monroe County", value: 348967, pct: 3.71 },
+      { label: "36067 Onondaga County", value: 211852, pct: 2.25 }
+    ],
+    topFlows: [
+      { home: "36061 New York County", work: "36061 New York County", value: 532110, pct: 5.65 },
+      { home: "36047 Kings County", work: "36061 New York County", value: 475957, pct: 5.06 },
+      { home: "36103 Suffolk County", work: "36103 Suffolk County", value: 454781, pct: 4.83 },
+      { home: "36047 Kings County", work: "36047 Kings County", value: 424210, pct: 4.51 },
+      { home: "36029 Erie County", work: "36029 Erie County", value: 359555, pct: 3.82 },
+      { home: "36081 Queens County", work: "36061 New York County", value: 343646, pct: 3.65 },
+      { home: "36059 Nassau County", work: "36059 Nassau County", value: 305294, pct: 3.24 },
+      { home: "36081 Queens County", work: "36081 Queens County", value: 289543, pct: 3.08 },
+      { home: "36055 Monroe County", work: "36055 Monroe County", value: 279288, pct: 2.97 },
+      { home: "36005 Bronx County", work: "36061 New York County", value: 206562, pct: 2.19 }
+    ],
+    findings: [
+      "The derived regional view shows that most workers in this filtered LEHD dataset both live and work within New York.",
+      "Outside-NY homes still account for 832,893 workers tied to New York workplaces, which signals cross-jurisdictional planning needs.",
+      "Manhattan is the dominant statewide employment destination, while Brooklyn is the largest home county in the filtered view.",
+      "The strongest regional commute corridors are still visible through county-to-county flows."
+    ],
+    methodology: [
+      "Regional is a derived planning view rather than an official regional boundary lookup.",
+      "It combines state flow categories with county-scale destination, origin, and corridor patterns.",
+      "This level is intended for statewide and interagency briefing, not formal regional membership assignment."
+    ],
+    limitations: [
+      "Regional categories here do not represent official named regions or formal membership boundaries.",
+      "County-to-county corridors summarize labor market relationships, not exact travel paths.",
+      "A formal region lookup would be needed for official boundary-based reporting."
+    ]
+  },
+  county: {
+    label: "County",
+    shortSummary: "County is the default statewide briefing view for labor sheds and commuting corridors.",
+    summary: "County-level rollups show 9,411,356 workers across 8,529,759 OD records. County-to-county movement is substantial: 55.34% of workers cross county lines, and Manhattan is the largest workplace county while Brooklyn is the largest home county in the filtered statewide view.",
+    workGeos: 62,
+    homeGeos: 2352,
+    sameWorkers: 4203204,
+    crossWorkers: 5208152,
+    samePct: 44.66,
+    crossPct: 55.34,
+    topWork: [
+      { label: "36061 New York County (Manhattan)", value: 2504522, pct: 26.61 },
+      { label: "36047 Kings County (Brooklyn)", value: 883243, pct: 9.38 },
+      { label: "36081 Queens County", value: 728370, pct: 7.74 },
+      { label: "36103 Suffolk County", value: 646568, pct: 6.87 },
+      { label: "36059 Nassau County", value: 639475, pct: 6.79 },
+      { label: "36029 Erie County", value: 478475, pct: 5.08 },
+      { label: "36119 Westchester County", value: 396544, pct: 4.21 },
+      { label: "36055 Monroe County", value: 390979, pct: 4.15 },
+      { label: "36005 Bronx County", value: 340785, pct: 3.62 },
+      { label: "36067 Onondaga County", value: 255873, pct: 2.72 }
+    ],
+    topHome: [
+      { label: "36047 Kings County (Brooklyn)", value: 1149154, pct: 12.21 },
+      { label: "36081 Queens County", value: 942264, pct: 10.01 },
+      { label: "36103 Suffolk County", value: 751412, pct: 7.98 },
+      { label: "36061 New York County (Manhattan)", value: 723266, pct: 7.69 },
+      { label: "36059 Nassau County", value: 678692, pct: 7.21 },
+      { label: "36005 Bronx County", value: 546133, pct: 5.80 },
+      { label: "36029 Erie County", value: 429640, pct: 4.57 },
+      { label: "36119 Westchester County", value: 399476, pct: 4.24 },
+      { label: "36055 Monroe County", value: 348967, pct: 3.71 },
+      { label: "36067 Onondaga County", value: 211852, pct: 2.25 }
+    ],
+    topFlows: [
+      { home: "36061 New York County", work: "36061 New York County", value: 532110, pct: 5.65 },
+      { home: "36047 Kings County", work: "36061 New York County", value: 475957, pct: 5.06 },
+      { home: "36103 Suffolk County", work: "36103 Suffolk County", value: 454781, pct: 4.83 },
+      { home: "36047 Kings County", work: "36047 Kings County", value: 424210, pct: 4.51 },
+      { home: "36029 Erie County", work: "36029 Erie County", value: 359555, pct: 3.82 },
+      { home: "36081 Queens County", work: "36061 New York County", value: 343646, pct: 3.65 },
+      { home: "36059 Nassau County", work: "36059 Nassau County", value: 305294, pct: 3.24 },
+      { home: "36081 Queens County", work: "36081 Queens County", value: 289543, pct: 3.08 },
+      { home: "36055 Monroe County", work: "36055 Monroe County", value: 279288, pct: 2.97 },
+      { home: "36005 Bronx County", work: "36061 New York County", value: 206562, pct: 2.19 }
+    ],
+    findings: [
+      "There are 62 unique workplace counties and 2,352 unique home counties represented in the filtered data.",
+      "Cross-county commuting accounts for 5,208,152 workers, more than same-county commuting.",
+      "New York County (Manhattan) is the top workplace county with 2,504,522 workers.",
+      "Kings County (Brooklyn) is the top home county with 1,149,154 workers."
+    ],
+    questions: [
+      "Which counties attract the most workers statewide?",
+      "Which counties send the most workers into other labor markets?",
+      "How much commuting stays within the same county versus crossing county lines?",
+      "Which county-to-county corridors should guide transit, highway, and TDM planning?",
+      "How large is the out-of-state worker shed tied to New York workplaces?"
+    ],
+    methodology: [
+      "County geography is derived from the county portion of workplace and home geocodes.",
+      "County rollups are best suited to statewide and regional briefing use.",
+      "Percentages are calculated from SUM(s_000) after filtering to JT00 and main/aux."
+    ],
+    limitations: [
+      "County geography hides within-county variation.",
+      "OD flows do not represent exact travel routes, travel times, or modes.",
+      "The aux file reflects outside-NY home geographies tied to NY workplaces."
+    ]
+  },
+  tract: {
+    label: "Tract",
+    shortSummary: "Tract geography shows sub-county centers and labor sheds in finer detail.",
+    summary: "Tract-level rollups retain the statewide total of 9,411,356 workers but reveal much more granular geography: 5,363 workplace tracts and 46,938 home tracts. Only 3.31% of workers remain within the same tract, making this level useful for concentrated job centers and fine-scale labor sheds.",
+    workGeos: 5363,
+    homeGeos: 46938,
+    sameWorkers: 311454,
+    crossWorkers: 9099902,
+    samePct: 3.31,
+    crossPct: 96.69,
+    topWork: [
+      { label: "36061009600", value: 78023, pct: 0.83 }, { label: "36061010900", value: 74884, pct: 0.80 },
+      { label: "36061010100", value: 66390, pct: 0.71 }, { label: "36061000900", value: 58601, pct: 0.62 },
+      { label: "36061009200", value: 56025, pct: 0.60 }, { label: "36061011300", value: 52070, pct: 0.55 },
+      { label: "36061010400", value: 51819, pct: 0.55 }, { label: "36061000700", value: 51746, pct: 0.55 },
+      { label: "36061001300", value: 51354, pct: 0.55 }, { label: "36061009400", value: 50488, pct: 0.54 }
+    ],
+    topHome: [
+      { label: "36061004400", value: 7049, pct: 0.07 }, { label: "36061013800", value: 5721, pct: 0.06 },
+      { label: "36061000700", value: 5484, pct: 0.06 }, { label: "36061024500", value: 5318, pct: 0.06 },
+      { label: "36081045500", value: 5173, pct: 0.05 }, { label: "36061013400", value: 5005, pct: 0.05 },
+      { label: "36061013900", value: 4837, pct: 0.05 }, { label: "36081001902", value: 4774, pct: 0.05 },
+      { label: "36061006600", value: 4734, pct: 0.05 }, { label: "36061001502", value: 4655, pct: 0.05 }
+    ],
+    topFlows: [
+      { home: "36061019900", work: "36061020300", value: 875, pct: 0.01 },
+      { home: "36033940000", work: "36033940000", value: 770, pct: 0.01 },
+      { home: "36109000600", work: "36109001302", value: 758, pct: 0.01 },
+      { home: "36061020701", work: "36061020300", value: 735, pct: 0.01 },
+      { home: "36121970500", work: "36121970500", value: 726, pct: 0.01 },
+      { home: "36061021100", work: "36061020300", value: 718, pct: 0.01 },
+      { home: "36077590202", work: "36077590202", value: 673, pct: 0.01 },
+      { home: "36109001500", work: "36109001302", value: 659, pct: 0.01 },
+      { home: "36061020500", work: "36061020300", value: 608, pct: 0.01 },
+      { home: "36071015003", work: "36071015003", value: 596, pct: 0.01 }
+    ],
+    findings: [
+      "There are 5,363 unique workplace tracts and 46,938 unique home tracts in the filtered data.",
+      "Same-tract flows account for only 311,454 workers, or 3.31% of the total.",
+      "The top workplace tracts are concentrated in Manhattan.",
+      "Top home tracts are much more dispersed and individually much smaller than top workplace tracts."
+    ],
+    questions: [
+      "Which tracts act as the strongest employment magnets?",
+      "Which residential tracts send the most workers into regional job centers?",
+      "Where are the strongest fine-scale home-to-work relationships?",
+      "Which sub-county centers deserve corridor or transit market analysis?"
+    ],
+    methodology: [
+      "Tract geography is derived from the tract portion of workplace and home geocodes.",
+      "Tract results are useful for sub-county center analysis, station areas, and corridor screening.",
+      "Raw GEOIDs are shown directly because no tract-name lookup table is attached here."
+    ],
+    limitations: [
+      "Tract GEOIDs are shown without place labels.",
+      "Tract OD flows are not direct route assignments.",
+      "Small tract-to-tract percentages are expected because of the statewide denominator."
+    ]
+  },
+  blockgroup: {
+    label: "Block Group",
+    shortSummary: "Block group geography adds neighborhood-scale detail without dropping to raw block noise.",
+    summary: "Block group rollups show 15,694 unique workplace block groups and 90,082 unique home block groups. Same-block-group commuting is just 1.15% of workers, which makes this level useful for pinpointing concentrated job nodes and neighborhood-scale labor sheds.",
+    workGeos: 15694,
+    homeGeos: 90082,
+    sameWorkers: 108656,
+    crossWorkers: 9302700,
+    samePct: 1.15,
+    crossPct: 98.85,
+    topWork: [
+      { label: "360610109001", value: 74884, pct: 0.80 }, { label: "360610101001", value: 66390, pct: 0.71 },
+      { label: "360610009001", value: 58601, pct: 0.62 }, { label: "360610113001", value: 52070, pct: 0.55 },
+      { label: "360610104001", value: 51819, pct: 0.55 }, { label: "360010011001", value: 50148, pct: 0.53 },
+      { label: "360610096001", value: 49367, pct: 0.52 }, { label: "360593018002", value: 42635, pct: 0.45 },
+      { label: "360610082002", value: 42100, pct: 0.45 }, { label: "360610092002", value: 39769, pct: 0.42 }
+    ],
+    topHome: [
+      { label: "360810019021", value: 4774, pct: 0.05 }, { label: "360470555001", value: 4652, pct: 0.05 },
+      { label: "360470037001", value: 3345, pct: 0.04 }, { label: "360810033011", value: 3075, pct: 0.03 },
+      { label: "360470015021", value: 3070, pct: 0.03 }, { label: "360610129012", value: 2690, pct: 0.03 },
+      { label: "360910626022", value: 2575, pct: 0.03 }, { label: "360610099021", value: 2439, pct: 0.03 },
+      { label: "360610151022", value: 2261, pct: 0.02 }, { label: "360470033002", value: 2252, pct: 0.02 }
+    ],
+    topFlows: [
+      { home: "360339400001", work: "360339400001", value: 374, pct: 0.00 },
+      { home: "360610207011", work: "360610203002", value: 357, pct: 0.00 },
+      { home: "360610207012", work: "360610203002", value: 338, pct: 0.00 },
+      { home: "360610201011", work: "360610203002", value: 319, pct: 0.00 },
+      { home: "360710150032", work: "360710150032", value: 298, pct: 0.00 },
+      { home: "360610205001", work: "360610203002", value: 287, pct: 0.00 },
+      { home: "361090015002", work: "361090013021", value: 280, pct: 0.00 },
+      { home: "360339400002", work: "360339400001", value: 269, pct: 0.00 },
+      { home: "361090013012", work: "361090013021", value: 266, pct: 0.00 },
+      { home: "361090005003", work: "361090013021", value: 264, pct: 0.00 }
+    ],
+    findings: [
+      "There are 15,694 unique workplace block groups and 90,082 unique home block groups in the filtered table.",
+      "Only 108,656 workers remain in the same block group, or 1.15% of the statewide total.",
+      "The largest workplace block groups are concentrated in Manhattan and key suburban job centers.",
+      "Top home block groups are far smaller than top workplace block groups."
+    ],
+    questions: [
+      "Which neighborhoods act as major employment concentrations?",
+      "Which block groups contribute the largest worker totals to regional job centers?",
+      "Where should teams focus first-mile, last-mile, or access planning?",
+      "How can tract findings be refined with neighborhood-scale geography?"
+    ],
+    methodology: [
+      "Block group geography is derived from the first 12 digits of workplace and home geocodes.",
+      "This level is useful for neighborhood-scale labor sheds and station-area review.",
+      "Raw GEOIDs are shown directly because no separate labeling layer is attached."
+    ],
+    limitations: [
+      "Block group GEOIDs are shown without neighborhood names.",
+      "OD flows do not show exact travel paths or travel modes.",
+      "Additional GIS context is needed before using block group findings for project action."
+    ]
+  },
+  block: {
+    label: "Block",
+    shortSummary: "Block geography uses the raw source geocodes for maximum spatial precision.",
+    summary: "Block-level analysis preserves the full raw geography of the LEHD OD table, with 108,030 unique workplace blocks and 463,138 unique home blocks. Only 13,322 workers stay within the same block, or 0.14% of the total, making this level best suited for analyst workflows and micro-area investigations.",
+    workGeos: 108030,
+    homeGeos: 463138,
+    sameWorkers: 13322,
+    crossWorkers: 9398034,
+    samePct: 0.14,
+    crossPct: 99.86,
+    topWork: [
+      { label: "360593018002016", value: 41521, pct: 0.44 }, { label: "360610101001006", value: 34958, pct: 0.37 },
+      { label: "360610203002000", value: 31197, pct: 0.33 }, { label: "360610062001000", value: 28790, pct: 0.31 },
+      { label: "360550038065001", value: 25020, pct: 0.27 }, { label: "360610168002002", value: 22742, pct: 0.24 },
+      { label: "360610096001000", value: 22497, pct: 0.24 }, { label: "360470447001005", value: 19287, pct: 0.20 },
+      { label: "360810716001015", value: 17865, pct: 0.19 }, { label: "360610104001006", value: 17398, pct: 0.18 }
+    ],
+    topHome: [
+      { label: "360470555001001", value: 2200, pct: 0.02 }, { label: "360610155011000", value: 2129, pct: 0.02 },
+      { label: "360610117002000", value: 1745, pct: 0.02 }, { label: "360810019021016", value: 1743, pct: 0.02 },
+      { label: "360470325003001", value: 1575, pct: 0.02 }, { label: "360610223022000", value: 1486, pct: 0.02 },
+      { label: "360050462073000", value: 1448, pct: 0.02 }, { label: "360610283002000", value: 1359, pct: 0.01 },
+      { label: "360050409001004", value: 1340, pct: 0.01 }, { label: "360610156014000", value: 1292, pct: 0.01 }
+    ],
+    topFlows: [
+      { home: "360610207011001", work: "360610203002000", value: 193, pct: 0.00 },
+      { home: "360610062002000", work: "360610062001000", value: 177, pct: 0.00 },
+      { home: "360610201011000", work: "360610203002000", value: 167, pct: 0.00 },
+      { home: "360610207011000", work: "360610203002000", value: 164, pct: 0.00 },
+      { home: "360610205001011", work: "360610203002000", value: 151, pct: 0.00 },
+      { home: "360610211001006", work: "360610203002000", value: 139, pct: 0.00 },
+      { home: "360550131032008", work: "360550131032008", value: 135, pct: 0.00 },
+      { home: "361090013012008", work: "361090013021014", value: 134, pct: 0.00 },
+      { home: "360610203002001", work: "360610203002000", value: 127, pct: 0.00 },
+      { home: "360610207012000", work: "360610203002000", value: 125, pct: 0.00 }
+    ],
+    findings: [
+      "The filtered data contains 108,030 unique workplace blocks and 463,138 unique home blocks.",
+      "Same-block commuting accounts for only 13,322 workers, or 0.14% of the statewide total.",
+      "Top workplace blocks capture intense site-level employment concentrations.",
+      "Block-level detail is most useful as analyst support for tract and block group findings."
+    ],
+    questions: [
+      "Which individual workplace blocks stand out as major employment anchors?",
+      "Which home blocks are most tied to a site or station area?",
+      "Where do the most concentrated micro-scale OD relationships appear?",
+      "How can coarse dashboards be backed by high-resolution evidence?"
+    ],
+    methodology: [
+      "Block geography uses workplace and home block geocodes directly.",
+      "This level is the highest precision available in the source table.",
+      "Raw GEOIDs are retained exactly as stored in the dataset."
+    ],
+    limitations: [
+      "Block GEOIDs are difficult to interpret without mapping or external labels.",
+      "Block OD flows are not route assignments or travel mode observations.",
+      "Additional parcel, roadway, and transit context is required before acting on block-level findings."
+    ]
+  }
+};
+
+const LEVEL_DETAILS = {
+  regional: {
+    takeaways: [
+      "In-state labor movement dominates the filtered LEHD OD file: 91.15% of workers both live and work in New York.",
+      "Outside-NY home inflow is still meaningful at 832,893 workers, which supports statewide border and megaregional coordination.",
+      "The top 10 workplace counties together account for a large share of all workers, led by Manhattan at 26.61%.",
+      "The strongest regional corridors cluster around Manhattan, Brooklyn, Queens, Long Island, and major upstate county labor markets."
+    ],
+    detailedQuestions: [
+      {
+        q: "How much of the worker flow is internal to New York versus tied to outside-New-York homes?",
+        show: "8,578,463 workers, or 91.15%, are NY-home-to-NY-workplace flows; 832,893 workers, or 8.85%, come from outside-NY homes into New York workplaces.",
+        support: "State flow breakdown and file-type filtered KPI cards.",
+        use: "Use this to frame whether planning conversations should stay mostly intrastate or include cross-border commuting partners.",
+        caveat: "This is based on New York workplace records only and does not include New Yorkers working outside the state."
+      },
+      {
+        q: "What are the largest regional labor corridors?",
+        show: "The largest observed corridor is Manhattan-to-Manhattan at 532,110 workers, followed by Brooklyn-to-Manhattan at 475,957 and Suffolk-to-Suffolk at 454,781.",
+        support: "Top geography-to-geography flows table.",
+        use: "These flows help prioritize cross-jurisdictional mobility conversations and corridor screening.",
+        caveat: "OD corridors are home-to-work relationships, not route assignments."
+      },
+      {
+        q: "Which areas function as major employment destinations?",
+        show: "Manhattan alone accounts for 2,504,522 workers, or 26.61% of the statewide filtered total.",
+        support: "Top workplace geographies chart.",
+        use: "Major destination counties are logical anchors for transit, pricing, freight, and peak-demand planning coordination.",
+        caveat: "Destination concentration at this level can mask sub-county variation."
+      },
+      {
+        q: "Which areas function as major residential labor sheds?",
+        show: "Brooklyn leads home counties at 1,149,154 workers, followed by Queens at 942,264 and Suffolk at 751,412.",
+        support: "Top home geographies chart.",
+        use: "These origin counties help frame where commuting demand is generated, not just where jobs are located.",
+        caveat: "Home concentration does not identify travel mode or network path."
+      }
+    ],
+    howRead: [
+      "Read Regional as a statewide planning frame built from state categories and county corridors.",
+      "Use it first to understand whether worker movement is concentrated in a few major destinations or distributed broadly.",
+      "Interpret large values as labor market linkage, not direct route usage."
+    ],
+    bestUses: [
+      "Statewide briefing decks and executive summaries.",
+      "Interagency conversations about regional and cross-border mobility.",
+      "Prioritizing which county corridors deserve deeper county or tract review."
+    ],
+    aggregateUp: [
+      "Stay at Regional when the goal is policy direction rather than project siting.",
+      "Use County after Regional when corridor prioritization needs named origin and destination counties."
+    ],
+    cautions: [
+      "This tab uses derived regional categories, not official region boundaries.",
+      "Statewide totals can make even important corridors appear small in percentage terms."
+    ],
+    compareNext: [
+      "Compare the top county destinations against transit service, highway bottlenecks, and park-and-ride geography.",
+      "Check whether the strongest county corridors align with known freight, commuter rail, or express bus markets.",
+      "Review county and tract tabs next to see where sub-county job centers sit inside the top destination counties."
+    ],
+    actions: [
+      "Use Regional to decide which county pairs should be discussed jointly by agencies and partner organizations.",
+      "Flag border-oriented worker inflows for coordination with neighboring states where relevant.",
+      "Carry the highest-volume corridors into County and Tract views for location-specific planning."
+    ]
+  },
+  county: {
+    takeaways: [
+      "County is the strongest summary level for labor sheds and intercounty commuting corridors.",
+      "Cross-county commuting exceeds same-county commuting: 5,208,152 workers versus 4,203,204.",
+      "Manhattan is the largest workplace county while Brooklyn is the largest home county.",
+      "The top county-to-county relationships highlight where regional transit and highway coordination may matter most."
+    ],
+    detailedQuestions: [
+      {
+        q: "Which counties attract the most workers?",
+        show: "Manhattan leads with 2,504,522 workers, followed by Brooklyn at 883,243 and Queens at 728,370.",
+        support: "Top workplace geographies chart and workplace KPI.",
+        use: "Use this to identify the counties functioning as statewide job magnets.",
+        caveat: "A high county total can include several distinct employment centers."
+      },
+      {
+        q: "Which counties send the most workers?",
+        show: "Brooklyn is the largest home county at 1,149,154 workers, ahead of Queens at 942,264 and Suffolk at 751,412.",
+        support: "Top home geographies chart and home concentration metrics.",
+        use: "These counties are key origin labor sheds for commute planning and demand management.",
+        caveat: "Home counties do not reveal which corridors or modes dominate without the flow table."
+      },
+      {
+        q: "Which county pairs have the strongest home-to-work relationships?",
+        show: "Brooklyn-to-Manhattan has 475,957 workers, Queens-to-Manhattan has 343,646, and Bronx-to-Manhattan has 206,562.",
+        support: "Top county-to-county flows table.",
+        use: "These relationships can guide intercounty transit, bridge/tunnel, and corridor coordination.",
+        caveat: "Large county pairs still need tract or block group follow-up for specific access strategies."
+      },
+      {
+        q: "Which counties appear more self-contained?",
+        show: "Major same-county flows include Manhattan-to-Manhattan at 532,110, Suffolk-to-Suffolk at 454,781, Erie-to-Erie at 359,555, and Nassau-to-Nassau at 305,294.",
+        support: "Top flow table and same-vs-cross chart.",
+        use: "Self-contained counties may emphasize internal circulation and access rather than only intercounty connectivity.",
+        caveat: "Self-contained does not mean no external dependency; cross-county commuting is still substantial statewide."
+      }
+    ],
+    howRead: [
+      "County is best read as a policy and corridor summary level.",
+      "Use the same-vs-cross split to judge how self-contained county labor markets are.",
+      "Read destination counties and origin counties together to compare job concentration versus residential labor supply."
+    ],
+    bestUses: [
+      "Regional transit and highway corridor prioritization.",
+      "County-to-county planning coordination across agency and county lines.",
+      "Executive briefing for where the largest job magnets and labor sheds sit."
+    ],
+    aggregateUp: [
+      "Aggregate up to Regional when a statewide message is needed instead of county detail.",
+      "Stay at County when tract-level precision is more detail than the decision actually needs."
+    ],
+    cautions: [
+      "County geography hides downtown, campus, airport, port, and industrial sub-centers.",
+      "County flows should not be treated as exact travel routes or mode shares."
+    ],
+    compareNext: [
+      "Compare high-volume county corridors with transit service spans and roadway reliability measures.",
+      "Look for counties where top workplace share far exceeds top home share to identify net destination markets.",
+      "Move to Tract to find the sub-county centers driving the biggest county totals."
+    ],
+    actions: [
+      "Use county corridors to structure interagency meetings and corridor studies.",
+      "Target counties with strong inbound and outbound flows for coordinated transit and TDM strategies.",
+      "Pair county findings with demographic, land use, and network performance layers before action."
+    ]
+  },
+  tract: {
+    takeaways: [
+      "Tract geography reveals concentrated job centers that disappear inside county averages.",
+      "Only 3.31% of workers remain in the same tract, so tract is primarily a cross-tract labor shed view.",
+      "The top workplace tracts are heavily concentrated in Manhattan, while home tracts are far more dispersed.",
+      "Tract is a strong screening level for downtowns, campuses, industrial areas, and station-area access analysis."
+    ],
+    detailedQuestions: [
+      {
+        q: "Which tracts are major employment centers?",
+        show: "The largest workplace tract is 36061009600 with 78,023 workers, followed by 36061010900 at 74,884 and 36061010100 at 66,390.",
+        support: "Top workplace tracts chart.",
+        use: "Use this to identify sub-county job magnets for transit access, curb, and circulation review.",
+        caveat: "Raw tract GEOIDs need mapping or a lookup layer for intuitive place labeling."
+      },
+      {
+        q: "Which tracts are major residential labor sources?",
+        show: "Top home tracts are much smaller and more dispersed; the largest listed home tract is 36061004400 at 7,049 workers.",
+        support: "Top home tracts chart.",
+        use: "This helps identify residential sources feeding major centers, especially when paired with mapping.",
+        caveat: "Because the statewide denominator is large, tract percentages are expected to be small."
+      },
+      {
+        q: "Which tract-to-tract flows show sub-county commute patterns?",
+        show: "Examples include 36061019900 to 36061020300 with 875 workers and several adjacent Manhattan tract flows above 700 workers.",
+        support: "Top tract-to-tract flows table.",
+        use: "These are strong candidates for first-mile/last-mile review and fine-grained transit market screening.",
+        caveat: "OD pairs do not describe which route, station, or corridor the trip actually uses."
+      },
+      {
+        q: "Where should tract patterns be reviewed with land use and transit data?",
+        show: "The strongest workplace tracts are concentrated in dense Manhattan job areas, indicating that land use intensity and transit supply likely shape these totals.",
+        support: "Top workplace tracts, same-vs-cross split, and composition charts.",
+        use: "Pair these tracts with station locations, bus service, curb demand, and zoning context.",
+        caveat: "Without external GIS context, tract IDs alone should not drive project selection."
+      }
+    ],
+    howRead: [
+      "Read tract as a sub-county center and labor shed tool rather than a simple ranking exercise.",
+      "Expect very low same-tract percentages because most workers move across tract boundaries even within one county.",
+      "Use tract as the first lower-level drill-down after County."
+    ],
+    bestUses: [
+      "Finding downtowns, campuses, and industrial employment clusters.",
+      "Screening station areas and transit-supportive job centers.",
+      "Tracing fine-grained residential-to-job relationships inside major county corridors."
+    ],
+    aggregateUp: [
+      "Aggregate back to County when explaining results to executive audiences.",
+      "Aggregate up when many tract flows are individually small but collectively point to one county corridor."
+    ],
+    cautions: [
+      "Tract patterns can be hard to interpret without a map or county context.",
+      "Sparse percentages do not mean a tract is unimportant; they often reflect the statewide denominator."
+    ],
+    compareNext: [
+      "Compare top workplace tracts with transit stops, route span, and pedestrian access quality.",
+      "Review whether top residential tracts line up with lower-income or service-sector worker concentrations.",
+      "Move to Block Group when neighborhood targeting is needed around a tract-level center."
+    ],
+    actions: [
+      "Use tract hotspots to shortlist places for station access, shuttle, and service redesign review.",
+      "Cross-check tract-level findings with land use and local development knowledge.",
+      "Bring tract pairs into local corridor studies before dropping to block detail."
+    ]
+  },
+  blockgroup: {
+    takeaways: [
+      "Block group adds neighborhood-scale detail while remaining more stable than raw block patterns.",
+      "Only 1.15% of workers stay within the same block group, so most relationships still span multiple nearby geographies.",
+      "Top workplace block groups capture concentrated activity nodes that can support localized access planning.",
+      "This level is useful for neighborhood targeting, but it needs careful interpretation and mapping context."
+    ],
+    detailedQuestions: [
+      {
+        q: "Which neighborhoods or small areas have strong workplace concentration?",
+        show: "The largest workplace block group is 360610109001 with 74,884 workers, followed by 360610101001 at 66,390 and 360610009001 at 58,601.",
+        support: "Top workplace block group chart.",
+        use: "These locations are strong candidates for curb, pedestrian, bus stop, and local circulation review.",
+        caveat: "Raw GEOIDs need local mapping context before being treated as named neighborhoods."
+      },
+      {
+        q: "Which block groups are important residential labor sheds?",
+        show: "The largest listed home block group is 360810019021 with 4,774 workers, followed by 360470555001 at 4,652.",
+        support: "Top home block groups chart.",
+        use: "This helps identify neighborhood-scale origin markets feeding larger employment centers.",
+        caveat: "Block group totals are much smaller and can be sensitive to localized land use patterns."
+      },
+      {
+        q: "Which block group flows reveal local corridor demand?",
+        show: "Examples include 360610207011 to 360610203002 with 357 workers and 360610207012 to 360610203002 with 338 workers.",
+        support: "Top block-group flow table.",
+        use: "These patterns can support bus route, shuttle, and active transportation access review near major destinations.",
+        caveat: "They are relationship signals, not confirmed corridor assignments."
+      },
+      {
+        q: "Which small-area insights need caution?",
+        show: "Same-block-group commuting is only 108,656 workers statewide, or 1.15%, and top-flow shares round near zero because the denominator is statewide.",
+        support: "Same-vs-cross chart and top flow table.",
+        use: "This reminds planners to use block group mainly for drill-down and spatial targeting, not standalone statewide messaging.",
+        caveat: "Very small percentages can still represent important localized markets."
+      }
+    ],
+    howRead: [
+      "Read block group as neighborhood-scale evidence nested inside county and tract findings.",
+      "Look for clusters of related top workplace and flow geographies rather than one-off IDs.",
+      "Use percentages carefully because statewide denominators compress local signal."
+    ],
+    bestUses: [
+      "Neighborhood access and first-mile/last-mile targeting.",
+      "Examining local feeder patterns around job centers.",
+      "Refining tract findings with smaller-area evidence."
+    ],
+    aggregateUp: [
+      "Aggregate up to Tract when communicating to broader policy audiences.",
+      "Aggregate up when block group patterns are too fragmented to support a single planning action."
+    ],
+    cautions: [
+      "Smaller geographies are more sensitive to localized employers, campuses, or special generators.",
+      "Neighborhood-scale results should be checked against land use, network, and local knowledge before action."
+    ],
+    compareNext: [
+      "Compare workplace block groups with bus stop spacing, sidewalks, and local street connectivity.",
+      "Review whether low-wage or service-sector composition suggests equity-sensitive access needs.",
+      "Move to Block only when site-level targeting or map interaction is required."
+    ],
+    actions: [
+      "Use block group findings to frame neighborhood access studies around major employment nodes.",
+      "Pair these patterns with equity, safety, and transit service layers.",
+      "Keep public-facing summary reporting at County or Regional while using block group for internal targeting."
+    ]
+  },
+  block: {
+    takeaways: [
+      "Block is the highest-resolution view and is best treated as analyst support for mapping and drill-down.",
+      "Same-block commuting is only 13,322 workers, or 0.14%, confirming that block is not a self-contained summary level.",
+      "Top workplace blocks identify highly concentrated employment sites that may reflect campuses, towers, industrial parcels, or major facilities.",
+      "Block-level results are valuable for spatial targeting but should be communicated with caution."
+    ],
+    detailedQuestions: [
+      {
+        q: "Which blocks have the highest workplace concentration?",
+        show: "The largest workplace block is 360593018002016 with 41,521 workers, followed by 360610101001006 at 34,958 and 360610203002000 at 31,197.",
+        support: "Top workplace blocks chart.",
+        use: "This helps analysts identify very specific employment sites for mapping and access review.",
+        caveat: "A block code without mapping context is not a public-facing location description."
+      },
+      {
+        q: "Which blocks have the strongest block-to-block flows?",
+        show: "The largest listed block-to-block flow is 360610207011001 to 360610203002000 with 193 workers.",
+        support: "Top block flow table.",
+        use: "Use block flows to validate highly localized catchments around major sites, campuses, or transit nodes.",
+        caveat: "Block OD should never be interpreted as exact door-to-door commute behavior."
+      },
+      {
+        q: "Why is block best for drill-down rather than policy summaries?",
+        show: "There are 108,030 workplace blocks and 463,138 home blocks, and even the largest flows are tiny shares of the statewide total.",
+        support: "KPI cards, top flow table, and same-vs-cross chart.",
+        use: "This supports map interaction, micro-area screening, and analyst workflows after higher-level patterns are known.",
+        caveat: "Small counts and localized concentrations require privacy-minded interpretation and strong GIS context."
+      },
+      {
+        q: "How can block detail support planning without overclaiming precision?",
+        show: "The strongest workplace blocks likely reflect major employers or dense employment parcels, but they still need parcel, roadway, transit, and land use context before action.",
+        support: "Top workplace blocks, composition charts, and methodology notes.",
+        use: "Use block detail to focus field review, map popups, and site access analysis.",
+        caveat: "Do not use raw block rankings alone to prioritize investment."
+      }
+    ],
+    howRead: [
+      "Read block as the most precise spatial evidence in the dashboard, not the best summary layer.",
+      "Use it after County, Tract, or Block Group has already identified a target area.",
+      "Expect values and percentages to look sparse because the geography is extremely fine."
+    ],
+    bestUses: [
+      "Interactive map drill-down and analyst QA.",
+      "Site access review near major employers or facilities.",
+      "Confirming where within a tract or block group the strongest concentration sits."
+    ],
+    aggregateUp: [
+      "Aggregate up to Block Group or Tract for planning summaries and public communication.",
+      "Aggregate up when multiple adjacent blocks point to the same district or campus pattern."
+    ],
+    cautions: [
+      "Block-level OD is easy to over-interpret if detached from mapping and local context.",
+      "Small-area patterns may be sensitive, noisy, or shaped by individual sites rather than general market structure."
+    ],
+    compareNext: [
+      "Compare top workplace blocks to parcel, campus, and major-employer layers.",
+      "Review site-level transit access, sidewalks, curb loading, and roadway operations.",
+      "Roll adjacent high-value blocks back up to block groups or tracts for clearer communication."
+    ],
+    actions: [
+      "Use block results inside internal analyst tools and map interfaces.",
+      "Translate block insights back into tract or block-group summaries for stakeholder presentation.",
+      "Confirm any action-oriented conclusion with transportation network and land use context."
+    ]
+  }
+};
+
+const DRILLDOWN_WORKFLOW = [
+  "Start at Regional to understand broad labor movement patterns, the in-state share, and the biggest county corridors.",
+  "Use County to identify the strongest intercounty flows and major labor sheds.",
+  "Use Tract to find sub-county employment centers and residential patterns inside major county corridors.",
+  "Use Block Group to examine neighborhood-scale flow relationships around target centers.",
+  "Use Block only for detailed spatial targeting, interactive mapping, and analyst drill-down.",
+  "Confirm findings with transportation network, transit service, land use, and local knowledge before acting."
+];
+
+const fmt = new Intl.NumberFormat("en-US");
+const f = (n) => fmt.format(n);
+const p = (n) => `${Number(n).toFixed(2)}%`;
+const sum = (items) => items.reduce((acc, item) => acc + item.value, 0);
+const ratio = (a, b) => b === 0 ? "n/a" : `${(a / b).toFixed(2)}:1`;
+const pctOfTotal = (n) => (n / COMMON.totalWorkers) * 100;
+
+function barRow(item, colorClass) {
+  return `
+    <div class="space-y-1">
+      <div class="flex items-center justify-between gap-3 text-[13px]">
+        <div class="text-slate-700">${item.label}</div>
+        <div class="font-mono text-[11px] text-slate-500 tabular-nums">${f(item.value)} ${item.pct !== undefined ? `<span class="text-slate-400">(${p(item.pct)})</span>` : ""}</div>
+      </div>
+      <div class="h-3 rounded-full bg-slate-200 overflow-hidden">
+        <div class="h-full rounded-full ${colorClass}" style="width:${Math.max(1, item.value / Math.max(...currentChartValues) * 100)}%"></div>
+      </div>
+    </div>
+  `;
+}
+
+let currentChartValues = [];
+
+function renderBars(targetId, items, palette = ["bg-[#1F3F8F]", "bg-[#37576B]", "bg-[#E5A646]"]) {
+  currentChartValues = items.map(d => d.value);
+  document.getElementById(targetId).innerHTML = items.map((item, idx) => barRow(item, palette[idx % palette.length])).join("");
+}
+
+function renderStateFlow(level) {
+  const items = [
+    { label: "NY home to NY workplace", value: COMMON.nyToNyWorkers, pct: COMMON.nyToNyPct },
+    { label: "Outside-NY home to NY workplace", value: COMMON.outsideNyWorkers, pct: COMMON.outsideNyPct }
+  ];
+  const host = document.getElementById("state-flow-chart");
+  host.innerHTML = items.map((item, idx) => `
+    <div class="col-span-12 md:col-span-6 rounded-[8px] border border-zinc-950/10 bg-slate-50/70 p-4">
+      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">${idx === 0 ? "in-state labor shed" : "cross-border labor shed"}</div>
+      <div class="font-display font-semibold text-[28px] leading-none text-[#0F1722] tabular-nums">${f(item.value)}</div>
+      <div class="font-proxima text-[13px] text-slate-700 mt-1">${item.label}</div>
+      <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 mt-2">${p(item.pct)} of total workers</div>
+    </div>
+  `).join("");
+}
+
+function renderKpis(level, key) {
+  const geoLabel = key === "regional" ? "destination counties" : `workplace ${level.label.toLowerCase()}s`;
+  const homeLabel = key === "regional" ? "origin counties" : `home ${level.label.toLowerCase()}s`;
+  const cards = [
+    { label: "Total workers", value: f(COMMON.totalWorkers), note: "SUM(s_000)" },
+    { label: "OD flow records", value: f(COMMON.odRecords), note: "COUNT(*)" },
+    { label: geoLabel, value: f(level.workGeos), note: "distinct workplace geographies" },
+    { label: homeLabel, value: f(level.homeGeos), note: "distinct home geographies" },
+    { label: "Main workers", value: f(COMMON.mainWorkers), note: p(COMMON.mainPct) },
+    { label: "Aux workers", value: f(COMMON.auxWorkers), note: p(COMMON.auxPct) },
+    { label: key === "regional" ? "NY-home workers" : `Same ${level.label.toLowerCase()}`, value: f(level.sameWorkers), note: p(level.samePct) },
+    { label: key === "regional" ? "Outside-NY-home workers" : `Cross ${level.label.toLowerCase()}`, value: f(level.crossWorkers), note: p(level.crossPct) },
+    { label: "Top workplace", value: level.topWork[0].label, note: f(level.topWork[0].value) + " workers" },
+    { label: "Top home", value: level.topHome[0].label, note: f(level.topHome[0].value) + " workers" }
+  ];
+  document.getElementById("kpi-grid").innerHTML = cards.map(card => `
+    <div class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">${card.label}</div>
+      <div class="font-display font-semibold ${card.value.length > 24 ? "text-[18px] leading-tight mt-2" : "text-[28px] leading-none mt-2"} text-[#0F1722]">${card.value}</div>
+      <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 mt-2">${card.note}</div>
+    </div>
+  `).join("");
+}
+
+function renderSameCross(level, key) {
+  const deg = (level.sameWorkers / (level.sameWorkers + level.crossWorkers)) * 360;
+  document.getElementById("same-cross-title").textContent = key === "regional"
+    ? "Internal New York versus outside-New-York home flows."
+    : `Same versus cross ${level.label.toLowerCase()} movement.`;
+  document.getElementById("donut").style.background = `conic-gradient(#1F3F8F 0deg ${deg}deg, #37576B ${deg}deg 360deg)`;
+  document.getElementById("donut").innerHTML = `<div class="absolute inset-[24px] rounded-full bg-white border border-zinc-950/10"></div><div class="absolute inset-0 flex flex-col items-center justify-center z-10"><div class="font-display font-semibold text-[26px] leading-none text-[#0F1722]">${p(level.crossPct)}</div><div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 mt-2">${key === "regional" ? "outside-ny home" : `cross ${level.label.toLowerCase()}`}</div></div>`;
+  document.getElementById("same-cross-legend").innerHTML = [
+    { label: key === "regional" ? "NY home to NY workplace" : `Same ${level.label}`, value: level.sameWorkers, pct: level.samePct, swatch: "bg-[#1F3F8F]" },
+    { label: key === "regional" ? "Outside-NY home to NY workplace" : `Cross ${level.label}`, value: level.crossWorkers, pct: level.crossPct, swatch: "bg-[#37576B]" }
+  ].map(item => `
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 text-[13px] text-slate-700"><span class="size-3 rounded-full ${item.swatch}"></span>${item.label}</div>
+      <div class="font-mono text-[11px] text-slate-500 tabular-nums">${f(item.value)} (${p(item.pct)})</div>
+    </div>
+  `).join("");
+}
+
+function renderTable(targetId, rows, mapper) {
+  document.getElementById(targetId).innerHTML = rows.map((row, idx) => mapper(row, idx)).join("");
+}
+
+function renderQuestionCards(items) {
+  document.getElementById("question-cards").innerHTML = items.map((item, idx) => `
+    <details class="rounded-[8px] border border-zinc-950/10 bg-slate-50/60 open:bg-white group" ${idx === 0 ? "open" : ""}>
+      <summary class="list-none cursor-pointer px-4 py-3 flex items-start justify-between gap-4">
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">Question ${idx + 1}</div>
+          <div class="font-display text-[18px] leading-[1.25] text-[#0F1722] mt-1">${item.q}</div>
+        </div>
+        <span class="mt-1 text-slate-400 group-open:rotate-180 transition-transform">⌄</span>
+      </summary>
+      <div class="px-4 pb-4 grid grid-cols-12 gap-3 text-[13px] text-slate-700">
+        <div class="col-span-12"><span class="font-semibold text-[#0F1722]">What the current data shows:</span> ${item.show}</div>
+        <div class="col-span-12 md:col-span-6"><span class="font-semibold text-[#0F1722]">Metric/table/chart:</span> ${item.support}</div>
+        <div class="col-span-12 md:col-span-6"><span class="font-semibold text-[#0F1722]">How to use it:</span> ${item.use}</div>
+        <div class="col-span-12"><span class="font-semibold text-[#0F1722]">Caveat:</span> ${item.caveat}</div>
+      </div>
+    </details>
+  `).join("");
+}
+
+function renderSimpleList(targetId, items) {
+  document.getElementById(targetId).innerHTML = items.map(item => `<li>${item}</li>`).join("");
+}
+
+function renderDerivedMetrics(level, key) {
+  const topWorkShare = sum(level.topWork);
+  const topHomeShare = sum(level.topHome);
+  const topFlowShare = sum(level.topFlows);
+  const cards = [
+    { label: "Top 10 workplace share", value: p((topWorkShare / COMMON.totalWorkers) * 100), note: `${f(topWorkShare)} workers in the top 10 ${key === "regional" ? "destination counties" : "workplace geographies"}` },
+    { label: "Top 10 home share", value: p((topHomeShare / COMMON.totalWorkers) * 100), note: `${f(topHomeShare)} workers in the top 10 ${key === "regional" ? "origin counties" : "home geographies"}` },
+    { label: "Top 10 flow share", value: p((topFlowShare / COMMON.totalWorkers) * 100), note: `${f(topFlowShare)} workers in the top 10 flow pairs` },
+    { label: key === "regional" ? "NY-home to outside-home ratio" : "Same-to-cross ratio", value: ratio(level.sameWorkers, level.crossWorkers), note: key === "regional" ? "NY-home workers relative to outside-NY-home workers" : `${f(level.sameWorkers)} same versus ${f(level.crossWorkers)} cross` },
+    { label: "Main versus aux", value: `${p(COMMON.mainPct)} / ${p(COMMON.auxPct)}`, note: `${f(COMMON.mainWorkers)} main and ${f(COMMON.auxWorkers)} aux workers` },
+    { label: "Strongest single flow", value: p(level.topFlows[0].pct), note: `${level.topFlows[0].home} → ${level.topFlows[0].work}` }
+  ];
+  document.getElementById("derived-metrics-grid").innerHTML = cards.map(card => `
+    <div class="col-span-12 md:col-span-6 xl:col-span-4 rounded-[8px] border border-zinc-950/10 bg-slate-50/70 p-4">
+      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">${card.label}</div>
+      <div class="font-display font-semibold text-[26px] leading-none text-[#0F1722] mt-2">${card.value}</div>
+      <div class="font-proxima text-[12.5px] leading-[1.5] text-slate-700 mt-2">${card.note}</div>
+    </div>
+  `).join("");
+}
+
+function deriveBalance(level) {
+  const work = new Map(level.topWork.map(d => [d.label, d.value]));
+  const home = new Map(level.topHome.map(d => [d.label, d.value]));
+  const labels = [...new Set([...work.keys(), ...home.keys()])];
+  return labels.map(label => {
+    const workVal = work.get(label) || 0;
+    const homeVal = home.get(label) || 0;
+    const net = workVal - homeVal;
+    return {
+      label,
+      workVal,
+      homeVal,
+      net,
+      type: net > 0 ? "Employment destination" : net < 0 ? "Residential origin" : "Balanced"
+    };
+  }).sort((a, b) => Math.abs(b.net) - Math.abs(a.net)).slice(0, 8);
+}
+
+function renderFlowBalance(level, key) {
+  const items = deriveBalance(level);
+  const maxAbs = Math.max(...items.map(d => Math.abs(d.net)), 1);
+  document.getElementById("flow-balance-copy").textContent = key === "regional"
+    ? "This compares the biggest destination and origin counties in the regional view to show where worker attraction is strongest versus where labor supply is strongest."
+    : "This compares workplace totals and home totals for the biggest geographies in the current view to show which places act more like destinations and which act more like residential labor sheds.";
+  document.getElementById("flow-balance-chart").innerHTML = items.map(item => `
+    <div class="rounded-[8px] border border-zinc-950/10 bg-slate-50/60 p-3">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="font-proxima text-[13px] text-slate-800">${item.label}</div>
+          <div class="font-mono text-[10px] uppercase tracking-[0.16em] ${item.net > 0 ? "text-emerald-700" : item.net < 0 ? "text-rose-700" : "text-slate-500"} mt-1">${item.type}</div>
+        </div>
+        <div class="font-mono text-[11px] text-slate-500 tabular-nums">net ${item.net >= 0 ? "+" : ""}${f(item.net)}</div>
+      </div>
+      <div class="mt-3 h-3 rounded-full bg-slate-200 overflow-hidden flex">
+        <div class="h-full bg-[#37576B]" style="width:${Math.max(1, (item.homeVal / (item.workVal + item.homeVal || 1)) * 100)}%"></div>
+        <div class="h-full bg-[#1F3F8F]" style="width:${Math.max(1, (item.workVal / (item.workVal + item.homeVal || 1)) * 100)}%"></div>
+      </div>
+      <div class="mt-2 flex items-center justify-between text-[12px] text-slate-700">
+        <span>Home ${f(item.homeVal)}</span>
+        <span>Workplace ${f(item.workVal)}</span>
+      </div>
+      <div class="mt-2 h-2 rounded-full bg-slate-200 overflow-hidden">
+        <div class="h-full ${item.net >= 0 ? "bg-emerald-500" : "bg-rose-500"}" style="width:${Math.max(2, Math.abs(item.net) / maxAbs * 100)}%"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderDumbbell(level, key) {
+  const items = deriveBalance(level);
+  const maxVal = Math.max(...items.flatMap(d => [d.workVal, d.homeVal]), 1);
+  document.getElementById("dumbbell-copy").textContent = key === "regional"
+    ? "Each row compares origin-county worker totals to destination-county worker totals for the biggest places in the regional view."
+    : "Each row compares home-worker totals to workplace-worker totals for the biggest places in the current geography level.";
+  document.getElementById("dumbbell-chart").innerHTML = items.map(item => {
+    const homePct = (item.homeVal / maxVal) * 100;
+    const workPct = (item.workVal / maxVal) * 100;
+    const left = Math.min(homePct, workPct);
+    const width = Math.max(1, Math.abs(workPct - homePct));
+    return `
+      <div class="grid grid-cols-12 gap-3 items-center">
+        <div class="col-span-12 md:col-span-4">
+          <div class="font-proxima text-[13px] text-slate-800">${item.label}</div>
+          <div class="font-mono text-[10px] uppercase tracking-[0.16em] ${item.net > 0 ? "text-emerald-700" : item.net < 0 ? "text-rose-700" : "text-slate-500"} mt-1">${item.type}</div>
+        </div>
+        <div class="col-span-12 md:col-span-8">
+          <div class="relative h-10">
+            <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] bg-slate-200"></div>
+            <div class="absolute top-1/2 -translate-y-1/2 h-[2px] bg-slate-400" style="left:${left}%;width:${width}%"></div>
+            <div class="absolute top-1/2 -translate-y-1/2 -ml-[7px] size-3.5 rounded-full bg-[#37576B] ring-2 ring-white shadow-sm" style="left:${homePct}%"></div>
+            <div class="absolute top-1/2 -translate-y-1/2 -ml-[7px] size-3.5 rounded-full bg-[#1F3F8F] ring-2 ring-white shadow-sm" style="left:${workPct}%"></div>
+          </div>
+          <div class="mt-1 flex items-center justify-between text-[12px] text-slate-700">
+            <span>Home ${f(item.homeVal)}</span>
+            <span>Workplace ${f(item.workVal)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderConcentration(level, key) {
+  const top5Work = sum(level.topWork.slice(0, 5));
+  const top10Work = sum(level.topWork.slice(0, 10));
+  const top5Home = sum(level.topHome.slice(0, 5));
+  const top10Home = sum(level.topHome.slice(0, 10));
+  const top25Unavailable = "Unavailable from the current embedded top-list depth";
+  document.getElementById("concentration-copy").textContent = key === "regional"
+    ? "Regional concentration shows whether statewide worker totals are dominated by a small set of counties or spread across many destinations and origins."
+    : "Concentration shows whether this geography level is dominated by a few leading places or spread across many smaller places.";
+  const cards = [
+    { label: "Top 5 workplace share", value: p(pctOfTotal(top5Work)), note: `${f(top5Work)} workers in the top 5 workplace geographies` },
+    { label: "Top 10 workplace share", value: p(pctOfTotal(top10Work)), note: `${f(top10Work)} workers in the top 10 workplace geographies` },
+    { label: "Top 5 home share", value: p(pctOfTotal(top5Home)), note: `${f(top5Home)} workers in the top 5 home geographies` },
+    { label: "Top 10 home share", value: p(pctOfTotal(top10Home)), note: `${f(top10Home)} workers in the top 10 home geographies` },
+    { label: "Top 25 workplace share", value: "Unavailable", note: top25Unavailable },
+    { label: "Top 25 home share", value: "Unavailable", note: top25Unavailable }
+  ];
+  document.getElementById("concentration-grid").innerHTML = cards.map(card => `
+    <div class="col-span-12 md:col-span-6 xl:col-span-4 rounded-[8px] border border-zinc-950/10 bg-slate-50/70 p-4">
+      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">${card.label}</div>
+      <div class="font-display font-semibold text-[24px] leading-none text-[#0F1722] mt-2">${card.value}</div>
+      <div class="font-proxima text-[12.5px] leading-[1.5] text-slate-700 mt-2">${card.note}</div>
+    </div>
+  `).join("");
+}
+
+function renderSignals(level, key) {
+  const signals = [];
+  signals.push({
+    title: level.crossPct >= 75 ? "Cross-geography dependency" : "Relatively self-contained",
+    note: key === "regional"
+      ? `${p(level.crossPct)} of workers come from outside-NY homes.`
+      : `${p(level.crossPct)} of workers cross ${level.label.toLowerCase()} boundaries.`
+  });
+  signals.push({
+    title: pctOfTotal(level.topWork[0].value) >= 15 ? "High workplace concentration" : "Workplace concentration is more distributed",
+    note: `${level.topWork[0].label} accounts for ${p(level.topWork[0].pct)} of total workers.`
+  });
+  signals.push({
+    title: pctOfTotal(level.topHome[0].value) >= 8 ? "Strong residential labor shed" : "Home origins are more distributed",
+    note: `${level.topHome[0].label} accounts for ${p(level.topHome[0].pct)} of total workers.`
+  });
+  signals.push({
+    title: key === "regional" || key === "county" ? "Corridor planning signal" : "Lower-level drill-down signal",
+    note: key === "regional" || key === "county"
+      ? `${level.topFlows[0].home} → ${level.topFlows[0].work} is the strongest corridor at ${p(level.topFlows[0].pct)} of total workers.`
+      : `${level.topFlows[0].home} → ${level.topFlows[0].work} is best used as a detailed flow pair for follow-up mapping.`
+  });
+  document.getElementById("signals-grid").innerHTML = signals.map(signal => `
+    <div class="col-span-12 md:col-span-6 xl:col-span-3 rounded-[8px] border border-zinc-950/10 ${signal.title.includes("High") || signal.title.includes("Strong") ? "bg-[#F5F1E8] border-[#e7dcc7]" : "bg-slate-50/70"} p-4">
+      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Signal</div>
+      <div class="font-display text-[18px] leading-[1.25] text-[#0F1722] mt-2">${signal.title}</div>
+      <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-700 mt-2">${signal.note}</div>
+    </div>
+  `).join("");
+}
+
+function renderWorkflow() {
+  document.getElementById("workflow-list").innerHTML = DRILLDOWN_WORKFLOW.map((item, idx) => `
+    <div class="col-span-12 md:col-span-6 xl:col-span-2 rounded-[8px] border border-zinc-950/10 bg-slate-50/70 p-4">
+      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Step ${idx + 1}</div>
+      <div class="font-display text-[18px] leading-[1.2] text-[#0F1722] mt-2">${["Regional","County","Tract","Block Group","Block","Confirm"][idx]}</div>
+      <div class="font-proxima text-[12.5px] leading-[1.55] text-slate-700 mt-2">${item}</div>
+    </div>
+  `).join("");
+}
+
+function renderCrossLevelChart(activeKey) {
+  const keys = ["regional", "county", "tract", "blockgroup", "block"];
+  document.getElementById("cross-level-chart").innerHTML = keys.map((key) => {
+    const level = LEVELS[key];
+    return `
+      <div class="rounded-[8px] border ${key === activeKey ? "border-[#37576B] bg-[#F5F8FC]" : "border-zinc-950/10 bg-slate-50/60"} p-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="font-display text-[18px] leading-[1.2] text-[#0F1722]">${level.label}</div>
+            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 mt-1">${key === activeKey ? "current view" : "comparison view"}</div>
+          </div>
+          <div class="text-right">
+            <div class="font-display text-[22px] leading-none text-[#0F1722]">${p(level.samePct)}</div>
+            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 mt-1">same geography</div>
+          </div>
+        </div>
+        <div class="mt-4 h-4 rounded-full bg-slate-200 overflow-hidden flex">
+          <div class="h-full bg-[#1F3F8F]" style="width:${level.samePct}%"></div>
+          <div class="h-full bg-[#37576B]" style="width:${level.crossPct}%"></div>
+        </div>
+        <div class="mt-2 flex items-center justify-between text-[12px] text-slate-700">
+          <span>Same ${f(level.sameWorkers)}</span>
+          <span>Cross ${f(level.crossWorkers)}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderMapSpec(level, key) {
+  document.getElementById("map-spec-copy").textContent = "No live geometry is embedded in this static page, so this section defines map-ready joins, metrics, and interaction behavior for a GIS or web map implementation.";
+  const rows = [
+    {
+      concept: "Workplace concentration",
+      join: key === "regional" ? "County FIPS / derived regional county key" : `${level.label} geoid`,
+      metric: "workplace_workers",
+      style: "Filled polygons or points colored by worker totals; hover: geography, workers, share"
+    },
+    {
+      concept: "Home concentration",
+      join: key === "regional" ? "County FIPS / derived regional county key" : `${level.label} geoid`,
+      metric: "home_workers",
+      style: "Filled polygons or points colored by home-worker totals; hover: geography, workers, share"
+    },
+    {
+      concept: key === "regional" || key === "county" ? "Flow corridor" : "Detailed flow pair",
+      join: `home_${level.label.toLowerCase()} → work_${level.label.toLowerCase()}`,
+      metric: "total_workers",
+      style: "Desire lines sized by workers; hover: home, workplace, workers, share; click: drill down"
+    },
+    {
+      concept: "Same vs cross geography",
+      join: key === "regional" ? "derived flow type" : `${level.label} geoid`,
+      metric: key === "regional" ? "ny_home_share / outside_home_share" : "same_share / cross_share",
+      style: "Badge or fill category showing self-contained versus outward-dependent patterns"
+    }
+  ];
+  renderTable("map-spec-table", rows, (row, idx) => `
+    <tr class="${idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"} border-b border-zinc-950/05">
+      <td class="px-3 py-2">${row.concept}</td>
+      <td class="px-3 py-2 font-mono text-[12px]">${row.join}</td>
+      <td class="px-3 py-2">${row.metric}</td>
+      <td class="px-3 py-2">${row.style}</td>
+    </tr>
+  `);
+}
+
+function renderLevel(key) {
+  const level = { ...LEVELS[key], ...LEVEL_DETAILS[key] };
+  document.getElementById("geo-chip").textContent = level.label;
+  document.getElementById("summary-level").textContent = level.label;
+  document.getElementById("summary-copy").textContent = level.shortSummary;
+  document.getElementById("band-workers").textContent = f(COMMON.totalWorkers);
+  document.getElementById("band-workgeos").textContent = f(level.workGeos);
+  document.getElementById("band-samepct").textContent = p(level.samePct);
+  document.getElementById("band-sameworkers").textContent = key === "regional"
+    ? `${f(level.sameWorkers)} NY-home workers`
+    : `${f(level.sameWorkers)} same-${level.label.toLowerCase()} workers`;
+  document.getElementById("band-topwork").textContent = level.topWork[0].label;
+  document.getElementById("band-topworkval").textContent = `${f(level.topWork[0].value)} workers`;
+  document.getElementById("exec-summary").textContent = level.summary;
+  document.getElementById("key-findings").innerHTML = level.findings.map(item => `<li>${item}</li>`).join("");
+  renderQuestionCards(level.detailedQuestions);
+  renderSimpleList("takeaways-list", level.takeaways);
+  renderSimpleList("how-read-list", level.howRead);
+  renderSimpleList("best-uses-list", level.bestUses);
+  renderSimpleList("aggregate-up-list", level.aggregateUp);
+  renderSimpleList("planning-caution-list", level.cautions);
+  renderWorkflow();
+  renderSimpleList("compare-next-list", level.compareNext);
+  renderSimpleList("actions-list", level.actions);
+  document.getElementById("methodology-list").innerHTML = [
+    "All metrics use job_type = JT00 and file_type IN ('main', 'aux').",
+    ...level.methodology,
+    "No write queries, schema changes, temp tables, or persisted DB objects were used."
+  ].map(item => `<li>${item}</li>`).join("");
+  document.getElementById("limitations-list").innerHTML = level.limitations.map(item => `<li>${item}</li>`).join("");
+
+  renderKpis(level, key);
+  renderBars("file-type-chart", [
+    { label: "Main", value: COMMON.mainWorkers, pct: COMMON.mainPct },
+    { label: "Aux", value: COMMON.auxWorkers, pct: COMMON.auxPct }
+  ]);
+  renderSameCross(level, key);
+  renderStateFlow(level);
+  renderDerivedMetrics(level, key);
+  renderFlowBalance(level, key);
+  renderDumbbell(level, key);
+  renderConcentration(level, key);
+  renderSignals(level, key);
+  renderMapSpec(level, key);
+  renderCrossLevelChart(key);
+  document.getElementById("top-work-title").textContent = key === "regional" ? "Largest workplace counties in the regional view." : `Largest workplace ${level.label.toLowerCase()}s.`;
+  document.getElementById("top-home-title").textContent = key === "regional" ? "Largest origin counties in the regional view." : `Largest home ${level.label.toLowerCase()}s.`;
+  document.getElementById("top-flow-title").textContent = key === "regional" ? "Strongest county-to-county corridors in the regional view." : `Strongest ${level.label.toLowerCase()}-to-${level.label.toLowerCase()} flows.`;
+  document.getElementById("flow-home-head").textContent = key === "regional" ? "Origin County" : `Home ${level.label}`;
+  document.getElementById("flow-work-head").textContent = key === "regional" ? "Destination County" : `Workplace ${level.label}`;
+  renderBars("top-work-chart", level.topWork);
+  renderBars("top-home-chart", level.topHome);
+  renderBars("top-flow-bars", level.topFlows.map(row => ({
+    label: `${row.home} → ${row.work}`,
+    value: row.value,
+    pct: row.pct
+  })));
+  renderBars("age-chart", COMMON.age);
+  renderBars("earnings-chart", COMMON.earnings);
+  renderBars("industry-chart", COMMON.industry);
+
+  renderTable("top-flow-table", level.topFlows, (row, idx) => `
+    <tr class="${idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"} border-b border-zinc-950/05">
+      <td class="px-3 py-2">${row.home}</td>
+      <td class="px-3 py-2">${row.work}</td>
+      <td class="px-3 py-2 text-right font-mono tabular-nums">${f(row.value)}</td>
+      <td class="px-3 py-2 text-right font-mono tabular-nums">${p(row.pct)}</td>
+    </tr>
+  `);
+
+  renderTable("quality-table", COMMON.quality, (row, idx) => `
+    <tr class="${idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"} border-b border-zinc-950/05">
+      <td class="px-3 py-2">${row.check}</td>
+      <td class="px-3 py-2 text-right font-mono tabular-nums">${f(row.value)}</td>
+      <td class="px-3 py-2">${row.note}</td>
+    </tr>
+  `);
+
+  renderTable("dictionary-table", COMMON.dictionary, (row, idx) => `
+    <tr class="${idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"} border-b border-zinc-950/05">
+      <td class="px-3 py-2 font-mono text-[12px]">${row.field}</td>
+      <td class="px-3 py-2">${row.meaning}</td>
+    </tr>
+  `);
+
+  [...document.querySelectorAll("[data-geo-tab]")].forEach(btn => {
+    const active = btn.dataset.geoTab === key;
+    btn.className = active
+      ? "inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full bg-white text-[#0F1722] shadow-sm border border-zinc-950/5 text-[12.5px] font-proxima"
+      : "inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima";
+  });
+}
+
+document.getElementById("geo-switcher").innerHTML = ["regional","county","tract","blockgroup","block"].map((key) => `
+  <button data-geo-tab="${key}" class="inline-flex items-center gap-2 h-8 pl-2.5 pr-3 rounded-full text-white/80 hover:bg-white/10 text-[12.5px] font-proxima">
+    <span class="size-2 rounded-full ${key === "regional" ? "bg-violet-300" : key === "county" ? "bg-[#FACC15]" : key === "tract" ? "bg-emerald-400" : key === "blockgroup" ? "bg-sky-400" : "bg-rose-400"}"></span>${LEVELS[key].label}
+  </button>
+`).join("");
+
+document.getElementById("geo-switcher").addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-geo-tab]");
+  if (!btn) return;
+  renderLevel(btn.dataset.geoTab);
+});
+
+renderLevel("county");
+</script>
+
+<div style="position:fixed;bottom:24px;right:24px;z-index:9999;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:220px;max-height:70vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;padding:0 16px 8px;border-bottom:1px solid #e2e8f0;margin-bottom:4px;">TransportNY DMS · v0.2</div>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">design system</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">1</span> theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">2</span> layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">3</span> grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">4</span> components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">5</span> patterns</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">pages</div>
+    <a href="landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">6</span> landing</a>
+    <a href="login.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">7</span> login</a>
+    <a href="getting-started.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">8</span> getting-started</a>
+    <a href="docs-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">9</span> docs-overview</a>
+    <a href="map-21.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">10</span> map-21</a>
+    <a href="map-21-system-performance.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">11</span> map-21-system-performance</a>
+    <a href="map-21-trend.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">12</span> map-21-trend</a>
+    <a href="employment-estimates.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">13</span> employment-estimates</a>
+    <a href="employment-estimates-mpo.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">14</span> employment-estimates-mpo</a>
+    <a href="lehd-od.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#CA8A04;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">15</span> lehd-od</a>
+    <a href="floating-car.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">16</span> floating-car</a>
+    <a href="congestion.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">17</span> congestion</a>
+    <a href="work-zones.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">18</span> work-zones</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding:8px 16px 4px;">freight atlas</div>
+    <a href="freight-atlas-home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">19</span> freight-atlas-home</a>
+    <a href="freight-atlas-map.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">20</span> freight-atlas-map</a>
+    <a href="freight-atlas-gallery.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">21</span> freight-atlas-gallery</a>
+    <a href="freight-atlas-insights.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">22</span> freight-atlas-insights</a>
+    <a href="freight-atlas-data.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">23</span> freight-atlas-data</a>
+    <a href="freight-atlas-dataset.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">24</span> freight-atlas-dataset</a>
+    <a href="freight-atlas-about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#334155;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#94a3b8;min-width:14px;">25</span> freight-atlas-about</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';" style="width:40px;height:40px;border-radius:10px;background:#12181F;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);" aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

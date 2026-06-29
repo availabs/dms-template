@@ -1,0 +1,218 @@
+/* ============================================================
+   MitigateNY (mny) — brand surface utilities
+   Canonical source for:
+     · design-system/*.html  →  <link rel="stylesheet" href="../theme/index.css.additions"/>
+     · pages/*.html          →  <link rel="stylesheet" href="../theme/index.css.additions"/>
+     · production build      →  theme.js  fonts[] array entry
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   Brand font-family classes
+   Google Fonts loaded in each page <head> via CDN link.
+   These class rules make font-display / font-proxima available
+   as plain CSS utility classes throughout every mockup.
+   ---------------------------------------------------------- */
+.font-display,
+.font-oswald {
+  font-family: "Oswald", "Bebas Neue", sans-serif;
+}
+
+.font-proxima,
+.font-body {
+  font-family: "Source Sans 3", "Proxima Nova", system-ui, sans-serif;
+}
+
+/* ----------------------------------------------------------
+   Page backgrounds — topo-texture overlays
+   Each variant uses the brand's topographic line art masked
+   behind a translucent color wash.
+   ---------------------------------------------------------- */
+.mny-page-bg {
+  background-color: #F4F4F4;
+  background-image:
+    linear-gradient(0deg, rgba(244,244,244,0.96), rgba(244,244,244,0.96)),
+    url('../assets/mny/topolines.png');
+  background-size: 500px;
+}
+
+.mny-page-bg-dark {
+  background-image:
+    linear-gradient(0deg, rgba(33,52,64,0.96), rgba(55,87,107,0.96)),
+    url('../assets/mny/topolines.png');
+  background-size: 500px;
+}
+
+.mny-page-bg-yellow {
+  background-image:
+    linear-gradient(0deg, rgba(252,246,236,0.96), rgba(252,246,236,0.96)),
+    url('../assets/mny/topolines.png');
+  background-size: 500px;
+}
+
+/* ----------------------------------------------------------
+   Shadows — two brand-defined levels
+   shadow-sm: form elements, cards (subtle)
+   shadow-md: content wrapper panels
+   ---------------------------------------------------------- */
+.mny-shadow-sm {
+  box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.02), 0px 2px 4px 0px rgba(0,0,0,0.08);
+}
+
+.mny-shadow-md {
+  box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.04), 0px 4px 8px 0px rgba(0,0,0,0.06);
+}
+
+/* ----------------------------------------------------------
+   TopNav — design-system page links
+   ---------------------------------------------------------- */
+.dms-ds-toplink {
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #37576B;
+  text-decoration: none;
+  padding: 4px 12px;
+  border-radius: 6px;
+  transition: color 0.12s, background 0.12s;
+}
+.dms-ds-toplink:hover {
+  color: #2D3E4C;
+  background: #F3F8F9;
+}
+.dms-ds-toplink.active {
+  color: #EAAD43;
+  background: rgba(234,173,67,0.08);
+}
+
+/* ----------------------------------------------------------
+   Floating design-system nav widget
+   Collapsed: small icon button.  Expanded: page list panel.
+   Intended as a reusable pattern across all DMS design systems.
+   ---------------------------------------------------------- */
+.dms-ds-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+}
+
+.dms-ds-widget-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #2D3E4C;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.dms-ds-widget-toggle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.dms-ds-widget-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dms-ds-widget-panel {
+  position: absolute;
+  bottom: 52px;
+  right: 0;
+  background: white;
+  border-radius: 10px;
+  padding: 12px 0;
+  min-width: 190px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.dms-ds-widget-panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.dms-ds-widget-title {
+  font-family: "Oswald", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6D96AE;
+  padding: 0 16px 8px;
+  border-bottom: 1px solid #E0EBF0;
+  margin-bottom: 4px;
+}
+
+.dms-ds-widget-panel a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #37576B;
+  text-decoration: none;
+  transition: color 0.12s, background 0.12s;
+}
+.dms-ds-widget-panel a:hover {
+  color: #2D3E4C;
+  background: #F3F8F9;
+}
+.dms-ds-widget-panel a.active {
+  color: #EAAD43;
+}
+.dms-ds-widget-panel a .ds-page-num {
+  font-size: 10px;
+  font-weight: 500;
+  color: #C5D7E0;
+  min-width: 14px;
+}
+
+/* ----------------------------------------------------------
+   DMS structural annotation overlay
+   Activate with <body class="mny-annotated"> on any page.
+   Used on layouts.html, grid.html for visual explanation.
+   Default-off on pages/ so example pages look like product.
+   ---------------------------------------------------------- */
+.mny-annotated [data-dms="layout"]::before,
+.mny-annotated [data-dms="group"]::before,
+.mny-annotated [data-dms="section"]::before {
+  display: block;
+  font-family: "Source Sans 3", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  margin-bottom: 4px;
+  border-radius: 2px;
+  pointer-events: none;
+  line-height: 1.4;
+}
+
+.mny-annotated [data-dms="layout"]::before {
+  content: "LAYOUT · " attr(data-name);
+  background: #EAAD43;
+  color: #2D3E4C;
+}
+
+.mny-annotated [data-dms="group"]::before {
+  content: "GROUP · " attr(data-name);
+  background: #6D96AE;
+  color: #fff;
+}
+
+.mny-annotated [data-dms="section"]::before {
+  content: "SECTION · " attr(data-name);
+  background: #E0EBF0;
+  color: #37576B;
+}
