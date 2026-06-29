@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMS Admin — Pattern Creation Flow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-800': '#243240', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <style>
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; background: #e8edf0; }
+
+    .ds-label {
+      font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #6D96AE;
+      padding: 3px 8px; background: #E0EBF0; border-radius: 3px;
+      display: inline-block; margin-bottom: 12px;
+    }
+
+    /* Modal shell */
+    .modal {
+      background: white; border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18); overflow: hidden;
+      width: 580px;
+    }
+    .modal-header {
+      padding: 20px 24px 0;
+    }
+    .modal-title {
+      font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 600;
+      color: #2D3E4C; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .modal-sub {
+      font-size: 12px; color: #6D96AE; margin-top: 2px;
+    }
+
+    /* Card grid */
+    .card-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      padding: 16px 24px;
+    }
+
+    /* Option card — default */
+    .opt-card {
+      border: 1.5px solid #E0EBF0; border-radius: 8px;
+      padding: 12px 12px 10px;
+      cursor: pointer; transition: border-color 0.12s, background 0.12s;
+      position: relative; background: #F3F8F9;
+    }
+    .opt-card:hover {
+      border-color: #6D96AE; background: white;
+    }
+    /* selected */
+    .opt-card.selected {
+      border-color: #37576B; background: white;
+      box-shadow: 0 0 0 3px rgba(55,87,107,0.12);
+    }
+
+    .opt-name {
+      font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 600;
+      color: #2D3E4C; letter-spacing: 0.02em; line-height: 1.2;
+    }
+    .opt-desc {
+      font-size: 10px; color: #6D96AE; margin-top: 4px; line-height: 1.4;
+    }
+
+    /* "page" tag on page template cards */
+    .page-tag {
+      position: absolute; top: 8px; right: 8px;
+      font-family: 'Oswald', sans-serif; font-size: 9px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      background: #E0EBF0; color: #6D96AE;
+      padding: 1px 6px; border-radius: 3px;
+    }
+    .opt-card.selected .page-tag {
+      background: #C5D7E0; color: #37576B;
+    }
+
+    /* Divider between non-page patterns and page templates */
+    .grid-divider {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; gap: 8px; padding: 0 0 4px;
+    }
+    .grid-divider-line { flex: 1; height: 1px; background: #E0EBF0; }
+    .grid-divider-label {
+      font-family: 'Oswald', sans-serif; font-size: 9px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #C5D7E0;
+      white-space: nowrap;
+    }
+
+    /* Confirmation / name form — shown after selection */
+    .confirm-area {
+      border-top: 1px solid #E0EBF0;
+      padding: 16px 24px 20px;
+    }
+    .confirm-label {
+      font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #6D96AE;
+      margin-bottom: 10px;
+    }
+    .confirm-fields { display: flex; gap: 10px; align-items: flex-end; }
+    .confirm-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .field-label {
+      font-size: 11px; font-weight: 600; color: #37576B; letter-spacing: 0.02em;
+    }
+    .field-input {
+      border: 1.5px solid #C5D7E0; border-radius: 6px;
+      padding: 7px 10px; font-size: 13px; color: #2D3E4C;
+      font-family: 'Source Sans 3', system-ui, sans-serif;
+      background: white; outline: none;
+    }
+    .field-input:focus { border-color: #37576B; }
+    .field-input.url-input { color: #6D96AE; font-size: 12px; }
+
+    .btn-add {
+      background: #37576B; color: white; border: none; border-radius: 6px;
+      padding: 8px 20px; font-family: 'Oswald', sans-serif; font-size: 13px;
+      font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: background 0.12s;
+    }
+    .btn-add:hover { background: #2D3E4C; }
+
+    /* Empty confirm area (nothing selected) */
+    .confirm-empty {
+      font-size: 12px; color: #C5D7E0; text-align: center; padding: 14px 24px 18px;
+      border-top: 1px solid #E0EBF0; font-style: italic;
+    }
+  </style>
+</head>
+<body class="py-10 px-6">
+
+<div class="max-w-[900px] mx-auto mb-10">
+  <p class="font-display text-[11px] font-[500] text-mny-400 uppercase tracking-[0.16em] mb-1">Admin — Pattern Creation</p>
+  <h1 class="font-display text-[30px] font-[600] text-mny-900 uppercase tracking-[-0.01em] mb-2">Add Pattern Flow</h1>
+  <p class="font-proxima text-[13px] text-mny-400 max-w-[560px] leading-[1.6]">
+    The add-pattern modal replaces the <code>pattern_type</code> dropdown + secondary template picker
+    with a single card grid. Non-page patterns appear as named cards; page templates appear with a
+    <strong class="text-mny-700">page</strong> tag identifying the pattern type.
+  </p>
+</div>
+
+
+<!-- ════ SECTION 1 — NOTHING SELECTED (initial state) ═══════════════════════════════════════════ -->
+
+<div class="max-w-[900px] mx-auto mb-14">
+  <div class="ds-label">1.0 — Add Pattern modal · nothing selected</div>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Pattern</div>
+      <div class="modal-sub">Choose what to add to your site</div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Non-page patterns -->
+      <div class="opt-card">
+        <div class="opt-name">Datasets</div>
+        <div class="opt-desc">Connect and manage data sources</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-name">Forms</div>
+        <div class="opt-desc">Collect user-submitted data</div>
+      </div>
+
+      <!-- Invisible spacer to push page templates to next row -->
+      <div></div>
+
+      <!-- Divider -->
+      <div class="grid-divider">
+        <div class="grid-divider-line"></div>
+        <div class="grid-divider-label">page templates</div>
+        <div class="grid-divider-line"></div>
+      </div>
+
+      <!-- Page templates -->
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Blank</div>
+        <div class="opt-desc">Empty page — start from scratch</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Article</div>
+        <div class="opt-desc">Long-form richtext content</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Two Column</div>
+        <div class="opt-desc">Two equal-width content areas</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Card Grid</div>
+        <div class="opt-desc">Data table or card layout</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Stats + Chart</div>
+        <div class="opt-desc">Metrics and a bar graph</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Narrative</div>
+        <div class="opt-desc">Text with supporting data table</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Overview</div>
+        <div class="opt-desc">Header + stats strip + detail table</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Profile</div>
+        <div class="opt-desc">Detail view for a single record</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Dashboard</div>
+        <div class="opt-desc">Header band + two data sections</div>
+      </div>
+
+    </div>
+
+    <!-- Nothing selected — placeholder -->
+    <div class="confirm-empty">Select an option above to continue</div>
+  </div>
+</div>
+
+
+<!-- ════ SECTION 2 — PAGE TEMPLATE SELECTED ════════════════════════════════════════════════════ -->
+
+<div class="max-w-[900px] mx-auto mb-14">
+  <div class="ds-label">2.0 — Add Pattern modal · "Article" page template selected</div>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Pattern</div>
+      <div class="modal-sub">Choose what to add to your site</div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="opt-card">
+        <div class="opt-name">Datasets</div>
+        <div class="opt-desc">Connect and manage data sources</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-name">Forms</div>
+        <div class="opt-desc">Collect user-submitted data</div>
+      </div>
+
+      <div></div>
+
+      <div class="grid-divider">
+        <div class="grid-divider-line"></div>
+        <div class="grid-divider-label">page templates</div>
+        <div class="grid-divider-line"></div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Blank</div>
+        <div class="opt-desc">Empty page — start from scratch</div>
+      </div>
+
+      <!-- SELECTED -->
+      <div class="opt-card selected">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Article</div>
+        <div class="opt-desc">Long-form richtext content</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Two Column</div>
+        <div class="opt-desc">Two equal-width content areas</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Card Grid</div>
+        <div class="opt-desc">Data table or card layout</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Stats + Chart</div>
+        <div class="opt-desc">Metrics and a bar graph</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Narrative</div>
+        <div class="opt-desc">Text with supporting data table</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Overview</div>
+        <div class="opt-desc">Header + stats strip + detail table</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Profile</div>
+        <div class="opt-desc">Detail view for a single record</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Dashboard</div>
+        <div class="opt-desc">Header band + two data sections</div>
+      </div>
+
+    </div>
+
+    <!-- Confirmation area — page template selected -->
+    <div class="confirm-area">
+      <div class="confirm-label">Article &mdash; page pattern</div>
+      <div class="confirm-fields">
+        <div class="confirm-field">
+          <div class="field-label">Name</div>
+          <input class="field-input" type="text" value="Pages" />
+        </div>
+        <div class="confirm-field" style="max-width:160px;">
+          <div class="field-label">Base URL</div>
+          <input class="field-input url-input" type="text" value="pages" />
+        </div>
+        <button class="btn-add">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════ SECTION 3 — NON-PAGE PATTERN SELECTED ════════════════════════════════════════════════ -->
+
+<div class="max-w-[900px] mx-auto mb-14">
+  <div class="ds-label">3.0 — Add Pattern modal · "Datasets" selected</div>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Pattern</div>
+      <div class="modal-sub">Choose what to add to your site</div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- SELECTED -->
+      <div class="opt-card selected">
+        <div class="opt-name">Datasets</div>
+        <div class="opt-desc">Connect and manage data sources</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-name">Forms</div>
+        <div class="opt-desc">Collect user-submitted data</div>
+      </div>
+
+      <div></div>
+
+      <div class="grid-divider">
+        <div class="grid-divider-line"></div>
+        <div class="grid-divider-label">page templates</div>
+        <div class="grid-divider-line"></div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Blank</div>
+        <div class="opt-desc">Empty page — start from scratch</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Article</div>
+        <div class="opt-desc">Long-form richtext content</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Two Column</div>
+        <div class="opt-desc">Two equal-width content areas</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Card Grid</div>
+        <div class="opt-desc">Data table or card layout</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Stats + Chart</div>
+        <div class="opt-desc">Metrics and a bar graph</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Narrative</div>
+        <div class="opt-desc">Text with supporting data table</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Overview</div>
+        <div class="opt-desc">Header + stats strip + detail table</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Profile</div>
+        <div class="opt-desc">Detail view for a single record</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="page-tag">page</div>
+        <div class="opt-name">Dashboard</div>
+        <div class="opt-desc">Header band + two data sections</div>
+      </div>
+
+    </div>
+
+    <!-- Confirmation area — non-page pattern selected -->
+    <div class="confirm-area">
+      <div class="confirm-label">Datasets pattern</div>
+      <div class="confirm-fields">
+        <div class="confirm-field">
+          <div class="field-label">Name</div>
+          <input class="field-input" type="text" value="Data" />
+        </div>
+        <div class="confirm-field" style="max-width:160px;">
+          <div class="field-label">Base URL</div>
+          <input class="field-input url-input" type="text" value="data" />
+        </div>
+        <button class="btn-add">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

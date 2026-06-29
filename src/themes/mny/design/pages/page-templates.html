@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Page Templates Design</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-grn': '#54B99B', 'mny-ora': '#EA8954',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; }
+
+    /* ── section annotation labels ── */
+    .ds-label {
+      font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #6D96AE;
+      padding-bottom: 6px; border-bottom: 1px solid #E0EBF0; margin-bottom: 20px;
+    }
+
+    /* ── shared card surface ── */
+    .card { background: white; border-radius: 12px; box-shadow: 0px 0px 6px 0px rgba(0,0,0,.02), 0px 2px 4px 0px rgba(0,0,0,.08); }
+
+    /* ── modal overlay backdrop simulation ── */
+    .modal-backdrop {
+      background: rgba(45, 62, 76, 0.55);
+      border-radius: 12px;
+      padding: 48px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── template picker modal panel ── */
+    .tpicker {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 8px 24px rgba(0,0,0,0.16);
+      width: 680px;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .tpicker-header {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid #E0EBF0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .tpicker-title {
+      font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 500;
+      text-transform: uppercase; color: #2D3E4C; letter-spacing: 0.02em;
+    }
+    .tpicker-close {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: #F3F8F9; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #6D96AE; transition: background .12s, color .12s;
+    }
+    .tpicker-close:hover { background: #E0EBF0; color: #2D3E4C; }
+
+    .tpicker-body { padding: 20px 24px; }
+    .tpicker-subtitle {
+      font-family: 'Source Sans 3', sans-serif; font-size: 13px; color: #6D96AE;
+      margin-bottom: 16px;
+    }
+
+    /* ── source tabs (Theme templates / Your templates) ── */
+    .src-tabs { display: flex; gap: 2px; background: #F3F8F9; border: 1px solid #C5D7E0;
+                border-radius: 20px; padding: 2px; margin-bottom: 18px; width: fit-content; }
+    .src-tab { border: none; background: none; border-radius: 18px; padding: 4px 16px;
+               font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+               letter-spacing: 0.07em; text-transform: uppercase; color: #6D96AE; cursor: pointer; }
+    .src-tab.active { background: white; color: #2D3E4C; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+
+    /* ── template card grid ── */
+    .tmpl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+    /* ── individual template card ── */
+    .tmpl-card {
+      border: 2px solid #E0EBF0; border-radius: 10px; cursor: pointer;
+      overflow: hidden; transition: border-color .15s, box-shadow .15s;
+      background: white;
+    }
+    .tmpl-card:hover { border-color: #6D96AE; box-shadow: 0 0 0 3px rgba(109,150,174,0.12); }
+    .tmpl-card.selected { border-color: #EAAD43; box-shadow: 0 0 0 3px rgba(234,173,67,0.18); }
+
+    /* preview area — visual sketch of the layout */
+    .tmpl-preview {
+      height: 100px; background: #F3F8F9; padding: 10px;
+      position: relative; display: flex; flex-direction: column; gap: 4px;
+    }
+    .tmpl-card.selected .tmpl-preview { background: #FCF6EC; }
+
+    /* layout sketch elements */
+    .sk-bar  { background: #C5D7E0; border-radius: 2px; }
+    .sk-line { background: #D8E7EE; border-radius: 2px; height: 5px; }
+    .sk-line-sm { height: 4px; }
+    .sk-line-lg { height: 7px; }
+    .sk-cell { background: #C5D7E0; border-radius: 2px; flex: 1; }
+    .sk-grid-row { display: flex; gap: 3px; }
+    .sk-check {
+      position: absolute; top: 7px; right: 7px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #EAAD43; color: white;
+      display: none; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700;
+    }
+    .tmpl-card.selected .sk-check { display: flex; }
+
+    .tmpl-info { padding: 9px 10px 10px; }
+    .tmpl-name {
+      font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 500;
+      text-transform: uppercase; color: #2D3E4C; letter-spacing: 0.04em; margin-bottom: 2px;
+    }
+    .tmpl-desc {
+      font-family: 'Source Sans 3', sans-serif; font-size: 11px; color: #6D96AE; line-height: 1.4;
+    }
+
+    /* ── selected info strip ── */
+    .selected-info {
+      margin-top: 14px; padding: 10px 12px; background: #FCF6EC;
+      border: 1px solid #F1CA87; border-radius: 8px;
+      font-family: 'Source Sans 3', sans-serif; font-size: 12px; color: #37576B;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .selected-info-label { color: #C8922A; font-weight: 600; font-size: 11px; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* ── picker footer ── */
+    .tpicker-footer {
+      padding: 14px 24px; border-top: 1px solid #E0EBF0;
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    }
+    .btn-ghost {
+      font-family: 'Source Sans 3', sans-serif; font-size: 13px; font-weight: 600;
+      color: #37576B; background: white; border: 1px solid #C5D7E0;
+      border-radius: 20px; padding: 7px 20px; cursor: pointer; transition: all .12s;
+    }
+    .btn-ghost:hover { border-color: #6D96AE; background: #F3F8F9; color: #2D3E4C; }
+    .btn-gold {
+      font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: white; background: #EAAD43; border: none;
+      border-radius: 20px; padding: 8px 22px; cursor: pointer; transition: background .12s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-gold:hover { background: #D99A2E; }
+    .btn-gold:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── user template list (Your templates tab) ── */
+    .utmpl-empty {
+      text-align: center; padding: 32px 24px; color: #9BB5C2;
+      font-family: 'Source Sans 3', sans-serif; font-size: 13px;
+    }
+    .utmpl-empty .empty-icon { font-size: 28px; color: #C5D7E0; margin-bottom: 8px; }
+    .utmpl-empty strong { color: #6D96AE; font-weight: 600; }
+
+    /* ── template manager table ── */
+    .mgr-table { width: 100%; border-collapse: collapse; }
+    .mgr-table thead th {
+      font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.08em; color: #6D96AE;
+      padding: 8px 12px; text-align: left; border-bottom: 1px solid #C5D7E0;
+      background: #F3F8F9; white-space: nowrap;
+    }
+    .mgr-table tbody tr { border-bottom: 1px solid #E0EBF0; transition: background .1s; }
+    .mgr-table tbody tr:hover { background: #F7FAFB; }
+    .mgr-table tbody tr:last-child { border-bottom: none; }
+    .mgr-table td { padding: 10px 12px; font-size: 13px; color: #37576B; vertical-align: middle; }
+    .mgr-name { color: #2D3E4C; font-weight: 600; }
+    .mgr-desc { color: #6D96AE; font-size: 12px; }
+    .mgr-meta { font-size: 11px; color: #9BB5C2; }
+    .mgr-actions { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+
+    /* ── small action buttons ── */
+    .act-btn {
+      font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .06em;
+      border: 1px solid #C5D7E0; background: white; color: #37576B;
+      border-radius: 20px; padding: 3px 12px; cursor: pointer; transition: all .12s; white-space: nowrap;
+    }
+    .act-btn:hover { border-color: #6D96AE; background: #F3F8F9; color: #2D3E4C; }
+    .act-btn-danger { color: #DD524C; border-color: #F2C9C7; }
+    .act-btn-danger:hover { border-color: #DD524C; background: #FAEAEA; color: #C04040; }
+    .act-btn-gold { background: #EAAD43; border-color: #EAAD43; color: white; }
+    .act-btn-gold:hover { background: #D99A2E; border-color: #D99A2E; }
+
+    /* ── pattern editor chrome (simplified) ── */
+    .pe-shell {
+      background: white; border-radius: 12px;
+      box-shadow: 0px 0px 4px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .pe-topbar {
+      display: flex; align-items: center; padding: 0 16px;
+      border-bottom: 1px solid #E0EBF0; height: 44px; gap: 4px;
+    }
+    .pe-topbar-title { font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 500;
+      text-transform: uppercase; color: #2D3E4C; letter-spacing: .04em; }
+    .pe-topbar-sep { color: #C5D7E0; font-size: 14px; margin: 0 6px; }
+    .pe-topbar-sub { font-family: 'Source Sans 3', sans-serif; font-size: 12px; color: #6D96AE; }
+    .pe-tabs { display: flex; border-bottom: 1px solid #E0EBF0; padding: 0 0 0 16px; }
+    .pe-tab {
+      font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .07em; color: #6D96AE;
+      padding: 10px 14px; border-bottom: 2px solid transparent; cursor: pointer;
+      transition: color .12s, border-color .12s; margin-bottom: -1px;
+    }
+    .pe-tab:hover { color: #37576B; }
+    .pe-tab.active { color: #2D3E4C; border-bottom-color: #EAAD43; }
+    .pe-body { padding: 20px 20px; }
+
+    /* ── save-as-template widget in settings pane ── */
+    .sat-panel {
+      border: 1px solid #E0EBF0; border-radius: 10px; padding: 14px 16px;
+      background: #F3F8F9; margin-top: 16px;
+    }
+    .sat-label {
+      font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .07em; color: #37576B; margin-bottom: 10px;
+    }
+    .sat-input {
+      width: 100%; background: white; border: 1px solid #C5D7E0; border-radius: 8px;
+      font-family: 'Source Sans 3', sans-serif; font-size: 13px; color: #2D3E4C;
+      padding: 7px 12px; outline: none; transition: border .12s; margin-bottom: 8px;
+    }
+    .sat-input:focus { border-color: #6D96AE; }
+    .sat-input::placeholder { color: #B9CBD6; }
+    .sat-row { display: flex; gap: 8px; align-items: center; }
+    .sat-hint { font-family: 'Source Sans 3', sans-serif; font-size: 11px; color: #9BB5C2; flex: 1; }
+  </style>
+</head>
+<body class="min-h-screen mny-page-bg">
+
+<div class="max-w-[1440px] mx-auto">
+
+  <!-- TopNav -->
+  <div class="sticky top-0 z-20 px-4 pt-8 xl:px-[64px] pointer-events-none">
+    <nav class="px-6 py-4 w-full bg-white h-20 flex items-center rounded-lg pointer-events-auto mny-shadow-md">
+      <div class="flex items-center w-full">
+        <div class="h-12 pl-3 pr-2 flex items-center flex-shrink-0">
+          <img src="../assets/mny/mnyLogo.svg" alt="MitigateNY" class="h-10">
+        </div>
+        <span class="hidden md:block font-display text-[13px] font-[500] text-[#6D96AE] uppercase tracking-wider ml-3 mr-5 border-l border-[#E0EBF0] pl-5">Page Templates — Design</span>
+      </div>
+    </nav>
+  </div>
+
+  <div class="flex flex-1 md:px-4 xl:px-[64px] pb-16">
+    <div class="flex-1 pt-10 flex flex-col gap-14">
+
+
+      <!-- ================================================================
+           SECTION 1 — TEMPLATE PICKER MODAL
+           (shown open, with semi-dark backdrop, page behind is blurred)
+           ================================================================ -->
+      <section>
+        <div class="ds-label">1.0 — Template Picker Modal (opens on "+ Add Page")</div>
+
+        <!-- backdrop simulation -->
+        <div class="modal-backdrop">
+          <div class="tpicker">
+
+            <!-- header -->
+            <div class="tpicker-header">
+              <div>
+                <div class="tpicker-title">Choose a template</div>
+              </div>
+              <button class="tpicker-close">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- body -->
+            <div class="tpicker-body">
+              <!-- source tabs -->
+              <div class="src-tabs">
+                <button class="src-tab active">Theme templates</button>
+                <button class="src-tab">Your templates <span style="font-family:'Source Sans 3',sans-serif;font-size:10px;background:#E0EBF0;color:#37576B;border-radius:9999px;padding:0 6px;font-weight:700;margin-left:4px;">3</span></button>
+              </div>
+
+              <!-- template grid — "Article" selected -->
+              <div class="tmpl-grid">
+
+                <!-- Blank -->
+                <div class="tmpl-card">
+                  <div class="tmpl-preview" style="align-items:center;justify-content:center;">
+                    <div class="sk-check">✓</div>
+                    <div style="width:64px;height:64px;border:2px dashed #C5D7E0;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+                      <svg width="20" height="20" fill="none" stroke="#C5D7E0" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="tmpl-info">
+                    <div class="tmpl-name">Blank</div>
+                    <div class="tmpl-desc">Start fresh with an empty page</div>
+                  </div>
+                </div>
+
+                <!-- Article — SELECTED -->
+                <div class="tmpl-card selected">
+                  <div class="tmpl-preview" style="padding:10px 12px;gap:5px;">
+                    <div class="sk-check">✓</div>
+                    <!-- heading line -->
+                    <div class="sk-bar sk-line-lg" style="width:75%;margin-bottom:3px;background:#C8A840;opacity:0.6;"></div>
+                    <!-- paragraph lines -->
+                    <div class="sk-line" style="width:100%;"></div>
+                    <div class="sk-line" style="width:100%;"></div>
+                    <div class="sk-line" style="width:100%;"></div>
+                    <div class="sk-line" style="width:80%;"></div>
+                    <div style="height:4px;"></div>
+                    <div class="sk-line" style="width:100%;"></div>
+                    <div class="sk-line" style="width:100%;"></div>
+                    <div class="sk-line" style="width:60%;"></div>
+                  </div>
+                  <div class="tmpl-info">
+                    <div class="tmpl-name">Article</div>
+                    <div class="tmpl-desc">Long-form text — docs, reports, blog posts</div>
+                  </div>
+                </div>
+
+                <!-- Two Column -->
+                <div class="tmpl-card">
+                  <div class="tmpl-preview" style="flex-direction:row;gap:6px;padding:10px;">
+                    <div class="sk-check">✓</div>
+                    <!-- left col -->
+                    <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                      <div class="sk-bar sk-line-lg" style="width:70%;"></div>
+                      <div class="sk-line" style="width:100%;"></div>
+                      <div class="sk-line" style="width:100%;"></div>
+                      <div class="sk-line" style="width:85%;"></div>
+                      <div style="height:2px;"></div>
+                      <div class="sk-line" style="width:100%;"></div>
+                      <div class="sk-line" style="width:70%;"></div>
+                    </div>
+                    <!-- divider -->
+                    <div style="width:1px;background:#E0EBF0;flex-shrink:0;"></div>
+                    <!-- right col -->
+                    <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                      <div class="sk-bar sk-line-lg" style="width:65%;"></div>
+                      <div class="sk-line" style="width:100%;"></div>
+                      <div class="sk-line" style="width:100%;"></div>
+                      <div class="sk-line" style="width:90%;"></div>
+                      <div style="height:2px;"></div>
+                      <div class="sk-line" style="width:100%;"></div>
+                      <div class="sk-line" style="width:55%;"></div>
+                    </div>
+                  </div>
+                  <div class="tmpl-info">
+                    <div class="tmpl-name">Two Column</div>
+                    <div class="tmpl-desc">Two equal content areas side by side</div>
+                  </div>
+                </div>
+
+                <!-- Data View -->
+                <div class="tmpl-card">
+                  <div class="tmpl-preview" style="padding:10px;gap:3px;">
+                    <div class="sk-check">✓</div>
+                    <!-- table header row -->
+                    <div class="sk-grid-row" style="margin-bottom:2px;">
+                      <div class="sk-cell" style="height:9px;background:#B8D0DB;border-radius:3px;"></div>
+                      <div class="sk-cell" style="height:9px;background:#B8D0DB;border-radius:3px;"></div>
+                      <div class="sk-cell" style="height:9px;background:#B8D0DB;border-radius:3px;"></div>
+                      <div class="sk-cell" style="height:9px;background:#B8D0DB;border-radius:3px;"></div>
+                    </div>
+                    <!-- data rows -->
+                    <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                    <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                    <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                    <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                    <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                  </div>
+                  <div class="tmpl-info">
+                    <div class="tmpl-name">Data View</div>
+                    <div class="tmpl-desc">A table or card grid — connect a data source</div>
+                  </div>
+                </div>
+
+                <!-- Dashboard -->
+                <div class="tmpl-card">
+                  <div class="tmpl-preview" style="padding:8px 10px;gap:5px;">
+                    <div class="sk-check">✓</div>
+                    <!-- header band -->
+                    <div style="background:#C5D7E0;border-radius:3px;height:14px;width:100%;margin-bottom:4px;"></div>
+                    <!-- two card columns -->
+                    <div style="display:flex;gap:5px;flex:1;">
+                      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                        <div class="sk-grid-row"><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div></div>
+                        <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                        <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                        <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                      </div>
+                      <div style="width:1px;background:#E0EBF0;"></div>
+                      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                        <div class="sk-grid-row"><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div></div>
+                        <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                        <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                        <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tmpl-info">
+                    <div class="tmpl-name">Dashboard</div>
+                    <div class="tmpl-desc">Header band + two data sections below</div>
+                  </div>
+                </div>
+
+                <!-- (empty slot placeholder to balance grid) -->
+                <div></div>
+
+              </div><!-- /tmpl-grid -->
+
+              <!-- selected template info strip -->
+              <div class="selected-info">
+                <svg width="14" height="14" fill="none" stroke="#C8922A" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+                </svg>
+                <span><span class="selected-info-label">Article</span> — 1 richtext section, placeholder text pre-filled. Connect a data source after to enrich the page.</span>
+              </div>
+
+            </div><!-- /tpicker-body -->
+
+            <!-- footer -->
+            <div class="tpicker-footer">
+              <button class="btn-ghost">Cancel</button>
+              <button class="btn-gold">
+                Create Page
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path d="M5 12h14M13 6l6 6-6 6"/>
+                </svg>
+              </button>
+            </div>
+
+          </div><!-- /tpicker -->
+        </div><!-- /backdrop -->
+
+      </section>
+
+
+      <!-- ================================================================
+           SECTION 2 — "YOUR TEMPLATES" TAB (empty state + populated state)
+           ================================================================ -->
+      <section>
+        <div class="ds-label">1.1 — Template Picker: "Your Templates" tab</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+          <!-- empty state -->
+          <div>
+            <div class="tpicker" style="width:100%;">
+              <div class="tpicker-header">
+                <div class="tpicker-title">Choose a template</div>
+                <button class="tpicker-close">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div class="tpicker-body" style="padding-bottom:24px;">
+                <div class="src-tabs">
+                  <button class="src-tab">Theme templates</button>
+                  <button class="src-tab active">Your templates <span style="font-family:'Source Sans 3',sans-serif;font-size:10px;background:#E0EBF0;color:#9BB5C2;border-radius:9999px;padding:0 6px;font-weight:700;margin-left:4px;">0</span></button>
+                </div>
+                <div class="utmpl-empty">
+                  <div class="empty-icon">
+                    <svg width="32" height="32" fill="none" stroke="#C5D7E0" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
+                  </div>
+                  <p>No saved templates yet.</p>
+                  <p style="margin-top:4px;">Open any page, go to <strong>Settings → Save as Template</strong> to create one.</p>
+                </div>
+              </div>
+              <div class="tpicker-footer">
+                <button class="btn-ghost">Cancel</button>
+                <button class="btn-gold" disabled>Create Page →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- populated state -->
+          <div>
+            <div class="tpicker" style="width:100%;">
+              <div class="tpicker-header">
+                <div class="tpicker-title">Choose a template</div>
+                <button class="tpicker-close">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div class="tpicker-body">
+                <div class="src-tabs">
+                  <button class="src-tab">Theme templates</button>
+                  <button class="src-tab active">Your templates <span style="font-family:'Source Sans 3',sans-serif;font-size:10px;background:#E0EBF0;color:#37576B;border-radius:9999px;padding:0 6px;font-weight:700;margin-left:4px;">3</span></button>
+                </div>
+                <!-- 3-col grid of user templates -->
+                <div class="tmpl-grid">
+                  <div class="tmpl-card selected">
+                    <div class="tmpl-preview" style="padding:10px 12px;gap:5px;">
+                      <div class="sk-check">✓</div>
+                      <div class="sk-bar sk-line-lg" style="width:75%;background:#C8A840;opacity:0.6;margin-bottom:3px;"></div>
+                      <div class="sk-line" style="width:100%;"></div>
+                      <div class="sk-line" style="width:100%;"></div>
+                      <div class="sk-line" style="width:80%;"></div>
+                      <div style="height:4px;"></div>
+                      <div style="display:flex;gap:4px;">
+                        <div class="sk-grid-row" style="flex:1;"><div class="sk-cell" style="height:18px;background:#C0D5DF;"></div></div>
+                        <div class="sk-grid-row" style="flex:1;"><div class="sk-cell" style="height:18px;background:#C0D5DF;"></div></div>
+                      </div>
+                    </div>
+                    <div class="tmpl-info">
+                      <div class="tmpl-name">Hazard Overview</div>
+                      <div class="tmpl-desc">Saved by you · Jun 18</div>
+                    </div>
+                  </div>
+                  <div class="tmpl-card">
+                    <div class="tmpl-preview" style="gap:3px;padding:10px;">
+                      <div class="sk-check">✓</div>
+                      <div class="sk-grid-row" style="margin-bottom:2px;"><div class="sk-cell" style="height:9px;background:#B8D0DB;"></div><div class="sk-cell" style="height:9px;background:#B8D0DB;"></div><div class="sk-cell" style="height:9px;background:#B8D0DB;"></div></div>
+                      <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                      <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                      <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                      <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                    </div>
+                    <div class="tmpl-info">
+                      <div class="tmpl-name">County Stats</div>
+                      <div class="tmpl-desc">Saved by editor · Jun 12</div>
+                    </div>
+                  </div>
+                  <div class="tmpl-card">
+                    <div class="tmpl-preview" style="padding:8px 10px;gap:5px;">
+                      <div class="sk-check">✓</div>
+                      <div style="background:#C5D7E0;border-radius:3px;height:14px;width:100%;margin-bottom:4px;"></div>
+                      <div style="display:flex;gap:5px;flex:1;">
+                        <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                          <div class="sk-grid-row"><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div></div>
+                          <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                          <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                        </div>
+                        <div style="width:1px;background:#E0EBF0;"></div>
+                        <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                          <div class="sk-grid-row"><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div><div class="sk-cell" style="height:7px;background:#C0D5DF;"></div></div>
+                          <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                          <div class="sk-grid-row"><div class="sk-cell" style="height:7px;"></div><div class="sk-cell" style="height:7px;"></div></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="tmpl-info">
+                      <div class="tmpl-name">Risk Report</div>
+                      <div class="tmpl-desc">Saved by you · Jun 5</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="selected-info">
+                  <svg width="14" height="14" fill="none" stroke="#C8922A" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+                  <span><span class="selected-info-label">Hazard Overview</span> — saved by you on Jun 18. Includes layout + data source.</span>
+                </div>
+              </div>
+              <div class="tpicker-footer">
+                <button class="btn-ghost">Cancel</button>
+                <button class="btn-gold">Create Page <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           SECTION 3 — PATTERN EDITOR: PAGE TEMPLATES TAB
+           ================================================================ -->
+      <section>
+        <div class="ds-label">2.0 — Pattern Editor: Page Templates Tab</div>
+
+        <div class="pe-shell">
+          <!-- simplified pattern editor chrome -->
+          <div class="pe-topbar">
+            <span class="pe-topbar-title">My Pattern</span>
+            <span class="pe-topbar-sep">›</span>
+            <span class="pe-topbar-sub">Pattern Editor</span>
+          </div>
+          <div class="pe-tabs">
+            <div class="pe-tab">Overview</div>
+            <div class="pe-tab">Pages</div>
+            <div class="pe-tab">Data Sources</div>
+            <div class="pe-tab active">Page Templates</div>
+            <div class="pe-tab">Settings</div>
+          </div>
+
+          <div class="pe-body">
+            <!-- tab header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+              <div>
+                <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:500;text-transform:uppercase;color:#2D3E4C;letter-spacing:.04em;margin-bottom:2px;">Page Templates</div>
+                <div style="font-family:'Source Sans 3',sans-serif;font-size:12px;color:#6D96AE;">Reusable page layouts saved by your team. Choose one when adding a new page.</div>
+              </div>
+            </div>
+
+            <!-- template list table -->
+            <div class="card" style="overflow:hidden;">
+              <table class="mgr-table">
+                <thead>
+                  <tr>
+                    <th>Template Name</th>
+                    <th>Description</th>
+                    <th>Saved By</th>
+                    <th>Last Updated</th>
+                    <th style="text-align:right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="mgr-name">Hazard Overview</div>
+                    </td>
+                    <td><div class="mgr-desc">Title + text + 2-col data tables</div></td>
+                    <td><div class="mgr-meta">you</div></td>
+                    <td><div class="mgr-meta">Jun 18, 2026</div></td>
+                    <td>
+                      <div class="mgr-actions">
+                        <button class="act-btn act-btn-gold">Use →</button>
+                        <button class="act-btn act-btn-danger">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><div class="mgr-name">County Stats</div></td>
+                    <td><div class="mgr-desc">Header + single spreadsheet</div></td>
+                    <td><div class="mgr-meta">editor@agency.gov</div></td>
+                    <td><div class="mgr-meta">Jun 12, 2026</div></td>
+                    <td>
+                      <div class="mgr-actions">
+                        <button class="act-btn act-btn-gold">Use →</button>
+                        <button class="act-btn act-btn-danger">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><div class="mgr-name">Risk Report</div></td>
+                    <td><div class="mgr-desc">Rich multi-section layout with sidebar</div></td>
+                    <td><div class="mgr-meta">you</div></td>
+                    <td><div class="mgr-meta">Jun 5, 2026</div></td>
+                    <td>
+                      <div class="mgr-actions">
+                        <!-- delete confirm state -->
+                        <span style="font-family:'Source Sans 3',sans-serif;font-size:11px;color:#C04040;margin-right:4px;">Delete?</span>
+                        <button class="act-btn" style="color:#C04040;border-color:#C04040;background:#FAEAEA;font-size:10px;padding:3px 10px;">Yes</button>
+                        <button class="act-btn">No</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div><!-- /pe-body -->
+        </div><!-- /pe-shell -->
+
+      </section>
+
+
+      <!-- ================================================================
+           SECTION 4 — SAVE AS TEMPLATE (in page Settings pane)
+           ================================================================ -->
+      <section>
+        <div class="ds-label">3.0 — Save as Template widget (Settings pane, bottom)</div>
+
+        <div style="display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start;">
+          <!-- settings pane strip (partial) -->
+          <div class="card" style="padding:16px;">
+            <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;color:#6D96AE;letter-spacing:.08em;margin-bottom:12px;">Settings</div>
+
+            <!-- stub settings rows -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #E0EBF0;">
+              <span style="font-family:'Source Sans 3',sans-serif;font-size:12px;color:#37576B;">Hide in navigation</span>
+              <div style="width:30px;height:17px;border-radius:9999px;background:#C5D7E0;position:relative;">
+                <div style="position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:white;box-shadow:0 1px 2px rgba(0,0,0,.2);"></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #E0EBF0;">
+              <span style="font-family:'Source Sans 3',sans-serif;font-size:12px;color:#37576B;">Sidebar</span>
+              <div style="width:30px;height:17px;border-radius:9999px;background:#54B99B;position:relative;">
+                <div style="position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:white;box-shadow:0 1px 2px rgba(0,0,0,.2);"></div>
+              </div>
+            </div>
+
+            <!-- save as template widget -->
+            <div class="sat-panel">
+              <div class="sat-label">Save as Page Template</div>
+              <input class="sat-input" type="text" placeholder="Template name…" value="Hazard Overview">
+              <input class="sat-input" type="text" placeholder="Description (optional)…">
+              <div class="sat-row">
+                <span class="sat-hint">Saves this page's current layout for reuse.</span>
+                <button class="btn-gold" style="font-size:11px;padding:6px 16px;border-radius:16px;">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- annotation -->
+          <div style="padding:12px 0;">
+            <div style="font-family:'Oswald',sans-serif;font-size:12px;font-weight:500;text-transform:uppercase;color:#6D96AE;letter-spacing:.06em;margin-bottom:8px;">Notes</div>
+            <ul style="font-family:'Source Sans 3',sans-serif;font-size:13px;color:#37576B;line-height:1.7;list-style:disc;padding-left:18px;">
+              <li>Appears at the bottom of the Settings pane, below all other settings.</li>
+              <li>Saving strips section IDs and refs so sections don't conflict when applied to a new page.</li>
+              <li>Name field: if a template with this name already exists in the pattern, the button changes to <strong>Overwrite</strong> with a two-step confirm (matching component template behaviour).</li>
+              <li>Success/error shown inline below the button (no toast).</li>
+              <li>Description is optional — shown in the picker and in the manager tab.</li>
+            </ul>
+          </div>
+        </div>
+
+      </section>
+
+
+    </div><!-- /flex-1 -->
+  </div><!-- /flex px-gutter -->
+
+</div><!-- /max-w container -->
+
+</body>
+</html>
