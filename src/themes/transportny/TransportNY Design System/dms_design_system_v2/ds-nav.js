@@ -45,6 +45,9 @@
       { f: 'sitemgmt-overview.html', t: 'control room' }, { f: 'sitemgmt-tickets.html', t: 'tickets' },
       { f: 'sitemgmt-ticket.html', t: 'ticket detail' }, { f: 'sitemgmt-page.html', t: 'page QA detail' },
     ]},
+    { key: 'ds2', label: 'Datasets', landing: 'datasets-catalog.html', dir: 'pages', pages: [
+      { f: 'datasets-catalog.html', t: 'data catalog' }, { f: 'datasets-source.html', t: 'source · overview' },
+    ]},
   ];
 
   // current page + folder

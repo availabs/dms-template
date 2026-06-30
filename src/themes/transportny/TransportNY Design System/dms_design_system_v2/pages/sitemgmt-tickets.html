@@ -13,9 +13,9 @@
 </head>
 <body class="tny-pane font-proxima text-[#0F1722]">
 <!--
-  sitemgmt-tickets.html · SITE MANAGEMENT 2 of 4 — the ticket board + list.
-  Board (4 status columns) ⇄ Table toggle over the full ticket set.
-  Everything dynamic is rendered from window.SITEMGMT (sitemgmt-data.js).
+  sitemgmt-tickets.html · SITE MANAGEMENT — all QA tickets across the surfaces. Severity, source
+  (AI / dev / client), status; filter by open/closed/severity/source; each row → ticket detail.
+  Rendered from window.SITEMGMT.
 -->
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
@@ -47,46 +47,25 @@
       <div class="flex flex-1 items-start">
         <div class="flex-1 min-w-0 flex flex-col">
           <main class="mr-auto w-full max-w-[1560px] pl-12 pr-8 py-8">
-
-            <!-- header -->
-            <div class="flex items-end justify-between mb-5">
+            <div class="flex items-end justify-between mb-4">
               <div>
-                <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">// site management · tickets</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">// site management</div>
                 <h1 class="font-display text-[30px] leading-none font-medium text-[#0F1722]">Tickets</h1>
               </div>
-              <div class="inline-flex rounded-md overflow-hidden border border-slate-200 shadow-sm">
-                <button id="btnBoard" onclick="showView('board')" class="font-proxima text-[12.5px] px-3.5 py-1.5 bg-[#1F3F8F] text-white">Board</button>
-                <button id="btnTable" onclick="showView('table')" class="font-proxima text-[12.5px] px-3.5 py-1.5 bg-white text-slate-600 border-l border-slate-200">Table</button>
-              </div>
+              <button class="font-proxima text-[12.5px] px-3 py-1.5 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">+ Add ticket</button>
             </div>
-
-            <!-- filter bar (visual) -->
-            <div class="flex flex-wrap items-center gap-2 mb-4" id="filters"></div>
-
-            <!-- board -->
-            <div id="board" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3"></div>
-
-            <!-- table -->
-            <div id="table" hidden>
-              <div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                  <thead>
-                    <tr class="bg-slate-50 border-b border-slate-100 font-mono text-[10px] uppercase tracking-wider text-slate-500">
-                      <th class="py-2 pl-4 pr-2 font-medium">ID</th>
-                      <th class="py-2 px-2 font-medium">Severity</th>
-                      <th class="py-2 px-2 font-medium">Priority</th>
-                      <th class="py-2 px-2 font-medium">Status</th>
-                      <th class="py-2 px-2 font-medium">Surface · Page</th>
-                      <th class="py-2 px-2 font-medium">Title</th>
-                      <th class="py-2 px-2 font-medium">Assignee</th>
-                      <th class="py-2 px-2 pr-4 font-medium">Updated</th>
-                    </tr>
-                  </thead>
-                  <tbody id="ticketRows"></tbody>
-                </table>
-              </div>
+            <div id="summary"></div>
+            <div id="filters" class="flex flex-wrap items-center gap-2 mb-3"></div>
+            <div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 overflow-hidden">
+              <table class="w-full text-left border-collapse">
+                <thead><tr class="bg-slate-50 border-b border-slate-100 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                  <th class="py-2 pl-4 pr-2 font-medium">#</th><th class="py-2 px-2 font-medium">Severity</th><th class="py-2 px-2 font-medium">Source</th>
+                  <th class="py-2 px-2 font-medium">Status</th><th class="py-2 px-2 font-medium">Ticket</th><th class="py-2 px-2 font-medium">Page</th>
+                  <th class="py-2 px-2 font-medium">Owner</th><th class="py-2 px-2 pr-4 font-medium">Updated</th></tr></thead>
+                <tbody id="rows"></tbody>
+              </table>
             </div>
-
+            <div id="empty" class="hidden py-8 text-center font-proxima text-[13px] text-slate-400">No tickets match this filter.</div>
           </main>
           <footer class="w-full bg-white border-t border-zinc-950/10 mt-6">
             <div class="mr-auto w-full max-w-[1560px] pl-12 pr-8 py-4 flex items-center justify-between">
@@ -103,83 +82,100 @@
   </div>
 </div>
 
-<script>
-  function showView(v){
-    var board = document.getElementById('board'), table = document.getElementById('table');
-    var bB = document.getElementById('btnBoard'), bT = document.getElementById('btnTable');
-    var on = 'font-proxima text-[12.5px] px-3.5 py-1.5 bg-[#1F3F8F] text-white';
-    var off = 'font-proxima text-[12.5px] px-3.5 py-1.5 bg-white text-slate-600 border border-slate-200';
-    if (v === 'table'){ board.hidden = true; table.hidden = false; bT.className = on; bB.className = off; }
-    else { board.hidden = false; table.hidden = true; bB.className = on; bT.className = off; }
-  }
-</script>
 <script src="sitemgmt-data.js"></script>
 <script>
 (function(){
   var S = window.SITEMGMT;
-  var $ = function(id){ return document.getElementById(id); };
-  function badge(text, cls){ return '<span class="inline-flex items-center rounded px-2 py-[3px] text-[11px] font-medium '+cls+'">'+text+'</span>'; }
-  function pill(text, cls){ return '<span class="inline-flex items-center rounded-full px-2 py-[2px] text-[10.5px] font-medium '+cls+'">'+text+'</span>'; }
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function initials(a){ return (a && a !== '—') ? a : '—'; }
-  function ageDays(t){ return Math.round((Date.parse(S.asOf) - Date.parse(t.opened)) / 86400000); }
+  function badge(text, cls){ return '<span class="inline-flex items-center rounded px-2 py-[3px] text-[11px] font-medium '+cls+'">'+esc(text)+'</span>'; }
+  var statusColor = { 'Triage':'bg-slate-100 text-slate-500', 'In progress':'bg-sky-100 text-sky-700', 'In review':'bg-amber-100 text-amber-700', 'Resolved':'bg-emerald-100 text-emerald-700', 'Closed':'bg-emerald-100 text-emerald-700' };
 
-  var statusBadge = function(status){
-    var cls = (status === 'Resolved' || status === 'Closed') ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600';
-    return badge(status, cls);
-  };
+  var filter = { kind: 'all', sev: null, src: null };
+  var openN = S.tickets.filter(function(t){ return S.isOpen(t); }).length;
+  var chips = [
+    { id:'all',    label:'All ('+S.tickets.length+')' },
+    { id:'open',   label:'Open ('+openN+')' },
+    { id:'closed', label:'Closed ('+(S.tickets.length-openN)+')' },
+  ];
+  var sevs = ['Blocker','Major','Minor','Polish'];
+  var srcs = [['ai','AI'],['dev','Dev'],['client','Client']];
 
-  // ── filter bar (visual only) ──
-  var fchips = ['All','Blocker+Major','Now','Open','Resolved'];
-  $('filters').innerHTML = '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mr-1">filter</span>'
-    + fchips.map(function(f,i){ return '<button class="font-proxima text-[12px] px-2.5 py-1 rounded-full border '+(i===0?'bg-[#1F3F8F] text-white border-[#1F3F8F]':'bg-white text-slate-600 border-slate-200 hover:border-slate-300')+'">'+f+'</button>'; }).join('')
-    + '<div class="ml-auto"><input placeholder="search tickets…" class="font-proxima text-[12px] px-3 py-1.5 rounded-md border border-slate-200 w-48 focus:outline-none focus:border-[#1F3F8F]"/></div>';
-
-  // ── BOARD ──
-  var statuses = ['Triage','In progress','In review','Resolved'];
-  function card(t){
-    var p = S.page(t.page), surf = S.surface(p.surface);
-    return '<a href="sitemgmt-ticket.html?id='+t.id+'" class="block bg-white rounded-md shadow-sm border border-zinc-950/5 p-3 hover:shadow-md transition-shadow">'
-      + '<div class="flex items-center gap-2 mb-2">'
-      +   badge(t.severity, S.sevColor[t.severity])
-      +   pill(t.priority, S.prioColor[t.priority])
-      +   '<span class="ml-auto font-mono text-[11px] text-slate-300">#'+t.id+'</span>'
-      + '</div>'
-      + '<div class="font-proxima text-[13px] text-slate-800 leading-snug mb-2.5 line-clamp-2">'+esc(t.title)+'</div>'
-      + '<div class="flex items-center gap-2">'
-      +   '<span class="font-mono text-[10px] text-slate-400 truncate flex-1 min-w-0">'+esc(surf.label)+' / '+esc(p.name)+'</span>'
-      +   '<span class="inline-flex items-center justify-center size-5 rounded-full bg-slate-200 text-slate-600 font-mono text-[9px] font-semibold">'+esc(initials(t.assignee))+'</span>'
-      +   '<span class="font-mono text-[10px] text-slate-400 tabular-nums">'+ageDays(t)+'d</span>'
-      + '</div>'
-      + '</a>';
+  function renderFilters(){
+    var h = '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mr-1">status</span>';
+    h += chips.map(function(c){ var on = filter.kind===c.id; return '<button data-k="'+c.id+'" class="chip font-proxima text-[12px] px-2.5 py-1 rounded-full border '+(on?'bg-[#1F3F8F] text-white border-[#1F3F8F]':'bg-white text-slate-600 border-slate-200 hover:border-slate-300')+'">'+c.label+'</button>'; }).join('');
+    h += '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mx-1 ml-3">severity</span>';
+    h += sevs.map(function(s){ var on=filter.sev===s; return '<button data-sev="'+s+'" class="chip font-proxima text-[12px] px-2.5 py-1 rounded-full border '+(on?'bg-slate-800 text-white border-slate-800':'bg-white text-slate-600 border-slate-200 hover:border-slate-300')+'">'+s+'</button>'; }).join('');
+    h += '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mx-1 ml-3">source</span>';
+    h += srcs.map(function(s){ var on=filter.src===s[0]; return '<button data-src="'+s[0]+'" class="chip font-proxima text-[12px] px-2.5 py-1 rounded-full border '+(on?'bg-sky-600 text-white border-sky-600':'bg-white text-slate-600 border-slate-200 hover:border-slate-300')+'">'+s[1]+'</button>'; }).join('');
+    document.getElementById('filters').innerHTML = h;
+    document.querySelectorAll('.chip').forEach(function(b){ b.onclick = function(){
+      if(b.dataset.k) filter.kind = b.dataset.k;
+      if(b.dataset.sev) filter.sev = (filter.sev===b.dataset.sev?null:b.dataset.sev);
+      if(b.dataset.src) filter.src = (filter.src===b.dataset.src?null:b.dataset.src);
+      renderFilters(); renderRows();
+    };});
   }
-  $('board').innerHTML = statuses.map(function(st){
-    var col = S.tickets.filter(function(t){ return t.status === st; });
-    return '<div class="bg-slate-50/70 rounded-lg p-2">'
-      + '<div class="flex items-center justify-between px-1.5 py-1.5 mb-1">'
-      +   '<span class="font-display text-[12px] font-semibold uppercase tracking-wide text-slate-600">'+st+'</span>'
-      +   '<span class="inline-flex items-center justify-center min-w-[20px] px-1.5 h-5 rounded-full bg-white border border-slate-200 font-mono text-[10px] text-slate-500 tabular-nums">'+col.length+'</span>'
-      + '</div>'
-      + '<div class="flex flex-col gap-2">'+ (col.length ? col.map(card).join('') : '<div class="px-1.5 py-4 text-center font-mono text-[11px] text-slate-300">none</div>') +'</div>'
-      + '</div>';
-  }).join('');
+  function renderRows(){
+    var rows = S.tickets.slice().sort(function(a,b){ var ao=S.isOpen(a)?0:1, bo=S.isOpen(b)?0:1; return (ao-bo)||(a.updated<b.updated?1:-1); })
+      .filter(function(t){
+        if(filter.kind==='open' && !S.isOpen(t)) return false;
+        if(filter.kind==='closed' && S.isOpen(t)) return false;
+        if(filter.sev && t.severity!==filter.sev) return false;
+        if(filter.src && S.sourceOf(t)!==filter.src) return false;
+        return true;
+      });
+    document.getElementById('empty').classList.toggle('hidden', rows.length>0);
+    document.getElementById('rows').innerHTML = rows.map(function(t){
+      var open=S.isOpen(t), src=S.sourceOf(t), pg=S.page(t.page)||{name:t.page};
+      return '<tr class="border-b border-slate-50 hover:bg-slate-50/60 cursor-pointer" onclick="location.href=\'sitemgmt-ticket.html?id='+t.id+'\'">'
+        + '<td class="py-2 pl-4 pr-2 font-mono text-[11px] text-slate-400">#'+t.id+'</td>'
+        + '<td class="py-2 px-2">'+badge(t.severity, S.sevColor[t.severity])+'</td>'
+        + '<td class="py-2 px-2">'+badge(S.sourceLabel[src], S.sourceColor[src])+'</td>'
+        + '<td class="py-2 px-2">'+badge(t.status, statusColor[t.status]||'bg-slate-100 text-slate-500')+'</td>'
+        + '<td class="py-2 px-2 font-proxima text-[13px] '+(open?'text-slate-800':'text-slate-400 line-through')+'">'+esc(t.title)+'</td>'
+        + '<td class="py-2 px-2 font-proxima text-[12px] text-slate-500">'+esc(pg.name)+'</td>'
+        + '<td class="py-2 px-2 font-mono text-[11px] text-slate-500">'+esc(t.assignee)+'</td>'
+        + '<td class="py-2 px-2 pr-4 font-mono text-[11px] text-slate-400 tabular-nums">'+esc(t.updated)+'</td></tr>';
+    }).join('');
+  }
+  function renderSummary(){
+    var byStatus = { 'Triage':0, 'In progress':0, 'In review':0, 'Resolved':0, 'Closed':0 };
+    S.tickets.forEach(function(t){ byStatus[t.status] = (byStatus[t.status]||0)+1; });
+    var open = S.tickets.filter(function(t){ return S.isOpen(t); }).length, done = S.tickets.length - open;
+    var bySev = { Blocker:0, Major:0, Minor:0, Polish:0 }; S.tickets.filter(function(t){ return S.isOpen(t); }).forEach(function(t){ bySev[t.severity]++; });
+    var bySrc = { ai:0, dev:0, client:0 }; S.tickets.forEach(function(t){ bySrc[S.sourceOf(t)]++; });
+    var eDone=0, eTot=0; S.tickets.forEach(function(t){ var w=S.sevWeight[t.severity]||1; eTot+=w; if(!S.isOpen(t)) eDone+=w; });
+    var ePct = eTot ? Math.round(100*eDone/eTot) : 0;
 
-  // ── TABLE ──
-  $('ticketRows').innerHTML = S.tickets.map(function(t){
-    var p = S.page(t.page), surf = S.surface(p.surface);
-    var done = (t.status === 'Resolved' || t.status === 'Closed');
-    var muted = done ? ' text-slate-400' : '';
-    return '<tr onclick="location.href=\'sitemgmt-ticket.html?id='+t.id+'\'" class="border-b border-slate-50 hover:bg-blue-50/40 cursor-pointer'+muted+'">'
-      + '<td class="py-2.5 pl-4 pr-2"><span class="font-mono text-[11px] text-slate-400 tabular-nums">#'+t.id+'</span></td>'
-      + '<td class="py-2.5 px-2">'+badge(t.severity, S.sevColor[t.severity])+'</td>'
-      + '<td class="py-2.5 px-2">'+pill(t.priority, S.prioColor[t.priority])+'</td>'
-      + '<td class="py-2.5 px-2">'+statusBadge(t.status)+'</td>'
-      + '<td class="py-2.5 px-2"><span class="font-mono text-[11px] text-slate-500">'+esc(surf.label)+' / '+esc(p.name)+'</span></td>'
-      + '<td class="py-2.5 px-2"><span class="font-proxima text-[13px]'+(done?' text-slate-400':' text-slate-800')+'">'+esc(t.title)+'</span></td>'
-      + '<td class="py-2.5 px-2"><span class="font-mono text-[11px] text-slate-500">'+esc(t.assignee)+'</span></td>'
-      + '<td class="py-2.5 px-2 pr-4"><span class="font-mono text-[11px] text-slate-400 tabular-nums">'+esc(t.updated)+'</span></td>'
-      + '</tr>';
-  }).join('');
+    var FLOW = [['Triage',byStatus['Triage'],'bg-slate-300'],['In progress',byStatus['In progress'],'bg-sky-400'],['In review',byStatus['In review'],'bg-amber-400'],['Resolved / closed',done,'bg-emerald-500']];
+    var h = '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4 mb-4">'
+      + '<div class="flex items-center justify-between mb-3"><span class="font-display text-[14px] font-medium text-slate-800">Where tickets stand</span>'
+      + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">lifecycle · reported → resolved</span></div>'
+      + '<div class="flex items-stretch gap-1">'
+      + FLOW.map(function(s,i){
+          var last = i===FLOW.length-1;
+          return '<div class="flex-1 rounded-md border '+(last?'border-emerald-200 bg-emerald-50/50':'border-slate-200 bg-slate-50/60')+' p-3">'
+            + '<div class="flex items-center gap-2"><span class="size-2.5 rounded-full '+s[2]+'"></span>'
+            + '<span class="font-display text-[12.5px] font-medium text-slate-700">'+s[0]+'</span>'
+            + '<span class="ml-auto font-display text-[18px] font-semibold text-[#0F1722]">'+s[1]+'</span></div></div>'
+            + (last?'':'<div class="flex items-center text-slate-300 text-[16px] px-0.5">›</div>');
+        }).join('')
+      + '</div>'
+      // stats: resolution + severity + source
+      + '<div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-100 mt-4 pt-3">'
+      + '<div><div class="flex items-center justify-between mb-1"><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">resolution</span><span class="font-display text-[16px] font-semibold tabular-nums">'+ePct+'%</span></div>'
+      + '<div class="h-2 rounded-full bg-amber-100 overflow-hidden"><div class="h-full bg-emerald-500" style="width:'+ePct+'%"></div></div>'
+      + '<div class="font-mono text-[11px] text-slate-500 mt-1"><span class="text-amber-600 font-semibold">'+open+'</span> open · <span class="text-emerald-600 font-semibold">'+done+'</span> done</div></div>'
+      + '<div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">open by severity</div><div class="flex flex-wrap gap-x-3.5 gap-y-1">'
+      + ['Blocker','Major','Minor','Polish'].map(function(sv){ return '<span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] '+(bySev[sv]?'text-slate-700':'text-slate-300')+'"><span class="size-2 rounded-full '+S.sevDot[sv]+'"></span>'+sv+' <span class="font-mono tabular-nums '+(bySev[sv]?'font-semibold':'')+'">'+bySev[sv]+'</span></span>'; }).join('')
+      + '</div></div>'
+      + '<div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">found by</div><div class="flex flex-wrap gap-x-3.5 gap-y-1">'
+      + [['ai','AI'],['dev','Dev'],['client','Client']].map(function(s){ return '<span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] '+(bySrc[s[0]]?'text-slate-700':'text-slate-300')+'"><span class="inline-flex items-center rounded px-1.5 py-[1px] text-[10px] font-medium '+S.sourceColor[s[0]]+'">'+s[1]+'</span><span class="font-mono tabular-nums '+(bySrc[s[0]]?'font-semibold':'')+'">'+bySrc[s[0]]+'</span></span>'; }).join('')
+      + '</div></div>'
+      + '</div></div>';
+    document.getElementById('summary').innerHTML = h;
+  }
+  renderSummary(); renderFilters(); renderRows();
 })();
 </script>
 <script src="../ds-nav.js"></script>
