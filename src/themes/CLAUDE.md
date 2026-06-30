@@ -70,3 +70,11 @@ Only after those four answer "no" should you reach for a custom section componen
 See [THEME_EDITING_GUIDE.md](./THEME_EDITING_GUIDE.md) for the mechanical details of theme file structure (`options/styles`, named styles, merging, registered widgets/column types, etc.).
 
 See `src/dms/skills/card-layout.md` for the full surface of Card-section authoring knobs.
+
+## Custom theme components worth knowing about
+
+- **`transportny/components/ReportRouteList`** — a custom page section that manages a "report"
+  (a list of routes + graphs) and, unusually, injects graph sections into the page in **view**
+  mode via `setItem` rather than the normal add-component flow. It is the one place in the codebase
+  that sidesteps that flow. Read [its README](./transportny/components/ReportRouteList/README.md)
+  before touching it — especially the open question about where in-place graph edits should persist.
