@@ -1,10 +1,9 @@
-import React, { useCallback, useContext, useEffect, useState, useRef } from 'react';
-import { get, cloneDeep } from 'lodash-es';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { cloneDeep, get, isEqual } from 'lodash-es';
 import { ComponentContext, PageContext, CMSContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
 import { reportRouteListTheme } from './ReportRouteList.theme';
-import { buildUdaConfig } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
-import { nameToSlug } from '../../../../dms/packages/dms/src/utils/type-utils';
+import { buildUdaConfig, SELF_PARAM_KEY_SENTINEL, selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 
 // Helper functions based on useDataSource.js
 const getSources = async (falcor, envs) => {
@@ -40,7 +39,6 @@ const getViews = async (falcor, sourceId, srcEnv, viewAttributes) => {
 };
 
 function transformReportRoutes(routes) {
-  //const routes = report.data?.routes || [];
   if(!routes || routes.length < 1){
     return;
   }
@@ -151,13 +149,56 @@ function roundToFiveMinutes(dateStr) {
   return `${datePart}T${String(finalHours).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}`;
 }
 
-export default function ReportRouteList(props) {
-  const { isEdit, updateItem } = props;
+// Stable reference for "no routes yet" — `item?.[routesKey] || []` would otherwise
+// produce a brand-new array every render, which would re-trigger the publish effect
+// below on every render (it depends on `routes`) and loop forever.
+const EMPTY_ROUTES = [];
+const EMPTY_SECTIONS = [];
+
+// Finds sibling page sections carrying an enabled `comparison_series` subscriber
+// wired to the `$self` sentinel (see `buildUdaConfig.js`) — i.e. graphs ready to
+// receive a per-instance route list. Each match's own key is derived from its own
+// section id via `selfParamKey`, so publishing needs no author-typed param key.
+// Ordinal labels number only the discovered graphs, not their position among all
+// sections, so interleaved non-graph sections don't create label gaps.
+function findSelfBoundGraphs(sectionList) {
+  return (sectionList || [])
+    .map((section) => {
+      if (section?.id == null) return null;
+      const elementData = section?.element?.['element-data'];
+      if (typeof elementData !== 'string') return null;
+      let parsed;
+      try {
+        parsed = JSON.parse(elementData);
+      } catch (e) {
+        return null;
+      }
+      const subscribers = parsed?.display?._functions?.subscribers;
+      const sub = Array.isArray(subscribers)
+        ? subscribers.find((s) => s?.functionId === 'comparison_series' && s?.enabled && s?.paramKey === SELF_PARAM_KEY_SENTINEL)
+        : null;
+      if (!sub) return null;
+      return { sectionId: String(section.id) };
+    })
+    .filter(Boolean)
+    .map((g, i) => ({ ...g, paramKey: selfParamKey(g.sectionId), label: `Graph ${i + 1}` }));
+}
+
+export default function ReportRouteList() {
+  const { apiLoad, apiUpdate, pageState, setActionParam, clearActionParam, item, format, editPageMode } = useContext(PageContext) || {};
   const { falcor, datasources } = useContext(CMSContext) || {};
-  const { state, setState, state:{join} } = useContext(ComponentContext) || {};
-  const { apiLoad, apiUpdate, pageState, setPageState, format, clearActionParam, setActionParam,item, setItem } = useContext(PageContext) || {};
+  const { setState, state, state:{join, externalSource} } = useContext(ComponentContext) || {};
+  // NOT `props.isEdit` — that's dataWrapper's per-section "is THIS component's own
+  // settings editor open" flag (almost always false in normal interactive use, since
+  // this panel renders via SectionView even on an /edit/... page). `editPageMode`
+  // (from PageContext, set only on the /edit/... route) is whichever sections array
+  // (`draft_sections` vs `sections`) sibling components are ACTUALLY rendering from
+  // right now — that's what routesKey/sectionsKey below must track, since graphIds
+  // stored on a route only mean anything if they reference the ids of the sections
+  // actually on screen.
+  const isEdit = Boolean(editPageMode);
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
-  const { Button, Select, Input, Icon } = UI || {};
+  const { Button, Input, Icon } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -166,45 +207,27 @@ export default function ReportRouteList(props) {
   const [views, setViews] = useState([]);
   const [pendingRoute, setPendingRoute] = useState(null);
   const [expandedRoutes, setExpandedRoutes] = useState({});
-  const [expandedGraphs, setExpandedGraphs] = useState({});
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
-  const [isGraphsExpanded, setIsGraphsExpanded] = useState(true);
   const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
   const [editNameValue, setEditNameValue] = useState('');
-  const [editingGraphNameIndex, setEditingGraphNameIndex] = useState(null);
-  const [editGraphNameValue, setEditGraphNameValue] = useState('');
   const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
   const [editStartDateValue, setEditStartDateValue] = useState('');
   const [editEndDateValue, setEditEndDateValue] = useState('');
-  const [graphTemplates, setGraphTemplates] = useState([]);
-  const [selectedGraphTemplateId, setSelectedGraphTemplateId] = useState('');
-  const routeSourceInfo = join?.sources?.table1?.sourceInfo;
+  const routeSourceInfo = externalSource;
+  console.log("comp state::", state)
+  // The report's routes live on the page item itself (a "report" IS a page, created
+  // from the Report Page template) — draft copy while editing, published copy in view.
+  // ReportRouteList no longer owns a separate report data row.
+  const routesKey = isEdit ? 'draft_routes' : 'routes';
+  const routes = item?.[routesKey] || EMPTY_ROUTES;
 
-  const currentReport = state?.data?.[0];
-
-  const loadTemplates = useCallback(async () => {
-    if (!apiLoad) return;
-    
-    // Mimicking TemplateManager pattern
-    try {
-      const rows = await apiLoad({
-        format: { 
-          app: "npmrdsv5", 
-          type: "npmrds_sub|avl_graph_template", 
-          attributes: ["id", "updated_at", "app", "type", "data"] 
-        },
-        children: [{ type: () => {}, action: "list", path: "/" }],
-      });
-      const list = (rows || []).filter(r => r && r.id);
-      setGraphTemplates(list);
-    } catch (e) {
-      console.error('<ReportRouteList:loadTemplates>', e);
-    }
-  }, [apiLoad]);
-
-  useEffect(() => { 
-    loadTemplates(); 
-  }, [loadTemplates]);
+  // Sibling graphs on this same page that are ready to receive a per-instance route
+  // list (see findSelfBoundGraphs above). Read-only — never written to; each graph
+  // resolves its own key from its own section id.
+  const sectionsKey = isEdit ? 'draft_sections' : 'sections';
+  const sectionList = item?.[sectionsKey] || EMPTY_SECTIONS;
+  const graphs = useMemo(() => findSelfBoundGraphs(sectionList), [sectionList]);
+  const knownSectionIds = useMemo(() => new Set(sectionList.map((s) => s?.id != null ? String(s.id) : null).filter(Boolean)), [sectionList]);
 
   const getDateValue = (val) => (val || '').split('T')[0];
   const getTimeValue = (val) => (val || '').split('T')[1] || '';
@@ -221,10 +244,8 @@ export default function ReportRouteList(props) {
     setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
-  const routes = currentReport?.routes || [];
-  const reportId = pageState?.filters?.find(f => f.searchKey === 'report_id')?.values?.[0];
   const addRouteId = pageState?.filters?.find(f => f.searchKey === 'add_route_id' && f.type === 'action')?.values?.[0];
-
+  console.log({addRouteId})
   useEffect(() => {
     if (!falcor || !datasources?.length) return;
     const envs = datasources.reduce((acc, ds) => {
@@ -263,24 +284,25 @@ export default function ReportRouteList(props) {
   };
 
   const fetchDynamicRoute = async () => {
+    console.log({addRouteId, apiLoad, routeSourceInfo})
     if (!addRouteId || !apiLoad || !routeSourceInfo) return;
     setLoading(true);
-    
+    console.log("fetching dynamic route")
     const externalSource = {
       ...routeSourceInfo,
     };
-    
+
     const udaConfig = buildUdaConfig({
       externalSource,
       columns: externalSource.columns.map(c => ({...c, show: true})),
       filters: { op: "AND", groups: [{ col: "data->>'route_id'", op: "filter", value: addRouteId.value }] }
     });
-    
+
     const config = {
       format: { ...externalSource, app: "npmrdsv5", type: "routes_data" },
       children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options) }, params: {} }]
     };
-    
+
     try {
       const data = await apiLoad(config, "/");
       if (data && data[0]) setPendingRoute(data[0].data.value);
@@ -298,8 +320,16 @@ export default function ReportRouteList(props) {
     }
   },[addRouteId]);
 
+  // Persist a route mutation onto the page row — `draft_routes` while editing,
+  // `routes` in view (routes are edited live, even outside edit mode, mirroring
+  // today's behavior). This replaces the old dataWrapper-row `updateItem` write.
+  const persistRoutes = async (nextRoutes) => {
+    if (!apiUpdate || !item?.id) return;
+    await apiUpdate({ data: { id: item.id, [routesKey]: nextRoutes }, config: { format } });
+  };
+
   const addRoute = async () => {
-    if (!updateItem || !currentReport?.id || !pendingRoute || saving) return;
+    if (!apiUpdate || !item?.id || !pendingRoute || saving) return;
     setSaving(true);
     setError('');
     try {
@@ -313,14 +343,13 @@ export default function ReportRouteList(props) {
           }
         }
       });
-      
+
       const newRoute = {
         ...pendingRoute,
         route_comp_id: `comp-${maxId + 1}`
       };
 
-      const updatedRoutes = [...routes, newRoute];
-      await updateItem(updatedRoutes, { name: 'routes' }, currentReport);
+      await persistRoutes([...routes, newRoute]);
 
       setPendingRoute(null);
       clearActionParam('add_route_id');
@@ -333,12 +362,11 @@ export default function ReportRouteList(props) {
   };
 
   const removeRoute = async (indexToRemove) => {
-    if (!updateItem || !currentReport?.id || saving) return;
+    if (!apiUpdate || !item?.id || saving) return;
     setSaving(true);
     setError('');
     try {
-      const updatedRoutes = routes.filter((_, i) => i !== indexToRemove);
-      await updateItem(updatedRoutes, { name: 'routes' }, currentReport);
+      await persistRoutes(routes.filter((_, i) => i !== indexToRemove));
     } catch (e) {
       console.error('<ReportRouteList:remove>', e);
       setError('Could not remove route.');
@@ -347,78 +375,9 @@ export default function ReportRouteList(props) {
     }
   };
 
-  const updateGraphRouteAssociation = async (graphIndex, routeCompId, action) => {
-    if (!updateItem || !currentReport?.id || saving) return;
-    setSaving(true);
-    setError('');
-    try {
-      const updatedGraphComps = cloneDeep(currentReport.graph_comps || []);
-      const graph = updatedGraphComps[graphIndex];
-      
-      if (action === 'add') {
-        if (!graph.route_comp_ids.includes(routeCompId)) {
-          graph.route_comp_ids.push(routeCompId);
-        }
-      } else if (action === 'remove') {
-        graph.route_comp_ids = graph.route_comp_ids.filter(id => id !== routeCompId);
-      }
-      
-      // Update element-data to keep it in sync
-      const elementData = graph.element['element-data'] ? JSON.parse(graph.element['element-data']) : {};
-      elementData.route_comp_ids = graph.route_comp_ids;
-      graph.element['element-data'] = JSON.stringify(elementData);
-
-      await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
-    } catch (e) {
-      console.error('<ReportRouteList:updateGraphRouteAssociation>', e);
-      setError('Could not update graph association.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const removeGraph = async (indexToRemove) => {
-    if (!updateItem || !currentReport?.id || saving) return;
-    setSaving(true);
-    setError('');
-    try {
-      const updatedGraphComps = (currentReport.graph_comps || []).filter((_, i) => i !== indexToRemove);
-      await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
-    } catch (e) {
-      console.error('<ReportRouteList:removeGraph>', e);
-      setError('Could not remove graph.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const updateGraph = async ({index, updates}) => {
-    if (!updateItem || !currentReport?.id || saving || !updates) return;
-    setSaving(true);
-    setError('');
-    try {
-      const updatedGraphComps = cloneDeep(currentReport.graph_comps || []);
-      const graph = updatedGraphComps[index];
-      const elementData = graph.element['element-data'] ? JSON.parse(graph.element['element-data']) : {};
-      
-      if (updates.title !== undefined) {
-        elementData.title = updates.title;
-      }
-      
-      graph.element['element-data'] = JSON.stringify(elementData);
-      
-      await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
-    } catch (e) {
-      console.error('<ReportRouteList:updateGraph>', e);
-      setError('Could not update graph.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const reorderRoutes = async (index, direction) => {
-    if (!updateItem || !currentReport?.id || saving) return;
-    
+    if (!apiUpdate || !item?.id || saving) return;
+
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= routes.length) return;
 
@@ -429,8 +388,8 @@ export default function ReportRouteList(props) {
       const temp = updatedRoutes[index];
       updatedRoutes[index] = updatedRoutes[newIndex];
       updatedRoutes[newIndex] = temp;
-      
-      await updateItem(updatedRoutes, { name: 'routes' }, currentReport);
+
+      await persistRoutes(updatedRoutes);
     } catch (e) {
       console.error('<ReportRouteList:reorder>', e);
       setError('Could not reorder route.');
@@ -439,32 +398,8 @@ export default function ReportRouteList(props) {
     }
   };
 
-  const reorderGraphs = async (index, direction) => {
-    if (!updateItem || !currentReport?.id || saving) return;
-    
-    const graphComps = currentReport.graph_comps || [];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= graphComps.length) return;
-
-    setSaving(true);
-    setError('');
-    try {
-      const updatedGraphs = [...graphComps];
-      const temp = updatedGraphs[index];
-      updatedGraphs[index] = updatedGraphs[newIndex];
-      updatedGraphs[newIndex] = temp;
-      
-      await updateItem(updatedGraphs, { name: 'graph_comps' }, currentReport);
-    } catch (e) {
-      console.error('<ReportRouteList:reorderGraphs>', e);
-      setError('Could not reorder graph.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const updateRoute = async ({index, updates}) => {
-    if (!updateItem || !currentReport?.id || saving || !updates) return;
+    if (!apiUpdate || !item?.id || saving || !updates) return;
     setSaving(true);
     setError('');
     try {
@@ -476,7 +411,7 @@ export default function ReportRouteList(props) {
           }
           newRoutes[index][field] = finalValue;
       });
-      await updateItem(newRoutes, { name: 'routes' }, currentReport);
+      await persistRoutes(newRoutes);
     } catch (e) {
       console.error('<ReportRouteList:update>', e);
       setError('Could not update route.');
@@ -484,166 +419,78 @@ export default function ReportRouteList(props) {
       setSaving(false);
     }
   };
-  // Update dynamic bindings and graph component configurations when routes change
-  // UPDATES THE PERSISTED DB DATA WITHIN CURRENT ROUTE
-  useEffect(() => {
-    // 1. Existing setActionParam
-    const routeFilter = transformReportRoutes(routes);
-    // if (setActionParam && routeFilter !== undefined) {
-    //   setActionParam('routes', routeFilter);
-    // }
 
-    // 2. New logic: Update graph_comps element-data with new variants
-    if (!currentReport?.graph_comps || !updateItem || !currentReport?.id) {
-      return;
-    }
-
-    let updated = false;
-    const updatedGraphComps = currentReport.graph_comps.map(comp => {
-      // Calculate new variants based on routes
-      const newVariants = transformReportRoutes(routes.filter(r => comp.route_comp_ids?.includes(r.route_comp_id))) || [];
-      
-      // Check if variants actually changed
-      if (JSON.stringify(comp.comparisonSeries.variants) === JSON.stringify(newVariants)) {
-        return comp;
-      }
-      
-      updated = true;
-      // Prepare new comparisonSeries config
-      const newComparisonSeries = {
-        ...comp.comparisonSeries,
-        variants: newVariants,
-        seriesLabel: comp.comparisonSeries.seriesLabel || 'Routes' // Ensure seriesLabel persists
-      };
-
-      // Parse element-data
-      const elementData = comp.element['element-data'] ? JSON.parse(comp.element['element-data']) : {};
-      elementData.comparisonSeries = newComparisonSeries;
-
-      // Return updated component
-      return {
-        ...comp,
-        comparisonSeries: newComparisonSeries,
-        element: {
-          ...comp.element,
-          'element-data': JSON.stringify(elementData)
-        }
-      };
-    });
-
-    if (updated) {
-      updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
-    }
-  }, [routes, updateItem, setActionParam, currentReport?.id, currentReport?.graph_comps]);
-
-  // Sync graph_comps to page item -- RENDERS GRAPHS TO PAGE
-  useEffect(() => {
-    if (!currentReport?.graph_comps || !setItem) return;
-
-    setItem(draft => {
-        // Ensure `draft` has `sections` and `draft_sections` arrays.
-        if (!draft.sections) draft.sections = [];
-        if (!draft.draft_sections) draft.draft_sections = [];
-
-        // Remove existing 'reports' components
-        draft.sections = draft.sections.filter(c => c.createdBy !== 'reports');
-        draft.draft_sections = draft.draft_sections.filter(c => c.createdBy !== 'reports');
-        // Add components from graph_comps
-
-        console.log("current graph comps::", currentReport.graph_comps)
-        const injected = (currentReport.graph_comps || []).map(comp => {
-          const elementData = comp.element['element-data'] ? JSON.parse(comp.element['element-data']) : {};
-          return {
-              ...comp,
-              title: elementData?.title || 'New Graph',
-              //display: {...comp.display, title: elementData?.title || 'New Graph' },
-              // Ensure comparisonSeries is merged into the section configuration
-              config: {
-                  ...(comp.config || {}),
-                  title: elementData.title,
-                  comparisonSeries: comp.comparisonSeries,
-                  route_comp_ids: comp.route_comp_ids,
-                  routes // Pass live routes to allow dynamic resolution
-              }
-          }
-        });
-        draft.sections.push(...injected);
-        draft.draft_sections.push(...injected);
-    });
-  }, [currentReport?.graph_comps, setItem]);
-
-  const addGraph = async () => {
-    const templateRow = graphTemplates.find(gt => gt.id === selectedGraphTemplateId);
-    if (!templateRow) return;
-
-    // Ensure templateRow.data is parsed
-    const tpl = { ...templateRow, ...(typeof templateRow.data === 'string' ? JSON.parse(templateRow.data) : templateRow.data) };
-    console.log("add G, tpl::", tpl)
-    const parsedState = tpl.stateJson ? JSON.parse(tpl.stateJson) : {};
-    const layout = tpl.includesLayout && tpl.layoutJson ? JSON.parse(tpl.layoutJson) : {};
-    const elementType = tpl.elementType || 'Graph';
-
-    // // Build UDA config to get outputSourceInfo
-    // const udaConfig = buildUdaConfig({
-    //   externalSource: parsedState.externalSource,
-    //   columns: parsedState.columns || [],
-    //   filters: parsedState.filters,
-    //   comparisonSeries: parsedState.comparisonSeries,
-    // });
-
-    const id = crypto.randomUUID();
-    const trackingId = crypto.randomUUID();
-
-    // Store the mapping of which routes belong to this graph.
-    const initialRouteCompIds = routes.map(r => r.route_comp_id);
-    const newVariants = transformReportRoutes(routes) || [];
-    // Minimal config: let the component resolve variants dynamically.
-    const comparisonSeriesConfig = {
-      enabled: true,
-      seriesKey: '__series',
-      seriesLabel: 'Routes', // Added series label
-      variants: newVariants,// will also be resolved dynamically by the component
-    };
-
-    //TODO -- there is prob a better way of making sure we inject this column
-    //esp since name/alias are harcoded herre b ut the user can change them
-    const seriesColumn = {
-      name: "__series",
-      alias: "__series",
-      type: "text",
-      show: true,
-      group: true,
-      target: "categorize",
-      isCalculatedColumn: false,
-      origin: "comparison-series",
-    };
-
-    if(!parsedState.columns.some(c => c.alias === "__series")){
-      parsedState.columns.push(seriesColumn)
-    }
-    parsedState.comparisonSeries = comparisonSeriesConfig;
-    parsedState.route_comp_ids = initialRouteCompIds;
-    // Inject outputSourceInfo
-    //parsedState.outputSourceInfo = { asUdaConfig: udaConfig };
-
-    const newComponent = {
-      ...layout,
-      id,
-      trackingId,
-      createdBy: 'reports',
-      element: {
-        'element-type': elementType,
-        'element-data': JSON.stringify({ ...parsedState, title: layout?.title || 'New Graph' }),
-      },
-      comparisonSeries: comparisonSeriesConfig,
-      route_comp_ids: initialRouteCompIds
-    };
-    console.log({newComponent})
-    if (updateItem && currentReport) {
-      const updatedGraphComps = [...(currentReport.graph_comps || []), newComponent];
-      await updateItem(updatedGraphComps, { name: 'graph_comps' }, currentReport);
+  // Toggle whether a route feeds a given graph's route list. `graphIds` is a hidden
+  // per-route field (section ids of the graphs this route has been clicked onto) —
+  // never surfaced as an abstract "group"; the UI is just "this route is on Graph N."
+  // A route feeds no graph until explicitly toggled onto one (no implicit sharing).
+  const toggleRouteGraph = async (index, sectionId) => {
+    if (!apiUpdate || !item?.id || saving) return;
+    setSaving(true);
+    setError('');
+    try {
+      const newRoutes = cloneDeep(routes);
+      const current = new Set(newRoutes[index].graphIds || []);
+      if (current.has(sectionId)) current.delete(sectionId); else current.add(sectionId);
+      newRoutes[index].graphIds = Array.from(current);
+      await persistRoutes(newRoutes);
+    } catch (e) {
+      console.error('<ReportRouteList:toggleGraph>', e);
+      setError('Could not update route.');
+    } finally {
+      setSaving(false);
     }
   };
+
+  // Publish each discovered graph's filtered route subset to its own self-derived
+  // key (see findSelfBoundGraphs/selfParamKey). Each graph's `comparison_series`
+  // subscriber reads back the identical key, so no author-typed param key is ever
+  // needed. The isEqual guard is load-bearing per key: setActionParam unconditionally
+  // writes pageState, which re-renders this component and recomputes `routes`/`graphs`
+  // — without the guard that write→re-render cycle never settles (mirrors the same
+  // guard in usePageFilterSync's comparison-series resolver).
+  useEffect(() => {
+    if (!setActionParam) return;
+    graphs.forEach(({ sectionId, paramKey }) => {
+      const next = transformReportRoutes(routes.filter(r => r.graphIds?.includes(sectionId))) || [];
+      // setActionParam stores an already-array value as-is (see its `Array.isArray(value)
+      // ? value : [value]` check) — `values` IS the variants list here, not a 1-element
+      // wrapper around it. Reading `.values?.[0]` (the single-scalar convention most other
+      // providers use) would compare against the first variant instead of the whole list,
+      // so isEqual would almost never match and this guard would never actually stop the
+      // write→re-render cycle.
+      const current = pageState?.filters?.find(f => f.searchKey === paramKey && f.type === 'action')?.values;
+      if (isEqual(current, next)) return;
+      setActionParam(paramKey, next);
+    });
+
+    // Clear any previously-published self-key whose graph is no longer on the page
+    // (removed, or its subscriber disabled) — nothing reads it anymore.
+    if (!clearActionParam) return;
+    const liveParamKeys = new Set(graphs.map(g => g.paramKey));
+    (pageState?.filters || [])
+      .filter(f => f.type === 'action' && typeof f.searchKey === 'string' && f.searchKey.startsWith('__self__'))
+      .forEach(f => {
+        if (!liveParamKeys.has(f.searchKey)) clearActionParam(f.searchKey);
+      });
+  }, [routes, graphs, pageState?.filters, setActionParam, clearActionParam]);
+
+  // Orphan cleanup (v1): once a graph section is actually removed from the page
+  // (not merely disabled), strip its id from every route's graphIds so stale
+  // membership doesn't silently linger. Guarded on sectionList being non-empty —
+  // every report page always has at least this panel's own section, so an empty
+  // list means "not loaded yet," not "everything was removed."
+  useEffect(() => {
+    if (!apiUpdate || !item?.id || !sectionList.length) return;
+    const needsCleanup = routes.some(r => (r.graphIds || []).some(id => !knownSectionIds.has(id)));
+    if (!needsCleanup) return;
+    const cleaned = routes.map(r => {
+      if (!r.graphIds?.length) return r;
+      const filtered = r.graphIds.filter(id => knownSectionIds.has(id));
+      return filtered.length === r.graphIds.length ? r : { ...r, graphIds: filtered };
+    });
+    persistRoutes(cleaned);
+  }, [routes, knownSectionIds, sectionList.length]);
 
   const cancelAdd = () => {
     setPendingRoute(null);
@@ -651,287 +498,168 @@ export default function ReportRouteList(props) {
   };
   return (
     <div className={t.wrapper}>
-      {reportId == -1 || !reportId ? (
-        <div className={t.empty}>Select a report to get started</div>
-      ) : (
+      <div className={t.title}>{item?.title}</div>
+      <div className={t.titleWrapper}>
+        <div>Routes</div>
+        <Button themeOptions={{ size: "xs", color:"transparent" }} onClick={() => setIsRoutesExpanded(!isRoutesExpanded)}>
+          {isRoutesExpanded ? <Icon icon="ChevronUp" /> : <Icon icon="ChevronDown" />}
+        </Button>
+      </div>
+      {isRoutesExpanded && (
         <>
-          <div className={t.title}>{currentReport?.name}</div>
-          <div className={t.titleWrapper}>
-            <div>Routes</div>
-            <Button themeOptions={{ size: "xs", color:"transparent" }} onClick={() => setIsRoutesExpanded(!isRoutesExpanded)}>
-              {isRoutesExpanded ? <Icon icon="ChevronUp" /> : <Icon icon="ChevronDown" />}
-            </Button>
-          </div>
-          {isRoutesExpanded && (
-            <>
-              {loading ? <div className={t.loading}>Loading…</div> : null}
-              <div className={t.list}>
-                {routes.map((r, i) => {
-                  const tmcArray = getTmcArray(r.tmc_array);
-                  const isExpanded = expandedRoutes[i];
-                  return (
-                    <div key={`${r.id}-${i}`} className={t.row}>
-                      <div className={t.rowContainer}>
-                        <div className={t.rowHeader}>
-                          <div className={t.iconContainer}>
-                            <Icon icon={'Drag'} />
-                            <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
-                              {isExpanded ? '-' : '+'}
+          {loading ? <div className={t.loading}>Loading…</div> : null}
+          <div className={t.list}>
+            {routes.map((r, i) => {
+              const tmcArray = getTmcArray(r.tmc_array);
+              const isExpanded = expandedRoutes[i];
+              return (
+                <div key={`${r.id}-${i}`} className={t.row}>
+                  <div className={t.rowContainer}>
+                    <div className={t.rowHeader}>
+                      <div className={t.iconContainer}>
+                        <Icon icon={'Drag'} />
+                        <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
+                          {isExpanded ? '-' : '+'}
+                        </Button>
+                        {editingRouteNameIndex === i ? (
+                          <div className={t.editContainer}>
+                            <div className={t.editInputWrapper}>
+                              <Input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} />
+                            </div>
+                            <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
+                              updateRoute({ index: i, updates: { name: editNameValue } });
+                              setEditingRouteNameIndex(null);
+                            }}>
+                              <Icon icon={"FloppyDisk"} />
                             </Button>
-                            {editingRouteNameIndex === i ? (
-                              <div className={t.editContainer}>
-                                <div className={t.editInputWrapper}>
-                                  <Input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} />
-                                </div>
-                                <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
-                                  updateRoute({ index: i, updates: { name: editNameValue } });
-                                  setEditingRouteNameIndex(null);
-                                }}>
-                                  <Icon icon={"FloppyDisk"} />
-                                </Button>
-                                <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteNameIndex(null)}>
-                                  <Icon icon={"CancelCircle"} />
-                                </Button>
-                              </div>
+                            <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteNameIndex(null)}>
+                              <Icon icon={"CancelCircle"} />
+                            </Button>
+                          </div>
 
-                            ) : (
-                              <div className={t.editContainer}>
-                                <div className={t.routeTitle}>{r.name}</div>
-                                {isExpanded && (
-                                  <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
-                                    setEditingRouteNameIndex(i);
-                                    setEditNameValue(r.name);
-                                  }}>
-                                    <Icon icon={'PencilSquare'} />
-                                  </Button>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          <div className={t.reorderButtons}>
-                            <Button themeOptions={{ size: "xs" }} disabled={i === 0 || saving} onClick={() => reorderRoutes(i, 'up')}>
-                              <Icon icon={'ChevronUp'} />
-                            </Button>
-                            <Button themeOptions={{ size: "xs" }} disabled={i === routes.length - 1 || saving} onClick={() => reorderRoutes(i, 'down')}>
-                              <Icon icon={'ChevronDown'} />
-                            </Button>
-                          </div>
-                        </div>
-                        {isExpanded && (
-                          <div className={t.expandedContainer}>
-                            {tmcArray.length > 0 && (
-                              <div className={t.tmcWrapper}>
-                                <div className={t.tmcLabel}>TMCs:</div>
-                                <div className={t.tmcList}>
-                                  {tmcArray.join(", ")}
-                                </div>
-                              </div>
-                            )}
-                            <div className={t.dateInputsContainer}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div className={t.dateRangeLabel}>Date Range</div>
-                                {editingRouteDatesIndex === i ? (
-                                  <div className={t.editContainer}>
-                                    <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
-                                      updateRoute({ index: i, updates: { startDate: editStartDateValue, endDate: editEndDateValue } });
-                                      setEditingRouteDatesIndex(null);
-                                    }}>
-                                      <Icon icon={"FloppyDisk"} />
-                                    </Button>
-                                    <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteDatesIndex(null)}>
-                                      <Icon icon={"CancelCircle"} />
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <Button themeOptions={{ size: "xs" }} title="Edit Dates" onClick={() => {
-                                    setEditingRouteDatesIndex(i);
-                                    setEditStartDateValue(r.startDate);
-                                    setEditEndDateValue(r.endDate);
-                                  }}>
-                                    <Icon icon={'PencilSquare'} />
-                                  </Button>
-                                )}
-                              </div>
-                              <div className={t.dateInputWrapper}>
-                                <label className={t.dateLabel}>Start Date:</label>
-                                <div className={t.dateInputFlex}>
-                                  <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
-                                  <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
-                                </div>
-                              </div>
-                              <div className={t.dateInputWrapper}>
-                                <label className={t.dateLabel}>End Date:</label>
-                                <div className={t.dateInputFlex}>
-                                  <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
-                                  <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
-                                </div>
-                              </div>
-                            </div>
-                            <div className={t.graphAssociationContainer}>
-                              <div className={t.tmcLabel}>Graph Membership:</div>
-                              {(currentReport.graph_comps || []).map((graph, gIdx) => {
-                                const isAdded = graph.route_comp_ids?.includes(r.route_comp_id);
-                                const graphLabel = JSON.parse(graph.element['element-data'] || '{}').title || graph.element?.['element-type'] || 'Graph'
-                                return (
-                                  <Button 
-                                    key={gIdx} 
-                                    themeOptions={{ 
-                                      size: "xs", 
-                                      color: isAdded ? "primary" : "secondary" 
-                                    }} 
-                                    title={isAdded ? `Remove from ${graphLabel}` : `Add to ${graphLabel}`}
-                                    onClick={() => updateGraphRouteAssociation(gIdx, r.route_comp_id, isAdded ? 'remove' : 'add')}
-                                  >
-                                    <Icon icon={isAdded ? "XMark" : "Plus"} />
-                                    {graphLabel}
-                                  </Button>
-                                );
-                              })}
-                            </div>
-                            <div className={t.removeButtonWrapper}>
-                              <Button 
-                                themeOptions={{ size: "xs", color: "danger" }} 
-                                disabled={saving} 
-                                onClick={() => removeRoute(i)}
-                                className="bg-red-100 text-red-700 hover:bg-red-200"
-                              >
-                                <Icon icon="Trash" /> Remove Route from Report
+                        ) : (
+                          <div className={t.editContainer}>
+                            <div className={t.routeTitle}>{r.name}</div>
+                            {isExpanded && (
+                              <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
+                                setEditingRouteNameIndex(i);
+                                setEditNameValue(r.name);
+                              }}>
+                                <Icon icon={'PencilSquare'} />
                               </Button>
-                            </div>
+                            )}
                           </div>
                         )}
                       </div>
+                      <div className={t.reorderButtons}>
+                        <Button themeOptions={{ size: "xs" }} disabled={i === 0 || saving} onClick={() => reorderRoutes(i, 'up')}>
+                          <Icon icon={'ChevronUp'} />
+                        </Button>
+                        <Button themeOptions={{ size: "xs" }} disabled={i === routes.length - 1 || saving} onClick={() => reorderRoutes(i, 'down')}>
+                          <Icon icon={'ChevronDown'} />
+                        </Button>
+                      </div>
                     </div>
-                  );
-                })}
-                {!loading && routes.length === 0 ? <div className={t.empty}>No routes added.</div> : null}
-              </div>
-              {pendingRoute && (
-                <div className={t.addForm}>
-                  <div>Add “{pendingRoute.name}”?</div>
-                  <Button disabled={saving} onClick={addRoute}>
-                    {saving ? "Adding…" : "Confirm"}
-                  </Button>
-                  <Button disabled={saving} onClick={cancelAdd}>
-                    Cancel
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-          {currentReport?.graph_comps && (
-            <div className={t.addedGraphsWrapper}>
-              <div className={t.titleWrapper}>
-                <div>Graphs</div>
-                <Button themeOptions={{ size: "xs", color:"transparent" }} onClick={() => setIsGraphsExpanded(!isGraphsExpanded)}>
-                  {isGraphsExpanded ? <Icon icon="ChevronUp" /> : <Icon icon="ChevronDown" />}
-                </Button>
-              </div>
-              {isGraphsExpanded && (
-                <>
-                  <div className={t.list}>
-                    {currentReport.graph_comps.map((g, i) => {
-                      const isExpanded = expandedGraphs[i];
-                      const graphTitle = JSON.parse(g.element['element-data'] || '{}').title || g.element?.['element-type'] || 'Graph';
-                      
-                      return (
-                        <div key={i} className={t.row}>
-                          <div className={t.rowContainer}>
-                            <div className={t.rowHeader}>
-                              <div className={t.iconContainer}>
-                                <Icon icon={'Drag'} />
-                                <Button themeOptions={{ size: "xs" }} onClick={() => setExpandedGraphs(prev => ({ ...prev, [i]: !prev[i] }))}>
-                                  {isExpanded ? '-' : '+'}
-                                </Button>
-                                {editingGraphNameIndex === i ? (
-                                    <div className={t.editContainer}>
-                                      <div className={t.editInputWrapper}>
-                                        <Input value={editGraphNameValue} onChange={(e) => setEditGraphNameValue(e.target.value)} />
-                                      </div>
-                                      <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
-                                        updateGraph({ index: i, updates: { title: editGraphNameValue } });
-                                        setEditingGraphNameIndex(null);
-                                      }}>
-                                        <Icon icon={"FloppyDisk"} />
-                                      </Button>
-                                      <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingGraphNameIndex(null)}>
-                                        <Icon icon={"CancelCircle"} />
-                                      </Button>
-                                    </div>
-                                ) : (
-                                    <div className={t.editContainer}>
-                                      <div className={t.routeTitle}>{graphTitle}</div>
-                                      <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={() => {
-                                        setEditingGraphNameIndex(i);
-                                        setEditGraphNameValue(graphTitle);
-                                      }}>
-                                        <Icon icon={'PencilSquare'} />
-                                      </Button>
-                                    </div>
-                                )}
-                              </div>
-                              <div className={t.reorderButtons}>
-                                <Button themeOptions={{ size: "xs" }} disabled={i === 0 || saving} onClick={() => reorderGraphs(i, 'up')}>
-                                  <Icon icon={'ChevronUp'} />
-                                </Button>
-                                <Button themeOptions={{ size: "xs" }} disabled={i === currentReport.graph_comps.length - 1 || saving} onClick={() => reorderGraphs(i, 'down')}>
-                                  <Icon icon={'ChevronDown'} />
-                                </Button>
-                              </div>
+                    {isExpanded && (
+                      <div className={t.expandedContainer}>
+                        {tmcArray.length > 0 && (
+                          <div className={t.tmcWrapper}>
+                            <div className={t.tmcLabel}>TMCs:</div>
+                            <div className={t.tmcList}>
+                              {tmcArray.join(", ")}
                             </div>
-                            {isExpanded && (
-                              <div className={t.expandedContainer}>
-                                <div className={t.routesInGraph}>
-                                  <div className={t.tmcLabel}>Associated Routes:</div>
-                                  {(g.route_comp_ids || []).map(rId => {
-                                    const route = routes.find(r => r.route_comp_id === rId);
-                                    return route ? (
-                                       <div key={rId} className={t.routeInGraph}>
-                                         {route.name}
-                                         <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => updateGraphRouteAssociation(i, rId, 'remove')}><Icon icon="XMark" /></Button>
-                                       </div>
-                                    ) : null;
-                                  })}
-                                </div>
-                                <div className={t.removeButtonWrapper}>
-                                  <Button themeOptions={{ size: "xs", color: "danger" }} disabled={saving} onClick={() => removeGraph(i)}>
-                                    <Icon icon="Trash" /> Remove Graph from Report
-                                  </Button>
-                                </div>
+                          </div>
+                        )}
+                        <div className={t.dateInputsContainer}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div className={t.dateRangeLabel}>Date Range</div>
+                            {editingRouteDatesIndex === i ? (
+                              <div className={t.editContainer}>
+                                <Button themeOptions={{ size: "xs" }} title="save" onClick={() => {
+                                  updateRoute({ index: i, updates: { startDate: editStartDateValue, endDate: editEndDateValue } });
+                                  setEditingRouteDatesIndex(null);
+                                }}>
+                                  <Icon icon={"FloppyDisk"} />
+                                </Button>
+                                <Button themeOptions={{ size: "xs", color: "danger" }} title="cancel" onClick={() => setEditingRouteDatesIndex(null)}>
+                                  <Icon icon={"CancelCircle"} />
+                                </Button>
                               </div>
+                            ) : (
+                              <Button themeOptions={{ size: "xs" }} title="Edit Dates" onClick={() => {
+                                setEditingRouteDatesIndex(i);
+                                setEditStartDateValue(r.startDate);
+                                setEditEndDateValue(r.endDate);
+                              }}>
+                                <Icon icon={'PencilSquare'} />
+                              </Button>
                             )}
                           </div>
+                          <div className={t.dateInputWrapper}>
+                            <label className={t.dateLabel}>Start Date:</label>
+                            <div className={t.dateInputFlex}>
+                              <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
+                              <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editStartDateValue : r.startDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editStartDateValue : r.startDate || '', setEditStartDateValue)} />
+                            </div>
+                          </div>
+                          <div className={t.dateInputWrapper}>
+                            <label className={t.dateLabel}>End Date:</label>
+                            <div className={t.dateInputFlex}>
+                              <Input type="date" value={getDateValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onDateChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
+                              <Input type="time" value={getTimeValue(editingRouteDatesIndex === i ? editEndDateValue : r.endDate)} disabled={editingRouteDatesIndex !== i} onChange={(e) => onTimeChange(e, editingRouteDatesIndex === i ? editEndDateValue : r.endDate || '', setEditEndDateValue)} />
+                            </div>
+                          </div>
                         </div>
-                      );
-                    })}
+                        {graphs.length > 0 && (
+                          <div className={t.graphChipsWrapper}>
+                            <span className={t.graphChipsLabel}>On:</span>
+                            {graphs.map((g) => {
+                              const isOn = (r.graphIds || []).includes(g.sectionId);
+                              return (
+                                <span
+                                  key={g.sectionId}
+                                  className={isOn ? t.graphChipActive : t.graphChip}
+                                  onClick={() => !saving && toggleRouteGraph(i, g.sectionId)}
+                                  title={isOn ? `Remove from ${g.label}` : `Add to ${g.label}`}
+                                >
+                                  {g.label}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                        <div className={t.removeButtonWrapper}>
+                          <Button
+                            themeOptions={{ size: "xs", color: "danger" }}
+                            disabled={saving}
+                            onClick={() => removeRoute(i)}
+                            className="bg-red-100 text-red-700 hover:bg-red-200"
+                          >
+                            <Icon icon="Trash" /> Remove Route from Report
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className={t.graphTemplateWrapper}>
-                    <label>Select Graph Template</label>
-                    <Select
-                      aria-label="Select Graph Template"
-                      value={graphTemplates.find(gt => gt.id === selectedGraphTemplateId)?.name}
-                      onChange={(e) => setSelectedGraphTemplateId(e.props.value)}
-                      options={graphTemplates.map((g) => (
-                        <option key={g.id} value={g.id}>
-                          {g.name || g.id}
-                        </option>
-                      ))}
-                    />
-                    <Button
-                      themeOptions={{ size: "sm" }}
-                      className={t.addGraphButton}
-                      onClick={addGraph}
-                    >
-                      Add Graph
-                    </Button>
-                  </div>
-                </>
-              )}
+                </div>
+              );
+            })}
+            {!loading && routes.length === 0 ? <div className={t.empty}>No routes added.</div> : null}
+          </div>
+          {pendingRoute && (
+            <div className={t.addForm}>
+              <div>Add “{pendingRoute.name}”?</div>
+              <Button disabled={saving} onClick={addRoute}>
+                {saving ? "Adding…" : "Confirm"}
+              </Button>
+              <Button disabled={saving} onClick={cancelAdd}>
+                Cancel
+              </Button>
             </div>
           )}
-          {error ? <div className={t.error}>{error}</div> : null}
         </>
       )}
+      {error ? <div className={t.error}>{error}</div> : null}
     </div>
   );
 }
