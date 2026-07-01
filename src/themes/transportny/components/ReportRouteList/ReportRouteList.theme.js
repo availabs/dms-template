@@ -26,11 +26,8 @@ export const reportRouteListTheme = {
   empty: 'text-gray-400 italic text-sm',
   addForm: 'mt-2 p-1.5 bg-gray-50 rounded text-sm',
   error: 'text-red-500 mt-1 text-xs',
-  graphTemplateWrapper: 'mt-3 p-2 border border-slate-200 rounded-lg',
-  addedGraphsWrapper: 'mt-3',
-  graphTemplateSelectContainer: 'mt-1',
-  addGraphButton: 'mt-1 w-full',
-  graphAssociationContainer: 'flex flex-wrap items-center gap-1 pt-2 mt-2 border-t border-slate-100',
-  routesInGraph: 'flex flex-wrap gap-1 mt-1',
-  routeInGraph: 'flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-100 rounded text-[11px] text-slate-700 border border-slate-200'
+  graphChipsWrapper: 'flex flex-wrap items-center gap-1 pt-2 mt-2 border-t border-slate-100',
+  graphChipsLabel: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1',
+  graphChip: 'px-1.5 py-0.5 rounded text-[11px] border cursor-pointer bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200',
+  graphChipActive: 'px-1.5 py-0.5 rounded text-[11px] border cursor-pointer bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
 };

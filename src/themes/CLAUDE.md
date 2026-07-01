@@ -73,8 +73,9 @@ See `src/dms/skills/card-layout.md` for the full surface of Card-section authori
 
 ## Custom theme components worth knowing about
 
-- **`transportny/components/ReportRouteList`** — a custom page section that manages a "report"
-  (a list of routes + graphs) and, unusually, injects graph sections into the page in **view**
-  mode via `setItem` rather than the normal add-component flow. It is the one place in the codebase
-  that sidesteps that flow. Read [its README](./transportny/components/ReportRouteList/README.md)
-  before touching it — especially the open question about where in-place graph edits should persist.
+- **`transportny/components/ReportRouteList`** — a route-editor panel for "report" pages (created
+  from the `npmrds_sub` pattern's **Report Page** template). A report is just a page: routes live on
+  the page's `routes`/`draft_routes` attribute, and graphs are ordinary page sections (a
+  `comparison_series` subscriber binds a graph to the panel's published `report_routes` action
+  param). Read [its README](./transportny/components/ReportRouteList/README.md) for the route
+  catalog binding it keeps (`join.sources.table1`) and the publish/subscribe wiring.
