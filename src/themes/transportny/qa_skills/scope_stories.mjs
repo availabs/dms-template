@@ -26,9 +26,9 @@ const mode = process.argv[2] || "list";
 
 if (mode === "list") {
   const pages = (await readRows(PAGES.env, PAGES.view, ["page_key", "name", "surface_label", "route", "description", "stage"]))
-    .filter((p) => p.stage === "Scoping");
+    .filter((p) => p.stage === "Proposed");
   console.log(JSON.stringify(pages, null, 2));
-  console.error(`\n${pages.length} page(s) in Scoping. Propose stories, then: node scope_stories.mjs write <stories.json>`);
+  console.error(`\n${pages.length} page(s) in Proposed. Propose stories, then: node scope_stories.mjs write <stories.json>`);
 } else if (mode === "write") {
   const file = process.argv[3]; if (!file) { console.error("usage: write <stories.json>  ({ \"page_key\": [\"story\", …] })"); process.exit(1); }
   const map = JSON.parse(readFileSync(file, "utf8"));

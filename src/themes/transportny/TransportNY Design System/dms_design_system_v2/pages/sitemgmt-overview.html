@@ -45,27 +45,40 @@
       </aside>
 
       <div class="flex flex-1 items-start">
-        <div class="flex-1 min-w-0 flex flex-col">
-          <main class="mr-auto w-full max-w-[1460px] pl-12 pr-8 py-8">
-            <div class="flex items-end justify-between mb-1">
-              <div>
-                <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">// site management · QA workflow</div>
-                <h1 class="font-display text-[30px] leading-none font-medium text-[#0F1722]">Control room</h1>
-              </div>
-              <div class="font-mono text-[11px] text-slate-500">as of <span id="asOf"></span></div>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMB BAR ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <nav class="h-11 flex items-center font-mono text-[10.5px] uppercase tracking-[0.18em]" aria-label="Breadcrumb">
+                <a href="sitemgmt-overview.html" class="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#0f1722]"><svg class="size-4 text-[#37576B] relative -top-[1px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10"/></svg>Site Management</a>
+                <span class="text-slate-300 px-2">/</span>
+                <span class="text-[#0f1722]">Control Room</span>
+              </nav>
             </div>
-            <div id="summary" class="font-proxima text-[13px] text-slate-500 mb-6"></div>
-            <div id="root"></div>
-          </main>
-          <footer class="w-full bg-white border-t border-zinc-950/10 mt-6">
-            <div class="mr-auto w-full max-w-[1460px] pl-12 pr-8 py-4 flex items-center justify-between">
-              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
-                <a href="sitemgmt-overview.html" class="hover:text-slate-900">control room</a>
-                <a href="sitemgmt-tickets.html" class="hover:text-slate-900">tickets</a>
+          </div>
+
+          <!-- ═════════ HEADER BAND ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-5">
+              <div class="flex items-end justify-between gap-6">
+                <div class="min-w-0">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-slate-400 mb-1.5">// site management · QA workflow</div>
+                  <h1 class="font-display font-semibold text-[28px] leading-none tracking-tight uppercase text-[#0F1722]">Control room<span class="text-[#CA8A04]">.</span></h1>
+                </div>
+                <div class="font-mono text-[11px] text-slate-500 flex-shrink-0">as of <span id="asOf"></span></div>
               </div>
-              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS · QA v0.1 · mockup</span>
+              <div id="summary" class="font-proxima text-[13px] text-slate-500 mt-2"></div>
             </div>
-          </footer>
+          </div>
+
+          <!-- ═════════ CONTENT BAND ═════════ -->
+          <div class="w-full bg-[#ECEEF2] pt-6 pb-12">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <div id="root"></div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -78,30 +91,30 @@
   var S = window.SITEMGMT;
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function pct(n,d){ return d ? Math.round(100*n/d) : 0; }
-  var STAGE_BAR = { 'In Development':'bg-amber-400', 'Dev Review':'bg-sky-400', 'Client Review':'bg-[#0a0e13]', 'Approved':'bg-emerald-500' };
+  var STAGE_BAR = { 'Proposed':'bg-zinc-400', 'Design':'bg-violet-500', 'Implemented':'bg-amber-400', 'QA':'bg-sky-400', 'Dev Acceptance':'bg-teal-500', 'Client Acceptance':'bg-emerald-500' };
 
   document.getElementById('asOf').textContent = S.asOf;
   var P = S.pages.length;
   var openT = S.tickets.filter(function(t){ return S.isOpen(t); }).length, closedT = S.tickets.length - openT;
-  var approved = S.stageCounts()['Approved'];
+  var accepted = S.stageCounts()['Client Acceptance'];
   document.getElementById('summary').innerHTML =
     '<span class="font-semibold text-slate-700">'+S.surfaces.length+'</span> patterns · '
     + '<span class="font-semibold text-slate-700">'+P+'</span> pages · '
-    + '<span class="font-semibold text-emerald-600">'+approved+'</span> approved · '
+    + '<span class="font-semibold text-emerald-600">'+accepted+'</span> accepted · '
     + '<span class="font-semibold text-amber-600">'+openT+'</span> open / <span class="font-semibold text-emerald-600">'+closedT+'</span> done tickets';
 
   var html = '';
 
   // ── process banner: how delivery works ──
   var sc = S.stageCounts();
-  var stageWho = { 'In Development':'our team', 'Dev Review':'our team', 'Client Review':'you', 'Approved':'done' };
-  var stageDesc = { 'In Development':'build & fix AI-flagged issues', 'Dev Review':'internal QA sign-off', 'Client Review':'review & approve', 'Approved':'ready to publish' };
+  var stageWho = { 'Proposed':'product', 'Design':'design', 'Implemented':'our team', 'QA':'our team', 'Dev Acceptance':'our team', 'Client Acceptance':'you' };
+  var stageDesc = { 'Proposed':'scope the user stories', 'Design':'design the page', 'Implemented':'build the page', 'QA':'test & fix', 'Dev Acceptance':'internal sign-off', 'Client Acceptance':'review & approve' };
   html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4 mb-4">'
     + '<div class="flex items-center justify-between mb-3"><span class="font-display text-[14px] font-medium text-slate-800">How delivery works</span>'
     + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">AI flags issues · we fix &amp; sign off · you approve</span></div>'
     + '<div class="flex items-stretch gap-1">'
     + S.STAGES.map(function(st,i){
-        var mine = st==='Client Review';
+        var mine = st==='Client Acceptance';
         var blk = '<div class="flex-1 rounded-md border '+(mine?'border-[#1F3F8F]/40 bg-[#1F3F8F]/[0.04]':'border-slate-200 bg-slate-50/60')+' p-3">'
           + '<div class="flex items-center gap-2"><span class="size-2.5 rounded-full '+STAGE_BAR[st]+'"></span>'
           + '<span class="font-display text-[13px] font-medium '+(mine?'text-[#1F3F8F]':'text-slate-700')+'">'+esc(st)+'</span>'
@@ -109,38 +122,6 @@
           + '<div class="font-mono text-[9px] uppercase tracking-wider '+(mine?'text-[#1F3F8F] font-semibold':'text-slate-400')+' mt-1">'+esc(stageWho[st])+'</div>'
           + '<div class="font-proxima text-[11px] text-slate-500 leading-snug">'+stageDesc[st]+'</div></div>';
         return blk + (i<S.STAGES.length-1 ? '<div class="flex items-center text-slate-300 text-[16px] px-0.5">›</div>' : '');
-      }).join('')
-    + '</div></div>';
-
-  // ── for your review + priority work (2-col) ──
-  var review = S.pages.filter(function(p){ return S.stageOf(p)==='Client Review'; });
-  var prioOrder = { Now:0, Next:1, Later:2 };
-  var prio = S.tickets.filter(function(t){ return S.isOpen(t) && (t.priority==='Now'||t.priority==='Next'); })
-    .sort(function(a,b){ return prioOrder[a.priority]-prioOrder[b.priority]; });
-  html += '<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">';
-  html += '<div class="bg-white rounded-lg shadow-sm border-2 border-[#1F3F8F]/25 p-4">'
-    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-1">'
-    + '<span class="font-display text-[14px] font-medium text-[#1F3F8F]">For your review</span>'
-    + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">'+review.length+' awaiting your approval</span></div>'
-    + (review.length ? review.map(function(p){
-        return '<div class="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">'
-          + '<span class="size-2 rounded-full bg-[#0a0e13] flex-shrink-0"></span>'
-          + '<a href="sitemgmt-page.html?id='+encodeURIComponent(p.id)+'" class="flex-1 min-w-0 truncate font-proxima text-[13px] text-slate-800 hover:text-[#1F3F8F]">'+esc(p.name)+'</a>'
-          + '<span class="font-mono text-[10px] text-slate-400 hidden sm:inline">'+esc((S.surface(p.surface)||{}).label||p.surface)+'</span>'
-          + '<button class="font-proxima text-[11.5px] px-2.5 py-1 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">Approve</button>'
-          + '<button class="font-proxima text-[11.5px] px-2.5 py-1 rounded-md border border-slate-200 text-slate-600 hover:border-slate-300">Changes</button></div>';
-      }).join('') : '<div class="py-3 font-proxima text-[13px] text-slate-400">Nothing awaiting your review right now.</div>')
-    + '</div>';
-  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
-    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-1">'
-    + '<span class="font-display text-[14px] font-medium text-slate-800">Priority work</span>'
-    + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">what the team is on now</span></div>'
-    + prio.slice(0,5).map(function(t){ var pg=S.page(t.page)||{name:t.page};
-        return '<a href="sitemgmt-ticket.html?id='+t.id+'" class="flex items-center gap-2 py-1.5 hover:bg-slate-50/70 -mx-1 px-1 rounded">'
-          + '<span class="inline-flex items-center rounded px-1.5 py-[2px] text-[10px] font-medium '+S.prioColor[t.priority]+'">'+esc(t.priority)+'</span>'
-          + '<span class="inline-flex items-center rounded px-1.5 py-[2px] text-[10px] font-medium '+S.sevColor[t.severity]+'">'+esc(t.severity)+'</span>'
-          + '<span class="flex-1 min-w-0 truncate font-proxima text-[12.5px] text-slate-700">'+esc(t.title)+'</span>'
-          + '<span class="font-mono text-[10px] text-slate-400 truncate max-w-[26%]">'+esc(pg.name)+'</span></a>';
       }).join('')
     + '</div></div>';
 
@@ -160,26 +141,29 @@
         + '<div><div class="font-display text-[17px] font-medium text-[#0F1722] leading-tight">'+esc(s.label)+'</div>'
         + '<div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">'+esc(s.sub||s.key)+'</div></div>'
         + '<div class="font-mono text-[11px] text-slate-500 lg:mt-2"><span class="font-display text-[18px] font-semibold text-[#0F1722]">'+r.pages+'</span> pages</div></div>'
-        // stage bar + legend
-        + '<div class="flex-1 min-w-0">'
-        + '<div class="flex h-4 rounded-full overflow-hidden bg-slate-100 mb-2">'
-        + S.STAGES.map(function(st){ var n=r.stages[st], w=pct(n,r.pages); return n>0 ? '<div class="'+STAGE_BAR[st]+'" style="width:'+w+'%" title="'+esc(st)+': '+n+'"></div>' : ''; }).join('')
+        // two data bars STACKED on their own lines (stages, then tickets)
+        + '<div class="flex-1 min-w-0 space-y-3">'
+          // stage bar + legend
+          + '<div>'
+          + '<div class="flex h-4 rounded-full overflow-hidden bg-slate-100 mb-2">'
+          + S.STAGES.map(function(st){ var n=r.stages[st], w=pct(n,r.pages); return n>0 ? '<div class="'+STAGE_BAR[st]+'" style="width:'+w+'%" title="'+esc(st)+': '+n+'"></div>' : ''; }).join('')
+          + '</div>'
+          + '<div class="flex flex-wrap gap-x-4 gap-y-1">'
+          + S.STAGES.map(function(st){ var n=r.stages[st]; return '<span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] '+(n?'text-slate-600':'text-slate-300')+'"><span class="size-2 rounded-full '+STAGE_BAR[st]+'"></span>'+esc(st)+' <span class="font-mono tabular-nums '+(n?'text-slate-800 font-semibold':'')+'">'+n+'</span></span>'; }).join('')
+          + '</div></div>'
+          // tickets bar + caption (its own line)
+          + '<div>'
+          + '<div class="h-4 rounded-full bg-amber-100 overflow-hidden mb-2"><div class="h-full bg-emerald-500" style="width:'+tixDone+'%"></div></div>'
+          + '<div class="flex items-center justify-between"><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">tickets</span>'
+          + '<span class="font-mono text-[11.5px] tabular-nums"><span class="text-amber-600 font-semibold">'+r.open+'</span> open · <span class="text-emerald-600 font-semibold">'+r.closed+'</span> done</span></div></div>'
         + '</div>'
-        + '<div class="flex flex-wrap gap-x-4 gap-y-1">'
-        + S.STAGES.map(function(st){ var n=r.stages[st]; return '<span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] '+(n?'text-slate-600':'text-slate-300')+'"><span class="size-2 rounded-full '+STAGE_BAR[st]+'"></span>'+esc(st)+' <span class="font-mono tabular-nums '+(n?'text-slate-800 font-semibold':'')+'">'+n+'</span></span>'; }).join('')
-        + '</div></div>'
-        // tickets — bar on top (aligns with the stage bar), caption below (aligns with the legend)
-        + '<div class="lg:w-64 flex-shrink-0">'
-        + '<div class="h-4 rounded-full bg-amber-100 overflow-hidden mb-2"><div class="h-full bg-emerald-500" style="width:'+tixDone+'%"></div></div>'
-        + '<div class="flex items-center justify-between"><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">tickets</span>'
-        + '<span class="font-mono text-[11.5px] tabular-nums"><span class="text-amber-600 font-semibold">'+r.open+'</span> open · <span class="text-emerald-600 font-semibold">'+r.closed+'</span> done</span></div></div>'
       + '</div>'
       // ── pages as a table (mirrors the live DMS Spreadsheet) ──
       + '<div class="mt-4 border-t border-slate-100 pt-3 overflow-x-auto">'
       + '<table class="w-full text-left border-collapse">'
       + '<thead><tr class="font-mono text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-100">'
       + '<th class="py-1.5 pr-3 font-medium">Page</th><th class="py-1.5 pr-3 font-medium">Stage</th>'
-      + '<th class="py-1.5 pr-3 font-medium">Next step</th><th class="py-1.5 pr-3 font-medium text-right">Open</th><th class="py-1.5"></th>'
+      + '<th class="py-1.5 pr-3 font-medium">Next step</th><th class="py-1.5 pr-3 font-medium text-right">Open</th><th class="py-1.5 text-right font-medium">Links</th>'
       + '</tr></thead><tbody>'
       + sp.map(function(p){ var st=S.stageOf(p), open=S.openTicketsFor(p.id).length;
           return '<tr class="border-b border-slate-50 hover:bg-slate-50/70">'
@@ -187,7 +171,9 @@
             + '<td class="py-1.5 pr-3"><span class="inline-flex items-center rounded px-1.5 py-[2px] text-[10px] font-medium '+S.stageColor[st]+'">'+esc(st)+'</span></td>'
             + '<td class="py-1.5 pr-3 font-proxima text-[12px] text-slate-500">'+esc(S.nextStepOf(p))+'</td>'
             + '<td class="py-1.5 pr-3 text-right font-mono text-[11px] '+(open?'text-amber-600 font-semibold':'text-slate-300')+'">'+open+'</td>'
-            + '<td class="py-1.5 text-right"><a href="sitemgmt-page.html?id='+encodeURIComponent(p.id)+'" class="font-mono text-[10px] text-slate-400 hover:text-[#1F3F8F]">open &rarr;</a></td>'
+            + '<td class="py-1.5 text-right whitespace-nowrap font-mono text-[10px] text-slate-400">'
+              + (S.fileFor(p.id) ? '<a href="'+S.fileFor(p.id)+'" target="_blank" class="hover:text-[#1F3F8F]">view</a> <span class="text-slate-300">·</span> ' : '')
+              + '<a href="sitemgmt-design.html?id='+encodeURIComponent(p.id)+'" class="hover:text-[#1F3F8F]">design &rarr;</a></td>'
             + '</tr>';
         }).join('')
       + '</tbody></table></div></div>';
