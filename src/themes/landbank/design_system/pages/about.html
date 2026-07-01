@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Albany County Land Bank · About</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<body class="lb-paper">
+
+<!--
+  about.html · EXAMPLE PAGE 2 of 3 — the public "who we are / accountability" page.
+  Layout `default` (utility strip + product TopNav, no SideNav).
+  Bands: hero · what a land bank is · the pipeline · track-record timeline ·
+  accountability · partners + dark CTA (ink) · visit strip · footer.
+  Every section sits on grid-cols-12 with p-3 gutters; all text resolves
+  to theme.html tokens; data is real (ACLB records; NYS Land Bank Act, 2011).
+-->
+
+<div class="min-h-svh flex flex-col" data-dms-layout="default">
+
+  <!-- ═══ Utility strip ═══ -->
+  <div class="w-full bg-ink text-white/80">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-8 flex items-center justify-between gap-4">
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em] truncate">A public authority of Albany County, New York</span>
+      <span class="hidden sm:flex items-center gap-4 font-meta text-[9.5px] uppercase tracking-[0.12em] text-white/60 shrink-0">
+        <span class="inline-flex items-center gap-1.5"><!-- icon: Phone --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>(518) 407-0309</span>
+        <span class="inline-flex items-center gap-1.5"><!-- icon: Clock --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>Mon–Fri 9:30–4:30</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══ TopNav · product ═══ -->
+  <header class="w-full bg-white border-b border-ink/10 sticky top-0 z-50">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-16 flex items-center gap-8">
+      <a href="home.html" class="flex items-center shrink-0">
+        <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-10 w-auto"/>
+      </a>
+      <nav class="flex-1 flex items-center justify-end gap-1 font-prose text-[13.5px] font-semibold">
+        <a href="home.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Home</a>
+        <a href="about.html" class="px-3 h-16 flex items-center text-skydeep border-b-2 border-sky -mb-px">About</a>
+        <a href="properties.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Properties</a>
+      </nav>
+      <a href="properties.html" class="lb-press hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-md bg-skydeep hover:bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold shrink-0">
+        <!-- icon: Lot --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+        Browse properties
+      </a>
+      <button class="md:hidden text-ink" aria-label="Open menu"><!-- icon: Menu --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg></button>
+    </div>
+  </header>
+
+  <!-- ═══ HERO · LayoutGroup hero ═══ -->
+  <div class="w-full lb-plat border-b border-ink/10" data-dms-group="hero">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-14">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-10 p-3" data-dms-section="hero-copy">
+          <div class="flex items-center gap-2.5 mb-3">
+            <span class="size-2 bg-leaf"></span>
+            <span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">About · Our mission</span>
+          </div>
+          <h1 class="font-display font-bold text-[54px] leading-[1.04] tracking-[-0.015em] text-ink max-w-[980px]">A public authority with one&nbsp;job: return vacant property to the&nbsp;neighborhood<span class="text-sky">.</span></h1>
+          <p class="font-prose text-[17.5px] leading-[1.6] text-slate mt-5 max-w-[720px]">The Albany County Land Bank is a not-for-profit corporation dedicated to revitalizing neighborhoods by addressing vacant properties. We acquire tax-foreclosed, vacant, or abandoned properties throughout Albany County and identify responsible buyers through an application process that includes multi-layered review.</p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a href="properties.html" class="lb-press inline-flex items-center gap-2 h-11 px-5 rounded-md bg-skydeep hover:bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold">
+              <!-- icon: Lot --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+              Browse properties
+            </a>
+            <a href="#accountability" class="inline-flex items-center gap-2 h-11 px-5 rounded-md bg-white hover:bg-paper border border-ink/15 text-ink font-prose text-[13.5px] font-semibold">
+              <!-- icon: Scale --><svg class="size-4 text-skydeep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8M12 6l-6 1 2.5 6a3.2 3.2 0 0 1-5 0L6 7m12-1 6 1-2.5 6a3.2 3.2 0 0 1-5 0L18 6"/></svg>
+              Public accountability
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ What a land bank is ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="whatis-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">The basics</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">What a land bank is — and isn't</h2>
+      </div>
+      <div class="grid grid-cols-12 gap-0 mt-2">
+        <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="whatis-copy">
+          <div class="space-y-4 max-w-[640px]">
+            <p class="font-prose text-[15px] leading-[1.65] text-slate">Land banks are creatures of New York's 2011 Land Bank Act — public authorities that counties and cities can charter to take on the properties the private market has walked away from. Albany County established its land bank in 2014 as the county's answer to a growing backlog of tax-foreclosure vacancy: blocks where title problems, back taxes, and deterioration kept parcels from ever reaching a responsible owner.</p>
+            <p class="font-prose text-[15px] leading-[1.65] text-slate">Despite the name, a land bank is <em>not a bank</em>. It doesn't lend, and it doesn't hold land hoping it appreciates. It does three things, over and over: it <strong class="text-ink">acquires</strong> vacant, abandoned, and tax-foreclosed parcels; it <strong class="text-ink">stabilizes</strong> them — boarding, mowing, clearing title; and it <strong class="text-ink">resells</strong> them to buyers with a credible plan to put them back to use.</p>
+            <p class="font-prose text-[15px] leading-[1.65] text-slate">That narrow job is the whole design. When a parcel no longer needs the Land Bank, it leaves the portfolio — through the pipeline below — and the neighborhood gets a taxpaying property back.</p>
+            <p class="font-prose text-[12px] leading-[1.5] text-mist">NYS Land Bank Act: Article 16 of the Not-for-Profit Corporation Law, enacted 2011.</p>
+          </div>
+        </div>
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="whatis-facts">
+          <div class="lb-card p-6 h-full">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-2">At a glance</div>
+            <div class="divide-y divide-ink/5">
+              <div class="flex gap-4 py-4">
+                <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Landmark --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg></span>
+                <p class="font-prose text-[13.5px] leading-[1.55] text-slate"><strong class="text-ink">Established 2014</strong> by the Albany County Legislature.</p>
+              </div>
+              <div class="flex gap-4 py-4">
+                <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Building --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17M15 8h4v13M3 21h18"/><path d="M8 7h2m-2 4h2m-2 4h2"/></svg></span>
+                <p class="font-prose text-[13.5px] leading-[1.55] text-slate"><strong class="text-ink">1,314 properties acquired</strong> since 2015 — over 92% through county tax foreclosure.</p>
+              </div>
+              <div class="flex gap-4 py-4">
+                <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Users --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3.5 3.5 0 0 1 0 6.6M21 20a6 6 0 0 0-4-5.5"/></svg></span>
+                <p class="font-prose text-[13.5px] leading-[1.55] text-slate"><strong class="text-ink">Governed by a volunteer Board of Directors</strong> — meetings open to the public.</p>
+              </div>
+              <div class="flex gap-4 pt-4">
+                <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Scale --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8M12 6l-6 1 2.5 6a3.2 3.2 0 0 1-5 0L6 7m12-1 6 1-2.5 6a3.2 3.2 0 0 1-5 0L18 6"/></svg></span>
+                <p class="font-prose text-[13.5px] leading-[1.55] text-slate"><strong class="text-ink">Reports to Albany County and New York State</strong> — audits and annual reports published.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ The pipeline ═══ -->
+  <div class="w-full lb-paper-tint border-y border-ink/5 py-12" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="pipeline-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">The pipeline</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">From foreclosure to front porch</h2>
+        <p class="font-prose text-[15px] leading-[1.65] text-slate mt-2 max-w-[680px]">Three steps, repeated parcel by parcel — more than a thousand times over the past decade.</p>
+      </div>
+      <div class="grid grid-cols-12 gap-0 mt-2">
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="pipeline-acquire">
+          <div class="lb-card p-5 h-full">
+            <div class="flex items-center justify-between mb-3">
+              <span class="size-9 rounded-md bg-skydeep/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-skydeep">01</span>
+              <!-- icon: Landmark --><svg class="size-5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Acquire</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Nearly everything arrives through Albany County tax foreclosure — over 92% of acquisitions since 2015. Taking title stops vacant parcels from cycling through speculation and neglect.</p>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="pipeline-stabilize">
+          <div class="lb-card p-5 h-full">
+            <div class="flex items-center justify-between mb-3">
+              <span class="size-9 rounded-md bg-skydeep/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-skydeep">02</span>
+              <!-- icon: Hammer --><svg class="size-5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m14 10-8.5 8.5a1.8 1.8 0 0 1-2.5-2.5L11.5 7.5"/><path d="M13 4.5 15.5 2l6 6-2.5 2.5a2 2 0 0 1-2.8 0l-3.2-3.2a2 2 0 0 1 0-2.8Z"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Stabilize</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Crews and vendors board structures, mow lots, and keep up routine maintenance while staff clear titles — so every parcel is safe, legal, and ready to transfer.</p>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="pipeline-return">
+          <div class="lb-card p-5 h-full">
+            <div class="flex items-center justify-between mb-3">
+              <span class="size-9 rounded-md bg-skydeep/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-skydeep">03</span>
+              <!-- icon: Key --><svg class="size-5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.3-8.3M15 7l2.5 2.5M18 4l2 2"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Return</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Application-based sales match parcels with responsible buyers; in-house rehab projects and co-development clusters take on the blocks that need more than a sale.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Track record timeline ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="timeline-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Track record</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">A decade in the ledger</h2>
+        <p class="font-prose text-[15px] leading-[1.65] text-slate mt-2 max-w-[680px]">Every acquisition and every sale is a public record. The shape of the decade, in six lines.</p>
+      </div>
+      <div class="grid grid-cols-12 gap-0 mt-2">
+        <div class="col-span-12 lg:col-span-8 p-3" data-dms-section="timeline">
+          <div class="border-l border-ink/10 ml-1.5">
+            <div class="relative pl-8 pb-7">
+              <span class="absolute -left-[5.5px] top-1 size-2.5 rounded-full bg-leaf ring-4 ring-paper"></span>
+              <div class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">2014</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1 max-w-[560px]"><strong class="text-ink">The corporation is established</strong> by the Albany County Legislature — the county's response to tax-foreclosure vacancy.</p>
+            </div>
+            <div class="relative pl-8 pb-7">
+              <span class="absolute -left-[5.5px] top-1 size-2.5 rounded-full bg-sky ring-4 ring-paper"></span>
+              <div class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">2015</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1 max-w-[560px]"><strong class="text-ink">The first 118 parcels are acquired</strong> and the first 9 sales close.</p>
+            </div>
+            <div class="relative pl-8 pb-7">
+              <span class="absolute -left-[5.5px] top-1 size-2.5 rounded-full bg-sky ring-4 ring-paper"></span>
+              <div class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">2017</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1 max-w-[560px]"><strong class="text-ink">Busiest acquisition year</strong> — 316 parcels enter the pipeline.</p>
+            </div>
+            <div class="relative pl-8 pb-7">
+              <span class="absolute -left-[5.5px] top-1 size-2.5 rounded-full bg-sky ring-4 ring-paper"></span>
+              <div class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">2021</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1 max-w-[560px]"><strong class="text-ink">Busiest sales year</strong> — 170 properties returned to productive use.</p>
+            </div>
+            <div class="relative pl-8 pb-7">
+              <span class="absolute -left-[5.5px] top-1 size-2.5 rounded-full bg-leaf ring-4 ring-paper"></span>
+              <div class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">2024</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1 max-w-[560px]"><strong class="text-ink">The 1,000th property is sold.</strong></p>
+            </div>
+            <div class="relative pl-8">
+              <span class="absolute -left-[5.5px] top-1 size-2.5 rounded-full bg-sky ring-4 ring-paper"></span>
+              <div class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">2026</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1 max-w-[560px]"><strong class="text-ink">Today:</strong> 199 parcels in inventory, 60 for sale.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Accountability ═══ -->
+  <div id="accountability" class="w-full lb-paper-tint border-y border-ink/5 py-12" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="accountability-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Accountability</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Built to be watched</h2>
+        <p class="font-prose text-[15px] leading-[1.65] text-slate mt-2 max-w-[680px]">The Land Bank is a public authority. Its board meets in public, its minutes and resolutions are published, and its records are available under the Freedom of Information Law.</p>
+      </div>
+      <div class="grid grid-cols-12 gap-0 mt-2">
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="accountability-board">
+          <a href="#" class="lb-card block p-5 h-full hover:border-skydeep/40 transition-colors">
+            <div class="flex items-start justify-between mb-3">
+              <span class="size-10 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Users --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3.5 3.5 0 0 1 0 6.6M21 20a6 6 0 0 0-4-5.5"/></svg></span>
+              <!-- icon: ArrowUpRight --><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Board &amp; committees</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">A seven-member volunteer board appointed by the County Legislature, with Governance, Finance, and Real Estate committees.</p>
+          </a>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="accountability-reports">
+          <a href="#" class="lb-card block p-5 h-full hover:border-skydeep/40 transition-colors">
+            <div class="flex items-start justify-between mb-3">
+              <span class="size-10 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: FileText --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg></span>
+              <!-- icon: ArrowUpRight --><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Annual reports</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Filed with the New York State Authorities Budget Office and published every year, alongside independent audits.</p>
+          </a>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="accountability-meetings">
+          <a href="#" class="lb-card block p-5 h-full hover:border-skydeep/40 transition-colors">
+            <div class="flex items-start justify-between mb-3">
+              <span class="size-10 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Calendar --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="1.5"/><path d="M3.5 10h17M8 3v4m8-4v4"/></svg></span>
+              <!-- icon: ArrowUpRight --><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Board meetings</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Monthly and open to the public, with notice posted ahead of time and minutes published after.</p>
+          </a>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="accountability-policies">
+          <a href="#" class="lb-card block p-5 h-full hover:border-skydeep/40 transition-colors">
+            <div class="flex items-start justify-between mb-3">
+              <span class="size-10 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Scale --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8M12 6l-6 1 2.5 6a3.2 3.2 0 0 1-5 0L6 7m12-1 6 1-2.5 6a3.2 3.2 0 0 1-5 0L18 6"/></svg></span>
+              <!-- icon: ArrowUpRight --><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Policies &amp; resolutions</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">The disposition pricing policy and every sale resolution, published — how each price is set is on the record.</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Partners + get involved · ink band ═══ -->
+  <div class="w-full lb-plat-ink py-14" data-dms-group="feature">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="partners-copy">
+          <div class="flex items-center gap-2.5 mb-3"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-sky">Partners</span></div>
+          <h2 class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-white">This work is shared.</h2>
+          <p class="font-prose text-[15px] leading-[1.65] text-white/70 mt-4 max-w-[520px]">None of it happens alone. Albany County moves foreclosed parcels into the pipeline; the City of Albany coordinates code enforcement and planning; the New York Land Bank Association connects the work to a statewide movement; and community partners tell us which blocks need attention first.</p>
+          <div class="mt-6 flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center h-7 px-3 rounded-full bg-white/5 border border-white/15 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/70">Albany County</span>
+            <span class="inline-flex items-center h-7 px-3 rounded-full bg-white/5 border border-white/15 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/70">City of Albany</span>
+            <span class="inline-flex items-center h-7 px-3 rounded-full bg-white/5 border border-white/15 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/70">NY Land Bank Association</span>
+            <span class="inline-flex items-center h-7 px-3 rounded-full bg-white/5 border border-white/15 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/70">Community partners</span>
+          </div>
+        </div>
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="partners-involved">
+          <div class="rounded-md border border-white/15 bg-white/5 p-6 h-full">
+            <div class="font-display font-semibold text-[21px] leading-[1.2] text-white">Get involved</div>
+            <div class="mt-4 space-y-4">
+              <div class="flex gap-3.5">
+                <span class="size-9 shrink-0 rounded-md bg-white/10 flex items-center justify-center text-leaf"><!-- icon: Sprout --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-8"/><path d="M12 12c0-3.5-2.5-6-6-6 0 3.5 2.5 6 6 6Zm0-2c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6ZM5 20h14"/></svg></span>
+                <div>
+                  <div class="font-prose text-[13.5px] font-semibold text-white">Volunteer at a cleanup</div>
+                  <p class="font-prose text-[12px] leading-[1.5] text-white/60">Spring and fall workdays on Land Bank lots.</p>
+                </div>
+              </div>
+              <div class="flex gap-3.5">
+                <span class="size-9 shrink-0 rounded-md bg-white/10 flex items-center justify-center text-leaf"><!-- icon: Users --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3.5 3.5 0 0 1 0 6.6M21 20a6 6 0 0 0-4-5.5"/></svg></span>
+                <div>
+                  <div class="font-prose text-[13.5px] font-semibold text-white">Join an application-support session</div>
+                  <p class="font-prose text-[12px] leading-[1.5] text-white/60">Weekly help preparing a purchase application.</p>
+                </div>
+              </div>
+              <div class="flex gap-3.5">
+                <span class="size-9 shrink-0 rounded-md bg-white/10 flex items-center justify-center text-leaf"><!-- icon: Mail --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3 7 9 6 9-6"/></svg></span>
+                <div>
+                  <div class="font-prose text-[13.5px] font-semibold text-white">Subscribe to the for-sale list</div>
+                  <p class="font-prose text-[12px] leading-[1.5] text-white/60">New listings and meeting notices, monthly.</p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 pt-5 border-t border-white/10">
+              <a href="#" class="inline-flex items-center gap-2 h-11 px-5 rounded-md bg-leaf hover:bg-white text-ink font-prose text-[13.5px] font-semibold transition-colors">
+                Contact us
+                <!-- icon: ArrowRight --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m0 0-6-6m6 6-6 6"/></svg>
+              </a>
+              <div class="mt-4 space-y-2 font-prose text-[13.5px] text-white/75">
+                <div class="flex items-center gap-2.5"><!-- icon: Phone --><svg class="size-4 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>(518) 407-0309</div>
+                <div class="flex items-center gap-2.5"><!-- icon: Mail --><svg class="size-4 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3 7 9 6 9-6"/></svg>info@albanycountylandbank.org</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Visit strip ═══ -->
+  <div class="w-full bg-white" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3 flex flex-wrap items-center gap-x-8 gap-y-2" data-dms-section="visit">
+          <div class="flex items-center gap-2.5"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Visit the office</span></div>
+          <span class="inline-flex items-center gap-2 font-prose text-[13.5px] text-slate"><!-- icon: MapPin --><svg class="size-4 shrink-0 text-skydeep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>111 Washington Avenue, Suite 601, Albany, NY 12210</span>
+          <span class="inline-flex items-center gap-2 font-prose text-[13.5px] text-slate"><!-- icon: Clock --><svg class="size-4 shrink-0 text-skydeep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>Mon–Fri 9:30–4:30</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="w-full lb-plat-ink mt-auto" data-dms-group="footer">
+    <div class="mx-auto w-full max-w-[1240px] px-6 pt-12 pb-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="footer-brand">
+          <div class="bg-white rounded-md px-3 py-2 inline-block"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-9 w-auto"/></div>
+          <p class="font-prose text-[13.5px] leading-[1.55] text-white/70 mt-4 max-w-[380px]">A not-for-profit corporation revitalizing neighborhoods by returning vacant, abandoned, and tax-foreclosed properties to productive use.</p>
+          <div class="mt-4 flex items-center gap-2 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/40">
+            <!-- icon: Landmark --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg>
+            Empowering opportunity · strengthening communities
+          </div>
+        </div>
+        <div class="col-span-6 sm:col-span-4 lg:col-span-2 p-3" data-dms-section="footer-explore">
+          <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40 mb-3">Explore</div>
+          <nav class="space-y-2 font-prose text-[13.5px] font-semibold text-white/75">
+            <a href="home.html" class="block hover:text-white">Home</a>
+            <a href="about.html" class="block hover:text-white">About</a>
+            <a href="properties.html" class="block hover:text-white">Properties</a>
+            <a href="properties.html" class="block hover:text-white">For-sale list</a>
+          </nav>
+        </div>
+        <div class="col-span-6 sm:col-span-4 lg:col-span-2 p-3" data-dms-section="footer-account">
+          <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40 mb-3">Accountability</div>
+          <nav class="space-y-2 font-prose text-[13.5px] font-semibold text-white/75">
+            <a href="about.html" class="block hover:text-white">Board &amp; committees</a>
+            <a href="about.html" class="block hover:text-white">Annual reports</a>
+            <a href="about.html" class="block hover:text-white">Policies</a>
+            <a href="about.html" class="block hover:text-white">Resolutions</a>
+          </nav>
+        </div>
+        <div class="col-span-12 sm:col-span-4 lg:col-span-3 p-3" data-dms-section="footer-visit">
+          <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40 mb-3">Visit or call</div>
+          <div class="space-y-2.5 font-prose text-[13.5px] leading-[1.55] text-white/75">
+            <div class="flex gap-2.5"><!-- icon: MapPin --><svg class="size-4 mt-0.5 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>111 Washington Avenue, Suite 601<br/>Albany, NY 12210</span></div>
+            <div class="flex gap-2.5"><!-- icon: Phone --><svg class="size-4 mt-0.5 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span>(518) 407-0309</span></div>
+            <div class="flex gap-2.5"><!-- icon: Mail --><svg class="size-4 mt-0.5 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3 7 9 6 9-6"/></svg><span>info@albanycountylandbank.org</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-5 border-t border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <span class="font-prose text-[12px] text-white/50">© 2026 Albany County Land Bank Corporation. Records and reports available under the Freedom of Information Law.</span>
+        <nav class="flex gap-4 font-prose text-[12px] font-semibold text-white/60">
+          <a href="#" class="hover:text-white">Facebook</a><a href="#" class="hover:text-white">Instagram</a><a href="#" class="hover:text-white">YouTube</a><a href="#" class="hover:text-white">LinkedIn</a>
+        </nav>
+      </div>
+    </div>
+    <!-- doc-only index strip (design-system scaffolding — not product chrome) -->
+    <div class="border-t border-white/10 bg-black/20">
+      <div class="mx-auto w-full max-w-[1240px] px-6 py-3 flex flex-wrap items-center gap-x-5 gap-y-1">
+        <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/35">Design system</span>
+        <nav class="flex flex-wrap gap-x-4 gap-y-1 font-meta text-[10px] text-white/50">
+          <a href="../design-system/theme.html" class="hover:text-white">theme</a>
+          <a href="../design-system/layouts.html" class="hover:text-white">layouts</a>
+          <a href="../design-system/grid.html" class="hover:text-white">grid</a>
+          <a href="../design-system/components.html" class="hover:text-white">components</a>
+          <a href="../design-system/patterns.html" class="hover:text-white">patterns</a>
+          <span class="text-white/25">·</span>
+          <a href="home.html" class="hover:text-white">home</a>
+          <a href="about.html" class="text-leaf">about</a>
+          <a href="properties.html" class="hover:text-white">properties</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- floating design-system navigation widget (documentation scaffolding — never ships) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:8px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:0 16px 8px;border-bottom:1px solid rgba(22,35,44,0.08);margin-bottom:4px;">ACLB Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">1</span>Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">2</span>Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">3</span>Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">4</span>Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">5</span>Patterns</a>
+    <div style="height:1px;background:rgba(22,35,44,0.08);margin:6px 0;"></div>
+    <a href="home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Home</a>
+    <a href="about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#0A6E99;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>About</a>
+    <a href="properties.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:8px;background:#16232C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.25);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
