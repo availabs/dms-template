@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { cloneDeep, get, isEqual } from 'lodash-es';
 import { ComponentContext, PageContext, CMSContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
@@ -257,6 +257,12 @@ export default function ReportRouteList() {
   // and of the page's routes/draft_routes (removed; see the README's "Storage"
   // section for why).
   const [reportRow, setReportRow] = useState(null);
+  // Synchronous mirror of reportRow.id — persistRoutes reads/writes this
+  // instead of the closed-over `reportRow` state so a create's id is never
+  // lost to a stale closure (e.g. two persistRoutes calls overlapping before
+  // a re-render lands). React state updates are async and batched; a ref is
+  // not, so it can't go stale between "row created" and "next edit persisted".
+  const reportRowIdRef = useRef(null);
   const routes = reportRow?.routes || EMPTY_ROUTES;
 
   // Sibling graphs on this same page that are ready to receive a per-instance route
@@ -383,12 +389,15 @@ export default function ReportRouteList() {
         } catch (e) {
           parsedRoutes = [];
         }
+        reportRowIdRef.current = row.id;
         setReportRow({ id: row.id, routes: parsedRoutes });
       } else {
+        reportRowIdRef.current = null;
         setReportRow({ id: null, routes: [] });
       }
     } catch (e) {
       console.error('<ReportRouteList:loadReportRow>', e);
+      reportRowIdRef.current = null;
       setReportRow({ id: null, routes: [] });
     }
   };
@@ -405,10 +414,13 @@ export default function ReportRouteList() {
   // "Storage" section for why those two were both dead ends.
   const persistRoutes = async (nextRoutes) => {
     if (!apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
+    const currentId = reportRowIdRef.current;
     const payload = { report_id: String(item.id), routes: JSON.stringify(nextRoutes) };
-    if (reportRow.id) payload.id = reportRow.id;
+    if (currentId) payload.id = currentId;
     const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
-    setReportRow({ id: reportRow.id || res?.id, routes: nextRoutes });
+    const nextId = currentId || res?.id;
+    reportRowIdRef.current = nextId;
+    setReportRow({ id: nextId, routes: nextRoutes });
   };
 
   const addRoute = async () => {
