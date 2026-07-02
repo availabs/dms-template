@@ -74,8 +74,15 @@ See `src/dms/skills/card-layout.md` for the full surface of Card-section authori
 ## Custom theme components worth knowing about
 
 - **`transportny/components/ReportRouteList`** — a route-editor panel for "report" pages (created
-  from the `npmrds_sub` pattern's **Report Page** template). A report is just a page: routes live on
-  the page's `routes`/`draft_routes` attribute, and graphs are ordinary page sections (a
-  `comparison_series` subscriber binds a graph to the panel's published `report_routes` action
-  param). Read [its README](./transportny/components/ReportRouteList/README.md) for the route
-  catalog binding it keeps (`join.sources.table1`) and the publish/subscribe wiring.
+  from the `npmrds_sub` pattern's **Report Page** template). A report is just a page; its routes are
+  stored in one dedicated row of a dataset (the template pre-wires `reports_snap_2`), keyed 1:1 to the
+  page — chosen via this section's own sectionMenu "Dataset" picker (`externalSource`), not a bespoke
+  Page attribute (tried and reverted) or a hardcoded constant (tried and reverted — repo-convention
+  violation, dataset choice belongs to the author). The route **catalog** binding (which routes are
+  addable) lives on the sectionMenu's "Add Join Source" slot instead, deliberately left incomplete (no
+  join columns configured) so it never fires as a real SQL join — see the README's "Storage" section
+  for the full history and why two sectionMenu slots are used this way. Graphs are ordinary page
+  sections (a `comparison_series` subscriber, keyed by the `$self` sentinel, binds each graph to the
+  routes the panel has assigned it via `setActionParam`). **As of 2026-07-02 this storage rework is
+  implemented but NOT live-verified** — no browser session confirmed routes actually persist correctly
+  — read [its README](./transportny/components/ReportRouteList/README.md) before assuming it works.

@@ -4,6 +4,7 @@ import { ComponentContext, PageContext, CMSContext } from "../../../../dms/packa
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
 import { reportRouteListTheme } from './ReportRouteList.theme';
 import { buildUdaConfig, SELF_PARAM_KEY_SENTINEL, selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
+import { nameToSlug } from '../../../../dms/packages/dms/src/utils/type-utils';
 
 // Helper functions based on useDataSource.js
 const getSources = async (falcor, envs) => {
@@ -149,11 +150,27 @@ function roundToFiveMinutes(dateStr) {
   return `${datePart}T${String(finalHours).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}`;
 }
 
-// Stable reference for "no routes yet" — `item?.[routesKey] || []` would otherwise
+// Stable reference for "no routes yet" — `reportRow?.routes || []` would otherwise
 // produce a brand-new array every render, which would re-trigger the publish effect
 // below on every render (it depends on `routes`) and loop forever.
 const EMPTY_ROUTES = [];
 const EMPTY_SECTIONS = [];
+
+// The report's routes live in exactly one row of a `reports_snap_2`-shaped dataset —
+// one row per report page, keyed by `report_id` = the page's own id. This is a
+// genuine DMS `:data` row (the same split-table storage Card/Spreadsheet write
+// through via `updateItem`/`addItem`), which is the only truly schema-free
+// persistence layer in this system: page/component rows go through a declared
+// attribute schema (`page.format.js`/`cmsSection`) that a client-side allowlist can
+// silently strip unknown keys from (this is exactly what happened when routes lived
+// in this section's own `element-data` — dataWrapper's save effect round-trips
+// `element-data` through a fixed set of known fields whenever it fires, dropping
+// anything else). A `:data` row has no such allowlist.
+//
+// Which dataset this is is an author decision, not a hardcoded one: `externalSource`
+// is this section's normal sectionMenu "Dataset" binding (the one every
+// `useDataWrapper` component gets). The Report Page template pre-wires it to
+// `reports_snap_2`, but nothing in this file hardcodes that source/view id anymore.
 
 // Finds sibling page sections carrying an enabled `comparison_series` subscriber
 // wired to the `$self` sentinel (see `buildUdaConfig.js`) — i.e. graphs ready to
@@ -185,7 +202,7 @@ function findSelfBoundGraphs(sectionList) {
 }
 
 export default function ReportRouteList() {
-  const { apiLoad, apiUpdate, pageState, setActionParam, clearActionParam, item, format, editPageMode } = useContext(PageContext) || {};
+  const { apiLoad, apiUpdate, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
   const { falcor, datasources } = useContext(CMSContext) || {};
   const { setState, state, state:{join, externalSource} } = useContext(ComponentContext) || {};
   // NOT `props.isEdit` — that's dataWrapper's per-section "is THIS component's own
@@ -193,9 +210,9 @@ export default function ReportRouteList() {
   // this panel renders via SectionView even on an /edit/... page). `editPageMode`
   // (from PageContext, set only on the /edit/... route) is whichever sections array
   // (`draft_sections` vs `sections`) sibling components are ACTUALLY rendering from
-  // right now — that's what routesKey/sectionsKey below must track, since graphIds
-  // stored on a route only mean anything if they reference the ids of the sections
-  // actually on screen.
+  // right now — that's what sectionsKey below must track, since graphIds stored on a
+  // route only mean anything if they reference the ids of the sections actually on
+  // screen.
   const isEdit = Boolean(editPageMode);
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Input, Icon } = UI || {};
@@ -213,17 +230,40 @@ export default function ReportRouteList() {
   const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
   const [editStartDateValue, setEditStartDateValue] = useState('');
   const [editEndDateValue, setEditEndDateValue] = useState('');
-  const routeSourceInfo = externalSource;
-  console.log("comp state::", state)
-  // The report's routes live on the page item itself (a "report" IS a page, created
-  // from the Report Page template) — draft copy while editing, published copy in view.
-  // ReportRouteList no longer owns a separate report data row.
-  const routesKey = isEdit ? 'draft_routes' : 'routes';
-  const routes = item?.[routesKey] || EMPTY_ROUTES;
+  // The route CATALOG binding — read-only, used only to resolve `add_route_id` into
+  // a route to copy from. Bound via the sectionMenu's "Add Join Source" slot rather
+  // than `externalSource` (which is this component's STORAGE binding, see below):
+  // an author picks a join source + view and stops there (never configures join
+  // columns), which leaves `isJoinComplete()` false and keeps this from ever being
+  // sent to the query engine as a real SQL join (`buildUdaConfig.js`'s per-alias
+  // `isJoinComplete` filter) — while still populating full `sourceInfo` the moment
+  // the source is picked (`useDataSource.js`'s `onJoinSourceChange`). Read the first
+  // (only) join source rather than hardcoding an alias name — there's only ever one
+  // for this component, so no ambiguity, and it's robust to whatever alias ends up
+  // assigned.
+  const routeSourceInfo = Object.values(join?.sources || {})[0]?.sourceInfo;
+  // The report STORAGE binding — this section's normal sectionMenu "Dataset" pick.
+  // The Report Page template pre-wires this to `reports_snap_2`, but nothing here
+  // hardcodes that source/view id; an author could point it anywhere with the same
+  // shape (a `report_id` + `routes` column).
+  const sourceType = externalSource?.type || (externalSource?.name ? nameToSlug(externalSource.name) : undefined);
+  const storageDataFormat = externalSource?.view_id && sourceType
+    ? { ...externalSource, type: `${sourceType}|${externalSource.view_id}:data` }
+    : externalSource;
+  // `reportRow` is this report's one dedicated row in the storage dataset — `null`
+  // while loading, `{id: null, routes: []}` once loaded if no row exists yet (first
+  // route add creates it), `{id, routes}` once one exists. Loaded/persisted directly
+  // via apiLoad/apiUpdate below — independent of this section's own `element-data`
+  // and of the page's routes/draft_routes (removed; see the README's "Storage"
+  // section for why).
+  const [reportRow, setReportRow] = useState(null);
+  const routes = reportRow?.routes || EMPTY_ROUTES;
 
   // Sibling graphs on this same page that are ready to receive a per-instance route
   // list (see findSelfBoundGraphs above). Read-only — never written to; each graph
-  // resolves its own key from its own section id.
+  // resolves its own key from its own section id. Unrelated to routes storage
+  // (see storageDataFormat/persistRoutes below) — this is purely for discovering
+  // which graphs are on the page right now.
   const sectionsKey = isEdit ? 'draft_sections' : 'sections';
   const sectionList = item?.[sectionsKey] || EMPTY_SECTIONS;
   const graphs = useMemo(() => findSelfBoundGraphs(sectionList), [sectionList]);
@@ -288,18 +328,15 @@ export default function ReportRouteList() {
     if (!addRouteId || !apiLoad || !routeSourceInfo) return;
     setLoading(true);
     console.log("fetching dynamic route")
-    const externalSource = {
-      ...routeSourceInfo,
-    };
 
     const udaConfig = buildUdaConfig({
-      externalSource,
-      columns: externalSource.columns.map(c => ({...c, show: true})),
+      externalSource: routeSourceInfo,
+      columns: routeSourceInfo.columns.map(c => ({...c, show: true})),
       filters: { op: "AND", groups: [{ col: "data->>'route_id'", op: "filter", value: addRouteId.value }] }
     });
 
     const config = {
-      format: { ...externalSource, app: "npmrdsv5", type: "routes_data" },
+      format: { ...routeSourceInfo },
       children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options) }, params: {} }]
     };
 
@@ -320,16 +357,62 @@ export default function ReportRouteList() {
     }
   },[addRouteId]);
 
-  // Persist a route mutation onto the page row — `draft_routes` while editing,
-  // `routes` in view (routes are edited live, even outside edit mode, mirroring
-  // today's behavior). This replaces the old dataWrapper-row `updateItem` write.
+  // Load this report's one row from the storage dataset (`externalSource`), keyed by
+  // `report_id` = the page's own id (a real column filter, same `data->>'col'` UDA
+  // query shape fetchDynamicRoute uses above — just against a different dataset). No
+  // row yet is a normal, expected state for a freshly created report page, not an
+  // error.
+  const loadReportRow = async () => {
+    if (!apiLoad || !item?.id || !externalSource?.columns) return;
+    const udaConfig = buildUdaConfig({
+      externalSource,
+      columns: externalSource.columns.map(c => ({ ...c, show: true })),
+      filters: { op: "AND", groups: [{ col: "data->>'report_id'", op: "filter", value: String(item.id) }] }
+    });
+    const config = {
+      format: { ...externalSource },
+      children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options) }, params: {} }]
+    };
+    try {
+      const data = await apiLoad(config, "/");
+      const row = data?.[0]?.data?.value;
+      if (row) {
+        let parsedRoutes = [];
+        try {
+          parsedRoutes = JSON.parse(row.routes || '[]') || [];
+        } catch (e) {
+          parsedRoutes = [];
+        }
+        setReportRow({ id: row.id, routes: parsedRoutes });
+      } else {
+        setReportRow({ id: null, routes: [] });
+      }
+    } catch (e) {
+      console.error('<ReportRouteList:loadReportRow>', e);
+      setReportRow({ id: null, routes: [] });
+    }
+  };
+
+  useEffect(() => {
+    loadReportRow();
+  }, [item?.id, externalSource?.source_id, externalSource?.view_id]);
+
+  // Persist a route mutation to this report's row in the storage dataset — creating
+  // it on the first-ever route add (no row yet → `apiUpdate` with no `id` inserts
+  // one, same as dataWrapper's own `addItem` elsewhere), updating it on every
+  // mutation after. This is a genuine DMS data row (split-table, schema-free), not a
+  // page attribute and not this section's own `element-data` — see the README's
+  // "Storage" section for why those two were both dead ends.
   const persistRoutes = async (nextRoutes) => {
-    if (!apiUpdate || !item?.id) return;
-    await apiUpdate({ data: { id: item.id, [routesKey]: nextRoutes }, config: { format } });
+    if (!apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
+    const payload = { report_id: String(item.id), routes: JSON.stringify(nextRoutes) };
+    if (reportRow.id) payload.id = reportRow.id;
+    const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
+    setReportRow({ id: reportRow.id || res?.id, routes: nextRoutes });
   };
 
   const addRoute = async () => {
-    if (!apiUpdate || !item?.id || !pendingRoute || saving) return;
+    if (!apiUpdate || !item?.id || !pendingRoute || saving || !reportRow) return;
     setSaving(true);
     setError('');
     try {
@@ -362,7 +445,7 @@ export default function ReportRouteList() {
   };
 
   const removeRoute = async (indexToRemove) => {
-    if (!apiUpdate || !item?.id || saving) return;
+    if (!apiUpdate || !item?.id || saving || !reportRow) return;
     setSaving(true);
     setError('');
     try {
@@ -376,7 +459,7 @@ export default function ReportRouteList() {
   };
 
   const reorderRoutes = async (index, direction) => {
-    if (!apiUpdate || !item?.id || saving) return;
+    if (!apiUpdate || !item?.id || saving || !reportRow) return;
 
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= routes.length) return;
@@ -399,7 +482,7 @@ export default function ReportRouteList() {
   };
 
   const updateRoute = async ({index, updates}) => {
-    if (!apiUpdate || !item?.id || saving || !updates) return;
+    if (!apiUpdate || !item?.id || saving || !updates || !reportRow) return;
     setSaving(true);
     setError('');
     try {
@@ -425,7 +508,7 @@ export default function ReportRouteList() {
   // never surfaced as an abstract "group"; the UI is just "this route is on Graph N."
   // A route feeds no graph until explicitly toggled onto one (no implicit sharing).
   const toggleRouteGraph = async (index, sectionId) => {
-    if (!apiUpdate || !item?.id || saving) return;
+    if (!apiUpdate || !item?.id || saving || !reportRow) return;
     setSaving(true);
     setError('');
     try {
@@ -481,7 +564,7 @@ export default function ReportRouteList() {
   // every report page always has at least this panel's own section, so an empty
   // list means "not loaded yet," not "everything was removed."
   useEffect(() => {
-    if (!apiUpdate || !item?.id || !sectionList.length) return;
+    if (!apiUpdate || !item?.id || !sectionList.length || !reportRow) return;
     const needsCleanup = routes.some(r => (r.graphIds || []).some(id => !knownSectionIds.has(id)));
     if (!needsCleanup) return;
     const cleaned = routes.map(r => {
@@ -490,7 +573,7 @@ export default function ReportRouteList() {
       return filtered.length === r.graphIds.length ? r : { ...r, graphIds: filtered };
     });
     persistRoutes(cleaned);
-  }, [routes, knownSectionIds, sectionList.length]);
+  }, [routes, knownSectionIds, sectionList.length, reportRow]);
 
   const cancelAdd = () => {
     setPendingRoute(null);
@@ -507,7 +590,7 @@ export default function ReportRouteList() {
       </div>
       {isRoutesExpanded && (
         <>
-          {loading ? <div className={t.loading}>Loading…</div> : null}
+          {(loading || !reportRow) ? <div className={t.loading}>Loading…</div> : null}
           <div className={t.list}>
             {routes.map((r, i) => {
               const tmcArray = getTmcArray(r.tmc_array);
@@ -644,7 +727,7 @@ export default function ReportRouteList() {
                 </div>
               );
             })}
-            {!loading && routes.length === 0 ? <div className={t.empty}>No routes added.</div> : null}
+            {!loading && reportRow && routes.length === 0 ? <div className={t.empty}>No routes added.</div> : null}
           </div>
           {pendingRoute && (
             <div className={t.addForm}>
