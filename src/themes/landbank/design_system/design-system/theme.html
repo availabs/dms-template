@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ACLB Design System · Theme</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<body class="lb-paper">
+
+<!--
+  theme.html · DESIGN SYSTEM 1 of 5 — foundation tokens.
+  Layout `default` (public chrome: utility strip + TopNav). The TopNav doubles as
+  design-system navigation per the skill; the product TopNav is documented on layouts.html.
+  Sections: color · status system · type · icons · spacing & radius · surfaces.
+-->
+
+<div class="min-h-svh flex flex-col" data-dms-layout="default">
+
+  <!-- ═══ Utility strip (Layout headerChildren) ═══ -->
+  <div class="w-full bg-ink text-white/80">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-8 flex items-center justify-between">
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em]">Albany County Land Bank Corporation · Design System</span>
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em] text-white/50">v0.1 · 2026</span>
+    </div>
+  </div>
+
+  <!-- ═══ TopNav · design-system variant (Theme active) ═══ -->
+  <header class="w-full bg-white border-b border-ink/10 sticky top-0 z-50">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-16 flex items-center gap-8">
+      <a href="theme.html" class="flex items-center gap-3 shrink-0">
+        <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-9 w-auto"/>
+      </a>
+      <span class="hidden md:inline font-meta text-[10px] uppercase tracking-[0.16em] text-mist border-l border-ink/10 pl-4">Design System</span>
+      <nav class="flex-1 flex items-center justify-end gap-1 font-prose text-[13.5px] font-semibold">
+        <a href="theme.html" class="px-3 h-16 flex items-center text-skydeep border-b-2 border-sky -mb-px">Theme</a>
+        <a href="layouts.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Layouts</a>
+        <a href="grid.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Grid</a>
+        <a href="components.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Components</a>
+        <a href="patterns.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Patterns</a>
+      </nav>
+      <span class="font-meta text-[10px] text-mist tabular-nums shrink-0">1 / 5</span>
+    </div>
+  </header>
+
+  <!-- ═══ HEADER · LayoutGroup hero ═══ -->
+  <div class="w-full lb-plat border-b border-ink/10" data-dms-group="hero">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-14" data-dms-section="page-header">
+      <div class="flex items-center gap-2.5 mb-3">
+        <span class="size-2 bg-leaf"></span>
+        <span class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-skydeep">Foundation · Tokens</span>
+      </div>
+      <h1 class="font-display font-bold text-[54px] leading-[1.04] tracking-[-0.015em] text-ink max-w-[820px]">Every parcel starts with a survey.</h1>
+      <p class="font-prose text-[17.5px] leading-[1.6] text-slate mt-4 max-w-[720px]">The Albany County Land Bank brand vocabulary — color, type, icons, spacing, and surfaces — before it is composed into anything. If a token isn't declared on this page, no page in this system may use it.</p>
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate"><span class="size-2 rounded-full bg-sky"></span>Sky #0AA7E4</span>
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate"><span class="size-2 rounded-full bg-leaf"></span>Leaf #8CC63E</span>
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate"><span class="size-2 rounded-full bg-ink"></span>Ink #16232C</span>
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate">Archivo · Public Sans · Plex Mono</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Color ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="color">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Color</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Both brand brights come straight from the logo mark — the sky above the skyline and the hill below it. They are <em>graphic</em> colors: fills, charts, the map. Text and interaction always step down to their darkened pairs so contrast holds. The workhorse ratio is roughly 90% neutrals, 8% sky, 2% leaf.</p>
+
+      <div class="grid grid-cols-12 gap-0">
+        <!-- Brand -->
+        <div class="col-span-12 p-3" data-dms-section="color-brand">
+          <div class="lb-card p-6">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">Brand</div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div><div class="h-24 rounded-md bg-sky"></div><div class="mt-2 font-prose text-[13.5px] font-semibold text-ink">Sky</div><div class="font-meta text-[11px] text-mist">bg-sky · #0AA7E4</div><div class="font-prose text-[12px] text-slate mt-0.5">Logo sky. Charts, map pins, graphic fills. Never body text.</div></div>
+              <div><div class="h-24 rounded-md bg-skydeep"></div><div class="mt-2 font-prose text-[13.5px] font-semibold text-ink">Sky · deep</div><div class="font-meta text-[11px] text-mist">bg-skydeep · #0A6E99</div><div class="font-prose text-[12px] text-slate mt-0.5">Links, primary buttons, active nav. The interactive color.</div></div>
+              <div><div class="h-24 rounded-md bg-leaf"></div><div class="mt-2 font-prose text-[13.5px] font-semibold text-ink">Leaf</div><div class="font-meta text-[11px] text-mist">bg-leaf · #8CC63E</div><div class="font-prose text-[12px] text-slate mt-0.5">Logo hill. Eyebrow squares, lot hatches, accents only.</div></div>
+              <div><div class="h-24 rounded-md bg-field"></div><div class="mt-2 font-prose text-[13.5px] font-semibold text-ink">Field</div><div class="font-meta text-[11px] text-mist">bg-field · #4C9129</div><div class="font-prose text-[12px] text-slate mt-0.5">"For Sale" — the one semantic green. White text passes on it.</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Neutrals -->
+        <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="color-neutral">
+          <div class="lb-card p-6 h-full">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">Neutrals · record paper</div>
+            <div class="grid grid-cols-3 gap-4">
+              <div><div class="h-16 rounded-md bg-ink"></div><div class="mt-2 font-prose text-[13px] font-semibold text-ink">Ink</div><div class="font-meta text-[10.5px] text-mist">#16232C</div></div>
+              <div><div class="h-16 rounded-md bg-slate"></div><div class="mt-2 font-prose text-[13px] font-semibold text-ink">Slate</div><div class="font-meta text-[10.5px] text-mist">#475A66</div></div>
+              <div><div class="h-16 rounded-md bg-mist"></div><div class="mt-2 font-prose text-[13px] font-semibold text-ink">Mist</div><div class="font-meta text-[10.5px] text-mist">#8CA0AB</div></div>
+              <div><div class="h-16 rounded-md bg-paper border border-ink/10"></div><div class="mt-2 font-prose text-[13px] font-semibold text-ink">Paper</div><div class="font-meta text-[10.5px] text-mist">#F2F5F6</div></div>
+              <div><div class="h-16 rounded-md bg-papertint border border-ink/10"></div><div class="mt-2 font-prose text-[13px] font-semibold text-ink">Paper · tint</div><div class="font-meta text-[10.5px] text-mist">#EAEFF1</div></div>
+              <div><div class="h-16 rounded-md bg-white border border-ink/10"></div><div class="mt-2 font-prose text-[13px] font-semibold text-ink">White</div><div class="font-meta text-[10.5px] text-mist">#FFFFFF</div></div>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-4">Ink is primary text and the footer band. Slate is secondary text. Mist is muted labels and disabled states. Borders are <span class="font-meta text-[11px]">ink/10</span> everywhere — one border tone, no exceptions.</p>
+          </div>
+        </div>
+        <!-- Semantic accents -->
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="color-semantic">
+          <div class="lb-card p-6 h-full">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">Semantic accents</div>
+            <div class="grid grid-cols-2 gap-4">
+              <div><div class="h-12 rounded-md bg-amber"></div><div class="mt-1.5 font-prose text-[12.5px] font-semibold text-ink">Amber <span class="font-meta text-[10px] font-normal text-mist">#E0940B</span></div></div>
+              <div><div class="h-12 rounded-md bg-violet"></div><div class="mt-1.5 font-prose text-[12.5px] font-semibold text-ink">Violet <span class="font-meta text-[10px] font-normal text-mist">#8B6FC7</span></div></div>
+              <div><div class="h-12 rounded-md bg-rose"></div><div class="mt-1.5 font-prose text-[12.5px] font-semibold text-ink">Rose <span class="font-meta text-[10px] font-normal text-mist">#CE5B4E</span></div></div>
+              <div><div class="h-12 rounded-md bg-steel"></div><div class="mt-1.5 font-prose text-[12.5px] font-semibold text-ink">Steel <span class="font-meta text-[10px] font-normal text-mist">#8195A1</span></div></div>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-4">Each accent exists for one job in the status system below. Text-safe deep pairs: <span class="font-meta text-[11px]">forest #33641B · amberdeep #8F5E08 · violetdeep #6C50A8 · rosedeep #B03E31</span>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Status system ═══ -->
+  <div class="w-full lb-paper-tint py-12 border-y border-ink/5" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="status-system">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">The status system</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Every property in the portfolio carries one disposition status. The same color means the same thing on a pill, a map pin, a donut slice, and a bar — everywhere, always. Pills are the canonical rendering: tinted ground, deep text, no border.</p>
+      <div class="lb-card p-6 overflow-x-auto">
+        <table class="w-full min-w-[760px]">
+          <thead>
+            <tr class="border-b border-ink/10">
+              <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Status</th>
+              <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Pill</th>
+              <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Graphic / text pair</th>
+              <th class="text-left py-2 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Covers</th>
+            </tr>
+          </thead>
+          <tbody class="font-prose text-[13px] text-slate">
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">For Sale</td><td class="py-2.5 pr-4"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest font-prose text-[12px] font-semibold">For Sale</span></td><td class="py-2.5 pr-4 font-meta text-[11px]">field / forest</td><td class="py-2.5">Listed and accepting applications</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">ACLB Rehab</td><td class="py-2.5 pr-4"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-sky/10 text-skydeep font-prose text-[12px] font-semibold">ACLB Rehab</span></td><td class="py-2.5 pr-4 font-meta text-[11px]">sky / skydeep</td><td class="py-2.5">In-house rehab projects ("ACLB Project")</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">Sale Pending</td><td class="py-2.5 pr-4"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-amber/10 text-amberdeep font-prose text-[12px] font-semibold">Sale Pending</span></td><td class="py-2.5 pr-4 font-meta text-[11px]">amber / amberdeep</td><td class="py-2.5">Application approved, closing in progress</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">Co-Development</td><td class="py-2.5 pr-4"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-violet/10 text-violetdeep font-prose text-[12px] font-semibold">Co-Development</span></td><td class="py-2.5 pr-4 font-meta text-[11px]">violet / violetdeep</td><td class="py-2.5">Partner development clusters (CoDev)</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">In Process</td><td class="py-2.5 pr-4"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-steel/10 text-slate font-prose text-[12px] font-semibold">In Process</span></td><td class="py-2.5 pr-4 font-meta text-[11px]">steel / slate</td><td class="py-2.5">Processing · Application to Board · Under Option</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">On Hold</td><td class="py-2.5 pr-4"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-rose/10 text-rosedeep font-prose text-[12px] font-semibold">On Hold</span></td><td class="py-2.5 pr-4 font-meta text-[11px]">rose / rosedeep</td><td class="py-2.5">Tabled · Title Problem · Not Available</td></tr>
+            <tr><td class="py-2.5 pr-4 font-semibold text-ink">Sold</td><td class="py-2.5 pr-4"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-ink/5 text-slate font-prose text-[12px] font-semibold">Sold</span></td><td class="py-2.5 pr-4 font-meta text-[11px]">ink/5 / slate</td><td class="py-2.5">Returned to productive use — the goal state, rendered quiet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Type ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="type">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Type</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Three voices, fourteen tokens. <strong class="text-ink">Archivo</strong> — opened up to 118% width — is the display voice: sturdy civic lettering that echoes the wide-tracked caps of the ACLB wordmark. <strong class="text-ink">Public Sans</strong>, the typeface built for the U.S. public sector, carries all running text. <strong class="text-ink">IBM Plex Mono</strong> is the ledger voice: parcel IDs, eyebrows, data chrome. Every text treatment on every page resolves to one of these tokens plus modifier axes (color · uppercase+tracking · tabular-nums · italic).</p>
+
+      <!-- display role -->
+      <div class="lb-card p-6 mb-3" data-dms-section="type-display">
+        <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-5">Role · display — Archivo 118%</div>
+        <div class="space-y-6">
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">displayHero · Archivo 54/1.04 · 700 · −0.015em</div><div class="font-display font-bold text-[54px] leading-[1.04] tracking-[-0.015em] text-ink">Vacant to vibrant.</div></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">displayXL · Archivo 38/1.1 · 700 · −0.01em</div><div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink">1,115 properties returned</div></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">displayLG · Archivo 27/1.15 · 600</div><div class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Portfolio by neighborhood</div></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">displayMD · Archivo 21/1.2 · 600</div><div class="font-display font-semibold text-[21px] leading-[1.2] text-ink">49 Park Avenue, Mansion</div></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">displaySM · Archivo 17/1.3 · 600</div><div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Residential vacant lot</div></div>
+        </div>
+        <p class="font-prose text-[12px] text-slate mt-5 pt-4 border-t border-ink/5">Folded in: KPI numerals are <span class="font-meta text-[11px]">displayXL + tabular-nums</span>, not a separate token. Section headings on dark grounds are the same tokens with <span class="font-meta text-[11px]">text-white</span>. No italic display exists in this system.</p>
+      </div>
+
+      <!-- prose role -->
+      <div class="lb-card p-6 mb-3" data-dms-section="type-prose">
+        <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-5">Role · prose — Public Sans</div>
+        <div class="space-y-5">
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">proseLG · Public Sans 17.5/1.6 · 400</div><p class="font-prose text-[17.5px] leading-[1.6] text-slate max-w-[640px]">The Land Bank acquires tax-foreclosed, vacant, and abandoned properties throughout Albany County and returns them to responsible ownership.</p></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">prose · Public Sans 15/1.65 · 400</div><p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[640px]">Most lots sell for a few hundred dollars. An application, a plan for the property, and proof of funds are all it takes to be considered — the review is multi-layered so buyers are responsible, not just fastest.</p></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">proseSM · Public Sans 13.5/1.55 · 400</div><p class="font-prose text-[13.5px] leading-[1.55] text-slate max-w-[560px]">Side lots are offered to adjacent owner-occupants first. Pricing follows the published disposition policy.</p></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">proseXS · Public Sans 12/1.5 · 400</div><p class="font-prose text-[12px] leading-[1.5] text-slate max-w-[560px]">Source: ACLB property records, updated weekly. Figures reflect the current published inventory.</p></div>
+        </div>
+        <p class="font-prose text-[12px] text-slate mt-5 pt-4 border-t border-ink/5">Folded in: card body copy is <span class="font-meta text-[11px]">proseSM</span>; captions and footnotes are <span class="font-meta text-[11px]">proseXS + text-mist</span>; ledes are <span class="font-meta text-[11px]">proseLG</span>. Italic is a call-site modifier for titles of documents only.</p>
+      </div>
+
+      <!-- label role -->
+      <div class="lb-card p-6 mb-3" data-dms-section="type-label">
+        <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-5">Role · label — Public Sans semibold</div>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">labelMD · Public Sans 13.5/1.2 · 600</div><div class="font-prose text-[13.5px] leading-[1.2] font-semibold text-ink">Browse available properties</div><p class="font-prose text-[12px] text-slate mt-1">Buttons, nav items, field labels, pills at full size.</p></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">labelSM · Public Sans 12/1.2 · 600</div><div class="font-prose text-[12px] leading-[1.2] font-semibold text-ink">Asking price</div><p class="font-prose text-[12px] text-slate mt-1">Table headers, small pills, compact chrome.</p></div>
+        </div>
+        <p class="font-prose text-[12px] text-slate mt-5 pt-4 border-t border-ink/5">Folded in: link text is <span class="font-meta text-[11px]">labelMD + text-skydeep</span>. No separate "button" token.</p>
+      </div>
+
+      <!-- meta role -->
+      <div class="lb-card p-6" data-dms-section="type-meta">
+        <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-5">Role · meta — IBM Plex Mono</div>
+        <div class="space-y-5">
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">metaMD · Plex Mono 12.5/1.5 · 500</div><div class="font-meta font-medium text-[12.5px] text-ink">SBL 76.49-6-65 · 22′ × 105′ · 0.05 ac</div></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">metaSM · Plex Mono 11/1.4 · 500 <span class="text-mist/70">(shown with the uppercase-tracking modifier)</span></div><div class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Property Portfolio · Updated Weekly</div></div>
+          <div><div class="font-meta text-[10.5px] text-mist mb-1.5">metaXS · Plex Mono 9.5/1.3 · 500</div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">a public authority of albany county, new york</div></div>
+        </div>
+        <p class="font-prose text-[12px] text-slate mt-5 pt-4 border-t border-ink/5">Folded in: eyebrows are <span class="font-meta text-[11px]">metaSM + uppercase + tracking-[0.16em]</span> preceded by a <span class="font-meta text-[11px]">size-2 bg-leaf</span> square (the legend-swatch device); table numerals are <span class="font-meta text-[11px]">metaMD + tabular-nums</span>; axis labels on charts are <span class="font-meta text-[11px]">metaXS</span>. No separate eyebrow or numeral token.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Icons ═══ -->
+  <div class="w-full lb-paper-tint py-12 border-y border-ink/5" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="icons" id="icons">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Icons</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">One drawn set: 24-unit grid, 1.5 stroke, round caps, no fills. Components reference icons by these registry names — an unregistered name renders nothing. The set below is the complete registry for v0.1; <span class="font-meta text-[12px]">Lot</span> is the one custom glyph (a surveyed parcel), everything else follows familiar conventions.</p>
+      <div class="lb-card p-6">
+        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-7">
+
+          <!-- each tile: 16 / 24 / 32 rendering + name -->
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Lot --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg><!-- icon: Lot --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg><!-- icon: Lot --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg></div><span class="font-meta text-[10px] text-slate">Lot</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: House --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/><path d="M10 20v-5h4v5"/></svg><!-- icon: House --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/><path d="M10 20v-5h4v5"/></svg><!-- icon: House --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/><path d="M10 20v-5h4v5"/></svg></div><span class="font-meta text-[10px] text-slate">House</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Building --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17M15 8h4v13M3 21h18"/><path d="M8 7h2m-2 4h2m-2 4h2"/></svg><!-- icon: Building --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17M15 8h4v13M3 21h18"/><path d="M8 7h2m-2 4h2m-2 4h2"/></svg><!-- icon: Building --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17M15 8h4v13M3 21h18"/><path d="M8 7h2m-2 4h2m-2 4h2"/></svg></div><span class="font-meta text-[10px] text-slate">Building</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Landmark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg><!-- icon: Landmark --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg><!-- icon: Landmark --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg></div><span class="font-meta text-[10px] text-slate">Landmark</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Key --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.3-8.3M15 7l2.5 2.5M18 4l2 2"/></svg><!-- icon: Key --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.3-8.3M15 7l2.5 2.5M18 4l2 2"/></svg><!-- icon: Key --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.3-8.3M15 7l2.5 2.5M18 4l2 2"/></svg></div><span class="font-meta text-[10px] text-slate">Key</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Hammer --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m14 10-8.5 8.5a1.8 1.8 0 0 1-2.5-2.5L11.5 7.5"/><path d="M13 4.5 15.5 2l6 6-2.5 2.5a2 2 0 0 1-2.8 0l-3.2-3.2a2 2 0 0 1 0-2.8Z"/></svg><!-- icon: Hammer --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m14 10-8.5 8.5a1.8 1.8 0 0 1-2.5-2.5L11.5 7.5"/><path d="M13 4.5 15.5 2l6 6-2.5 2.5a2 2 0 0 1-2.8 0l-3.2-3.2a2 2 0 0 1 0-2.8Z"/></svg><!-- icon: Hammer --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m14 10-8.5 8.5a1.8 1.8 0 0 1-2.5-2.5L11.5 7.5"/><path d="M13 4.5 15.5 2l6 6-2.5 2.5a2 2 0 0 1-2.8 0l-3.2-3.2a2 2 0 0 1 0-2.8Z"/></svg></div><span class="font-meta text-[10px] text-slate">Hammer</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Sprout --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-8"/><path d="M12 12c0-3.5-2.5-6-6-6 0 3.5 2.5 6 6 6Zm0-2c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6ZM5 20h14"/></svg><!-- icon: Sprout --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-8"/><path d="M12 12c0-3.5-2.5-6-6-6 0 3.5 2.5 6 6 6Zm0-2c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6ZM5 20h14"/></svg><!-- icon: Sprout --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-8"/><path d="M12 12c0-3.5-2.5-6-6-6 0 3.5 2.5 6 6 6Zm0-2c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6ZM5 20h14"/></svg></div><span class="font-meta text-[10px] text-slate">Sprout</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: MapPin --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><!-- icon: MapPin --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><!-- icon: MapPin --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></div><span class="font-meta text-[10px] text-slate">MapPin</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Map --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg><!-- icon: Map --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg><!-- icon: Map --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg></div><span class="font-meta text-[10px] text-slate">Map</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Ruler --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21l-4-4Z"/><path d="m7.5 12.5 2 2m1-5 2 2m1-5 2 2"/></svg><!-- icon: Ruler --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21l-4-4Z"/><path d="m7.5 12.5 2 2m1-5 2 2m1-5 2 2"/></svg><!-- icon: Ruler --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21l-4-4Z"/><path d="m7.5 12.5 2 2m1-5 2 2m1-5 2 2"/></svg></div><span class="font-meta text-[10px] text-slate">Ruler</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Tag --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8l10 10-8 8L3 11V3Z"/><circle cx="8" cy="8" r="1.5"/></svg><!-- icon: Tag --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8l10 10-8 8L3 11V3Z"/><circle cx="8" cy="8" r="1.5"/></svg><!-- icon: Tag --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8l10 10-8 8L3 11V3Z"/><circle cx="8" cy="8" r="1.5"/></svg></div><span class="font-meta text-[10px] text-slate">Tag</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Scale --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8M12 6l-6 1 2.5 6a3.2 3.2 0 0 1-5 0L6 7m12-1 6 1-2.5 6a3.2 3.2 0 0 1-5 0L18 6"/></svg><!-- icon: Scale --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8M12 6l-6 1 2.5 6a3.2 3.2 0 0 1-5 0L6 7m12-1 6 1-2.5 6a3.2 3.2 0 0 1-5 0L18 6"/></svg><!-- icon: Scale --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8M12 6l-6 1 2.5 6a3.2 3.2 0 0 1-5 0L6 7m12-1 6 1-2.5 6a3.2 3.2 0 0 1-5 0L18 6"/></svg></div><span class="font-meta text-[10px] text-slate">Scale</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: FileText --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg><!-- icon: FileText --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg><!-- icon: FileText --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg></div><span class="font-meta text-[10px] text-slate">FileText</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Users --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3.5 3.5 0 0 1 0 6.6M21 20a6 6 0 0 0-4-5.5"/></svg><!-- icon: Users --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3.5 3.5 0 0 1 0 6.6M21 20a6 6 0 0 0-4-5.5"/></svg><!-- icon: Users --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3.5 3.5 0 0 1 0 6.6M21 20a6 6 0 0 0-4-5.5"/></svg></div><span class="font-meta text-[10px] text-slate">Users</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Calendar --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="1.5"/><path d="M3.5 10h17M8 3v4m8-4v4"/></svg><!-- icon: Calendar --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="1.5"/><path d="M3.5 10h17M8 3v4m8-4v4"/></svg><!-- icon: Calendar --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="1.5"/><path d="M3.5 10h17M8 3v4m8-4v4"/></svg></div><span class="font-meta text-[10px] text-slate">Calendar</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Download --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4.5-4.5M12 15 7.5 10.5M4 21h16"/></svg><!-- icon: Download --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4.5-4.5M12 15 7.5 10.5M4 21h16"/></svg><!-- icon: Download --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4.5-4.5M12 15 7.5 10.5M4 21h16"/></svg></div><span class="font-meta text-[10px] text-slate">Download</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Search --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 5 5"/></svg><!-- icon: Search --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 5 5"/></svg><!-- icon: Search --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 5 5"/></svg></div><span class="font-meta text-[10px] text-slate">Search</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Filter --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z"/></svg><!-- icon: Filter --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z"/></svg><!-- icon: Filter --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z"/></svg></div><span class="font-meta text-[10px] text-slate">Filter</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Table --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v10M3.5 14.5h17"/></svg><!-- icon: Table --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v10M3.5 14.5h17"/></svg><!-- icon: Table --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v10M3.5 14.5h17"/></svg></div><span class="font-meta text-[10px] text-slate">Table</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: ChartBar --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 17v-6m5 6V7m5 10v-4"/></svg><!-- icon: ChartBar --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 17v-6m5 6V7m5 10v-4"/></svg><!-- icon: ChartBar --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 17v-6m5 6V7m5 10v-4"/></svg></div><span class="font-meta text-[10px] text-slate">ChartBar</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: ChartDonut --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 1-9 9"/><path d="M12 7a5 5 0 1 0 5 5h4M12 3v4"/></svg><!-- icon: ChartDonut --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 1-9 9"/><path d="M12 7a5 5 0 1 0 5 5h4M12 3v4"/></svg><!-- icon: ChartDonut --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 1-9 9"/><path d="M12 7a5 5 0 1 0 5 5h4M12 3v4"/></svg></div><span class="font-meta text-[10px] text-slate">ChartDonut</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Phone --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><!-- icon: Phone --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><!-- icon: Phone --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg></div><span class="font-meta text-[10px] text-slate">Phone</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Mail --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3 7 9 6 9-6"/></svg><!-- icon: Mail --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3 7 9 6 9-6"/></svg><!-- icon: Mail --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3 7 9 6 9-6"/></svg></div><span class="font-meta text-[10px] text-slate">Mail</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Clock --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg><!-- icon: Clock --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg><!-- icon: Clock --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div><span class="font-meta text-[10px] text-slate">Clock</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: ArrowRight --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m0 0-6-6m6 6-6 6"/></svg><!-- icon: ArrowRight --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m0 0-6-6m6 6-6 6"/></svg><!-- icon: ArrowRight --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m0 0-6-6m6 6-6 6"/></svg></div><span class="font-meta text-[10px] text-slate">ArrowRight</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: ArrowUpRight --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg><!-- icon: ArrowUpRight --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg><!-- icon: ArrowUpRight --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7m0 0H9m8 0v8"/></svg></div><span class="font-meta text-[10px] text-slate">ArrowUpRight</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: ChevronDown --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg><!-- icon: ChevronDown --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg><!-- icon: ChevronDown --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div><span class="font-meta text-[10px] text-slate">ChevronDown</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: ChevronRight --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><!-- icon: ChevronRight --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><!-- icon: ChevronRight --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></div><span class="font-meta text-[10px] text-slate">ChevronRight</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Check --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg><!-- icon: Check --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg><!-- icon: Check --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg></div><span class="font-meta text-[10px] text-slate">Check</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Close --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg><!-- icon: Close --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg><!-- icon: Close --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg></div><span class="font-meta text-[10px] text-slate">Close</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Menu --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg><!-- icon: Menu --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg><!-- icon: Menu --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg></div><span class="font-meta text-[10px] text-slate">Menu</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Plus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><!-- icon: Plus --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><!-- icon: Plus --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div><span class="font-meta text-[10px] text-slate">Plus</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Minus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg><!-- icon: Minus --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg><!-- icon: Minus --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg></div><span class="font-meta text-[10px] text-slate">Minus</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Info --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8.5v.5"/></svg><!-- icon: Info --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8.5v.5"/></svg><!-- icon: Info --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8.5v.5"/></svg></div><span class="font-meta text-[10px] text-slate">Info</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: CircleCheck --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5 5.5-6"/></svg><!-- icon: CircleCheck --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5 5.5-6"/></svg><!-- icon: CircleCheck --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5 5.5-6"/></svg></div><span class="font-meta text-[10px] text-slate">CircleCheck</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: CircleAlert --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3.5v.5"/></svg><!-- icon: CircleAlert --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3.5v.5"/></svg><!-- icon: CircleAlert --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3.5v.5"/></svg></div><span class="font-meta text-[10px] text-slate">CircleAlert</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Trash --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M9 6V4h6v2m-9 0 1 14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-14M10 10v7m4-7v7"/></svg><!-- icon: Trash --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M9 6V4h6v2m-9 0 1 14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-14M10 10v7m4-7v7"/></svg><!-- icon: Trash --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M9 6V4h6v2m-9 0 1 14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-14M10 10v7m4-7v7"/></svg></div><span class="font-meta text-[10px] text-slate">Trash</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Edit --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg><!-- icon: Edit --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg><!-- icon: Edit --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></div><span class="font-meta text-[10px] text-slate">Edit</span></div>
+
+          <div class="flex flex-col items-center gap-2"><div class="flex items-end gap-2 text-ink"><!-- icon: Dollar --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M16.5 6.5c-.8-1.2-2.4-2-4.5-2-2.6 0-4.5 1.3-4.5 3.5 0 4.6 9 2.6 9 7.5 0 2.2-1.9 3.5-4.5 3.5-2.1 0-3.7-.8-4.5-2"/></svg><!-- icon: Dollar --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M16.5 6.5c-.8-1.2-2.4-2-4.5-2-2.6 0-4.5 1.3-4.5 3.5 0 4.6 9 2.6 9 7.5 0 2.2-1.9 3.5-4.5 3.5-2.1 0-3.7-.8-4.5-2"/></svg><!-- icon: Dollar --><svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M16.5 6.5c-.8-1.2-2.4-2-4.5-2-2.6 0-4.5 1.3-4.5 3.5 0 4.6 9 2.6 9 7.5 0 2.2-1.9 3.5-4.5 3.5-2.1 0-3.7-.8-4.5-2"/></svg></div><span class="font-meta text-[10px] text-slate">Dollar</span></div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Spacing, radius, elevation ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="spacing">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Spacing · radius · elevation</h2></div>
+      <div class="grid grid-cols-12 gap-0 mt-4">
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="spacing-scale">
+          <div class="lb-card p-6 h-full">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">Spacing scale</div>
+            <div class="space-y-2.5">
+              <div class="flex items-center gap-3"><div class="h-4 bg-sky/25 border-l-2 border-sky w-1"></div><span class="font-meta text-[11px] text-slate">1 · 4px — icon-to-label gaps</span></div>
+              <div class="flex items-center gap-3"><div class="h-4 bg-sky/25 border-l-2 border-sky w-2"></div><span class="font-meta text-[11px] text-slate">2 · 8px — chip gaps, tight stacks</span></div>
+              <div class="flex items-center gap-3"><div class="h-4 bg-sky/25 border-l-2 border-sky w-3"></div><span class="font-meta text-[11px] text-slate">3 · 12px — the section gutter (p-3)</span></div>
+              <div class="flex items-center gap-3"><div class="h-4 bg-sky/25 border-l-2 border-sky w-4"></div><span class="font-meta text-[11px] text-slate">4 · 16px — inside compact cards</span></div>
+              <div class="flex items-center gap-3"><div class="h-4 bg-sky/25 border-l-2 border-sky w-6"></div><span class="font-meta text-[11px] text-slate">6 · 24px — card padding (p-6)</span></div>
+              <div class="flex items-center gap-3"><div class="h-4 bg-sky/25 border-l-2 border-sky w-12"></div><span class="font-meta text-[11px] text-slate">12 · 48px — band padding (py-12)</span></div>
+              <div class="flex items-center gap-3"><div class="h-4 bg-sky/25 border-l-2 border-sky w-14"></div><span class="font-meta text-[11px] text-slate">14 · 56px — hero padding (py-14)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="radius-scale">
+          <div class="lb-card p-6 h-full">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">Radius</div>
+            <div class="flex flex-wrap gap-4">
+              <div class="text-center"><div class="size-16 bg-papertint border border-ink/10 rounded"></div><div class="font-meta text-[10px] text-slate mt-1.5">rounded · 4px<br/>inputs, tags</div></div>
+              <div class="text-center"><div class="size-16 bg-papertint border border-ink/10 rounded-md"></div><div class="font-meta text-[10px] text-slate mt-1.5">rounded-md · 6px<br/>cards, buttons</div></div>
+              <div class="text-center"><div class="size-16 bg-papertint border border-ink/10 rounded-full"></div><div class="font-meta text-[10px] text-slate mt-1.5">rounded-full<br/>pills, dots</div></div>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-4">Corners stay tight — this is a records office, not a startup. Nothing between 6px and full exists.</p>
+          </div>
+        </div>
+        <div class="col-span-12 lg:col-span-3 p-3" data-dms-section="elevation-scale">
+          <div class="lb-card p-6 h-full">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">Elevation</div>
+            <div class="space-y-4">
+              <div><div class="h-12 rounded-md bg-white border border-ink/10" style="box-shadow: 0 1px 2px rgba(22,35,44,0.05)"></div><div class="font-meta text-[10px] text-slate mt-1.5">card — lb-card default</div></div>
+              <div><div class="h-12 rounded-md bg-white border border-ink/10 shadow-lg"></div><div class="font-meta text-[10px] text-slate mt-1.5">overlay — menus, dialogs</div></div>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-4">Two levels only. Structure comes from borders, not shadow stacks.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Surfaces & the parcel plate ═══ -->
+  <div class="w-full lb-paper-tint py-12 border-y border-ink/5" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="surfaces">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Surfaces &amp; the parcel plate</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Five named surfaces from <span class="font-meta text-[12px]">_shared.css</span>, plus the system's signature: the <strong class="text-ink">parcel plate</strong>, a lot-geometry thumbnail drawn to each parcel's true recorded proportions. Vacant lots don't photograph well — their survey does.</p>
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 md:col-span-4 p-3"><div class="lb-plat border border-ink/10 rounded-md h-40 flex items-end p-4"><span class="font-meta text-[11px] text-slate bg-white/80 px-2 py-1 rounded">.lb-plat — survey-sheet hero</span></div></div>
+        <div class="col-span-12 md:col-span-4 p-3"><div class="lb-plat-ink rounded-md h-40 flex items-end p-4"><span class="font-meta text-[11px] text-white/80 bg-ink/60 px-2 py-1 rounded">.lb-plat-ink — footer band</span></div></div>
+        <div class="col-span-12 md:col-span-4 p-3"><div class="lb-card h-40 flex items-end p-4"><span class="font-meta text-[11px] text-slate">.lb-card on .lb-paper / .lb-paper-tint</span></div></div>
+        <!-- the parcel plate, annotated -->
+        <div class="col-span-12 p-3" data-dms-section="parcel-plate">
+          <div class="lb-card p-6">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-5">The parcel plate — signature element</div>
+            <div class="grid md:grid-cols-3 gap-6">
+              <div>
+                <div class="lb-plate rounded-md h-44 relative flex items-center justify-center overflow-hidden">
+                  <div class="lb-lot" style="width:24%; height:72%"></div>
+                  <span class="absolute font-meta text-[9.5px] text-slate" style="bottom:6%; left:50%; transform:translateX(-50%)">22′</span>
+                  <span class="absolute font-meta text-[9.5px] text-slate" style="left:63%; top:50%; transform:translateY(-50%)">105′</span>
+                </div>
+                <div class="mt-2 font-meta text-[11px] text-slate">.lb-lot — for sale (field hatch)</div>
+                <div class="font-prose text-[12px] text-mist">49 Park Ave · 22′ × 105′ · 0.05 ac</div>
+              </div>
+              <div>
+                <div class="lb-plate rounded-md h-44 relative flex items-center justify-center overflow-hidden">
+                  <div class="lb-lot-sky" style="width:26%; height:56%"></div>
+                  <span class="absolute font-meta text-[9.5px] text-slate" style="bottom:14%; left:50%; transform:translateX(-50%)">25′</span>
+                  <span class="absolute font-meta text-[9.5px] text-slate" style="left:64%; top:50%; transform:translateY(-50%)">80′</span>
+                </div>
+                <div class="mt-2 font-meta text-[11px] text-slate">.lb-lot-sky — ACLB rehab</div>
+                <div class="font-prose text-[12px] text-mist">Plate ground is .lb-plate (survey grid at 12px)</div>
+              </div>
+              <div>
+                <div class="lb-plate rounded-md h-44 relative flex items-center justify-center overflow-hidden">
+                  <div class="lb-lot-slate" style="width:40%; height:44%"></div>
+                  <span class="absolute font-meta text-[9.5px] text-slate" style="bottom:20%; left:50%; transform:translateX(-50%)">44′</span>
+                  <span class="absolute font-meta text-[9.5px] text-slate" style="left:72%; top:50%; transform:translateY(-50%)">86′</span>
+                </div>
+                <div class="mt-2 font-meta text-[11px] text-slate">.lb-lot-slate — neutral / sold</div>
+                <div class="font-prose text-[12px] text-mist">Lot proportions come from the recorded width × length</div>
+              </div>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-5 pt-4 border-t border-ink/5">Rules: the lot rectangle scales to the parcel's true aspect ratio, capped so it never exceeds ~75% of the plate. Dimensions label in <span class="font-meta text-[11px]">metaXS</span>. Hatch color follows the status system. In live DMS this renders as a small column type fed by the width/length columns.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER · doc index ═══ -->
+  <footer class="w-full lb-plat-ink mt-auto" data-dms-group="footer">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-10">
+      <div class="flex flex-col md:flex-row md:items-center gap-6 justify-between">
+        <div class="flex items-center gap-4">
+          <div class="bg-white rounded-md px-3 py-2"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-8 w-auto"/></div>
+          <div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-white">Design System</div>
+            <div class="font-meta text-[9.5px] uppercase tracking-[0.14em] text-white/50">v0.1 · foundation tokens · 2026</div>
+          </div>
+        </div>
+        <nav class="flex flex-wrap gap-x-6 gap-y-2 font-prose text-[12px] font-semibold text-white/70">
+          <a href="theme.html" class="text-leaf">1 · Theme</a>
+          <a href="layouts.html" class="hover:text-white">2 · Layouts</a>
+          <a href="grid.html" class="hover:text-white">3 · Grid</a>
+          <a href="components.html" class="hover:text-white">4 · Components</a>
+          <a href="patterns.html" class="hover:text-white">5 · Patterns</a>
+          <span class="text-white/30">·</span>
+          <a href="../pages/home.html" class="hover:text-white">Home</a>
+          <a href="../pages/about.html" class="hover:text-white">About</a>
+          <a href="../pages/properties.html" class="hover:text-white">Properties</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- floating design-system navigation widget (documentation scaffolding — never ships) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:8px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:0 16px 8px;border-bottom:1px solid rgba(22,35,44,0.08);margin-bottom:4px;">ACLB Design System</div>
+    <a href="theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#0A6E99;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">1</span>Theme</a>
+    <a href="layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">2</span>Layouts</a>
+    <a href="grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">3</span>Grid</a>
+    <a href="components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">4</span>Components</a>
+    <a href="patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">5</span>Patterns</a>
+    <div style="height:1px;background:rgba(22,35,44,0.08);margin:6px 0;"></div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Home</a>
+    <a href="../pages/about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>About</a>
+    <a href="../pages/properties.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:8px;background:#16232C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.25);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Albany County Land Bank · Home</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<body class="lb-paper">
+
+<!--
+  home.html · EXAMPLE PAGE 1 of 3 — the public homepage.
+  Layout `default` (utility strip + product TopNav, no SideNav).
+  Bands: hero · KPI proof strip · how it works · featured properties ·
+  programs · where the work is (ink) · news · footer.
+  Every section sits on grid-cols-12 with p-3 gutters; all text resolves
+  to theme.html tokens; data is real (ACLB property records, 2026).
+-->
+
+<div class="min-h-svh flex flex-col" data-dms-layout="default">
+
+  <!-- ═══ Utility strip ═══ -->
+  <div class="w-full bg-ink text-white/80">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-8 flex items-center justify-between gap-4">
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em] truncate">A public authority of Albany County, New York</span>
+      <span class="hidden sm:flex items-center gap-4 font-meta text-[9.5px] uppercase tracking-[0.12em] text-white/60 shrink-0">
+        <span class="inline-flex items-center gap-1.5"><!-- icon: Phone --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>(518) 407-0309</span>
+        <span class="inline-flex items-center gap-1.5"><!-- icon: Clock --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>Mon–Fri 9:30–4:30</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══ TopNav · product ═══ -->
+  <header class="w-full bg-white border-b border-ink/10 sticky top-0 z-50">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-16 flex items-center gap-8">
+      <a href="home.html" class="flex items-center shrink-0">
+        <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-10 w-auto"/>
+      </a>
+      <nav class="flex-1 flex items-center justify-end gap-1 font-prose text-[13.5px] font-semibold">
+        <a href="home.html" class="px-3 h-16 flex items-center text-skydeep border-b-2 border-sky -mb-px">Home</a>
+        <a href="about.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">About</a>
+        <a href="properties.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Properties</a>
+      </nav>
+      <a href="properties.html" class="lb-press hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-md bg-skydeep hover:bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold shrink-0">
+        <!-- icon: Lot --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+        Browse properties
+      </a>
+      <button class="md:hidden text-ink" aria-label="Open menu"><!-- icon: Menu --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg></button>
+    </div>
+  </header>
+
+  <!-- ═══ HERO · LayoutGroup hero ═══ -->
+  <div class="w-full lb-plat border-b border-ink/10" data-dms-group="hero">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-14">
+      <div class="grid grid-cols-12 gap-0 items-center">
+        <!-- headline · span 7 -->
+        <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="hero-copy">
+          <div class="flex items-center gap-2.5 mb-3">
+            <span class="size-2 bg-leaf"></span>
+            <span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Albany County Land Bank Corporation</span>
+          </div>
+          <h1 class="font-display font-bold text-[54px] leading-[1.04] tracking-[-0.015em] text-ink">Transforming vacant spaces into thriving places<span class="text-sky">.</span></h1>
+          <p class="font-prose text-[17.5px] leading-[1.6] text-slate mt-5 max-w-[600px]">We acquire tax-foreclosed, vacant, and abandoned properties throughout Albany County and return them to responsible owners — neighbors, first-time homebuyers, and community partners — through an open application process.</p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a href="properties.html" class="lb-press inline-flex items-center gap-2 h-11 px-5 rounded-md bg-skydeep hover:bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold">
+              <!-- icon: Lot --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+              See 60 properties for sale
+            </a>
+            <a href="about.html" class="inline-flex items-center gap-2 h-11 px-5 rounded-md bg-white hover:bg-paper border border-ink/15 text-ink font-prose text-[13.5px] font-semibold">How buying works</a>
+          </div>
+          <div class="mt-6 flex items-center gap-2 font-prose text-[12px] text-slate">
+            <span class="size-1.5 rounded-full bg-field dot-pulse"></span>
+            June 2026 for-sale list is open — applications reviewed in the order received.
+          </div>
+        </div>
+        <!-- hero artifact: a property record card · span 5 -->
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="hero-record">
+          <div class="lb-card overflow-hidden max-w-[420px] lg:ml-auto">
+            <div class="lb-plate h-52 relative flex items-center justify-center">
+              <div class="lb-lot" style="width:22%; height:74%"></div>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="bottom:5%; left:50%; transform:translateX(-50%)">22′</span>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="left:62%; top:50%; transform:translateY(-50%)">105′</span>
+              <span class="absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest font-prose text-[12px] font-semibold border border-field/20 bg-white/80">For Sale</span>
+              <span class="absolute top-3 right-3 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist bg-white/80 px-2 py-1 rounded">Parcel survey</span>
+            </div>
+            <div class="p-5 border-t border-ink/10">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <div class="font-display font-semibold text-[21px] leading-[1.2] text-ink">49 Park Avenue</div>
+                  <div class="font-prose text-[13.5px] leading-[1.55] text-slate mt-0.5">Mansion · Albany 12202</div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="font-display font-semibold text-[21px] leading-[1.2] text-ink tabular-nums">$5,000</div>
+                  <div class="font-meta text-[9.5px] uppercase tracking-[0.14em] text-mist mt-0.5">asking</div>
+                </div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-ink/5 flex flex-wrap items-center gap-x-4 gap-y-1 font-meta font-medium text-[11px] text-slate">
+                <span>SBL 76.49-6-65</span><span>·</span><span>0.05 ac</span><span>·</span><span>Zoned R-T</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ KPI proof strip ═══ -->
+  <div class="w-full bg-white border-b border-ink/10" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-8">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-6 lg:col-span-3 p-3" data-dms-section="kpi-returned">
+          <div class="border-l-2 border-leaf pl-4">
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums">1,115</div>
+            <div class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">properties returned to productive use since 2015</div>
+          </div>
+        </div>
+        <div class="col-span-6 lg:col-span-3 p-3" data-dms-section="kpi-forsale">
+          <div class="border-l-2 border-field pl-4">
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums">60</div>
+            <div class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">properties for sale right now, most under $1,000</div>
+          </div>
+        </div>
+        <div class="col-span-6 lg:col-span-3 p-3" data-dms-section="kpi-inventory">
+          <div class="border-l-2 border-sky pl-4">
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums">199</div>
+            <div class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">parcels in inventory being cleared, maintained, or rehabbed</div>
+          </div>
+        </div>
+        <div class="col-span-6 lg:col-span-3 p-3" data-dms-section="kpi-median">
+          <div class="border-l-2 border-amber pl-4">
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums">$600</div>
+            <div class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">median asking price for a buildable vacant lot</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ How it works ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="how-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">From application to closing</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Buying from the Land Bank, in four steps</h2>
+        <p class="font-prose text-[15px] leading-[1.65] text-slate mt-2 max-w-[680px]">Properties aren't sold to the fastest bidder. Every application gets a multi-layered review so properties go to buyers with a real plan — that's the point of a land bank.</p>
+      </div>
+      <div class="grid grid-cols-12 gap-0 mt-2">
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="step-1">
+          <div class="lb-card p-5 h-full">
+            <div class="flex items-center justify-between mb-3">
+              <span class="size-9 rounded-md bg-skydeep/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-skydeep">01</span>
+              <!-- icon: Search --><svg class="size-5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 5 5"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Browse the inventory</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Search the portfolio by neighborhood, price, and property type. Every listing shows the parcel survey, zoning, and lot dimensions.</p>
+          </div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="step-2">
+          <div class="lb-card p-5 h-full">
+            <div class="flex items-center justify-between mb-3">
+              <span class="size-9 rounded-md bg-skydeep/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-skydeep">02</span>
+              <!-- icon: FileText --><svg class="size-5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Apply with your plan</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Submit a purchase application with your intended use and proof of funds. Staff hold weekly application-support sessions if you want help.</p>
+          </div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="step-3">
+          <div class="lb-card p-5 h-full">
+            <div class="flex items-center justify-between mb-3">
+              <span class="size-9 rounded-md bg-skydeep/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-skydeep">03</span>
+              <!-- icon: Scale --><svg class="size-5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8M12 6l-6 1 2.5 6a3.2 3.2 0 0 1-5 0L6 7m12-1 6 1-2.5 6a3.2 3.2 0 0 1-5 0L18 6"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Multi-layered review</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Staff and the board review feasibility, neighborhood fit, and buyer readiness. Approved sales go to resolution at a public board meeting.</p>
+          </div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="step-4">
+          <div class="lb-card p-5 h-full">
+            <div class="flex items-center justify-between mb-3">
+              <span class="size-9 rounded-md bg-skydeep/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-skydeep">04</span>
+              <!-- icon: Key --><svg class="size-5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.3-8.3M15 7l2.5 2.5M18 4l2 2"/></svg>
+            </div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Close and build</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Sign the purchase agreement, close, and put the property back to work — a garden, a side yard, a rehab, a new home.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Featured properties ═══ -->
+  <div class="w-full lb-paper-tint border-y border-ink/5 py-12" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3 flex flex-wrap items-end justify-between gap-4" data-dms-section="featured-header">
+        <div>
+          <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">On the market</span></div>
+          <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Featured properties</h2>
+        </div>
+        <a href="properties.html" class="inline-flex items-center gap-1.5 font-prose text-[13.5px] font-semibold text-skydeep hover:text-ink">
+          All 60 for-sale properties
+          <!-- icon: ArrowRight --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m0 0-6-6m6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="grid grid-cols-12 gap-0 mt-2">
+        <!-- 352 First St · rehab -->
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="featured-1">
+          <a href="properties.html" class="lb-card block overflow-hidden hover:border-skydeep/40 transition-colors h-full">
+            <div class="lb-plate h-40 relative flex items-center justify-center">
+              <div class="lb-lot-sky" style="width:24%; height:62%"></div>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="bottom:11%; left:50%; transform:translateX(-50%)">25′</span>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="left:63%; top:50%; transform:translateY(-50%)">92′</span>
+              <span class="absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full bg-sky/10 text-skydeep font-prose text-[12px] font-semibold bg-white/80 border border-sky/25">ACLB Rehab</span>
+            </div>
+            <div class="p-5 border-t border-ink/10">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">352 First Street</div>
+                  <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">West Hill · Albany 12206</div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink tabular-nums">$14,900</div>
+                </div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-ink/5 font-meta font-medium text-[11px] text-slate">Two-family · renovated by ACLB crews</div>
+            </div>
+          </a>
+        </div>
+        <!-- 110 Alexander St -->
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="featured-2">
+          <a href="properties.html" class="lb-card block overflow-hidden hover:border-skydeep/40 transition-colors h-full">
+            <div class="lb-plate h-40 relative flex items-center justify-center">
+              <div class="lb-lot" style="width:34%; height:52%"></div>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="bottom:15%; left:50%; transform:translateX(-50%)">25′</span>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="left:69%; top:50%; transform:translateY(-50%)">50′</span>
+              <span class="absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest font-prose text-[12px] font-semibold bg-white/80 border border-field/20">For Sale</span>
+            </div>
+            <div class="p-5 border-t border-ink/10">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">110 Alexander Street</div>
+                  <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">South End · Albany 12202</div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink tabular-nums">$600</div>
+                </div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-ink/5 font-meta font-medium text-[11px] text-slate">Vacant lot · SBL 76.64-2-6 · 0.03 ac</div>
+            </div>
+          </a>
+        </div>
+        <!-- 64 Third St -->
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="featured-3">
+          <a href="properties.html" class="lb-card block overflow-hidden hover:border-skydeep/40 transition-colors h-full">
+            <div class="lb-plate h-40 relative flex items-center justify-center">
+              <div class="lb-lot" style="width:18%; height:72%"></div>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="bottom:6%; left:50%; transform:translateX(-50%)">21′</span>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="left:60%; top:50%; transform:translateY(-50%)">134′</span>
+              <span class="absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest font-prose text-[12px] font-semibold bg-white/80 border border-field/20">For Sale</span>
+            </div>
+            <div class="p-5 border-t border-ink/10">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">64 Third Street</div>
+                  <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">Arbor Hill · Albany 12210</div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink tabular-nums">$3,000</div>
+                </div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-ink/5 font-meta font-medium text-[11px] text-slate">Vacant lot · SBL 65.74-3-13 · 0.06 ac</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Programs ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="programs-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Programs</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">A program for every kind of buyer</h2>
+        <p class="font-prose text-[15px] leading-[1.65] text-slate mt-2 max-w-[680px]">Discounts, financing help, and priority access are built into how we sell — so ownership stays within reach of the neighbors who live here.</p>
+      </div>
+      <div class="grid grid-cols-12 gap-0 mt-2">
+        <div class="col-span-12 sm:col-span-6 lg:col-span-4 p-3" data-dms-section="program-equitable">
+          <div class="lb-card p-5 h-full flex gap-4">
+            <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Key --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.3-8.3M15 7l2.5 2.5M18 4l2 2"/></svg></span>
+            <div>
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Equitable Ownership</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">Pathways to ownership for buyers historically shut out of the market.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-4 p-3" data-dms-section="program-fthb">
+          <div class="lb-card p-5 h-full flex gap-4">
+            <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: House --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/><path d="M10 20v-5h4v5"/></svg></span>
+            <div>
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">First-Time Homebuyer</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">Purchase discounts and closing support for first-time owner-occupants.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-4 p-3" data-dms-section="program-sidelot">
+          <div class="lb-card p-5 h-full flex gap-4">
+            <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Sprout --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-8"/><path d="M12 12c0-3.5-2.5-6-6-6 0 3.5 2.5 6 6 6Zm0-2c0-3.5 2.5-6 6-6 0 3.5-2.5 6-6 6ZM5 20h14"/></svg></span>
+            <div>
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Residential Side Lot</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">Own the lot next door — priority pricing for adjacent owner-occupants.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-4 p-3" data-dms-section="program-spend">
+          <div class="lb-card p-5 h-full flex gap-4">
+            <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Tag --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8l10 10-8 8L3 11V3Z"/><circle cx="8" cy="8" r="1.5"/></svg></span>
+            <div>
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Spend a Little, Get a LOT!</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">Deeply discounted vacant lots for buyers ready to maintain them.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-4 p-3" data-dms-section="program-lotsforless">
+          <div class="lb-card p-5 h-full flex gap-4">
+            <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Lot --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+            <div>
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Lots for Less</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">Bundle pricing when one buyer takes on multiple adjacent lots.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-4 p-3" data-dms-section="program-inclusive">
+          <div class="lb-card p-5 h-full flex gap-4">
+            <span class="size-10 shrink-0 rounded-md bg-skydeep/10 flex items-center justify-center text-skydeep"><!-- icon: Users --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3.5 3.5 0 0 1 0 6.6M21 20a6 6 0 0 0-4-5.5"/></svg></span>
+            <div>
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Inclusive Neighborhoods</div>
+              <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1">Partnerships that keep redevelopment accountable to residents.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Where the work is · ink band ═══ -->
+  <div class="w-full lb-plat-ink py-14" data-dms-group="feature">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="impact-copy">
+          <div class="flex items-center gap-2.5 mb-3"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-sky">Where the work is</span></div>
+          <h2 class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-white">Block by block, a decade of returns</h2>
+          <p class="font-prose text-[15px] leading-[1.65] text-white/70 mt-4 max-w-[460px]">Since 2015 the Land Bank has moved more than a thousand properties out of vacancy — concentrated where tax foreclosure hit hardest: West Hill, the South End, and Arbor Hill. The full portfolio, every parcel, is public.</p>
+          <a href="properties.html" class="mt-6 inline-flex items-center gap-2 h-11 px-5 rounded-md bg-leaf hover:bg-white text-ink font-prose text-[13.5px] font-semibold transition-colors">
+            Explore the portfolio dashboard
+            <!-- icon: ArrowRight --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16m0 0-6-6m6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="impact-chart">
+          <div class="rounded-md border border-white/15 bg-white/5 p-6 h-full">
+            <div class="flex items-baseline justify-between mb-5">
+              <span class="font-prose text-[12px] font-semibold text-white/80">Properties sold by year</span>
+              <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/40">2015 – June 2026 · ACLB records</span>
+            </div>
+            <!-- decorative — sold-by-year bar chart, real values -->
+            <svg viewBox="0 0 640 200" class="w-full" role="img" aria-label="Bar chart: properties sold per year, 2015 through 2026, peaking at 170 in 2021">
+              <g fill="#8CC63E">
+                <rect x="8"   y="171.3" width="36" height="8.7"   opacity="0.7"/>
+                <rect x="61"  y="148.2" width="36" height="31.8"  opacity="0.7"/>
+                <rect x="114" y="29.5"  width="36" height="150.5" opacity="0.9"/>
+                <rect x="167" y="48.8"  width="36" height="131.2" opacity="0.9"/>
+                <rect x="220" y="47.8"  width="36" height="132.2" opacity="0.9"/>
+                <rect x="273" y="23.7"  width="36" height="156.3" opacity="0.9"/>
+                <rect x="326" y="16"    width="36" height="164"/>
+                <rect x="379" y="62.3"  width="36" height="117.7" opacity="0.9"/>
+                <rect x="432" y="128.9" width="36" height="51.1"  opacity="0.7"/>
+                <rect x="485" y="152"   width="36" height="28"    opacity="0.7"/>
+                <rect x="538" y="97"    width="36" height="83"    opacity="0.9"/>
+                <rect x="591" y="158.8" width="36" height="21.2"  opacity="0.5"/>
+              </g>
+              <line x1="0" y1="180" x2="640" y2="180" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+              <g font-family="'IBM Plex Mono', monospace" font-size="9.5" fill="rgba(255,255,255,0.5)" text-anchor="middle">
+                <text x="26" y="194">'15</text><text x="79" y="194">'16</text><text x="132" y="194">'17</text><text x="185" y="194">'18</text><text x="238" y="194">'19</text><text x="291" y="194">'20</text><text x="344" y="194">'21</text><text x="397" y="194">'22</text><text x="450" y="194">'23</text><text x="503" y="194">'24</text><text x="556" y="194">'25</text><text x="609" y="194">'26</text>
+              </g>
+              <text x="344" y="10" font-family="'IBM Plex Mono', monospace" font-size="10" fill="#8CC63E" text-anchor="middle">170</text>
+            </svg>
+            <div class="mt-4 pt-4 border-t border-white/10 grid grid-cols-3 gap-4">
+              <div><div class="font-display font-semibold text-[21px] leading-[1.2] text-white tabular-nums">280</div><div class="font-prose text-[12px] text-white/60 mt-0.5">parcels touched in West Hill</div></div>
+              <div><div class="font-display font-semibold text-[21px] leading-[1.2] text-white tabular-nums">269</div><div class="font-prose text-[12px] text-white/60 mt-0.5">in the South End</div></div>
+              <div><div class="font-display font-semibold text-[21px] leading-[1.2] text-white tabular-nums">95</div><div class="font-prose text-[12px] text-white/60 mt-0.5">in Arbor Hill</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ News & notices ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3 flex flex-wrap items-end justify-between gap-4" data-dms-section="news-header">
+        <div>
+          <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">News &amp; notices</span></div>
+          <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">What's happening</h2>
+        </div>
+        <span class="font-meta font-medium text-[11px] text-mist">Public meeting notices are posted 7+ days ahead</span>
+      </div>
+      <div class="grid grid-cols-12 gap-0 mt-2">
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="news-1">
+          <a href="properties.html" class="lb-card block p-5 h-full hover:border-skydeep/40 transition-colors">
+            <div class="flex items-center gap-2 font-meta font-medium text-[11px] text-mist"><!-- icon: FileText --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg>June 24, 2026 · For-sale list</div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mt-3">June property sale list: 60 lots and buildings now open for applications</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Nineteen South End lots headline this month's list, alongside side-lot candidates in Eagle Hill and Delaware Avenue.</p>
+          </a>
+        </div>
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="news-2">
+          <a href="about.html" class="lb-card block p-5 h-full hover:border-skydeep/40 transition-colors">
+            <div class="flex items-center gap-2 font-meta font-medium text-[11px] text-mist"><!-- icon: Hammer --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m14 10-8.5 8.5a1.8 1.8 0 0 1-2.5-2.5L11.5 7.5"/><path d="M13 4.5 15.5 2l6 6-2.5 2.5a2 2 0 0 1-2.8 0l-3.2-3.2a2 2 0 0 1 0-2.8Z"/></svg>June 12, 2026 · Redevelopment</div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mt-3">79 Elizabeth Street closes at $199,000 — a full rehab returned to homeownership</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">The two-family rebuild anchors a block where the Land Bank has moved eleven parcels since 2019.</p>
+          </a>
+        </div>
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="news-3">
+          <a href="about.html" class="lb-card block p-5 h-full hover:border-skydeep/40 transition-colors">
+            <div class="flex items-center gap-2 font-meta font-medium text-[11px] text-mist"><!-- icon: Calendar --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="1.5"/><path d="M3.5 10h17M8 3v4m8-4v4"/></svg>July 15, 2026 · Public meeting</div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mt-3">Board of Directors meets July 15 — sale resolutions on the agenda</div>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">Meetings are open to the public at 111 Washington Avenue, Suite 601. Minutes and resolutions post within two weeks.</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="w-full lb-plat-ink mt-auto" data-dms-group="footer">
+    <div class="mx-auto w-full max-w-[1240px] px-6 pt-12 pb-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="footer-brand">
+          <div class="bg-white rounded-md px-3 py-2 inline-block"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-9 w-auto"/></div>
+          <p class="font-prose text-[13.5px] leading-[1.55] text-white/70 mt-4 max-w-[380px]">A not-for-profit corporation revitalizing neighborhoods by returning vacant, abandoned, and tax-foreclosed properties to productive use.</p>
+          <div class="mt-4 flex items-center gap-2 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/40">
+            <!-- icon: Landmark --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg>
+            Empowering opportunity · strengthening communities
+          </div>
+        </div>
+        <div class="col-span-6 sm:col-span-4 lg:col-span-2 p-3" data-dms-section="footer-explore">
+          <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40 mb-3">Explore</div>
+          <nav class="space-y-2 font-prose text-[13.5px] font-semibold text-white/75">
+            <a href="home.html" class="block hover:text-white">Home</a>
+            <a href="about.html" class="block hover:text-white">About</a>
+            <a href="properties.html" class="block hover:text-white">Properties</a>
+            <a href="properties.html" class="block hover:text-white">For-sale list</a>
+          </nav>
+        </div>
+        <div class="col-span-6 sm:col-span-4 lg:col-span-2 p-3" data-dms-section="footer-account">
+          <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40 mb-3">Accountability</div>
+          <nav class="space-y-2 font-prose text-[13.5px] font-semibold text-white/75">
+            <a href="about.html" class="block hover:text-white">Board &amp; committees</a>
+            <a href="about.html" class="block hover:text-white">Annual reports</a>
+            <a href="about.html" class="block hover:text-white">Policies</a>
+            <a href="about.html" class="block hover:text-white">Resolutions</a>
+          </nav>
+        </div>
+        <div class="col-span-12 sm:col-span-4 lg:col-span-3 p-3" data-dms-section="footer-visit">
+          <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40 mb-3">Visit or call</div>
+          <div class="space-y-2.5 font-prose text-[13.5px] leading-[1.55] text-white/75">
+            <div class="flex gap-2.5"><!-- icon: MapPin --><svg class="size-4 mt-0.5 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>111 Washington Avenue, Suite 601<br/>Albany, NY 12210</span></div>
+            <div class="flex gap-2.5"><!-- icon: Phone --><svg class="size-4 mt-0.5 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span>(518) 407-0309</span></div>
+            <div class="flex gap-2.5"><!-- icon: Mail --><svg class="size-4 mt-0.5 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3 7 9 6 9-6"/></svg><span>info@albanycountylandbank.org</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-5 border-t border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <span class="font-prose text-[12px] text-white/50">© 2026 Albany County Land Bank Corporation. Records and reports available under the Freedom of Information Law.</span>
+        <nav class="flex gap-4 font-prose text-[12px] font-semibold text-white/60">
+          <a href="#" class="hover:text-white">Facebook</a><a href="#" class="hover:text-white">Instagram</a><a href="#" class="hover:text-white">YouTube</a><a href="#" class="hover:text-white">LinkedIn</a>
+        </nav>
+      </div>
+    </div>
+    <!-- doc-only index strip (design-system scaffolding — not product chrome) -->
+    <div class="border-t border-white/10 bg-black/20">
+      <div class="mx-auto w-full max-w-[1240px] px-6 py-3 flex flex-wrap items-center gap-x-5 gap-y-1">
+        <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/35">Design system</span>
+        <nav class="flex flex-wrap gap-x-4 gap-y-1 font-meta text-[10px] text-white/50">
+          <a href="../design-system/theme.html" class="hover:text-white">theme</a>
+          <a href="../design-system/layouts.html" class="hover:text-white">layouts</a>
+          <a href="../design-system/grid.html" class="hover:text-white">grid</a>
+          <a href="../design-system/components.html" class="hover:text-white">components</a>
+          <a href="../design-system/patterns.html" class="hover:text-white">patterns</a>
+          <span class="text-white/25">·</span>
+          <a href="home.html" class="text-leaf">home</a>
+          <a href="about.html" class="hover:text-white">about</a>
+          <a href="properties.html" class="hover:text-white">properties</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- floating design-system navigation widget (documentation scaffolding — never ships) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:8px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:0 16px 8px;border-bottom:1px solid rgba(22,35,44,0.08);margin-bottom:4px;">ACLB Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">1</span>Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">2</span>Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">3</span>Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">4</span>Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">5</span>Patterns</a>
+    <div style="height:1px;background:rgba(22,35,44,0.08);margin:6px 0;"></div>
+    <a href="home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#0A6E99;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Home</a>
+    <a href="about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>About</a>
+    <a href="properties.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:8px;background:#16232C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.25);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

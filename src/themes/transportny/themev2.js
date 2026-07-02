@@ -302,6 +302,16 @@ const layoutGroup = {
       wrapper3: "",
     },
     {
+      // breadcrumb — slim white bar (h-11) for a breadcrumb row, matching the datasets
+      // pages shell: full-width white band + hairline bottom border, content boxed to the
+      // same max-w-[1480px]/pl-12 as the content bands so the crumb left-aligns with them.
+      // Additive: only pages that opt a group into theme:"breadcrumb" use it.
+      name: "breadcrumb",
+      wrapper1: "w-full bg-white border-b border-zinc-950/10",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 h-11 flex items-center",
+      wrapper3: "",
+    },
+    {
       // Tight top-of-page nav bar — fixed height, no vertical padding (unlike
       // `header`, which is py-10 for page-title blocks). For a topnav band that
       // holds one full-width section (brand + links + actions row). wrapper2
@@ -658,6 +668,18 @@ const multiselect = {
       error:            "mt-1 text-[12px] text-[#EF4444]",
     },
     {
+      // Prominent "primary control" — a featured single-select like the page-status
+      // pipeline-stage selector (mockup: bordered button + ring, display-16px value).
+      // Pick it per column with `activeStyle: "field"` on the column config. Inherits the
+      // menu / caret / token keys from `default` (styles[0]); only the trigger differs.
+      name: "field",
+      inputWrapper:      "flex w-full items-center gap-2 h-11 px-3 rounded-[6px] border border-[#37576B] ring-2 ring-[#37576B]/15 bg-white hover:bg-slate-50 cursor-pointer",
+      caretWrapper:      "ml-auto pl-1 text-slate-500",
+      input:             "flex-1 bg-transparent font-display text-[16px] font-medium text-[#0F1722] placeholder:text-slate-400 focus:outline-none",
+      singleValue:       "font-display text-[16px] font-medium text-[#0F1722]",
+      singlePlaceholder: "font-display text-[16px] text-slate-400",
+    },
+    {
       name: "compact",
       inputWrapper: "flex items-center gap-1.5 h-8 px-2.5 rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white text-[12px] cursor-pointer transition-colors",
       caretWrapper: "ml-1 text-slate-500",
@@ -927,6 +949,14 @@ const dataCard = {
       headerValueWrapperBorderBelow: "border-b border-zinc-950/5 rounded-none",
       value:                         "px-3 pb-3 text-[14px] text-[#0F1722]",
       valueWrapper:                  "min-h-[20px]",
+      // header↔value layout (Card `headerValueLayout`): col = stacked (the default,
+      // matching headerValueWrapper's `flex flex-col`), row = label-left / value-right.
+      // The row variants use `flex-row!` so they override headerValueWrapper's baked-in
+      // `flex-col`; without these keys `row` silently produced no direction (mis-stacked).
+      itemFlexCol:                   "flex-col",
+      itemFlexRow:                   "flex-row! items-center justify-between gap-3",
+      itemFlexColReverse:            "flex-col-reverse",
+      itemFlexRowReverse:            "flex-row-reverse! items-center justify-between gap-3",
       description:                   "font-proxima text-[12px] font-light text-slate-500 px-3 pb-2",
       itemBorder:                    "border border-zinc-950/5",
       cardBorder:                    "border border-zinc-950/10",
@@ -1083,6 +1113,16 @@ const dataCard = {
       metaSM:  `${F_MONO} text-[11px]! uppercase tracking-wider text-white/60!`,
       metaXS:  `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-white/50!`,
       proseSM: `${F_SANS} text-[13px]! leading-[1.6] text-white/80!`,
+    },
+    {
+      // "rowaligned" — for label-left / value-right fact rows (`headerValueLayout:'row'`). The default
+      // header/value carry asymmetric vertical padding (header pt-3 pb-1, value pb-3) tuned for STACKED
+      // cells; in a row that padding offsets the label vs the value text. Here both get horizontal-only
+      // padding so, with the row's `items-center`, the label and value baselines align. Fonts come from
+      // the column's headerFontStyle/valueFontStyle. Pick via the section "Card style" (display.cardStyle).
+      name: "rowaligned",
+      header: "px-3",
+      value:  "px-3",
     },
   ],
 };
@@ -1276,6 +1316,19 @@ const table = {
       // style: tighter labels, more breathing room in the body, denser
       // information than the dashboard default.
       name: "report",
+      headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
+      headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
+      cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
+      cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2.5 px-4 font-[400] text-[13px] leading-[18px] text-slate-700",
+    },
+    {
+      // Flush table for COMPOSED CARDS — the section's compound card (border + radius)
+      // frames the table, so the table drops its own container border / rounding / shadow
+      // (keeps bg + scroll). Cells/header inherit the `report` treatment. Set per-section
+      // via `display.tableStyle: "flush"`, pairing a padding-0 body section under a header
+      // section so a lexical/Card title + the table read as one card (mockup panel look).
+      name: "flush",
+      tableContainer:                 "flex flex-col bg-white overflow-x-auto overflow-y-auto max-h-[calc(78vh_-_10px)]",
       headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
       headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
       cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",

@@ -162,15 +162,18 @@
     };
   };
 
-  // ── QA WORKFLOW process model ──────────────────────────────────────────────
+  // ── QA WORKFLOW process model (6-stage) ────────────────────────────────────
   // AI review is a TRIGGER (it adds tickets), not a stage. The visible pipeline is:
-  //   In Development → Dev Review → Client Review → Approved   (reopens on new features)
-  SITEMGMT.STAGES = ['In Development', 'Dev Review', 'Client Review', 'Approved'];
+  //   Proposed → Design → Implemented → QA → Dev Acceptance → Client Acceptance
+  //   (reopens on new features). Mirrors the live sitemgmt build.
+  SITEMGMT.STAGES = ['Proposed', 'Design', 'Implemented', 'QA', 'Dev Acceptance', 'Client Acceptance'];
   SITEMGMT.stageColor = {
-    'In Development': 'bg-amber-100 text-amber-800 ring-1 ring-amber-200',
-    'Dev Review':     'bg-sky-100 text-sky-700 ring-1 ring-sky-200',
-    'Client Review':  'bg-[#0a0e13] text-white',
-    'Approved':       'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200',
+    'Proposed':          'bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200',
+    'Design':            'bg-violet-100 text-violet-700 ring-1 ring-violet-200',
+    'Implemented':       'bg-amber-100 text-amber-800 ring-1 ring-amber-200',
+    'QA':                'bg-sky-100 text-sky-700 ring-1 ring-sky-200',
+    'Dev Acceptance':    'bg-teal-100 text-teal-700 ring-1 ring-teal-200',
+    'Client Acceptance': 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200',
   };
   // gate flags derived from the curated data (in the live build these are real toggles)
   SITEMGMT.gatesFor = function (p) {
@@ -180,19 +183,25 @@
       client_approved: (p.qa === 'Approved' && p.build === 'Published'),
     };
   };
+  // map the curated build/qa/ticket data onto the 6 stages (yields a realistic spread).
   SITEMGMT.stageOf = function (p) {
-    var open = this.openTicketsFor(p.id).length, g = this.gatesFor(p);
-    if (open > 0 || p.build === 'Not started' || p.build === 'In progress') return 'In Development';
-    if (!g.dev_ready) return 'Dev Review';
-    if (!g.client_approved) return 'Client Review';
-    return 'Approved';
+    var openT = this.openTicketsFor(p.id), open = openT.length;
+    var hasMajor = openT.some(function (t) { return t.severity === 'Blocker' || t.severity === 'Major'; });
+    if (p.build === 'Not started') return 'Proposed';
+    if (p.build === 'In progress') return 'Design';
+    if (hasMajor) return 'Implemented';        // built, but real defects open → still implementing
+    if (open > 0) return 'QA';                  // only minor/polish open → in QA
+    if (p.qa === 'Approved') return p.build === 'Published' ? 'Client Acceptance' : 'Dev Acceptance';
+    if (p.qa === 'Conditional sign-off') return 'Dev Acceptance';
+    return 'QA';                                // Needs QA / In review / Changes requested, no open tickets
   };
   SITEMGMT.nextStepOf = function (p) {
-    var open = this.openTicketsFor(p.id).length, g = this.gatesFor(p);
-    if (open > 0) return 'Resolve ' + open + ' open ticket' + (open === 1 ? '' : 's');
-    if (p.build === 'Not started' || p.build === 'In progress') return 'Finish building the page';
-    if (!g.dev_ready) return 'Dev: mark ready for client';
-    if (!g.client_approved) return 'Awaiting client approval';
+    var st = this.stageOf(p), open = this.openTicketsFor(p.id).length;
+    if (st === 'Proposed') return 'Scope & accept the user stories';
+    if (st === 'Design') return 'Review & approve the design mockup';
+    if (st === 'Implemented') return open > 0 ? 'Resolve ' + open + ' open ticket' + (open === 1 ? '' : 's') : 'Send to QA';
+    if (st === 'QA') return open > 0 ? 'Resolve ' + open + ' QA ticket' + (open === 1 ? '' : 's') + ', then dev sign-off' : 'Dev: sign off for client';
+    if (st === 'Dev Acceptance') return 'Send to client for acceptance';
     return 'Done — reopens on new features';
   };
   // effort weighting per severity → "work completed" sense
@@ -213,6 +222,25 @@
   };
   SITEMGMT.descFor = function (id) { var m = this.pageMeta[id], p = this.page(id); return (m && m.desc) || (p.name + ' — a page on the ' + ((this.surface(p.surface) || {}).label || p.surface) + ' surface.'); };
   SITEMGMT.storiesFor = function (id) { var m = this.pageMeta[id], p = this.page(id); return (m && m.stories) || ['As a user, I can view ' + p.name + '.', 'The page matches the approved design.', 'Content is bound to a real data source.', 'The page is responsive and accessible.']; };
+  // page → its design-system mockup file (the "live page" view). Irregular names overridden; else a
+  // surface-prefix + slug convention. '' when the page has no mockup. Shared by the overview + design pages.
+  SITEMGMT.designFile = {
+    'tsmo2:home': 'tsmo-home.html', 'tsmo2:congestion_v2': 'tsmo-congestion.html', 'tsmo2:reliability_v2': 'tsmo-reliability.html',
+    'tsmo2:workzones_v2': 'tsmo-workzones.html', 'tsmo2:incidents_v2': 'tsmo-incidents.html', 'tsmo2:corridor_view': 'tsmo-corridor.html',
+    'tsmo2:incident_view': 'tsmo-incident-view.html', 'tsmo2:incident_search': 'tsmo-incident-search.html', 'tsmo2:about': 'tsmo-about.html',
+    'tsmo2:methodology': 'tsmo-methodology.html',
+    'fa2:home': 'freight-atlas-home.html', 'fa2:maps_gallery': 'freight-atlas-gallery.html', 'fa2:freight_atlas': 'freight-atlas-map.html',
+    'fa2:about': 'freight-atlas-about.html',
+    'npmrds_dms:map_21': 'map-21.html', 'npmrds2:map_21': 'map-21.html',
+  };
+  SITEMGMT.fileFor = function (id) {
+    if (this.designFile[id]) return this.designFile[id];
+    var p = this.page(id); if (!p) return '';
+    var pre = p.surface === 'tsmo2' ? 'tsmo-' : (p.surface === 'fa2' || p.surface === 'freightatlas2') ? 'freight-atlas-' : '';
+    if (!pre) return '';
+    var slug = String(p.route || '').replace(/^\//, '').replace(/_v\d+$/, '').replace(/_/g, '-');
+    return slug ? pre + slug + '.html' : '';
+  };
   // chronological timeline of the page's QA activity (ticket opens / resolutions / comments)
   SITEMGMT.timelineFor = function (id) {
     var ev = [];
