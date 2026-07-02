@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tessera DS · 2/5 — Layouts</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cinzel:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../_shared.css"/>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { basalt:'#111417', slab:'#191E23', flint:'#21272E', mortar:'#333B44', chalk:'#E4E6DE', ash:'#98A2A8', smoke:'#5C666D', phosphor:'#45D68C', amber:'#E0A83C', oxide:'#E06A4E', verdigris:'#5BC0B0', lazuli:'#6B9BD8', porphyry:'#B287C9' },
+  fontFamily: { mono:['JetBrains Mono','ui-monospace','Menlo','monospace'], display:['JetBrains Mono','ui-monospace','Menlo','monospace'], incise:['Cinzel','Trajan Pro','Georgia','serif'] },
+  boxShadow: { glow:'0 0 24px rgba(69,214,140,0.22)', 'glow-sm':'0 0 10px rgba(69,214,140,0.28)' },
+  maxWidth: { content:'1280px', measure:'68ch' },
+}}};
+</script>
+</head>
+
+<body class="bg-basalt text-chalk font-mono">
+<div class="min-h-screen bg-basalt" data-dms-layout="default">
+
+  <!-- TopNav · design-system navigation -->
+  <header class="sticky top-0 z-50 w-full bg-basalt border-b border-mortar" data-dms-group="topnav">
+    <div class="mx-auto w-full max-w-content px-6 h-14 flex items-center justify-between">
+      <a href="../pages/product-landing.html" class="flex items-center gap-3">
+        <!-- decorative --><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="2.5" width="19" height="19" stroke="#333B44" stroke-width="1.5"/><rect x="7" y="7" width="10" height="10" fill="#45D68C"/></svg>
+        <span class="t-inciseSM text-chalk">TESSERA</span>
+        <span class="t-metaXS text-smoke hidden sm:inline">design system v3</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6" aria-label="Design system">
+        <a href="theme.html" class="t-metaSM text-ash hover:text-chalk pb-1">theme</a>
+        <a href="layouts.html" aria-current="page" class="t-metaSM text-phosphor border-b-2 border-phosphor pb-1">layouts</a>
+        <a href="grid.html" class="t-metaSM text-ash hover:text-chalk pb-1">grid</a>
+        <a href="components.html" class="t-metaSM text-ash hover:text-chalk pb-1">components</a>
+        <a href="patterns.html" class="t-metaSM text-ash hover:text-chalk pb-1">patterns</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <button onclick="document.body.classList.toggle('dms-annotated')" class="t-metaXS text-smoke hover:text-chalk border border-mortar px-2 py-1">annotate</button>
+        <span class="t-metaSM text-smoke">2 / 5</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- header band -->
+  <section class="w-full bg-basalt tes-cellgrid border-b border-mortar" data-dms-group="header">
+    <div class="mx-auto w-full max-w-content px-6 py-4">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-8 p-3" data-dms-section="page-title">
+          <div class="py-8">
+            <p class="t-metaSM text-phosphor mb-4">$ man tessera-layouts</p>
+            <h1 class="t-displayXL">Layouts<span class="text-smoke">.</span></h1>
+            <p class="t-prose text-ash mt-5 max-w-measure">The structural layer: every page is a <span class="text-chalk">Layout</span>
+            (chrome: optional TopNav, optional SideNav, a content area) stacking <span class="text-chalk">LayoutGroups</span>
+            (bands) that host <span class="text-chalk">Sections</span>. Nothing on any Tessera page steps outside this nest.
+            Toggle <span class="text-phosphor">annotate</span> in the nav to see this page confess its own structure.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- hierarchy -->
+  <section class="w-full bg-basalt py-4" data-dms-group="content">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="hierarchy">
+          <div class="border border-mortar bg-slab p-5">
+            <span class="t-metaSM text-ash">The nest — Site → Layout → LayoutGroup → Section → Component</span>
+            <div class="mt-4 border border-porphyry/50 p-3">
+              <p class="t-metaXS text-porphyry mb-2">layout · chrome (topnav / sidenav / content area)</p>
+              <div class="border border-lazuli/50 p-3">
+                <p class="t-metaXS text-lazuli mb-2">layoutgroup · a band — header / content / footer</p>
+                <div class="grid grid-cols-12 gap-0">
+                  <div class="col-span-12 md:col-span-8 p-1.5"><div class="border border-phosphor/50 p-3"><p class="t-metaXS text-phosphor">section · span 8</p><p class="t-proseXS text-smoke mt-1">component: Card / Table / Graph / Map / Lexical</p></div></div>
+                  <div class="col-span-12 md:col-span-4 p-1.5"><div class="border border-phosphor/50 p-3"><p class="t-metaXS text-phosphor">section · span 4</p><p class="t-proseXS text-smoke mt-1">component: Card</p></div></div>
+                </div>
+              </div>
+            </div>
+            <p class="t-proseXS text-smoke mt-3">The mosaic reading: the Layout is the wall, a LayoutGroup is a course, a Section is a tessera, the p-3 gutter is the grout. The composition — not the tile — is the design.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Layout variants -->
+  <section class="w-full bg-slab border-y border-mortar py-4" data-dms-group="content_slab">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 p-3" data-dms-section="layout-variants-intro">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[01]</span>
+            <h2 class="t-displayLG">Layout variants</h2>
+            <span class="t-metaSM text-smoke">default · app · bare</span>
+          </div>
+        </div>
+
+        <!-- default -->
+        <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="layout-default">
+          <div class="border border-mortar bg-basalt h-full flex flex-col">
+            <div class="p-4 border-b border-mortar"><p class="t-displaySM">default <span class="t-metaXS text-smoke">· marketing</span></p></div>
+            <div class="p-4 flex-1">
+              <!-- mini-mockup -->
+              <div class="border border-mortar">
+                <div class="h-6 bg-flint border-b border-mortar flex items-center px-2 gap-1"><div class="w-2 h-2 bg-phosphor"></div><div class="flex-1"></div><div class="w-8 h-1.5 bg-mortar"></div><div class="w-8 h-1.5 bg-mortar"></div></div>
+                <div class="h-24 tes-cellgrid flex items-center justify-center"><div class="w-3/5 space-y-1.5"><div class="h-2 bg-mortar"></div><div class="h-2 bg-mortar w-4/5"></div><div class="h-2 bg-phosphor/60 w-2/5"></div></div></div>
+                <div class="h-14 border-t border-mortar flex items-center justify-center"><div class="w-4/5 h-8 bg-slab border border-mortar"></div></div>
+              </div>
+              <p class="t-proseXS text-smoke mt-3">TopNav only, no SideNav. Bands centre (<span class="text-ash">mx-auto</span> — the one non-auth centred chrome, see the callout below). The landing page uses this.</p>
+            </div>
+            <div class="p-4 border-t border-mortar t-proseXS text-smoke space-y-1">
+              <p><span class="text-ash">outerWrapper</span> min-h-screen bg-basalt</p>
+              <p><span class="text-ash">wrapper</span> flex flex-col min-h-screen</p>
+              <p><span class="text-ash">wrapper2</span> flex-1 flex flex-col w-full</p>
+              <p><span class="text-ash">wrapper3</span> flex-1 flex w-full</p>
+              <p><span class="text-ash">childWrapper</span> flex-1 w-full min-w-0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- app -->
+        <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="layout-app">
+          <div class="border border-mortar bg-basalt h-full flex flex-col">
+            <div class="p-4 border-b border-mortar"><p class="t-displaySM">app <span class="t-metaXS text-smoke">· product / docs / data</span></p></div>
+            <div class="p-4 flex-1">
+              <div class="border border-mortar flex" style="height:152px">
+                <div class="w-16 bg-slab border-r border-mortar p-2 space-y-1.5">
+                  <div class="w-3 h-3 bg-phosphor mb-2"></div>
+                  <div class="h-1.5 bg-phosphor/60 w-4/5"></div><div class="h-1.5 bg-mortar"></div><div class="h-1.5 bg-mortar w-3/5 ml-2"></div><div class="h-1.5 bg-mortar w-3/5 ml-2"></div><div class="h-1.5 bg-mortar w-4/5"></div>
+                </div>
+                <div class="flex-1 flex flex-col">
+                  <div class="h-6 bg-flint border-b border-mortar"></div>
+                  <div class="flex-1 p-2"><div class="h-full border border-mortar bg-slab mr-6"></div></div>
+                </div>
+              </div>
+              <p class="t-proseXS text-smoke mt-3">SideNav (the file tree) + slim TopNav. Bands hug the SideNav with <span class="text-ash">mr-auto pl-12 pr-8</span>; excess viewport stays right. components.html and patterns.html render in this chrome.</p>
+            </div>
+            <div class="p-4 border-t border-mortar t-proseXS text-smoke space-y-1">
+              <p><span class="text-ash">outerWrapper</span> min-h-screen bg-basalt</p>
+              <p><span class="text-ash">wrapper</span> flex flex-col min-h-screen</p>
+              <p><span class="text-ash">wrapper2</span> flex-1 flex flex-col w-full</p>
+              <p><span class="text-ash">wrapper3</span> flex-1 flex w-full</p>
+              <p><span class="text-ash">childWrapper</span> flex-1 min-w-0 bg-basalt</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- bare -->
+        <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="layout-bare">
+          <div class="border border-mortar bg-basalt h-full flex flex-col">
+            <div class="p-4 border-b border-mortar"><p class="t-displaySM">bare <span class="t-metaXS text-smoke">· auth / embed / print</span></p></div>
+            <div class="p-4 flex-1">
+              <div class="border border-mortar tes-cellgrid flex items-center justify-center" style="height:152px">
+                <div class="w-2/5 bg-slab border border-mortar p-2 space-y-1.5"><div class="h-1.5 bg-mortar"></div><div class="h-1.5 bg-mortar"></div><div class="h-2 bg-phosphor/60 w-1/2 mx-auto mt-2"></div></div>
+              </div>
+              <p class="t-proseXS text-smoke mt-3">No chrome at all. Content fills the viewport; the auth LayoutGroup centres its single section. Also the target for embedded views.</p>
+            </div>
+            <div class="p-4 border-t border-mortar t-proseXS text-smoke space-y-1">
+              <p><span class="text-ash">outerWrapper</span> min-h-screen bg-basalt</p>
+              <p><span class="text-ash">wrapper</span> flex flex-col min-h-screen</p>
+              <p><span class="text-ash">wrapper2 · wrapper3</span> flex-1 flex w-full</p>
+              <p><span class="text-ash">childWrapper</span> flex-1 flex flex-col w-full</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- LayoutGroup variants -->
+  <section class="w-full bg-basalt py-4" data-dms-group="content">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 p-3" data-dms-section="group-variants-intro">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[02]</span>
+            <h2 class="t-displayLG">LayoutGroup variants</h2>
+            <span class="t-metaSM text-smoke">the bands — every one the brand ships</span>
+          </div>
+          <p class="t-prose text-ash mt-4 max-w-measure">Tessera bands are <span class="text-chalk">unboxed courses of stone</span>: no shadows,
+          no rounded shells — a band changes stone (basalt ↔ slab) and rules a mortar line where it meets its neighbor.
+          Bands keep y-padding minimal (<span class="text-ash">py-4</span>); sections own their spacing through the p-3 grout.</p>
+        </div>
+
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3" data-dms-section="group-hero">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="h-24 tes-cellgrid border-b border-mortar flex items-end p-3"><span class="t-displaySM tes-cursor">hero</span></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">hero</p><p class="t-proseXS text-smoke mt-1">Basalt + the cell grid ornament, mortar rule below. Marketing lead bands; hosts the landing page's three.js section.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3" data-dms-section="group-header">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="h-24 bg-basalt border-b border-mortar flex flex-col justify-end p-3"><div class="h-1.5 w-16 bg-phosphor/60 mb-2"></div><span class="t-displaySM">header</span></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">header</p><p class="t-proseXS text-smoke mt-1">Plain basalt, mortar rule below. Page titles, breadcrumbs, the metadata strip on product pages.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3" data-dms-section="group-content">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="h-24 bg-basalt border-b border-mortar p-3 grid grid-cols-2 gap-2"><div class="bg-slab border border-mortar"></div><div class="bg-slab border border-mortar"></div></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">content <span class="t-metaXS text-smoke">· the default</span></p><p class="t-proseXS text-smoke mt-1">Basalt ground; sections read as slab tiles set into it. Most bands on most pages.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3" data-dms-section="group-content-slab">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="h-24 bg-slab border-b border-mortar p-3 grid grid-cols-2 gap-2"><div class="bg-basalt border border-mortar"></div><div class="bg-basalt border border-mortar"></div></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">content_slab</p><p class="t-proseXS text-smoke mt-1">The tint band: slab ground, mortar rules top and bottom. Alternates with content to pace long pages; inner tiles flip to basalt.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3" data-dms-section="group-auth">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="h-24 tes-cellgrid border-b border-mortar flex items-center justify-center"><div class="w-24 bg-slab border border-mortar h-14 p-2"><p class="t-metaXS text-smoke">login:</p><div class="h-1.5 bg-flint mt-1.5"></div></div></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">auth</p><p class="t-proseXS text-smoke mt-1">Cell-grid ground, one centred section (max-w-md, mx-auto — the intentional centring). Sign-in is a login prompt.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3" data-dms-section="group-footer">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="h-24 bg-basalt p-3 flex flex-col justify-end"><div class="border-t border-mortar pt-2 flex gap-3"><div class="h-1.5 w-10 bg-mortar"></div><div class="h-1.5 w-10 bg-mortar"></div><div class="h-1.5 w-10 bg-mortar"></div></div></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">footer</p><p class="t-proseXS text-smoke mt-1">Slab, mortar rule above, quiet link columns, the colophon and one tessera course. Ends every page.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3" data-dms-section="group-workbench">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="h-24 bg-basalt border-b border-mortar p-1"><div class="h-full w-full bg-flint border border-mortar"></div></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">workbench</p><p class="t-proseXS text-smoke mt-1">Full-bleed, no cap (px-0). Map canvases, wide spreadsheets, the page editor. Pair with full_width: show (see [04]).</p></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- wrapper class reference (required) -->
+  <section class="w-full bg-slab border-y border-mortar py-4" data-dms-group="content_slab">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="wrapper-reference">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[03]</span>
+            <h2 class="t-displayLG">Wrapper class reference</h2>
+            <span class="t-metaSM text-smoke">verbatim strings — the alignment contract</span>
+          </div>
+          <div class="border border-mortar bg-basalt mt-6 overflow-x-auto">
+            <table class="w-full t-proseSM min-w-[900px]">
+              <thead><tr class="text-left border-b border-mortar bg-flint/50">
+                <th class="t-metaXS text-smoke font-medium py-2.5 px-4">variant</th>
+                <th class="t-metaXS text-smoke font-medium py-2.5 px-4">wrapper1</th>
+                <th class="t-metaXS text-smoke font-medium py-2.5 px-4">wrapper2</th>
+                <th class="t-metaXS text-smoke font-medium py-2.5 px-4">alignment</th>
+              </tr></thead>
+              <tbody class="divide-y divide-mortar/60 text-ash">
+                <tr><td class="py-2.5 px-4 text-chalk">hero</td><td class="py-2.5 px-4">w-full bg-basalt tes-cellgrid border-b border-mortar</td><td class="py-2.5 px-4">mr-auto w-full max-w-content pl-12 pr-8 py-4</td><td class="py-2.5 px-4">left · cap</td></tr>
+                <tr><td class="py-2.5 px-4 text-chalk">header</td><td class="py-2.5 px-4">w-full bg-basalt border-b border-mortar</td><td class="py-2.5 px-4">mr-auto w-full max-w-content pl-12 pr-8 py-4</td><td class="py-2.5 px-4">left · cap</td></tr>
+                <tr><td class="py-2.5 px-4 text-chalk">content</td><td class="py-2.5 px-4">w-full bg-basalt py-4</td><td class="py-2.5 px-4">mr-auto w-full max-w-content pl-12 pr-8</td><td class="py-2.5 px-4">left · cap</td></tr>
+                <tr><td class="py-2.5 px-4 text-chalk">content_slab</td><td class="py-2.5 px-4">w-full bg-slab border-y border-mortar py-4</td><td class="py-2.5 px-4">mr-auto w-full max-w-content pl-12 pr-8</td><td class="py-2.5 px-4">left · cap</td></tr>
+                <tr><td class="py-2.5 px-4 text-chalk">footer</td><td class="py-2.5 px-4">w-full bg-slab border-t border-mortar</td><td class="py-2.5 px-4">mr-auto w-full max-w-content pl-12 pr-8 py-4</td><td class="py-2.5 px-4">left · cap</td></tr>
+                <tr><td class="py-2.5 px-4 text-chalk">auth</td><td class="py-2.5 px-4">w-full flex-1 flex bg-basalt tes-cellgrid p-6</td><td class="py-2.5 px-4">mx-auto w-full max-w-md self-center</td><td class="py-2.5 px-4 text-phosphor">centred (intentional)</td></tr>
+                <tr><td class="py-2.5 px-4 text-chalk">workbench</td><td class="py-2.5 px-4">w-full bg-basalt py-4</td><td class="py-2.5 px-4">w-full px-0</td><td class="py-2.5 px-4 text-amber">full-bleed · no cap</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="border border-mortar bg-basalt border-t-0 p-4">
+            <p class="t-proseSM text-ash"><span class="text-phosphor">Rule:</span> product bands (Layout <span class="text-chalk">app</span>) use
+            <span class="text-chalk">mr-auto</span>, never mx-auto — the band hugs the SideNav; the asymmetric
+            <span class="text-chalk">pl-12 pr-8</span> gives breathing room off the nav's edge, and mr-auto consumes the
+            excess viewport on the right. The codebase default (max-w-[1020px] mx-auto) drifts content away from the
+            sidebar on wide monitors — don't use it. <span class="text-amber">Documented exception:</span> on Layout
+            <span class="text-chalk">default</span> (marketing — no SideNav to hug) the same variants swap
+            <span class="text-chalk">mr-auto … pl-12 pr-8</span> for <span class="text-chalk">mx-auto … px-6</span>.
+            <span class="text-chalk">auth</span> centres by intent, everywhere.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- section width -->
+  <section class="w-full bg-basalt py-4" data-dms-group="content">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="section-width">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[04]</span>
+            <h2 class="t-displayLG">Section width — regular vs full-width groups</h2>
+          </div>
+          <div class="grid grid-cols-12 gap-0 mt-3">
+            <div class="col-span-12 lg:col-span-6 p-3">
+              <div class="border border-mortar bg-slab p-5 h-full">
+                <p class="t-proseSM text-ash">Inside any band, the sectionArray picks one of two layout classes, keyed by the author-facing <span class="text-chalk">Full Width: off / show</span> toggle:</p>
+                <pre class="t-proseSM text-phosphor bg-flint border border-mortar p-4 mt-4 overflow-x-auto">className={`
+  ${theme.container}
+  ${theme.layouts[group.full_width === 'show'
+      ? 'fullwidth' : 'centered']}
+`}</pre>
+                <table class="w-full mt-4 t-proseSM">
+                  <thead><tr class="text-left border-b border-mortar"><th class="t-metaXS text-smoke font-medium py-2">group.full_width</th><th class="t-metaXS text-smoke font-medium py-2">class applied</th></tr></thead>
+                  <tbody class="divide-y divide-mortar/60 text-ash">
+                    <tr><td class="py-2.5">'off' (default)</td><td class="py-2.5">layouts.centered = <span class="text-chalk">'max-w-[1280px] mr-auto'</span></td></tr>
+                    <tr><td class="py-2.5">'show'</td><td class="py-2.5">layouts.fullwidth = <span class="text-chalk">''</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="col-span-12 lg:col-span-6 p-3">
+              <div class="border border-mortar bg-slab p-5 h-full">
+                <p class="t-proseSM text-ash"><span class="text-chalk">Pair the toggle with the band.</span> full_width: show inside a
+                <span class="text-chalk">content</span> band still caps at 1280px — wrapper2 itself carries the cap. A true
+                edge-to-edge canvas needs the <span class="text-chalk">workbench</span> variant (wrapper2 drops the cap)
+                <span class="text-phosphor">and</span> full_width: show, together.</p>
+                <div class="mt-4 space-y-3">
+                  <div><p class="t-metaXS text-smoke mb-1.5">content + off — capped, left</p><div class="border border-mortar h-10 p-1"><div class="h-full w-4/5 bg-flint border border-mortar"></div></div></div>
+                  <div><p class="t-metaXS text-smoke mb-1.5">content + show — still capped by wrapper2</p><div class="border border-mortar h-10 p-1"><div class="h-full w-4/5 bg-flint border border-mortar"></div></div></div>
+                  <div><p class="t-metaXS text-smoke mb-1.5">workbench + show — edge to edge</p><div class="border border-mortar h-10 p-1"><div class="h-full w-full bg-flint border border-phosphor/40"></div></div></div>
+                </div>
+                <p class="t-proseXS text-smoke mt-4">Use workbench for maps, wide spreadsheets, and the page editor — not for ordinary content. The 1280 cap is correct for nearly every band.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- nesting + naming -->
+  <section class="w-full bg-slab border-y border-mortar py-4" data-dms-group="content_slab">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 lg:col-span-6 p-3" data-dms-section="nesting-example">
+          <div class="border border-mortar bg-basalt p-5 h-full">
+            <span class="t-metaSM text-ash">Band composition — the landing page, as courses</span>
+            <div class="mt-4 space-y-1 t-metaXS">
+              <div class="border border-mortar px-3 py-2 flex justify-between"><span class="text-chalk">topnav</span><span class="text-smoke">layout chrome</span></div>
+              <div class="border border-mortar tes-cellgrid px-3 py-4 flex justify-between"><span class="text-phosphor">hero</span><span class="text-smoke">1 section · three.js canvas</span></div>
+              <div class="border border-mortar px-3 py-3 flex justify-between"><span class="text-chalk">content</span><span class="text-smoke">synopsis · 2 sections</span></div>
+              <div class="border border-mortar bg-slab px-3 py-3 flex justify-between"><span class="text-chalk">content_slab</span><span class="text-smoke">renderings · 5 sections</span></div>
+              <div class="border border-mortar px-3 py-3 flex justify-between"><span class="text-chalk">content</span><span class="text-smoke">proof · 4 sections</span></div>
+              <div class="border border-mortar bg-slab px-3 py-3 flex justify-between"><span class="text-chalk">content_slab</span><span class="text-smoke">two doors · 2 sections</span></div>
+              <div class="border border-mortar px-3 py-3 flex justify-between"><span class="text-chalk">content</span><span class="text-smoke">theory · 1 section</span></div>
+              <div class="border border-mortar bg-slab px-3 py-2 flex justify-between"><span class="text-chalk">footer</span><span class="text-smoke">links + colophon</span></div>
+            </div>
+            <p class="t-proseXS text-smoke mt-3">Alternating basalt/slab bands pace the scroll; every seam is one mortar line. No band ever nests inside another.</p>
+          </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6 p-3" data-dms-section="naming-reference">
+          <div class="border border-mortar bg-basalt p-5 h-full">
+            <span class="t-metaSM text-ash">Which chrome for which page</span>
+            <table class="w-full mt-4 t-proseSM">
+              <thead><tr class="text-left border-b border-mortar"><th class="t-metaXS text-smoke font-medium py-2">page kind</th><th class="t-metaXS text-smoke font-medium py-2">layout</th><th class="t-metaXS text-smoke font-medium py-2">typical bands</th></tr></thead>
+              <tbody class="divide-y divide-mortar/60 text-ash">
+                <tr><td class="py-2.5">marketing / landing</td><td class="py-2.5 text-chalk">default</td><td class="py-2.5">hero → content ⁄ content_slab → footer</td></tr>
+                <tr><td class="py-2.5">docs / long-form</td><td class="py-2.5 text-chalk">app</td><td class="py-2.5">header → content (+ TOC rail pattern)</td></tr>
+                <tr><td class="py-2.5">dashboard / dataset</td><td class="py-2.5 text-chalk">app</td><td class="py-2.5">header → content ⁄ content_slab</td></tr>
+                <tr><td class="py-2.5">map / editor canvas</td><td class="py-2.5 text-chalk">app</td><td class="py-2.5">header → workbench</td></tr>
+                <tr><td class="py-2.5">sign-in / sign-up</td><td class="py-2.5 text-chalk">bare</td><td class="py-2.5">auth</td></tr>
+              </tbody>
+            </table>
+            <p class="t-proseXS text-smoke mt-4">These five pages document themselves in this vocabulary: theme, layouts, and grid render as Layout default; components and patterns render as Layout app — the brand documenting itself as the brand.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- footer link block -->
+  <footer class="w-full bg-slab border-t border-mortar" data-dms-group="footer">
+    <div class="mx-auto w-full max-w-content px-6 py-4">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="footer-links">
+          <div class="flex items-center gap-1.5 mb-6">
+            <div class="w-2 h-2 bg-mortar"></div><div class="w-2 h-2 bg-phosphor"></div><div class="w-2 h-2 bg-mortar"></div><div class="w-2 h-2 bg-flint"></div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+              <p class="t-metaXS text-smoke mb-3">design system</p>
+              <ul class="space-y-2 t-proseSM">
+                <li><a class="text-ash hover:text-chalk" href="theme.html">1 · theme</a></li>
+                <li><a class="text-phosphor" href="layouts.html">2 · layouts — you are here</a></li>
+                <li><a class="text-ash hover:text-chalk" href="grid.html">3 · grid</a></li>
+                <li><a class="text-ash hover:text-chalk" href="components.html">4 · components</a></li>
+                <li><a class="text-ash hover:text-chalk" href="patterns.html">5 · patterns</a></li>
+              </ul>
+            </div>
+            <div>
+              <p class="t-metaXS text-smoke mb-3">example pages</p>
+              <ul class="space-y-2 t-proseSM"><li><a class="text-ash hover:text-chalk" href="../pages/product-landing.html">product landing</a></li></ul>
+            </div>
+            <div>
+              <p class="t-metaXS text-smoke mb-3">artifacts</p>
+              <ul class="space-y-2 t-proseSM text-ash"><li>_shared.css — canonical</li><li>theme/icons.js — registry</li><li>theme/tailwind.additions.js</li></ul>
+            </div>
+            <div class="md:text-right">
+              <p class="t-inciseSM text-ash">Tessera</p>
+              <p class="t-proseXS text-smoke mt-2">design system v3 · set 2026-07-02</p>
+              <p class="t-proseXS text-phosphor mt-1">exit 0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- floating design-system navigation widget (§7.0.2) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'JetBrains Mono',monospace;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:#191E23;border:1px solid #333B44;padding:12px 0;min-width:220px;box-shadow:0 4px 20px rgba(0,0,0,0.5);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#5C666D;padding:0 16px 8px;border-bottom:1px solid #333B44;margin-bottom:4px;">Tessera design system</div>
+    <a href="theme.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">1</span> theme</a>
+    <a href="layouts.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#45D68C;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">2</span> layouts ▮</a>
+    <a href="grid.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">3</span> grid</a>
+    <a href="components.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">4</span> components</a>
+    <a href="patterns.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">5</span> patterns</a>
+    <div style="border-top:1px solid #333B44;margin:4px 0;"></div>
+    <a href="../pages/product-landing.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">◦</span> product landing</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px)':'translateY(0)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;background:#111417;color:#45D68C;border:1px solid #333B44;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+          aria-label="Design system navigation">
+    <!-- decorative --><svg xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px;" viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="3" width="6" height="6"/><rect x="11" y="3" width="6" height="6"/><rect x="3" y="11" width="6" height="6"/><rect x="11" y="11" width="6" height="6"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
