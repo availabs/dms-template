@@ -23,8 +23,9 @@ export const tailwindAdditions = {
         fog: "#A7ADB6",
         oxide: "#B5532C",
         tile: "#7F1D1D",
-        verdigris: "#5D8A85",
-        ochre: "#B45309",
+        verdigris: "#3F8F7F",
+        ochre: "#C7910F",
+        lapis: "#3B5BA5",
         grout: { light: "#D9D2C2", dark: "#1A1D22" },
       },
       fontFamily: {

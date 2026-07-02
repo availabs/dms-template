@@ -49,19 +49,20 @@
   /* accent — the inlay (≤15%, never decoration) */
   --color-oxide:       #B5532C;
   --color-tile:        #7F1D1D;
-  --color-verdigris:   #5D8A85;
-  --color-ochre:       #B45309;
+  --color-verdigris:   #3F8F7F;
+  --color-ochre:       #C7910F;
+  --color-lapis:       #3B5BA5;
 
   /* semantic status (accents doing work) */
   --status-success: var(--color-verdigris);
   --status-warning: var(--color-ochre);
   --status-danger:  var(--color-tile);
-  --status-info:    var(--color-graphite);
+  --status-info:    var(--color-lapis);
 
   /* chart series — never more than five, never rainbow */
   --series-1: var(--color-oxide);
-  --series-2: var(--color-verdigris);
-  --series-3: var(--color-slate);
+  --series-2: var(--color-lapis);
+  --series-3: var(--color-verdigris);
   --series-4: var(--color-ochre);
   --series-5: var(--color-tile);
 
@@ -102,6 +103,22 @@
   --color-fog:         #6E7480;
   --color-grout-dark:  #F4F1EA;
   --shadow-lift: none;
+}
+
+/* ── Stone ────────────────────────────────────────────────────────────────────────
+   Every surface carries a faint mineral grain (feTurbulence, slate-tinted,
+   ~4–7% peak alpha) so the system feels cut from stone rather than drawn
+   on glass. Limestone — the rougher stone — grains a step harder. The
+   grain is texture, not ornament: it never carries meaning and never
+   competes with ink. */
+
+body,
+.bg-bone,
+.bg-parchment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.165 0 0 0 0 0.184 0 0 0 0 0.212 0.09 0 0 0 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+.bg-limestone {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.165 0 0 0 0 0.184 0 0 0 0 0.212 0.16 0 0 0 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────── */
@@ -165,7 +182,7 @@
    band boundaries only (hero base, footer top, theory designator). */
 .tsr-frieze-tiles {
   height: 12px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='12'%3E%3Crect x='2'  y='2' width='8' height='8' fill='%23D9D2C2'/%3E%3Crect x='18' y='2' width='8' height='8' fill='%23E8E2D5'/%3E%3Crect x='34' y='2' width='8' height='8' fill='%23B5532C'/%3E%3Crect x='50' y='2' width='8' height='8' fill='%23E8E2D5'/%3E%3Crect x='66' y='2' width='8' height='8' fill='%23D9D2C2'/%3E%3Crect x='82' y='2' width='8' height='8' fill='%232A2F36'/%3E%3Crect x='98' y='2' width='8' height='8' fill='%23E8E2D5'/%3E%3Crect x='114' y='2' width='8' height='8' fill='%23D9D2C2'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='12'%3E%3Crect x='2'  y='2' width='8' height='8' fill='%23D9D2C2'/%3E%3Crect x='18' y='2' width='8' height='8' fill='%23E8E2D5'/%3E%3Crect x='34' y='2' width='8' height='8' fill='%23B5532C'/%3E%3Crect x='50' y='2' width='8' height='8' fill='%23E8E2D5'/%3E%3Crect x='66' y='2' width='8' height='8' fill='%23D9D2C2'/%3E%3Crect x='82' y='2' width='8' height='8' fill='%233B5BA5'/%3E%3Crect x='98' y='2' width='8' height='8' fill='%23E8E2D5'/%3E%3Crect x='114' y='2' width='8' height='8' fill='%23D9D2C2'/%3E%3C/svg%3E");
   background-repeat: repeat-x;
 }
 

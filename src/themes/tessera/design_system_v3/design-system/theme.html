@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="../_shared.css"/>
 <script>
 tailwind.config = { theme: { extend: {
-  colors: { bone:'#F4F1EA', limestone:'#E8E2D5', parchment:'#FBF9F4', slate:'#2A2F36', graphite:'#4A5160', fog:'#A7ADB6', oxide:'#B5532C', tile:'#7F1D1D', verdigris:'#5D8A85', ochre:'#B45309', grout:{light:'#D9D2C2', dark:'#1A1D22'} },
+  colors: { bone:'#F4F1EA', limestone:'#E8E2D5', parchment:'#FBF9F4', slate:'#2A2F36', graphite:'#4A5160', fog:'#A7ADB6', oxide:'#B5532C', tile:'#7F1D1D', verdigris:'#3F8F7F', ochre:'#C7910F', lapis:'#3B5BA5', grout:{light:'#D9D2C2', dark:'#1A1D22'} },
   fontFamily: { display:['Tiempos Headline','Newsreader','Georgia','serif'], fine:['Tiempos Fine','Tiempos Headline','Newsreader','Georgia','serif'], sans:['IBM Plex Sans','system-ui','sans-serif'], mono:['IBM Plex Mono','ui-monospace','monospace'] },
   boxShadow: { lift:'0 1px 2px rgba(42,47,54,0.04)' },
   maxWidth: { content:'1280px', measure:'620px' },
@@ -33,7 +33,7 @@ tailwind.config = { theme: { extend: {
   <nav class="w-64 flex-none border-r border-grout-light bg-bone hidden lg:flex flex-col" aria-label="Design system">
     <div class="px-6 pt-7 pb-6 border-b border-grout-light">
       <a href="theme.html" class="flex items-center gap-3">
-        <!-- icon: TileMark --><svg class="w-7 h-7 text-slate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><rect x="4" y="4" width="16" height="16"/><path d="M12 8.5l3.5 3.5-3.5 3.5L8.5 12 12 8.5Z" class="text-oxide"/></svg>
+        <!-- decorative --><svg class="w-7 h-7" viewBox="0 0 96 96" fill="none" aria-hidden="true"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
         <span>
           <span class="block t-displayXS">Tessera</span>
           <span class="block t-metaXS text-graphite mt-0.5">Design system · v3</span>
@@ -92,7 +92,7 @@ tailwind.config = { theme: { extend: {
       <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8 pt-12 pb-10" data-dms-section="page-title">
         <div class="inline-block tsr-tabula mb-5"><span class="t-metaSM text-graphite">Foundation · tokens</span></div>
         <h1 class="t-displayXL max-w-[16ch]">Theme — the brand&rsquo;s vocabulary</h1>
-        <p class="t-proseLG text-graphite mt-5 max-w-measure">Everything the rest of the system inherits from: twelve mineral colors, sixteen type tokens, a drawn icon set, the grout scale, one shadow, and the small set of ornaments the brand permits itself. If a token is missing here, it is missing everywhere.</p>
+        <p class="t-proseLG text-graphite mt-5 max-w-measure">Everything the rest of the system inherits from: thirteen mineral colors, sixteen type tokens, a drawn icon set, the grout scale, one shadow, and the small set of ornaments the brand permits itself. If a token is missing here, it is missing everywhere.</p>
       </div>
     </div>
 
@@ -100,8 +100,8 @@ tailwind.config = { theme: { extend: {
     <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
       <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
         <div class="t-metaSM text-oxide mb-1">Color</div>
-        <h2 class="t-displayLG mb-2">Twelve minerals, three duties</h2>
-        <p class="t-prose text-graphite max-w-measure mb-2">Surface is the floor — roughly 85% of any composition. Ink writes on it. Accent is the inlay: at most 15% of any surface, always doing work, never decoration.</p>
+        <h2 class="t-displayLG mb-2">Thirteen stones, three duties</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">Surface is the floor — roughly 85% of any composition. Ink writes on it. Accent is the inlay: at most 15% of any surface, always doing work, never decoration. The accents are smalti — the fired glass Roman workshops set among the stone: terracotta, lapis, copper, gold, and the deep tile red.</p>
 
         <div class="grid grid-cols-12 gap-0">
 
@@ -134,12 +134,13 @@ tailwind.config = { theme: { extend: {
           <!-- accent -->
           <div class="col-span-12 md:col-span-6 p-3" data-dms-section="color-accent">
             <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
-              <div class="t-metaSM text-graphite mb-4">Accent — the inlay, ≤ 15%</div>
+              <div class="t-metaSM text-graphite mb-4">Accent — the smalti, ≤ 15%</div>
               <div class="grid grid-cols-2 gap-4">
                 <div><div class="h-14" style="background:#B5532C"></div><div class="mt-2 t-proseSM font-medium">oxide</div><div class="t-metaXS text-graphite">#B5532C · text-oxide</div><div class="t-proseXS text-graphite mt-1">primary accent · links · active</div></div>
                 <div><div class="h-14" style="background:#7F1D1D"></div><div class="mt-2 t-proseSM font-medium">tile</div><div class="t-metaXS text-graphite">#7F1D1D · text-tile</div><div class="t-proseXS text-graphite mt-1">deep red · emphasis · danger</div></div>
-                <div><div class="h-14" style="background:#5D8A85"></div><div class="mt-2 t-proseSM font-medium">verdigris</div><div class="t-metaXS text-graphite">#5D8A85 · text-verdigris</div><div class="t-proseXS text-graphite mt-1">cool accent · success</div></div>
-                <div><div class="h-14" style="background:#B45309"></div><div class="mt-2 t-proseSM font-medium">ochre</div><div class="t-metaXS text-graphite">#B45309 · text-ochre</div><div class="t-proseXS text-graphite mt-1">warning · highlight</div></div>
+                <div><div class="h-14" style="background:#3B5BA5"></div><div class="mt-2 t-proseSM font-medium">lapis</div><div class="t-metaXS text-graphite">#3B5BA5 · text-lapis</div><div class="t-proseXS text-graphite mt-1">smalti blue · info · links</div></div>
+                <div><div class="h-14" style="background:#3F8F7F"></div><div class="mt-2 t-proseSM font-medium">verdigris</div><div class="t-metaXS text-graphite">#3F8F7F · text-verdigris</div><div class="t-proseXS text-graphite mt-1">copper green · success</div></div>
+                <div><div class="h-14" style="background:#C7910F"></div><div class="mt-2 t-proseSM font-medium">ochre</div><div class="t-metaXS text-graphite">#C7910F · text-ochre</div><div class="t-proseXS text-graphite mt-1">gold smalti · warning</div></div>
               </div>
             </div>
           </div>
@@ -153,7 +154,7 @@ tailwind.config = { theme: { extend: {
                 <div class="flex items-center gap-3"><span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-verdigris/15 text-verdigris border border-verdigris/30">Published</span><span class="t-metaXS text-graphite">success → verdigris</span></div>
                 <div class="flex items-center gap-3"><span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-ochre/15 text-ochre border border-ochre/30">Stale view</span><span class="t-metaXS text-graphite">warning → ochre</span></div>
                 <div class="flex items-center gap-3"><span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-tile/10 text-tile border border-tile/30">Failed load</span><span class="t-metaXS text-graphite">danger → tile</span></div>
-                <div class="flex items-center gap-3"><span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-limestone text-graphite border border-grout-light">Draft</span><span class="t-metaXS text-graphite">info / neutral → graphite</span></div>
+                <div class="flex items-center gap-3"><span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-lapis/15 text-lapis border border-lapis/30">In review</span><span class="t-metaXS text-graphite">info → lapis</span></div>
               </div>
             </div>
           </div>
@@ -165,13 +166,13 @@ tailwind.config = { theme: { extend: {
               <p class="t-proseXS text-graphite mb-4">Data visualisation is the brand&rsquo;s primary illustration. Five series, mineral, in this order; a sixth series means the chart needs a different form.</p>
               <div class="flex h-14">
                 <div class="flex-1" style="background:#B5532C"></div>
-                <div class="flex-1" style="background:#5D8A85"></div>
-                <div class="flex-1" style="background:#2A2F36"></div>
-                <div class="flex-1" style="background:#B45309"></div>
+                <div class="flex-1" style="background:#3B5BA5"></div>
+                <div class="flex-1" style="background:#3F8F7F"></div>
+                <div class="flex-1" style="background:#C7910F"></div>
                 <div class="flex-1" style="background:#7F1D1D"></div>
               </div>
               <div class="flex t-metaXS text-graphite mt-2">
-                <span class="flex-1">series-1<br/>oxide</span><span class="flex-1">series-2<br/>verdigris</span><span class="flex-1">series-3<br/>slate</span><span class="flex-1">series-4<br/>ochre</span><span class="flex-1">series-5<br/>tile</span>
+                <span class="flex-1">series-1<br/>oxide</span><span class="flex-1">series-2<br/>lapis</span><span class="flex-1">series-3<br/>verdigris</span><span class="flex-1">series-4<br/>ochre</span><span class="flex-1">series-5<br/>tile</span>
               </div>
             </div>
           </div>
@@ -195,8 +196,9 @@ tailwind.config = { theme: { extend: {
                   <tr class="border-b border-grout-light"><td class="py-2 pr-3"><span class="px-2 py-0.5" style="background:#F4F1EA;color:#4A5160">graphite on bone</span></td><td class="py-2 pr-3 t-metaMD">7.1 : 1</td><td class="py-2 pr-3 text-verdigris">AAA</td><td class="py-2 text-graphite">captions, secondary copy</td></tr>
                   <tr class="border-b border-grout-light"><td class="py-2 pr-3"><span class="px-2 py-0.5" style="background:#2A2F36;color:#FBF9F4">parchment on slate</span></td><td class="py-2 pr-3 t-metaMD">11.7 : 1</td><td class="py-2 pr-3 text-verdigris">AAA</td><td class="py-2 text-graphite">reversed chrome, primary buttons</td></tr>
                   <tr class="border-b border-grout-light"><td class="py-2 pr-3"><span class="px-2 py-0.5" style="background:#F4F1EA;color:#7F1D1D">tile on bone</span></td><td class="py-2 pr-3 t-metaMD">8.9 : 1</td><td class="py-2 pr-3 text-verdigris">AAA</td><td class="py-2 text-graphite">danger text at any size</td></tr>
+                  <tr class="border-b border-grout-light"><td class="py-2 pr-3"><span class="px-2 py-0.5" style="background:#F4F1EA;color:#3B5BA5">lapis on bone</span></td><td class="py-2 pr-3 t-metaMD">5.8 : 1</td><td class="py-2 pr-3 text-verdigris">AA</td><td class="py-2 text-graphite">links, info accents, chart series — any text ≥ proseSM</td></tr>
                   <tr class="border-b border-grout-light"><td class="py-2 pr-3"><span class="px-2 py-0.5" style="background:#F4F1EA;color:#B5532C">oxide on bone</span></td><td class="py-2 pr-3 t-metaMD">4.4 : 1</td><td class="py-2 pr-3 text-ochre">AA-large</td><td class="py-2 text-graphite">links &amp; eyebrows at proseSM+ medium; headline accents; never long copy</td></tr>
-                  <tr class="border-b border-grout-light"><td class="py-2 pr-3"><span class="px-2 py-0.5" style="background:#F4F1EA;color:#5D8A85">verdigris on bone</span></td><td class="py-2 pr-3 t-metaMD">3.4 : 1</td><td class="py-2 pr-3 text-ochre">AA-large</td><td class="py-2 text-graphite">status pills &amp; marks only, paired with a label</td></tr>
+                  <tr class="border-b border-grout-light"><td class="py-2 pr-3"><span class="px-2 py-0.5" style="background:#F4F1EA;color:#3F8F7F">verdigris on bone</span></td><td class="py-2 pr-3 t-metaMD">3.4 : 1</td><td class="py-2 pr-3 text-ochre">AA-large</td><td class="py-2 text-graphite">status pills &amp; marks only, paired with a label</td></tr>
                   <tr><td class="py-2 pr-3"><span class="px-2 py-0.5" style="background:#F4F1EA;color:#A7ADB6">fog on bone</span></td><td class="py-2 pr-3 t-metaMD">2.0 : 1</td><td class="py-2 pr-3 text-tile">fail</td><td class="py-2 text-graphite">disabled states and hairline marks only — never copy</td></tr>
                 </tbody>
               </table>
@@ -505,15 +507,15 @@ tailwind.config = { theme: { extend: {
 
           <div class="col-span-12 md:col-span-6 p-3" data-dms-section="ornament-monogram">
             <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
-              <div class="t-metaSM text-graphite mb-4">The mark — a tessera, set</div>
+              <div class="t-metaSM text-graphite mb-4">The mark — five tiles, one being set</div>
               <div class="flex items-center gap-8 mb-5">
-                <!-- decorative --><svg class="w-16 h-16" viewBox="0 0 96 96" fill="none"><rect x="6" y="6" width="84" height="84" stroke="#2A2F36" stroke-width="3"/><rect x="26" y="26" width="44" height="44" fill="#B5532C" transform="rotate(45 48 48)"/></svg>
+                <!-- decorative --><svg class="w-16 h-16" viewBox="0 0 96 96" fill="none" aria-hidden="true"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
                 <div class="flex items-center gap-3">
-                  <!-- decorative --><svg class="w-8 h-8" viewBox="0 0 96 96" fill="none"><rect x="6" y="6" width="84" height="84" stroke="#2A2F36" stroke-width="4"/><rect x="26" y="26" width="44" height="44" fill="#B5532C" transform="rotate(45 48 48)"/></svg>
+                  <!-- decorative --><svg class="w-8 h-8" viewBox="0 0 96 96" fill="none" aria-hidden="true"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
                   <span class="t-displaySM">Tessera</span>
                 </div>
               </div>
-              <p class="t-proseXS text-graphite">A single tile set within its frame, rotated 45° — placed, not stamped. Monochrome at 16px for the favicon; ornament belongs to the marketing site, never to the mark.</p>
+              <p class="t-proseXS text-graphite">A composed monogram: five tesserae suggest the T — three slate and lapis across the bar, and an oxide tile in the stem set at nine degrees, the tile being placed. It reads as a T at wordmark size and as a textured square at 16px. Ornament belongs to the marketing site, never to the mark.</p>
             </div>
           </div>
 
@@ -553,7 +555,8 @@ tailwind.config = { theme: { extend: {
                 <span class="t-displaySM" style="color:#F4F1EA">Ink turns to bone.</span>
                 <span class="t-proseSM" style="color:#C8C2B3">Muted copy in worn ivory.</span>
                 <span class="t-proseSM font-medium" style="color:#B5532C">Oxide holds.</span>
-                <span class="t-proseSM font-medium" style="color:#5D8A85">Verdigris holds.</span>
+                <span class="t-proseSM font-medium" style="color:#3B5BA5">Lapis holds.</span>
+                <span class="t-proseSM font-medium" style="color:#3F8F7F">Verdigris holds.</span>
               </div>
             </div>
           </div>

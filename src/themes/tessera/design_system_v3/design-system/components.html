@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="../_shared.css"/>
 <script>
 tailwind.config = { theme: { extend: {
-  colors: { bone:'#F4F1EA', limestone:'#E8E2D5', parchment:'#FBF9F4', slate:'#2A2F36', graphite:'#4A5160', fog:'#A7ADB6', oxide:'#B5532C', tile:'#7F1D1D', verdigris:'#5D8A85', ochre:'#B45309', grout:{light:'#D9D2C2', dark:'#1A1D22'} },
+  colors: { bone:'#F4F1EA', limestone:'#E8E2D5', parchment:'#FBF9F4', slate:'#2A2F36', graphite:'#4A5160', fog:'#A7ADB6', oxide:'#B5532C', tile:'#7F1D1D', verdigris:'#3F8F7F', ochre:'#C7910F', lapis:'#3B5BA5', grout:{light:'#D9D2C2', dark:'#1A1D22'} },
   fontFamily: { display:['Tiempos Headline','Newsreader','Georgia','serif'], fine:['Tiempos Fine','Tiempos Headline','Newsreader','Georgia','serif'], sans:['IBM Plex Sans','system-ui','sans-serif'], mono:['IBM Plex Mono','ui-monospace','monospace'] },
   boxShadow: { lift:'0 1px 2px rgba(42,47,54,0.04)' },
   maxWidth: { content:'1280px', measure:'620px' },
@@ -33,7 +33,7 @@ tailwind.config = { theme: { extend: {
   <nav class="w-64 flex-none border-r border-grout-light bg-bone hidden lg:flex flex-col" aria-label="Design system">
     <div class="px-6 pt-7 pb-6 border-b border-grout-light">
       <a href="theme.html" class="flex items-center gap-3">
-        <!-- icon: TileMark --><svg class="w-7 h-7 text-slate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><rect x="4" y="4" width="16" height="16"/><path d="M12 8.5l3.5 3.5-3.5 3.5L8.5 12 12 8.5Z" class="text-oxide"/></svg>
+        <!-- decorative --><svg class="w-7 h-7" viewBox="0 0 96 96" fill="none" aria-hidden="true"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
         <span>
           <span class="block t-displayXS">Tessera</span>
           <span class="block t-metaXS text-graphite mt-0.5">Design system · v3</span>
@@ -113,7 +113,7 @@ tailwind.config = { theme: { extend: {
               <div class="border border-grout-light bg-bone">
                 <div class="flex items-center gap-8 h-16 px-6">
                   <a href="#" class="flex items-center gap-2.5 flex-none">
-                    <!-- icon: TileMark --><svg class="w-7 h-7 text-slate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><rect x="4" y="4" width="16" height="16"/><path d="M12 8.5l3.5 3.5-3.5 3.5L8.5 12 12 8.5Z" class="text-oxide"/></svg>
+                    <!-- decorative --><svg class="w-7 h-7" viewBox="0 0 96 96" fill="none" aria-hidden="true"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
                     <span class="t-displaySM">Tessera</span>
                   </a>
                   <nav class="hidden md:flex items-center h-full t-proseSM" aria-label="Marketing">
@@ -730,7 +730,7 @@ tailwind.config = { theme: { extend: {
                 <div class="bg-parchment border border-grout-light shadow-lift">
                   <div class="grid grid-cols-12 gap-0">
                     <div class="col-span-12 sm:col-span-4 sm:row-span-2 p-3">
-                      <!-- decorative --><svg class="w-full h-full min-h-[120px] border border-grout-light" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice"><rect width="200" height="150" fill="#F4F1EA"/><rect x="55" y="30" width="90" height="90" fill="none" stroke="#2A2F36" stroke-width="2"/><rect x="78" y="53" width="44" height="44" fill="#B5532C" transform="rotate(45 100 75)"/></svg>
+                      <!-- decorative --><svg class="w-full h-full min-h-[120px] border border-grout-light" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice"><rect width="200" height="150" fill="#F4F1EA"/><g transform="translate(56 33) scale(0.9)"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></g></svg>
                     </div>
                     <div class="col-span-6 sm:col-span-4 p-3">
                       <div class="t-metaXS text-graphite mb-1">County</div>
@@ -828,31 +828,31 @@ tailwind.config = { theme: { extend: {
               <div class="grid grid-cols-2 gap-6">
                 <div>
                   <div class="t-metaXS text-fog mb-3">mark only</div>
-                  <!-- decorative --><svg class="w-12 h-12" viewBox="0 0 96 96" fill="none"><rect x="6" y="6" width="84" height="84" stroke="#2A2F36" stroke-width="4"/><rect x="26" y="26" width="44" height="44" fill="#B5532C" transform="rotate(45 48 48)"/></svg>
+                  <!-- decorative --><svg class="w-12 h-12" viewBox="0 0 96 96" fill="none"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
                 </div>
                 <div>
                   <div class="t-metaXS text-fog mb-3">horizontal</div>
                   <div class="flex items-center gap-3">
-                    <!-- decorative --><svg class="w-8 h-8" viewBox="0 0 96 96" fill="none"><rect x="6" y="6" width="84" height="84" stroke="#2A2F36" stroke-width="4"/><rect x="26" y="26" width="44" height="44" fill="#B5532C" transform="rotate(45 48 48)"/></svg>
+                    <!-- decorative --><svg class="w-8 h-8" viewBox="0 0 96 96" fill="none"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
                     <span class="t-displaySM">Tessera</span>
                   </div>
                 </div>
                 <div>
                   <div class="t-metaXS text-fog mb-3">stacked</div>
                   <div class="flex flex-col items-center gap-2 w-max">
-                    <!-- decorative --><svg class="w-10 h-10" viewBox="0 0 96 96" fill="none"><rect x="6" y="6" width="84" height="84" stroke="#2A2F36" stroke-width="4"/><rect x="26" y="26" width="44" height="44" fill="#B5532C" transform="rotate(45 48 48)"/></svg>
+                    <!-- decorative --><svg class="w-10 h-10" viewBox="0 0 96 96" fill="none"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
                     <span class="t-displayXS">Tessera</span>
                   </div>
                 </div>
                 <div>
                   <div class="t-metaXS text-fog mb-3">monochrome · slate</div>
                   <div class="flex items-center gap-3">
-                    <!-- decorative --><svg class="w-8 h-8" viewBox="0 0 96 96" fill="none"><rect x="6" y="6" width="84" height="84" stroke="#2A2F36" stroke-width="4"/><rect x="26" y="26" width="44" height="44" fill="#2A2F36" transform="rotate(45 48 48)"/></svg>
+                    <!-- decorative --><svg class="w-8 h-8" viewBox="0 0 96 96" fill="none"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#2A2F36" transform="rotate(9 48 76)"/></svg>
                     <span class="t-displaySM">Tessera</span>
                   </div>
                 </div>
               </div>
-              <p class="t-proseXS text-graphite mt-5">The mark is a tessera set within its frame. Monochrome for favicons and single-ink contexts; never outlined in an accent, never on a photograph.</p>
+              <p class="t-proseXS text-graphite mt-5">The mark is a composed monogram — five tesserae suggesting the T, the stem tile set at nine degrees. Monochrome for favicons and single-ink contexts; never outlined in an accent, never on a photograph.</p>
             </div>
           </div>
 
@@ -891,7 +891,7 @@ tailwind.config = { theme: { extend: {
                 <pre class="t-metaMD bg-bone border border-grout-light p-4 overflow-x-auto mb-6">dms dataset dump nfip_claims_v6 \
   --view 41 --format json</pre>
                 <figure>
-                  <!-- decorative --><svg class="w-full border border-grout-light" viewBox="0 0 560 240" preserveAspectRatio="xMidYMid slice"><rect width="560" height="240" fill="#F4F1EA"/><path d="M0 190 Q 140 150 280 168 T 560 140 V240 H0 Z" fill="#E8E2D5"/><path d="M0 205 Q 180 175 340 190 T 560 178 V240 H0 Z" fill="#D9D2C2" opacity="0.55"/><rect x="252" y="72" width="56" height="56" fill="none" stroke="#2A2F36" stroke-width="2"/><rect x="266" y="86" width="28" height="28" fill="#B5532C" transform="rotate(45 280 100)"/></svg>
+                  <!-- decorative --><svg class="w-full border border-grout-light" viewBox="0 0 560 240" preserveAspectRatio="xMidYMid slice"><rect width="560" height="240" fill="#F4F1EA"/><path d="M0 190 Q 140 150 280 168 T 560 140 V240 H0 Z" fill="#E8E2D5"/><path d="M0 205 Q 180 175 340 190 T 560 178 V240 H0 Z" fill="#D9D2C2" opacity="0.55"/><g transform="translate(252 68) scale(0.66)"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></g></svg>
                   <figcaption class="t-proseXS text-graphite mt-2">The Upper Delaware course, drawn from the 2026 parcel roll. Captions are <span class="t-metaMD">proseXS</span> graphite.</figcaption>
                 </figure>
               </article>
@@ -962,11 +962,11 @@ tailwind.config = { theme: { extend: {
 
                 <div>
                   <div class="t-metaSM text-graphite mb-3">Claims vs. policies · line</div>
-                  <!-- decorative --><svg class="w-full" viewBox="0 0 300 160"><rect width="300" height="160" fill="#F4F1EA"/><line x1="0" y1="40" x2="300" y2="40" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="80" x2="300" y2="80" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="120" x2="300" y2="120" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="152" x2="300" y2="152" stroke="#D9D2C2" stroke-width="1"/><polyline points="10,128 68,112 126,120 184,84 242,64 292,40" fill="none" stroke="#B5532C" stroke-width="1.5"/><polyline points="10,140 68,136 126,128 184,124 242,112 292,108" fill="none" stroke="#5D8A85" stroke-width="1.5"/></svg>
+                  <!-- decorative --><svg class="w-full" viewBox="0 0 300 160"><rect width="300" height="160" fill="#F4F1EA"/><line x1="0" y1="40" x2="300" y2="40" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="80" x2="300" y2="80" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="120" x2="300" y2="120" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="152" x2="300" y2="152" stroke="#D9D2C2" stroke-width="1"/><polyline points="10,128 68,112 126,120 184,84 242,64 292,40" fill="none" stroke="#B5532C" stroke-width="1.5"/><polyline points="10,140 68,136 126,128 184,124 242,112 292,108" fill="none" stroke="#3F8F7F" stroke-width="1.5"/></svg>
                   <div class="flex t-metaXS text-graphite mt-1.5 text-center"><span class="flex-1">2021</span><span class="flex-1">2022</span><span class="flex-1">2023</span><span class="flex-1">2024</span><span class="flex-1">2025</span><span class="flex-1">2026</span></div>
                   <div class="flex gap-4 mt-2">
                     <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5" style="background:#B5532C"></span><span class="t-metaXS text-graphite">claims</span></span>
-                    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5" style="background:#5D8A85"></span><span class="t-metaXS text-graphite">policies</span></span>
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5" style="background:#3F8F7F"></span><span class="t-metaXS text-graphite">policies</span></span>
                   </div>
                 </div>
 
@@ -974,14 +974,14 @@ tailwind.config = { theme: { extend: {
                   <div class="t-metaSM text-graphite mb-3">Paid by hazard · donut</div>
                   <div class="flex items-center gap-5">
                     <div class="relative w-36 h-36 flex-none">
-                      <!-- decorative --><svg class="w-36 h-36" viewBox="0 0 160 160"><circle cx="80" cy="80" r="54" fill="none" stroke="#F4F1EA" stroke-width="22"/><circle cx="80" cy="80" r="54" fill="none" stroke="#B5532C" stroke-width="22" stroke-dasharray="152.7 186.6" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#5D8A85" stroke-width="22" stroke-dasharray="101.8 237.5" stroke-dashoffset="-152.7" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#2A2F36" stroke-width="22" stroke-dasharray="50.9 288.4" stroke-dashoffset="-254.5" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#B45309" stroke-width="22" stroke-dasharray="33.9 305.4" stroke-dashoffset="-305.4" transform="rotate(-90 80 80)"/></svg>
+                      <!-- decorative --><svg class="w-36 h-36" viewBox="0 0 160 160"><circle cx="80" cy="80" r="54" fill="none" stroke="#F4F1EA" stroke-width="22"/><circle cx="80" cy="80" r="54" fill="none" stroke="#B5532C" stroke-width="22" stroke-dasharray="152.7 186.6" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#3F8F7F" stroke-width="22" stroke-dasharray="101.8 237.5" stroke-dashoffset="-152.7" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#3B5BA5" stroke-width="22" stroke-dasharray="50.9 288.4" stroke-dashoffset="-254.5" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#C7910F" stroke-width="22" stroke-dasharray="33.9 305.4" stroke-dashoffset="-305.4" transform="rotate(-90 80 80)"/></svg>
                       <div class="absolute inset-0 flex items-center justify-center"><span class="t-metaMD text-slate">$2.5B</span></div>
                     </div>
                     <div class="space-y-1.5">
                       <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#B5532C"></span><span class="t-metaXS text-graphite">flood · 45%</span></div>
-                      <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#5D8A85"></span><span class="t-metaXS text-graphite">coastal · 30%</span></div>
+                      <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#3F8F7F"></span><span class="t-metaXS text-graphite">coastal · 30%</span></div>
                       <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#2A2F36"></span><span class="t-metaXS text-graphite">wind · 15%</span></div>
-                      <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#B45309"></span><span class="t-metaXS text-graphite">ice · 10%</span></div>
+                      <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#C7910F"></span><span class="t-metaXS text-graphite">ice · 10%</span></div>
                     </div>
                   </div>
                 </div>
@@ -996,7 +996,7 @@ tailwind.config = { theme: { extend: {
               <div class="t-metaSM text-graphite mb-1">Map — mineral basemap, cartographic chrome</div>
               <p class="t-proseXS text-graphite mb-4 max-w-measure">Limestone land on bone water, grout-light boundaries. Highlights are verdigris fills; the pin is the drafted MapPin with its tessera pupil. Controls and legend sit as parchment tiles inside the frame.</p>
               <div class="relative border border-grout-light overflow-hidden h-72">
-                <!-- decorative --><svg class="absolute inset-0 w-full h-full" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid slice"><rect width="800" height="320" fill="#F4F1EA"/><path d="M0 0h520c30 40 12 96-24 132-32 32-40 88-16 128 16 26 12 44 0 60H0Z" fill="#E8E2D5"/><path d="M640 0h160v130c-44 8-84-16-104-52-16-30-40-56-56-78Z" fill="#E8E2D5"/><path d="M160 0v96c0 40 32 64 64 76" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M300 0v70c0 52-24 92-56 118" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M0 150h120c48 0 92 24 116 58" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M420 0v60c0 60 36 96 64 120" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M120 150v170" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M236 208c40 24 56 64 60 112" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M300 70 420 60" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M160 96c48-8 104-16 140-26" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M244 128c36 28 96 44 156 40l40 52c-28 36-84 48-136 32-44-14-72-64-60-124Z" fill="#5D8A85" fill-opacity="0.3" stroke="#5D8A85" stroke-width="1.5"/></svg>
+                <!-- decorative --><svg class="absolute inset-0 w-full h-full" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid slice"><rect width="800" height="320" fill="#F4F1EA"/><path d="M0 0h520c30 40 12 96-24 132-32 32-40 88-16 128 16 26 12 44 0 60H0Z" fill="#E8E2D5"/><path d="M640 0h160v130c-44 8-84-16-104-52-16-30-40-56-56-78Z" fill="#E8E2D5"/><path d="M160 0v96c0 40 32 64 64 76" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M300 0v70c0 52-24 92-56 118" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M0 150h120c48 0 92 24 116 58" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M420 0v60c0 60 36 96 64 120" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M120 150v170" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M236 208c40 24 56 64 60 112" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M300 70 420 60" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M160 96c48-8 104-16 140-26" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M244 128c36 28 96 44 156 40l40 52c-28 36-84 48-136 32-44-14-72-64-60-124Z" fill="#3F8F7F" fill-opacity="0.3" stroke="#3F8F7F" stroke-width="1.5"/></svg>
                 <!-- icon: MapPin --><svg class="absolute left-[38%] top-[42%] w-7 h-7 text-oxide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M12 21s-6.5-5.4-6.5-10a6.5 6.5 0 0 1 13 0c0 4.6-6.5 10-6.5 10Z"/><path d="M12 8.6l2.4 2.4-2.4 2.4-2.4-2.4L12 8.6Z"/></svg>
                 <div class="absolute top-3 right-3 flex flex-col border border-grout-light shadow-lift">
                   <button class="cursor-pointer inline-flex items-center justify-center w-8 h-8 bg-parchment text-slate hover:bg-limestone border-b border-grout-light" aria-label="Zoom in">
@@ -1007,7 +1007,7 @@ tailwind.config = { theme: { extend: {
                 <div class="absolute bottom-3 left-3 bg-parchment border border-grout-light shadow-lift p-3">
                   <div class="t-metaXS text-graphite mb-2">SFHA coverage</div>
                   <div class="space-y-1.5">
-                    <div class="flex items-center gap-2"><span class="w-3 h-3 flex-none border" style="background:rgba(93,138,133,0.3);border-color:#5D8A85"></span><span class="t-proseXS text-graphite">Special flood hazard area</span></div>
+                    <div class="flex items-center gap-2"><span class="w-3 h-3 flex-none border" style="background:rgba(93,138,133,0.3);border-color:#3F8F7F"></span><span class="t-proseXS text-graphite">Special flood hazard area</span></div>
                     <div class="flex items-center gap-2"><span class="w-3 h-3 flex-none bg-limestone border border-grout-light"></span><span class="t-proseXS text-graphite">County land</span></div>
                   </div>
                 </div>

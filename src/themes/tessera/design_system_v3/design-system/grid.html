@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="../_shared.css"/>
 <script>
 tailwind.config = { theme: { extend: {
-  colors: { bone:'#F4F1EA', limestone:'#E8E2D5', parchment:'#FBF9F4', slate:'#2A2F36', graphite:'#4A5160', fog:'#A7ADB6', oxide:'#B5532C', tile:'#7F1D1D', verdigris:'#5D8A85', ochre:'#B45309', grout:{light:'#D9D2C2', dark:'#1A1D22'} },
+  colors: { bone:'#F4F1EA', limestone:'#E8E2D5', parchment:'#FBF9F4', slate:'#2A2F36', graphite:'#4A5160', fog:'#A7ADB6', oxide:'#B5532C', tile:'#7F1D1D', verdigris:'#3F8F7F', ochre:'#C7910F', lapis:'#3B5BA5', grout:{light:'#D9D2C2', dark:'#1A1D22'} },
   fontFamily: { display:['Tiempos Headline','Newsreader','Georgia','serif'], fine:['Tiempos Fine','Tiempos Headline','Newsreader','Georgia','serif'], sans:['IBM Plex Sans','system-ui','sans-serif'], mono:['IBM Plex Mono','ui-monospace','monospace'] },
   boxShadow: { lift:'0 1px 2px rgba(42,47,54,0.04)' },
   maxWidth: { content:'1280px', measure:'620px' },
@@ -33,7 +33,7 @@ tailwind.config = { theme: { extend: {
   <nav class="w-64 flex-none border-r border-grout-light bg-bone hidden lg:flex flex-col" aria-label="Design system">
     <div class="px-6 pt-7 pb-6 border-b border-grout-light">
       <a href="theme.html" class="flex items-center gap-3">
-        <!-- icon: TileMark --><svg class="w-7 h-7 text-slate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><rect x="4" y="4" width="16" height="16"/><path d="M12 8.5l3.5 3.5-3.5 3.5L8.5 12 12 8.5Z" class="text-oxide"/></svg>
+        <!-- decorative --><svg class="w-7 h-7" viewBox="0 0 96 96" fill="none" aria-hidden="true"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
         <span>
           <span class="block t-displayXS">Tessera</span>
           <span class="block t-metaXS text-graphite mt-0.5">Design system · v3</span>
@@ -209,9 +209,9 @@ tailwind.config = { theme: { extend: {
                   <div class="border-b border-x border-grout-light bg-parchment px-5 pt-2 pb-4">
                     <!-- decorative --><svg viewBox="0 0 640 120" class="w-full h-28" preserveAspectRatio="none" role="img" aria-label="Bar chart, five decades of claims">
                       <rect x="24"  y="58" width="88" height="54" fill="#B5532C"/>
-                      <rect x="148" y="30" width="88" height="82" fill="#5D8A85"/>
-                      <rect x="272" y="70" width="88" height="42" fill="#2A2F36"/>
-                      <rect x="396" y="44" width="88" height="68" fill="#B45309"/>
+                      <rect x="148" y="30" width="88" height="82" fill="#3F8F7F"/>
+                      <rect x="272" y="70" width="88" height="42" fill="#3B5BA5"/>
+                      <rect x="396" y="44" width="88" height="68" fill="#C7910F"/>
                       <rect x="520" y="84" width="88" height="28" fill="#7F1D1D"/>
                       <line x1="12" y1="112" x2="628" y2="112" stroke="#D9D2C2" stroke-width="1"/>
                     </svg>
@@ -420,7 +420,7 @@ tailwind.config = { theme: { extend: {
                 <span class="t-metaXS text-fog">size 6 · rowspan 2</span>
               </div>
               <!-- decorative --><svg viewBox="0 0 400 180" class="w-full flex-1 min-h-[10rem]" preserveAspectRatio="none" role="img" aria-label="Area chart, streamflow trend">
-                <polyline points="8,140 60,120 112,128 164,96 216,108 268,72 320,84 372,52" fill="none" stroke="#5D8A85" stroke-width="2"/>
+                <polyline points="8,140 60,120 112,128 164,96 216,108 268,72 320,84 372,52" fill="none" stroke="#3F8F7F" stroke-width="2"/>
                 <polyline points="8,160 60,150 112,154 164,138 216,144 268,126 320,132 372,116" fill="none" stroke="#2A2F36" stroke-width="2"/>
                 <line x1="4" y1="172" x2="396" y2="172" stroke="#D9D2C2" stroke-width="1"/>
               </svg>

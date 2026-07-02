@@ -38,7 +38,17 @@
    warning → ochre, danger → tile), a measured WCAG contrast table, a
    motion spec with reduced-motion behaviour, documented dark tokens
    ("photographs of stone at night"), and a voice section in the tokens page.
-6. **One example page, with a three.js hero.** `pages/product-landing.html`
+6. **The v3.1 revision pass (owner feedback).** The accent set became
+   smalti — the fired glass of Roman workshops: a new **lapis** `#3B5BA5`
+   (info, links, series-2), verdigris brightened to `#3F8F7F`, ochre
+   turned gold `#C7910F`; slate left the chart series. Every surface
+   carries a faint feTurbulence **stone grain** (limestone grains a step
+   harder). The mark became a **composed monogram** — five tesserae
+   suggesting the T, the stem tile set at nine degrees, the tile being
+   placed. And the landing hero went **full-bleed**: the mosaic floor
+   spans the whole band, with the copy set on a solid bone plaque — a
+   tabula set into the pavement.
+7. **One example page, with a three.js hero.** `pages/product-landing.html`
    is the deliverable's single example. Its hero — tesserae assembling,
    course by course, into the composed layout of a data page — is a
    deliberate, documented exception to the no-JS rule (see below).
@@ -144,9 +154,10 @@ additional example pages; the MapLibre basemap and production chart theme.
   open `/src/themes/tessera/design_system_v3/design-system/theme.html`.
   (Root-serving matters: Tiempos loads from `/fonts/tessera/tiempos/`;
   elsewhere the pages fall back to Newsreader.)
-- **Change a token:** edit `_shared.css` (+ the inline tailwind.config
-  block if it's a color/family), update the swatch or spec row on
-  `theme.html`, then grep the other pages for the old value.
+- **Change a token:** edit `_shared.css` **and** `theme/tailwind.additions.js`
+  (+ each page's inline tailwind.config block if it's a color/family),
+  update the swatch or spec row on `theme.html`, then grep the other
+  pages for the old value.
 - **Add an icon:** register in `theme/icons.js`, add a catalog tile on
   `theme.html` §04, tag the page svgs, re-run the audit.
 - **Add a page:** copy a page's head + chrome, add one line to
