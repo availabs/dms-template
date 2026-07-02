@@ -25,6 +25,8 @@
    ============================================================================= */
 
 import icons from './icons';
+import parcelPlate from './columnTypes/parcelPlate.config';
+import { parcelPlateTheme } from './columnTypes/parcelPlate.theme';
 
 /* ---------- Brand palette (design_system/theme.html#color) ----------------- */
 
@@ -850,9 +852,27 @@ const dataCard = {
     {
       name: 'default',
 
+      // v2 layout model (see card.theme.jsx + Card.layout.js): cards-grid
+      // rows content-sized/packed by default (`cardsVerticalAlign:'stretch'`
+      // opts into fill), no transparent cell border (+2px) — edit hover uses
+      // an outline — and the ambient cell gutter is the single `cellGutter`
+      // below (emitted inline, so explicit knobs including 0 always win;
+      // headerValueWrapper therefore carries NO padding class).
+      layoutModel: 'v2',
+      cellGutter: 8,
+      itemEditOutline: `outline outline-[${C.sky}] -outline-offset-1`,
+
       header: `w-full ${FONT_META} text-[11px] leading-[1.4] font-medium uppercase tracking-[0.16em] text-[${C.mist}]`,
-      value: `w-full ${FONT_DISPLAY} font-semibold text-[17px] leading-[1.3] text-[${C.ink}]`,
-      valueWrapper: `min-h-[20px]`,
+      // Layout-only. Typography comes from the column's valueFontStyle token
+      // (textSettings; Card falls back to `textXS` when unset). Baking a font
+      // spec here (the v0.1 displaySM classes) collided with EVERY chosen
+      // token — both class strings land on the cell and the arbitrary-value
+      // utilities (text-[17px] vs text-[12px]) resolve by stylesheet order,
+      // not author intent.
+      value: `w-full`,
+      // No min-height: a 20px floor under short content (a 10px data_bar
+      // track) reads as phantom padding above/below the bar in tight lists.
+      valueWrapper: ``,
       description: `w-full ${FONT_PROSE} text-[12px] leading-[1.5] font-normal text-[${C.slate}]`,
 
       columnControlWrapper: `grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-0.5`,
@@ -867,7 +887,7 @@ const dataCard = {
       subWrapperCompactView: `flex flex-col`,
       subWrapperSimpleView: `grid`,
 
-      headerValueWrapper: `w-full rounded-md flex items-center justify-center p-2`,
+      headerValueWrapper: `w-full rounded-md flex items-center justify-center`,
       headerValueWrapperCompactView: `py-0`,
       headerValueWrapperSimpleView: ``,
       headerValueWrapperFullBleed: `w-full relative overflow-hidden`,
@@ -926,7 +946,10 @@ const dataCard = {
       description: `w-full ${FONT_PROSE} text-[12px] leading-[1.5] font-normal text-[${C.slate}]`,
       itemBorder: `bg-white border ${BORDER} border-t-2 border-t-[${C.field}] rounded-md shadow-[0_1px_2px_rgba(22,35,44,0.05)]`,
       cardBorder: `bg-white border ${BORDER} border-t-2 border-t-[${C.field}] rounded-md shadow-[0_1px_2px_rgba(22,35,44,0.05)]`,
-      headerValueWrapper: `w-full rounded-md flex flex-col items-start justify-center gap-1 p-4`,
+      // v2 (inherited from default): gutter is data, not a class — 16px
+      // ambient, overridable per section/cell (was `p-4`).
+      cellGutter: 16,
+      headerValueWrapper: `w-full rounded-md flex flex-col items-start justify-center gap-1`,
     },
   ],
 };
@@ -1056,6 +1079,14 @@ const table = {
       headerCellControlWrapper: `w-full group px-2 py-1 flex justify-between items-center rounded hover:bg-[${C.sky}]/5`,
       headerCellControlLabel: `w-fit font-normal text-[${C.mist}] cursor-default`,
       headerCellControl: `p-0.5 w-full rounded bg-white group-hover:bg-[${C.sky}]/5 cursor-pointer`,
+    },
+    {
+      // Chrome-less variant for tables fused inside a section card (the
+      // compact-card pattern): the SECTION inner box draws the border and
+      // radius, so the table itself is flush — no border, no rounding.
+      // All other keys inherit from styles[0].
+      name: 'flush',
+      tableContainer: `flex flex-col overflow-x-auto min-h-[40px] max-h-[calc(78vh_-_10px)] overflow-y-auto bg-white`,
     },
     {
       // openOut opens inline below the row (inherits everything else).
@@ -1434,6 +1465,42 @@ const pagesTheme = {
     navItemActive: `block w-full text-left ${FONT_PROSE} text-[13.5px] font-semibold text-[${C.skydeep}] py-1 cursor-pointer`,
   },
 
+  /* userMenu — compact avatar + edit-control for the white TopNav.
+     The codebase default relies on the TopNav rightMenuContainer's
+     min-w-[250px]; landbank's compact rightMenuContainer is content-sized,
+     and the default's `authContainer: w-full` + `userMenuContainer: flex-1
+     w-full` collapse to ~0 width there — the EditControl link then paints
+     on top of the avatar. Content-size everything instead.               */
+  userMenu: {
+    options: { activeStyle: 0 },
+    styles: [{
+      name: 'default',
+      userMenuContainer: `flex items-center shrink-0`,
+      avatarWrapper: `flex p-1 justify-center items-center`,
+      avatar: `size-8 border border-[${C.ink}]/15 rounded-full flex items-center justify-center hover:border-[${C.skydeep}]/50 transition-colors`,
+      avatarIcon: `size-5 fill-[${C.slate}]`,
+      // Compact chrome — no email/group text in the 1240-cap public bar.
+      infoWrapper: `hidden`,
+      emailText: `hidden`,
+      groupText: `hidden`,
+
+      editControlWrapper: `flex justify-center items-center shrink-0`,
+      iconWrapper: `size-9 flex items-center justify-center rounded-md hover:bg-[${C.paper}] transition-colors`,
+      icon: `size-6 text-[${C.mist}] hover:text-[${C.skydeep}]`,
+      viewIcon: 'ViewPage',
+      editIcon: 'EditPage',
+
+      loginWrapper: `flex items-center justify-center py-2`,
+      loginLink: `flex items-center`,
+      loginIconWrapper: `size-8 flex items-center justify-center border border-[${C.ink}]/15 rounded-full hover:border-[${C.skydeep}]/50`,
+      loginIcon: `size-5 stroke-[${C.slate}] text-[${C.slate}]`,
+      loginText: `hidden`,
+      authContainer: `shrink-0`,
+      authWrapper: `flex items-center gap-1`,
+      userMenuWrapper: `flex items-center`,
+    }],
+  },
+
   /* searchButton — quiet white chip with the sky icon puck. */
   searchButton: {
     options: { activeStyle: 0 },
@@ -1602,13 +1669,32 @@ const landbankTheme = {
   filters,
   attribution,
 
+  // Value-driven column-type skins (top-level keys, per each type's
+  // getComponentTheme read). data_bar: papertint track, status-system fills;
+  // barColorKey 'sky' for inventory bars, 'field' for for-sale bars.
+  dataBar: {
+    wrapper: 'w-full flex items-center gap-2',
+    track: `relative flex-1 min-w-0 h-2.5 rounded-sm bg-[${C.papertint}] overflow-hidden`,
+    fill: 'absolute inset-y-0 left-0',
+    value: `${FONT_META} text-[11px] font-medium tabular-nums text-[${C.ink}] shrink-0`,
+    fills: {
+      primary: `bg-[${C.sky}]`,
+      sky: `bg-[${C.sky}]`,
+      field: `bg-[${C.field}]`,
+      muted: `bg-[${C.steel}]/45`,
+    },
+  },
+  parcelPlate: parcelPlateTheme,
+
   // Pattern-level
   pages: pagesTheme,
   datasets: datasetsTheme,
   auth: authTheme,
 
-  // Extension slots (the parcel-plate columnType lands here in a follow-up)
-  columnTypes: {},
+  // Theme-registered column types (auto-registered in patterns/page/siteConfig.jsx)
+  columnTypes: {
+    parcel_plate: parcelPlate,
+  },
   pageComponents: {},
 };
 

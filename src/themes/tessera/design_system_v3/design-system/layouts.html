@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tessera · Layouts — page chrome</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="../_shared.css"/>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { bone:'#F4F1EA', limestone:'#E8E2D5', parchment:'#FBF9F4', slate:'#2A2F36', graphite:'#4A5160', fog:'#A7ADB6', oxide:'#B5532C', tile:'#7F1D1D', verdigris:'#5D8A85', ochre:'#B45309', grout:{light:'#D9D2C2', dark:'#1A1D22'} },
+  fontFamily: { display:['Tiempos Headline','Newsreader','Georgia','serif'], fine:['Tiempos Fine','Tiempos Headline','Newsreader','Georgia','serif'], sans:['IBM Plex Sans','system-ui','sans-serif'], mono:['IBM Plex Mono','ui-monospace','monospace'] },
+  boxShadow: { lift:'0 1px 2px rgba(42,47,54,0.04)' },
+  maxWidth: { content:'1280px', measure:'620px' },
+}}};
+</script>
+</head>
+
+<body class="bg-bone text-slate font-sans dms-annotated">
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LAYOUT `app` — the design system documents itself as the brand:
+     persistent SideNav + slim TopNav, the same chrome a Tessera product
+     page ships. Bands use wrapper2 = mr-auto max-w-content pl-12 pr-8.
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="min-h-screen bg-bone" data-dms-layout="app">
+<div class="flex min-h-screen">
+
+  <!-- ─────────── SideNav (Layout chrome, style `main`) ─────────── -->
+  <nav class="w-64 flex-none border-r border-grout-light bg-bone hidden lg:flex flex-col" aria-label="Design system">
+    <div class="px-6 pt-7 pb-6 border-b border-grout-light">
+      <a href="theme.html" class="flex items-center gap-3">
+        <!-- icon: TileMark --><svg class="w-7 h-7 text-slate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><rect x="4" y="4" width="16" height="16"/><path d="M12 8.5l3.5 3.5-3.5 3.5L8.5 12 12 8.5Z" class="text-oxide"/></svg>
+        <span>
+          <span class="block t-displayXS">Tessera</span>
+          <span class="block t-metaXS text-graphite mt-0.5">Design system · v3</span>
+        </span>
+      </a>
+    </div>
+    <div class="flex-1 px-3 py-6 space-y-7">
+      <div>
+        <div class="t-metaXS text-fog px-3 mb-2">Foundation</div>
+        <a href="theme.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Theme — tokens</a>
+        <a href="layouts.html" aria-current="page" class="flex items-center gap-2.5 px-3 py-2 t-proseSM font-medium text-slate border-l-2 border-oxide bg-parchment">
+          <span class="w-1.5 h-1.5 bg-oxide rotate-45 flex-none"></span>Layouts — page chrome</a>
+        <a href="grid.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Grid — opus tessellatum</a>
+      </div>
+      <div>
+        <div class="t-metaXS text-fog px-3 mb-2">Catalogue</div>
+        <a href="components.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Components</a>
+        <a href="patterns.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Patterns</a>
+      </div>
+      <div>
+        <div class="t-metaXS text-fog px-3 mb-2">Example pages</div>
+        <a href="../pages/product-landing.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Product landing
+          <!-- icon: ArrowUpRight --><svg class="w-3.5 h-3.5 ml-auto text-fog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M6 18 18 6"/><path d="M8 6h10v10"/></svg></a>
+      </div>
+    </div>
+    <div class="px-6 py-5 border-t border-grout-light">
+      <span class="t-metaXS text-fog">v3 · 2026-07 · AGPL-3.0</span>
+    </div>
+  </nav>
+
+  <!-- ─────────── Content column ─────────── -->
+  <div class="flex-1 min-w-0">
+
+    <!-- slim TopNav: breadcrumb + page counter -->
+    <div class="w-full bg-parchment border-b border-grout-light" data-dms-group="topnav">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8 h-12 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="t-metaSM text-graphite">Design system</span>
+          <!-- icon: ChevronRight --><svg class="w-3 h-3 text-fog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M9 5l7 7-7 7"/></svg>
+          <span class="t-metaSM text-slate">Layouts</span>
+        </div>
+        <div class="flex items-center gap-5">
+          <span class="t-metaXS text-fog">2 / 5</span>
+          <a href="../pages/product-landing.html" class="t-metaSM text-oxide hover:text-tile">Product landing →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 01 · PAGE HEADER · LayoutGroup `header` ═══ -->
+    <div class="w-full border-b border-grout-light" data-dms-group="header">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8 pt-12 pb-10" data-dms-section="page-title">
+        <div class="inline-block tsr-tabula mb-5"><span class="t-metaSM text-graphite">Structure · page chrome</span></div>
+        <h1 class="t-displayXL max-w-[18ch]">Layouts — the chrome every page wears</h1>
+        <p class="t-proseLG text-graphite mt-5 max-w-measure">Layout and LayoutGroup are the invisible structural layer: the hierarchy runs Site → Layout → LayoutGroup → Section → Component. A Layout owns the page&rsquo;s chrome — TopNav, SideNav, the content column. A LayoutGroup is one band inside it. Nothing on this page is a visible component; everything on this page decides where visible components sit.</p>
+      </div>
+    </div>
+
+    <!-- ═══ § 02 · HIERARCHY · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Hierarchy</div>
+        <h2 class="t-displayLG mb-2">Five layers, one nesting</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">Every page in this deliverable — and every page a DMS author composes — is this diagram. The annotation overlay you can see on this very page draws the same three inner layers in slate, oxide, and verdigris.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+          <div class="col-span-12 p-3" data-dms-section="hierarchy-diagram">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 lg:p-8">
+
+              <!-- Site -->
+              <div class="border border-dashed border-grout-dark/50 p-3">
+                <div class="t-metaXS text-graphite mb-2">site — one row in the DMS; owns theme + patterns</div>
+
+                <!-- Layout -->
+                <div class="border border-dashed border-grout-dark/40 bg-bone p-3">
+                  <div class="t-metaXS text-graphite mb-2">layout `app` — outerWrapper · wrapper · wrapper2 · wrapper3</div>
+
+                  <div class="h-8 border border-dashed border-grout-light bg-parchment flex items-center px-3 mb-2">
+                    <span class="t-metaXS text-fog">topnav — lives in wrapper2</span>
+                  </div>
+                  <div class="flex gap-2">
+                    <div class="w-24 flex-none border border-dashed border-grout-light bg-parchment p-2">
+                      <span class="t-metaXS text-fog">sidenav — lives in wrapper3</span>
+                    </div>
+
+                    <!-- childWrapper -->
+                    <div class="flex-1 min-w-0 border border-dashed border-grout-light p-3">
+                      <div class="t-metaXS text-graphite mb-2">childwrapper — the band stack</div>
+
+                      <!-- LayoutGroup -->
+                      <div class="border border-dashed border-oxide/60 p-3">
+                        <div class="t-metaXS text-graphite mb-2">layoutgroup — wrapper1 (full-width band)</div>
+                        <div class="border border-dashed border-oxide/40 bg-bone p-3 mr-6">
+                          <div class="t-metaXS text-graphite mb-2">wrapper2 — mr-auto · max-w-content · pl-12 pr-8</div>
+
+                          <!-- Section -->
+                          <div class="border border-dashed border-verdigris/70 p-3">
+                            <div class="t-metaXS text-graphite mb-2">section — one editable block on the 12-col grid · p-3 grout</div>
+
+                            <!-- Component -->
+                            <div class="bg-limestone border border-grout-light p-3">
+                              <span class="t-metaXS text-graphite">component — card · graph · map · lexical · spreadsheet</span>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="t-proseXS text-graphite mt-5 max-w-measure">The designer touches two of these layers on this page — Layout and LayoutGroup — and never sees them again: they render as class strings on wrapper divs. Sections and their components live on the <a href="grid.html" class="text-oxide hover:text-tile">grid page</a> and the catalogue pages.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 03 · LAYOUT VARIANTS · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Layout variants</div>
+        <h2 class="t-displayLG mb-2">Three chromes: default, app, bare</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">A Layout decides which navs exist and how the content column sits against them. Tessera ships three. Every page in <code class="t-metaMD bg-bone px-1.5 py-0.5">pages/</code> uses one of these; there is no fourth chrome.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- default -->
+          <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="layout-default">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">default</span>
+                <span class="t-metaXS text-graphite">marketing</span>
+              </div>
+              <div class="h-72 border border-grout-light bg-bone flex flex-col mb-4">
+                <div class="h-9 flex-none bg-parchment border-b border-grout-light flex items-center justify-between px-3">
+                  <span class="t-metaXS text-graphite">topnav</span>
+                  <span class="t-metaXS text-fog">wrapper2</span>
+                </div>
+                <div class="flex-1 p-2 min-h-0">
+                  <div class="h-full border border-dashed border-grout-dark/30 p-2 flex flex-col gap-2">
+                    <div class="mx-auto w-4/5 flex-1 border border-dashed border-grout-light flex flex-col items-center justify-center">
+                      <span class="t-metaXS text-fog">hero · mx-auto</span>
+                      <div class="tsr-frieze-tiles w-3/4 mt-2"></div>
+                    </div>
+                    <div class="mx-auto w-4/5 h-10 border border-dashed border-grout-light flex items-center justify-center">
+                      <span class="t-metaXS text-fog">band · mx-auto</span>
+                    </div>
+                    <div class="w-full h-10 bg-limestone border-y border-grout-light flex items-center justify-center">
+                      <span class="t-metaXS text-graphite">band_limestone · full-bleed</span>
+                    </div>
+                    <div class="w-full h-9 bg-limestone border-t border-grout-light flex items-center justify-center">
+                      <span class="t-metaXS text-graphite">footer</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-4">
+                <div class="t-proseXS text-graphite"><span class="t-metaXS text-fog">outerWrapper</span> — bone page fill, min-h-screen</div>
+                <div class="t-proseXS text-graphite"><span class="t-metaXS text-fog">wrapper2</span> — TopNav + content column, full width</div>
+                <div class="t-proseXS text-graphite"><span class="t-metaXS text-fog">childWrapper</span> — the band stack; no SideNav, so bands centre with mx-auto</div>
+              </div>
+              <p class="t-proseSM text-graphite mt-auto">When to use: marketing surfaces — the landing page, docs, theory essays.</p>
+            </div>
+          </div>
+
+          <!-- app -->
+          <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="layout-app">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">app</span>
+                <span class="t-metaXS text-graphite">product · these pages</span>
+              </div>
+              <div class="h-72 border border-grout-light bg-bone flex mb-4">
+                <div class="w-16 flex-none border-r border-grout-light p-2">
+                  <div class="t-metaXS text-graphite mb-2">side<br/>nav</div>
+                  <div class="space-y-1.5">
+                    <div class="h-2 bg-oxide/60 w-full"></div>
+                    <div class="h-2 bg-grout-light w-full"></div>
+                    <div class="h-2 bg-grout-light w-full"></div>
+                    <div class="h-2 bg-grout-light w-3/4"></div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0 flex flex-col">
+                  <div class="h-7 flex-none bg-parchment border-b border-grout-light flex items-center justify-between px-2">
+                    <span class="t-metaXS text-graphite">slim topnav</span>
+                    <span class="t-metaXS text-fog">2 / 5</span>
+                  </div>
+                  <div class="flex-1 p-2 min-h-0">
+                    <div class="h-full border border-dashed border-grout-dark/30 p-2 flex flex-col gap-2">
+                      <div class="w-5/6 h-12 border border-dashed border-grout-light flex items-center justify-center">
+                        <span class="t-metaXS text-fog">header · mr-auto</span>
+                      </div>
+                      <div class="w-5/6 flex-1 flex gap-1.5">
+                        <div class="flex-1 bg-parchment border border-grout-light shadow-lift flex items-center justify-center"><span class="t-metaXS text-fog">content</span></div>
+                        <div class="flex-1 bg-parchment border border-grout-light shadow-lift flex items-center justify-center"><span class="t-metaXS text-fog">content</span></div>
+                      </div>
+                      <div class="w-5/6 h-10 bg-parchment border border-grout-light shadow-lift flex items-center justify-center">
+                        <span class="t-metaXS text-fog">content · mr-auto</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-4">
+                <div class="t-proseXS text-graphite"><span class="t-metaXS text-fog">wrapper3</span> — the SideNav + content row</div>
+                <div class="t-proseXS text-graphite"><span class="t-metaXS text-fog">childWrapper</span> — flex-1 min-w-0, hosts the bands</div>
+                <div class="t-proseXS text-graphite"><span class="t-metaXS text-fog">wrapper2 (groups)</span> — mr-auto: bands hug the SideNav&rsquo;s right edge</div>
+              </div>
+              <p class="t-proseSM text-graphite mt-auto">When to use: product and admin surfaces — dashboards, dataset views, and these very design-system pages.</p>
+            </div>
+          </div>
+
+          <!-- bare -->
+          <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="layout-bare">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">bare</span>
+                <span class="t-metaXS text-graphite">auth · embed · print</span>
+              </div>
+              <div class="h-72 border border-grout-light bg-bone flex items-center justify-center mb-4">
+                <div class="w-3/5 bg-parchment border border-grout-light shadow-lift p-4">
+                  <div class="t-metaXS text-graphite mb-3">auth card · mx-auto</div>
+                  <div class="space-y-2">
+                    <div class="h-2.5 bg-limestone w-full"></div>
+                    <div class="h-2.5 bg-limestone w-full"></div>
+                    <div class="h-2.5 bg-slate w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-4">
+                <div class="t-proseXS text-graphite"><span class="t-metaXS text-fog">outerWrapper</span> — bone fill; that is the whole chrome</div>
+                <div class="t-proseXS text-graphite"><span class="t-metaXS text-fog">topNav / sideNav</span> — size none: neither renders</div>
+                <div class="t-proseXS text-graphite"><span class="t-metaXS text-fog">childWrapper</span> — fills the viewport; the `auth` group centres its card</div>
+              </div>
+              <p class="t-proseSM text-graphite mt-auto">When to use: sign-in, embedded views, print — anywhere chrome would be noise.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 04 · LAYOUTGROUP VARIANTS · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">LayoutGroup variants</div>
+        <h2 class="t-displayLG mb-2">Eight bands, one recipe each</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">A LayoutGroup is two nested wrappers: wrapper1 is the full-width band, wrapper2 the capped container the sections sit in. Every variant the brand ships is catalogued here; a band that is not in this list is not a Tessera band.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- content -->
+          <div class="col-span-12 md:col-span-6 p-3" data-dms-section="group-content">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">content</span>
+                <span class="t-metaXS text-graphite">app · the default body band</span>
+              </div>
+              <div class="border border-grout-light bg-bone mb-4">
+                <div class="py-3 border-b border-grout-light">
+                  <div class="mr-auto w-5/6 pl-3 flex gap-1.5">
+                    <div class="flex-1 h-12 bg-parchment border border-grout-light shadow-lift"></div>
+                    <div class="flex-1 h-12 bg-parchment border border-grout-light shadow-lift"></div>
+                    <div class="flex-1 h-12 bg-parchment border border-grout-light shadow-lift"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-3">
+                <div><span class="t-metaXS text-fog">wrapper1</span> <code class="t-metaMD block">w-full py-10 border-b border-grout-light</code></div>
+                <div><span class="t-metaXS text-fog">wrapper2</span> <code class="t-metaMD block">mr-auto w-full max-w-content pl-12 pr-8</code></div>
+              </div>
+              <p class="t-proseXS text-graphite mt-auto">The workhorse: hairline-divided courses of parchment cards, set against the SideNav. This band you are reading is one.</p>
+            </div>
+          </div>
+
+          <!-- header -->
+          <div class="col-span-12 md:col-span-6 p-3" data-dms-section="group-header">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">header</span>
+                <span class="t-metaXS text-graphite">app · page-title band</span>
+              </div>
+              <div class="border border-grout-light bg-bone mb-4">
+                <div class="border-b border-grout-light">
+                  <div class="mr-auto w-5/6 pl-3 pt-5 pb-4">
+                    <div class="h-2 w-16 bg-limestone mb-2"></div>
+                    <div class="h-4 w-2/3 bg-slate/80 mb-1.5"></div>
+                    <div class="h-2 w-1/2 bg-grout-light"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-3">
+                <div><span class="t-metaXS text-fog">wrapper1</span> <code class="t-metaMD block">w-full border-b border-grout-light</code></div>
+                <div><span class="t-metaXS text-fog">wrapper2</span> <code class="t-metaMD block">mr-auto w-full max-w-content pl-12 pr-8 pt-12 pb-10</code></div>
+              </div>
+              <p class="t-proseXS text-graphite mt-auto">Unboxed: the title sits directly on bone. One per page, at the top; padding lives on wrapper2, not on a card.</p>
+            </div>
+          </div>
+
+          <!-- band -->
+          <div class="col-span-12 md:col-span-6 p-3" data-dms-section="group-band">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">band</span>
+                <span class="t-metaXS text-graphite">marketing · content band</span>
+              </div>
+              <div class="border border-grout-light bg-bone mb-4">
+                <div class="py-4">
+                  <div class="mx-auto w-4/5 flex gap-1.5">
+                    <div class="flex-1 h-12 bg-parchment border border-grout-light shadow-lift"></div>
+                    <div class="flex-1 h-12 bg-parchment border border-grout-light shadow-lift"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-3">
+                <div><span class="t-metaXS text-fog">wrapper1</span> <code class="t-metaMD block">w-full py-14</code></div>
+                <div><span class="t-metaXS text-fog">wrapper2</span> <code class="t-metaMD block">mx-auto w-full max-w-content px-6</code></div>
+              </div>
+              <p class="t-proseXS text-graphite mt-auto">The marketing counterpart of `content`: centred, because Layout `default` has no SideNav to hug. Generous vertical air, no hairline.</p>
+            </div>
+          </div>
+
+          <!-- hero -->
+          <div class="col-span-12 md:col-span-6 p-3" data-dms-section="group-hero">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">hero</span>
+                <span class="t-metaXS text-graphite">marketing · one per site</span>
+              </div>
+              <div class="border border-grout-light bg-bone mb-4">
+                <div class="pt-5">
+                  <div class="mx-auto w-4/5 pb-4">
+                    <div class="h-5 w-3/4 bg-slate/80 mb-1.5"></div>
+                    <div class="h-2 w-1/2 bg-grout-light mb-3"></div>
+                    <div class="flex gap-1.5">
+                      <div class="h-4 w-16 bg-slate"></div>
+                      <div class="h-4 w-16 border border-slate"></div>
+                    </div>
+                  </div>
+                  <div class="tsr-frieze-tiles"></div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-3">
+                <div><span class="t-metaXS text-fog">wrapper1</span> <code class="t-metaMD block">w-full pt-16</code></div>
+                <div><span class="t-metaXS text-fog">wrapper2</span> <code class="t-metaMD block">mx-auto w-full max-w-content px-6</code></div>
+              </div>
+              <p class="t-proseXS text-graphite mt-auto">The emblema&rsquo;s frame: bone surface, no bottom padding on wrapper1 — the band closes with the tessera-course frieze instead.</p>
+            </div>
+          </div>
+
+          <!-- band_limestone -->
+          <div class="col-span-12 md:col-span-6 p-3" data-dms-section="group-band-limestone">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">band_limestone</span>
+                <span class="t-metaXS text-graphite">marketing · feature band</span>
+              </div>
+              <div class="border border-grout-light bg-bone mb-4">
+                <div class="bg-limestone border-y border-grout-light py-4">
+                  <div class="mx-auto w-4/5 flex gap-1.5">
+                    <div class="flex-1 h-12 bg-parchment border border-grout-light shadow-lift"></div>
+                    <div class="flex-1 h-12 bg-parchment border border-grout-light shadow-lift"></div>
+                    <div class="flex-1 h-12 bg-parchment border border-grout-light shadow-lift"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-3">
+                <div><span class="t-metaXS text-fog">wrapper1</span> <code class="t-metaMD block">w-full bg-limestone border-y border-grout-light py-14</code></div>
+                <div><span class="t-metaXS text-fog">wrapper2</span> <code class="t-metaMD block">mx-auto w-full max-w-content px-6</code></div>
+              </div>
+              <p class="t-proseXS text-graphite mt-auto">The sunken feature band: full-bleed limestone with hairline rules top and bottom. At most one or two per marketing page — it is emphasis, not wallpaper.</p>
+            </div>
+          </div>
+
+          <!-- auth -->
+          <div class="col-span-12 md:col-span-6 p-3" data-dms-section="group-auth">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">auth</span>
+                <span class="t-metaXS text-graphite">bare or default · sign-in</span>
+              </div>
+              <div class="border border-grout-light bg-bone mb-4">
+                <div class="flex items-center justify-center py-6">
+                  <div class="w-2/5 bg-parchment border border-grout-light shadow-lift p-3">
+                    <div class="h-2 w-1/2 bg-slate/80 mb-2"></div>
+                    <div class="h-2.5 bg-limestone w-full mb-1.5"></div>
+                    <div class="h-2.5 bg-limestone w-full mb-2"></div>
+                    <div class="h-3 bg-slate w-full"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-3">
+                <div><span class="t-metaXS text-fog">wrapper1</span> <code class="t-metaMD block">w-full flex-1 flex p-6 items-center justify-center min-h-[80vh]</code></div>
+                <div><span class="t-metaXS text-fog">wrapper2</span> <code class="t-metaMD block">mx-auto w-full max-w-md bg-parchment border border-grout-light shadow-lift p-10</code></div>
+              </div>
+              <p class="t-proseXS text-graphite mt-auto">The one product surface that centres: a single parchment card held in the middle of the viewport. wrapper2 is the card.</p>
+            </div>
+          </div>
+
+          <!-- footer -->
+          <div class="col-span-12 md:col-span-6 p-3" data-dms-section="group-footer">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">footer</span>
+                <span class="t-metaXS text-graphite">marketing · page close</span>
+              </div>
+              <div class="border border-grout-light bg-bone mb-4">
+                <div class="bg-limestone border-t border-grout-light">
+                  <div class="tsr-frieze-meander"></div>
+                  <div class="mx-auto w-4/5 py-4 flex gap-4">
+                    <div class="flex-1 space-y-1.5"><div class="h-2 w-3/4 bg-graphite/50"></div><div class="h-1.5 w-1/2 bg-grout-light"></div><div class="h-1.5 w-2/3 bg-grout-light"></div></div>
+                    <div class="flex-1 space-y-1.5"><div class="h-2 w-3/4 bg-graphite/50"></div><div class="h-1.5 w-1/2 bg-grout-light"></div><div class="h-1.5 w-2/3 bg-grout-light"></div></div>
+                    <div class="flex-1 space-y-1.5"><div class="h-2 w-3/4 bg-graphite/50"></div><div class="h-1.5 w-1/2 bg-grout-light"></div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-3">
+                <div><span class="t-metaXS text-fog">wrapper1</span> <code class="t-metaMD block">w-full bg-limestone border-t border-grout-light</code></div>
+                <div><span class="t-metaXS text-fog">wrapper2</span> <code class="t-metaMD block">mx-auto w-full max-w-content px-6 py-12</code></div>
+              </div>
+              <p class="t-proseXS text-graphite mt-auto">Full-bleed limestone closed by the meander frieze at its top edge — one of the frieze&rsquo;s three sanctioned locations.</p>
+            </div>
+          </div>
+
+          <!-- workbench -->
+          <div class="col-span-12 md:col-span-6 p-3" data-dms-section="group-workbench">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full flex flex-col">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="t-displayXS">workbench</span>
+                <span class="t-metaXS text-graphite">app · full-bleed canvas</span>
+              </div>
+              <div class="border border-grout-light bg-bone mb-4">
+                <div class="py-2">
+                  <div class="w-full h-20 bg-limestone border-y border-grout-light flex items-center justify-center">
+                    <span class="t-metaXS text-graphite">map · wide table · edge to edge</span>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-1.5 mb-3">
+                <div><span class="t-metaXS text-fog">wrapper1</span> <code class="t-metaMD block">w-full py-6</code></div>
+                <div><span class="t-metaXS text-fog">wrapper2</span> <code class="t-metaMD block">w-full px-0</code></div>
+              </div>
+              <p class="t-proseXS text-graphite mt-auto">No cap, no gutter: the canvas runs to the viewport edge. Pair with <code class="t-metaMD">full_width: 'show'</code> — see the section-width card below.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 05 · WRAPPER REFERENCE · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Wrapper reference</div>
+        <h2 class="t-displayLG mb-2">The class strings, verbatim</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">The variant cards convey shape; alignment decisions hide inside the class strings. This table is the contract the theme translation reads — one row per shipped variant, strings copied exactly.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+          <div class="col-span-12 p-3" data-dms-section="wrapper-table">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 overflow-x-auto">
+              <table class="w-full border-collapse t-proseSM min-w-[900px]">
+                <thead>
+                  <tr class="border-b border-slate">
+                    <th class="text-left py-2 pr-4 t-metaSM text-graphite font-normal">Variant</th>
+                    <th class="text-left py-2 pr-4 t-metaSM text-graphite font-normal">wrapper1</th>
+                    <th class="text-left py-2 pr-4 t-metaSM text-graphite font-normal">wrapper2</th>
+                    <th class="text-left py-2 t-metaSM text-graphite font-normal">Alignment</th>
+                  </tr>
+                </thead>
+                <tbody class="align-top">
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4 t-proseSM font-medium">content</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">w-full py-10 border-b border-grout-light</code></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">mr-auto w-full max-w-content pl-12 pr-8</code></td>
+                    <td class="py-2.5 text-graphite">left-set · 1280 cap</td>
+                  </tr>
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4 t-proseSM font-medium">header</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">w-full border-b border-grout-light</code></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">mr-auto w-full max-w-content pl-12 pr-8 pt-12 pb-10</code></td>
+                    <td class="py-2.5 text-graphite">left-set · 1280 cap</td>
+                  </tr>
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4 t-proseSM font-medium">band</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">w-full py-14</code></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">mx-auto w-full max-w-content px-6</code></td>
+                    <td class="py-2.5 text-graphite">centred · 1280 cap (Layout default has no SideNav)</td>
+                  </tr>
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4 t-proseSM font-medium">hero</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">w-full pt-16</code> <span class="t-proseXS text-graphite block mt-1">frieze-tiles at band base</span></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">mx-auto w-full max-w-content px-6</code></td>
+                    <td class="py-2.5 text-graphite">centred · 1280 cap (Layout default has no SideNav)</td>
+                  </tr>
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4 t-proseSM font-medium">band_limestone</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">w-full bg-limestone border-y border-grout-light py-14</code></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">mx-auto w-full max-w-content px-6</code></td>
+                    <td class="py-2.5 text-graphite">centred · 1280 cap (Layout default has no SideNav)</td>
+                  </tr>
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4 t-proseSM font-medium">auth</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">w-full flex-1 flex p-6 items-center justify-center min-h-[80vh]</code></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">mx-auto w-full max-w-md bg-parchment border border-grout-light shadow-lift p-10</code></td>
+                    <td class="py-2.5 text-graphite">centred (intentional)</td>
+                  </tr>
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4 t-proseSM font-medium">footer</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">w-full bg-limestone border-t border-grout-light</code> <span class="t-proseXS text-graphite block mt-1">meander frieze at top</span></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">mx-auto w-full max-w-content px-6 py-12</code></td>
+                    <td class="py-2.5 text-graphite">centred · 1280 cap (Layout default has no SideNav)</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 pr-4 t-proseSM font-medium">workbench</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">w-full py-6</code></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">w-full px-0</code></td>
+                    <td class="py-2.5 text-graphite">full-bleed · no cap</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="border-l-2 border-oxide bg-bone p-4 mt-6">
+                <p class="t-proseSM text-graphite max-w-measure">Product LayoutGroups on Layout <code class="t-metaMD">app</code> use <code class="t-metaMD">mr-auto</code>, not <code class="t-metaMD">mx-auto</code>. The codebase default (<code class="t-metaMD">max-w-[1020px] mx-auto</code>) drifts content off the SideNav&rsquo;s right edge on wide monitors. The asymmetric <code class="t-metaMD">pl-12 pr-8</code> gives the band breathing room from the SideNav without padding a right side that already borders open viewport. Marketing bands on Layout <code class="t-metaMD">default</code> centre because there is no SideNav to hug — an intentional, documented exception. Only <code class="t-metaMD">auth</code> centres on <code class="t-metaMD">app</code>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 06 · SECTION WIDTH · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Section width</div>
+        <h2 class="t-displayLG mb-2">Regular vs full-width groups</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">Inside any LayoutGroup, the sectionArray applies one of two layout classes to its grid container, picked by the group&rsquo;s <code class="t-metaMD bg-bone px-1.5 py-0.5">full_width</code> flag. The literal code, from <code class="t-metaMD bg-bone px-1.5 py-0.5">sectionArray.jsx</code>:</p>
+
+        <div class="grid grid-cols-12 gap-0">
+          <div class="col-span-12 p-3" data-dms-section="section-width">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6">
+              <pre class="t-metaMD bg-bone border border-grout-light p-4 overflow-x-auto mb-6">className={`
+  ${theme.container}
+  ${theme.layouts[group.full_width === 'show' ? 'fullwidth' : 'centered']}
+`}</pre>
+
+              <table class="w-full border-collapse t-proseSM">
+                <thead>
+                  <tr class="border-b border-slate">
+                    <th class="text-left py-2 pr-4 t-metaSM text-graphite font-normal">group.full_width</th>
+                    <th class="text-left py-2 pr-4 t-metaSM text-graphite font-normal">Class applied</th>
+                    <th class="text-left py-2 t-metaSM text-graphite font-normal">Result</th>
+                  </tr>
+                </thead>
+                <tbody class="align-top">
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">'off'</code> <span class="t-proseXS text-graphite">(default)</span></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">layouts.centered = 'max-w-[1280px] mr-auto'</code></td>
+                    <td class="py-2.5 text-graphite">sections capped at brand width, left-set against the SideNav</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">'show'</code></td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">layouts.fullwidth = ''</code></td>
+                    <td class="py-2.5 text-graphite">sections fill the parent — no cap of their own</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <p class="t-proseSM text-graphite mt-6 max-w-measure">The toggle lives in the editor&rsquo;s section-groups pane as a two-item menu (Full width: off / show) the author flips per group. Developers do not intervene.</p>
+              <p class="t-proseSM text-graphite mt-3 max-w-measure"><span class="font-medium text-slate">Pairing rule.</span> Setting <code class="t-metaMD">full_width: 'show'</code> on a <code class="t-metaMD">content</code> group still constrains sections, because that group&rsquo;s wrapper2 caps at the brand width itself. True edge-to-edge needs the <code class="t-metaMD">workbench</code> LayoutGroup <em>and</em> <code class="t-metaMD">full_width: 'show'</code>, so both layers drop their cap. Use it for map workbenches and wide tables only — the capped <code class="t-metaMD">content</code> band is correct for almost everything else.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 07 · NESTING · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Nesting</div>
+        <h2 class="t-displayLG mb-2">Bands stack into a page</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">A Layout holds a stack of LayoutGroups; composition is vertical. The marketing landing page reads, top to bottom, as four named bands:</p>
+
+        <div class="grid grid-cols-12 gap-0">
+          <div class="col-span-12 p-3" data-dms-section="nesting-example">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6">
+              <div class="border border-grout-light">
+
+                <div class="bg-bone pt-6">
+                  <div class="mx-auto w-4/5 pb-5 flex items-end justify-between">
+                    <div>
+                      <div class="h-4 w-48 bg-slate/80 mb-1.5"></div>
+                      <div class="h-2 w-32 bg-grout-light"></div>
+                    </div>
+                    <span class="t-metaXS text-graphite">hero</span>
+                  </div>
+                  <div class="tsr-frieze-tiles"></div>
+                </div>
+
+                <div class="bg-bone py-5">
+                  <div class="mx-auto w-4/5 flex items-center justify-between gap-4">
+                    <div class="flex gap-1.5 flex-1">
+                      <div class="flex-1 h-9 bg-parchment border border-grout-light shadow-lift"></div>
+                      <div class="flex-1 h-9 bg-parchment border border-grout-light shadow-lift"></div>
+                    </div>
+                    <span class="t-metaXS text-graphite">band</span>
+                  </div>
+                </div>
+
+                <div class="bg-limestone border-y border-grout-light py-5">
+                  <div class="mx-auto w-4/5 flex items-center justify-between gap-4">
+                    <div class="flex gap-1.5 flex-1">
+                      <div class="flex-1 h-9 bg-parchment border border-grout-light shadow-lift"></div>
+                      <div class="flex-1 h-9 bg-parchment border border-grout-light shadow-lift"></div>
+                      <div class="flex-1 h-9 bg-parchment border border-grout-light shadow-lift"></div>
+                    </div>
+                    <span class="t-metaXS text-graphite">band_limestone</span>
+                  </div>
+                </div>
+
+                <div class="bg-limestone border-t border-grout-light">
+                  <div class="tsr-frieze-meander"></div>
+                  <div class="mx-auto w-4/5 py-4 flex items-center justify-between gap-4">
+                    <div class="flex gap-4 flex-1">
+                      <div class="flex-1 space-y-1.5"><div class="h-1.5 w-3/4 bg-graphite/50"></div><div class="h-1.5 w-1/2 bg-grout-light"></div></div>
+                      <div class="flex-1 space-y-1.5"><div class="h-1.5 w-3/4 bg-graphite/50"></div><div class="h-1.5 w-1/2 bg-grout-light"></div></div>
+                      <div class="flex-1 space-y-1.5"><div class="h-1.5 w-3/4 bg-graphite/50"></div><div class="h-1.5 w-1/2 bg-grout-light"></div></div>
+                    </div>
+                    <span class="t-metaXS text-graphite">footer</span>
+                  </div>
+                </div>
+
+              </div>
+              <p class="t-proseXS text-graphite mt-4 max-w-measure">One frieze per boundary, never stacked: the tessera course closes the hero, the meander opens the footer. Between them the floor stays bone, and the limestone band earns its contrast by being alone.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 08 · NAMING · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Naming reference</div>
+        <h2 class="t-displayLG mb-2">Which chrome for which page</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">Every page kind resolves to one Layout and a short stack of LayoutGroups. If a new page does not fit a row here, the review question is why it exists, not which new variant to mint.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+          <div class="col-span-12 p-3" data-dms-section="naming-table">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6">
+              <table class="w-full border-collapse t-proseSM">
+                <thead>
+                  <tr class="border-b border-slate">
+                    <th class="text-left py-2 pr-4 t-metaSM text-graphite font-normal">Page kind</th>
+                    <th class="text-left py-2 pr-4 t-metaSM text-graphite font-normal">Layout</th>
+                    <th class="text-left py-2 t-metaSM text-graphite font-normal">LayoutGroup stack</th>
+                  </tr>
+                </thead>
+                <tbody class="align-top">
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4">Marketing landing</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">default</code></td>
+                    <td class="py-2.5"><code class="t-metaMD">hero · band · band_limestone · footer</code></td>
+                  </tr>
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4">Product dashboard</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">app</code></td>
+                    <td class="py-2.5"><code class="t-metaMD">header · content</code></td>
+                  </tr>
+                  <tr class="border-b border-grout-light">
+                    <td class="py-2.5 pr-4">Dataset workbench</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">app</code></td>
+                    <td class="py-2.5"><code class="t-metaMD">header · workbench</code></td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5 pr-4">Sign-in</td>
+                    <td class="py-2.5 pr-4"><code class="t-metaMD">bare</code> or <code class="t-metaMD">default</code></td>
+                    <td class="py-2.5"><code class="t-metaMD">auth</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- footer link block (§7.0.3) -->
+    <div class="w-full bg-limestone border-t border-grout-light" data-dms-group="footer">
+      <div class="tsr-frieze-meander"></div>
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8 py-8 flex flex-wrap items-center gap-x-6 gap-y-2">
+        <span class="t-metaSM text-graphite">Tessera design system · v3</span>
+        <a class="t-proseSM text-graphite hover:text-slate" href="theme.html">Theme</a>
+        <a class="t-proseSM text-oxide font-medium" href="layouts.html" aria-current="page">Layouts</a>
+        <a class="t-proseSM text-graphite hover:text-slate" href="grid.html">Grid</a>
+        <a class="t-proseSM text-graphite hover:text-slate" href="components.html">Components</a>
+        <a class="t-proseSM text-graphite hover:text-slate" href="patterns.html">Patterns</a>
+        <a class="t-proseSM text-graphite hover:text-slate" href="../pages/product-landing.html">Product landing</a>
+        <span class="t-metaXS text-fog ml-auto">2 / 5 · 2026-07</span>
+      </div>
+    </div>
+
+  </div><!-- /content column -->
+</div>
+</div><!-- /layout -->
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

@@ -104,9 +104,17 @@ pages.searchButton · pages.searchPallet (sparse) · datasets.datasetsList
   config additions required.
 - **Assets** — `public/themes/landbank/aclb-logo.png` (referenced by the
   `logo` theme; on dark grounds it always sits in a white chip).
-- **Planned** (not in v0.1): the parcel-plate `columnTypes` entry — the
-  lot-geometry thumbnail drawn from recorded width × length
-  (`theme.columnTypes` is the registered extension slot).
+- **Column types** — `columnTypes.parcel_plate`
+  (`columnTypes/parcelPlate.{jsx,config.js,theme.js}`): the lot-geometry
+  survey thumbnail drawn from recorded width × length. Full-bleed
+  (`cardHints`), reads the length + status off sibling row columns
+  (fetch them as `show:true, hideValue:true` loader cells), hatch variant
+  by status (`parcelPlate.lotVariantByValue` — ACLB Project → sky,
+  Sold → slate), "survey pending" fallback when dimensions are missing.
+  The status pill needs no custom type — the built-in `status_pill`
+  + per-column `pillColors` maps onto the theme's seven pill styles.
+  In-cell bars are the built-in `data_bar` skinned by the top-level
+  `dataBar` theme key (papertint track; `sky`/`field` fills).
 
 ## Documented deviations
 
