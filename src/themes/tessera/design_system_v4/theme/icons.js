@@ -1,7 +1,7 @@
-// Tessera v3 · icon registry — SOURCE OF TRUTH
+// Tessera v4 · icon registry — SOURCE OF TRUTH
 //
 // The live `src/themes/tessera/icons.jsx` is GENERATED from this file
-// by scripts/icons-sync.mjs. Do not run the sync until the v3 theme
+// by scripts/icons-sync.mjs. Do not run the sync until the v4 theme
 // translation lands — the current live registry belongs to the v2
 // theme that production sites still consume.
 //

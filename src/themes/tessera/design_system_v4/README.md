@@ -1,6 +1,6 @@
-# Tessera — Design System v3 (console)
+# Tessera — Design System v4 (console)
 
-> v3 · 2026-07-02 · A ground-up rebuild. **Primary inspiration: the
+> v4 · 2026-07-02 · A ground-up rebuild. **Primary inspiration: the
 > unix/linux console. Secondary: the stone tablet / tessera mosaic** —
 > the conceit is that stone mosaics were put to work as screens, and
 > the system they run builds everything from tesserae. A terminal's
@@ -9,13 +9,13 @@
 >
 > Deliberately takes **no** inspiration from the earlier Tessera
 > systems (`../Tessera Design System/`, `../design_system_v2/`, or the
-> mosaic-craft v3 preserved at git `a54606c`) — no bone/limestone
+> mosaic-craft system at `../design_system_v3/`) — no bone/limestone
 > palette, no warm print serifs.
 >
 > Read in this order: `src/dms/skills/designing-a-dms-design-system.md`
 > (the structural grammar, followed precisely) ·
 > `research/dms product/positioning-v2.md` (the product story the
-> landing page tells) · `planning/tessera/tasks/current/tessera-v3-console-design-system.md`
+> landing page tells) · `planning/tessera/tasks/current/tessera-v4-console-design-system.md`
 > (this pass's task doc) · this file.
 
 ## The brand in one paragraph
@@ -36,7 +36,7 @@ the caret, and the hero's premise.
 ## Layout
 
 ```
-design_system_v3/
+design_system_v4/
 ├── README.md               ← this file
 ├── _shared.css             ← THE canonical CSS: .t-* type tokens (14),
 │                             .tes-* surface utilities, annotation overlay.
@@ -122,7 +122,7 @@ Every `<svg>` in the pages carries `<!-- icon: Name -->` (must exist
 in the registry) or `<!-- decorative -->`. Audit per
 `src/dms/skills/managing-design-system-icons.md`. Do **not** run
 `icons-sync` yet: the live `src/themes/tessera/icons.jsx` belongs to
-the v2 theme that `tessera-theme.js` still consumes. Sync when the v3
+the v2 theme that `tessera-theme.js` still consumes. Sync when the v4
 theme translation lands.
 
 ## Scope — what this theme is and isn't for
@@ -135,7 +135,7 @@ surfaces (photo-forward sites should ship their own theme); print.
 All primitives are nonetheless themed (components.html shows every
 one) so nothing falls back to Catalyst chrome.
 
-Out of scope for v3, deliberately: the `theme/theme.js` translation
+Out of scope for v4, deliberately: the `theme/theme.js` translation
 (the sibling skill's job — v2's runtime theme keeps serving live
 sites until then); a light mode (dark-only is the brand decision,
 documented on theme.html); additional example pages; the MapLibre
@@ -144,7 +144,7 @@ basemap style and production chart theme.
 ## Working with this folder
 
 - **Preview:** `python -m http.server` from the dms-template root,
-  then open `/src/themes/tessera/design_system_v3/design-system/theme.html`.
+  then open `/src/themes/tessera/design_system_v4/design-system/theme.html`.
   (Fonts come from the Google Fonts CDN; no local files needed.)
 - **Change a token:** edit `_shared.css` (+ the inline
   `tailwind.config` block in each page's head if it's a color/family

@@ -1,4 +1,4 @@
-// Tessera v3 · theme.extend block
+// Tessera v4 · theme.extend block
 //
 // The canonical Tailwind extension every mockup page inlines in its
 // <head> (Play CDN config) and the theme translation mirrors into the

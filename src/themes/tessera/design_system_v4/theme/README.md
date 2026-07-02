@@ -1,7 +1,7 @@
-# theme/ — artifacts for the v3 theme translation
+# theme/ — artifacts for the v4 theme translation
 
 Inputs for `src/dms/skills/translating-design-system-to-dms-theme.md`
-when the v3 (console) theme translation happens. Until then the live
+when the v4 (console) theme translation happens. Until then the live
 site keeps running the v2 runtime theme (`../../tessera-theme.js`).
 
 - **`icons.js`** — the icon registry, SOURCE OF TRUTH (63 glyphs).
