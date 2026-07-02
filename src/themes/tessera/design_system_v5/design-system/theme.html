@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tessera v5 · Theme tokens — Deco Field Guide</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:       '#20323A',
+          paper:     '#FBF4E2',
+          parchment: '#F0E1BE',
+          gold:      '#C79A3B',
+          canyon:    '#D97E45',
+          ember:     '#BC5B44',
+          teal:      '#33706A',
+          pine:      '#27443E',
+          sage:      '#A9C4A2',
+        },
+      }
+    }
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Jost:ital,wght@0,400;0,500;1,400&family=Yellowtail&display=swap">
+<link rel="stylesheet" href="../_shared.css"/>
+</head>
+
+<body class="bg-parchment text-ink font-prose antialiased">
+
+<!-- ════════════════════════ LAYOUT: default ═══════════════════════ -->
+<div class="min-h-screen flex flex-col bg-parchment"><!-- Layout.outerWrapper -->
+
+  <!-- ─── TopNav (doubles as design-system navigation, §7.0.1) ─── -->
+  <nav class="w-full bg-parchment">
+    <div class="mx-auto w-full max-w-[1200px] px-6">
+      <div class="h-16 flex items-center justify-between gap-6">
+        <a href="theme.html" class="flex items-center gap-3">
+          <!-- icon: TesseraMark -->
+          <svg viewBox="0 0 24 24" class="w-7 h-7" aria-hidden="true">
+            <g transform="rotate(45 12 12)">
+              <rect x="4.5" y="4.5" width="7" height="7" fill="#C79A3B"/>
+              <rect x="12.5" y="4.5" width="7" height="7" fill="#D97E45"/>
+              <rect x="4.5" y="12.5" width="7" height="7" fill="#33706A"/>
+              <rect x="12.5" y="12.5" width="7" height="7" fill="#BC5B44"/>
+              <rect x="4.5" y="4.5" width="15" height="15" fill="none" stroke="#20323A" stroke-width="2"/>
+            </g>
+          </svg>
+          <span class="font-display font-bold uppercase text-[22px] leading-none tracking-[0.14em] pt-0.5">Tessera</span>
+          <span class="hidden sm:inline font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 border-l border-ink/40 pl-3 pt-0.5">Design system · v5 deco</span>
+        </a>
+        <div class="hidden md:flex items-center gap-6">
+          <a href="theme.html" class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ember border-b-2 border-ember pb-0.5">Theme</a>
+          <span class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ink/40" title="Pending in v0.1">Layouts</span>
+          <span class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ink/40" title="Pending in v0.1">Grid</span>
+          <span class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ink/40" title="Pending in v0.1">Components</span>
+          <span class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ink/40" title="Pending in v0.1">Patterns</span>
+          <a href="../pages/product-landing.html" class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] hover:text-ember">Landing ↗</a>
+        </div>
+        <span class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70">1 / 5</span>
+      </div>
+    </div>
+    <div class="w-full border-t-2 border-ink"></div>
+    <div class="w-full h-[3px]"></div>
+    <div class="w-full border-t border-ink"></div>
+  </nav>
+
+  <!-- ─── Layout.childWrapper ─── -->
+  <main class="flex-1 w-full">
+
+    <!-- ══════════ LayoutGroup: header ══════════ -->
+    <section class="w-full tsr-bands">
+      <div class="mx-auto w-full max-w-[1200px] px-6 pt-10 pb-8">
+        <div class="grid grid-cols-12 gap-0">
+          <!-- Section: page title · span 12 -->
+          <div data-section class="col-span-12 p-3">
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] mb-3">Deco Field Guide · foundations</p>
+            <h1 class="font-display font-semibold uppercase text-[32px] md:text-[44px] leading-[1.05] tracking-[0.06em]">Theme tokens</h1>
+            <p class="font-prose text-[19px] leading-[1.55] max-w-[64ch] mt-4">
+              The brand's vocabulary before it is composed into anything: nine
+              inks, twelve type tokens, a badge-style icon registry, and the
+              poster-frame surface recipes. Every page in this system resolves
+              to what is declared here. Sourced from the art-deco park posters
+              and badge series in <span class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">references/tessera/deco</span>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="w-full h-3 tsr-tesserae border-y-2 border-ink"></div>
+
+    <!-- ══════════ LayoutGroup: content ══════════ -->
+    <section class="w-full bg-parchment">
+      <div class="mx-auto w-full max-w-[1200px] px-6 py-10">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Section: color tokens · span 12 -->
+          <div data-section id="color" class="col-span-12 p-3">
+            <div class="tsr-frame bg-paper p-7">
+              <h2 class="font-display font-semibold uppercase text-[30px] leading-[1.1] tracking-[0.08em]">Color</h2>
+              <p class="font-prose text-[14px] leading-[1.5] text-ink/80 mt-2 mb-6 max-w-[70ch]">
+                One ink, two paper stocks, one brass accent, and five poster
+                pigments. Text is always ink on paper/parchment, or
+                paper/parchment on ink — pigments are for art, badges, and
+                accents, never body text.
+              </p>
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="border-2 border-ink">
+                  <div class="h-20 bg-ink"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">ink</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">#20323A · text, borders, dark bands</p>
+                  </div>
+                </div>
+                <div class="border-2 border-ink">
+                  <div class="h-20 bg-paper"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">paper</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">#FBF4E2 · card stock</p>
+                  </div>
+                </div>
+                <div class="border-2 border-ink">
+                  <div class="h-20 bg-parchment"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">parchment</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">#F0E1BE · page background</p>
+                  </div>
+                </div>
+                <div class="border-2 border-ink">
+                  <div class="h-20 bg-gold"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">gold</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">#C79A3B · brass accent, diamonds</p>
+                  </div>
+                </div>
+                <div class="border-2 border-ink">
+                  <div class="h-20 bg-ember"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">ember</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">#BC5B44 · hover, active, emphasis</p>
+                  </div>
+                </div>
+                <div class="border-2 border-ink">
+                  <div class="h-20 bg-canyon"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">canyon</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">#D97E45 · pigment, badge tints</p>
+                  </div>
+                </div>
+                <div class="border-2 border-ink">
+                  <div class="h-20 bg-teal"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">teal</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">#33706A · pigment, badge tints</p>
+                  </div>
+                </div>
+                <div class="border-2 border-ink">
+                  <div class="h-20 bg-pine"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">pine</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">#27443E · shadows, button hover</p>
+                  </div>
+                </div>
+                <div class="border-2 border-ink">
+                  <div class="h-20 bg-sage"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">sage</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">#A9C4A2 · pigment, soft fills</p>
+                  </div>
+                </div>
+                <div class="border-2 border-ink">
+                  <div class="h-20 tsr-tesserae"></div>
+                  <div class="p-3 border-t-2 border-ink">
+                    <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">tesserae</p>
+                    <p class="font-prose text-[14px] leading-[1.5] text-ink/70">.tsr-tesserae · tone-bar pattern</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: type tokens · span 12 -->
+          <div data-section id="type" class="col-span-12 p-3">
+            <div class="tsr-frame bg-paper p-7">
+              <h2 class="font-display font-semibold uppercase text-[30px] leading-[1.1] tracking-[0.08em]">Type</h2>
+              <p class="font-prose text-[14px] leading-[1.5] text-ink/80 mt-2 mb-6 max-w-[70ch]">
+                Three voices: <span class="font-display font-semibold uppercase text-[13px] tracking-[0.1em]">Josefin Sans</span> display caps
+                (geometric, high-waisted — the poster titling voice),
+                <span class="font-medium">Jost</span> prose and meta (a Futura
+                descendant, period-correct body), and
+                <span class="font-script text-gold text-[20px]">Yellowtail</span> as
+                the brush-script accent — at most twice per page. Twelve tokens;
+                modifier axes (color, italic, tabular-nums, responsive downshift)
+                apply at the call site and never mint new tokens.
+              </p>
+
+              <!-- display role -->
+              <div class="border-t-2 border-ink pt-5 flex flex-col gap-6">
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">displayHero · Josefin Sans 76 / 0.98 · 700 · +0.05em · uppercase · downshifts 54 / 38 · short lines may fill with a trailing rule + gold diamond</p>
+                  <p class="font-display font-bold uppercase text-[42px] md:text-[76px] leading-[0.98] tracking-[0.05em]">Worth preserving</p>
+                </div>
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">displayXL · Josefin Sans 44 / 1.05 · 600 · +0.06em · uppercase · downshifts 32</p>
+                  <p class="font-display font-semibold uppercase text-[44px] leading-[1.05] tracking-[0.06em]">Choose your route</p>
+                </div>
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">displayLG · Josefin Sans 30 / 1.1 · 600 · +0.08em · uppercase</p>
+                  <p class="font-display font-semibold uppercase text-[30px] leading-[1.1] tracking-[0.08em]">Compose like a printmaker</p>
+                </div>
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">displayMD · Josefin Sans 22 / 1 · 700 · +0.14em · uppercase · the wordmark / lockup scale</p>
+                  <p class="font-display font-bold uppercase text-[22px] leading-none tracking-[0.14em]">Tessera</p>
+                </div>
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">displaySM · Josefin Sans 18 / 1.2 · 600 · +0.12em · uppercase</p>
+                  <p class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">Section composer</p>
+                </div>
+                <p class="font-prose text-[14px] leading-[1.5] text-ink/70 max-w-[70ch]">
+                  Folded in: stat numerals and plan prices are
+                  <span class="font-medium">displayXL + tabular-nums</span> (in gold on
+                  ink) — not a separate numeric token. Step roundel numerals are
+                  <span class="font-medium">displayLG</span>. SVG text inside poster art
+                  is artwork, not page type, and is exempt from the token contract.
+                </p>
+              </div>
+
+              <!-- script role -->
+              <div class="border-t-2 border-ink pt-5 mt-6 flex flex-col gap-4">
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">scriptLG · Yellowtail 30 / 1.2 · 400 · sentence case · gold by default · max twice per page</p>
+                  <p class="font-script text-[30px] leading-[1.2] text-gold">commemorating the grand urge to publish</p>
+                </div>
+              </div>
+
+              <!-- prose role -->
+              <div class="border-t-2 border-ink pt-5 mt-6 flex flex-col gap-5">
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">proseLG · Jost 19 / 1.55 · 400</p>
+                  <p class="font-prose text-[19px] leading-[1.55] max-w-[58ch]">Tessera is a CMS in the WordPress tradition, cut for this decade — compose pages from sections and publish a site that outlasts the trend cycle.</p>
+                </div>
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">prose · Jost 16 / 1.6 · 400 · the body default</p>
+                  <p class="font-prose text-[16px] leading-[1.6] max-w-[62ch]">The editor is the page. Set a section's span, pick its type style, bind its data — and watch the print come up exactly as readers will see it.</p>
+                </div>
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">proseSM · Jost 14 / 1.5 · 400</p>
+                  <p class="font-prose text-[14px] leading-[1.5] max-w-[62ch]">Bind any section to a dataset. Tables, charts, and cards refresh the moment the data does — no copy-paste republishing.</p>
+                </div>
+                <p class="font-prose text-[14px] leading-[1.5] text-ink/70 max-w-[70ch]">
+                  Folded in: the pull quote is <span class="font-medium">proseLG + italic</span>;
+                  muted copy is any prose token + <span class="font-medium">text-ink/70–80</span>.
+                  No separate quote or caption prose tokens.
+                </p>
+              </div>
+
+              <!-- meta role -->
+              <div class="border-t-2 border-ink pt-5 mt-6 flex flex-col gap-5">
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">metaMD · Jost 13 · 500 · +0.18em · uppercase · button &amp; CTA labels</p>
+                  <p class="font-prose font-medium uppercase text-[13px] tracking-[0.18em]">Start building — free</p>
+                </div>
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">metaSM · Jost 11 · 500 · +0.22em · uppercase · eyebrows, nav items, tier labels</p>
+                  <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">The expedition kit</p>
+                </div>
+                <div>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">metaXS · Jost 10 · 500 · +0.18em · uppercase · micro strips, captions, spec lines</p>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Self-hosted or hosted · open source · est. 2026</p>
+                </div>
+                <p class="font-prose text-[14px] leading-[1.5] text-ink/70 max-w-[70ch]">
+                  Folded in: these spec lines themselves are metaXS. Diamond
+                  separators between meta phrases are markup
+                  (<span class="font-medium">rotate-45 gold squares</span>), not punctuation glyphs.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: icon registry · span 12 -->
+          <div data-section id="icons" class="col-span-12 p-3">
+            <div class="tsr-frame bg-paper p-7">
+              <h2 class="font-display font-semibold uppercase text-[30px] leading-[1.1] tracking-[0.08em]">Icons</h2>
+              <p class="font-prose text-[14px] leading-[1.5] text-ink/80 mt-2 mb-6 max-w-[70ch]">
+                Badge-style glyphs: 2px ink stroke, square caps, 24-unit grid —
+                the STEB thick-outline voice. Registry names below are the API;
+                an unregistered name renders nothing. Shown at 16 / 24 / 32.
+              </p>
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <!-- one tile per registry icon -->
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: TesseraMark -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true"><g transform="rotate(45 12 12)"><rect x="4.5" y="4.5" width="7" height="7" fill="#C79A3B"/><rect x="12.5" y="4.5" width="7" height="7" fill="#D97E45"/><rect x="4.5" y="12.5" width="7" height="7" fill="#33706A"/><rect x="12.5" y="12.5" width="7" height="7" fill="#BC5B44"/><rect x="4.5" y="4.5" width="15" height="15" fill="none" stroke="#20323A" stroke-width="2"/></g></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" aria-hidden="true"><g transform="rotate(45 12 12)"><rect x="4.5" y="4.5" width="7" height="7" fill="#C79A3B"/><rect x="12.5" y="4.5" width="7" height="7" fill="#D97E45"/><rect x="4.5" y="12.5" width="7" height="7" fill="#33706A"/><rect x="12.5" y="12.5" width="7" height="7" fill="#BC5B44"/><rect x="4.5" y="4.5" width="15" height="15" fill="none" stroke="#20323A" stroke-width="2"/></g></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" aria-hidden="true"><g transform="rotate(45 12 12)"><rect x="4.5" y="4.5" width="7" height="7" fill="#C79A3B"/><rect x="12.5" y="4.5" width="7" height="7" fill="#D97E45"/><rect x="4.5" y="12.5" width="7" height="7" fill="#33706A"/><rect x="12.5" y="12.5" width="7" height="7" fill="#BC5B44"/><rect x="4.5" y="4.5" width="15" height="15" fill="none" stroke="#20323A" stroke-width="2"/></g></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">TesseraMark</p>
+                </div>
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: Layers -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5Z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5Z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5Z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Layers</p>
+                </div>
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: Bolt -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 5 13.5h6L11 22l8-11.5h-6L13 2Z"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 5 13.5h6L11 22l8-11.5h-6L13 2Z"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 5 13.5h6L11 22l8-11.5h-6L13 2Z"/></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Bolt</p>
+                </div>
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: Palette -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H12a2 2 0 0 1 0-4h6a3 3 0 0 0 3-3c0-4-4-7-9-7Z"/><path d="M7.5 10.5h.01M11 6.5h.01M16 7.5h.01"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H12a2 2 0 0 1 0-4h6a3 3 0 0 0 3-3c0-4-4-7-9-7Z"/><path d="M7.5 10.5h.01M11 6.5h.01M16 7.5h.01"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H12a2 2 0 0 1 0-4h6a3 3 0 0 0 3-3c0-4-4-7-9-7Z"/><path d="M7.5 10.5h.01M11 6.5h.01M16 7.5h.01"/></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Palette</p>
+                </div>
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: Shield -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v6c0 4.5 3 7.5 7.5 9 4.5-1.5 7.5-4.5 7.5-9V6L12 3Z"/><path d="m9 12 2 2 4-4.5"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v6c0 4.5 3 7.5 7.5 9 4.5-1.5 7.5-4.5 7.5-9V6L12 3Z"/><path d="m9 12 2 2 4-4.5"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v6c0 4.5 3 7.5 7.5 9 4.5-1.5 7.5-4.5 7.5-9V6L12 3Z"/><path d="m9 12 2 2 4-4.5"/></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Shield</p>
+                </div>
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: Archive -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5"/><path d="M5 9v11h14V9"/><path d="M10 13h4"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5"/><path d="M5 9v11h14V9"/><path d="M10 13h4"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5"/><path d="M5 9v11h14V9"/><path d="M10 13h4"/></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Archive</p>
+                </div>
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: Compass -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Compass</p>
+                </div>
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: Check -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Check</p>
+                </div>
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: ArrowRight -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 12h15m0 0-6-6m6 6-6 6"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 12h15m0 0-6-6m6 6-6 6"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 12h15m0 0-6-6m6 6-6 6"/></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">ArrowRight</p>
+                </div>
+                <div class="border-2 border-ink p-4 flex flex-col items-center gap-3">
+                  <span class="flex items-end gap-3">
+                    <!-- icon: Menu -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                    <svg viewBox="0 0 24 24" class="w-8 h-8" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                  </span>
+                  <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Menu</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: surfaces & frames · span 7 -->
+          <div data-section id="surfaces" class="col-span-12 lg:col-span-7 p-3">
+            <div class="tsr-frame bg-paper p-7 h-full">
+              <h2 class="font-display font-semibold uppercase text-[30px] leading-[1.1] tracking-[0.08em]">Frames &amp; surfaces</h2>
+              <p class="font-prose text-[14px] leading-[1.5] text-ink/80 mt-2 mb-6 max-w-[60ch]">
+                The signature card is a poster: 2px ink border, a 1px keyline
+                inset 5px, 3px corners. Utilities live in
+                <span class="font-medium">_shared.css</span>.
+              </p>
+              <div class="flex flex-col gap-4">
+                <div class="tsr-frame bg-paper p-5">
+                  <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">.tsr-frame</p>
+                  <p class="font-prose text-[14px] leading-[1.5] text-ink/70">Poster frame on paper stock — the default card.</p>
+                </div>
+                <div class="tsr-frame-gold bg-ink text-parchment p-5">
+                  <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-gold">.tsr-frame-gold</p>
+                  <p class="font-prose text-[14px] leading-[1.5] text-parchment/80">Brass keyline on ink — featured / inverted cards.</p>
+                </div>
+                <div class="tsr-bands border-2 border-ink p-5">
+                  <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">.tsr-bands</p>
+                  <p class="font-prose text-[14px] leading-[1.5] text-ink/70">Dusk horizon wash — hero LayoutGroup background.</p>
+                </div>
+                <div class="bg-ink tsr-rays border-2 border-ink p-5">
+                  <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-gold">.tsr-rays</p>
+                  <p class="font-prose text-[14px] leading-[1.5] text-parchment/80">Sunburst on ink — final CTA band and poster skies only.</p>
+                </div>
+                <div class="flex items-center gap-4">
+                  <button class="tsr-press font-prose font-medium uppercase text-[13px] tracking-[0.18em] bg-ink text-parchment border-2 border-ink px-6 py-3.5 hover:bg-pine">.tsr-press</button>
+                  <div class="tsr-frame tsr-lift bg-paper px-6 py-3.5 font-prose font-medium uppercase text-[13px] tracking-[0.18em]">.tsr-lift</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: spacing & structure · span 5 -->
+          <div data-section id="spacing" class="col-span-12 lg:col-span-5 p-3">
+            <div class="tsr-frame bg-paper p-7 h-full">
+              <h2 class="font-display font-semibold uppercase text-[30px] leading-[1.1] tracking-[0.08em]">Structure</h2>
+              <p class="font-prose text-[14px] leading-[1.5] text-ink/80 mt-2 mb-6">
+                The numbers every page shares.
+              </p>
+              <ul class="flex flex-col font-prose text-[14px] leading-[1.5]">
+                <li class="flex justify-between gap-4 py-2.5 border-t border-ink/30"><span class="font-medium uppercase text-[11px] tracking-[0.22em] pt-0.5">Grid</span><span>12 columns · gap-0</span></li>
+                <li class="flex justify-between gap-4 py-2.5 border-t border-ink/30"><span class="font-medium uppercase text-[11px] tracking-[0.22em] pt-0.5">Section gutter</span><span>p-3 per section</span></li>
+                <li class="flex justify-between gap-4 py-2.5 border-t border-ink/30"><span class="font-medium uppercase text-[11px] tracking-[0.22em] pt-0.5">Content cap</span><span>max-w-[1200px] · mx-auto*</span></li>
+                <li class="flex justify-between gap-4 py-2.5 border-t border-ink/30"><span class="font-medium uppercase text-[11px] tracking-[0.22em] pt-0.5">Band padding</span><span>py-14 marketing · py-10 dense</span></li>
+                <li class="flex justify-between gap-4 py-2.5 border-t border-ink/30"><span class="font-medium uppercase text-[11px] tracking-[0.22em] pt-0.5">Card padding</span><span>p-7 (p-4 art plates)</span></li>
+                <li class="flex justify-between gap-4 py-2.5 border-t border-ink/30"><span class="font-medium uppercase text-[11px] tracking-[0.22em] pt-0.5">Radius</span><span>3px frames · full roundels</span></li>
+                <li class="flex justify-between gap-4 py-2.5 border-t border-ink/30 border-b"><span class="font-medium uppercase text-[11px] tracking-[0.22em] pt-0.5">Rules</span><span>2px major · 1px keyline</span></li>
+              </ul>
+              <p class="font-prose text-[14px] leading-[1.5] text-ink/70 mt-5">
+                *This marketing layout has no SideNav, so bands center with
+                mx-auto. A future Tessera app layout must switch to mr-auto per
+                the platform rule.
+              </p>
+              <div class="flex items-center gap-3 mt-6">
+                <span class="flex-1 border-t-2 border-ink"></span>
+                <span class="w-2 h-2 rotate-45 bg-gold border border-ink"></span>
+                <span class="flex-1 border-t-2 border-ink"></span>
+              </div>
+              <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 text-center mt-3">
+                The diamond rule — the brand's divider, always gold on ink lines
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─── Footer link block (§7.0.3) ─── -->
+  <footer class="w-full bg-parchment border-t-2 border-ink">
+    <div class="w-full h-[3px]"></div>
+    <div class="w-full border-t border-ink"></div>
+    <div class="mx-auto w-full max-w-[1200px] px-6 py-8">
+      <div class="grid grid-cols-12 gap-0">
+        <div data-section class="col-span-12 p-3 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70">Tessera v5 · Deco Field Guide · v0.1</p>
+          <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] flex flex-wrap items-center gap-3">
+            <a href="theme.html" class="text-ember border-b border-ember">Theme</a>
+            <span class="text-ink/40">Layouts · Grid · Components · Patterns (pending)</span>
+            <a href="../pages/product-landing.html" class="border-b border-gold hover:text-ember">Product landing</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- /Layout -->
+
+<!-- Design-system navigation widget (documentation scaffolding — never ships on a live site) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Jost',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:#FBF4E2;border:2px solid #20323A;border-radius:6px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(32,50,58,0.25);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Josefin Sans',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#20323A;padding:0 16px 8px;border-bottom:1px solid rgba(32,50,58,0.35);margin-bottom:4px;">Tessera v5 · Deco</div>
+    <a href="theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#BC5B44;text-decoration:none;">
+      <span style="font-size:10px;color:rgba(32,50,58,0.55);min-width:14px;">1</span> Theme</a>
+    <a href="../pages/product-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#20323A;text-decoration:none;">
+      <span style="font-size:10px;color:rgba(32,50,58,0.55);min-width:14px;">2</span> Product landing</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:6px;background:#20323A;color:#FBF4E2;border:2px solid #20323A;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(32,50,58,0.3);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
