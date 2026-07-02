@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Design review · Site Management · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+  <style>
+    .font-display{font-family:Oswald,sans-serif}.font-proxima{font-family:'Source Sans 3',system-ui,sans-serif}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    /* design-tool canvas: dotted backdrop the artboard is pinned to */
+    .dz-canvas{background-color:#E4E8EE;background-image:radial-gradient(rgba(15,23,42,0.11) 1px, transparent 1px);background-size:20px 20px;}
+    .dz-board{box-shadow:0 1px 0 rgba(15,23,42,.04),0 18px 40px -16px rgba(15,23,42,.28);}
+  </style>
+</head>
+<body class="tny-pane">
+<!--
+  sitemgmt-design.html · per-PAGE DESIGN REVIEW (the Design step of the pipeline).
+  LAYOUT (2026-06-29): unified with the datasets pages — dark SideNav + full-width BREADCRUMB bar +
+  compact full-width HEADER band (title · pipeline · the decision) + a wide CONTENT band that gives the
+  artboard maximum room. Subject: a reviewer studies the proposed mockup for a tracked page and decides
+  whether to approve it (Proposed → DESIGN → Implemented → QA → Dev Acceptance → Client Acceptance).
+  Signature = the mockup shown as an ARTBOARD on a design-tool canvas, inside a faux browser frame whose
+  URL is the page's real route. ?id=<pageId>; identity from window.SITEMGMT, artboard src = sibling file.
+-->
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ════════ SIDENAV (matches the sitemgmt family) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <a href="sitemgmt-overview.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[14px]">SM</div>
+              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">Site Mgmt</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · TransportNY</div></div>
+            </a>
+            <div class="flex-1 py-1 overflow-y-auto">
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Manage</div>
+              <a href="sitemgmt-overview.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10"/></svg><span class="flex-1">Control Room</span></a>
+              <a href="sitemgmt-tickets.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"/><path d="M13 6v12"/></svg><span class="flex-1">Tickets</span></a>
+              <a href="sitemgmt-page.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg><span class="flex-1">Page QA</span></a>
+              <a href="sitemgmt-design.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z"/></svg><span class="flex-1">Design</span></a>
+              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Surfaces</div>
+              <a href="tsmo-home.html" class="font-proxima text-[12.5px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><span class="flex-1">TSMO (tsmo2)</span></a>
+              <a href="freight-atlas-home.html" class="font-proxima text-[12.5px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><span class="flex-1">Freight Atlas</span></a>
+              <a href="map-21.html" class="font-proxima text-[12.5px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><span class="flex-1">NPMRDS</span></a>
+            </div>
+            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Delivery team</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">internal · design</div></div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ════════ CONTENT COLUMN — breadcrumb · header · canvas (rendered from SITEMGMT) ════════ -->
+        <div id="design" class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0"></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="sitemgmt-data.js"></script>
+<script>
+(function(){
+  var S = window.SITEMGMT || {};
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  var PIPE = ['Proposed','Design','Implemented','QA','Dev Acceptance','Client Acceptance'];
+  var CUR  = 'Design';
+
+  var id = new URLSearchParams(location.search).get('id') || 'tsmo2:home';
+  var p = (S.page && S.page(id)) || { name:'Home', surface:'tsmo2', route:'/home', owner:'AM', updated:'2026-06-29' };
+  var surf = (S.surface && S.surface(p.surface)) || { label:'TSMO' };
+  var desc = (S.descFor && S.descFor(id)) || 'The TSMO program home — congestion, reliability and incident highlights with a year control over the v2 series.';
+
+  var FILE = {
+    'tsmo2:home':'tsmo-home.html','tsmo2:congestion':'tsmo-congestion.html','tsmo2:congestion_v2':'tsmo-congestion.html',
+    'tsmo2:reliability':'tsmo-reliability.html','tsmo2:reliability_v2':'tsmo-reliability.html',
+    'tsmo2:workzones':'tsmo-workzones.html','tsmo2:workzones_v2':'tsmo-workzones.html',
+    'tsmo2:incidents':'tsmo-incidents.html','tsmo2:incidents_v2':'tsmo-incidents.html',
+    'tsmo2:corridor_view':'tsmo-corridor.html','tsmo2:incident_view':'tsmo-incident-view.html',
+    'tsmo2:incident_search':'tsmo-incident-search.html','tsmo2:about':'tsmo-about.html','tsmo2:methodology':'tsmo-methodology.html',
+    'fa2:home':'freight-atlas-home.html','fa2:maps_gallery':'freight-atlas-gallery.html','fa2:freight_atlas':'freight-atlas-map.html',
+    'fa2:freight_insights':'freight-atlas-insights.html','fa2:data_downloads':'freight-atlas-data.html','fa2:about':'freight-atlas-about.html',
+    'npmrds_dms:map_21':'map-21.html','npmrds2:map_21':'map-21.html'
+  };
+  function fileFor(key, surface, route){
+    if (FILE[key]) return FILE[key];
+    var pre = surface==='tsmo2' ? 'tsmo-' : (surface==='fa2'||surface==='freightatlas2') ? 'freight-atlas-' : '';
+    if (!pre) return '';
+    var slug = String(route||'').replace(/^\//,'').replace(/_v\d+$/,'').replace(/_/g,'-');
+    return slug ? pre+slug+'.html' : '';
+  }
+  var file = fileFor(id, p.surface, p.route);
+
+  // inline pipeline: each step a dot + label; Design lit, earlier steps done.
+  function pipe(){
+    var cur = PIPE.indexOf(CUR);
+    return PIPE.map(function(st,i){
+      var done = i<cur, isCur = i===cur;
+      var dot = done
+        ? '<span class="size-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M5 12l4.5 4.5L19 7"/></svg></span>'
+        : isCur
+          ? '<span class="size-5 rounded-full bg-[#1F3F8F] text-white flex items-center justify-center text-[10px] font-semibold ring-4 ring-[#1F3F8F]/15">'+(i+1)+'</span>'
+          : '<span class="size-5 rounded-full bg-white border border-slate-300 text-slate-400 flex items-center justify-center text-[10px] font-semibold">'+(i+1)+'</span>';
+      var line = i<PIPE.length-1 ? '<span class="flex-1 h-px '+(i<cur?'bg-emerald-300':'bg-slate-200')+' mx-2 min-w-4"></span>' : '';
+      return '<span class="flex items-center '+(i<PIPE.length-1?'flex-1':'')+'">'
+        + '<span class="flex items-center gap-2">'+dot
+        + '<span class="font-display text-[12.5px] whitespace-nowrap '+(isCur?'text-[#1F3F8F] font-semibold':done?'text-slate-600':'text-slate-400')+'">'+st+'</span></span>'
+        + line + '</span>';
+    }).join('');
+  }
+
+  var route = esc(p.route || '/');
+  var urlbar = 'tsmo2.transportny.org'+route;
+  var html = '';
+
+  // ═════════ BREADCRUMB BAR ═════════
+  html += '<div class="w-full bg-white border-b border-zinc-950/10">'
+    + '<div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">'
+      + '<nav class="h-11 flex items-center font-mono text-[10.5px] uppercase tracking-[0.18em]" aria-label="Breadcrumb">'
+        + '<a href="sitemgmt-overview.html" class="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#0f1722]"><svg class="size-4 text-[#37576B] relative -top-[1px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10"/></svg>Site Management</a>'
+        + '<span class="text-slate-300 px-2">/</span>'
+        + '<a href="sitemgmt-design.html" class="text-slate-500 hover:text-[#0f1722]">Design</a>'
+        + '<span class="text-slate-300 px-2">/</span>'
+        + '<span class="text-[#0f1722]">'+esc(p.name)+'</span>'
+      + '</nav>'
+    + '</div>'
+  + '</div>';
+
+  // ═════════ HEADER BAND — identity · decision · pipeline ═════════
+  html += '<div class="w-full bg-white border-b border-zinc-950/10">'
+    + '<div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 pt-5">'
+      + '<div class="flex items-start justify-between gap-6">'
+        + '<div class="min-w-0">'
+          + '<div class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-slate-400 mb-1.5"><span class="text-[#CA8A04]">// design review</span> · step 2 of 6</div>'
+          + '<div class="flex items-end gap-3 flex-wrap">'
+            + '<h1 class="font-display font-semibold text-[28px] leading-none tracking-tight uppercase text-[#0F1722]">'+esc(p.name)+'<span class="text-[#CA8A04]">.</span></h1>'
+            + '<span class="inline-flex items-center h-6 px-2.5 rounded-[4px] bg-[#1F3F8F]/10 text-[#1F3F8F] font-mono text-[10.5px] uppercase tracking-wide">'+esc(surf.label)+'</span>'
+            + '<span class="font-mono text-[11px] text-slate-400">'+route+'</span>'
+          + '</div>'
+          + '<p class="font-proxima text-[13.5px] text-slate-600 leading-snug mt-2 max-w-2xl">'+esc(desc)+'</p>'
+        + '</div>'
+        + '<div class="flex flex-col items-end gap-2 flex-shrink-0">'
+          + '<div class="inline-flex items-center rounded-md border border-zinc-950/10 bg-slate-50 p-0.5 font-mono text-[10.5px] uppercase tracking-wide">'
+            + '<a href="sitemgmt-page.html?id='+encodeURIComponent(id)+'" class="px-3 py-1 rounded-[5px] text-slate-500 hover:text-slate-800">QA</a>'
+            + '<span class="px-3 py-1 rounded-[5px] bg-[#1F3F8F] text-white">Design</span>'
+          + '</div>'
+          + '<div class="flex items-center gap-2">'
+            + '<button class="font-proxima text-[13px] px-3.5 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">Request changes</button>'
+            + '<button class="tny-press font-display uppercase text-[12.5px] tracking-wide px-4 py-2 rounded-[6px] bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white inline-flex items-center gap-2"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l4.5 4.5L19 7"/></svg>Approve design</button>'
+          + '</div>'
+          + '<div class="font-proxima text-[11px] text-slate-400">Approving advances to <span class="font-medium text-slate-600">Implemented</span></div>'
+        + '</div>'
+      + '</div>'
+      // pipeline strip
+      + '<div class="mt-4 border-t border-slate-100 pt-3 pb-3.5 flex items-center">'+pipe()+'</div>'
+    + '</div>'
+  + '</div>';
+
+  // ═════════ CONTENT BAND — the artboard, maximum room ═════════
+  if (file){
+    html += '<div class="w-full dz-canvas flex-1 pt-6 pb-10">'
+      + '<div class="w-full pl-12 pr-8">'
+        + '<div class="flex items-center justify-between mb-4">'
+          + '<div class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-slate-500">// proposed design</div>'
+          + '<div class="flex items-center gap-2 font-mono text-[10.5px] text-slate-500">'
+            + '<span class="tny-mono">'+esc(file)+'</span>'
+            + '<span class="hidden sm:inline text-slate-400">·</span><span class="hidden sm:inline">desktop · 1440</span>'
+            + '<a href="'+esc(file)+'" target="_blank" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 normal-case tracking-normal">open ↗</a>'
+          + '</div>'
+        + '</div>'
+        + '<div class="dz-board w-full bg-white rounded-lg overflow-hidden border border-zinc-950/10">'
+          + '<div class="h-10 bg-[#F1F3F6] border-b border-zinc-950/10 flex items-center gap-3 px-4">'
+            + '<div class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-[#ED6A5E]"></span><span class="size-2.5 rounded-full bg-[#F4BF50]"></span><span class="size-2.5 rounded-full bg-[#61C554]"></span></div>'
+            + '<div class="flex-1 max-w-md mx-auto"><div class="h-6 rounded-md bg-white border border-zinc-950/10 flex items-center px-3 gap-2 font-mono text-[11px] text-slate-500"><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'+esc(urlbar)+'</div></div>'
+            + '<span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400">preview</span>'
+          + '</div>'
+          + '<iframe src="'+esc(file)+'" title="proposed design — '+esc(p.name)+'" loading="lazy" class="block w-full" style="height:84vh;border:0;background:#fff"></iframe>'
+        + '</div>'
+      + '</div>'
+    + '</div>';
+  } else {
+    html += '<div class="w-full dz-canvas flex-1 pt-6 pb-10"><div class="w-full pl-12 pr-8">'
+      + '<div class="rounded-lg border border-zinc-950/10 bg-white/70 px-6 py-20 text-center">'
+        + '<div class="font-display text-[18px] text-slate-500">No design mockup yet</div>'
+        + '<div class="font-proxima text-[13px] text-slate-400 mt-1">This page hasn’t been designed in the system. It enters the Design step once a mockup exists.</div>'
+      + '</div></div></div>';
+  }
+
+  document.getElementById('design').innerHTML = html;
+})();
+</script>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

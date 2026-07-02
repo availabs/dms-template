@@ -6,6 +6,7 @@ import transportnyv2 from './transportny/themev2'
 import wcdb from './wcdb/wcdb_theme'
 import avail from './avail/theme'
 import tessera from './tessera/tessera-theme'
+import landbank from './landbank/theme'
 
 export default {
   catalyst,
@@ -15,6 +16,7 @@ export default {
   mny_admin,
   wcdb,
   avail,
-  tessera
+  tessera,
+  landbank
 
 }

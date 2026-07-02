@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ACLB Design System · Layouts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<body class="lb-paper">
+
+<!--
+  layouts.html · DESIGN SYSTEM 2 of 5 — page chrome shapes.
+  Layout `default` (public chrome: utility strip + TopNav). Documents the
+  invisible structure: three Layout variants (default / app / bare) and the
+  eight LayoutGroup bands that stack inside them, with the literal wrapper
+  class strings and the group.full_width section toggle.
+  Sections: hierarchy · layout variants · layoutgroup variants ·
+  wrapper class reference · section width · nesting example · naming.
+-->
+
+<div class="min-h-svh flex flex-col" data-dms-layout="default">
+
+  <!-- ═══ Utility strip (Layout headerChildren) ═══ -->
+  <div class="w-full bg-ink text-white/80">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-8 flex items-center justify-between">
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em]">Albany County Land Bank Corporation · Design System</span>
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em] text-white/50">v0.1 · 2026</span>
+    </div>
+  </div>
+
+  <!-- ═══ TopNav · design-system variant (Layouts active) ═══ -->
+  <header class="w-full bg-white border-b border-ink/10 sticky top-0 z-50">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-16 flex items-center gap-8">
+      <a href="theme.html" class="flex items-center gap-3 shrink-0">
+        <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-9 w-auto"/>
+      </a>
+      <span class="hidden md:inline font-meta text-[10px] uppercase tracking-[0.16em] text-mist border-l border-ink/10 pl-4">Design System</span>
+      <nav class="flex-1 flex items-center justify-end gap-1 font-prose text-[13.5px] font-semibold">
+        <a href="theme.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Theme</a>
+        <a href="layouts.html" class="px-3 h-16 flex items-center text-skydeep border-b-2 border-sky -mb-px">Layouts</a>
+        <a href="grid.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Grid</a>
+        <a href="components.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Components</a>
+        <a href="patterns.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Patterns</a>
+      </nav>
+      <span class="font-meta text-[10px] text-mist tabular-nums shrink-0">2 / 5</span>
+    </div>
+  </header>
+
+  <!-- ═══ HEADER · LayoutGroup hero ═══ -->
+  <div class="w-full lb-plat border-b border-ink/10" data-dms-group="hero">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-14" data-dms-section="page-header">
+      <div class="flex items-center gap-2.5 mb-3">
+        <span class="size-2 bg-leaf"></span>
+        <span class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-skydeep">Structure · Page chrome</span>
+      </div>
+      <h1 class="font-display font-bold text-[54px] leading-[1.04] tracking-[-0.015em] text-ink max-w-[820px]">Three layouts, eight bands.</h1>
+      <p class="font-prose text-[17.5px] leading-[1.6] text-slate mt-4 max-w-[720px]">This page documents the invisible chrome: the Layout variants that wrap every page and the LayoutGroup bands that stack inside them. No component here has visible design of its own — layouts and groups are the surfaces everything else sits on, and their wrapper class strings are the spec.</p>
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate"><span class="size-2 rounded-full bg-sky"></span>default · public</span>
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate"><span class="size-2 rounded-full bg-ink"></span>app · admin</span>
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate"><span class="size-2 rounded-full bg-mist"></span>bare · auth</span>
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate"><span class="size-2 rounded-full bg-leaf"></span>8 LayoutGroup variants</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Hierarchy ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="hierarchy">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">The hierarchy</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Every DMS page is five nested layers. The outer two — Layout and LayoutGroup — are this page's subject: pure structure, no visible design of their own beyond a surface fill and a width decision. Sections lay on the grid (documented on <a href="grid.html" class="font-semibold text-skydeep">grid.html</a>); components carry all the visible design (<a href="components.html" class="font-semibold text-skydeep">components.html</a>).</p>
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="hierarchy-diagram">
+          <div class="lb-card p-6">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">Site → Layout → LayoutGroup → Section → Component</div>
+            <div class="border border-dashed border-slate/40 rounded-md p-4 sm:p-5 bg-paper">
+              <div class="font-meta font-medium text-[11px] uppercase tracking-[0.14em] text-slate mb-3">Site — one DMS site, every pattern and page</div>
+              <div class="border border-dashed border-skydeep/50 rounded-md p-4 sm:p-5 bg-white">
+                <div class="font-meta font-medium text-[11px] uppercase tracking-[0.14em] text-skydeep mb-3">Layout — the page chrome · default / app / bare</div>
+                <div class="border border-dashed border-field/60 rounded-md p-4 sm:p-5 lb-paper">
+                  <div class="font-meta font-medium text-[11px] uppercase tracking-[0.14em] text-forest mb-3">LayoutGroup — a full-width band; wrapper2 sets width &amp; alignment</div>
+                  <div class="border border-dashed border-amberdeep/50 rounded-md p-4 sm:p-5 bg-white">
+                    <div class="font-meta font-medium text-[11px] uppercase tracking-[0.14em] text-amberdeep mb-3">Section — a col-span-* p-3 cell on the 12-column grid</div>
+                    <div class="lb-card p-4 max-w-[400px]">
+                      <div class="font-prose text-[13.5px] font-semibold text-ink">Component</div>
+                      <p class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">Card · Graph · Spreadsheet · Map · Lexical — the only layer with visible design. Everything above it is chrome.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-5 pt-4 border-t border-ink/5">Authors compose the inner three layers in the page editor; developers ship the outer two as named theme variants. This page is the contract for those two.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Layout variants ═══ -->
+  <div class="w-full lb-paper-tint py-12 border-y border-ink/5" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="layout-variants">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Layout variants</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Three named Layouts ship in v0.1. <span class="font-meta text-[12px]">default</span> is the public civic site — no SideNav, centered bands. <span class="font-meta text-[12px]">app</span> is the staff authoring surface — dark SideNav, left-hugging bands. <span class="font-meta text-[12px]">bare</span> strips all chrome for auth and print.</p>
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- default -->
+        <div class="col-span-12 p-3" data-dms-section="layout-default">
+          <div class="lb-card p-6">
+            <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+              <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist">Layout · default — public site</div>
+              <span class="font-meta text-[10px] text-mist">home.html · about.html · properties.html · this page</span>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-6">
+              <div>
+                <div class="rounded-md border border-ink/10 overflow-hidden">
+                  <div class="h-3 bg-ink flex items-center px-3"><div class="h-1 w-16 rounded-full bg-white/40"></div></div>
+                  <div class="h-7 bg-white border-b border-ink/10 flex items-center px-3 gap-2">
+                    <div class="h-2.5 w-9 rounded-sm bg-sky/70"></div>
+                    <div class="ml-auto flex items-center gap-1.5">
+                      <div class="h-1.5 w-7 rounded-full bg-skydeep/60"></div>
+                      <div class="h-1.5 w-7 rounded-full bg-ink/20"></div>
+                      <div class="h-1.5 w-7 rounded-full bg-ink/20"></div>
+                      <div class="h-4 w-9 rounded-sm bg-skydeep"></div>
+                    </div>
+                  </div>
+                  <div class="lb-plat border-b border-ink/10 px-4 py-3">
+                    <div class="mx-auto w-[82%] h-10 rounded-sm border border-dashed border-skydeep/50 bg-white/50 flex items-center justify-center"><span class="font-meta text-[9.5px] text-skydeep">wrapper2 · mx-auto max-w-[1240px] px-6</span></div>
+                  </div>
+                  <div class="lb-paper px-4 py-2.5"><div class="mx-auto w-[82%] h-7 rounded-sm border border-dashed border-skydeep/40 bg-white/60"></div></div>
+                  <div class="lb-paper-tint border-y border-ink/5 px-4 py-2.5"><div class="mx-auto w-[82%] h-7 rounded-sm border border-dashed border-skydeep/40 bg-white/60"></div></div>
+                  <div class="lb-plat-ink px-4 py-3"><div class="mx-auto w-[82%] h-6 rounded-sm border border-dashed border-white/30"></div></div>
+                </div>
+                <div class="mt-2 font-meta text-[9.5px] uppercase tracking-[0.14em] text-mist text-center">bands center — equal margins both sides</div>
+              </div>
+              <div class="flex flex-col">
+                <div class="space-y-2.5 font-meta text-[10px] leading-[1.5] text-slate">
+                  <div class="flex gap-2.5"><span class="size-2 bg-ink mt-1 shrink-0"></span><div><span class="font-medium text-ink">headerChildren</span> — utility strip · bg-ink h-8 · authority line + phone + hours</div></div>
+                  <div class="flex gap-2.5"><span class="size-2 bg-sky mt-1 shrink-0"></span><div><span class="font-medium text-ink">topNav</span> — bg-white h-16 · sticky top-0 z-50 · logo + links + CTA. No SideNav on this layout.</div></div>
+                  <div class="flex gap-2.5"><span class="size-2 bg-leaf mt-1 shrink-0"></span><div><span class="font-medium text-ink">childWrapper</span> — LayoutGroups stack edge to edge; each band is w-full and centers its own wrapper2</div></div>
+                  <div class="flex gap-2.5"><span class="size-2 bg-slate mt-1 shrink-0"></span><div><span class="font-medium text-ink">footerChildren</span> — lb-plat-ink footer band, pushed down by mt-auto</div></div>
+                </div>
+                <div class="mt-auto pt-4 border-t border-ink/5">
+                  <div class="font-meta font-medium text-[12.5px] text-ink">outerWrapper · lb-paper min-h-svh flex flex-col</div>
+                  <div class="font-meta text-[11px] text-slate mt-1">band wrapper2 · mx-auto w-full max-w-[1240px] px-6 — centered, because no SideNav exists to hug</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- app -->
+        <div class="col-span-12 p-3" data-dms-section="layout-app">
+          <div class="lb-card p-6">
+            <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+              <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist">Layout · app — staff authoring &amp; admin</div>
+              <span class="font-meta text-[10px] text-mist">property-record editing · portfolio admin</span>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-6">
+              <div>
+                <div class="rounded-md border border-ink/10 overflow-hidden flex h-44">
+                  <div class="w-[22%] bg-ink p-2.5 flex flex-col gap-1.5 shrink-0">
+                    <div class="h-2.5 w-10 rounded-sm bg-white/40 mb-1.5"></div>
+                    <div class="h-2 w-full rounded-sm bg-white/10"></div>
+                    <div class="h-2 w-full rounded-r-sm border-l-[3px] border-leaf bg-white/20"></div>
+                    <div class="pl-2 flex flex-col gap-1">
+                      <div class="h-1.5 w-5/6 rounded-sm bg-white/10"></div>
+                      <div class="h-1.5 w-4/6 rounded-sm bg-white/10"></div>
+                    </div>
+                    <div class="h-2 w-full rounded-sm bg-white/10"></div>
+                    <div class="h-2 w-full rounded-sm bg-white/10"></div>
+                  </div>
+                  <div class="flex-1 lb-paper py-3 min-w-0">
+                    <div class="mr-auto w-[86%] pl-4 pr-3 space-y-2">
+                      <div class="h-9 rounded-sm border border-dashed border-skydeep/50 bg-white/70 flex items-center justify-center"><span class="font-meta text-[9.5px] text-skydeep">mr-auto max-w-[1480px] · pl-12 pr-8</span></div>
+                      <div class="h-6 rounded-sm border border-dashed border-skydeep/40 bg-white/70"></div>
+                      <div class="h-6 rounded-sm border border-dashed border-skydeep/40 bg-white/70"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-2 font-meta text-[9.5px] uppercase tracking-[0.14em] text-mist text-center">bands hug the SideNav — excess viewport falls to the right</div>
+              </div>
+              <div class="flex flex-col">
+                <div class="space-y-2.5 font-meta text-[10px] leading-[1.5] text-slate">
+                  <div class="flex gap-2.5"><span class="size-2 bg-ink mt-1 shrink-0"></span><div><span class="font-medium text-ink">sideNav</span> — bg-ink w-60 fixed left · level-1 and level-2 items · active item carries the leaf rail, border-l-[3px] border-leaf. Full state set on <a href="components.html" class="text-skydeep font-medium">components.html</a>.</div></div>
+                  <div class="flex gap-2.5"><span class="size-2 bg-sky mt-1 shrink-0"></span><div><span class="font-medium text-ink">topNav</span> — none; the SideNav owns navigation on app surfaces</div></div>
+                  <div class="flex gap-2.5"><span class="size-2 bg-leaf mt-1 shrink-0"></span><div><span class="font-medium text-ink">childWrapper</span> — offset by the SideNav; content bands run denser (py-6 to py-10) than public bands</div></div>
+                </div>
+                <div class="mt-auto pt-4 border-t border-ink/5">
+                  <div class="font-meta font-medium text-[12.5px] text-ink">outerWrapper · lb-paper min-h-svh · sideNav w-60 fixed</div>
+                  <div class="font-meta text-[11px] text-slate mt-1">band wrapper2 · mr-auto w-full max-w-[1480px] pl-12 pr-8 — the platform rule: hug the SideNav, never drift center</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- bare -->
+        <div class="col-span-12 p-3" data-dms-section="layout-bare">
+          <div class="lb-card p-6">
+            <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+              <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist">Layout · bare — auth &amp; print</div>
+              <span class="font-meta text-[10px] text-mist">sign-in · password reset · print views</span>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-6">
+              <div>
+                <div class="rounded-md border border-ink/10 lb-paper h-44 grid place-content-center">
+                  <div class="lb-card w-44 p-3">
+                    <div class="h-2 w-16 rounded-sm bg-ink/20 mb-2.5"></div>
+                    <div class="h-5 w-full rounded-sm bg-white border border-ink/15 mb-1.5"></div>
+                    <div class="h-5 w-full rounded-sm bg-white border border-ink/15 mb-2.5"></div>
+                    <div class="h-5 w-full rounded-sm bg-skydeep"></div>
+                  </div>
+                </div>
+                <div class="mt-2 font-meta text-[9.5px] uppercase tracking-[0.14em] text-mist text-center">one auth group, centered both axes</div>
+              </div>
+              <div class="flex flex-col">
+                <div class="space-y-2.5 font-meta text-[10px] leading-[1.5] text-slate">
+                  <div class="flex gap-2.5"><span class="size-2 bg-ink mt-1 shrink-0"></span><div><span class="font-medium text-ink">no navs</span> — no utility strip, no TopNav, no SideNav. Nothing competes with the form or the printed record.</div></div>
+                  <div class="flex gap-2.5"><span class="size-2 bg-leaf mt-1 shrink-0"></span><div><span class="font-medium text-ink">childWrapper</span> — lb-paper fills the viewport; a single <span class="font-medium text-ink">auth</span> LayoutGroup centers with grid place-content-center</div></div>
+                </div>
+                <div class="mt-auto pt-4 border-t border-ink/5">
+                  <div class="font-meta font-medium text-[12.5px] text-ink">outerWrapper · lb-paper min-h-svh flex flex-col</div>
+                  <div class="font-meta text-[11px] text-slate mt-1">auth wrapper2 · mx-auto w-full max-w-md — the one centered-and-capped-small surface</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- which pages use which layout -->
+        <div class="col-span-12 p-3" data-dms-section="layout-usage">
+          <div class="lb-card p-6 overflow-x-auto">
+            <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">Which pages use which Layout</div>
+            <table class="w-full min-w-[640px]">
+              <thead>
+                <tr class="border-b border-ink/10">
+                  <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Page</th>
+                  <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Layout</th>
+                  <th class="text-left py-2 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Chrome</th>
+                </tr>
+              </thead>
+              <tbody class="font-prose text-[13px] text-slate">
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">home.html</td><td class="py-2.5 pr-4 font-meta text-[11px]">default</td><td class="py-2.5">Utility strip + TopNav (Home active) · hero + six bands + footer</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">about.html</td><td class="py-2.5 pr-4 font-meta text-[11px]">default</td><td class="py-2.5">Utility strip + TopNav · header band instead of hero</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">properties.html</td><td class="py-2.5 pr-4 font-meta text-[11px]">default</td><td class="py-2.5">Utility strip + TopNav (Properties active) · filter band writes page variables</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">Staff property-record editor</td><td class="py-2.5 pr-4 font-meta text-[11px]">app</td><td class="py-2.5">Dark SideNav w-60 · mr-auto content bands · denser padding</td></tr>
+                <tr><td class="py-2.5 pr-4 font-semibold text-ink">Sign-in / password reset</td><td class="py-2.5 pr-4 font-meta text-[11px]">bare</td><td class="py-2.5">No navs · single centered auth group</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § LayoutGroup variants ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="layoutgroup-variants">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">LayoutGroup variants</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Eight named bands — the complete v0.1 catalogue. Every band on every page resolves to one of these. Each swatch below is the band's actual surface; the spec line gives its vertical rhythm.</p>
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="group-hero">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="lb-plat border-b border-ink/10 h-24 flex items-end p-3"><span class="font-meta text-[9.5px] text-slate bg-white/80 px-1.5 py-0.5 rounded">lb-plat</span></div>
+            <div class="p-4 flex-1 flex flex-col">
+              <div class="font-prose text-[13.5px] font-semibold text-ink">hero</div>
+              <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1 flex-1">Page-opening band: headline plus one proof artifact on the survey sheet. One per page, homepage and doc pages only.</p>
+              <div class="font-meta text-[10px] text-mist mt-2 pt-2 border-t border-ink/5">py-14 · border-b ink/10</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="group-header">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="lb-plat border-b border-ink/10 h-24 flex items-end p-3"><span class="font-meta text-[9.5px] text-slate bg-white/80 px-1.5 py-0.5 rounded">lb-plat</span></div>
+            <div class="p-4 flex-1 flex flex-col">
+              <div class="font-prose text-[13.5px] font-semibold text-ink">header</div>
+              <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1 flex-1">Page-title band for interior pages — title, freshness strip, actions. The properties dashboard opens with it.</p>
+              <div class="font-meta text-[10px] text-mist mt-2 pt-2 border-t border-ink/5">py-10 · border-b ink/10</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="group-content">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="lb-paper border-b border-ink/10 h-24 flex items-end p-3"><span class="font-meta text-[9.5px] text-slate bg-white/80 px-1.5 py-0.5 rounded">lb-paper</span></div>
+            <div class="p-4 flex-1 flex flex-col">
+              <div class="font-prose text-[13.5px] font-semibold text-ink">content</div>
+              <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1 flex-1">The default body band. Sections lay on grid-cols-12 with p-3 gutters; cards do the talking.</p>
+              <div class="font-meta text-[10px] text-mist mt-2 pt-2 border-t border-ink/5">py-12 · no border</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="group-content-tint">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="lb-paper-tint border-b border-ink/10 h-24 flex items-end p-3"><span class="font-meta text-[9.5px] text-slate bg-white/80 px-1.5 py-0.5 rounded">lb-paper-tint</span></div>
+            <div class="p-4 flex-1 flex flex-col">
+              <div class="font-prose text-[13.5px] font-semibold text-ink">content_tint</div>
+              <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1 flex-1">The alternating emphasis band — featured properties, fresh listings. Never two tint bands in a row.</p>
+              <div class="font-meta text-[10px] text-mist mt-2 pt-2 border-t border-ink/5">py-12 · border-y ink/5</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="group-feature">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="lb-plat-ink h-24 flex items-end p-3"><span class="font-meta text-[9.5px] text-white/80 bg-ink/60 px-1.5 py-0.5 rounded">lb-plat-ink</span></div>
+            <div class="p-4 flex-1 flex flex-col">
+              <div class="font-prose text-[13.5px] font-semibold text-ink">feature</div>
+              <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1 flex-1">The dark highlight band — impact numbers, the neighborhood chart. At most one per page, mid-flow.</p>
+              <div class="font-meta text-[10px] text-mist mt-2 pt-2 border-t border-ink/5">py-14 · white text tokens</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="group-footer">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="lb-plat-ink h-24 flex items-end p-3"><span class="font-meta text-[9.5px] text-white/80 bg-ink/60 px-1.5 py-0.5 rounded">lb-plat-ink</span></div>
+            <div class="p-4 flex-1 flex flex-col">
+              <div class="font-prose text-[13.5px] font-semibold text-ink">footer</div>
+              <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1 flex-1">The site footer — brand block, link columns, legal line. mt-auto pins it to the viewport bottom on short pages.</p>
+              <div class="font-meta text-[10px] text-mist mt-2 pt-2 border-t border-ink/5">pt-12 pb-6 · mt-auto</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="group-auth">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="lb-paper border-b border-ink/10 h-24 grid place-content-center"><div class="lb-card w-16 p-1.5"><div class="h-1 w-8 rounded-sm bg-ink/20 mb-1"></div><div class="h-2 w-full rounded-sm bg-white border border-ink/15 mb-1"></div><div class="h-2 w-full rounded-sm bg-skydeep"></div></div></div>
+            <div class="p-4 flex-1 flex flex-col">
+              <div class="font-prose text-[13.5px] font-semibold text-ink">auth</div>
+              <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1 flex-1">Sign-in band on the bare layout. The one intentionally centered-and-capped-small variant: mx-auto max-w-md.</p>
+              <div class="font-meta text-[10px] text-mist mt-2 pt-2 border-t border-ink/5">flex-1 grid place-content-center p-6</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 p-3" data-dms-section="group-workbench">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="lb-plate border-b border-ink/10 h-24 relative"><div class="lb-lot-sky absolute" style="left:12%; top:22%; width:14%; height:42%"></div><div class="lb-lot absolute" style="left:58%; top:30%; width:10%; height:48%"></div><span class="absolute bottom-2 left-3 font-meta text-[9.5px] text-slate bg-white/80 px-1.5 py-0.5 rounded">full-bleed canvas</span></div>
+            <div class="p-4 flex-1 flex flex-col">
+              <div class="font-prose text-[13.5px] font-semibold text-ink">workbench</div>
+              <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1 flex-1">Edge-to-edge canvas for the staff map dashboard — wrapper2 drops the cap entirely. Pair with full_width: 'show' below.</p>
+              <div class="font-meta text-[10px] text-mist mt-2 pt-2 border-t border-ink/5">py-6 · wrapper2 w-full px-0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 p-3" data-dms-section="group-note">
+          <p class="font-prose text-[12px] leading-[1.5] text-slate">One sanctioned surface override: proof strips — the homepage KPI band and the properties filter band — are <span class="font-meta text-[11px]">content</span> groups rendered on <span class="font-meta text-[11px]">bg-white border-b border-ink/10</span> with tighter padding (py-8 and py-4). Same variant, same wrapper2; only the fill and rhythm change.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Wrapper class reference ═══ -->
+  <div class="w-full lb-paper-tint py-12 border-y border-ink/5" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="wrapper-reference">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Wrapper class reference</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">The variant cards convey shape; this table is the spec. One row per band, class strings verbatim. The alignment column is where the system's one deliberate platform deviation lives — read the callout.</p>
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="wrapper-table">
+          <div class="lb-card p-6 overflow-x-auto">
+            <table class="w-full min-w-[920px]">
+              <thead>
+                <tr class="border-b border-ink/10">
+                  <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Variant</th>
+                  <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">wrapper1 — outer band</th>
+                  <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">wrapper2 — inner container</th>
+                  <th class="text-left py-2 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Alignment</th>
+                </tr>
+              </thead>
+              <tbody class="font-meta text-[11px] text-slate">
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-prose text-[13px] font-semibold text-ink">hero</td><td class="py-2.5 pr-4">w-full lb-plat border-b border-ink/10</td><td class="py-2.5 pr-4">mx-auto w-full max-w-[1240px] px-6 py-14</td><td class="py-2.5 font-prose text-[12px]">centered · cap</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-prose text-[13px] font-semibold text-ink">header</td><td class="py-2.5 pr-4">w-full lb-plat border-b border-ink/10</td><td class="py-2.5 pr-4">mx-auto w-full max-w-[1240px] px-6 py-10</td><td class="py-2.5 font-prose text-[12px]">centered · cap</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-prose text-[13px] font-semibold text-ink">content</td><td class="py-2.5 pr-4">w-full lb-paper py-12</td><td class="py-2.5 pr-4">mx-auto w-full max-w-[1240px] px-6</td><td class="py-2.5 font-prose text-[12px]">centered · cap</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-prose text-[13px] font-semibold text-ink">content_tint</td><td class="py-2.5 pr-4">w-full lb-paper-tint border-y border-ink/5 py-12</td><td class="py-2.5 pr-4">mx-auto w-full max-w-[1240px] px-6</td><td class="py-2.5 font-prose text-[12px]">centered · cap</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-prose text-[13px] font-semibold text-ink">feature</td><td class="py-2.5 pr-4">w-full lb-plat-ink py-14</td><td class="py-2.5 pr-4">mx-auto w-full max-w-[1240px] px-6</td><td class="py-2.5 font-prose text-[12px]">centered · cap</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-prose text-[13px] font-semibold text-ink">footer</td><td class="py-2.5 pr-4">w-full lb-plat-ink mt-auto</td><td class="py-2.5 pr-4">mx-auto w-full max-w-[1240px] px-6 pt-12 pb-6</td><td class="py-2.5 font-prose text-[12px]">centered · cap</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-prose text-[13px] font-semibold text-ink">auth</td><td class="py-2.5 pr-4">w-full flex-1 grid place-content-center p-6</td><td class="py-2.5 pr-4">mx-auto w-full max-w-md</td><td class="py-2.5 font-prose text-[12px]">centered · narrow</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-prose text-[13px] font-semibold text-ink">workbench</td><td class="py-2.5 pr-4">w-full lb-paper py-6</td><td class="py-2.5 pr-4">w-full px-0</td><td class="py-2.5 font-prose text-[12px]">full-bleed · no cap</td></tr>
+                <tr><td class="py-2.5 pr-4 font-prose text-[13px] font-semibold text-ink">content <span class="font-meta text-[10px] font-normal text-mist">(app layout)</span></td><td class="py-2.5 pr-4">w-full lb-paper py-12</td><td class="py-2.5 pr-4">mr-auto w-full max-w-[1480px] pl-12 pr-8</td><td class="py-2.5 font-prose text-[12px]">left · hugs SideNav</td></tr>
+              </tbody>
+            </table>
+            <div class="mt-5 rounded-md bg-sky/5 border border-ink/10 p-4 flex gap-3">
+              <!-- icon: Info --><svg class="size-5 text-skydeep shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8.5v.5"/></svg>
+              <p class="font-prose text-[13.5px] leading-[1.6] text-slate"><strong class="text-ink">Why mx-auto here when the platform rule says mr-auto?</strong> The platform's mr-auto rule exists so app-surface bands hug a SideNav instead of drifting toward the middle of a wide monitor. The public <span class="font-meta text-[12px]">default</span> layout has no SideNav — it is a civic website, and a civic website centers. So every public band uses <span class="font-meta text-[12px]">mx-auto w-full max-w-[1240px] px-6</span>: an intentional, documented deviation, not drift. The <span class="font-meta text-[12px]">app</span> layout follows the platform rule exactly — <span class="font-meta text-[12px]">mr-auto w-full max-w-[1480px] pl-12 pr-8</span>, the asymmetric padding giving breathing room off the SideNav's edge while mr-auto sends excess viewport to the right. Only <span class="font-meta text-[12px]">auth</span> is centered on both layouts (<span class="font-meta text-[12px]">mx-auto max-w-md</span>); sign-in forms are the one intentionally narrow centered surface.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Section width ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="section-width">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Section width — regular vs full-width</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Inside any LayoutGroup, the sectionArray picks one of two layout classes for its grid container from the <span class="font-meta text-[12px]">group.full_width</span> editor flag. Authors flip it per group in the edit pane (<em>Full Width: off / show</em>) — developers don't intervene.</p>
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="section-width-card">
+          <div class="lb-card p-6">
+            <div class="font-meta text-[11px] bg-papertint border border-ink/10 rounded p-3 text-slate overflow-x-auto whitespace-nowrap mb-5">className={`${theme.container} ${theme.layouts[group.full_width === 'show' ? 'fullwidth' : 'centered']}`}</div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[720px]">
+                <thead>
+                  <tr class="border-b border-ink/10">
+                    <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">group.full_width</th>
+                    <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Class applied</th>
+                    <th class="text-left py-2 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Result</th>
+                  </tr>
+                </thead>
+                <tbody class="font-prose text-[13px] text-slate">
+                  <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-meta text-[11px] text-ink">'off' <span class="text-mist">(default)</span></td><td class="py-2.5 pr-4 font-meta text-[11px]">layouts.centered · max-w-[1240px] mx-auto</td><td class="py-2.5">Sections capped at the brand width inside the band</td></tr>
+                  <tr><td class="py-2.5 pr-4 font-meta text-[11px] text-ink">'show'</td><td class="py-2.5 pr-4 font-meta text-[11px]">layouts.fullwidth · '' <span class="text-mist">(empty string)</span></td><td class="py-2.5">Sections fill the parent wrapper — no inner cap</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-5 pt-4 border-t border-ink/5 flex gap-3">
+              <!-- icon: Map --><svg class="size-5 text-skydeep shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>
+              <p class="font-prose text-[13.5px] leading-[1.6] text-slate"><strong class="text-ink">The flag alone is not full-bleed.</strong> Setting <span class="font-meta text-[12px]">full_width: 'show'</span> on a <span class="font-meta text-[12px]">content</span> group still leaves the section inside wrapper2's own <span class="font-meta text-[12px]">max-w-[1240px]</span> cap. A true edge-to-edge canvas needs the <span class="font-meta text-[12px]">workbench</span> variant (wrapper2 <span class="font-meta text-[12px]">w-full px-0</span>) <strong class="text-ink">and</strong> <span class="font-meta text-[12px]">full_width: 'show'</span> so both caps drop. The portfolio map on <a href="../pages/properties.html" class="font-semibold text-skydeep">properties.html</a> is the surface that would use it: it renders at content width on the public page, and its staff counterpart on an <span class="font-meta text-[12px]">app</span> layout is the map workbench that goes full-bleed. Don't reach for workbench for ordinary content — the capped bands are correct for almost everything.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Nesting example ═══ -->
+  <div class="w-full lb-paper-tint py-12 border-y border-ink/5" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="nesting-example">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Nesting — how home.html stacks</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">The homepage, band by band. Eight LayoutGroups inside one <span class="font-meta text-[12px]">default</span> layout, each stripe rendered in its actual surface. The rhythm to copy: open on the plat sheet, alternate paper and tint, spend the one dark feature band mid-flow, close on ink.</p>
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="nesting-stack">
+          <div class="lb-card overflow-hidden">
+            <div class="bg-ink h-6 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/50">utility strip — layout chrome, not a LayoutGroup</span><span class="font-meta text-[9.5px] text-white/40">bg-ink · h-8</span></div>
+            <div class="bg-white border-b border-ink/10 h-8 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">topNav — layout chrome, not a LayoutGroup</span><span class="font-meta text-[9.5px] text-mist">bg-white · h-16 sticky</span></div>
+            <div class="lb-plat border-b border-ink/10 h-16 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[11px] text-ink">hero</span><span class="font-meta text-[9.5px] text-slate">Transforming vacant spaces · lb-plat · py-14</span></div>
+            <div class="bg-white border-b border-ink/10 h-10 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[11px] text-ink">content</span><span class="font-meta text-[9.5px] text-slate">KPI proof strip · bg-white · py-8</span></div>
+            <div class="lb-paper h-14 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[11px] text-ink">content</span><span class="font-meta text-[9.5px] text-slate">How it works · lb-paper · py-12</span></div>
+            <div class="lb-paper-tint border-y border-ink/5 h-14 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[11px] text-ink">content_tint</span><span class="font-meta text-[9.5px] text-slate">Featured properties · lb-paper-tint · py-12</span></div>
+            <div class="lb-paper h-14 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[11px] text-ink">content</span><span class="font-meta text-[9.5px] text-slate">Programs · lb-paper · py-12</span></div>
+            <div class="lb-plat-ink h-16 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[11px] text-white/90">feature</span><span class="font-meta text-[9.5px] text-white/50">Where the work is · lb-plat-ink · py-14</span></div>
+            <div class="lb-paper border-t border-ink/5 h-14 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[11px] text-ink">content</span><span class="font-meta text-[9.5px] text-slate">News · lb-paper · py-12</span></div>
+            <div class="lb-plat-ink h-12 px-5 flex items-center justify-between"><span class="font-meta font-medium text-[11px] text-white/90">footer</span><span class="font-meta text-[9.5px] text-white/50">lb-plat-ink · pt-12 pb-6 · mt-auto</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Naming reference ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="naming-reference">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Naming reference</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Which Layout and which band sequence for which kind of page. Start here when composing anything new.</p>
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="naming-table">
+          <div class="lb-card p-6 overflow-x-auto">
+            <table class="w-full min-w-[760px]">
+              <thead>
+                <tr class="border-b border-ink/10">
+                  <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Kind of page</th>
+                  <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Layout</th>
+                  <th class="text-left py-2 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Typical band sequence</th>
+                </tr>
+              </thead>
+              <tbody class="font-prose text-[13px] text-slate">
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">Public homepage</td><td class="py-2.5 pr-4 font-meta text-[11px]">default</td><td class="py-2.5 font-meta text-[11px]">hero · content ×2 · content_tint · content · feature · content · footer</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">Interior narrative page (About)</td><td class="py-2.5 pr-4 font-meta text-[11px]">default</td><td class="py-2.5 font-meta text-[11px]">header · content / content_tint alternating · footer</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">Public data dashboard (Properties)</td><td class="py-2.5 pr-4 font-meta text-[11px]">default</td><td class="py-2.5 font-meta text-[11px]">header · content (filters) · content ×3 · content_tint · content · footer</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">Staff record editor</td><td class="py-2.5 pr-4 font-meta text-[11px]">app</td><td class="py-2.5 font-meta text-[11px]">header · content bands at mr-auto max-w-[1480px]</td></tr>
+                <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">Staff map workbench</td><td class="py-2.5 pr-4 font-meta text-[11px]">app</td><td class="py-2.5 font-meta text-[11px]">header · workbench (full_width: 'show')</td></tr>
+                <tr><td class="py-2.5 pr-4 font-semibold text-ink">Sign-in / password reset</td><td class="py-2.5 pr-4 font-meta text-[11px]">bare</td><td class="py-2.5 font-meta text-[11px]">auth</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER · doc index ═══ -->
+  <footer class="w-full lb-plat-ink mt-auto" data-dms-group="footer">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-10">
+      <div class="flex flex-col md:flex-row md:items-center gap-6 justify-between">
+        <div class="flex items-center gap-4">
+          <div class="bg-white rounded-md px-3 py-2"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-8 w-auto"/></div>
+          <div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-white">Design System</div>
+            <div class="font-meta text-[9.5px] uppercase tracking-[0.14em] text-white/50">v0.1 · page chrome · 2026</div>
+          </div>
+        </div>
+        <nav class="flex flex-wrap gap-x-6 gap-y-2 font-prose text-[12px] font-semibold text-white/70">
+          <a href="theme.html" class="hover:text-white">1 · Theme</a>
+          <a href="layouts.html" class="text-leaf">2 · Layouts</a>
+          <a href="grid.html" class="hover:text-white">3 · Grid</a>
+          <a href="components.html" class="hover:text-white">4 · Components</a>
+          <a href="patterns.html" class="hover:text-white">5 · Patterns</a>
+          <span class="text-white/30">·</span>
+          <a href="../pages/home.html" class="hover:text-white">Home</a>
+          <a href="../pages/about.html" class="hover:text-white">About</a>
+          <a href="../pages/properties.html" class="hover:text-white">Properties</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- floating design-system navigation widget (documentation scaffolding — never ships) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:8px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:0 16px 8px;border-bottom:1px solid rgba(22,35,44,0.08);margin-bottom:4px;">ACLB Design System</div>
+    <a href="theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">1</span>Theme</a>
+    <a href="layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#0A6E99;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">2</span>Layouts</a>
+    <a href="grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">3</span>Grid</a>
+    <a href="components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">4</span>Components</a>
+    <a href="patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">5</span>Patterns</a>
+    <div style="height:1px;background:rgba(22,35,44,0.08);margin:6px 0;"></div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Home</a>
+    <a href="../pages/about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>About</a>
+    <a href="../pages/properties.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:8px;background:#16232C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.25);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ACLB Design System · Grid</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<body class="lb-paper">
+
+<!--
+  grid.html · DESIGN SYSTEM 3 of 5 — the sectionArray column grid every section
+  sits on inside any band. Layout `default` (public chrome: utility strip + TopNav).
+  The model: `grid grid-cols-12 gap-0` · the gutter is per-section p-3 padding ·
+  border / radius / background live on an INNER box (.lb-card) inside that padding.
+  Sections: grid spec · column ruler + span vocabulary (with the properties-dashboard
+  rows re-drawn as real anatomy) · the gutter model · compound-card worked example ·
+  responsive collapse · in-editor grid view · rules for picking spans.
+-->
+
+<div class="min-h-svh flex flex-col" data-dms-layout="default">
+
+  <!-- ═══ Utility strip (Layout headerChildren) ═══ -->
+  <div class="w-full bg-ink text-white/80">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-8 flex items-center justify-between">
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em]">Albany County Land Bank Corporation · Design System</span>
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em] text-white/50">v0.1 · 2026</span>
+    </div>
+  </div>
+
+  <!-- ═══ TopNav · design-system variant (Grid active) ═══ -->
+  <header class="w-full bg-white border-b border-ink/10 sticky top-0 z-50">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-16 flex items-center gap-8">
+      <a href="theme.html" class="flex items-center gap-3 shrink-0">
+        <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-9 w-auto"/>
+      </a>
+      <span class="hidden md:inline font-meta text-[10px] uppercase tracking-[0.16em] text-mist border-l border-ink/10 pl-4">Design System</span>
+      <nav class="flex-1 flex items-center justify-end gap-1 font-prose text-[13.5px] font-semibold">
+        <a href="theme.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Theme</a>
+        <a href="layouts.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Layouts</a>
+        <a href="grid.html" class="px-3 h-16 flex items-center text-skydeep border-b-2 border-sky -mb-px">Grid</a>
+        <a href="components.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Components</a>
+        <a href="patterns.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Patterns</a>
+      </nav>
+      <span class="font-meta text-[10px] text-mist tabular-nums shrink-0">3 / 5</span>
+    </div>
+  </header>
+
+  <!-- ═══ HEADER · LayoutGroup hero ═══ -->
+  <div class="w-full lb-plat border-b border-ink/10" data-dms-group="hero">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-14" data-dms-section="page-header">
+      <div class="flex items-center gap-2.5 mb-3">
+        <span class="size-2 bg-leaf"></span>
+        <span class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-skydeep">Structure · Columns</span>
+      </div>
+      <h1 class="font-display font-bold text-[54px] leading-[1.04] tracking-[-0.015em] text-ink max-w-[820px]">Twelve columns, twelve-pixel gutters.</h1>
+      <p class="font-prose text-[17.5px] leading-[1.6] text-slate mt-4 max-w-[720px]">The column grid every section sits on inside any band — the survey grid under every page. The grid itself is <span class="font-meta text-[15px]">gap-0</span>; the gutter is each section's own padding; the card chrome lives on an inner box. One grid for the whole system, no freehand widths.</p>
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate"><span class="size-2 rounded-full bg-sky"></span>grid-cols-12 · gap-0</span>
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate"><span class="size-2 rounded-full bg-leaf"></span>gutter = p-3 (12px)</span>
+        <span class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta text-[10px] uppercase tracking-[0.12em] text-slate">cap max-w-[1240px] · centered</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Grid spec ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="grid-spec">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">The grid spec</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Every LayoutGroup on every page hosts the same sectionArray grid. These are the settings — memorize the first four and you can read any page in this system.</p>
+      <div class="lb-card p-6 overflow-x-auto">
+        <table class="w-full min-w-[760px]">
+          <thead>
+            <tr class="border-b border-ink/10">
+              <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Setting</th>
+              <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Value</th>
+              <th class="text-left py-2 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Notes</th>
+            </tr>
+          </thead>
+          <tbody class="font-prose text-[13px] text-slate">
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">gridSize</td><td class="py-2.5 pr-4 font-meta text-[11px]">12</td><td class="py-2.5">Twelve columns inside every band — finer span control than the codebase default of 6.</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">defaultSize</td><td class="py-2.5 pr-4 font-meta text-[11px]">12</td><td class="py-2.5">A new section takes the full row until an author narrows it.</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">grid class</td><td class="py-2.5 pr-4 font-meta text-[11px]">grid grid-cols-12 gap-0</td><td class="py-2.5">Always <span class="font-meta text-[11px]">gap-0</span> — the grid never owns the space between sections.</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">sectionPadding</td><td class="py-2.5 pr-4 font-meta text-[11px]">p-3</td><td class="py-2.5">12px on every side of every section; two neighbors make a 24px gutter. Never grid gap.</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">centered cap</td><td class="py-2.5 pr-4 font-meta text-[11px]">max-w-[1240px] mx-auto px-6</td><td class="py-2.5">The public default layout centers each band; the grid fills the cap.</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">paddings</td><td class="py-2.5 pr-4 font-meta text-[11px]">p-1.5 · p-3 · p-6</td><td class="py-2.5">Dense filter rows · the default section gutter · card interiors. Three steps, nothing in between.</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">chrome</td><td class="py-2.5 pr-4 font-meta text-[11px]">.lb-card (inner box)</td><td class="py-2.5">Border, 6px radius, and background render on an inner box inside the padding — never on the section wrapper.</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">borderSides · radiusCorners</td><td class="py-2.5 pr-4 font-meta text-[11px]">per-edge, on the inner box</td><td class="py-2.5">Any side or corner can be dropped to fuse neighbors — the compound-card recipe below.</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">rowspans</td><td class="py-2.5 pr-4 font-meta text-[11px]">—</td><td class="py-2.5">This theme ships no row-span vocabulary. Height comes from stacking rows; cards equalize with <span class="font-meta text-[11px]">h-full</span>.</td></tr>
+            <tr class="border-b border-ink/5"><td class="py-2.5 pr-4 font-semibold text-ink">backgrounds</td><td class="py-2.5 pr-4 font-meta text-[11px]">lb-paper · lb-paper-tint</td><td class="py-2.5">Bands alternate the two paper tones; section wrappers stay transparent.</td></tr>
+            <tr><td class="py-2.5 pr-4 font-semibold text-ink">gridview</td><td class="py-2.5 pr-4 font-meta text-[11px]">dashed sky · metaXS indices</td><td class="py-2.5">The edit-mode "show grid" overlay — dashed sky column guides with metaXS column numbers (mockup below).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Column ruler + span vocabulary ═══ -->
+  <div class="w-full lb-paper-tint py-12 border-y border-ink/5" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="span-vocabulary">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Column ruler &amp; span vocabulary</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Seven row shapes cover every page in the system. Each demo below is a real <span class="font-meta text-[12px]">grid grid-cols-12 gap-0</span> row: every cell is a <span class="font-meta text-[12px]">col-span-* p-3</span> section wrapper with its inner box inside.</p>
+
+      <div class="lb-card p-6">
+        <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">The ruler — 12 columns, ≈ 99px each inside the 1240 cap</div>
+        <div class="grid grid-cols-12 gap-px bg-ink/10 border border-ink/10 rounded-md overflow-hidden">
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">1</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">2</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">3</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">4</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">5</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">6</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">7</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">8</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">9</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">10</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">11</div>
+          <div class="h-9 bg-papertint flex items-center justify-center font-meta font-medium text-[9.5px] text-mist">12</div>
+        </div>
+
+        <div class="mt-6">
+          <div class="px-3 font-meta text-[10.5px] text-mist">12 — full row · the default</div>
+          <div class="grid grid-cols-12 gap-0">
+            <div class="col-span-12 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">12</div></div>
+          </div>
+
+          <div class="px-3 font-meta text-[10.5px] text-mist">8 + 4 — primary canvas + sidecar (the map and its donut)</div>
+          <div class="grid grid-cols-12 gap-0">
+            <div class="col-span-8 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">8</div></div>
+            <div class="col-span-4 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">4</div></div>
+          </div>
+
+          <div class="px-3 font-meta text-[10.5px] text-mist">6 + 6 — two equal peers</div>
+          <div class="grid grid-cols-12 gap-0">
+            <div class="col-span-6 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">6</div></div>
+            <div class="col-span-6 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">6</div></div>
+          </div>
+
+          <div class="px-3 font-meta text-[10.5px] text-mist">5 + 4 + 3 — three densities (the charts row)</div>
+          <div class="grid grid-cols-12 gap-0">
+            <div class="col-span-5 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">5</div></div>
+            <div class="col-span-4 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">4</div></div>
+            <div class="col-span-3 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">3</div></div>
+          </div>
+
+          <div class="px-3 font-meta text-[10.5px] text-mist">4 + 4 + 4 — the card trio (fresh listings)</div>
+          <div class="grid grid-cols-12 gap-0">
+            <div class="col-span-4 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">4</div></div>
+            <div class="col-span-4 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">4</div></div>
+            <div class="col-span-4 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">4</div></div>
+          </div>
+
+          <div class="px-3 font-meta text-[10.5px] text-mist">3 + 3 + 3 + 3 — four quiet stats or links</div>
+          <div class="grid grid-cols-12 gap-0">
+            <div class="col-span-3 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">3</div></div>
+            <div class="col-span-3 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">3</div></div>
+            <div class="col-span-3 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">3</div></div>
+            <div class="col-span-3 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">3</div></div>
+          </div>
+
+          <div class="px-3 font-meta text-[10.5px] text-mist">2 × 6 — the KPI strip, six tiles across</div>
+          <div class="grid grid-cols-12 gap-0">
+            <div class="col-span-2 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">2</div></div>
+            <div class="col-span-2 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">2</div></div>
+            <div class="col-span-2 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">2</div></div>
+            <div class="col-span-2 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">2</div></div>
+            <div class="col-span-2 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">2</div></div>
+            <div class="col-span-2 p-3"><div class="h-14 rounded-md bg-papertint border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-slate">2</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- the same spans, drawn with the dashboard's anatomy -->
+      <h3 class="font-display font-semibold text-[21px] leading-[1.2] text-ink mt-10 mb-1 px-3">The same spans, drawn with the dashboard's anatomy</h3>
+      <p class="font-prose text-[13.5px] leading-[1.55] text-slate max-w-[720px] px-3">Three of the rows above as they actually ship on <a href="../pages/properties.html" class="font-semibold text-skydeep">the properties dashboard</a> — same wrappers, same paddings, real content shapes.</p>
+    </div>
+
+    <div class="mx-auto w-full max-w-[1240px] px-6 mt-4">
+      <div class="px-3 font-meta text-[10.5px] text-mist">2 × 6 · col-span-6 md:col-span-4 xl:col-span-2 — the KPI strip</div>
+      <div class="grid grid-cols-12 gap-0" data-dms-section="anatomy-kpi">
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3">
+          <div class="lb-card p-4 h-full border-t-2 border-t-sky">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">In inventory</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">199</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3">
+          <div class="lb-card p-4 h-full border-t-2 border-t-field">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">For sale</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-forest tabular-nums mt-1">60</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3">
+          <div class="lb-card p-4 h-full border-t-2 border-t-amber">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Sale pending</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">17</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3">
+          <div class="lb-card p-4 h-full border-t-2 border-t-ink">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Sold since 2015</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">1,115</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3">
+          <div class="lb-card p-4 h-full border-t-2 border-t-leaf">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Median asking</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">$600</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3">
+          <div class="lb-card p-4 h-full border-t-2 border-t-steel">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Avg days held</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">2,611</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-3 pt-3 font-meta text-[10.5px] text-mist">8 + 4 · lg:col-span-8 + lg:col-span-4 — map + status donut</div>
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-8 p-3" data-dms-section="anatomy-map">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="px-4 py-3 border-b border-ink/10 flex items-center justify-between gap-3">
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Where the inventory is</div>
+              <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist shrink-0">176 of 199 geocoded</span>
+            </div>
+            <div class="lb-plate relative flex-1 min-h-[190px]">
+              <!-- decorative — mini map sketch: a handful of status-colored parcel dots -->
+              <span class="absolute size-2 rounded-full bg-field ring-1 ring-white" style="left:52%; top:58%"></span>
+              <span class="absolute size-2 rounded-full bg-field ring-1 ring-white" style="left:55%; top:66%"></span>
+              <span class="absolute size-2 rounded-full bg-field ring-1 ring-white" style="left:58%; top:62%"></span>
+              <span class="absolute size-2 rounded-full bg-field ring-1 ring-white" style="left:30%; top:48%"></span>
+              <span class="absolute size-2 rounded-full bg-field ring-1 ring-white" style="left:33%; top:54%"></span>
+              <span class="absolute size-2 rounded-full bg-sky ring-1 ring-white" style="left:60%; top:52%"></span>
+              <span class="absolute size-2 rounded-full bg-sky ring-1 ring-white" style="left:62%; top:60%"></span>
+              <span class="absolute size-2 rounded-full bg-sky ring-1 ring-white" style="left:64%; top:55%"></span>
+              <span class="absolute size-2 rounded-full bg-amber ring-1 ring-white" style="left:67%; top:50%"></span>
+              <span class="absolute size-2 rounded-full bg-steel ring-1 ring-white" style="left:70%; top:44%"></span>
+              <span class="absolute size-2 rounded-full bg-violet ring-1 ring-white" style="left:57%; top:47%"></span>
+              <span class="absolute size-2 rounded-full bg-rose ring-1 ring-white" style="left:46%; top:42%"></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="anatomy-donut">
+          <div class="lb-card p-4 h-full flex flex-col">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Inventory by status</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">199 parcels held today</div>
+            <div class="flex items-center justify-center py-3">
+              <!-- decorative — mini status donut sketch, real proportions -->
+              <svg viewBox="0 0 80 80" class="w-24 h-24" role="img" aria-label="Mini donut chart: For Sale 60, ACLB Rehab 57, all other statuses 82">
+                <g transform="rotate(-90 40 40)">
+                  <circle cx="40" cy="40" r="30" fill="none" stroke="#4C9129" stroke-width="12" stroke-dasharray="56.8 188.5" stroke-dashoffset="0"/>
+                  <circle cx="40" cy="40" r="30" fill="none" stroke="#0AA7E4" stroke-width="12" stroke-dasharray="54 188.5" stroke-dashoffset="-56.8"/>
+                  <circle cx="40" cy="40" r="30" fill="none" stroke="#8195A1" stroke-width="12" stroke-dasharray="77.7 188.5" stroke-dashoffset="-110.8"/>
+                </g>
+                <text x="40" y="45" text-anchor="middle" font-family="'Archivo', sans-serif" font-weight="700" font-size="16" fill="#16232C">199</text>
+              </svg>
+            </div>
+            <div class="space-y-1.5 font-prose text-[12px] leading-[1.5]">
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-field shrink-0"></span><span class="flex-1 text-slate">For Sale</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">60</span></div>
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-sky shrink-0"></span><span class="flex-1 text-slate">ACLB Rehab</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">57</span></div>
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-steel shrink-0"></span><span class="flex-1 text-slate">All other statuses</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">82</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-3 pt-3 font-meta text-[10.5px] text-mist">5 + 4 + 3 · lg:col-span-5 + 4 + 3 — three chart densities</div>
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="anatomy-chart-5">
+          <div class="lb-card p-4 h-full flex flex-col">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Properties sold by year</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5 mb-4">The widest card takes the time series</div>
+            <!-- decorative — mini annual-sales bars, real proportions -->
+            <div class="flex items-end gap-1 h-20 mt-auto">
+              <div class="flex-1 bg-sky/50 rounded-sm" style="height:5%"></div>
+              <div class="flex-1 bg-sky/50 rounded-sm" style="height:19%"></div>
+              <div class="flex-1 bg-sky/80 rounded-sm" style="height:92%"></div>
+              <div class="flex-1 bg-sky/80 rounded-sm" style="height:80%"></div>
+              <div class="flex-1 bg-sky/80 rounded-sm" style="height:81%"></div>
+              <div class="flex-1 bg-sky/80 rounded-sm" style="height:95%"></div>
+              <div class="flex-1 bg-sky rounded-sm" style="height:100%"></div>
+              <div class="flex-1 bg-sky/80 rounded-sm" style="height:72%"></div>
+              <div class="flex-1 bg-sky/50 rounded-sm" style="height:31%"></div>
+              <div class="flex-1 bg-sky/50 rounded-sm" style="height:17%"></div>
+              <div class="flex-1 bg-sky/80 rounded-sm" style="height:51%"></div>
+              <div class="flex-1 bg-sky/40 rounded-sm" style="height:13%"></div>
+            </div>
+            <div class="border-t border-ink/20 mt-1"></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3" data-dms-section="anatomy-chart-4">
+          <div class="lb-card p-4 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Inventory by property type</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5 mb-4">The middle card takes the breakdown</div>
+            <div class="space-y-3">
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12px] font-semibold text-ink">Residential vacant lots</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">163</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-sky" style="width:100%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12px] font-semibold text-ink">Residential buildings</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">22</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-sky" style="width:13.5%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12px] font-semibold text-ink">Everything else</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">14</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-steel" style="width:8.6%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 lg:col-span-3 p-3" data-dms-section="anatomy-chart-3">
+          <div class="lb-card p-4 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">By neighborhood</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5 mb-4">The narrow card takes the list</div>
+            <div class="space-y-2.5">
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12px] text-slate">South End</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">19</span></div>
+                <div class="h-2 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:100%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12px] text-slate">Eagle Hill</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">8</span></div>
+                <div class="h-2 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:42%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12px] text-slate">Buckingham Pond</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">6</span></div>
+                <div class="h-2 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:31.5%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § The gutter model ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="gutter-model">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">The gutter model</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6"><span class="font-meta text-[12px]">gap-0</span> · padding gutters · inner-box chrome. The grid never owns the space between sections — each section carries its own <span class="font-meta text-[12px]">p-3</span>, and the card you see is an inner box drawn inside that padding.</p>
+
+      <div class="lb-card p-6">
+        <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">Two adjacent sections, padding zones exposed</div>
+        <div class="bg-paper rounded-md border border-ink/5 p-4">
+          <div class="relative">
+            <div class="grid grid-cols-12 gap-0">
+              <div class="col-span-12 md:col-span-6 p-3 bg-sky/10 outline-dashed outline-1 outline-sky/50 -outline-offset-1">
+                <div class="lb-card p-4 h-full">
+                  <div class="font-prose text-[13.5px] leading-[1.2] font-semibold text-ink">Section A</div>
+                  <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1.5">The inner box — border, 6px radius, white ground — is the card you see. The section wrapper around it stays invisible.</p>
+                </div>
+              </div>
+              <div class="col-span-12 md:col-span-6 p-3 bg-sky/10 outline-dashed outline-1 outline-sky/50 -outline-offset-1">
+                <div class="lb-card p-4 h-full">
+                  <div class="font-prose text-[13.5px] leading-[1.2] font-semibold text-ink">Section B</div>
+                  <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1.5">Its neighbor's padding meets ours at the column boundary — no grid gap anywhere in between.</p>
+                </div>
+              </div>
+            </div>
+            <span class="hidden md:inline-flex absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 items-center h-6 px-2.5 rounded-full bg-white border border-sky/40 font-meta font-medium text-[9.5px] text-skydeep whitespace-nowrap">12 + 12 = 24px</span>
+          </div>
+        </div>
+        <div class="mt-4 flex flex-col sm:flex-row gap-x-8 gap-y-2">
+          <div class="flex items-center gap-2.5">
+            <span class="inline-block w-8 h-5 rounded-sm bg-sky/10 outline-dashed outline-1 outline-sky/50 -outline-offset-1 shrink-0"></span>
+            <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-slate">section padding = gutter (p-3)</span>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="inline-block w-8 h-5 lb-card shrink-0"></span>
+            <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-slate">inner box carries border + radius + bg</span>
+          </div>
+        </div>
+        <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-5 pt-4 border-t border-ink/5"><strong class="text-ink">Why gap-0:</strong> a grid <span class="font-meta text-[12px]">gap</span> is the same for every pair of neighbors and can't be removed for just one edge. Padding belongs to the section, so any single edge can go to zero — which is exactly what lets two sections fuse into one visual card. Content padding <em>inside</em> a card (<span class="font-meta text-[12px]">p-6</span>) is the component's own and is never the gutter.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Compound card worked example ═══ -->
+  <div class="w-full lb-paper-tint py-12 border-y border-ink/5" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="compound-card">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Compound cards — the worked example</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">The property ledger on the dashboard looks like one card. It is two sections: a header and a table, fused by zeroing the padding on their shared edge and coordinating corners. Rendered live below, in miniature.</p>
+
+      <div class="lb-card p-6">
+        <div class="grid grid-cols-12 gap-0">
+          <div class="col-span-12 lg:col-span-8 p-3">
+            <div class="bg-paper rounded-md border border-ink/5 p-2">
+              <div class="grid grid-cols-12 gap-0">
+                <!-- section A · header piece -->
+                <div class="col-span-12 px-3 pt-3 pb-0">
+                  <div class="lb-card rounded-b-none border-b-0 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">The property ledger</div>
+                      <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">Every record, past and present</div>
+                    </div>
+                    <span class="font-meta font-medium text-[11px] text-mist tabular-nums">1–3 of 1,314</span>
+                  </div>
+                </div>
+                <!-- section B · table piece -->
+                <div class="col-span-12 px-3 pt-0 pb-3">
+                  <div class="lb-card rounded-t-none overflow-x-auto">
+                    <table class="w-full min-w-[420px]">
+                      <thead>
+                        <tr class="border-b border-ink/10 bg-papertint/60">
+                          <th class="text-left px-3 py-2 font-prose text-[12px] font-semibold text-slate">Parcel</th>
+                          <th class="text-left px-3 py-2 font-prose text-[12px] font-semibold text-slate">Address</th>
+                          <th class="text-left px-3 py-2 font-prose text-[12px] font-semibold text-slate">Status</th>
+                          <th class="text-right px-3 py-2 font-prose text-[12px] font-semibold text-slate">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody class="font-prose text-[13px]">
+                        <tr class="border-b border-ink/5">
+                          <td class="px-3 py-2 font-meta font-medium text-[11px] text-skydeep">76.49-6-65</td>
+                          <td class="px-3 py-2 font-semibold text-ink">49 Park Avenue</td>
+                          <td class="px-3 py-2"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span></td>
+                          <td class="px-3 py-2 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$5,000</td>
+                        </tr>
+                        <tr class="border-b border-ink/5 bg-papertint/30">
+                          <td class="px-3 py-2 font-meta font-medium text-[11px] text-skydeep">65.74-3-13</td>
+                          <td class="px-3 py-2 font-semibold text-ink">64 Third Street</td>
+                          <td class="px-3 py-2"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span></td>
+                          <td class="px-3 py-2 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$3,000</td>
+                        </tr>
+                        <tr>
+                          <td class="px-3 py-2 font-meta font-medium text-[11px] text-skydeep">76.65-3-32</td>
+                          <td class="px-3 py-2 font-semibold text-ink">10 Alexander Street</td>
+                          <td class="px-3 py-2"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-sky/10 text-skydeep text-[12px] font-semibold">ACLB Rehab</span></td>
+                          <td class="px-3 py-2 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$24,900</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-span-12 lg:col-span-4 p-3">
+            <div class="space-y-4 h-full flex flex-col justify-center">
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-skydeep">Section A · px-3 pt-3 pb-0</div>
+                <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1">The header piece keeps top and side gutters but zeroes the bottom. Its inner box drops the bottom edge: <span class="font-meta text-[11px]">rounded-b-none border-b-0</span>.</p>
+              </div>
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-skydeep">Shared edge · pb-0 meets pt-0</div>
+                <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1">Both paddings on the seam are zero, so the two inner boxes butt together. The header's bottom border is gone; the table's own top border is the one hairline between them.</p>
+              </div>
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-skydeep">Section B · px-3 pt-0 pb-3</div>
+                <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1">The body piece zeroes its top and squares its top corners: <span class="font-meta text-[11px]">rounded-t-none</span>. Outer corners stay 6px, so the fused stack reads as one card.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-2 pt-4 border-t border-ink/5"><strong class="text-ink">The rule:</strong> a compound card is adjacent sections with their shared-edge padding zeroed and corners coordinated — top piece <span class="font-meta text-[11px]">rounded-b-none border-b-0</span>, bottom piece <span class="font-meta text-[11px]">rounded-t-none</span>. It maps 1:1 to two DMS sections; nothing here is a bespoke component.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Responsive collapse ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="responsive-collapse">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Responsive collapse</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Spans step down at breakpoints; nothing ever leaves the 12-column system. A collapsed tile is just a bigger span of the same grid.</p>
+      <div class="lb-card p-6 overflow-x-auto">
+        <table class="w-full min-w-[760px]">
+          <thead>
+            <tr class="border-b border-ink/10">
+              <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">Row</th>
+              <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">base · &lt; 768</th>
+              <th class="text-left py-2 pr-4 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">md · ≥ 768</th>
+              <th class="text-left py-2 font-meta text-[10px] uppercase tracking-[0.14em] text-mist font-medium">lg / xl · ≥ 1024 / 1280</th>
+            </tr>
+          </thead>
+          <tbody class="font-prose text-[13px] text-slate">
+            <tr class="border-b border-ink/5">
+              <td class="py-2.5 pr-4 font-semibold text-ink">KPI tiles</td>
+              <td class="py-2.5 pr-4"><span class="font-meta text-[11px]">col-span-6</span> · two across</td>
+              <td class="py-2.5 pr-4"><span class="font-meta text-[11px]">md:col-span-4</span> · three across</td>
+              <td class="py-2.5"><span class="font-meta text-[11px]">xl:col-span-2</span> · six across</td>
+            </tr>
+            <tr class="border-b border-ink/5">
+              <td class="py-2.5 pr-4 font-semibold text-ink">Map + donut</td>
+              <td class="py-2.5 pr-4"><span class="font-meta text-[11px]">col-span-12</span> · stacked</td>
+              <td class="py-2.5 pr-4">still stacked</td>
+              <td class="py-2.5"><span class="font-meta text-[11px]">lg:col-span-8</span> + <span class="font-meta text-[11px]">lg:col-span-4</span></td>
+            </tr>
+            <tr>
+              <td class="py-2.5 pr-4 font-semibold text-ink">Charts row</td>
+              <td class="py-2.5 pr-4"><span class="font-meta text-[11px]">col-span-12</span> · stacked</td>
+              <td class="py-2.5 pr-4"><span class="font-meta text-[11px]">md:col-span-6</span> · the 4 and 3 pair up</td>
+              <td class="py-2.5"><span class="font-meta text-[11px]">lg:col-span-5</span> + <span class="font-meta text-[11px]">4</span> + <span class="font-meta text-[11px]">3</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="font-prose text-[12px] leading-[1.5] text-slate mt-4 pt-4 border-t border-ink/5">The section gutter never changes — <span class="font-meta text-[11px]">p-3</span> at every breakpoint — so collapsed layouts keep the same rhythm as the full grid.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § In-editor grid view ═══ -->
+  <div class="w-full lb-paper-tint py-12 border-y border-ink/5" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="gridview">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">The in-editor grid view</h2></div>
+      <p class="font-prose text-[15px] leading-[1.65] text-slate max-w-[720px] mb-6">Authors toggle "show grid" in the page editor to see the columns their sections snap to. The overlay is documentation chrome, not page chrome — it never renders on the live site.</p>
+      <div class="lb-card p-6">
+        <div class="font-meta text-[11px] font-medium uppercase tracking-[0.16em] text-mist mb-4">gridviewItem — what authors see</div>
+        <div class="bg-paper rounded-md border border-ink/5 p-4">
+          <div class="relative">
+            <!-- the section row, faded under the overlay -->
+            <div class="grid grid-cols-12 gap-0 opacity-60">
+              <div class="col-span-8 p-3"><div class="h-32 rounded-md bg-white border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-mist">map · 8</div></div>
+              <div class="col-span-4 p-3"><div class="h-32 rounded-md bg-white border border-ink/10 flex items-center justify-center font-meta font-medium text-[12.5px] text-mist">donut · 4</div></div>
+            </div>
+            <!-- the dashed column-guide overlay -->
+            <div class="absolute inset-0 grid grid-cols-12 gap-0 pointer-events-none" aria-hidden="true">
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">1</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">2</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">3</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">4</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">5</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">6</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">7</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">8</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">9</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">10</span></div>
+              <div class="relative border-l border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">11</span></div>
+              <div class="relative border-l border-r border-dashed border-sky/40"><span class="absolute top-1 left-1.5 font-meta font-medium text-[9.5px] text-sky/70">12</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="font-meta font-medium text-[11px] text-mist mt-3">Dashed sky column guides with metaXS indices, drawn over the live sections — the 8 + 4 row above keeps rendering underneath.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT · § Rules for picking spans ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6" data-dms-section="span-rules">
+      <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Rules for picking spans</h2></div>
+      <ul class="mt-4 space-y-3 max-w-[760px]">
+        <li class="flex gap-3"><span class="size-2 bg-leaf mt-2 shrink-0"></span><p class="font-prose text-[15px] leading-[1.65] text-slate"><strong class="text-ink">Default to 12.</strong> A section earns a narrower span only when it genuinely shares a row — never just to look smaller.</p></li>
+        <li class="flex gap-3"><span class="size-2 bg-leaf mt-2 shrink-0"></span><p class="font-prose text-[15px] leading-[1.65] text-slate"><strong class="text-ink">KPI tiles are 2</strong> — six across the cap, collapsing to three then two. Don't stretch six-across spacing over sparse data; four stats read better at 3.</p></li>
+        <li class="flex gap-3"><span class="size-2 bg-leaf mt-2 shrink-0"></span><p class="font-prose text-[15px] leading-[1.65] text-slate"><strong class="text-ink">Primary canvas + sidecar is 8 + 4</strong> (the map and its donut). Two equal peers are 6 + 6.</p></li>
+        <li class="flex gap-3"><span class="size-2 bg-leaf mt-2 shrink-0"></span><p class="font-prose text-[15px] leading-[1.65] text-slate"><strong class="text-ink">5 + 4 + 3 only when three cards have genuinely different densities</strong> — a wide time series, a medium breakdown, a narrow list. Otherwise 4 + 4 + 4.</p></li>
+        <li class="flex gap-3"><span class="size-2 bg-leaf mt-2 shrink-0"></span><p class="font-prose text-[15px] leading-[1.65] text-slate"><strong class="text-ink">No row-spans.</strong> Vertical rhythm comes from stacking rows; cards equalize height with <span class="font-meta text-[13px]">h-full</span> inside their row.</p></li>
+        <li class="flex gap-3"><span class="size-2 bg-leaf mt-2 shrink-0"></span><p class="font-prose text-[15px] leading-[1.65] text-slate"><strong class="text-ink">Never freehand widths.</strong> If a span isn't in the vocabulary on this page, it doesn't ship — add it here first or take the nearest span that is.</p></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER · doc index ═══ -->
+  <footer class="w-full lb-plat-ink mt-auto" data-dms-group="footer">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-10">
+      <div class="flex flex-col md:flex-row md:items-center gap-6 justify-between">
+        <div class="flex items-center gap-4">
+          <div class="bg-white rounded-md px-3 py-2"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-8 w-auto"/></div>
+          <div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-white">Design System</div>
+            <div class="font-meta text-[9.5px] uppercase tracking-[0.14em] text-white/50">v0.1 · the column grid · 2026</div>
+          </div>
+        </div>
+        <nav class="flex flex-wrap gap-x-6 gap-y-2 font-prose text-[12px] font-semibold text-white/70">
+          <a href="theme.html" class="hover:text-white">1 · Theme</a>
+          <a href="layouts.html" class="hover:text-white">2 · Layouts</a>
+          <a href="grid.html" class="text-leaf">3 · Grid</a>
+          <a href="components.html" class="hover:text-white">4 · Components</a>
+          <a href="patterns.html" class="hover:text-white">5 · Patterns</a>
+          <span class="text-white/30">·</span>
+          <a href="../pages/home.html" class="hover:text-white">Home</a>
+          <a href="../pages/about.html" class="hover:text-white">About</a>
+          <a href="../pages/properties.html" class="hover:text-white">Properties</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- floating design-system navigation widget (documentation scaffolding — never ships) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:8px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:0 16px 8px;border-bottom:1px solid rgba(22,35,44,0.08);margin-bottom:4px;">ACLB Design System</div>
+    <a href="theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">1</span>Theme</a>
+    <a href="layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">2</span>Layouts</a>
+    <a href="grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#0A6E99;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">3</span>Grid</a>
+    <a href="components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">4</span>Components</a>
+    <a href="patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">5</span>Patterns</a>
+    <div style="height:1px;background:rgba(22,35,44,0.08);margin:6px 0;"></div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Home</a>
+    <a href="../pages/about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>About</a>
+    <a href="../pages/properties.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:8px;background:#16232C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.25);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
