@@ -13,7 +13,10 @@ const defaultSites = [
 function getSiteHref(subdomain) {
   const { protocol, host } = window.location
   const parts = host.split('.')
-  if (parts.length >= 2) {
+  // Bare IPv4 host (e.g. 1.2.3.4) has no room for a subdomain — swapping in
+  // an octet would produce a broken address, so just prefix it instead.
+  const isIPv4Host = /^\d+$/.test(parts[parts.length - 1])
+  if (!isIPv4Host && parts.length >= 2) {
     parts[0] = subdomain
   } else {
     parts.unshift(subdomain)
@@ -28,7 +31,10 @@ export default function LogoNav(props) {
   const logoTheme = getComponentTheme(fullTheme, 'logo', props.activeStyle)
   const navConfig = fullTheme?.logoNav || {}
   const sites = navConfig.sites || defaultSites
-  const currentSubdomain = window.location.host.split('.')[0]
+  const hostParts = window.location.host.split('.')
+  // Bare IPv4 host (e.g. 1.2.3.4) would otherwise misread its last octet as
+  // a subdomain; real TLDs are never all-digits.
+  const currentSubdomain = /^\d+$/.test(hostParts[hostParts.length - 1]) ? '' : hostParts[0]
   const activeSite = sites.find(s => s.subdomain === currentSubdomain)
   const title = activeSite?.name || logoTheme?.title || 'TransportNY'
 
