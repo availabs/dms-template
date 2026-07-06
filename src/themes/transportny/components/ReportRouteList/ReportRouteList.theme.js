@@ -26,4 +26,8 @@ export const reportRouteListTheme = {
   empty: 'text-gray-400 italic text-sm',
   addForm: 'mt-2 p-1.5 bg-gray-50 rounded text-sm',
   error: 'text-red-500 mt-1 text-xs',
+  graphChipsWrapper: 'flex flex-wrap items-center gap-1 pt-2 mt-2 border-t border-slate-100',
+  graphChipsLabel: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1',
+  graphChip: 'px-1.5 py-0.5 rounded text-[11px] border cursor-pointer bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200',
+  graphChipActive: 'px-1.5 py-0.5 rounded text-[11px] border cursor-pointer bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
 };

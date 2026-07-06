@@ -3,8 +3,100 @@ import { cloneDeep, isEqual } from 'lodash-es';
 import { ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
 import { reportRouteListTheme } from './ReportRouteList.theme';
-import { buildUdaConfig } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
+import { buildUdaConfig, SELF_PARAM_KEY_SENTINEL, selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { nameToSlug } from '../../../../dms/packages/dms/src/utils/type-utils';
+
+function transformReportRoutes(routes) {
+  if(!routes || routes.length < 1){
+    return;
+  }
+  // Helper function to handle YYYY-MM-DD or YYYY-MM-DDTHH:mm strings safely
+  function parseYMD(dateStr) {
+    if (dateStr.includes('T')) {
+        return new Date(dateStr);
+    }
+    const [year, month, day] = dateStr.split('-');
+    // Month is 0-indexed in JS Dates (0 = January)
+    return new Date(year, month - 1, day);
+  }
+
+  // Helper function to generate an array of 'YYYY-MM-DD' dates
+  function generateDateRange(startStr, endStr) {
+    const startDate = parseYMD(startStr);
+    const endDate = parseYMD(endStr);
+    const dates = [];
+
+    // Loop day-by-day from start to end
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      dates.push(`${year}-${month}-${day}`);
+    }
+    return dates;
+  }
+
+  function timeToEpoch(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 12 + Math.floor(minutes / 5);
+  }
+
+  function generateEpochRange(startStr, endStr) {
+    const startTime = startStr.includes('T') ? startStr.split('T')[1] : startStr;
+    const endTime = endStr.includes('T') ? endStr.split('T')[1] : endStr;
+
+    const startEpoch = timeToEpoch(startTime);
+    const endEpoch = timeToEpoch(endTime);
+
+    const epochs = [];
+    for (let e = startEpoch; e <= endEpoch; e++) {
+      epochs.push(e);
+    }
+    return epochs;
+  }
+
+  return routes.map(route => {
+    let parsedTmcArray = [];
+    try {
+      parsedTmcArray = JSON.parse(route.tmc_array);
+    } catch (e) {
+      console.error(`Failed to parse tmc_array for route ${route.route_id}:`, e);
+    }
+
+    // Generates the range based on your MM-DD-YYYY inputs
+    const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate) : [];
+    const epochArray = (route.startDate && route.endDate && route.startDate.includes('T') && route.endDate.includes('T')) ? generateEpochRange(route.startDate, route.endDate) : [];
+
+    const groups = [
+      {
+        op: "filter",
+        col: "tmc",
+        value: parsedTmcArray
+      },
+      {
+        op: "filter",
+        col: "date",
+        value: dateArray
+      }
+    ];
+
+    if (epochArray.length > 0) {
+      groups.push({
+        op: "filter",
+        col: "epoch",
+        value: epochArray
+      });
+    }
+
+    return {
+      label: route.name,
+      filters: {
+        op: "AND",
+        groups: groups
+      }
+    };
+  });
+}
 
 function roundToFiveMinutes(dateStr) {
   if (!dateStr || !dateStr.includes('T')) return dateStr;
@@ -29,6 +121,7 @@ function roundToFiveMinutes(dateStr) {
 // produce a brand-new array every render, which would re-trigger the publish effect
 // below on every render (it depends on `routes`) and loop forever.
 const EMPTY_ROUTES = [];
+const EMPTY_SECTIONS = [];
 
 // The report's routes live in exactly one row of a `reports_snap_2`-shaped dataset —
 // one row per report page, keyed by `report_id` = the page's own id. This is a
@@ -46,16 +139,50 @@ const EMPTY_ROUTES = [];
 // `useDataWrapper` component gets). The Report Page template pre-wires it to
 // `reports_snap_2`, but nothing in this file hardcodes that source/view id anymore.
 
+// Finds sibling page sections carrying an enabled `comparison_series` subscriber
+// wired to the `$self` sentinel (see `buildUdaConfig.js`) — i.e. graphs ready to
+// receive a per-instance route list. Each match's own key is derived from its own
+// section id via `selfParamKey`, so publishing needs no author-typed param key.
+// Ordinal labels number only the discovered graphs, not their position among all
+// sections, so interleaved non-graph sections don't create label gaps.
+function findSelfBoundGraphs(sectionList) {
+  return (sectionList || [])
+    .map((section) => {
+      if (section?.id == null) return null;
+      const elementData = section?.element?.['element-data'];
+      if (typeof elementData !== 'string') return null;
+      let parsed;
+      try {
+        parsed = JSON.parse(elementData);
+      } catch (e) {
+        return null;
+      }
+      const subscribers = parsed?.display?._functions?.subscribers;
+      const sub = Array.isArray(subscribers)
+        ? subscribers.find((s) => s?.functionId === 'comparison_series' && s?.enabled && s?.paramKey === SELF_PARAM_KEY_SENTINEL)
+        : null;
+      if (!sub) return null;
+      // Prefer trackingId (stable across publish) over the DB row id (reminted on
+      // every publish — see the draft/published section-identity task notes) —
+      // must match usePageFilterSync's own trackingId-first resolution exactly, or
+      // this discovery and the graph's own self-key diverge.
+      return { sectionId: String(section.trackingId || section.id) };
+    })
+    .filter(Boolean)
+    .map((g, i) => ({ ...g, paramKey: selfParamKey(g.sectionId), label: `Graph ${i + 1}` }));
+}
+
 export default function ReportRouteList() {
-  const { apiLoad, apiUpdate, pageState, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
+  const { apiLoad, apiUpdate, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
   const { state:{join, externalSource} } = useContext(ComponentContext) || {};
   // NOT `props.isEdit` — that's dataWrapper's per-section "is THIS component's own
   // settings editor open" flag (almost always false in normal interactive use, since
   // this panel renders via SectionView even on an /edit/... page). `editPageMode`
-  // (from PageContext, set only on the /edit/... route) is page-level: whether this
-  // report is currently open for editing, independent of any single section's own
-  // settings-editor state. Every mutating handler and control below gates on this,
-  // not on props.isEdit.
+  // (from PageContext, set only on the /edit/... route) is whichever sections array
+  // (`draft_sections` vs `sections`) sibling components are ACTUALLY rendering from
+  // right now — that's what sectionsKey below must track, since graphIds stored on a
+  // route only mean anything if they reference the ids of the sections actually on
+  // screen.
   const isEdit = Boolean(editPageMode);
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Input, Icon } = UI || {};
@@ -105,6 +232,21 @@ export default function ReportRouteList() {
   // not, so it can't go stale between "row created" and "next edit persisted".
   const reportRowIdRef = useRef(null);
   const routes = reportRow?.routes || EMPTY_ROUTES;
+
+  // Sibling graphs on this same page that are ready to receive a per-instance route
+  // list (see findSelfBoundGraphs above). Read-only — never written to; each graph
+  // resolves its own key from its own section id. Unrelated to routes storage
+  // (see storageDataFormat/persistRoutes below) — this is purely for discovering
+  // which graphs are on the page right now.
+  const sectionsKey = isEdit ? 'draft_sections' : 'sections';
+  const sectionList = item?.[sectionsKey] || EMPTY_SECTIONS;
+  const graphs = useMemo(() => findSelfBoundGraphs(sectionList), [sectionList]);
+  // Must derive from the identical trackingId-first fallback findSelfBoundGraphs uses —
+  // graphIds are stored using that same value (see toggleRouteGraph), so comparing
+  // against plain DB ids here would treat every trackingId-identified graph as unknown
+  // and immediately strip it right back out (this is what caused the toggle-then-revert
+  // bug found live 2026-07-06).
+  const knownSectionIds = useMemo(() => new Set(sectionList.map((s) => s?.id != null ? String(s.trackingId || s.id) : null).filter(Boolean)), [sectionList]);
 
   const getDateValue = (val) => (val || '').split('T')[0];
   const getTimeValue = (val) => (val || '').split('T')[1] || '';
@@ -218,9 +360,14 @@ export default function ReportRouteList() {
   const persistRoutes = async (nextRoutes) => {
     // Page-level edit-mode gate: mirrors the convention every other dataWrapper
     // component follows (mutations only happen while the page is open on /edit/...).
-    // This is a single choke point — every mutating handler below funnels through
-    // here, so gating here is sufficient on its own to guarantee no write ever fires
-    // while a report is merely being viewed.
+    // This is a single choke point — every mutating handler and the orphan-cleanup
+    // effect below both funnel through here, so gating here is sufficient on its own
+    // to guarantee no write ever fires while a report is merely being viewed. This is
+    // what caused a real report's route→graph assignments to be silently wiped: the
+    // orphan-cleanup effect compared draft-captured graphIds against the published
+    // section-id set (a different, separately-materialized set of ids — see the
+    // README) while just viewing the published page, concluded they were stale, and
+    // persisted the "cleaned" (assignment-stripped) result.
     if (!isEdit || !apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
     const currentId = reportRowIdRef.current;
     const payload = { report_id: String(item.id), routes: JSON.stringify(nextRoutes) };
@@ -322,6 +469,83 @@ export default function ReportRouteList() {
       setSaving(false);
     }
   };
+
+  // Toggle whether a route feeds a given graph's route list. `graphIds` is a hidden
+  // per-route field (section ids of the graphs this route has been clicked onto) —
+  // never surfaced as an abstract "group"; the UI is just "this route is on Graph N."
+  // A route feeds no graph until explicitly toggled onto one (no implicit sharing).
+  const toggleRouteGraph = async (index, sectionId) => {
+    if (!apiUpdate || !item?.id || saving || !reportRow) return;
+    setSaving(true);
+    setError('');
+    try {
+      const newRoutes = cloneDeep(routes);
+      const current = new Set(newRoutes[index].graphIds || []);
+      if (current.has(sectionId)) current.delete(sectionId); else current.add(sectionId);
+      newRoutes[index].graphIds = Array.from(current);
+      await persistRoutes(newRoutes);
+    } catch (e) {
+      console.error('<ReportRouteList:toggleGraph>', e);
+      setError('Could not update route.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Publish each discovered graph's filtered route subset to its own self-derived
+  // key (see findSelfBoundGraphs/selfParamKey). Each graph's `comparison_series`
+  // subscriber reads back the identical key, so no author-typed param key is ever
+  // needed. The isEqual guard is load-bearing per key: setActionParam unconditionally
+  // writes pageState, which re-renders this component and recomputes `routes`/`graphs`
+  // — without the guard that write→re-render cycle never settles (mirrors the same
+  // guard in usePageFilterSync's comparison-series resolver).
+  useEffect(() => {
+    if (!setActionParam) return;
+    graphs.forEach(({ sectionId, paramKey }) => {
+      const next = transformReportRoutes(routes.filter(r => r.graphIds?.includes(sectionId))) || [];
+      // setActionParam stores an already-array value as-is (see its `Array.isArray(value)
+      // ? value : [value]` check) — `values` IS the variants list here, not a 1-element
+      // wrapper around it. Reading `.values?.[0]` (the single-scalar convention most other
+      // providers use) would compare against the first variant instead of the whole list,
+      // so isEqual would almost never match and this guard would never actually stop the
+      // write→re-render cycle.
+      const current = pageState?.filters?.find(f => f.searchKey === paramKey && f.type === 'action')?.values;
+      if (isEqual(current, next)) return;
+      setActionParam(paramKey, next);
+    });
+
+    // Clear any previously-published self-key whose graph is no longer on the page
+    // (removed, or its subscriber disabled) — nothing reads it anymore.
+    if (!clearActionParam) return;
+    const liveParamKeys = new Set(graphs.map(g => g.paramKey));
+    (pageState?.filters || [])
+      .filter(f => f.type === 'action' && typeof f.searchKey === 'string' && f.searchKey.startsWith('__self__'))
+      .forEach(f => {
+        if (!liveParamKeys.has(f.searchKey)) clearActionParam(f.searchKey);
+      });
+  }, [routes, graphs, pageState?.filters, setActionParam, clearActionParam]);
+
+  // Orphan cleanup (v1): once a graph section is actually removed from the page
+  // (not merely disabled), strip its id from every route's graphIds so stale
+  // membership doesn't silently linger. Guarded on sectionList being non-empty —
+  // every report page always has at least this panel's own section, so an empty
+  // list means "not loaded yet," not "everything was removed."
+  useEffect(() => {
+    // isEdit guard is redundant with persistRoutes' own guard (defense in depth) —
+    // kept here too so this effect never even computes/attempts a cleanup write
+    // while the page is merely being viewed, where knownSectionIds reflects the
+    // published sections (a different id set than whatever graphIds were captured
+    // against during editing).
+    if (!isEdit || !apiUpdate || !item?.id || !sectionList.length || !reportRow) return;
+    const needsCleanup = routes.some(r => (r.graphIds || []).some(id => !knownSectionIds.has(id)));
+    if (!needsCleanup) return;
+    const cleaned = routes.map(r => {
+      if (!r.graphIds?.length) return r;
+      const filtered = r.graphIds.filter(id => knownSectionIds.has(id));
+      return filtered.length === r.graphIds.length ? r : { ...r, graphIds: filtered };
+    });
+    persistRoutes(cleaned);
+  }, [isEdit, routes, knownSectionIds, sectionList.length, reportRow]);
 
   const cancelAdd = () => {
     setPendingRoute(null);
@@ -443,6 +667,24 @@ export default function ReportRouteList() {
                             </div>
                           </div>
                         </div>
+                        {graphs.length > 0 && (
+                          <div className={t.graphChipsWrapper}>
+                            <span className={t.graphChipsLabel}>On:</span>
+                            {graphs.map((g) => {
+                              const isOn = (r.graphIds || []).includes(g.sectionId);
+                              return (
+                                <span
+                                  key={g.sectionId}
+                                  className={isOn ? t.graphChipActive : t.graphChip}
+                                  onClick={() => isEdit && !saving && toggleRouteGraph(i, g.sectionId)}
+                                  title={isEdit ? (isOn ? `Remove from ${g.label}` : `Add to ${g.label}`) : (isOn ? `On ${g.label}` : undefined)}
+                                >
+                                  {g.label}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
                         {isEdit && (
                           <div className={t.removeButtonWrapper}>
                             <Button
