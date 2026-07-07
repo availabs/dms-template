@@ -195,8 +195,8 @@
     + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">'
     + '<span class="font-display text-[14px] font-medium text-slate-800">Tickets</span>'
     + '<div class="flex items-center gap-2"><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">'+openCount+' open · '+closedCount+' closed</span>'
-    + '<button class="font-proxima text-[11.5px] px-2.5 py-1 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">+ Add ticket</button></div></div>'
-    + '<div class="divide-y divide-slate-50">'
+    + '<button id="btnAddTicket" class="font-proxima text-[11.5px] px-2.5 py-1 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">+ Add ticket</button></div></div>'
+    + '<div id="tixlist" class="divide-y divide-slate-50">'
     + (allT.length ? allT.map(ticketRow).join('') : '<div class="py-3 font-proxima text-[13px] text-slate-400">No tickets for this page.</div>') + '</div></div>';
 
   // features & user stories (moved to the MAIN column; each carries an editable status, like the live page)
@@ -263,6 +263,62 @@
   + '</div>';
   html += '</div></div>';
   document.getElementById('pageqa').innerHTML = html;
+
+  // ── Add-ticket MODAL — mock of the DMS modal section-group flow: the header button
+  // (click_publish provider) opens an isModal group holding an allowAdddNew Card whose
+  // target-page field is PRE-FILLED from the page's ?key= filter (usePageParams). ──
+  var sevOpts = ['Blocker','Major','Minor','Polish'], prioOpts = ['Now','Next','Later'], srcOpts = [['client','Client'],['dev','Dev'],['ai','AI']];
+  function opt(list){ return list.map(function(o){ var v=Array.isArray(o)?o[0]:o, l=Array.isArray(o)?o[1]:o; return '<option value="'+v+'">'+l+'</option>'; }).join(''); }
+  function mLbl(t){ return '<div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-1">'+t+'</div>'; }
+  var inputCls = 'w-full rounded-md border border-slate-200 bg-white px-3 py-2 font-proxima text-[13px] text-slate-700 focus:outline-none focus:border-[#1F3F8F]';
+  var modal = document.createElement('div');
+  modal.id = 'addTicketModal';
+  modal.className = 'hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50';
+  modal.innerHTML = '<div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">'
+    + '<div class="p-5">'
+    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">'
+    +   '<span class="font-display text-[15px] font-medium text-slate-800 uppercase tracking-tight">New ticket</span>'
+    +   '<button id="mClose" class="text-slate-400 hover:text-slate-700 text-xl leading-none">✕</button></div>'
+    + '<div class="mb-3">'+mLbl('target page · pre-filled from this page')
+    +   '<div class="flex items-center gap-2 rounded-md bg-slate-50 border border-slate-100 px-3 py-2">'
+    +     '<span class="font-proxima text-[13px] text-slate-700 font-medium">'+esc(surf.label)+' / '+esc(p.name)+'</span>'
+    +     '<span class="font-mono text-[11px] text-slate-400">'+esc(p.route)+'</span>'
+    +     '<span class="ml-auto inline-flex items-center rounded px-1.5 py-[1px] text-[10px] font-medium '+(S.stageColor[stage]||'bg-slate-100 text-slate-600')+'">'+esc(stage)+'</span></div></div>'
+    + '<div class="mb-3">'+mLbl('title')+'<input id="mTitle" class="'+inputCls+'" placeholder="Short, specific summary…"/></div>'
+    + '<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">'
+    +   '<div>'+mLbl('severity')+'<select id="mSev" class="'+inputCls+'">'+opt(sevOpts)+'</select></div>'
+    +   '<div>'+mLbl('priority')+'<select id="mPrio" class="'+inputCls+'">'+opt(prioOpts)+'</select></div>'
+    +   '<div>'+mLbl('source')+'<select id="mSrc" class="'+inputCls+'">'+opt(srcOpts)+'</select></div>'
+    +   '<div>'+mLbl('assignee')+'<input id="mWho" class="'+inputCls+'" placeholder="initials"/></div></div>'
+    + '<div class="mb-3">'+mLbl('description')+'<textarea id="mDesc" rows="3" class="'+inputCls+' resize-none" placeholder="What’s wrong?"></textarea></div>'
+    + '<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">'
+    +   '<div>'+mLbl('steps to reproduce')+'<textarea rows="2" class="'+inputCls+' resize-none"></textarea></div>'
+    +   '<div>'+mLbl('expected')+'<textarea rows="2" class="'+inputCls+' resize-none"></textarea></div>'
+    +   '<div>'+mLbl('actual')+'<textarea rows="2" class="'+inputCls+' resize-none"></textarea></div></div>'
+    + '<div class="flex justify-end gap-2">'
+    +   '<button id="mCancel" class="font-proxima text-[13px] px-4 py-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50">Cancel</button>'
+    +   '<button id="mAdd" class="font-proxima text-[13px] px-4 py-1.5 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">Add ticket</button></div>'
+    + '</div>';
+  document.body.appendChild(modal);
+  function mShow(){ modal.classList.remove('hidden'); }
+  function mHide(){ modal.classList.add('hidden'); }
+  document.getElementById('btnAddTicket').onclick = mShow;
+  document.getElementById('mClose').onclick = mHide;
+  document.getElementById('mCancel').onclick = mHide;
+  modal.addEventListener('click', function(e){ if(e.target === modal) mHide(); });
+  document.getElementById('mAdd').onclick = function(){
+    var title = document.getElementById('mTitle').value || 'Untitled ticket';
+    var sev = document.getElementById('mSev').value;
+    var row = document.createElement('div');
+    row.innerHTML = '<div class="flex items-center gap-3 py-2 -mx-1 px-1 rounded bg-amber-50/60">'
+      + '<span class="font-mono text-[11px] text-slate-400">#new</span>'
+      + '<span class="inline-flex items-center rounded px-2 py-[3px] text-[11px] font-medium '+(S.sevColor[sev]||'bg-slate-100 text-slate-600')+'">'+esc(sev)+'</span>'
+      + '<span class="flex-1 font-proxima text-[13px] text-slate-800">'+esc(title)+'</span>'
+      + '<span class="font-mono text-[10px] uppercase text-slate-400">Triage</span></div>';
+    var list = document.getElementById('tixlist');
+    list.insertBefore(row.firstChild, list.firstChild);
+    mHide();
+  };
 })();
 </script>
 <script src="../ds-nav.js"></script>

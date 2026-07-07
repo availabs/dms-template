@@ -804,14 +804,16 @@ try {
     const avoid = keepOuts();
 
     let col = 0, row = 0, found = false;
-    for (let tries = 0; tries < 40 && !found; tries++) {
+    for (let tries = 0; tries < 60 && !found; tries++) {
       col = 1 + Math.floor(Math.random() * Math.max(1, cols - bp.w - 1));
       row = 1 + Math.floor(Math.random() * Math.max(1, rows - bp.h - 1));
       const px = col * GRID, py = row * GRID, pw = bp.w * GRID, ph = bp.h * GRID;
       if (avoid.some((r) => hits(px, py, pw, ph, r))) continue;
+      // never stack layouts: ≥1 clear cell between live compositions, no
+      // exceptions — the top-up spawner retries when there's no room
       const clear = comps.every((c) =>
         col + bp.w < c.col || c.col + c.bp.w < col || row + bp.h < c.row || c.row + c.bp.h < row);
-      if (clear || tries >= 20) found = true;          // relax comp overlap late
+      if (clear) found = true;
     }
     if (!found) return false;                          // top-up will retry
 
