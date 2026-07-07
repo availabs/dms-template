@@ -11,7 +11,8 @@ A "report" is not a separate data row selected via a picker — **a report is a 
 [Where the template lives](#where-the-template-lives)). Graphs that want to visualize the report's
 routes are added through the normal **Add Component** flow and bind to the panel via a page action
 param — there is no `graph_comps` field, no injected sections, no `setItem` fork. (See
-[History](#history-what-this-replaced) for the old picker-based model this replaced.)
+[Design iterations during development](#design-iterations-during-development) for earlier approaches
+tried and rejected before landing here — none of these ever shipped to `master`.)
 
 ## Where it lives
 
@@ -116,13 +117,18 @@ See `page-templates.md` for how page templates work generally.
   `trackingId` (assigned once at creation), not the row id.
 - **`route_comp_id` is a local join key only** (`comp-<n>`, assigned by this component) — not a DB id.
 
-## History: what this replaced
+## Design iterations during development
 
-Earlier versions modeled a report as a **separate data row** (`reports_snap_2`, selected via a
+Reports didn't exist in `master` before this component — everything below describes iterations tried
+and rejected during this branch's own development, not a predecessor that ever shipped.
+
+An early iteration modeled a report as a **separate data row** (`reports_snap_2`, selected via a
 `report_id` picker across many report rows) carrying both `routes` and a `graph_comps` array of
 section-shaped graph objects, injected into the live page via a `setItem` escape hatch added to
 `view.jsx`/`edit/index.jsx` specifically for this component. That leaked: any generic section
 operation (e.g. reorder) would materialize the injected graphs into real, persisted component rows,
-double-storing them (confirmed live on page `2180280`, ids `2186931`/`2186932` — cleanup still
-pending). The current model (report = page, graphs = normal sections, dynamic binding via the
-`comparison_series` subscriber) eliminates the injection path entirely.
+double-storing them (observed on a dev-only page during that iteration, ids `2186931`/`2186932` —
+that page/data lives only in the dev DB from this branch's own in-progress work and isn't a `master`
+migration concern, though the leaked rows themselves are still dev-DB cleanup debt). The current model
+(report = page, graphs = normal sections, dynamic binding via the `comparison_series` subscriber)
+eliminates the injection path entirely.

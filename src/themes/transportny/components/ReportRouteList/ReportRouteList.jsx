@@ -568,11 +568,10 @@ export default function ReportRouteList() {
               const tmcArray = getTmcArray(r.tmc_array);
               const isExpanded = expandedRoutes[i];
               return (
-                <div key={`${r.id}-${i}`} className={t.row}>
+                <div key={r.route_comp_id ?? i} className={t.row}>
                   <div className={t.rowContainer}>
                     <div className={t.rowHeader}>
                       <div className={t.iconContainer}>
-                        <Icon icon={'Drag'} />
                         <Button disabled={editingRouteNameIndex === i} themeOptions={{ size: "xs" }} onClick={() => toggleRoute(i)}>
                           {isExpanded ? '-' : '+'}
                         </Button>
@@ -628,7 +627,7 @@ export default function ReportRouteList() {
                           </div>
                         )}
                         <div className={t.dateInputsContainer}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div className={t.rowHeaderWrapper}>
                             <div className={t.dateRangeLabel}>Date Range</div>
                             {editingRouteDatesIndex === i ? (
                               <div className={t.editContainer}>
@@ -675,7 +674,7 @@ export default function ReportRouteList() {
                               return (
                                 <span
                                   key={g.sectionId}
-                                  className={isOn ? t.graphChipActive : t.graphChip}
+                                  className={`${isOn ? t.graphChipActive : t.graphChip} ${isEdit ? 'cursor-pointer' : 'cursor-default'}`}
                                   onClick={() => isEdit && !saving && toggleRouteGraph(i, g.sectionId)}
                                   title={isEdit ? (isOn ? `Remove from ${g.label}` : `Add to ${g.label}`) : (isOn ? `On ${g.label}` : undefined)}
                                 >
@@ -691,7 +690,6 @@ export default function ReportRouteList() {
                               themeOptions={{ size: "xs", color: "danger" }}
                               disabled={saving}
                               onClick={() => removeRoute(i)}
-                              className="bg-red-100 text-red-700 hover:bg-red-200"
                             >
                               <Icon icon="Trash" /> Remove Route from Report
                             </Button>
