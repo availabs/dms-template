@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>tessera · features (beta)</title>
+<!-- apply stored light/dark choice before first paint -->
+<script>(function(){try{var t=localStorage.getItem("t6-theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: {
+    paper:"var(--t-paper)", panel:"var(--t-panel)", well:"var(--t-well)",
+    ink:"var(--t-ink)", graphite:"var(--t-graphite)", pencil:"var(--t-pencil)",
+    rule:"var(--t-rule)", ruleStrong:"var(--t-rule-strong)",
+    cobalt:"var(--t-cobalt)", cobaltDeep:"var(--t-cobalt-deep)", cobaltSoft:"var(--t-cobalt-soft)", accentInk:"var(--t-accent-ink)",
+    marker:"var(--t-marker)", markerSoft:"var(--t-marker-soft)",
+    go:"var(--t-go)", goSoft:"var(--t-go-soft)", amber:"var(--t-amber)", amberSoft:"var(--t-amber-soft)",
+    brick:"var(--t-brick)", brickSoft:"var(--t-brick-soft)",
+    board:"var(--t-board)", board2:"var(--t-board-2)", chalk:"var(--t-chalk)", chalkDim:"var(--t-chalk-dim)",
+    scrim:"var(--t-scrim)",
+  },
+  fontFamily: {
+    display:['"IBM Plex Sans"',"system-ui","sans-serif"], sans:['"IBM Plex Sans"',"system-ui","sans-serif"],
+    mono:['"IBM Plex Mono"',"ui-monospace","monospace"], note:["Caveat",'"Segoe Print"',"cursive"],
+  },
+  boxShadow: { lift:"var(--t-shadow-lift)", drag:"var(--t-shadow-drag)" },
+  maxWidth: { content:"1200px", measure:"640px" },
+}}};
+</script>
+<link rel="stylesheet" href="../_shared.css"/>
+</head>
+
+<!-- Layout: default — marketing chrome, same as the beta landing.
+     Annotation off: this page looks like the product. -->
+<body class="text-ink font-sans">
+<div data-dms-layout="default" class="min-h-screen flex flex-col">
+
+  <!-- ═══ TopNav (Layout default · product navigation) ═══ -->
+  <header class="w-full border-b border-rule sticky top-0 z-50 bg-paper">
+    <div class="absolute inset-y-0 left-0 w-4 t6-hatch border-r border-rule hidden xl:block"></div>
+    <div class="absolute inset-y-0 right-0 w-4 t6-hatch border-l border-rule hidden xl:block"></div>
+    <span class="t6-joint hidden xl:block" style="bottom:-3.5px;left:12.5px;"></span>
+    <span class="t6-joint hidden xl:block" style="bottom:-3.5px;right:12.5px;"></span>
+    <div class="mx-auto w-full max-w-content px-6 lg:px-8 h-16 flex items-center gap-3">
+      <a href="beta-landing.html" class="flex items-center gap-2.5">
+        <!-- icon: Tile -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 text-cobalt" aria-hidden="true"><path d="M8 2.5v19M16 2.5v19M2.5 8h19M2.5 16h19" opacity="0.45"/><rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.1" fill="currentColor" stroke="none" transform="rotate(-8 12 12)"/></svg>
+        <span class="t-displaySM">Tessera</span>
+      </a>
+      <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 mt-0.5">beta 0.6.0</span>
+      <nav class="hidden md:flex items-center gap-6 ml-8">
+        <a href="features.html" class="t-metaMD text-ink font-medium">features</a>
+        <a href="docs.html" class="t-metaMD text-graphite hover:text-ink">docs</a>
+      </nav>
+      <span class="flex-1"></span>
+      <button onclick="var r=document.documentElement;var d=r.getAttribute('data-theme')==='dark';if(d){r.removeAttribute('data-theme')}else{r.setAttribute('data-theme','dark')}try{localStorage.setItem('t6-theme',d?'light':'dark')}catch(e){}" aria-label="Toggle dark mode" class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite hover:text-ink hover:border-ruleStrong">
+        <span class="t6-when-light"><!-- icon: Moon -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></span>
+        <span class="t6-when-dark"><!-- icon: Sun -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6L17 7M7 17l-1.4 1.4M18.4 18.4L17 17M7 7L5.6 5.6"/></svg></span>
+      </button>
+      <a href="beta-landing.html#invite" class="hidden sm:inline-flex items-center gap-1.5 t-proseSM font-medium text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-md px-3.5 py-2">request an invite</a>
+      <button class="md:hidden w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite" aria-label="Menu">
+        <!-- icon: Menu -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1">
+
+    <!-- ═══ LayoutGroup: page header (feature band) ═══ -->
+    <div data-dms-group="header" class="w-full relative">
+      <div class="t6-sheet-fade"></div>
+      <div class="absolute inset-y-0 left-0 w-4 t6-hatch border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-hatch border-l border-rule hidden xl:block"></div>
+      <div class="relative mx-auto w-full max-w-content px-6 lg:px-8 pt-14 lg:pt-16 pb-12">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="header" class="col-span-12 lg:col-span-8 p-3">
+            <p class="t-metaSM text-cobalt">features</p>
+            <h1 class="t-displayXL mt-3">What's in the builder</h1>
+            <p class="t-proseLG text-graphite mt-4 max-w-measure">The landing page gives the tour; this is the spec sheet. Every
+              capability below ships in beta 0.6.0 and runs on production sites today.</p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: edit in place (deep dive) ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div data-dms-group="content" class="w-full relative">
+      <div class="absolute inset-y-0 left-0 w-4 t6-ticks border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-ticks border-l border-rule hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="edit-copy" class="col-span-12 lg:col-span-5 p-3">
+            <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+              <!-- icon: Pencil -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg>
+            </span>
+            <h2 class="t-displayLG mt-4">Edit in place</h2>
+            <p class="t-prose text-graphite mt-3">The page is the editor. Click a section and its handles and toolbar appear
+              around it — type, restyle, or rebind it without leaving the layout you're building.</p>
+            <ul class="mt-5 space-y-2.5 t-proseSM text-graphite">
+              <li class="flex gap-2.5"><span class="text-go mt-0.5 flex-none"><!-- icon: Check -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></span>
+                What you edit is what visitors see — same layout, theme, and live data.</li>
+              <li class="flex gap-2.5"><span class="text-go mt-0.5 flex-none"><!-- icon: Check -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></span>
+                Changes save to a draft as you work; nothing goes live until you publish.</li>
+              <li class="flex gap-2.5"><span class="text-go mt-0.5 flex-none"><!-- icon: Check -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></span>
+                Undo exists, at every step.</li>
+            </ul>
+            <p class="t-metaSM text-pencil mt-6 border-t border-rule pt-4">draft → publish · autosave · undo</p>
+          </section>
+
+          <section data-dms-section="edit-illustration" class="col-span-12 lg:col-span-7 p-3">
+            <div class="bg-panel border border-rule rounded-lg shadow-lift overflow-hidden">
+              <div class="h-10 border-b border-rule flex items-center gap-2 px-4">
+                <span class="flex gap-1.5"><!-- decorative -->
+                  <span class="w-2.5 h-2.5 rounded-full border border-ruleStrong"></span>
+                  <span class="w-2.5 h-2.5 rounded-full border border-ruleStrong"></span>
+                  <span class="w-2.5 h-2.5 rounded-full border border-ruleStrong"></span>
+                </span>
+                <span class="t-metaMD text-graphite ml-3 truncate">tessera.build/edit/annual-report</span>
+                <span class="flex-1"></span>
+                <span class="hidden sm:inline-flex items-center gap-1.5 t-metaXS text-amber bg-amberSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-amber"></span>draft</span>
+              </div>
+              <div class="t6-sheet p-4 sm:p-6">
+                <div class="grid grid-cols-12 gap-0">
+                  <div class="col-span-12 p-1.5">
+                    <div class="bg-panel border border-rule rounded-md px-4 py-3">
+                      <p class="t-displaySM">Annual report — 2026</p>
+                      <p class="t-proseXS text-graphite mt-0.5">programs, spending, and outcomes by county</p>
+                    </div>
+                  </div>
+                  <div class="col-span-12 sm:col-span-7 p-1.5">
+                    <!-- the selected section: handles + toolbar -->
+                    <div class="relative border-2 border-cobalt rounded-md bg-panel px-4 py-4 mt-3">
+                      <span class="t6-joint" style="top:-4.5px;left:-4.5px;"></span>
+                      <span class="t6-joint" style="top:-4.5px;right:-4.5px;"></span>
+                      <span class="t6-joint" style="bottom:-4.5px;left:-4.5px;"></span>
+                      <span class="t6-joint" style="bottom:-4.5px;right:-4.5px;"></span>
+                      <div class="absolute -top-4 right-2 flex items-center gap-2 bg-panel border border-rule rounded-md px-2 py-1 shadow-lift text-graphite">
+                        <!-- icon: Pencil -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-cobalt" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg>
+                        <!-- icon: GripVertical -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-3.5 h-3.5" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                        <!-- icon: Copy -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+                        <!-- icon: Trash -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg>
+                      </div>
+                      <p class="t-proseSM">Grants awarded rose <span class="t6-mark">18% year over year</span>, led by the
+                        flood-mitigation program.</p>
+                    </div>
+                  </div>
+                  <div class="col-span-12 sm:col-span-5 p-1.5">
+                    <div class="bg-panel border border-rule rounded-md px-3 py-2.5 mt-3">
+                      <p class="t-metaXS text-pencil">grants awarded</p>
+                      <p class="t-displayLG tabular-nums">312</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="t-proseXS text-pencil mt-3 text-center">a selected section: corner handles, a toolbar, and the rest of the page still around it</p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: the sheet (deep dive, illustration left) ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div data-dms-group="content" class="w-full relative">
+      <div class="absolute inset-y-0 left-0 w-4 t6-dashes border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-dashes border-l border-rule hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="sheet-illustration" class="col-span-12 lg:col-span-7 p-3 order-2 lg:order-1">
+            <div class="t6-sheet border border-rule rounded-lg p-4 sm:p-6 relative">
+              <div class="absolute inset-4 sm:inset-6 grid grid-cols-12 gap-0 pointer-events-none"><!-- decorative -->
+                <div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed border-r" style="border-color:var(--t-cobalt-line);opacity:.28"></div>
+              </div>
+              <div class="relative grid grid-cols-12 gap-0">
+                <div class="col-span-8 p-1.5">
+                  <div class="bg-panel border border-rule rounded-md px-3 py-6 flex items-center justify-between">
+                    <span class="t-metaSM text-graphite">narrative</span>
+                    <span class="t-metaXS text-cobalt">cols 1–8</span>
+                  </div>
+                </div>
+                <div class="col-span-4 p-1.5">
+                  <div class="bg-panel border border-rule rounded-md px-3 py-6 flex items-center justify-between">
+                    <span class="t-metaSM text-graphite">card</span>
+                    <span class="t-metaXS text-cobalt">9–12</span>
+                  </div>
+                </div>
+                <div class="col-span-12 p-1.5">
+                  <div class="bg-panel border border-rule rounded-md px-3 py-5 flex items-center justify-between">
+                    <span class="t-metaSM text-graphite">full-width table</span>
+                    <span class="t-metaXS text-cobalt">cols 1–12</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="t-proseXS text-pencil mt-3 text-center">spans are the whole layout system — no pixel nudging, no CSS</p>
+          </section>
+
+          <section data-dms-section="sheet-copy" class="col-span-12 lg:col-span-5 p-3 order-1 lg:order-2">
+            <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+              <!-- icon: Grid -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M3.5 9h17M3.5 15h17M9 3.5v17M15 3.5v17"/></svg>
+            </span>
+            <h2 class="t-displayLG mt-4">The sheet</h2>
+            <p class="t-prose text-graphite mt-3">Every page is sections on a 12-column grid. A section gets a column span and a
+              row; the sheet handles alignment, wrapping, and responsive stacking on its own.</p>
+            <p class="t-prose text-graphite mt-3">Drag to reorder, drag the edge to respan. Toggle the grid overlay and the page
+              shows its own drafting lines — the same ones on this page's hero.</p>
+            <p class="t-metaSM text-pencil mt-6 border-t border-rule pt-4">12 columns · spans 1–12 · drag to reorder · responsive by default</p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: data (deep dive) ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div data-dms-group="content" class="w-full relative">
+      <div class="absolute inset-y-0 left-0 w-4 t6-backhatch border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-backhatch border-l border-rule hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="data-copy" class="col-span-12 lg:col-span-5 p-3">
+            <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+              <!-- icon: Database -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M5 6.5C5 4.8 8.1 3.5 12 3.5s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3Z"/><path d="M5 6.5v11c0 1.7 3.1 3 7 3s7-1.3 7-3v-11"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>
+            </span>
+            <h2 class="t-displayLG mt-4">Data that stays live</h2>
+            <p class="t-prose text-graphite mt-3">Upload a file and it becomes a versioned dataset — columns typed, rows queryable.
+              Cards, tables, charts, and maps bind to it directly.</p>
+            <p class="t-prose text-graphite mt-3">Upload next month's file and every bound section updates. Old versions stay
+              addressable, so last quarter's report keeps showing last quarter's numbers.</p>
+            <p class="t-metaSM text-pencil mt-6 border-t border-rule pt-4">csv · xlsx · shapefile · geojson · versioned · queryable</p>
+          </section>
+
+          <section data-dms-section="data-illustration" class="col-span-12 lg:col-span-7 p-3">
+            <div class="bg-panel border border-rule rounded-lg shadow-lift overflow-hidden">
+              <div class="px-4 py-3 border-b border-rule flex items-center gap-2.5 flex-wrap">
+                <!-- icon: File -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-graphite" aria-hidden="true"><path d="M6.5 3.5h7l4 4v13h-11v-17Z"/><path d="M13.5 3.5v4h4"/></svg>
+                <span class="t-metaMD text-graphite">claims_2026.csv</span>
+                <!-- icon: ArrowRight -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-pencil" aria-hidden="true"><path d="M4.5 12h15M13.5 6l6 6-6 6"/></svg>
+                <!-- icon: Database -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-cobalt" aria-hidden="true"><path d="M5 6.5C5 4.8 8.1 3.5 12 3.5s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3Z"/><path d="M5 6.5v11c0 1.7 3.1 3 7 3s7-1.3 7-3v-11"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>
+                <span class="t-metaMD text-ink">claims</span>
+                <span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">v3</span>
+                <span class="flex-1"></span>
+                <span class="t-metaXS text-pencil">38,412 rows</span>
+              </div>
+              <div class="px-4 py-1.5 flex justify-between t-proseXS border-b border-rule"><span class="text-pencil">county</span><span class="text-pencil">claims</span><span class="text-pencil hidden sm:block">paid</span></div>
+              <div class="px-4 py-1.5 flex justify-between t-proseXS"><span>Albany</span><span class="tabular-nums">1,204</span><span class="tabular-nums hidden sm:block">$4.1m</span></div>
+              <div class="px-4 py-1.5 flex justify-between t-proseXS bg-well"><span>Suffolk</span><span class="tabular-nums">3,932</span><span class="tabular-nums hidden sm:block">$18.7m</span></div>
+              <div class="px-4 py-1.5 flex justify-between t-proseXS"><span>Westchester</span><span class="tabular-nums">2,145</span><span class="tabular-nums hidden sm:block">$9.3m</span></div>
+              <div class="px-4 py-3 border-t border-rule flex items-center gap-2 flex-wrap">
+                <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">csv</span>
+                <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">xlsx</span>
+                <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">shapefile</span>
+                <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">geojson</span>
+                <span class="flex-1"></span>
+                <span class="t-metaXS text-cobalt">6 sections bound</span>
+              </div>
+            </div>
+            <p class="t-proseXS text-pencil mt-3 text-center">one dataset, three versions, six sections that never go stale</p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: the rest of the toolkit ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div data-dms-group="content" class="w-full relative">
+      <div class="absolute inset-y-0 left-0 w-4 t6-rungs border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-rungs border-l border-rule hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="rest-lede" class="col-span-12 p-3">
+            <p class="t-metaSM text-pencil">the rest of the toolkit</p>
+            <h2 class="t-displayXL mt-3">Section types for real work</h2>
+          </section>
+
+          <section data-dms-section="rest-tables" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift flex flex-col">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Table -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M12 4.5v15"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">tables</h3>
+              <p class="t-proseSM text-graphite mt-2 flex-1">Spreadsheet sections handle tens of thousands of rows: column types,
+                formatted numbers, links, pills. A keyword search over the whole table is one toggle.</p>
+              <p class="t-metaXS text-pencil mt-4 border-t border-rule pt-3">sort · filter · paginate · search</p>
+            </div>
+          </section>
+          <section data-dms-section="rest-charts" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift flex flex-col">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Graph -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M7.5 16v-4M12 16V8M16.5 16v-6.5"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">charts</h3>
+              <p class="t-proseSM text-graphite mt-2 flex-1">Pick a dataset, an x, and a y. Charts render in the site's palette,
+                and a target line is just another series — no custom code on either side.</p>
+              <p class="t-metaXS text-pencil mt-4 border-t border-rule pt-3">bar · line · area · target lines</p>
+            </div>
+          </section>
+          <section data-dms-section="rest-maps" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift flex flex-col">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Map -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M9 4.5L4 6.5v13l5-2 6 2 5-2v-13l-5 2-6-2Z"/><path d="M9 4.5v13M15 6.5v13"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">maps</h3>
+              <p class="t-proseSM text-graphite mt-2 flex-1">GIS uploads render as real vector maps — parcels, corridors, county
+                lines — with popups bound to the same dataset as everything else.</p>
+              <p class="t-metaXS text-pencil mt-4 border-t border-rule pt-3">vector tiles · parcels · corridors · popups</p>
+            </div>
+          </section>
+          <section data-dms-section="rest-themes" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift flex flex-col">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Layers -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M12 3.5l8.5 4.5L12 12.5 3.5 8 12 3.5Z"/><path d="M3.5 12.5L12 17l8.5-4.5"/><path d="M3.5 17L12 21.5 20.5 17"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">themes</h3>
+              <p class="t-proseSM text-graphite mt-2 flex-1">Every button, nav, and card reads from theme tokens. Swap the theme and
+                the same content becomes a different site — dark mode included.</p>
+              <p class="t-metaXS text-pencil mt-4 border-t border-rule pt-3">tokens · named styles · light + dark</p>
+            </div>
+          </section>
+          <section data-dms-section="rest-publish" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift flex flex-col">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Publish -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 16V8M8.5 11.5L12 8l3.5 3.5"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">drafts &amp; publish</h3>
+              <p class="t-proseSM text-graphite mt-2 flex-1">Published pages are immutable snapshots. Visitors never see drafts, an
+                editor bug can't break a live page, and rolling back is picking a version.</p>
+              <p class="t-metaXS text-pencil mt-4 border-t border-rule pt-3">drafts · snapshots · rollback</p>
+            </div>
+          </section>
+          <section data-dms-section="rest-access" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift flex flex-col">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Lock -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">access</h3>
+              <p class="t-proseSM text-graphite mt-2 flex-1">Sign-in and roles are built in. Public pages stay public; edit rights
+                go to the people who own the content — DJs edit their show pages, staff edit listings.</p>
+              <p class="t-metaXS text-pencil mt-4 border-t border-rule pt-3">sign-in · roles · per-page access</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: CTA (feature band) ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div data-dms-group="feature" class="w-full relative">
+      <div class="t6-sheet-fade"></div>
+      <div class="absolute inset-y-0 left-0 w-4 t6-hatch border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-hatch border-l border-rule hidden xl:block"></div>
+      <div class="relative mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="cta" class="col-span-12 lg:col-span-8 lg:col-start-3 p-3 text-center">
+            <h2 class="t-displayXL">Try it on your own data.</h2>
+            <p class="t-prose text-graphite mt-4 max-w-measure mx-auto">The beta is invite-only while the known issues list gets
+              shorter. Bring a dataset and see how far one afternoon gets you.</p>
+            <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
+              <a href="beta-landing.html#invite" class="inline-flex items-center gap-2 t-prose font-medium text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-md px-5 py-2.5">
+                request an invite
+                <!-- icon: ArrowRight -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 12h15M13.5 6l6 6-6 6"/></svg>
+              </a>
+              <a href="docs.html" class="inline-flex items-center gap-2 t-prose font-medium text-ink border border-ruleStrong bg-panel hover:border-ink rounded-md px-5 py-2.5">
+                read the docs
+              </a>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══ LayoutGroup: footer ═══ -->
+  <div class="t6-divider" aria-hidden="true"></div>
+  <footer data-dms-group="footer" class="w-full">
+    <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-12 gap-0">
+        <section data-dms-section="footer" class="col-span-12 p-3">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <span class="flex items-center gap-2">
+              <!-- icon: Tile -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-cobalt" aria-hidden="true"><path d="M8 2.5v19M16 2.5v19M2.5 8h19M2.5 16h19" opacity="0.45"/><rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.1" fill="currentColor" stroke="none" transform="rotate(-8 12 12)"/></svg>
+              <span class="t-metaSM text-graphite">tessera · beta 0.6.0</span>
+            </span>
+            <span class="t-metaSM text-pencil">made in albany, ny</span>
+            <span class="t-metaSM text-pencil">this page is a tessera page</span>
+            <span class="flex-1"></span>
+            <a href="#" class="t-metaSM text-graphite hover:text-ink">changelog</a>
+            <a href="#" class="t-metaSM text-graphite hover:text-ink">roadmap</a>
+            <a href="#" class="t-metaSM text-graphite hover:text-ink">sign in</a>
+          </div>
+          <div class="border-t border-rule mt-6 pt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <span class="t-metaXS text-pencil">design system</span>
+            <a href="../design-system/theme.html" class="t-metaXS text-pencil hover:text-graphite">1 theme</a>
+            <a href="../design-system/layouts.html" class="t-metaXS text-pencil hover:text-graphite">2 layouts</a>
+            <a href="../design-system/grid.html" class="t-metaXS text-pencil hover:text-graphite">3 grid</a>
+            <a href="../design-system/components.html" class="t-metaXS text-pencil hover:text-graphite">4 components</a>
+            <a href="../design-system/patterns.html" class="t-metaXS text-pencil hover:text-graphite">5 patterns</a>
+            <a href="beta-landing.html" class="t-metaXS text-pencil hover:text-graphite">beta landing</a>
+            <span class="t-metaXS text-cobalt">features (this page)</span>
+            <a href="docs.html" class="t-metaXS text-pencil hover:text-graphite">docs</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

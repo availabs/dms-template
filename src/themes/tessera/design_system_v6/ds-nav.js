@@ -34,6 +34,8 @@
       landing: "beta-landing.html",
       pages: [
         { f: "beta-landing.html", t: "Beta landing" },
+        { f: "features.html", t: "Features" },
+        { f: "docs.html", t: "Docs landing" },
       ],
     },
   ];

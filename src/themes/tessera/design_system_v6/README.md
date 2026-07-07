@@ -4,9 +4,10 @@
 > passes. Visual language drawn from **tailwindcss.com, Tailwind Plus, and
 > zed.dev**: hairline structure, drafting-sheet grids, monospace metadata,
 > one saturated cobalt, borders over shadows — plus a handwritten margin
-> voice, rationed to drafting annotations. The one example page is **an
+> voice, rationed to drafting annotations. The anchor example page is **an
 > invite-only beta landing** — personable but professional (the original
-> friends-and-family register was formalized per owner feedback, v6.4).
+> friends-and-family register was formalized per owner feedback, v6.4) —
+> joined by a features page and a docs landing (v6.6).
 >
 > Read in this order: `src/dms/skills/designing-a-dms-design-system.md`
 > (the structural grammar) ·
@@ -95,7 +96,9 @@ design_system_v6/
 │                                 forms, auth, edit chrome, recurring
 │                                 brand patterns
 ├── pages/
-│   └── beta-landing.html      THE one example page (see below)
+│   ├── beta-landing.html      the anchor example page (see below)
+│   ├── features.html          marketing features page — Layout default
+│   └── docs.html              docs landing — Layout app (SideNav + search)
 └── theme/                     artifacts for the theme translation
     ├── icons.js                 icon registry — SOURCE OF TRUTH
     ├── index.css.additions      pointer shim → ../_shared.css
@@ -103,9 +106,9 @@ design_system_v6/
     └── README.md                translation notes
 ```
 
-## The example page
+## The example pages
 
-`pages/beta-landing.html` — the landing page for an invite-only
+`pages/beta-landing.html` — the anchor: the landing page for an invite-only
 website-builder beta. Personable but professional, no first person (v6.4):
 a stacked hero lockup — "Tessera" (displayHero) over "a data-driven
 website builder." (displayXL) with the blinking caret — an illustration of
@@ -115,12 +118,28 @@ capability tiles, a **known issues** board band (mono checklist of real
 bugs + a report-an-issue link), a small FAQ, and an invite form. The
 margin voice is held to two drafting annotations on the editor
 illustration, and feedback routes through real channels (form, issue
-link) — never a personal one. The TopNav links to product pages
-(features, docs — placeholders), not in-page anchors. Every band is a
-DMS-shaped LayoutGroup on the documented 12-col gap-0 grid; every
-capability named is something DMS actually does (in-place editing, live data
-binding, spreadsheets, avlGraph charts, MapLibre GIS, themes,
-drafts→publish).
+link) — never a personal one. The TopNav links to the features and docs
+pages, not in-page anchors. Every band is a DMS-shaped LayoutGroup on the
+documented 12-col gap-0 grid; every capability named is something DMS
+actually does (in-place editing, live data binding, spreadsheets, avlGraph
+charts, MapLibre GIS, themes, drafts→publish).
+
+`pages/features.html` (v6.6) — the marketing features page, Layout
+`default`. Three deep-dive bands (edit in place, the sheet, live data),
+each pairing copy + a mono spec line with a product miniature drawn from DS
+primitives — a selected section with t6-joint corner handles and its edit
+toolbar, a spanned mini-sheet with the grid overlay, a file→dataset card
+with a version pill — then six compact toolkit tiles (tables, charts,
+maps, themes, publish, access) and an invite CTA. No three.js here: the
+sketch layer stays the landing hero's signature.
+
+`pages/docs.html` (v6.6) — the docs landing, Layout `app`: the SideNav
+carries doc categories (Start here active, with level-2 anchors) and the
+slim TopNav adds a docs search field with a `/` key hint. Bands (all
+`mr-auto`): a quick start of three numbered steps with board code panes
+(`npx tessera new` · `tessera dataset upload` · `tessera publish`), four
+concept cards, a popular-guides list in the flush-row style, and a help
+band linking the known-issues board. All guide links are placeholders.
 
 **Alignment note:** this page uses Layout `default` (marketing) — bands
 centre with `mx-auto`, the documented exception (no SideNav to hug).
