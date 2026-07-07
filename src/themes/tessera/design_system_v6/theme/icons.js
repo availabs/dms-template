@@ -36,12 +36,12 @@ const C = (cx, cy, r, extra) => React.createElement("circle", { cx, cy, r, ...ex
 
 export const icons = {
   /* ── brand ─────────────────────────────────────────────────────────── */
-  // the mark: a tile mid-placement on graph cells, cursor at its corner
+  // the mark: graph paper with one cell claimed — a filled tessera set at −8°.
+  // the only filled shape in the set; the fill is what makes it the logo.
   Tile: (p) =>
     svg(p, [
-      P("M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3", { key: "g", opacity: 0.45 }),
-      R(9.8, 9.8, 7.4, 7.4, { key: "t", rx: 1.5, transform: "rotate(-6 13.5 13.5)" }),
-      P("M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2", { key: "c" }),
+      P("M8 2.5v19M16 2.5v19M2.5 8h19M2.5 16h19", { key: "g", opacity: 0.45 }),
+      R(9.2, 9.2, 5.6, 5.6, { key: "t", rx: 1.1, fill: "currentColor", stroke: "none", transform: "rotate(-8 12 12)" }),
     ]),
   Grid: (p) => svg(p, [P("M3.5 9h17M3.5 15h17M9 3.5v17M15 3.5v17", { key: "a" })]),
 

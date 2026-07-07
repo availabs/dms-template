@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tessera — Build a site worth preserving</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:       '#20323A',
+          paper:     '#FBF4E2',
+          parchment: '#F0E1BE',
+          gold:      '#C79A3B',
+          canyon:    '#D97E45',
+          ember:     '#BC5B44',
+          teal:      '#33706A',
+          pine:      '#27443E',
+          sage:      '#A9C4A2',
+        },
+      }
+    }
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Jost:ital,wght@0,400;0,500;1,400&family=Yellowtail&display=swap">
+<link rel="stylesheet" href="../_shared.css"/>
+</head>
+
+<body class="bg-parchment text-ink font-prose antialiased">
+
+<!-- ════════════════════════ LAYOUT: default (marketing) ═══════════════════════ -->
+<div class="min-h-screen flex flex-col bg-parchment"><!-- Layout.outerWrapper -->
+
+  <!-- ─── TopNav ─── -->
+  <nav class="w-full bg-parchment">
+    <div class="mx-auto w-full max-w-[1200px] px-6">
+      <div class="h-16 flex items-center justify-between gap-6">
+        <!-- Logo lockup -->
+        <a href="#" class="flex items-center gap-3">
+          <!-- icon: TesseraMark -->
+          <svg viewBox="0 0 24 24" class="w-7 h-7" aria-hidden="true">
+            <g transform="rotate(45 12 12)">
+              <rect x="4.5" y="4.5" width="7" height="7" fill="#C79A3B"/>
+              <rect x="12.5" y="4.5" width="7" height="7" fill="#D97E45"/>
+              <rect x="4.5" y="12.5" width="7" height="7" fill="#33706A"/>
+              <rect x="12.5" y="12.5" width="7" height="7" fill="#BC5B44"/>
+              <rect x="4.5" y="4.5" width="15" height="15" fill="none" stroke="#20323A" stroke-width="2"/>
+            </g>
+          </svg>
+          <span class="font-display font-bold uppercase text-[22px] leading-none tracking-[0.14em] pt-0.5">Tessera</span>
+        </a>
+        <!-- Primary menu -->
+        <div class="hidden md:flex items-center gap-7">
+          <a href="#features" class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] hover:text-ember">Features</a>
+          <a href="#editor"   class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] hover:text-ember">Editor</a>
+          <a href="#themes"   class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] hover:text-ember">Themes</a>
+          <a href="#pricing"  class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] hover:text-ember">Pricing</a>
+          <a href="#"         class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] hover:text-ember">Docs</a>
+        </div>
+        <!-- Utility slot -->
+        <div class="hidden md:flex items-center gap-3">
+          <a href="#" class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] px-3 py-2 hover:text-ember">Sign in</a>
+          <a href="#pricing" class="tsr-press font-prose font-medium uppercase text-[11px] tracking-[0.22em] bg-ink text-parchment border-2 border-ink px-4 py-2.5 hover:bg-pine">Start building</a>
+        </div>
+        <!-- Mobile toggle -->
+        <button class="md:hidden p-2 border-2 border-ink" aria-label="Open menu">
+          <!-- icon: Menu -->
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" aria-hidden="true">
+            <path d="M3 6h18M3 12h18M3 18h18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <!-- deco double rule -->
+    <div class="w-full border-t-2 border-ink"></div>
+    <div class="w-full h-[3px]"></div>
+    <div class="w-full border-t border-ink"></div>
+  </nav>
+
+  <!-- ─── Layout.childWrapper ─── -->
+  <main class="flex-1 w-full">
+
+    <!-- ══════════ LayoutGroup: hero ══════════ -->
+    <section class="w-full tsr-bands"><!-- wrapper1 -->
+      <div class="mx-auto w-full max-w-[1200px] px-6 pt-12 pb-14"><!-- wrapper2 -->
+        <div class="grid grid-cols-12 gap-0"><!-- sectionArray -->
+
+          <!-- Section: hero copy · span 7 -->
+          <div data-section class="col-span-12 lg:col-span-7 p-3 flex flex-col justify-center">
+            <div class="flex items-center gap-3 mb-6">
+              <span class="block w-10 border-t-2 border-ink"></span>
+              <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em]">An open-source content management system</p>
+            </div>
+            <h1 class="font-display font-bold uppercase text-[38px] md:text-[54px] lg:text-[76px] leading-[0.98] tracking-[0.05em]">
+              <span class="block">Build a site</span>
+              <span class="flex items-center gap-5">
+                <span>Worth</span>
+                <span class="flex-1 border-t-2 border-ink"></span>
+                <span class="w-3 h-3 rotate-45 bg-gold border-2 border-ink shrink-0"></span>
+              </span>
+              <span class="block text-ember">Preserving</span>
+            </h1>
+            <p class="font-prose text-[19px] leading-[1.55] max-w-[52ch] mt-6">
+              Tessera is a CMS in the WordPress tradition, cut for this decade —
+              compose pages from sections, bind them to living data, and publish
+              a site that outlasts the trend cycle.
+            </p>
+            <div class="flex flex-wrap items-center gap-4 mt-8">
+              <a href="#pricing" class="tsr-press font-prose font-medium uppercase text-[13px] tracking-[0.18em] bg-ink text-parchment border-2 border-ink px-6 py-3.5 hover:bg-pine">Start building — free</a>
+              <a href="#editor" class="tsr-press font-prose font-medium uppercase text-[13px] tracking-[0.18em] text-ink border-2 border-ink px-6 py-3.5 hover:bg-ink hover:text-parchment">Tour the editor</a>
+            </div>
+            <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] mt-8 flex items-center gap-3 text-ink/80">
+              <span>Self-hosted or hosted</span>
+              <span class="w-1.5 h-1.5 rotate-45 bg-gold border border-ink"></span>
+              <span>Open source</span>
+              <span class="w-1.5 h-1.5 rotate-45 bg-gold border border-ink"></span>
+              <span>Est. 2026</span>
+            </p>
+          </div>
+
+          <!-- Section: hero poster · span 5 -->
+          <div data-section class="col-span-12 lg:col-span-5 p-3">
+            <figure class="tsr-frame tsr-lift bg-paper p-5 max-w-[440px] mx-auto">
+              <!-- decorative : hero travel poster, "the monument print" -->
+              <svg viewBox="0 0 400 520" class="w-full h-auto block" role="img" aria-label="Art-deco travel poster of a canyon at dusk, titled Tessera">
+                <!-- stock -->
+                <rect x="0" y="0" width="400" height="520" fill="#FBF4E2"/>
+                <!-- art plate -->
+                <g>
+                  <!-- sky bands -->
+                  <rect x="24" y="24" width="352" height="120" fill="#EFDFB9"/>
+                  <rect x="24" y="144" width="352" height="60" fill="#E7C687"/>
+                  <rect x="24" y="204" width="352" height="46" fill="#DFA45C"/>
+                  <!-- sun rays -->
+                  <g fill="#C79A3B" opacity="0.55">
+                    <polygon points="197,138 203,138 200,52" transform="rotate(0 200 138)"/>
+                    <polygon points="197,138 203,138 200,60" transform="rotate(28 200 138)"/>
+                    <polygon points="197,138 203,138 200,60" transform="rotate(-28 200 138)"/>
+                    <polygon points="197,138 203,138 200,72" transform="rotate(56 200 138)"/>
+                    <polygon points="197,138 203,138 200,72" transform="rotate(-56 200 138)"/>
+                    <polygon points="197,138 203,138 200,84" transform="rotate(82 200 138)"/>
+                    <polygon points="197,138 203,138 200,84" transform="rotate(-82 200 138)"/>
+                  </g>
+                  <!-- sun -->
+                  <circle cx="200" cy="138" r="34" fill="#C79A3B"/>
+                  <circle cx="200" cy="138" r="34" fill="none" stroke="#FBF4E2" stroke-width="3"/>
+                  <!-- far mesa -->
+                  <path d="M24 250 L76 206 H128 L168 250 H236 L272 214 H330 L376 250 V276 H24 Z" fill="#A9C4A2"/>
+                  <!-- mid mesa -->
+                  <path d="M24 292 L96 236 H150 L214 292 H376 V320 H24 Z" fill="#D97E45"/>
+                  <!-- near ridge -->
+                  <path d="M24 320 L86 286 H134 L196 320 H262 L306 292 H352 L376 320 V352 H24 Z" fill="#BC5B44"/>
+                  <!-- river base -->
+                  <rect x="24" y="352" width="352" height="46" fill="#33706A"/>
+                  <path d="M60 364 h64 M150 376 h84 M270 366 h56 M96 386 h52 M210 390 h44" stroke="#A9C4A2" stroke-width="4" stroke-linecap="square" opacity="0.6"/>
+                  <!-- foreground pines -->
+                  <g fill="#27443E">
+                    <path d="M56 398 l16 -34 16 34 Z M60 380 l12 -26 12 26 Z"/>
+                    <path d="M330 398 l18 -40 18 40 Z M336 376 l12 -28 12 28 Z"/>
+                  </g>
+                  <rect x="24" y="398" width="352" height="26" fill="#20323A"/>
+                  <g fill="#20323A">
+                    <path d="M96 398 l14 -30 14 30 Z"/>
+                    <path d="M282 398 l14 -30 14 30 Z"/>
+                  </g>
+                  <!-- plate keyline -->
+                  <rect x="24" y="24" width="352" height="400" fill="none" stroke="#20323A" stroke-width="3"/>
+                </g>
+                <!-- title block -->
+                <text x="200" y="466" text-anchor="middle" fill="#20323A" font-family="Josefin Sans, sans-serif" font-size="40" font-weight="700" letter-spacing="10">TESSERA</text>
+                <g font-family="Jost, sans-serif" font-size="10" font-weight="500" letter-spacing="2.5" fill="#20323A">
+                  <text x="118" y="496" text-anchor="middle">EVERY PAGE</text>
+                  <text x="282" y="496" text-anchor="middle">A MONUMENT</text>
+                </g>
+                <circle cx="200" cy="492" r="15" fill="none" stroke="#20323A" stroke-width="2"/>
+                <g font-family="Jost, sans-serif" font-weight="500" fill="#20323A">
+                  <text x="200" y="489.5" text-anchor="middle" font-size="6.5" letter-spacing="1">EST</text>
+                  <text x="200" y="499" text-anchor="middle" font-size="8" letter-spacing="1">2026</text>
+                </g>
+              </svg>
+            </figure>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ LayoutGroup: tone bar ══════════ -->
+    <div class="w-full h-3 tsr-tesserae border-y-2 border-ink"></div>
+
+    <!-- ══════════ LayoutGroup: features ══════════ -->
+    <section id="features" class="w-full bg-parchment">
+      <div class="mx-auto w-full max-w-[1200px] px-6 py-14">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Section: band heading · span 12 -->
+          <div data-section class="col-span-12 p-3 text-center">
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] mb-3">The expedition kit</p>
+            <h2 class="font-display font-semibold uppercase text-[32px] md:text-[44px] leading-[1.05] tracking-[0.06em]">Everything a publisher packs</h2>
+            <div class="flex items-center gap-3 mt-5 mb-4 max-w-[220px] mx-auto">
+              <span class="flex-1 border-t-2 border-ink"></span>
+              <span class="w-2 h-2 rotate-45 bg-gold border border-ink"></span>
+              <span class="flex-1 border-t-2 border-ink"></span>
+            </div>
+            <p class="font-prose text-[19px] leading-[1.55] max-w-[58ch] mx-auto">
+              No plugin roulette. The tools every site needs are stamped into the
+              core — and everything you make stays yours to export.
+            </p>
+          </div>
+
+          <!-- Section: feature badge · span 4 -->
+          <div data-section class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="tsr-frame tsr-lift bg-paper p-7 h-full flex flex-col gap-4">
+              <span class="w-14 h-14 rounded-full border-2 border-ink bg-gold/30 flex items-center justify-center">
+                <!-- icon: Layers -->
+                <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3l9 5-9 5-9-5 9-5Z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/>
+                </svg>
+              </span>
+              <h3 class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">Section composer</h3>
+              <p class="font-prose text-[14px] leading-[1.5]">
+                Pages are stacks of sections on a 12-column grid. Drag, span, and
+                reorder in place — no shortcodes, no page-builder plugins.
+              </p>
+            </div>
+          </div>
+
+          <!-- Section: feature badge · span 4 -->
+          <div data-section class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="tsr-frame tsr-lift bg-paper p-7 h-full flex flex-col gap-4">
+              <span class="w-14 h-14 rounded-full border-2 border-ink bg-canyon/30 flex items-center justify-center">
+                <!-- icon: Bolt -->
+                <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M13 2 5 13.5h6L11 22l8-11.5h-6L13 2Z"/>
+                </svg>
+              </span>
+              <h3 class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">Living data cards</h3>
+              <p class="font-prose text-[14px] leading-[1.5]">
+                Bind any section to a dataset. Tables, charts, and cards refresh
+                the moment the data does — no copy-paste republishing.
+              </p>
+            </div>
+          </div>
+
+          <!-- Section: feature badge · span 4 -->
+          <div data-section class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="tsr-frame tsr-lift bg-paper p-7 h-full flex flex-col gap-4">
+              <span class="w-14 h-14 rounded-full border-2 border-ink bg-teal/30 flex items-center justify-center">
+                <!-- icon: Palette -->
+                <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H12a2 2 0 0 1 0-4h6a3 3 0 0 0 3-3c0-4-4-7-9-7Z"/>
+                  <path d="M7.5 10.5h.01M11 6.5h.01M16 7.5h.01"/>
+                </svg>
+              </span>
+              <h3 class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">The theme press</h3>
+              <p class="font-prose text-[14px] leading-[1.5]">
+                One click re-inks every page. Color, type, and layout tokens
+                travel together, so a redesign is never a rebuild.
+              </p>
+            </div>
+          </div>
+
+          <!-- Section: feature badge · span 4 -->
+          <div data-section class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="tsr-frame tsr-lift bg-paper p-7 h-full flex flex-col gap-4">
+              <span class="w-14 h-14 rounded-full border-2 border-ink bg-ember/30 flex items-center justify-center">
+                <!-- icon: Shield -->
+                <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3 4.5 6v6c0 4.5 3 7.5 7.5 9 4.5-1.5 7.5-4.5 7.5-9V6L12 3Z"/><path d="m9 12 2 2 4-4.5"/>
+                </svg>
+              </span>
+              <h3 class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">Drafts &amp; roles</h3>
+              <p class="font-prose text-[14px] leading-[1.5]">
+                Writers draft, editors approve, admins publish. Every page keeps
+                its full version history, ready to restore.
+              </p>
+            </div>
+          </div>
+
+          <!-- Section: feature badge · span 4 -->
+          <div data-section class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="tsr-frame tsr-lift bg-paper p-7 h-full flex flex-col gap-4">
+              <span class="w-14 h-14 rounded-full border-2 border-ink bg-sage/40 flex items-center justify-center">
+                <!-- icon: Archive -->
+                <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="5"/><path d="M5 9v11h14V9"/><path d="M10 13h4"/>
+                </svg>
+              </span>
+              <h3 class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">Datasets &amp; media</h3>
+              <p class="font-prose text-[14px] leading-[1.5]">
+                Upload spreadsheets, GeoJSON, and imagery once; reuse them across
+                every page — and every site — you run.
+              </p>
+            </div>
+          </div>
+
+          <!-- Section: feature badge · span 4 -->
+          <div data-section class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="tsr-frame tsr-lift bg-paper p-7 h-full flex flex-col gap-4">
+              <span class="w-14 h-14 rounded-full border-2 border-ink bg-canyon/30 flex items-center justify-center">
+                <!-- icon: Compass -->
+                <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="#20323A" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/>
+                </svg>
+              </span>
+              <h3 class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">Search &amp; structure</h3>
+              <p class="font-prose text-[14px] leading-[1.5]">
+                Clean URLs, sitemaps, feeds, and fast full-text search ship with
+                every site. Nothing to bolt on afterward.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ LayoutGroup: editor showcase ══════════ -->
+    <section id="editor" class="w-full bg-paper border-y-2 border-ink">
+      <div class="mx-auto w-full max-w-[1200px] px-6 py-14">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Section: composing-room copy · span 4 -->
+          <div data-section class="col-span-12 lg:col-span-4 p-3 flex flex-col justify-center">
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] mb-3">The composing room</p>
+            <h2 class="font-display font-semibold uppercase text-[30px] leading-[1.1] tracking-[0.08em]">Compose like a printmaker</h2>
+            <div class="flex items-center gap-3 mt-5 mb-5 max-w-[180px]">
+              <span class="flex-1 border-t-2 border-ink"></span>
+              <span class="w-2 h-2 rotate-45 bg-gold border border-ink"></span>
+              <span class="flex-1 border-t-2 border-ink"></span>
+            </div>
+            <p class="font-prose text-[16px] leading-[1.6] mb-6">
+              The editor is the page. Set a section's span, pick its type style,
+              bind its data — and watch the print come up exactly as readers
+              will see it.
+            </p>
+            <ul class="flex flex-col gap-3">
+              <li class="flex items-start gap-3">
+                <span class="mt-1 w-4 h-4 rotate-45 bg-gold/40 border-2 border-ink shrink-0 flex items-center justify-center">
+                  <!-- icon: Check -->
+                  <svg viewBox="0 0 24 24" class="w-2.5 h-2.5 -rotate-45" fill="none" stroke="#20323A" stroke-width="3.5" stroke-linecap="square" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                </span>
+                <span class="font-prose text-[14px] leading-[1.5]">Every section snaps to the same 12-column grid</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-1 w-4 h-4 rotate-45 bg-gold/40 border-2 border-ink shrink-0 flex items-center justify-center">
+                  <!-- icon: Check -->
+                  <svg viewBox="0 0 24 24" class="w-2.5 h-2.5 -rotate-45" fill="none" stroke="#20323A" stroke-width="3.5" stroke-linecap="square" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                </span>
+                <span class="font-prose text-[14px] leading-[1.5]">Live sources preview with real rows, not lorem</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-1 w-4 h-4 rotate-45 bg-gold/40 border-2 border-ink shrink-0 flex items-center justify-center">
+                  <!-- icon: Check -->
+                  <svg viewBox="0 0 24 24" class="w-2.5 h-2.5 -rotate-45" fill="none" stroke="#20323A" stroke-width="3.5" stroke-linecap="square" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                </span>
+                <span class="font-prose text-[14px] leading-[1.5]">Draft and published states, side by side</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Section: editor plate · span 8 -->
+          <div data-section class="col-span-12 lg:col-span-8 p-3">
+            <div class="tsr-frame bg-parchment overflow-hidden">
+              <div class="p-2.5">
+                <!-- browser bar -->
+                <div class="bg-ink flex items-center gap-3 px-4 py-2.5">
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rotate-45 bg-ember"></span>
+                    <span class="w-2 h-2 rotate-45 bg-gold"></span>
+                    <span class="w-2 h-2 rotate-45 bg-teal"></span>
+                  </span>
+                  <span class="flex-1 text-center font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-parchment/80">tessera.press / edit / the-field-almanac</span>
+                  <span class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-gold">Draft</span>
+                </div>
+                <!-- editor body -->
+                <div class="flex bg-paper border-x-2 border-b-2 border-ink">
+                  <!-- sections rail -->
+                  <div class="hidden sm:flex w-44 shrink-0 border-r-2 border-ink flex-col">
+                    <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] px-4 pt-4 pb-2 text-ink/70">Sections</p>
+                    <div class="flex flex-col">
+                      <div class="px-4 py-2.5 flex items-center gap-2 border-y border-transparent">
+                        <span class="text-ink/50 leading-none">⠿</span>
+                        <span class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Masthead</span>
+                      </div>
+                      <div class="px-4 py-2.5 flex items-center gap-2 bg-gold/25 border-y border-ink">
+                        <span class="text-ink/70 leading-none">⠿</span>
+                        <span class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Hero poster</span>
+                      </div>
+                      <div class="px-4 py-2.5 flex items-center gap-2 border-y border-transparent">
+                        <span class="text-ink/50 leading-none">⠿</span>
+                        <span class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Story</span>
+                      </div>
+                      <div class="px-4 py-2.5 flex items-center gap-2 border-y border-transparent">
+                        <span class="text-ink/50 leading-none">⠿</span>
+                        <span class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Data card</span>
+                      </div>
+                      <div class="px-4 py-2.5 flex items-center gap-2 border-y border-transparent">
+                        <span class="text-ink/50 leading-none">⠿</span>
+                        <span class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">Gallery</span>
+                      </div>
+                    </div>
+                    <div class="mt-auto p-4">
+                      <span class="block text-center font-prose font-medium uppercase text-[10px] tracking-[0.18em] border-2 border-ink border-dashed py-2 text-ink/70">+ Add section</span>
+                    </div>
+                  </div>
+                  <!-- canvas -->
+                  <div class="flex-1 p-5 flex flex-col gap-3 min-w-0">
+                    <!-- mini hero poster, selected -->
+                    <div class="border-2 border-gold bg-ink p-4 flex flex-col items-center gap-2">
+                      <span class="font-display font-bold uppercase text-[16px] tracking-[0.2em] text-parchment">The Field Almanac</span>
+                      <span class="font-prose font-medium uppercase text-[8px] tracking-[0.22em] text-gold">Notes from the north country · est. 1987</span>
+                    </div>
+                    <!-- text lines -->
+                    <div class="flex flex-col gap-1.5 px-1 py-1">
+                      <span class="block h-1.5 bg-ink/20 w-full"></span>
+                      <span class="block h-1.5 bg-ink/20 w-11/12"></span>
+                      <span class="block h-1.5 bg-ink/20 w-4/5"></span>
+                    </div>
+                    <!-- 3-up cards -->
+                    <div class="grid grid-cols-3 gap-2">
+                      <div class="border-2 border-ink bg-parchment p-2 flex flex-col gap-1.5">
+                        <span class="block h-8 bg-teal"></span>
+                        <span class="block h-1 bg-ink/25 w-4/5"></span>
+                        <span class="block h-1 bg-ink/25 w-3/5"></span>
+                      </div>
+                      <div class="border-2 border-ink bg-parchment p-2 flex flex-col gap-1.5">
+                        <span class="block h-8 bg-canyon"></span>
+                        <span class="block h-1 bg-ink/25 w-4/5"></span>
+                        <span class="block h-1 bg-ink/25 w-3/5"></span>
+                      </div>
+                      <div class="border-2 border-ink bg-parchment p-2 flex flex-col gap-1.5">
+                        <span class="block h-8 bg-ember"></span>
+                        <span class="block h-1 bg-ink/25 w-4/5"></span>
+                        <span class="block h-1 bg-ink/25 w-3/5"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- properties rail -->
+                  <div class="hidden md:flex w-40 shrink-0 border-l-2 border-ink flex-col p-4 gap-4">
+                    <div>
+                      <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">Span</p>
+                      <div class="grid grid-cols-12 gap-px">
+                        <span class="h-3 bg-gold border border-ink col-span-1"></span><span class="h-3 bg-gold border border-ink"></span><span class="h-3 bg-gold border border-ink"></span><span class="h-3 bg-gold border border-ink"></span><span class="h-3 bg-gold border border-ink"></span><span class="h-3 bg-gold border border-ink"></span><span class="h-3 bg-gold border border-ink"></span><span class="h-3 bg-gold border border-ink"></span><span class="h-3 bg-paper border border-ink"></span><span class="h-3 bg-paper border border-ink"></span><span class="h-3 bg-paper border border-ink"></span><span class="h-3 bg-paper border border-ink"></span>
+                      </div>
+                      <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] mt-1.5">8 of 12</p>
+                    </div>
+                    <div>
+                      <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mb-2">Type style</p>
+                      <div class="border-2 border-ink px-2 py-1.5 flex items-center justify-between">
+                        <span class="font-prose font-medium uppercase text-[10px] tracking-[0.18em]">displayLG</span>
+                        <span class="text-[9px]">▾</span>
+                      </div>
+                    </div>
+                    <div class="mt-auto">
+                      <span class="block text-center font-prose font-medium uppercase text-[10px] tracking-[0.18em] bg-ink text-parchment py-2">Publish</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- plate caption -->
+                <p class="text-center font-prose font-medium uppercase text-[10px] tracking-[0.18em] pt-3 pb-1 text-ink/70">
+                  The Tessera editor · sections on a 12-column grid · what you compose is what ships
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ LayoutGroup: theme poster wall ══════════ -->
+    <section id="themes" class="w-full bg-parchment">
+      <div class="mx-auto w-full max-w-[1200px] px-6 py-14">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Section: band heading · span 12 -->
+          <div data-section class="col-span-12 p-3 text-center">
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] mb-3">The theme gallery</p>
+            <h2 class="font-display font-semibold uppercase text-[32px] md:text-[44px] leading-[1.05] tracking-[0.06em]">Change the scenery,<br class="md:hidden"/> keep the story</h2>
+            <div class="flex items-center gap-3 mt-5 mb-4 max-w-[220px] mx-auto">
+              <span class="flex-1 border-t-2 border-ink"></span>
+              <span class="w-2 h-2 rotate-45 bg-gold border border-ink"></span>
+              <span class="flex-1 border-t-2 border-ink"></span>
+            </div>
+            <p class="font-prose text-[19px] leading-[1.55] max-w-[58ch] mx-auto">
+              A theme is a full edition — palette, type scale, and layouts in one
+              print run. Swap it and every page you've ever published follows.
+            </p>
+          </div>
+
+          <!-- Section: theme poster "Canyon" · span 4 -->
+          <div data-section class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <figure class="tsr-frame tsr-lift bg-paper p-4 h-full">
+              <!-- decorative : Canyon theme poster -->
+              <svg viewBox="0 0 280 360" class="w-full h-auto block" role="img" aria-label="Canyon theme poster — dusk palette">
+                <rect width="280" height="360" fill="#FBF4E2"/>
+                <rect x="16" y="16" width="248" height="252" fill="#EFDFB9"/>
+                <rect x="16" y="120" width="248" height="60" fill="#E7C687"/>
+                <circle cx="140" cy="104" r="26" fill="#C79A3B"/>
+                <circle cx="140" cy="104" r="26" fill="none" stroke="#FBF4E2" stroke-width="2.5"/>
+                <path d="M16 180 L60 140 H100 L136 180 H176 L208 150 H240 L264 180 V204 H16 Z" fill="#D97E45"/>
+                <path d="M16 204 L70 176 H112 L164 204 H264 V232 H16 Z" fill="#BC5B44"/>
+                <rect x="16" y="232" width="248" height="36" fill="#27443E"/>
+                <path d="M52 232 l12 -24 12 24 Z M212 232 l12 -24 12 24 Z" fill="#20323A"/>
+                <rect x="16" y="16" width="248" height="252" fill="none" stroke="#20323A" stroke-width="3"/>
+                <rect x="16" y="284" width="248" height="60" fill="#20323A"/>
+                <text x="140" y="312" text-anchor="middle" fill="#FBF4E2" font-family="Josefin Sans, sans-serif" font-size="20" font-weight="700" letter-spacing="6">CANYON</text>
+                <text x="140" y="330" text-anchor="middle" fill="#C79A3B" font-family="Jost, sans-serif" font-size="8" font-weight="500" letter-spacing="2.5">DUSK EDITION · SERIF FREE</text>
+              </svg>
+              <figcaption class="flex items-center justify-between pt-3 px-1">
+                <span class="font-display font-semibold uppercase text-[18px] tracking-[0.12em]">Canyon</span>
+                <span class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded-full border border-ink bg-canyon"></span>
+                  <span class="w-3 h-3 rounded-full border border-ink bg-ember"></span>
+                  <span class="w-3 h-3 rounded-full border border-ink bg-gold"></span>
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+
+          <!-- Section: theme poster "Headland" · span 4 -->
+          <div data-section class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <figure class="tsr-frame tsr-lift bg-paper p-4 h-full">
+              <!-- decorative : Headland theme poster -->
+              <svg viewBox="0 0 280 360" class="w-full h-auto block" role="img" aria-label="Headland theme poster — coastal palette">
+                <rect width="280" height="360" fill="#FBF4E2"/>
+                <rect x="16" y="16" width="248" height="252" fill="#FBF4E2"/>
+                <g fill="#A9C4A2" opacity="0.7">
+                  <ellipse cx="80" cy="56" rx="40" ry="12"/>
+                  <ellipse cx="196" cy="80" rx="52" ry="14"/>
+                  <ellipse cx="120" cy="104" rx="34" ry="10"/>
+                </g>
+                <path d="M56 176 L88 84 L128 68 L152 96 L160 176 Z" fill="#33706A"/>
+                <g fill="#27443E">
+                  <path d="M92 84 l10 -22 10 22 Z"/>
+                  <path d="M112 76 l9 -20 9 20 Z"/>
+                  <path d="M130 84 l8 -18 8 18 Z"/>
+                </g>
+                <path d="M196 176 l14 -44 6 44 Z" fill="#27443E"/>
+                <rect x="16" y="176" width="248" height="92" fill="#A9C4A2"/>
+                <path d="M32 196 h56 M120 208 h72 M52 224 h44 M168 232 h64 M96 248 h58" stroke="#33706A" stroke-width="5" stroke-linecap="square"/>
+                <path d="M170 176 a10 6 0 0 1 20 0 Z M60 176 a8 5 0 0 1 16 0 Z" fill="#27443E"/>
+                <rect x="16" y="16" width="248" height="252" fill="none" stroke="#20323A" stroke-width="3"/>
+                <rect x="16" y="284" width="248" height="60" fill="#33706A"/>
+                <text x="140" y="312" text-anchor="middle" fill="#FBF4E2" font-family="Josefin Sans, sans-serif" font-size="20" font-weight="700" letter-spacing="5">HEADLAND</text>
+                <text x="140" y="330" text-anchor="middle" fill="#FBF4E2" opacity="0.75" font-family="Jost, sans-serif" font-size="8" font-weight="500" letter-spacing="2.5">COASTAL EDITION · COOL INK</text>
+              </svg>
+              <figcaption class="flex items-center justify-between pt-3 px-1">
+                <span class="font-display font-semibold uppercase text-[18px] tracking-[0.12em]">Headland</span>
+                <span class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded-full border border-ink bg-teal"></span>
+                  <span class="w-3 h-3 rounded-full border border-ink bg-sage"></span>
+                  <span class="w-3 h-3 rounded-full border border-ink bg-pine"></span>
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+
+          <!-- Section: theme poster "Valley" · span 4 -->
+          <div data-section class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <figure class="tsr-frame tsr-lift bg-paper p-4 h-full">
+              <!-- decorative : Valley theme poster -->
+              <svg viewBox="0 0 280 360" class="w-full h-auto block" role="img" aria-label="Valley theme poster — alpine palette">
+                <rect width="280" height="360" fill="#FBF4E2"/>
+                <rect x="16" y="16" width="248" height="252" fill="#A9C4A2"/>
+                <g fill="#FBF4E2" opacity="0.8">
+                  <ellipse cx="180" cy="52" rx="48" ry="12"/>
+                  <ellipse cx="96" cy="76" rx="36" ry="10"/>
+                </g>
+                <path d="M16 200 V60 L96 96 L96 200 Z" fill="#C79A3B"/>
+                <path d="M16 200 V120 L60 138 L60 200 Z" fill="#27443E" opacity="0.35"/>
+                <path d="M264 200 V72 L188 108 V200 Z" fill="#33706A"/>
+                <path d="M226 108 v92 h6 v-92 Z" fill="#FBF4E2" opacity="0.9"/>
+                <path d="M96 200 L140 148 L188 200 Z" fill="#27443E"/>
+                <rect x="16" y="200" width="248" height="68" fill="#33706A"/>
+                <path d="M40 220 h64 M140 232 h72 M64 248 h52" stroke="#A9C4A2" stroke-width="5" stroke-linecap="square" opacity="0.7"/>
+                <g fill="#27443E">
+                  <path d="M36 200 l10 -22 10 22 Z"/>
+                  <path d="M232 200 l10 -22 10 22 Z"/>
+                </g>
+                <rect x="16" y="16" width="248" height="252" fill="none" stroke="#20323A" stroke-width="3"/>
+                <rect x="16" y="284" width="248" height="60" fill="#27443E"/>
+                <text x="140" y="312" text-anchor="middle" fill="#FBF4E2" font-family="Josefin Sans, sans-serif" font-size="20" font-weight="700" letter-spacing="6">VALLEY</text>
+                <text x="140" y="330" text-anchor="middle" fill="#A9C4A2" font-family="Jost, sans-serif" font-size="8" font-weight="500" letter-spacing="2.5">ALPINE EDITION · WIDE MEASURE</text>
+              </svg>
+              <figcaption class="flex items-center justify-between pt-3 px-1">
+                <span class="font-display font-semibold uppercase text-[18px] tracking-[0.12em]">Valley</span>
+                <span class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded-full border border-ink bg-gold"></span>
+                  <span class="w-3 h-3 rounded-full border border-ink bg-teal"></span>
+                  <span class="w-3 h-3 rounded-full border border-ink bg-sage"></span>
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+
+          <!-- Section: gallery footer link · span 12 -->
+          <div data-section class="col-span-12 p-3 text-center">
+            <a href="#" class="inline-flex items-center gap-2 font-prose font-medium uppercase text-[13px] tracking-[0.18em] border-b-2 border-gold pb-1 hover:text-ember hover:border-ember">
+              Browse all 38 themes
+              <!-- icon: ArrowRight -->
+              <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 12h15m0 0-6-6m6 6-6 6"/></svg>
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ LayoutGroup: stats band ══════════ -->
+    <section class="w-full bg-ink border-y-2 border-ink">
+      <div class="mx-auto w-full max-w-[1200px] px-6 py-10">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Section: stat · span 3 -->
+          <div data-section class="col-span-6 lg:col-span-3 p-3 text-center lg:border-r lg:border-parchment/25">
+            <p class="font-display font-semibold uppercase text-[44px] leading-[1.05] tracking-[0.06em] text-gold tabular-nums">38</p>
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-parchment mt-1">Bundled themes</p>
+          </div>
+          <!-- Section: stat · span 3 -->
+          <div data-section class="col-span-6 lg:col-span-3 p-3 text-center lg:border-r lg:border-parchment/25">
+            <p class="font-display font-semibold uppercase text-[44px] leading-[1.05] tracking-[0.06em] text-gold tabular-nums">120<span class="text-[26px] align-baseline">ms</span></p>
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-parchment mt-1">From save to live</p>
+          </div>
+          <!-- Section: stat · span 3 -->
+          <div data-section class="col-span-6 lg:col-span-3 p-3 text-center lg:border-r lg:border-parchment/25">
+            <p class="font-display font-semibold uppercase text-[44px] leading-[1.05] tracking-[0.06em] text-gold tabular-nums">12<span class="text-[26px] align-baseline">col</span></p>
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-parchment mt-1">Section grid</p>
+          </div>
+          <!-- Section: stat · span 3 -->
+          <div data-section class="col-span-6 lg:col-span-3 p-3 text-center">
+            <p class="font-display font-semibold uppercase text-[44px] leading-[1.05] tracking-[0.06em] text-gold tabular-nums">100%</p>
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-parchment mt-1">Yours to keep</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ LayoutGroup: how it works ══════════ -->
+    <section id="how" class="w-full bg-parchment">
+      <div class="mx-auto w-full max-w-[1200px] px-6 py-14">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Section: band heading · span 12 -->
+          <div data-section class="col-span-12 p-3 text-center">
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] mb-3">The trail map</p>
+            <h2 class="font-display font-semibold uppercase text-[32px] md:text-[44px] leading-[1.05] tracking-[0.06em]">Three steps to opening day</h2>
+            <div class="flex items-center gap-3 mt-5 max-w-[220px] mx-auto">
+              <span class="flex-1 border-t-2 border-ink"></span>
+              <span class="w-2 h-2 rotate-45 bg-gold border border-ink"></span>
+              <span class="flex-1 border-t-2 border-ink"></span>
+            </div>
+          </div>
+
+          <!-- Section: step · span 4 -->
+          <div data-section class="col-span-12 lg:col-span-4 p-3 text-center">
+            <div class="px-4 py-5 flex flex-col items-center gap-4">
+              <span class="w-16 h-16 rounded-full border-2 border-ink bg-paper flex items-center justify-center">
+                <span class="font-display font-semibold uppercase text-[30px] leading-none tracking-[0.08em] pt-1">1</span>
+              </span>
+              <h3 class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">Stake your claim</h3>
+              <p class="font-prose text-[14px] leading-[1.5] max-w-[36ch]">
+                One command on your own server, or one click on ours. Either way,
+                the site is up in five minutes.
+              </p>
+            </div>
+          </div>
+          <!-- Section: step · span 4 -->
+          <div data-section class="col-span-12 lg:col-span-4 p-3 text-center">
+            <div class="px-4 py-5 flex flex-col items-center gap-4">
+              <span class="w-16 h-16 rounded-full border-2 border-ink bg-paper flex items-center justify-center">
+                <span class="font-display font-semibold uppercase text-[30px] leading-none tracking-[0.08em] pt-1">2</span>
+              </span>
+              <h3 class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">Compose your pages</h3>
+              <p class="font-prose text-[14px] leading-[1.5] max-w-[36ch]">
+                Stack sections on the grid, pull in your datasets, pick a theme.
+                Writers never touch code.
+              </p>
+            </div>
+          </div>
+          <!-- Section: step · span 4 -->
+          <div data-section class="col-span-12 lg:col-span-4 p-3 text-center">
+            <div class="px-4 py-5 flex flex-col items-center gap-4">
+              <span class="w-16 h-16 rounded-full border-2 border-ink bg-paper flex items-center justify-center">
+                <span class="font-display font-semibold uppercase text-[30px] leading-none tracking-[0.08em] pt-1">3</span>
+              </span>
+              <h3 class="font-display font-semibold uppercase text-[18px] leading-[1.2] tracking-[0.12em]">Publish for the ages</h3>
+              <p class="font-prose text-[14px] leading-[1.5] max-w-[36ch]">
+                Versioned, portable, and fast. Export the whole site any time —
+                your archive is never hostage.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ LayoutGroup: field note (quote) ══════════ -->
+    <section class="w-full bg-paper border-y-2 border-ink">
+      <div class="mx-auto w-full max-w-[1200px] px-6 py-12">
+        <div class="grid grid-cols-12 gap-0">
+          <!-- Section: pull quote · span 8 centered -->
+          <div data-section class="col-span-12 lg:col-span-8 lg:col-start-3 p-3 text-center">
+            <p class="font-script text-[30px] leading-[1.2] text-gold mb-3">worth the climb</p>
+            <blockquote class="font-prose italic text-[19px] leading-[1.55] max-w-[52ch] mx-auto">
+              “We moved forty years of trail journals into Tessera over a weekend.
+              It reads like the archive was always meant to live there.”
+            </blockquote>
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] mt-5 flex items-center justify-center gap-3">
+              <span>June Okafor</span>
+              <span class="w-1.5 h-1.5 rotate-45 bg-gold border border-ink"></span>
+              <span>Editor, The Field Almanac</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ LayoutGroup: pricing ══════════ -->
+    <section id="pricing" class="w-full bg-parchment">
+      <div class="mx-auto w-full max-w-[1200px] px-6 py-14">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Section: band heading · span 12 -->
+          <div data-section class="col-span-12 p-3 text-center">
+            <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] mb-3">Provisions</p>
+            <h2 class="font-display font-semibold uppercase text-[32px] md:text-[44px] leading-[1.05] tracking-[0.06em]">Choose your route</h2>
+            <div class="flex items-center gap-3 mt-5 mb-4 max-w-[220px] mx-auto">
+              <span class="flex-1 border-t-2 border-ink"></span>
+              <span class="w-2 h-2 rotate-45 bg-gold border border-ink"></span>
+              <span class="flex-1 border-t-2 border-ink"></span>
+            </div>
+            <p class="font-prose text-[19px] leading-[1.55] max-w-[54ch] mx-auto">
+              Self-hosting is free forever — that's the point of open source.
+              Pay only when you'd rather we carry the packs.
+            </p>
+          </div>
+
+          <!-- Section: plan "Campground" · span 4 -->
+          <div data-section class="col-span-12 lg:col-span-4 p-3">
+            <div class="tsr-frame bg-paper p-7 h-full flex flex-col">
+              <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ink/70">Campground</p>
+              <p class="font-display font-semibold uppercase text-[44px] leading-[1.05] tracking-[0.06em] mt-3 tabular-nums">$0</p>
+              <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mt-1">Forever · self-hosted</p>
+              <div class="border-t-2 border-ink my-5"></div>
+              <ul class="flex flex-col gap-2.5 mb-7">
+                <li class="flex items-start gap-2.5"><span class="mt-1.5 w-1.5 h-1.5 rotate-45 bg-gold border border-ink shrink-0"></span><span class="font-prose text-[14px] leading-[1.5]">Every core feature, no gating</span></li>
+                <li class="flex items-start gap-2.5"><span class="mt-1.5 w-1.5 h-1.5 rotate-45 bg-gold border border-ink shrink-0"></span><span class="font-prose text-[14px] leading-[1.5]">Unlimited pages, sites, and users</span></li>
+                <li class="flex items-start gap-2.5"><span class="mt-1.5 w-1.5 h-1.5 rotate-45 bg-gold border border-ink shrink-0"></span><span class="font-prose text-[14px] leading-[1.5]">Community lodge support</span></li>
+              </ul>
+              <a href="#" class="tsr-press mt-auto text-center font-prose font-medium uppercase text-[13px] tracking-[0.18em] border-2 border-ink px-6 py-3.5 hover:bg-ink hover:text-parchment">Download Tessera</a>
+            </div>
+          </div>
+
+          <!-- Section: plan "Lodge" (featured) · span 4 -->
+          <div data-section class="col-span-12 lg:col-span-4 p-3">
+            <div class="tsr-frame-gold bg-ink text-parchment p-7 h-full flex flex-col">
+              <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-gold">Lodge · most travelled</p>
+              <p class="font-display font-semibold uppercase text-[44px] leading-[1.05] tracking-[0.06em] mt-3 tabular-nums">$12</p>
+              <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-parchment/70 mt-1">Per site / month · hosted</p>
+              <div class="border-t-2 border-gold my-5"></div>
+              <ul class="flex flex-col gap-2.5 mb-7">
+                <li class="flex items-start gap-2.5"><span class="mt-1.5 w-1.5 h-1.5 rotate-45 bg-gold shrink-0"></span><span class="font-prose text-[14px] leading-[1.5]">Managed hosting, backups, updates</span></li>
+                <li class="flex items-start gap-2.5"><span class="mt-1.5 w-1.5 h-1.5 rotate-45 bg-gold shrink-0"></span><span class="font-prose text-[14px] leading-[1.5]">Global CDN and image pressing</span></li>
+                <li class="flex items-start gap-2.5"><span class="mt-1.5 w-1.5 h-1.5 rotate-45 bg-gold shrink-0"></span><span class="font-prose text-[14px] leading-[1.5]">Priority trail support</span></li>
+              </ul>
+              <a href="#" class="tsr-press mt-auto text-center font-prose font-medium uppercase text-[13px] tracking-[0.18em] bg-gold text-ink border-2 border-gold px-6 py-3.5 hover:bg-parchment hover:border-parchment">Start 30-day trial</a>
+            </div>
+          </div>
+
+          <!-- Section: plan "Summit" · span 4 -->
+          <div data-section class="col-span-12 lg:col-span-4 p-3">
+            <div class="tsr-frame bg-paper p-7 h-full flex flex-col">
+              <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ink/70">Summit</p>
+              <p class="font-display font-semibold uppercase text-[44px] leading-[1.05] tracking-[0.06em] mt-3">Custom</p>
+              <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 mt-1">For institutions &amp; fleets</p>
+              <div class="border-t-2 border-ink my-5"></div>
+              <ul class="flex flex-col gap-2.5 mb-7">
+                <li class="flex items-start gap-2.5"><span class="mt-1.5 w-1.5 h-1.5 rotate-45 bg-gold border border-ink shrink-0"></span><span class="font-prose text-[14px] leading-[1.5]">SSO, audit logs, fine-grained roles</span></li>
+                <li class="flex items-start gap-2.5"><span class="mt-1.5 w-1.5 h-1.5 rotate-45 bg-gold border border-ink shrink-0"></span><span class="font-prose text-[14px] leading-[1.5]">Migration sherpas for your archive</span></li>
+                <li class="flex items-start gap-2.5"><span class="mt-1.5 w-1.5 h-1.5 rotate-45 bg-gold border border-ink shrink-0"></span><span class="font-prose text-[14px] leading-[1.5]">99.9% uptime pledge</span></li>
+              </ul>
+              <a href="#" class="tsr-press mt-auto text-center font-prose font-medium uppercase text-[13px] tracking-[0.18em] border-2 border-ink px-6 py-3.5 hover:bg-ink hover:text-parchment">Talk to us</a>
+            </div>
+          </div>
+
+          <!-- Section: pricing footnote · span 12 -->
+          <div data-section class="col-span-12 p-3 text-center">
+            <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 flex flex-wrap items-center justify-center gap-3">
+              <span>Prices in USD</span>
+              <span class="w-1.5 h-1.5 rotate-45 bg-gold border border-ink"></span>
+              <span>Cancel any time</span>
+              <span class="w-1.5 h-1.5 rotate-45 bg-gold border border-ink"></span>
+              <span>Your content exports in one click</span>
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ LayoutGroup: final CTA ══════════ -->
+    <section class="w-full bg-ink tsr-rays border-t-2 border-ink">
+      <div class="mx-auto w-full max-w-[1200px] px-6 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <!-- Section: call to action · span 8 centered -->
+          <div data-section class="col-span-12 lg:col-span-8 lg:col-start-3 p-3 text-center">
+            <p class="font-script text-[30px] leading-[1.2] text-gold mb-2">pack your pages</p>
+            <h2 class="font-display font-semibold uppercase text-[32px] md:text-[44px] leading-[1.05] tracking-[0.06em] text-parchment">Start your expedition</h2>
+            <p class="font-prose text-[19px] leading-[1.55] text-parchment/80 max-w-[46ch] mx-auto mt-4">
+              Free to run, easy to leave, hard to outgrow. The next great site
+              in your collection starts tonight.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-4 mt-8">
+              <a href="#pricing" class="tsr-press font-prose font-medium uppercase text-[13px] tracking-[0.18em] bg-parchment text-ink border-2 border-parchment px-6 py-3.5 hover:bg-gold hover:border-gold">Start building — free</a>
+              <a href="#" class="tsr-press font-prose font-medium uppercase text-[13px] tracking-[0.18em] text-gold border-2 border-gold px-6 py-3.5 hover:bg-gold hover:text-ink">Read the field guide</a>
+            </div>
+            <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-parchment/60 mt-8 flex flex-wrap items-center justify-center gap-3">
+              <span>No credit card</span>
+              <span class="w-1.5 h-1.5 rotate-45 bg-gold"></span>
+              <span>Five-minute setup</span>
+              <span class="w-1.5 h-1.5 rotate-45 bg-gold"></span>
+              <span>Leaves no trace on exit</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─── Footer ─── -->
+  <footer class="w-full bg-parchment border-t-2 border-ink">
+    <div class="w-full h-[3px]"></div>
+    <div class="w-full border-t border-ink"></div>
+    <div class="mx-auto w-full max-w-[1200px] px-6 py-12">
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- Section: brand column · span 5 -->
+        <div data-section class="col-span-12 md:col-span-5 p-3">
+          <div class="flex items-center gap-3">
+            <!-- icon: TesseraMark -->
+            <svg viewBox="0 0 24 24" class="w-7 h-7" aria-hidden="true">
+              <g transform="rotate(45 12 12)">
+                <rect x="4.5" y="4.5" width="7" height="7" fill="#C79A3B"/>
+                <rect x="12.5" y="4.5" width="7" height="7" fill="#D97E45"/>
+                <rect x="4.5" y="12.5" width="7" height="7" fill="#33706A"/>
+                <rect x="12.5" y="12.5" width="7" height="7" fill="#BC5B44"/>
+                <rect x="4.5" y="4.5" width="15" height="15" fill="none" stroke="#20323A" stroke-width="2"/>
+              </g>
+            </svg>
+            <span class="font-display font-bold uppercase text-[22px] leading-none tracking-[0.14em] pt-0.5">Tessera</span>
+          </div>
+          <p class="font-prose text-[14px] leading-[1.5] max-w-[38ch] mt-4">
+            An open-source content management system for sites meant to last.
+            Compose, bind, publish — and keep every word you've ever set.
+          </p>
+        </div>
+
+        <!-- Section: product links · span 2 -->
+        <div data-section class="col-span-6 md:col-span-2 p-3">
+          <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ink/70 mb-4">Product</p>
+          <ul class="flex flex-col gap-2.5 font-prose text-[14px] leading-[1.5]">
+            <li><a href="#features" class="hover:text-ember">Features</a></li>
+            <li><a href="#editor" class="hover:text-ember">Editor</a></li>
+            <li><a href="#themes" class="hover:text-ember">Themes</a></li>
+            <li><a href="#pricing" class="hover:text-ember">Pricing</a></li>
+          </ul>
+        </div>
+
+        <!-- Section: resource links · span 2 -->
+        <div data-section class="col-span-6 md:col-span-2 p-3">
+          <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ink/70 mb-4">Resources</p>
+          <ul class="flex flex-col gap-2.5 font-prose text-[14px] leading-[1.5]">
+            <li><a href="#" class="hover:text-ember">Field guide</a></li>
+            <li><a href="#" class="hover:text-ember">Documentation</a></li>
+            <li><a href="#" class="hover:text-ember">Community lodge</a></li>
+            <li><a href="#" class="hover:text-ember">Status</a></li>
+          </ul>
+        </div>
+
+        <!-- Section: company links · span 3 -->
+        <div data-section class="col-span-12 md:col-span-3 p-3">
+          <p class="font-prose font-medium uppercase text-[11px] tracking-[0.22em] text-ink/70 mb-4">Company</p>
+          <ul class="flex flex-col gap-2.5 font-prose text-[14px] leading-[1.5]">
+            <li><a href="#" class="hover:text-ember">About the press</a></li>
+            <li><a href="#" class="hover:text-ember">Blog</a></li>
+            <li><a href="#" class="hover:text-ember">Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Section: bottom strip · span 12 -->
+        <div data-section class="col-span-12 p-3">
+          <div class="border-t border-ink/40 pt-5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 flex flex-wrap items-center gap-3">
+              <span>© 2026 Tessera Press</span>
+              <span class="w-1.5 h-1.5 rotate-45 bg-gold border border-ink"></span>
+              <span>Commemorating the grand urge to publish</span>
+            </p>
+            <p class="font-prose font-medium uppercase text-[10px] tracking-[0.18em] text-ink/70 flex items-center gap-3">
+              <span>Design system:</span>
+              <a href="../design-system/theme.html" class="border-b border-gold hover:text-ember">Theme</a>
+              <a href="product-landing.html" class="text-ember border-b border-ember">Landing</a>
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </footer>
+
+</div><!-- /Layout -->
+
+<!-- Design-system navigation widget (documentation scaffolding — never ships on a live site) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Jost',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:#FBF4E2;border:2px solid #20323A;border-radius:6px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(32,50,58,0.25);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Josefin Sans',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#20323A;padding:0 16px 8px;border-bottom:1px solid rgba(32,50,58,0.35);margin-bottom:4px;">Tessera v5 · Deco</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#20323A;text-decoration:none;">
+      <span style="font-size:10px;color:rgba(32,50,58,0.55);min-width:14px;">1</span> Theme</a>
+    <a href="product-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:500;color:#BC5B44;text-decoration:none;">
+      <span style="font-size:10px;color:rgba(32,50,58,0.55);min-width:14px;">2</span> Product landing</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:6px;background:#20323A;color:#FBF4E2;border:2px solid #20323A;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(32,50,58,0.3);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

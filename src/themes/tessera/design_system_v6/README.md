@@ -4,8 +4,9 @@
 > passes. Visual language drawn from **tailwindcss.com, Tailwind Plus, and
 > zed.dev**: hairline structure, drafting-sheet grids, monospace metadata,
 > one saturated cobalt, borders over shadows — plus a handwritten margin
-> voice, because the one example page is **a beta shared with friends**,
-> not a product launch.
+> voice, rationed to drafting annotations. The one example page is **an
+> invite-only beta landing** — personable but professional (the original
+> friends-and-family register was formalized per owner feedback, v6.4).
 >
 > Read in this order: `src/dms/skills/designing-a-dms-design-system.md`
 > (the structural grammar) ·
@@ -30,8 +31,10 @@ scroll) · `t6-backhatch` · `t6-dashes` · `t6-ticks` · `t6-rungs` ·
 v6.2; owner preferred the slivers. Plus-crosses, dot fills, and a
 checkerboard were tried in v6.3; owner preferred squares, ticks, rungs.) Mono annotations —
 and pencil notes in Caveat, as if the builder marked up a printout before
-handing it to you. The signature is **the tile being placed**: the logo is a
-tilted tile with a cursor at its corner, and the landing hero shows the
+handing it to you. The signature is **the claimed cell**: the logo is graph
+paper with one cell taken by a filled tessera set at −8° — the only filled
+shape in the icon set (chosen from a five-candidate pass, v6.5; the earlier
+mark was a tilted tile with a cursor) — and the landing hero shows the
 editor mid-drag.
 
 ## Light and dark, first-class
@@ -60,8 +63,11 @@ tokens, 4 roles — display + prose are **IBM Plex Sans** and meta is **IBM
 Plex Mono** (Zed's brand family: "Zed Plex" is customized IBM Plex), note is
 **Caveat** (margin voice, ≤3/page, never UI). Radius: 6px
 controls, 8px cards, pill badges. Depth: 1px borders; shadow-lift on hover;
-shadow-drag reserved for the mid-drag moment. Motion: 150ms ease-out and one
-permitted loop (the hero caret blink), reduced-motion safe.
+shadow-drag reserved for the mid-drag moment. Motion: 150ms ease-out and two
+permitted loops — the hero caret blink and the landing hero's sketch layer
+(three.js, v6.5: 2px wireframe sections trace onto the sheet, assemble page
+layouts, and get rearranged like editor sections, t6-joint squares at each
+corner; static when reduced-motion) — both reduced-motion safe.
 
 ## Layout
 
@@ -99,15 +105,22 @@ design_system_v6/
 
 ## The example page
 
-`pages/beta-landing.html` — a landing page for sharing a website-builder
-beta with friends. Deliberately informal: "I'm building a website builder"
-with a blinking caret, an illustration of **the actual editor mid-drag**
-(page tree, grid overlay, a graph section being placed), honest capability
-tiles, a **known rough edges** board band (mono checklist of real bugs), a
-small FAQ, and an invite form. Every band is a DMS-shaped LayoutGroup on
-the documented 12-col gap-0 grid; every capability named is something DMS
-actually does (live data binding, spreadsheets, avlGraph charts, MapLibre
-GIS, themes, drafts→publish).
+`pages/beta-landing.html` — the landing page for an invite-only
+website-builder beta. Personable but professional, no first person (v6.4):
+a stacked hero lockup — "Tessera" (displayHero) over "a data-driven
+website builder." (displayXL) with the blinking caret — an illustration of
+**the actual editor mid-drag** (page tree, grid overlay, a graph section
+being placed), honest
+capability tiles, a **known issues** board band (mono checklist of real
+bugs + a report-an-issue link), a small FAQ, and an invite form. The
+margin voice is held to two drafting annotations on the editor
+illustration, and feedback routes through real channels (form, issue
+link) — never a personal one. The TopNav links to product pages
+(features, docs — placeholders), not in-page anchors. Every band is a
+DMS-shaped LayoutGroup on the documented 12-col gap-0 grid; every
+capability named is something DMS actually does (in-place editing, live data
+binding, spreadsheets, avlGraph charts, MapLibre GIS, themes,
+drafts→publish).
 
 **Alignment note:** this page uses Layout `default` (marketing) — bands
 centre with `mx-auto`, the documented exception (no SideNav to hug).

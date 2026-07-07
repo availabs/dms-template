@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patterns · Tessera Docs · Reference</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ----- Docs-page specific styles ----- */
+
+    /* The docs surface uses a different rhythm than the dashboard:
+       narrow reading column (~620px), generous outer margins,
+       and a right rail for "On this page". The DMS sidenav holds
+       the docs navigation tree. */
+
+    /* Two-column body: reading column + right rail */
+    .docs-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 200px;
+      gap: var(--space-7);
+      align-items: flex-start;
+    }
+    @media (max-width: 1100px) {
+      .docs-body { grid-template-columns: 1fr; }
+      .docs-otp { display: none; }
+    }
+
+    /* Reading column — narrow prose measure per brand brief */
+    .docs-prose {
+      max-width: var(--measure-prose);
+      min-width: 0;
+    }
+
+    /* Long-form lede — token: t-proseLG ink-graphite italic */
+    .docs-lede {
+      margin: 0 0 var(--space-6);
+      text-wrap: pretty;
+    }
+
+    .docs-prose p {
+      margin: 0 0 var(--space-4);
+      text-wrap: pretty;
+    }
+
+    .docs-prose h2 {
+      margin: var(--space-7) 0 var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-grout-light);
+      scroll-margin-top: var(--space-5);
+    }
+
+    .docs-prose h3 {
+      margin: var(--space-6) 0 var(--space-3);
+      scroll-margin-top: var(--space-5);
+    }
+
+    .docs-prose ul {
+      padding: 0 0 0 18px;
+      margin: 0 0 var(--space-4);
+    }
+
+    .docs-prose ul li + li { margin-top: 6px; }
+
+    /* Anchor links: a hairline § that appears next to headings */
+    .docs-prose h2 .anchor,
+    .docs-prose h3 .anchor {
+      margin-left: var(--space-2);
+      opacity: 0;
+      transition: opacity var(--dur-snap) var(--ease-snap);
+    }
+    .docs-prose h2:hover .anchor,
+    .docs-prose h3:hover .anchor {
+      opacity: 1;
+    }
+
+    /* Code blocks — the Tessera CodeBlock treatment.
+       Dark contrast frame on bone, with figcaption underneath. */
+    .codeblock {
+      margin: var(--space-4) 0 var(--space-5);
+    }
+    .codeblock pre {
+      background: var(--color-grout-dark);
+      border: 1px solid var(--color-grout-dark);
+      color: var(--color-bone);
+      padding: var(--space-4) var(--space-5);
+      margin: 0;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .codeblock pre code {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      color: inherit;
+    }
+    .codeblock figcaption {
+      margin-top: var(--space-2);
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      align-items: baseline;
+    }
+
+    /* Light variant — limestone background, slate ink. For shorter samples. */
+    .codeblock--light pre {
+      background: var(--color-limestone);
+      border: 1px solid var(--color-grout-light);
+      color: var(--color-slate);
+    }
+
+    /* Inline code styling — picked up via base stylesheet but tightened */
+    .docs-prose code {
+      background: var(--color-limestone);
+      border: 1px solid var(--color-grout-light);
+      padding: 0.04em 0.32em;
+      border-radius: 2px;
+    }
+
+    /* Callouts — quiet, no shouty backgrounds */
+    .callout {
+      border-left: 2px solid var(--color-oxide);
+      padding: var(--space-2) 0 var(--space-2) var(--space-4);
+      margin: var(--space-4) 0 var(--space-5);
+      background: transparent;
+    }
+    .callout .label {
+      color: var(--color-oxide);
+      margin-bottom: var(--space-1);
+    }
+    .callout p { margin: 0; }
+
+    /* On-this-page right rail */
+    .docs-otp {
+      position: sticky;
+      top: var(--space-5);
+      align-self: flex-start;
+      padding-left: var(--space-4);
+      border-left: 1px solid var(--color-grout-light);
+    }
+    .docs-otp .designator-mono {
+      margin-bottom: var(--space-3);
+    }
+    .docs-otp ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .docs-otp a {
+      display: block;
+      text-decoration: none;
+      padding: 4px 0 4px var(--space-2);
+      border-left: 1px solid transparent;
+      margin-left: -1px;
+    }
+    .docs-otp a:hover { color: var(--color-slate); }
+    .docs-otp a.is-active {
+      color: var(--color-slate);
+      border-left-color: var(--color-slate);
+    }
+    .docs-otp li.depth-3 a { padding-left: var(--space-4); }
+
+    /* Page footer chrome — prev/next/edit row */
+    .docs-pagenav {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-top: var(--space-7);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-grout-light);
+    }
+    .docs-pagenav a {
+      text-decoration: none;
+    }
+    .docs-pagenav a:hover { color: var(--color-slate); }
+    .docs-pagenav .center { color: var(--color-fog); }
+
+    /* TopNav adjustments — version pill + search box stand-in */
+    .docs-version {
+      border: 1px solid var(--color-grout-light);
+      padding: 3px 8px;
+      border-radius: 2px;
+    }
+    .docs-search {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      padding: 5px 10px;
+      width: 220px;
+      text-decoration: none;
+    }
+    .docs-search .kbd {
+      margin-left: auto;
+      border: 1px solid var(--color-grout-light);
+      padding: 0 5px;
+      background: var(--color-bone);
+      border-radius: 2px;
+    }
+
+    /* Sidenav: docs tree uses tighter rhythm, no eyebrow dots */
+    .docs-sidenav-item {
+      display: block;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .docs-sidenav-item:hover {
+      color: var(--color-slate);
+      background: var(--color-limestone);
+    }
+    .docs-sidenav-item.is-active {
+      color: var(--color-slate);
+      background: var(--color-limestone);
+    }
+
+    /* The Tessera wordmark in the topnav uses a small terracotta tile. */
+    .docs-wordmark {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      text-decoration: none;
+    }
+    .docs-wordmark .tile {
+      width: 14px;
+      height: 14px;
+      background: var(--color-oxide);
+      display: inline-block;
+      transform: translateY(1px);
+    }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav: wordmark + docs label, section nav, version + search -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="#" class="docs-wordmark">
+              <span class="tile"></span>
+              <span class="word t-displaySM">Tessera</span>
+            </a>
+            <span class="dms-topnav-brand">
+              <span class="designator t-metaSM" style="border-left: 1px solid var(--color-grout-light); padding-left: var(--space-3); margin-left: 0;">Docs</span>
+            </span>
+          </div>
+          <div class="dms-topnav-right" style="gap: var(--space-5);">
+            <a href="#" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Guides</a>
+            <a href="#" class="t-proseSM weight-500" style="text-decoration: none; border-bottom: 1px solid var(--color-slate); padding-bottom: 2px;">Reference</a>
+            <a href="#" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Patterns</a>
+            <a href="#" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Theory</a>
+            <span class="docs-version t-metaSM ink-graphite" style="text-transform: none; letter-spacing: 0;">v0.14.2</span>
+            <a href="#" class="docs-search t-proseXS ink-fog">
+              <span>Search&hellip;</span>
+              <span class="kbd t-metaXS ink-graphite">/</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav: docs tree -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">getting started</div>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Introduction</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Install</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Your first site</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Core concepts</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">reference</div>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Rows</a>
+            <a class="docs-sidenav-item t-proseSM weight-500 is-active" href="#">Patterns</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Datasets</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Themes</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Queries</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">renderings</div>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Table</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Calendar</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Prose</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Chart</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Map</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">operations</div>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Deploy</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Backup &amp; restore</a>
+            <a class="docs-sidenav-item t-proseSM ink-graphite" href="#">Audit log</a>
+          </div>
+        </aside>
+
+        <!-- Main content -->
+        <div class="dms-layout-child">
+
+          <!-- Header band -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta t-metaSM">
+                <span>reference</span>
+                <span class="sep">/</span>
+                <span>patterns</span>
+              </div>
+              <h1 class="dms-page-title t-displayXL">Patterns</h1>
+            </div>
+          </section>
+
+          <!-- Body: prose + on-this-page rail -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+
+              <div class="docs-body">
+
+                <article class="docs-prose" id="overview">
+
+                  <p class="docs-lede t-proseLG ink-graphite italic">
+                    A pattern is the shape of a section. It tells Tessera which rows to fetch, how to fetch them, and how to render them. The same primitive that backs a homepage block also backs a chart, a table, or a map.
+                  </p>
+
+                  <p class="t-prose">
+                    Patterns are stored as ordinary rows in the <code class="t-proseSM">patterns</code> table. They reference a dataset, a query, and a rendering. A pattern is small &mdash; the rendering is just metadata. The data is somewhere else.
+                  </p>
+
+                  <div class="callout">
+                    <div class="label t-metaXS">note</div>
+                    <p class="t-proseSM ink-graphite">Patterns are typed rows. Anything you can do with a row &mdash; version, audit, snapshot, query &mdash; you can do with a pattern.</p>
+                  </div>
+
+                  <h2 id="anatomy" class="t-displayLG">Anatomy of a pattern <a class="anchor t-metaMD ink-fog" href="#anatomy">§</a></h2>
+
+                  <p class="t-prose">
+                    A pattern is a typed row with four required fields and several optional ones. The minimum schema below is abbreviated; consult the migration in <code class="t-proseSM">0014_patterns.sql</code> for the canonical definition.
+                  </p>
+
+                  <figure class="codeblock">
+                    <pre class="t-metaMD"><code>CREATE TABLE patterns (
+  id         bigint      PRIMARY KEY,
+  slug       text        NOT NULL UNIQUE,
+  renders_as text        NOT NULL,   -- 'table' | 'calendar' | 'prose' | 'chart' | 'map'
+  dataset    text,                   -- e.g. 'shows' or NULL for prose
+  query      text,                   -- SQL or query DSL fragment
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);</code></pre>
+                    <figcaption>
+                      <span class="lang t-metaXS">sql</span>
+                      <span class="caption t-proseXS ink-graphite">The minimum schema, abbreviated.</span>
+                    </figcaption>
+                  </figure>
+
+                  <p class="t-prose">
+                    Slugs are namespaced: <code class="t-proseSM">station.now_playing</code>, <code class="t-proseSM">civic.indicator_grid</code>, <code class="t-proseSM">archive.bibliography</code>. The first segment denotes the site, the second denotes the pattern's role within that site.
+                  </p>
+
+                  <h2 id="kinds" class="t-displayLG">Kinds <a class="anchor t-metaMD ink-fog" href="#kinds">§</a></h2>
+
+                  <p class="t-prose">
+                    Tessera ships five built-in renderings. Custom renderings may be registered by a theme; see <a href="#">Themes &rarr; Custom renderings</a>.
+                  </p>
+
+                  <h3 id="kinds-tab" class="t-displayMD">Table <a class="anchor t-metaMD ink-fog" href="#kinds-tab">§</a></h3>
+                  <p class="t-prose">
+                    A typed grid. Tabular figures, alternating row tints, hairline dividers. The most common pattern; the workhorse of the system.
+                  </p>
+
+                  <figure class="codeblock codeblock--light">
+                    <pre class="t-metaMD"><code>pattern:    station.archive
+renders_as: table
+dataset:    shows
+query: |
+  SELECT *
+  FROM   shows
+  ORDER  BY date DESC
+  LIMIT  24</code></pre>
+                    <figcaption>
+                      <span class="lang t-metaXS">tessera</span>
+                      <span class="caption t-proseXS ink-graphite">A table pattern, declared in YAML.</span>
+                    </figcaption>
+                  </figure>
+
+                  <h3 id="kinds-cal" class="t-displayMD">Calendar <a class="anchor t-metaMD ink-fog" href="#kinds-cal">§</a></h3>
+                  <p class="t-prose">
+                    A grid keyed on a time column. Hour-of-day on the horizontal axis, day-of-week on the vertical. Custom keying via <code class="t-proseSM">calendar.key_x</code> and <code class="t-proseSM">calendar.key_y</code>.
+                  </p>
+
+                  <h3 id="kinds-pro" class="t-displayMD">Prose <a class="anchor t-metaMD ink-fog" href="#kinds-pro">§</a></h3>
+                  <p class="t-prose">
+                    A single typed row treated as long-form. Use this for "About" pages, theory essays, and any surface where the row <em>is</em> the page.
+                  </p>
+
+                  <h2 id="compose" class="t-displayLG">Composing a page <a class="anchor t-metaMD ink-fog" href="#compose">§</a></h2>
+
+                  <p class="t-prose">
+                    A page is itself a row of kind <code class="t-proseSM">page</code> that points at a list of patterns. The page does not store its sections; it stores their slugs. This is the central move: composition by reference, not by embedding.
+                  </p>
+
+                  <figure class="codeblock">
+                    <pre class="t-metaMD"><code>{
+  "id":   2060672,
+  "slug": "station.home",
+  "kind": "page",
+  "sections": [
+    "station.now_playing",
+    "station.schedule",
+    "station.archive"
+  ]
+}</code></pre>
+                    <figcaption>
+                      <span class="lang t-metaXS">json</span>
+                      <span class="caption t-proseXS ink-graphite">A page row, with an ordered list of pattern slugs.</span>
+                    </figcaption>
+                  </figure>
+
+                  <h2 id="publish" class="t-displayLG">Publishing <a class="anchor t-metaMD ink-fog" href="#publish">§</a></h2>
+
+                  <p class="t-prose">
+                    Publishing snapshots a page and its constituent patterns into an immutable revision. Old revisions are addressable; rollback is a row insert.
+                  </p>
+
+                  <figure class="codeblock codeblock--light">
+                    <pre class="t-metaMD"><code>$ tessera publish station.home
+   placed   station.now_playing  rev 14 → 15
+   placed   station.schedule     rev 22 → 23
+   placed   station.archive      rev  9 → 10
+   sealed   station.home         rev 41 → 42  (2026-05-22T08:14:02Z)</code></pre>
+                    <figcaption>
+                      <span class="lang t-metaXS">shell</span>
+                      <span class="caption t-proseXS ink-graphite">Publishing is verbose by design; each placed tessera is logged.</span>
+                    </figcaption>
+                  </figure>
+
+                  <h2 id="see-also" class="t-displayLG">See also <a class="anchor t-metaMD ink-fog" href="#see-also">§</a></h2>
+                  <ul class="t-prose">
+                    <li><a href="#">Rows &mdash; the underlying primitive</a></li>
+                    <li><a href="#">Datasets &mdash; how data is sourced</a></li>
+                    <li><a href="#">Themes &mdash; custom renderings</a></li>
+                    <li><a href="#">Queries &mdash; the query DSL</a></li>
+                  </ul>
+
+                  <div class="docs-pagenav t-metaSM">
+                    <a href="#" class="ink-graphite">&larr; Rows</a>
+                    <a href="#" class="center">Edit this page on GitHub</a>
+                    <a href="#" class="ink-graphite">Datasets &rarr;</a>
+                  </div>
+
+                </article>
+
+                <!-- On this page rail -->
+                <aside class="docs-otp">
+                  <div class="designator-mono t-metaSM">On this page</div>
+                  <ul>
+                    <li><a href="#overview" class="t-proseSM ink-graphite">Overview</a></li>
+                    <li><a href="#anatomy" class="t-proseSM ink-graphite">Anatomy of a pattern</a></li>
+                    <li><a href="#kinds" class="t-proseSM weight-500 is-active">Kinds</a></li>
+                    <li class="depth-3"><a href="#kinds-tab" class="t-proseXS ink-graphite">Table</a></li>
+                    <li class="depth-3"><a href="#kinds-cal" class="t-proseXS ink-graphite">Calendar</a></li>
+                    <li class="depth-3"><a href="#kinds-pro" class="t-proseXS ink-graphite">Prose</a></li>
+                    <li><a href="#compose" class="t-proseSM ink-graphite">Composing a page</a></li>
+                    <li><a href="#publish" class="t-proseSM ink-graphite">Publishing</a></li>
+                    <li><a href="#see-also" class="t-proseSM ink-graphite">See also</a></li>
+                  </ul>
+                </aside>
+
+              </div>
+
+            </div>
+          </section>
+
+          <!-- Footer -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div style="display: flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
+                <div>
+                  <div class="designator t-metaSM">Tessera Docs · Reference</div>
+                  <div class="t-proseSM ink-graphite" style="margin-top: var(--space-2); max-width: 60ch;">
+                    Documentation for Tessera v0.14.2. Sources on GitHub; published from the <code class="t-proseSM">main</code> branch on each merge.
+                  </div>
+                </div>
+                <div class="t-metaSM ink-fog" style="text-align: right;">
+                  Tessera Design System v0.1 · 2026-05-22<br>
+                  <a href="../design-system/theme.html" style="color: inherit;">theme</a> ·
+                  <a href="../design-system/layouts.html" style="color: inherit;">layouts</a> ·
+                  <a href="../design-system/grid.html" style="color: inherit;">grid</a> ·
+                  <a href="../design-system/components.html" style="color: inherit;">components</a> ·
+                  <a href="../design-system/patterns.html" style="color: inherit;">patterns</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

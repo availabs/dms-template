@@ -128,6 +128,15 @@ body {
   -webkit-mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 95%);
   mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 95%);
 }
+/* three.js sketch layer for the landing hero — hand-drawn blocks on the
+   sheet. Shares the sheet-fade dissolve so blocks vanish with the grid.
+   Decorative only; script lives in pages/beta-landing.html. */
+.t6-hero-sketch {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 95%);
+  mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 95%);
+}
 /* diagonally hatched gutter strip — the tailwindcss.com margin move */
 .t6-hatch {
   background-image: repeating-linear-gradient(

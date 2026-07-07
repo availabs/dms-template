@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin · Themes — Tessera</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ---- Shared admin nav ---- */
+    .btn-row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+
+    /* ---- Theme card grid ---- */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--space-5);
+    }
+    .theme-card {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      box-shadow: var(--shadow-lift);
+      display: flex;
+      flex-direction: column;
+      cursor: default;
+      transition: border-color var(--dur-snap);
+    }
+    .theme-card:hover { border-color: var(--color-graphite); }
+
+    /* Palette preview strip */
+    .palette-strip {
+      height: 64px;
+      display: flex;
+    }
+    .palette-strip .swatch {
+      flex: 1;
+    }
+
+    /* Card body */
+    .theme-card-body {
+      padding: var(--space-4) var(--space-4) var(--space-3);
+      flex: 1;
+    }
+    .theme-card-name {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -0.008em;
+      color: var(--color-slate);
+      margin-bottom: var(--space-1);
+    }
+    .theme-card-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-fog);
+    }
+
+    /* Sites using this theme */
+    .theme-usage {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+      margin-top: var(--space-3);
+    }
+    .usage-chip {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--color-bone);
+      border: 1px solid var(--color-grout-light);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-graphite);
+    }
+
+    /* Card footer actions */
+    .theme-card-footer {
+      padding: var(--space-3) var(--space-4);
+      border-top: 1px solid var(--color-grout-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    /* ---- Icon buttons ---- */
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      color: var(--color-fog);
+      border-radius: var(--radius-1);
+      transition: background var(--dur-snap), color var(--dur-snap), border-color var(--dur-snap);
+    }
+    .icon-btn:hover { background: var(--color-limestone); color: var(--color-slate); border-color: var(--color-grout-light); }
+    .icon-btn--danger:hover { background: #FEF2F2; color: var(--color-oxide); border-color: var(--color-oxide); }
+
+    /* ---- Table chrome (components list) ---- */
+    .table-frame {
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      box-shadow: var(--shadow-lift);
+    }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead th {
+      text-align: left;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-slate);
+      background: var(--color-parchment);
+    }
+    .data-table tbody td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-grout-light);
+      vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: 0; }
+    .data-table tbody tr:hover td { background: var(--color-limestone); transition: background var(--dur-snap); }
+
+    /* ---- Toolbar ---- */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+      flex-wrap: wrap;
+    }
+    .search-input {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+      padding: 7px var(--space-3);
+      min-width: 220px;
+    }
+    .search-input input {
+      border: 0;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: var(--fs-body-sm);
+      color: var(--color-slate);
+      outline: none;
+      width: 100%;
+    }
+    .search-input input::placeholder { color: var(--color-fog); }
+
+    /* ---- Status badge ---- */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border: 1px solid;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-radius: 999px;
+    }
+    .status-badge--active { color: var(--color-verdigris); border-color: var(--color-verdigris); }
+    .status-badge--draft  { color: var(--color-ochre);     border-color: var(--color-ochre); }
+
+    /* ---- Component coverage bar ---- */
+    .coverage-bar {
+      height: 4px;
+      background: var(--color-limestone);
+      position: relative;
+      min-width: 80px;
+    }
+    .coverage-bar-fill { height: 100%; background: var(--color-verdigris); }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="#" class="dms-topnav-brand" style="text-decoration:none;">
+              <span class="mark">Tessera</span>
+              <span class="designator">Admin</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right" style="gap: var(--space-5);">
+            <a href="admin-sites.html"  class="t-proseSM weight-500 ink-graphite" style="text-decoration:none;">Sites</a>
+            <a href="admin-themes.html" class="t-proseSM weight-500"              style="text-decoration:none;">Themes</a>
+            <a href="admin-users.html"  class="t-proseSM weight-500 ink-graphite" style="text-decoration:none;">Users</a>
+            <a href="admin-groups.html" class="t-proseSM weight-500 ink-graphite" style="text-decoration:none;">Groups</a>
+            <span class="t-metaSM ink-fog">admin@example.org</span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">manage</div>
+            <a class="dms-sidenav-item" href="admin-sites.html">
+              <span class="dms-sidenav-item-mark"></span>Sites
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">12</span>
+            </a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="admin-themes.html">
+              <span class="dms-sidenav-item-mark"></span>Themes
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">4</span>
+            </a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">auth</div>
+            <a class="dms-sidenav-item" href="admin-users.html">
+              <span class="dms-sidenav-item-mark"></span>Users
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">38</span>
+            </a>
+            <a class="dms-sidenav-item" href="admin-groups.html">
+              <span class="dms-sidenav-item-mark"></span>Groups
+              <span class="t-metaSM ink-fog tabular" style="margin-left:auto;">6</span>
+            </a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item" href="#themes">
+              <span class="dms-sidenav-item-mark"></span>Themes
+            </a>
+            <a class="dms-sidenav-item" href="#components">
+              <span class="dms-sidenav-item-mark"></span>Components
+            </a>
+          </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="dms-layout-child">
+
+          <!-- Header -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span>admin</span>
+                <span class="sep">/</span>
+                <span>themes</span>
+              </div>
+              <h1 class="dms-page-title">Themes — visual identities for every site.</h1>
+              <p class="dms-page-lede">
+                Each theme defines the color palette, typography, spacing, and component styles for one or more sites. Edit opens the component-level theme editor. Duplicate clones all token overrides.
+              </p>
+              <div class="btn-row" style="margin-top: var(--space-5);">
+                <button class="btn btn-primary">Add theme</button>
+                <button class="btn btn-secondary">Import theme file</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Themes card grid -->
+          <section id="themes" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · THEMES</div>
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom: var(--space-5); gap: var(--space-4);">
+                  <h2 class="dms-section-title" style="margin:0;">4 themes</h2>
+                  <div class="toolbar" style="margin:0;">
+                    <div class="search-input">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-fog)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                      <input type="text" placeholder="Filter themes…" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="theme-grid">
+
+                  <!-- Catalyst theme -->
+                  <div class="theme-card">
+                    <div class="palette-strip">
+                      <div class="swatch" style="background:#1E293B;"></div>
+                      <div class="swatch" style="background:#334155;"></div>
+                      <div class="swatch" style="background:#64748B;"></div>
+                      <div class="swatch" style="background:#F8FAFC;"></div>
+                      <div class="swatch" style="background:#3B82F6;"></div>
+                      <div class="swatch" style="background:#10B981;"></div>
+                    </div>
+                    <div class="theme-card-body">
+                      <div class="theme-card-name">catalyst</div>
+                      <div class="theme-card-meta">id: catalyst · built-in</div>
+                      <div class="theme-usage" style="margin-top: var(--space-3);">
+                        <span class="t-metaSM ink-graphite" style="align-self:center;">Used by</span>
+                        <span class="usage-chip">main</span>
+                        <span class="usage-chip">data-explorer</span>
+                        <span class="usage-chip">public-auth</span>
+                      </div>
+                    </div>
+                    <div class="theme-card-footer">
+                      <span class="status-badge status-badge--active">
+                        <span style="width:5px;height:5px;border-radius:50%;background:var(--color-verdigris);display:inline-block;"></span>
+                        active
+                      </span>
+                      <div style="display:flex; gap: var(--space-2);">
+                        <a href="#" class="btn btn-secondary btn-sm" style="text-decoration:none;">Edit</a>
+                        <button class="icon-btn" title="Settings">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                        </button>
+                        <button class="icon-btn" title="Duplicate">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tessera theme -->
+                  <div class="theme-card">
+                    <div class="palette-strip">
+                      <div class="swatch" style="background:#F4F1EA;"></div>
+                      <div class="swatch" style="background:#E8E2D5;"></div>
+                      <div class="swatch" style="background:#2A2F36;"></div>
+                      <div class="swatch" style="background:#4A5160;"></div>
+                      <div class="swatch" style="background:#B5532C;"></div>
+                      <div class="swatch" style="background:#5D8A85;"></div>
+                    </div>
+                    <div class="theme-card-body">
+                      <div class="theme-card-name">tessera</div>
+                      <div class="theme-card-meta">id: tessera · custom</div>
+                      <div class="theme-usage" style="margin-top: var(--space-3);">
+                        <span class="t-metaSM ink-graphite" style="align-self:center;">Used by</span>
+                        <span class="usage-chip">reports</span>
+                      </div>
+                    </div>
+                    <div class="theme-card-footer">
+                      <span class="status-badge status-badge--active">
+                        <span style="width:5px;height:5px;border-radius:50%;background:var(--color-verdigris);display:inline-block;"></span>
+                        active
+                      </span>
+                      <div style="display:flex; gap: var(--space-2);">
+                        <a href="#" class="btn btn-secondary btn-sm" style="text-decoration:none;">Edit</a>
+                        <button class="icon-btn" title="Settings">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                        </button>
+                        <button class="icon-btn" title="Duplicate">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- MNY theme -->
+                  <div class="theme-card">
+                    <div class="palette-strip">
+                      <div class="swatch" style="background:#002868;"></div>
+                      <div class="swatch" style="background:#BF0A30;"></div>
+                      <div class="swatch" style="background:#FFFFFF;"></div>
+                      <div class="swatch" style="background:#F4F4F4;"></div>
+                      <div class="swatch" style="background:#003087;"></div>
+                      <div class="swatch" style="background:#D4A017;"></div>
+                    </div>
+                    <div class="theme-card-body">
+                      <div class="theme-card-name">mny</div>
+                      <div class="theme-card-meta">id: mny · custom</div>
+                      <div class="theme-usage" style="margin-top: var(--space-3);">
+                        <span class="t-metaSM ink-graphite" style="align-self:center;">Used by</span>
+                        <span class="usage-chip">intake</span>
+                      </div>
+                    </div>
+                    <div class="theme-card-footer">
+                      <span class="status-badge status-badge--active">
+                        <span style="width:5px;height:5px;border-radius:50%;background:var(--color-verdigris);display:inline-block;"></span>
+                        active
+                      </span>
+                      <div style="display:flex; gap: var(--space-2);">
+                        <a href="#" class="btn btn-secondary btn-sm" style="text-decoration:none;">Edit</a>
+                        <button class="icon-btn" title="Settings">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                        </button>
+                        <button class="icon-btn" title="Duplicate">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Draft theme (unused) -->
+                  <div class="theme-card" style="opacity: 0.7;">
+                    <div class="palette-strip">
+                      <div class="swatch" style="background:#F0F0F0;"></div>
+                      <div class="swatch" style="background:#D0D0D0;"></div>
+                      <div class="swatch" style="background:#404040;"></div>
+                      <div class="swatch" style="background:#808080;"></div>
+                      <div class="swatch" style="background:#A0A0A0;"></div>
+                      <div class="swatch" style="background:#C0C0C0;"></div>
+                    </div>
+                    <div class="theme-card-body">
+                      <div class="theme-card-name">greyscale dup</div>
+                      <div class="theme-card-meta">id: greyscale_dup · draft</div>
+                      <div style="margin-top: var(--space-3);">
+                        <span class="t-metaSM ink-fog">Not used by any sites</span>
+                      </div>
+                    </div>
+                    <div class="theme-card-footer">
+                      <span class="status-badge status-badge--draft">
+                        <span style="width:5px;height:5px;border-radius:50%;background:var(--color-ochre);display:inline-block;"></span>
+                        draft
+                      </span>
+                      <div style="display:flex; gap: var(--space-2);">
+                        <a href="#" class="btn btn-secondary btn-sm" style="text-decoration:none;">Edit</a>
+                        <button class="icon-btn" title="Settings">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                        </button>
+                        <button class="icon-btn icon-btn--danger" title="Delete">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/><path d="M10 11v6M14 11v6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Component coverage table -->
+          <section id="components" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · COMPONENT COVERAGE</div>
+                <h2 class="dms-section-title">Components — overrides per theme.</h2>
+                <p class="dms-section-lede">
+                  Each column type, layout primitive, and nav component falls back to the DMS default if the selected theme doesn't override it. This table shows which components each theme defines vs. inherits.
+                </p>
+
+                <div class="table-frame" style="margin-top: var(--space-4);">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th class="t-metaSM ink-graphite">Component</th>
+                        <th class="t-metaSM ink-graphite">catalyst</th>
+                        <th class="t-metaSM ink-graphite">tessera</th>
+                        <th class="t-metaSM ink-graphite">mny</th>
+                        <th class="t-metaSM ink-graphite">greyscale dup</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span class="t-proseSM weight-500">layout</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-proseSM weight-500">sidenav</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-proseSM weight-500">topnav</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-proseSM weight-500">button</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-proseSM weight-500">table</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-proseSM weight-500">textSettings</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-proseSM weight-500">card (dataCard)</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="t-proseSM weight-500">lexical (rich text)</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                        <td><span style="color:var(--color-verdigris);">✓</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                        <td><span class="t-metaSM ink-fog">inherited</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Design notes -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>DESIGN NOTES · GAPS VS. CURRENT</div>
+                <h2 class="dms-section-title">What this design adds over the current implementation.</h2>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-6); margin-top:var(--space-4);">
+                  <div>
+                    <div class="t-metaSM ink-graphite" style="margin-bottom:var(--space-3);">Added</div>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--space-2);">
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Palette preview strip — 6-color swatch from actual theme tokens</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> "Used by" list — shows which sites reference each theme</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Active/draft status badge — draft = not in use by any site</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Built-in vs. custom label in theme card</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Component coverage table — which components each theme defines</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-verdigris);font-weight:600;">+</span> Card layout instead of flat table — easier to compare visually</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div class="t-metaSM ink-graphite" style="margin-bottom:var(--space-3);">Implementation notes</div>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--space-2);">
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-graphite);">→</span> Color swatch: read from theme object's <code>c.*</code> palette (or first 6 button/background tokens)</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-graphite);">→</span> "Used by" requires cross-referencing patterns whose <code>theme.selectedTheme</code> matches</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--color-graphite);">→</span> Draft status: theme has no pattern using it</li>
+                      <li class="t-proseSM" style="display:flex; gap:var(--space-2); align-items:baseline;"><span style="color:var(--color-graphite);">→</span> Component coverage: inspect theme keys vs. DMS default theme keys</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Footer -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:var(--space-5);">
+                <div>
+                  <div class="t-metaSM ink-graphite">Tessera Admin · Themes</div>
+                  <div class="t-proseSM ink-graphite" style="margin-top:var(--space-2);">Design page — placeholder data, real structure.</div>
+                </div>
+                <div class="t-metaSM ink-fog">
+                  <a href="admin-sites.html" style="color:inherit;">sites</a> ·
+                  <a href="admin-users.html" style="color:inherit;">users</a> ·
+                  <a href="admin-groups.html" style="color:inherit;">groups</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
