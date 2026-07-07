@@ -1,0 +1,7 @@
+/* Tessera v3 — production CSS additions.
+   The canonical source for the design system is ../_shared.css (one file,
+   linked by every mockup as ../_shared.css; kept at the deliverable root
+   to avoid MIME-type issues with the .additions extension).
+   When translating the theme, mirror ../_shared.css here verbatim (minus
+   the dms-annotated documentation overlay, which never ships). */
+@import url("../_shared.css");

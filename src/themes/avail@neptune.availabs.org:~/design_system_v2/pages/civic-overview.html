@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mitigation Overview — Sullivan County · Tessera Example</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ----- Example-page-specific styles ----- */
+
+    /* KPI strip */
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
+    @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+    .kpi {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-5);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+    .kpi .label {
+      margin-bottom: var(--space-2);
+    }
+    .kpi .value {
+      margin-bottom: var(--space-2);
+    }
+    .kpi .meta {
+      display: flex;
+      justify-content: space-between;
+    }
+    .kpi .meta .delta { color: var(--color-verdigris); }
+    .kpi .meta .delta-down { color: var(--color-oxide); }
+
+    /* Two-col layout for content + sidebar */
+    .twocol { display: grid; grid-template-columns: 1fr 320px; gap: var(--space-5); }
+    @media (max-width: 1100px) { .twocol { grid-template-columns: 1fr; } }
+
+    /* Map placeholder */
+    .map-section {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+    .map-canvas {
+      height: 360px;
+      background: var(--color-limestone);
+      position: relative;
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    /* Visual stand-in for a map — geometric county outlines drawn with CSS */
+    .map-canvas::before {
+      content: '';
+      position: absolute;
+      inset: 32px;
+      background:
+        linear-gradient(135deg, transparent 49%, var(--color-grout-light) 49%, var(--color-grout-light) 51%, transparent 51%),
+        linear-gradient(45deg, transparent 49%, var(--color-grout-light) 49%, var(--color-grout-light) 51%, transparent 51%);
+      opacity: 0.35;
+    }
+    .map-canvas::after {
+      content: '';
+      position: absolute;
+      left: 22%;
+      top: 18%;
+      width: 56%;
+      height: 56%;
+      background: rgba(181, 83, 44, 0.22);
+      border: 1.5px solid var(--color-oxide);
+      transform: rotate(8deg) skew(-6deg, 2deg);
+    }
+    .map-overlay-pin {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--color-slate);
+      border: 2px solid var(--color-parchment);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .map-overlay-pin.accent { background: var(--color-oxide); }
+    .map-attrib {
+      padding: var(--space-3) var(--space-4);
+      display: flex;
+      justify-content: space-between;
+    }
+    .map-attrib .key { color: var(--color-graphite); }
+
+    /* Bar chart */
+    .chart-card {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-5);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+    }
+    .chart-card .title {
+      margin: 0 0 var(--space-1);
+    }
+    .chart-card .sub {
+      margin: 0 0 var(--space-4);
+    }
+    .bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 200px;
+      border-bottom: 1px solid var(--color-grout-light);
+      padding-bottom: 1px;
+    }
+    .bar { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .bar .stack { width: 100%; }
+    .bar-axis {
+      display: flex;
+      gap: 6px;
+      margin-top: var(--space-2);
+    }
+    .bar-axis span { flex: 1; text-align: center; min-width: 0; }
+
+    .legend {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+      flex-wrap: wrap;
+    }
+    .legend .item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend .swatch { width: 10px; height: 10px; display: inline-block; }
+
+    /* Stakeholders list */
+    .stakeholders { display: flex; flex-direction: column; }
+    .stakeholder {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--color-grout-light);
+      align-items: center;
+    }
+    .stakeholder:first-child { padding-top: 0; }
+    .stakeholder:last-child { border-bottom: 0; padding-bottom: 0; }
+    .stakeholder .ini {
+      width: 28px; height: 28px;
+      background: var(--color-limestone);
+      border: 1px solid var(--color-grout-light);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stakeholder .role {
+      margin-top: 2px;
+    }
+    .stakeholder .status {
+      padding: 2px 6px;
+      border: 1px solid var(--color-grout-light);
+    }
+    .stakeholder .status.draft { color: var(--color-ochre); border-color: var(--color-ochre); }
+    .stakeholder .status.submitted { color: var(--color-verdigris); border-color: var(--color-verdigris); }
+    .stakeholder .status.overdue { color: var(--color-oxide); border-color: var(--color-oxide); }
+
+    /* Side card */
+    .side-card {
+      background: var(--color-parchment);
+      border: 1px solid var(--color-grout-light);
+      padding: var(--space-5);
+      box-shadow: 0 1px 2px rgba(42, 47, 54, 0.04);
+      margin-bottom: var(--space-3);
+    }
+    .side-card .title {
+      margin: 0 0 var(--space-3);
+    }
+    .side-card .row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .side-card .row:last-child { border-bottom: 0; }
+    .side-card .row .k { color: var(--color-graphite); }
+    .side-card .row .v { color: var(--color-slate); }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="#" class="dms-topnav-brand" style="text-decoration:none;">
+              <span class="mark">Mitigation Atlas</span>
+              <span class="designator">NY · State Hazard Plan</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right" style="gap: var(--space-4);">
+            <a href="#" class="t-proseSM weight-500 ink-slate" style="text-decoration: none;">Counties</a>
+            <a href="#" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Hazards</a>
+            <a href="#" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Actions</a>
+            <a href="#" class="t-proseSM weight-500 ink-graphite" style="text-decoration: none;">Plans</a>
+            <span class="t-metaSM ink-fog">am3081@gmail.com</span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+
+        <!-- SideNav: county navigation -->
+        <aside class="dms-sidenav">
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">region</div>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Statewide</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>North Country</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Mohawk Valley</a>
+            <a class="dms-sidenav-item dms-sidenav-item--active" href="#"><span class="dms-sidenav-item-mark"></span>Catskills</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Hudson Valley</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Long Island</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">catskills counties</div>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Delaware</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Greene</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark" style="background:var(--color-oxide);"></span>Sullivan</a>
+            <a class="dms-sidenav-item" href="#"><span class="dms-sidenav-item-mark"></span>Ulster</a>
+          </div>
+          <div class="dms-sidenav-section">
+            <div class="dms-sidenav-eyebrow">on this page</div>
+            <a class="dms-sidenav-item" href="#summary">Summary</a>
+            <a class="dms-sidenav-item" href="#map">Hazard map</a>
+            <a class="dms-sidenav-item" href="#actions">Mitigation actions</a>
+            <a class="dms-sidenav-item" href="#stakeholders">Stakeholders</a>
+          </div>
+        </aside>
+
+        <!-- Main content -->
+        <div class="dms-layout-child">
+
+          <!-- Header band (LayoutGroup style: header) -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="dms-page-meta">
+                <span>catskills</span>
+                <span class="sep">/</span>
+                <span>sullivan county</span>
+                <span class="sep">/</span>
+                <span>mitigation overview</span>
+              </div>
+              <h1 class="dms-page-title">Sullivan County mitigation overview</h1>
+              <p class="dms-page-lede">
+                The county's All-Hazards Mitigation Plan, last adopted 2023. Tracks 47 jurisdiction-level actions across 6 hazard categories, with quarterly progress reporting from town and village stakeholders.
+              </p>
+
+              <div style="display: flex; gap: var(--space-3); margin-top: var(--space-5);">
+                <button class="btn btn-primary">Open 2026 update</button>
+                <button class="btn btn-secondary">Download annex</button>
+                <button class="btn btn-tertiary">Print PDF</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- KPI strip (LayoutGroup style: content, no extra padding around) -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner" style="padding: 0; background: transparent; border: 0; box-shadow: none;">
+              <div class="kpis">
+                <div class="kpi">
+                  <div class="label t-metaXS ink-graphite">Active actions</div>
+                  <div class="value t-displayLG tabular ink-slate">47</div>
+                  <div class="meta t-metaSM ink-fog"><span>since 2023-09-15</span><span class="delta">+4 YTD</span></div>
+                </div>
+                <div class="kpi">
+                  <div class="label t-metaXS ink-graphite">Completed</div>
+                  <div class="value t-displayLG tabular ink-slate">12</div>
+                  <div class="meta t-metaSM ink-fog"><span>25.5% of total</span><span class="delta">+3 YTD</span></div>
+                </div>
+                <div class="kpi">
+                  <div class="label t-metaXS ink-graphite">Overdue</div>
+                  <div class="value t-displayLG tabular ink-slate">6</div>
+                  <div class="meta t-metaSM ink-fog"><span>3 jurisdictions</span><span class="delta-down">+1 YTD</span></div>
+                </div>
+                <div class="kpi">
+                  <div class="label t-metaXS ink-graphite">Funding obligated</div>
+                  <div class="value t-displayLG tabular ink-slate">$3.4M</div>
+                  <div class="meta t-metaSM ink-fog"><span>FEMA HMGP · HMA</span><span class="delta">+$420K YTD</span></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Map section -->
+          <section id="map" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · MAP</div>
+                <h2 class="dms-section-title">Hazard exposure · Sullivan County, NY</h2>
+                <p class="dms-section-lede">
+                  FEMA NFIP claims joined to county parcels; overlaid with the 2023 Hazard Mitigation Plan's identified flood-prone zones. Click a parcel for claim history.
+                </p>
+
+                <div class="map-section" style="margin-top: var(--space-4);">
+                  <div class="map-canvas">
+                    <div class="map-overlay-pin" style="left: 30%; top: 35%;"></div>
+                    <div class="map-overlay-pin accent" style="left: 38%; top: 42%;"></div>
+                    <div class="map-overlay-pin" style="left: 45%; top: 50%;"></div>
+                    <div class="map-overlay-pin" style="left: 55%; top: 45%;"></div>
+                    <div class="map-overlay-pin accent" style="left: 60%; top: 55%;"></div>
+                    <div class="map-overlay-pin" style="left: 50%; top: 65%;"></div>
+                    <div class="map-overlay-pin" style="left: 65%; top: 70%;"></div>
+                  </div>
+                  <div class="map-attrib t-metaSM ink-fog">
+                    <span><span class="key">Source</span> · FEMA NFIP Claims v2 · 2,917 records · 1978–2025</span>
+                    <span>View · 1962564 · last refreshed 2026-05-22 04:21</span>
+                  </div>
+                </div>
+
+                <div class="legend t-metaSM ink-graphite" style="margin-top: var(--space-4);">
+                  <span class="item"><span class="swatch" style="background: var(--color-oxide);"></span> Repetitive loss · 4+ claims</span>
+                  <span class="item"><span class="swatch" style="background: var(--color-slate);"></span> Insured property</span>
+                  <span class="item"><span class="swatch" style="background: rgba(181, 83, 44, 0.22); border: 1px solid var(--color-oxide);"></span> 1% annual chance flood zone</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Actions: chart + table side by side via twocol -->
+          <section id="actions" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · MITIGATION ACTIONS</div>
+                <h2 class="dms-section-title">Action status by hazard category</h2>
+                <p class="dms-section-lede">
+                  6 hazard categories, 47 active actions, tracked by status. Flooding accounts for nearly half of all actions; severe storms second.
+                </p>
+
+                <div class="twocol" style="margin-top: var(--space-5);">
+
+                  <!-- Stacked bar chart -->
+                  <div class="chart-card">
+                    <div class="title t-proseLG weight-500 ink-slate">Actions by hazard · status</div>
+                    <div class="sub t-proseSM ink-graphite">Stacked. Sullivan County, 2026-Q2.</div>
+
+                    <div class="bars">
+                      <!-- Flooding: 22 total (10 active, 7 complete, 3 in progress, 2 overdue) -->
+                      <div class="bar">
+                        <div class="stack" style="background: var(--color-grout-light); height: 8%;"></div>
+                        <div class="stack" style="background: var(--color-oxide); height: 9%;"></div>
+                        <div class="stack" style="background: var(--color-ochre); height: 14%;"></div>
+                        <div class="stack" style="background: var(--color-verdigris); height: 32%;"></div>
+                        <div class="stack" style="background: var(--color-slate); height: 45%;"></div>
+                      </div>
+                      <!-- Severe storms: 11 -->
+                      <div class="bar">
+                        <div class="stack" style="background: var(--color-grout-light); height: 8%;"></div>
+                        <div class="stack" style="background: var(--color-oxide); height: 9%;"></div>
+                        <div class="stack" style="background: var(--color-ochre); height: 18%;"></div>
+                        <div class="stack" style="background: var(--color-verdigris); height: 22%;"></div>
+                        <div class="stack" style="background: var(--color-slate); height: 27%;"></div>
+                      </div>
+                      <!-- Wildfire: 6 -->
+                      <div class="bar">
+                        <div class="stack" style="background: var(--color-grout-light); height: 8%;"></div>
+                        <div class="stack" style="background: var(--color-oxide); height: 0%;"></div>
+                        <div class="stack" style="background: var(--color-ochre); height: 8%;"></div>
+                        <div class="stack" style="background: var(--color-verdigris); height: 11%;"></div>
+                        <div class="stack" style="background: var(--color-slate); height: 13%;"></div>
+                      </div>
+                      <!-- Winter storms: 4 -->
+                      <div class="bar">
+                        <div class="stack" style="background: var(--color-grout-light); height: 8%;"></div>
+                        <div class="stack" style="background: var(--color-oxide); height: 0%;"></div>
+                        <div class="stack" style="background: var(--color-ochre); height: 4%;"></div>
+                        <div class="stack" style="background: var(--color-verdigris); height: 8%;"></div>
+                        <div class="stack" style="background: var(--color-slate); height: 9%;"></div>
+                      </div>
+                      <!-- Earthquake: 2 -->
+                      <div class="bar">
+                        <div class="stack" style="background: var(--color-grout-light); height: 8%;"></div>
+                        <div class="stack" style="background: var(--color-oxide); height: 0%;"></div>
+                        <div class="stack" style="background: var(--color-ochre); height: 0%;"></div>
+                        <div class="stack" style="background: var(--color-verdigris); height: 4%;"></div>
+                        <div class="stack" style="background: var(--color-slate); height: 5%;"></div>
+                      </div>
+                      <!-- Landslide: 2 -->
+                      <div class="bar">
+                        <div class="stack" style="background: var(--color-grout-light); height: 8%;"></div>
+                        <div class="stack" style="background: var(--color-oxide); height: 5%;"></div>
+                        <div class="stack" style="background: var(--color-ochre); height: 0%;"></div>
+                        <div class="stack" style="background: var(--color-verdigris); height: 0%;"></div>
+                        <div class="stack" style="background: var(--color-slate); height: 5%;"></div>
+                      </div>
+                    </div>
+                    <div class="bar-axis t-metaXS ink-fog">
+                      <span>Flooding<br>22</span>
+                      <span>Severe<br>storm<br>11</span>
+                      <span>Wildfire<br>6</span>
+                      <span>Winter<br>4</span>
+                      <span>Earthquake<br>2</span>
+                      <span>Landslide<br>2</span>
+                    </div>
+
+                    <div class="legend t-metaSM ink-graphite">
+                      <span class="item"><span class="swatch" style="background: var(--color-slate);"></span>Active</span>
+                      <span class="item"><span class="swatch" style="background: var(--color-verdigris);"></span>Complete</span>
+                      <span class="item"><span class="swatch" style="background: var(--color-ochre);"></span>In progress</span>
+                      <span class="item"><span class="swatch" style="background: var(--color-oxide);"></span>Overdue</span>
+                      <span class="item"><span class="swatch" style="background: var(--color-grout-light);"></span>Not yet started</span>
+                    </div>
+                  </div>
+
+                  <!-- Side cards: KPIs + funding -->
+                  <div>
+                    <div class="side-card">
+                      <div class="title t-displaySM weight-500 ink-slate">Plan timeline</div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">Adopted</span><span class="v t-metaMD ink-slate">2023-09-15</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">Next update due</span><span class="v t-metaMD ink-slate">2028-09-15</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">Quarterly review</span><span class="v t-metaMD ink-slate">2026-09-30</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">FEMA approval</span><span class="v t-metaMD ink-slate">2023-10-04</span></div>
+                    </div>
+
+                    <div class="side-card">
+                      <div class="title t-displaySM weight-500 ink-slate">Funding sources</div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">HMGP (FEMA)</span><span class="v t-metaMD ink-slate">$2,180,000</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">BRIC (FEMA)</span><span class="v t-metaMD ink-slate">$840,000</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">FMA (FEMA)</span><span class="v t-metaMD ink-slate">$240,000</span></div>
+                      <div class="row"><span class="k t-proseSM ink-graphite">State match</span><span class="v t-metaMD ink-slate">$140,000</span></div>
+                      <div class="row" style="margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--color-slate);"><span class="k t-proseSM weight-500 ink-slate">Total obligated</span><span class="v t-metaMD weight-500 ink-slate">$3,400,000</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Recent actions table -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · TABLE</div>
+                <h2 class="dms-section-title">Recent action updates</h2>
+
+                <table class="table" style="margin-top: var(--space-4);">
+                  <thead>
+                    <tr>
+                      <th style="width: 8%;">ID</th>
+                      <th>Action</th>
+                      <th>Jurisdiction</th>
+                      <th>Hazard</th>
+                      <th>Status</th>
+                      <th class="num" style="text-align: right;">Cost</th>
+                      <th>Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-014</span></td>
+                      <td>Acquire and demolish 4 repetitive-loss properties on Liberty Rd</td>
+                      <td>Liberty, Town of</td>
+                      <td>Flooding</td>
+                      <td><span class="pill-base pill-verdigris">complete</span></td>
+                      <td class="num">$640,000</td>
+                      <td>2026-05-21</td>
+                    </tr>
+                    <tr>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-022</span></td>
+                      <td>Install backup generators at 3 emergency shelters</td>
+                      <td>Sullivan County (EOC)</td>
+                      <td>Severe storm</td>
+                      <td><span class="pill-base pill-ochre">in progress</span></td>
+                      <td class="num">$180,000</td>
+                      <td>2026-05-18</td>
+                    </tr>
+                    <tr>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-031</span></td>
+                      <td>Elevate Town Hall HVAC above 100-yr floodplain</td>
+                      <td>Fallsburg, Town of</td>
+                      <td>Flooding</td>
+                      <td><span class="pill-base pill-oxide">overdue</span></td>
+                      <td class="num">$96,000</td>
+                      <td>2026-05-14</td>
+                    </tr>
+                    <tr>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-007</span></td>
+                      <td>Fuel-break clearance on Burnt Hill ridge</td>
+                      <td>Bethel, Town of</td>
+                      <td>Wildfire</td>
+                      <td><span class="pill-base pill-neutral">active</span></td>
+                      <td class="num">$48,000</td>
+                      <td>2026-05-09</td>
+                    </tr>
+                    <tr>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-019</span></td>
+                      <td>Stormwater retention pond — Co Rt 161</td>
+                      <td>Liberty, Village of</td>
+                      <td>Flooding</td>
+                      <td><span class="pill-base pill-ochre">in progress</span></td>
+                      <td class="num">$420,000</td>
+                      <td>2026-05-08</td>
+                    </tr>
+                    <tr>
+                      <td><span class="t-proseXS ink-graphite tabular">SU-045</span></td>
+                      <td>Hazard awareness curriculum · grades 4–6</td>
+                      <td>Sullivan County BOCES</td>
+                      <td>Multi-hazard</td>
+                      <td><span class="pill-base pill-verdigris">complete</span></td>
+                      <td class="num">$12,000</td>
+                      <td>2026-04-30</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="t-proseSM ink-graphite" style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-3);">
+                  <span>Showing 6 of 47 actions</span>
+                  <a href="#" class="ink-slate">View all actions →</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Stakeholders -->
+          <section id="stakeholders" class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>SECTION · STAKEHOLDERS</div>
+                <h2 class="dms-section-title">Plan stakeholders &amp; quarterly status</h2>
+                <p class="dms-section-lede">
+                  Each jurisdiction submits a quarterly progress report. The county planning department reviews and forwards to NYS DHSES.
+                </p>
+
+                <div class="stakeholders" style="margin-top: var(--space-4);">
+                  <div class="stakeholder">
+                    <div class="ini t-metaSM ink-graphite">SC</div>
+                    <div>
+                      <div class="name t-proseSM ink-slate">Sullivan County Planning</div>
+                      <div class="role t-metaXS ink-fog">Lead · county-level actions</div>
+                    </div>
+                    <div class="status submitted t-metaXS">submitted</div>
+                  </div>
+                  <div class="stakeholder">
+                    <div class="ini t-metaSM ink-graphite">LI</div>
+                    <div>
+                      <div class="name t-proseSM ink-slate">Liberty, Town of</div>
+                      <div class="role t-metaXS ink-fog">14 actions assigned</div>
+                    </div>
+                    <div class="status submitted t-metaXS">submitted</div>
+                  </div>
+                  <div class="stakeholder">
+                    <div class="ini t-metaSM ink-graphite">FA</div>
+                    <div>
+                      <div class="name t-proseSM ink-slate">Fallsburg, Town of</div>
+                      <div class="role t-metaXS ink-fog">9 actions assigned</div>
+                    </div>
+                    <div class="status overdue t-metaXS">overdue</div>
+                  </div>
+                  <div class="stakeholder">
+                    <div class="ini t-metaSM ink-graphite">BE</div>
+                    <div>
+                      <div class="name t-proseSM ink-slate">Bethel, Town of</div>
+                      <div class="role t-metaXS ink-fog">7 actions assigned</div>
+                    </div>
+                    <div class="status submitted t-metaXS">submitted</div>
+                  </div>
+                  <div class="stakeholder">
+                    <div class="ini t-metaSM ink-graphite">MO</div>
+                    <div>
+                      <div class="name t-proseSM ink-slate">Monticello, Village of</div>
+                      <div class="role t-metaXS ink-fog">6 actions assigned</div>
+                    </div>
+                    <div class="status draft t-metaXS">draft</div>
+                  </div>
+                  <div class="stakeholder">
+                    <div class="ini t-metaSM ink-graphite">NE</div>
+                    <div>
+                      <div class="name t-proseSM ink-slate">Neversink, Town of</div>
+                      <div class="role t-metaXS ink-fog">4 actions assigned</div>
+                    </div>
+                    <div class="status submitted t-metaXS">submitted</div>
+                  </div>
+                  <div class="stakeholder">
+                    <div class="ini t-metaSM ink-graphite">CA</div>
+                    <div>
+                      <div class="name t-proseSM ink-slate">Callicoon, Town of</div>
+                      <div class="role t-metaXS ink-fog">3 actions assigned</div>
+                    </div>
+                    <div class="status overdue t-metaXS">overdue</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Footer -->
+          <section class="dms-group-footer">
+            <div class="dms-group-footer-inner">
+              <div style="display: flex; justify-content: space-between; gap: var(--space-5); align-items: baseline; flex-wrap: wrap;">
+                <div>
+                  <div class="designator">Mitigation Atlas · NY State Hazard Plan</div>
+                  <div class="t-proseSM ink-graphite" style="margin-top: var(--space-2); max-width: 60ch;">
+                    A worked example demonstrating the Tessera theme on a civic-dashboard surface. Real composition; placeholder data.
+                  </div>
+                </div>
+                <div class="t-metaSM ink-fog" style="text-align: right;">
+                  Tessera Design System v0.1 · 2026-05-22<br>
+                  <a href="../design-system/theme.html" style="color: inherit;">theme</a> ·
+                  <a href="../design-system/layouts.html" style="color: inherit;">layouts</a> ·
+                  <a href="../design-system/grid.html" style="color: inherit;">grid</a> ·
+                  <a href="../design-system/components.html" style="color: inherit;">components</a> ·
+                  <a href="../design-system/patterns.html" style="color: inherit;">patterns</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

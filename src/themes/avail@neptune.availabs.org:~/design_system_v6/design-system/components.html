@@ -1,0 +1,1136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tessera v6 · 4/5 · Components</title>
+<!-- apply stored light/dark choice before first paint -->
+<script>(function(){try{var t=localStorage.getItem("t6-theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: {
+    paper:"var(--t-paper)", panel:"var(--t-panel)", well:"var(--t-well)",
+    ink:"var(--t-ink)", graphite:"var(--t-graphite)", pencil:"var(--t-pencil)",
+    rule:"var(--t-rule)", ruleStrong:"var(--t-rule-strong)",
+    cobalt:"var(--t-cobalt)", cobaltDeep:"var(--t-cobalt-deep)", cobaltSoft:"var(--t-cobalt-soft)", accentInk:"var(--t-accent-ink)",
+    marker:"var(--t-marker)", markerSoft:"var(--t-marker-soft)",
+    go:"var(--t-go)", goSoft:"var(--t-go-soft)", amber:"var(--t-amber)", amberSoft:"var(--t-amber-soft)",
+    brick:"var(--t-brick)", brickSoft:"var(--t-brick-soft)",
+    board:"var(--t-board)", board2:"var(--t-board-2)", chalk:"var(--t-chalk)", chalkDim:"var(--t-chalk-dim)",
+    scrim:"var(--t-scrim)",
+  },
+  fontFamily: {
+    display:['"IBM Plex Sans"',"system-ui","sans-serif"], sans:['"IBM Plex Sans"',"system-ui","sans-serif"],
+    mono:['"IBM Plex Mono"',"ui-monospace","monospace"], note:["Caveat",'"Segoe Print"',"cursive"],
+  },
+  boxShadow: { lift:"var(--t-shadow-lift)", drag:"var(--t-shadow-drag)" },
+  maxWidth: { content:"1200px", measure:"640px" },
+}}};
+</script>
+<link rel="stylesheet" href="../_shared.css"/>
+</head>
+
+<body class="text-ink font-sans">
+<!-- ═══ Layout: app — the product chrome (SideNav + slim TopNav) ═══ -->
+<div data-dms-layout="app" class="min-h-screen">
+  <div class="flex min-h-screen">
+
+    <!-- SideNav (Layout app) — doubles as design-system navigation -->
+    <aside class="hidden lg:flex w-60 flex-none flex-col border-r border-rule">
+      <div class="h-14 flex items-center gap-2.5 px-5 border-b border-rule">
+        <!-- icon: Tile -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-cobalt" aria-hidden="true"><path d="M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3" opacity="0.45"/><rect x="9.8" y="9.8" width="7.4" height="7.4" rx="1.5" transform="rotate(-6 13.5 13.5)"/><path d="M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2"/></svg>
+        <span class="t-displaySM">tessera</span>
+        <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">v6</span>
+      </div>
+      <nav class="flex-1 overflow-y-auto py-5 px-3">
+        <div class="t-metaXS text-pencil px-2 pb-2">design system</div>
+        <a href="theme.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Sparkle -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 4l1.8 5.2L19 11l-5.2 1.8L12 18l-1.8-5.2L5 11l5.2-1.8L12 4Z"/><path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/></svg>
+          Theme — tokens</a>
+        <a href="layouts.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Layout -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9h17M9.5 9v11.5"/></svg>
+          Layouts</a>
+        <a href="grid.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Grid -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M3.5 9h17M3.5 15h17M9 3.5v17M15 3.5v17"/></svg>
+          Grid</a>
+        <!-- active level-1 item -->
+        <a href="components.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md bg-cobaltSoft text-cobalt t-proseSM font-medium">
+          <!-- icon: Card -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M7 14.5h6"/></svg>
+          Components</a>
+        <!-- level-2: on-page anchors of the active item -->
+        <div class="ml-4 border-l border-rule my-1">
+          <a href="#navigation" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Navigation</a>
+          <a href="#forms" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Forms</a>
+          <a href="#overlays" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Overlays</a>
+          <a href="#containers" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Containers &amp; atoms</a>
+          <a href="#rich" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Rich content</a>
+        </div>
+        <a href="patterns.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Layers -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 3.5l8.5 4.5L12 12.5 3.5 8 12 3.5Z"/><path d="M3.5 12.5L12 17l8.5-4.5"/><path d="M3.5 17L12 21.5 20.5 17"/></svg>
+          Patterns</a>
+        <div class="t-metaXS text-pencil px-2 pt-5 pb-2">example pages</div>
+        <a href="../pages/beta-landing.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Rocket -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 16.5c-1.5-.4-3-1.9-3.4-3.4C9.5 8 12.5 4.5 18 4c-.5 5.5-4 8.5-6 9.5v3Z"/><circle cx="14.5" cy="7.5" r="1.2"/><path d="M8.5 13.5c-1.8.3-3 2.7-3 5 2.3 0 4.7-1.2 5-3"/></svg>
+          Beta landing</a>
+      </nav>
+      <div class="px-5 py-4 border-t border-rule">
+        <p class="t-metaXS text-pencil">graph paper · light+dark</p>
+      </div>
+    </aside>
+
+    <!-- content column -->
+    <div class="flex-1 min-w-0 flex flex-col">
+      <!-- TopNav (Layout app): breadcrumb + counter + mode toggle -->
+      <header class="h-14 flex-none border-b border-rule flex items-center gap-3 px-5 lg:px-8">
+        <span class="t-metaMD text-graphite">design-system</span>
+        <span class="t-metaMD text-pencil">/</span>
+        <span class="t-metaMD text-cobalt">components.html</span>
+        <span class="flex-1"></span>
+        <span class="t-metaSM text-pencil">4 / 5</span>
+        <button onclick="var r=document.documentElement;var d=r.getAttribute('data-theme')==='dark';if(d){r.removeAttribute('data-theme')}else{r.setAttribute('data-theme','dark')}try{localStorage.setItem('t6-theme',d?'light':'dark')}catch(e){}" aria-label="Toggle dark mode" class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite hover:text-ink hover:border-ruleStrong">
+          <span class="t6-when-light"><!-- icon: Moon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></span>
+          <span class="t6-when-dark"><!-- icon: Sun -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6L17 7M7 17l-1.4 1.4M18.4 18.4L17 17M7 7L5.6 5.6"/></svg></span>
+        </button>
+      </header>
+
+      <main class="flex-1">
+
+        <!-- ═══ LayoutGroup: header band ═══ -->
+        <div data-dms-group="header" class="w-full border-b border-rule relative">
+          <span class="t6-joint" style="left:-3.5px;bottom:-3.5px;"></span>
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="page-title" class="col-span-12 p-3">
+                <p class="t-metaSM text-cobalt">tessera design system · v6 · graph paper</p>
+                <h1 class="t-displayXL mt-3">Components</h1>
+                <p class="t-proseLG text-graphite mt-4 max-w-measure">Every primitive an author can drop on a page, drawn in this
+                  brand's hand: nav in both directions, every form control in every state, overlays as still photographs, the
+                  dataCard workhorse with its knobs labelled, and the rich sections — text, table, graph, map. If a live render
+                  doesn't match this page, the theme is wrong, not the page.</p>
+                <p class="t-noteLG text-graphite mt-4 -rotate-1 inline-block">the demo data is real — bird-log and traffic_counts exist on my beta ↓</p>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 01 · Navigation ═══ -->
+        <div id="navigation" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="nav-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">01 · navigation</p>
+                <h2 class="t-displayLG mt-2">TopNav, SideNav, menus, crumbs</h2>
+                <p class="t-prose text-graphite mt-3 max-w-measure">Nav is hairlines and one accent. The active item is the only
+                  cobalt thing in the chrome; everything else is graphite that darkens to ink on hover. No fills, no shadows —
+                  a border-b and a soft cobalt wash do all the work.</p>
+              </section>
+
+              <!-- TopNav -->
+              <section data-dms-section="topnav" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">TopNav — marketing variant</h3>
+                    <span class="t-metaSM text-pencil">topnav.*</span>
+                  </div>
+                  <!-- desktop bar -->
+                  <div class="mt-5 border border-rule rounded-lg overflow-hidden">
+                    <div class="h-14 flex items-center gap-6 px-5 bg-paper">
+                      <span class="flex items-center gap-2.5">
+                        <span class="w-7 h-7 rounded-md border border-rule bg-panel flex items-center justify-center text-cobalt">
+                          <!-- icon: Tile -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3" opacity="0.45"/><rect x="9.8" y="9.8" width="7.4" height="7.4" rx="1.5" transform="rotate(-6 13.5 13.5)"/><path d="M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2"/></svg>
+                        </span>
+                        <span class="t-displaySM">tessera</span>
+                        <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">beta 0.6.0</span>
+                      </span>
+                      <span class="hidden md:flex items-center gap-5 t-proseSM">
+                        <a href="#navigation" class="text-cobalt font-medium underline decoration-2 underline-offset-8">features</a>
+                        <a href="#navigation" class="text-graphite hover:text-ink">examples</a>
+                        <a href="#navigation" class="text-graphite hover:text-ink">docs</a>
+                        <a href="#navigation" class="text-graphite hover:text-ink">changelog</a>
+                      </span>
+                      <span class="flex-1"></span>
+                      <span class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite">
+                        <!-- icon: Moon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>
+                      </span>
+                      <span class="t-proseSM font-medium bg-cobalt text-accentInk rounded-md px-3.5 py-1.5">start building</span>
+                    </div>
+                  </div>
+                  <p class="t-metaXS text-pencil mt-2">active link: text-cobalt + 2px underline, offset 8 · hover: graphite → ink · one primary button, right edge</p>
+                  <!-- mobile toggle state -->
+                  <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p class="t-metaSM text-graphite mb-2">mobile — closed</p>
+                      <div class="border border-rule rounded-lg overflow-hidden max-w-xs">
+                        <div class="h-12 flex items-center gap-2.5 px-4 bg-paper">
+                          <span class="text-cobalt"><!-- icon: Tile -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3" opacity="0.45"/><rect x="9.8" y="9.8" width="7.4" height="7.4" rx="1.5" transform="rotate(-6 13.5 13.5)"/><path d="M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2"/></svg></span>
+                          <span class="t-displaySM">tessera</span>
+                          <span class="flex-1"></span>
+                          <span class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite">
+                            <!-- icon: Menu -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <p class="t-metaSM text-graphite mb-2">mobile — open</p>
+                      <div class="border border-rule rounded-lg overflow-hidden max-w-xs">
+                        <div class="h-12 flex items-center gap-2.5 px-4 bg-paper border-b border-rule">
+                          <span class="text-cobalt"><!-- icon: Tile -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3" opacity="0.45"/><rect x="9.8" y="9.8" width="7.4" height="7.4" rx="1.5" transform="rotate(-6 13.5 13.5)"/><path d="M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2"/></svg></span>
+                          <span class="t-displaySM">tessera</span>
+                          <span class="flex-1"></span>
+                          <span class="w-8 h-8 rounded-md border border-ruleStrong bg-well flex items-center justify-center text-ink">
+                            <!-- icon: X -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                          </span>
+                        </div>
+                        <div class="bg-paper p-3">
+                          <a href="#navigation" class="block px-2 py-2 rounded-md bg-cobaltSoft text-cobalt t-proseSM font-medium">features</a>
+                          <a href="#navigation" class="block px-2 py-2 rounded-md text-graphite t-proseSM">examples</a>
+                          <a href="#navigation" class="block px-2 py-2 rounded-md text-graphite t-proseSM">docs</a>
+                          <a href="#navigation" class="block px-2 py-2 rounded-md text-graphite t-proseSM">changelog</a>
+                          <span class="block text-center t-proseSM font-medium bg-cobalt text-accentInk rounded-md px-3.5 py-2 mt-2">start building</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SideNav -->
+              <section data-dms-section="sidenav" class="col-span-12 lg:col-span-7 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">SideNav — three levels deep</h3>
+                    <span class="t-metaSM text-pencil">sidenav.navitem_level_1..3</span>
+                  </div>
+                  <div class="mt-5 flex flex-col sm:flex-row gap-6">
+                    <div class="w-full sm:w-60 flex-none border border-rule rounded-lg bg-paper p-3">
+                      <!-- level 1 -->
+                      <a href="#navigation" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+                        <!-- icon: Home -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 11L12 4.5 19.5 11"/><path d="M6.5 9.5v10h11v-10"/></svg>
+                        overview</a>
+                      <!-- level 1, expanded, with chevron indicator -->
+                      <a href="#navigation" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-ink bg-well t-proseSM font-medium">
+                        <!-- icon: File -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M6.5 3.5h7l4 4v13h-11v-17Z"/><path d="M13.5 3.5v4h4"/></svg>
+                        pages
+                        <span class="ml-auto text-pencil"><!-- icon: ChevronDown -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></span></a>
+                      <!-- level 2 -->
+                      <div class="ml-4 border-l border-rule my-1">
+                        <a href="#navigation" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">home</a>
+                        <a href="#navigation" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">about</a>
+                        <a href="#navigation" class="flex items-center pl-4 pr-2 py-1 t-proseSM rounded-r-md bg-cobaltSoft text-cobalt font-medium">bird-log
+                          <span class="ml-auto"><!-- icon: ChevronDown -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></span></a>
+                        <!-- level 3 -->
+                        <div class="ml-4 border-l border-rule">
+                          <a href="#navigation" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">spring 2026</a>
+                          <a href="#navigation" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">winter 2025</a>
+                        </div>
+                      </div>
+                      <a href="#navigation" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+                        <!-- icon: Database -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M5 6.5C5 4.8 8.1 3.5 12 3.5s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3Z"/><path d="M5 6.5v11c0 1.7 3.1 3 7 3s7-1.3 7-3v-11"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>
+                        datasets
+                        <span class="ml-auto text-pencil"><!-- icon: ChevronRight -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></span></a>
+                      <a href="#navigation" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+                        <!-- icon: Settings -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="2.5"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4L6 18M18 18l-1.6-1.6M7.6 7.6L6 6"/></svg>
+                        settings</a>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <ul class="space-y-2.5 t-proseSM text-graphite">
+                        <li><span class="t-metaSM text-cobalt">level 1</span> — icon + label, rounded-md; active gets bg-cobaltSoft + text-cobalt; an expanded parent gets bg-well + text-ink instead, so only one cobalt item exists.</li>
+                        <li><span class="t-metaSM text-cobalt">level 2</span> — no icon, indented behind a border-l border-rule; the hairline is the "you are inside" signal.</li>
+                        <li><span class="t-metaSM text-cobalt">level 3</span> — same treatment, one more hairline in. Four levels exist in the contract; past three, rethink the tree.</li>
+                        <li><span class="t-metaSM text-cobalt">indicator</span> — ChevronDown when expanded, ChevronRight when collapsed, always text-pencil.</li>
+                        <li><span class="t-metaSM text-cobalt">hover</span> — bg-well + text darkens to ink. Never a border change, never a shadow.</li>
+                      </ul>
+                      <p class="t-noteMD text-cobalt mt-4 rotate-1 inline-block">hover is a wash, active is a color — easy to tell apart ←</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- NavigableMenu + Breadcrumbs -->
+              <section data-dms-section="navigable-menu" class="col-span-12 lg:col-span-5 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">NavigableMenu</h3>
+                    <span class="t-metaSM text-pencil">navigableMenu.*</span>
+                  </div>
+                  <p class="t-metaSM text-graphite mt-4">closed trigger</p>
+                  <button class="mt-2 inline-flex items-center gap-2 border border-ruleStrong bg-panel rounded-md px-3 py-1.5 t-proseSM text-ink">
+                    section actions
+                    <!-- icon: ChevronDown -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+                  </button>
+                  <p class="t-metaSM text-graphite mt-5">open popover</p>
+                  <div class="mt-2 w-56 bg-panel border border-rule rounded-md shadow-drag p-1.5">
+                    <a href="#navigation" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md bg-cobaltSoft text-cobalt t-proseSM font-medium">
+                      <!-- icon: Copy -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+                      duplicate section
+                      <kbd class="ml-auto t-metaXS text-cobalt border border-rule rounded px-1.5 py-0.5">d</kbd></a>
+                    <a href="#navigation" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+                      <!-- icon: Upload -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 15V4.5M8 8.5L12 4.5l4 4"/><path d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg>
+                      move up
+                      <kbd class="ml-auto t-metaXS text-pencil border border-rule rounded px-1.5 py-0.5">↑</kbd></a>
+                    <a href="#navigation" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+                      <!-- icon: Download -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 4.5V15M8 11.5l4 4 4-4"/><path d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg>
+                      move down
+                      <kbd class="ml-auto t-metaXS text-pencil border border-rule rounded px-1.5 py-0.5">↓</kbd></a>
+                    <div class="h-px bg-rule my-1.5 mx-2"></div>
+                    <a href="#navigation" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-brick hover:bg-brickSoft t-proseSM">
+                      <!-- icon: Trash -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg>
+                      delete section</a>
+                  </div>
+                  <div class="border-t border-rule mt-6 pt-4">
+                    <div class="flex items-baseline justify-between pb-2">
+                      <h3 class="t-displaySM">Breadcrumbs</h3>
+                      <span class="t-metaSM text-pencil">separator: /</span>
+                    </div>
+                    <p class="t-metaMD mt-2"><a href="#navigation" class="text-graphite hover:text-ink">pages</a>
+                      <span class="text-pencil">/</span>
+                      <a href="#navigation" class="text-graphite hover:text-ink">bird-log</a>
+                      <span class="text-pencil">/</span>
+                      <span class="text-cobalt">spring 2026</span></p>
+                    <p class="t-proseXS text-graphite mt-2">t-metaMD; ancestors graphite, current page cobalt, slash always text-pencil.</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 02 · Forms ═══ -->
+        <div id="forms" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="forms-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">02 · forms</p>
+                <h2 class="t-displayLG mt-2">Controls: rounded-md, hairline, one accent</h2>
+                <p class="t-prose text-graphite mt-3 max-w-measure">Every control is a rounded-md box with a ruleStrong hairline.
+                  Focus is a 2px cobalt ring; errors switch the hairline to brick and add one plain sentence. Buttons say what
+                  happens — "publish", "save draft" — never "submit".</p>
+              </section>
+
+              <!-- Buttons -->
+              <section data-dms-section="button" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Button — four named styles</h3>
+                    <span class="t-metaSM text-pencil">button.default · secondary · ghost · danger</span>
+                  </div>
+                  <div class="mt-5 flex flex-wrap items-center gap-3">
+                    <button class="t-proseSM font-medium bg-cobalt text-accentInk rounded-md px-3.5 py-1.5 hover:bg-cobaltDeep">publish</button>
+                    <button class="t-proseSM font-medium border border-ruleStrong bg-panel text-ink rounded-md px-3.5 py-1.5 hover:border-ink">save draft</button>
+                    <button class="t-proseSM font-medium text-cobalt rounded-md px-3.5 py-1.5 hover:bg-cobaltSoft">preview</button>
+                    <button class="t-proseSM font-medium bg-brick text-accentInk rounded-md px-3.5 py-1.5">delete page</button>
+                  </div>
+                  <div class="mt-2 flex flex-wrap gap-3 t-metaXS text-pencil">
+                    <span class="px-1">default</span><span class="px-2">secondary</span><span class="px-1">ghost</span><span class="px-4">danger</span>
+                  </div>
+                  <!-- state row -->
+                  <p class="t-metaSM text-graphite mt-6 border-t border-rule pt-4">state row — the default style through its day</p>
+                  <div class="mt-3 grid grid-cols-2 sm:grid-cols-5 gap-4">
+                    <div><button class="t-proseSM font-medium bg-cobalt text-accentInk rounded-md px-3.5 py-1.5 w-full">publish</button><p class="t-metaXS text-pencil mt-2 text-center">default</p></div>
+                    <div><button class="t-proseSM font-medium bg-cobaltDeep text-white rounded-md px-3.5 py-1.5 w-full">publish</button><p class="t-metaXS text-pencil mt-2 text-center">hover · cobaltDeep</p></div>
+                    <div><button class="t-proseSM font-medium bg-cobalt text-accentInk rounded-md px-3.5 py-1.5 w-full outline outline-2 outline-cobalt outline-offset-2">publish</button><p class="t-metaXS text-pencil mt-2 text-center">focus · 2px ring</p></div>
+                    <div><button class="t-proseSM font-medium bg-well text-pencil border border-rule rounded-md px-3.5 py-1.5 w-full cursor-not-allowed">publish</button><p class="t-metaXS text-pencil mt-2 text-center">disabled</p></div>
+                    <div><button class="t-proseSM font-medium bg-cobalt text-accentInk rounded-md px-3.5 py-1.5 w-full inline-flex items-center justify-center gap-2 cursor-wait">
+                      <!-- decorative -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="w-3.5 h-3.5 animate-spin" aria-hidden="true"><path d="M12 3a9 9 0 1 1-6.4 2.6"/></svg>
+                      publishing…</button><p class="t-metaXS text-pencil mt-2 text-center">loading</p></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Input + Textarea -->
+              <section data-dms-section="input" class="col-span-12 lg:col-span-6 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Input &amp; Textarea</h3>
+                    <span class="t-metaSM text-pencil">input.* · textarea.*</span>
+                  </div>
+                  <div class="mt-5 space-y-5">
+                    <div>
+                      <label class="t-proseSM font-medium block mb-1.5">page title <span class="t-metaXS text-pencil ml-1">default</span></label>
+                      <input type="text" value="bird-log" class="w-full t-proseSM bg-panel border border-ruleStrong rounded-md px-3 py-1.5 text-ink placeholder:text-pencil"/>
+                    </div>
+                    <div>
+                      <label class="t-proseSM font-medium block mb-1.5">page title <span class="t-metaXS text-cobalt ml-1">focus</span></label>
+                      <input type="text" value="bird-log" class="w-full t-proseSM bg-panel border border-cobalt rounded-md px-3 py-1.5 text-ink ring-2 ring-cobaltSoft"/>
+                    </div>
+                    <div>
+                      <label class="t-proseSM font-medium block mb-1.5">slug <span class="t-metaXS text-brick ml-1">error</span></label>
+                      <input type="text" value="bird log!!" class="w-full t-proseSM bg-panel border border-brick rounded-md px-3 py-1.5 text-ink"/>
+                      <p class="t-proseXS text-brick mt-1.5">slugs are lowercase letters, numbers and dashes — try "bird-log"</p>
+                    </div>
+                    <div>
+                      <label class="t-proseSM font-medium block mb-1.5 text-graphite">site id <span class="t-metaXS text-pencil ml-1">disabled</span></label>
+                      <input type="text" value="site_0042" disabled class="w-full t-metaMD bg-well border border-rule rounded-md px-3 py-1.5 text-pencil cursor-not-allowed"/>
+                    </div>
+                    <div>
+                      <label class="t-proseSM font-medium block mb-1.5">description <span class="t-metaXS text-pencil ml-1">textarea</span></label>
+                      <textarea rows="3" class="w-full t-proseSM bg-panel border border-ruleStrong rounded-md px-3 py-2 text-ink placeholder:text-pencil" placeholder="what's this page about?">every bird I've seen from the porch since january. photos when I was fast enough.</textarea>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Switch / Tabs / FieldSet / Label -->
+              <section data-dms-section="switch-tabs-fieldset" class="col-span-12 lg:col-span-6 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Switch · Tabs · FieldSet · Label</h3>
+                    <span class="t-metaSM text-pencil">switch.* · tabs.* · fieldset.*</span>
+                  </div>
+                  <p class="t-metaSM text-graphite mt-4">switch — off / on / disabled</p>
+                  <div class="mt-2 flex items-center gap-8">
+                    <span class="inline-flex items-center gap-2"><span class="w-9 h-5 rounded-full bg-well border border-ruleStrong relative"><span class="absolute left-0.5 top-0.5 w-3.5 h-3.5 rounded-full bg-panel border border-ruleStrong"></span></span><span class="t-proseSM text-graphite">off</span></span>
+                    <span class="inline-flex items-center gap-2"><span class="w-9 h-5 rounded-full bg-cobalt relative"><span class="absolute right-0.5 top-0.5 w-3.5 h-3.5 rounded-full bg-white"></span></span><span class="t-proseSM text-graphite">on</span></span>
+                    <span class="inline-flex items-center gap-2 opacity-50"><span class="w-9 h-5 rounded-full bg-well border border-rule relative"><span class="absolute left-0.5 top-0.5 w-3.5 h-3.5 rounded-full bg-panel border border-rule"></span></span><span class="t-proseSM text-graphite">disabled</span></span>
+                  </div>
+                  <p class="t-metaSM text-graphite mt-6">tabs — underline style</p>
+                  <div class="mt-2 flex gap-6 border-b border-rule">
+                    <span class="t-proseSM font-medium text-ink border-b-2 border-cobalt pb-2 -mb-px">content</span>
+                    <span class="t-proseSM text-graphite hover:text-ink pb-2">data</span>
+                    <span class="t-proseSM text-graphite hover:text-ink pb-2">history</span>
+                    <span class="t-proseSM text-graphite hover:text-ink pb-2">settings</span>
+                  </div>
+                  <p class="t-metaSM text-graphite mt-6">fieldset — legend + fields + help</p>
+                  <div class="mt-2 border border-rule rounded-lg p-4">
+                    <p class="t-metaSM text-cobalt">publishing</p>
+                    <div class="mt-3">
+                      <label class="t-proseSM font-medium block mb-1.5">publish schedule</label>
+                      <input type="text" value="fridays, 9am" class="w-full t-proseSM bg-panel border border-ruleStrong rounded-md px-3 py-1.5 text-ink"/>
+                      <p class="t-proseXS text-graphite mt-1.5">drafts saved before this time go live automatically.</p>
+                    </div>
+                  </div>
+                  <p class="t-metaSM text-graphite mt-6">label — the bare primitive</p>
+                  <p class="mt-1"><span class="t-proseSM font-medium">row count</span> <span class="t-metaXS text-pencil ml-2">t-proseSM font-medium, ink; optional metaXS suffix</span></p>
+                </div>
+              </section>
+
+              <!-- MultiSelect -->
+              <section data-dms-section="multiselect" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">MultiSelect — one primitive, four faces</h3>
+                    <span class="t-metaSM text-pencil">multiselect.* — ~25 keys</span>
+                  </div>
+                  <div class="mt-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    <!-- closed trigger with tokens -->
+                    <div>
+                      <p class="t-metaSM text-graphite mb-2">closed — token chips</p>
+                      <div class="border border-ruleStrong bg-panel rounded-md px-2 py-1.5 flex items-center gap-1.5 flex-wrap">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-cobaltSoft text-cobalt t-metaMD px-2 py-0.5">traffic_counts
+                          <!-- icon: X -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-cobaltSoft text-cobalt t-metaMD px-2 py-0.5">parcels
+                          <!-- icon: X -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+                        <span class="ml-auto text-pencil"><!-- icon: ChevronDown -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></span>
+                      </div>
+                      <p class="t-proseXS text-graphite mt-2">chips: rounded-full bg-cobaltSoft text-cobalt, X removes one.</p>
+                    </div>
+                    <!-- open menu -->
+                    <div>
+                      <p class="t-metaSM text-graphite mb-2">open — search + checkboxes</p>
+                      <div class="bg-panel border border-rule rounded-md shadow-drag overflow-hidden">
+                        <div class="flex items-center gap-2 px-2.5 py-2 border-b border-rule">
+                          <span class="text-pencil"><!-- icon: Search -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15.5 15.5L20 20"/></svg></span>
+                          <span class="t-proseSM text-pencil">filter datasets…</span>
+                        </div>
+                        <div class="p-1.5">
+                          <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-md bg-cobaltSoft"><span class="w-4 h-4 rounded bg-cobalt flex items-center justify-center text-white"><!-- icon: Check --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></span><span class="t-proseSM text-ink">traffic_counts</span></div>
+                          <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-md"><span class="w-4 h-4 rounded bg-cobalt flex items-center justify-center text-white"><!-- icon: Check --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></span><span class="t-proseSM text-ink">parcels</span></div>
+                          <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-well"><span class="w-4 h-4 rounded border border-ruleStrong bg-panel"></span><span class="t-proseSM text-graphite">radio_schedule</span></div>
+                          <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-well"><span class="w-4 h-4 rounded border border-ruleStrong bg-panel"></span><span class="t-proseSM text-graphite">bird_sightings</span></div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- single-select -->
+                    <div>
+                      <p class="t-metaSM text-graphite mb-2">single-select mode</p>
+                      <div class="border border-ruleStrong bg-panel rounded-md px-3 py-1.5 flex items-center gap-2">
+                        <span class="t-proseSM text-ink">radio_schedule</span>
+                        <span class="ml-auto text-pencil"><!-- icon: ChevronDown -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></span>
+                      </div>
+                      <div class="mt-2 bg-panel border border-rule rounded-md shadow-drag p-1.5">
+                        <div class="flex items-center px-2 py-1.5 rounded-md hover:bg-well"><span class="t-proseSM text-graphite">traffic_counts</span></div>
+                        <div class="flex items-center px-2 py-1.5 rounded-md bg-cobaltSoft"><span class="t-proseSM text-cobalt font-medium">radio_schedule</span><span class="ml-auto text-cobalt"><!-- icon: Check --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></span></div>
+                        <div class="flex items-center px-2 py-1.5 rounded-md hover:bg-well"><span class="t-proseSM text-graphite">parcels</span></div>
+                      </div>
+                      <p class="t-proseXS text-graphite mt-2">singleSelectOnly: true — same shell, Check instead of checkboxes.</p>
+                    </div>
+                    <!-- tabular mode -->
+                    <div>
+                      <p class="t-metaSM text-graphite mb-2">tabular mode</p>
+                      <div class="bg-panel border border-rule rounded-md shadow-drag overflow-hidden">
+                        <div class="grid grid-cols-[1fr_auto_auto] gap-x-3 px-3 py-1.5 border-b border-rule">
+                          <span class="t-metaXS text-pencil">dataset</span><span class="t-metaXS text-pencil text-right">rows</span><span class="t-metaXS text-pencil text-right">views</span>
+                        </div>
+                        <div class="grid grid-cols-[1fr_auto_auto] gap-x-3 px-3 py-1.5 bg-cobaltSoft"><span class="t-proseSM text-cobalt font-medium">traffic_counts</span><span class="t-proseSM tabular-nums text-right">48,112</span><span class="t-proseSM tabular-nums text-right">3</span></div>
+                        <div class="grid grid-cols-[1fr_auto_auto] gap-x-3 px-3 py-1.5 hover:bg-well"><span class="t-proseSM text-graphite">radio_schedule</span><span class="t-proseSM tabular-nums text-right text-graphite">1,204</span><span class="t-proseSM tabular-nums text-right text-graphite">2</span></div>
+                        <div class="grid grid-cols-[1fr_auto_auto] gap-x-3 px-3 py-1.5 hover:bg-well"><span class="t-proseSM text-graphite">parcels</span><span class="t-proseSM tabular-nums text-right text-graphite">9,861</span><span class="t-proseSM tabular-nums text-right text-graphite">4</span></div>
+                      </div>
+                      <p class="t-proseXS text-graphite mt-2">option rows become metaXS-headed table rows; numerals go tabular.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 03 · Overlays ═══ -->
+        <div id="overlays" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="overlays-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">03 · overlays</p>
+                <h2 class="t-displayLG mt-2">The one place shadows are allowed</h2>
+                <p class="t-prose text-graphite mt-3 max-w-measure">Overlays float above the sheet, so they get shadow-drag —
+                  the only elevation deeper than a 1px lift. Backdrop is the scrim token. These are static snapshots; the live
+                  ones animate open in 150ms and trap focus.</p>
+              </section>
+
+              <!-- Dialog sm -->
+              <section data-dms-section="dialog-sm" class="col-span-12 lg:col-span-4 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Dialog — size sm</h3>
+                    <span class="t-metaSM text-pencil">dialog.sizes.sm</span>
+                  </div>
+                  <div class="mt-4 rounded-lg bg-scrim p-6 flex items-center justify-center">
+                    <div class="w-full max-w-xs bg-panel border border-rule rounded-lg shadow-drag p-5">
+                      <p class="t-displaySM">rename page?</p>
+                      <p class="t-proseSM text-graphite mt-2">links to "bird-log" keep working — we redirect the old slug.</p>
+                      <div class="mt-4 flex justify-end gap-2">
+                        <button class="t-proseSM font-medium border border-ruleStrong bg-panel rounded-md px-3 py-1.5">cancel</button>
+                        <button class="t-proseSM font-medium bg-cobalt text-accentInk rounded-md px-3 py-1.5">rename</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Dialog lg -->
+              <section data-dms-section="dialog-lg" class="col-span-12 lg:col-span-8 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Dialog — size lg</h3>
+                    <span class="t-metaSM text-pencil">dialog.sizes.lg — header · body · footer</span>
+                  </div>
+                  <div class="mt-4 rounded-lg bg-scrim p-6 flex items-center justify-center">
+                    <div class="w-full max-w-lg bg-panel border border-rule rounded-lg shadow-drag overflow-hidden">
+                      <div class="flex items-center px-5 py-3.5 border-b border-rule">
+                        <p class="t-displaySM">choose a data source</p>
+                        <span class="ml-auto text-graphite"><!-- icon: X -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+                      </div>
+                      <div class="p-5">
+                        <p class="t-proseSM text-graphite">this card will read from the dataset you pick. you can swap it later without rebuilding the layout.</p>
+                        <div class="mt-3 grid grid-cols-2 gap-3">
+                          <div class="border border-cobalt bg-cobaltSoft rounded-md p-3"><p class="t-metaMD text-cobalt">traffic_counts</p><p class="t-proseXS text-graphite mt-1 tabular-nums">48,112 rows · updated tue</p></div>
+                          <div class="border border-rule rounded-md p-3 t6-lift bg-panel"><p class="t-metaMD">radio_schedule</p><p class="t-proseXS text-graphite mt-1 tabular-nums">1,204 rows · updated 9:00</p></div>
+                        </div>
+                      </div>
+                      <div class="flex justify-end gap-2 px-5 py-3.5 border-t border-rule bg-well">
+                        <button class="t-proseSM font-medium border border-ruleStrong bg-panel rounded-md px-3 py-1.5">cancel</button>
+                        <button class="t-proseSM font-medium bg-cobalt text-accentInk rounded-md px-3 py-1.5">use traffic_counts</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Modal -->
+              <section data-dms-section="modal" class="col-span-12 lg:col-span-7 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Modal — the persistent workspace overlay</h3>
+                    <span class="t-metaSM text-pencil">modal.*</span>
+                  </div>
+                  <div class="mt-4 rounded-lg bg-scrim p-6">
+                    <div class="bg-panel border border-rule rounded-lg shadow-drag overflow-hidden">
+                      <div class="flex items-center gap-3 px-5 py-3 border-b border-rule">
+                        <p class="t-displaySM">column settings — traffic_counts</p>
+                        <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">14 columns</span>
+                        <span class="ml-auto text-graphite"><!-- icon: X -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+                      </div>
+                      <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div><label class="t-proseSM font-medium block mb-1.5">display name</label><input type="text" value="daily count" class="w-full t-proseSM bg-panel border border-ruleStrong rounded-md px-3 py-1.5"/></div>
+                        <div><label class="t-proseSM font-medium block mb-1.5">format</label>
+                          <div class="border border-ruleStrong bg-panel rounded-md px-3 py-1.5 flex items-center"><span class="t-proseSM">comma</span><span class="ml-auto text-pencil"><!-- icon: ChevronDown --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></span></div></div>
+                      </div>
+                      <div class="flex justify-end gap-2 px-5 py-3 border-t border-rule">
+                        <button class="t-proseSM font-medium border border-ruleStrong bg-panel rounded-md px-3 py-1.5">discard</button>
+                        <button class="t-proseSM font-medium bg-cobalt text-accentInk rounded-md px-3 py-1.5">apply</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Drawer + Popup -->
+              <section data-dms-section="drawer-popup" class="col-span-12 lg:col-span-5 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Drawer · Popup</h3>
+                    <span class="t-metaSM text-pencil">drawer.* · popup.*</span>
+                  </div>
+                  <div class="mt-4 rounded-lg bg-scrim h-56 flex overflow-hidden">
+                    <div class="flex-1"></div>
+                    <div class="w-56 bg-panel border-l border-rule shadow-drag p-4">
+                      <div class="flex items-center">
+                        <p class="t-displaySM">page settings</p>
+                        <span class="ml-auto text-graphite"><!-- icon: X -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+                      </div>
+                      <div class="mt-3 space-y-2">
+                        <div class="border border-rule rounded-md px-3 py-1.5 t-proseSM text-graphite">bird-log</div>
+                        <div class="flex items-center justify-between"><span class="t-proseSM">show in nav</span><span class="w-9 h-5 rounded-full bg-cobalt relative"><span class="absolute right-0.5 top-0.5 w-3.5 h-3.5 rounded-full bg-white"></span></span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="t-metaXS text-pencil mt-2">drawer slides from the right; full height, border-l + shadow-drag</p>
+                  <p class="t-metaSM text-graphite mt-5">popup — the tooltip base</p>
+                  <div class="mt-2 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite">
+                      <!-- icon: Info -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.9" fill="currentColor" stroke="none"/></svg>
+                    </span>
+                    <span class="bg-panel border border-rule rounded-md shadow-drag px-3 py-1.5 t-proseXS text-graphite">views are saved queries — the dataset itself never changes</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- DeleteModal -->
+              <section data-dms-section="delete-modal" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">DeleteModal — type to confirm</h3>
+                    <span class="t-metaSM text-pencil">deleteModal.* — brick accents, never a red wall</span>
+                  </div>
+                  <div class="mt-4 rounded-lg bg-scrim p-6 flex items-center justify-center">
+                    <div class="w-full max-w-md bg-panel border border-rule rounded-lg shadow-drag p-5">
+                      <div class="flex items-start gap-3">
+                        <span class="w-9 h-9 flex-none rounded-md bg-brickSoft text-brick flex items-center justify-center">
+                          <!-- icon: Alert -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M12 4L2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.5"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg>
+                        </span>
+                        <div class="min-w-0">
+                          <p class="t-displaySM">delete page "bird-log"?</p>
+                          <p class="t-proseSM text-graphite mt-1.5">this deletes the page and its 6 sections. the bird_sightings dataset it reads from is untouched. there's no undo.</p>
+                          <label class="t-proseSM font-medium block mt-4 mb-1.5">type <span class="t-metaMD text-brick">bird-log</span> to confirm</label>
+                          <input type="text" placeholder="bird-log" class="w-full t-metaMD bg-panel border border-brick rounded-md px-3 py-1.5 placeholder:text-pencil"/>
+                        </div>
+                      </div>
+                      <div class="mt-4 flex justify-end gap-2">
+                        <button class="t-proseSM font-medium border border-ruleStrong bg-panel rounded-md px-3 py-1.5">keep it</button>
+                        <button class="t-proseSM font-medium bg-brick text-accentInk rounded-md px-3 py-1.5">delete page</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 04 · Containers & atoms ═══ -->
+        <div id="containers" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="containers-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">04 · containers &amp; atoms</p>
+                <h2 class="t-displayLG mt-2">The dataCard is the product</h2>
+                <p class="t-prose text-graphite mt-3 max-w-measure">Authors don't write components — they configure Cards. A Card
+                  binds to a dataset, picks columns as cells, and lays them on the same 12-column sheet as everything else. Every
+                  knob shown here (<span class="t-metaMD">cardsGridSize</span>, <span class="t-metaMD">cellSpan</span>,
+                  <span class="t-metaMD">valueFontStyle</span>…) is a control in the section toolbar, not a line of code.</p>
+              </section>
+
+              <!-- generic Card -->
+              <section data-dms-section="card-generic" class="col-span-12 lg:col-span-5 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Card — the generic container</h3>
+                    <span class="t-metaSM text-pencil">card.wrapper</span>
+                  </div>
+                  <div class="mt-4 bg-panel border border-rule rounded-lg p-6 t6-lift">
+                    <p class="t-metaSM text-cobalt">anatomy</p>
+                    <p class="t-displaySM mt-2">bg-panel · border-rule · rounded-lg · p-6</p>
+                    <p class="t-proseSM text-graphite mt-2">hover sharpens the hairline to ruleStrong and lifts 1px (t6-lift). No resting shadow — the border is the depth.</p>
+                  </div>
+                  <p class="t-proseXS text-graphite mt-3">panels are opaque and grid-free; the sheet shows only in gutters.</p>
+                </div>
+              </section>
+
+              <!-- Logo lockups -->
+              <section data-dms-section="logo" class="col-span-12 lg:col-span-7 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Logo — three lockups</h3>
+                    <span class="t-metaSM text-pencil">logo.*</span>
+                  </div>
+                  <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="border border-rule rounded-lg p-5 flex flex-col items-center justify-center gap-3">
+                      <span class="w-10 h-10 rounded-md border border-rule bg-panel flex items-center justify-center text-cobalt">
+                        <!-- icon: Tile -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true"><path d="M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3" opacity="0.45"/><rect x="9.8" y="9.8" width="7.4" height="7.4" rx="1.5" transform="rotate(-6 13.5 13.5)"/><path d="M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2"/></svg>
+                      </span>
+                      <p class="t-metaXS text-pencil">tile mark alone · favicons</p>
+                    </div>
+                    <div class="border border-rule rounded-lg p-5 flex flex-col items-center justify-center gap-3">
+                      <span class="flex items-center gap-2.5">
+                        <span class="text-cobalt"><!-- icon: Tile -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true"><path d="M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3" opacity="0.45"/><rect x="9.8" y="9.8" width="7.4" height="7.4" rx="1.5" transform="rotate(-6 13.5 13.5)"/><path d="M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2"/></svg></span>
+                        <span class="t-displaySM">tessera</span>
+                      </span>
+                      <p class="t-metaXS text-pencil">mark + wordmark · product chrome</p>
+                    </div>
+                    <div class="border border-rule rounded-lg p-5 flex flex-col items-center justify-center gap-3">
+                      <span class="flex items-center gap-2.5">
+                        <span class="text-cobalt"><!-- icon: Tile -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true"><path d="M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3" opacity="0.45"/><rect x="9.8" y="9.8" width="7.4" height="7.4" rx="1.5" transform="rotate(-6 13.5 13.5)"/><path d="M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2"/></svg></span>
+                        <span class="t-displaySM">tessera</span>
+                        <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">beta 0.6.0</span>
+                      </span>
+                      <p class="t-metaXS text-pencil">+ beta chip · marketing pages</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- dataCard: cards-grid mode -->
+              <section data-dms-section="datacard-grid" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">dataCard — cards-grid mode</h3>
+                    <span class="t-metaSM text-pencil">cardsGridSize: 3 · one card per record</span>
+                  </div>
+                  <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="border border-rule rounded-lg overflow-hidden t6-lift bg-panel">
+                      <div class="h-28 t6-sheet flex items-center justify-center text-pencil">
+                        <!-- icon: Image -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M6 19l5-5 3.5 3.5L17 15l3.5 3.5"/></svg>
+                      </div>
+                      <div class="p-4">
+                        <p class="t-metaXS text-pencil">screenshot · imageLocation: top</p>
+                        <p class="t-displaySM mt-1.5">hilltop community radio</p>
+                        <p class="t-metaMD text-graphite mt-1">radio_schedule · 1,204 rows</p>
+                        <p class="t-proseSM text-graphite mt-2">weekly grid, "on air now" pulled live from the schedule.</p>
+                        <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-goSoft text-go mt-3"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>published</span>
+                      </div>
+                    </div>
+                    <div class="border border-rule rounded-lg overflow-hidden t6-lift bg-panel">
+                      <div class="h-28 t6-sheet flex items-center justify-center text-pencil">
+                        <!-- icon: Map -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true"><path d="M9 4.5L4 6.5v13l5-2 6 2 5-2v-13l-5 2-6-2Z"/><path d="M9 4.5v13M15 6.5v13"/></svg>
+                      </div>
+                      <div class="p-4">
+                        <p class="t-metaXS text-pencil">screenshot · imageLocation: top</p>
+                        <p class="t-displaySM mt-1.5">county land-bank map</p>
+                        <p class="t-metaMD text-graphite mt-1">parcels · 9,861 rows</p>
+                        <p class="t-proseSM text-graphite mt-2">every vacant parcel, filterable by status and ward.</p>
+                        <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-goSoft text-go mt-3"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>published</span>
+                      </div>
+                    </div>
+                    <div class="border border-rule rounded-lg overflow-hidden t6-lift bg-panel">
+                      <div class="h-28 t6-sheet flex items-center justify-center text-pencil">
+                        <!-- icon: Graph -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M7.5 16v-4M12 16V8M16.5 16v-6.5"/></svg>
+                      </div>
+                      <div class="p-4">
+                        <p class="t-metaXS text-pencil">screenshot · imageLocation: top</p>
+                        <p class="t-displaySM mt-1.5">hazard-mitigation dashboard</p>
+                        <p class="t-metaMD text-graphite mt-1">traffic_counts · 48,112 rows</p>
+                        <p class="t-proseSM text-graphite mt-2">county risk rollups; the graphs below come from this build.</p>
+                        <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-amberSoft text-amber mt-3"><span class="w-1.5 h-1.5 rounded-full bg-amber"></span>draft</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- dataCard: row mode + cell variants -->
+              <section data-dms-section="datacard-cells" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">dataCard — row mode &amp; cell variants</h3>
+                    <span class="t-metaSM text-pencil">cellsGridSize · cellSpan · formatFn · valueFontStyle</span>
+                  </div>
+                  <!-- row mode: stat strip -->
+                  <p class="t-metaSM text-graphite mt-4">row mode — a stat strip is one record, four cells</p>
+                  <div class="mt-2 border border-rule rounded-lg grid grid-cols-2 md:grid-cols-4 divide-x divide-rule overflow-hidden">
+                    <div class="p-4"><p class="t-metaSM text-pencil">pages</p><p class="t-displayLG tabular-nums mt-1">12</p><p class="t-metaXS text-pencil mt-1">valueFontStyle: displayLG</p></div>
+                    <div class="p-4"><p class="t-metaSM text-pencil">datasets</p><p class="t-displayLG tabular-nums mt-1">4</p><p class="t-metaXS text-pencil mt-1">valueFontStyle: displayLG</p></div>
+                    <div class="p-4"><p class="t-metaSM text-pencil">rows bound</p><p class="t-displayLG tabular-nums mt-1">59,177</p><p class="t-metaXS text-pencil mt-1">formatFn: comma</p></div>
+                    <div class="p-4"><p class="t-metaSM text-pencil">last publish</p><p class="t-displayLG tabular-nums mt-1">2h</p><p class="t-metaXS text-pencil mt-1">formatFn: time</p></div>
+                  </div>
+                  <!-- cell variants -->
+                  <p class="t-metaSM text-graphite mt-6">cell variants — each cell is one column of the record</p>
+                  <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="border border-rule rounded-lg p-4">
+                      <p class="t-metaXS text-pencil">image cell · imageSize: md</p>
+                      <div class="mt-2 h-20 w-20 t6-sheet border border-rule rounded-md flex items-center justify-center text-pencil">
+                        <!-- icon: Image -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M6 19l5-5 3.5 3.5L17 15l3.5 3.5"/></svg>
+                      </div>
+                      <p class="t-proseXS text-graphite mt-2">rounded-md, border-rule; sizes sm/md/lg/full.</p>
+                    </div>
+                    <div class="border border-rule rounded-lg p-4">
+                      <p class="t-metaXS text-pencil">link cell · isLink: true</p>
+                      <p class="mt-2"><a href="#containers" class="t-proseSM font-medium text-cobalt inline-flex items-center gap-1">open bird-log
+                        <!-- icon: ArrowUpRight -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6.5 17.5l11-11M8.5 6.5h9v9"/></svg></a></p>
+                      <p class="t-proseXS text-graphite mt-2">cobalt, no underline at rest; underline on hover.</p>
+                    </div>
+                    <div class="border border-rule rounded-lg p-4">
+                      <p class="t-metaXS text-pencil">number cell · formatFn: comma</p>
+                      <p class="t-displayMD tabular-nums mt-2">48,112</p>
+                      <p class="t-proseXS text-graphite mt-2">tabular-nums always; abbreviate gives "48.1k".</p>
+                    </div>
+                    <div class="border border-rule rounded-lg overflow-hidden">
+                      <div class="h-16 t6-sheet flex items-center justify-center text-pencil">
+                        <!-- icon: Image -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M6 19l5-5 3.5 3.5L17 15l3.5 3.5"/></svg>
+                      </div>
+                      <div class="p-4">
+                        <p class="t-metaXS text-pencil">full-bleed image · cardHints: fullBleed</p>
+                        <p class="t-proseXS text-graphite mt-2">image runs to the card edge; body keeps p-4.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- cells grid with spans -->
+                  <p class="t-metaSM text-graphite mt-6">cells-grid — one record, cellsGridSize: 4, spans set per column</p>
+                  <div class="mt-2 border border-rule rounded-lg p-4 grid grid-cols-4 gap-3">
+                    <div class="col-span-1 row-span-2 t6-sheet border border-rule rounded-md flex items-center justify-center text-pencil min-h-24">
+                      <!-- icon: Image -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M6 19l5-5 3.5 3.5L17 15l3.5 3.5"/></svg>
+                    </div>
+                    <div class="col-span-3"><p class="t-metaXS text-pencil">title · cellSpan: 3</p><p class="t-displaySM mt-0.5">cedar waxwing, front maple</p></div>
+                    <div class="col-span-2"><p class="t-metaXS text-pencil">date · formatFn: date</p><p class="t-proseSM tabular-nums mt-0.5">jun 14, 2026</p></div>
+                    <div class="col-span-1"><p class="t-metaXS text-pencil">count</p><p class="t-proseSM tabular-nums mt-0.5">7</p></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Pill / Pagination / Icon -->
+              <section data-dms-section="pill-pagination-icon" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Pill · Pagination · Icon</h3>
+                    <span class="t-metaSM text-pencil">pill.* · pagination.* · icon.*</span>
+                  </div>
+                  <div class="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div>
+                      <p class="t-metaSM text-graphite mb-2">pill — five colors, one shape</p>
+                      <div class="flex flex-wrap gap-2">
+                        <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-cobaltSoft text-cobalt"><span class="w-1.5 h-1.5 rounded-full bg-cobalt"></span>beta</span>
+                        <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-goSoft text-go"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>published</span>
+                        <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-amberSoft text-amber"><span class="w-1.5 h-1.5 rounded-full bg-amber"></span>draft</span>
+                        <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-brickSoft text-brick"><span class="w-1.5 h-1.5 rounded-full bg-brick"></span>failed</span>
+                        <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full border border-rule text-graphite"><span class="w-1.5 h-1.5 rounded-full bg-pencil"></span>archived</span>
+                      </div>
+                      <p class="t-proseXS text-graphite mt-2">neutral is a border, not a fill — it recedes.</p>
+                    </div>
+                    <div>
+                      <p class="t-metaSM text-graphite mb-2">pagination</p>
+                      <div class="inline-flex items-center gap-1">
+                        <span class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite">
+                          <!-- icon: ChevronLeft -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M14.5 6l-6 6 6 6"/></svg></span>
+                        <span class="w-8 h-8 rounded-md flex items-center justify-center t-proseSM text-graphite hover:bg-well">1</span>
+                        <span class="w-8 h-8 rounded-md bg-cobaltSoft text-cobalt flex items-center justify-center t-proseSM font-medium">2</span>
+                        <span class="w-8 h-8 rounded-md flex items-center justify-center t-proseSM text-graphite hover:bg-well">3</span>
+                        <span class="w-8 h-8 flex items-center justify-center t-proseSM text-pencil">…</span>
+                        <span class="w-8 h-8 rounded-md flex items-center justify-center t-proseSM text-graphite hover:bg-well">9</span>
+                        <span class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite">
+                          <!-- icon: ChevronRight -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></span>
+                      </div>
+                      <p class="t-proseXS text-graphite mt-2">active page: bg-cobaltSoft, no border. arrows: bordered.</p>
+                    </div>
+                    <div>
+                      <p class="t-metaSM text-graphite mb-2">icon — three sizes</p>
+                      <div class="flex items-end gap-6 text-ink">
+                        <div class="text-center"><!-- icon: Graph -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mx-auto" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M7.5 16v-4M12 16V8M16.5 16v-6.5"/></svg><p class="t-metaXS text-pencil mt-1.5">16 · inline</p></div>
+                        <div class="text-center"><!-- icon: Graph -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M7.5 16v-4M12 16V8M16.5 16v-6.5"/></svg><p class="t-metaXS text-pencil mt-1.5">24 · default</p></div>
+                        <div class="text-center"><!-- icon: Graph -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 mx-auto" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M7.5 16v-4M12 16V8M16.5 16v-6.5"/></svg><p class="t-metaXS text-pencil mt-1.5">32 · feature</p></div>
+                      </div>
+                      <p class="t-proseXS text-graphite mt-2">stroke stays 1.5 at every size — the glyphs are drawn for it.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 05 · Rich content ═══ -->
+        <div id="rich" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="rich-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">05 · rich content</p>
+                <h2 class="t-displayLG mt-2">Text, tables, graphs, maps</h2>
+                <p class="t-prose text-graphite mt-3 max-w-measure">The four section types that carry actual content. Lexical
+                  inherits the display ladder wholesale; tables and graphs put every numeral in tabular figures; the map is a
+                  sheet with drawings on it, which is the most tessera sentence on this page.</p>
+              </section>
+
+              <!-- Lexical -->
+              <section data-dms-section="lexical" class="col-span-12 lg:col-span-7 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Lexical — rich text</h3>
+                    <span class="t-metaSM text-pencil">lexical.* — headings map to display tokens</span>
+                  </div>
+                  <div class="mt-5 space-y-4">
+                    <p class="t-displayLG">Keeping a bird log <span class="t-metaXS text-pencil normal-case tracking-normal">h1 → displayLG</span></p>
+                    <p class="t-displayMD">What counts as a sighting <span class="t-metaXS text-pencil normal-case tracking-normal">h2 → displayMD</span></p>
+                    <p class="t-displaySM">Porch rules <span class="t-metaXS text-pencil normal-case tracking-normal">h3 → displaySM</span></p>
+                    <p class="t-prose">A sighting is a bird I can <strong class="font-semibold">identify with confidence</strong>, seen from the porch, <em>while the coffee is still warm</em>. Everything else goes in the <a href="#rich" class="text-cobalt underline decoration-1 underline-offset-2">maybe list</a> for the weekend.</p>
+                    <ul class="t-prose space-y-1.5 list-disc pl-5 marker:text-pencil">
+                      <li>binoculars stay on the rail, always</li>
+                      <li>photos are optional; the log entry is not</li>
+                      <li>ties go to the more boring species</li>
+                    </ul>
+                    <blockquote class="border-l-2 border-cobalt pl-4 py-0.5">
+                      <p class="t-prose italic text-graphite">"the data model for a hobby should be smaller than the hobby."</p>
+                    </blockquote>
+                    <p class="t-prose">Counts sync to the dataset as <span class="t-metaMD bg-well rounded px-1.5 py-0.5">bird_sightings.count</span> the moment the row saves.</p>
+                    <div class="t6-board rounded-md p-4">
+                      <p class="t-metaLG text-chalk"><span class="text-chalkDim">// bind a section to data</span></p>
+                      <p class="t-metaLG text-chalk">section.<span class="text-amber">source</span> = <span class="text-go">"bird_sightings"</span></p>
+                      <p class="t-metaLG text-chalk">section.<span class="text-amber">columns</span> = [<span class="text-go">"species"</span>, <span class="text-go">"count"</span>, <span class="text-go">"seen_at"</span>]</p>
+                      <p class="t-metaLG text-chalk">publish(<span class="text-go">"bird-log"</span>) <span class="text-chalkDim">// that's the whole job</span></p>
+                    </div>
+                    <p class="t-proseXS text-graphite">code blocks live on t6-board: chalk base, go strings, amber props, chalkDim comments. cobalt stays off the board — it's too dark there.</p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Table -->
+              <section data-dms-section="table" class="col-span-12 lg:col-span-5 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Table — the spreadsheet</h3>
+                    <span class="t-metaSM text-pencil">table.*</span>
+                  </div>
+                  <div class="mt-4 border border-rule rounded-lg overflow-hidden">
+                    <table class="w-full text-left">
+                      <thead>
+                        <tr class="border-b border-rule bg-well">
+                          <th class="t-metaSM text-pencil font-medium px-3 py-2">species</th>
+                          <th class="t-metaSM text-pencil font-medium px-3 py-2">
+                            <span class="inline-flex items-center gap-1 text-cobalt">seen
+                              <!-- icon: ChevronUp -->
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M6 14.5l6-6 6 6"/></svg></span></th>
+                          <th class="t-metaSM text-pencil font-medium px-3 py-2 text-right">count</th>
+                        </tr>
+                      </thead>
+                      <tbody class="t-proseSM">
+                        <tr class="border-b border-rule"><td class="px-3 py-2">cedar waxwing</td><td class="px-3 py-2 tabular-nums">jun 14</td><td class="px-3 py-2 tabular-nums text-right">7</td></tr>
+                        <tr class="border-b border-rule bg-well"><td class="px-3 py-2">house finch</td><td class="px-3 py-2 tabular-nums">jun 13</td><td class="px-3 py-2 tabular-nums text-right">12</td></tr>
+                        <tr class="border-b border-rule"><td class="px-3 py-2">cooper's hawk</td><td class="px-3 py-2 tabular-nums">jun 13</td><td class="px-3 py-2 tabular-nums text-right">1</td></tr>
+                        <tr class="border-b border-rule bg-well"><td class="px-3 py-2">
+                          <span class="inline-block border border-cobalt ring-2 ring-cobaltSoft rounded px-1.5 py-0.5 bg-panel">blue jay<span class="t6-caret"></span></span>
+                          <span class="t-metaXS text-cobalt ml-2">editing</span></td>
+                          <td class="px-3 py-2 tabular-nums">jun 12</td><td class="px-3 py-2 tabular-nums text-right">3</td></tr>
+                        <tr><td class="px-3 py-2">mourning dove</td><td class="px-3 py-2 tabular-nums">jun 12</td><td class="px-3 py-2 tabular-nums text-right">9</td></tr>
+                      </tbody>
+                    </table>
+                    <div class="flex items-center px-3 py-2 border-t border-rule bg-well">
+                      <span class="t-metaXS text-pencil tabular-nums">rows 1–5 of 214</span>
+                      <span class="flex-1"></span>
+                      <span class="inline-flex items-center gap-1">
+                        <span class="w-6 h-6 rounded border border-rule flex items-center justify-center text-graphite">
+                          <!-- icon: ChevronLeft -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M14.5 6l-6 6 6 6"/></svg></span>
+                        <span class="w-6 h-6 rounded border border-rule flex items-center justify-center text-graphite">
+                          <!-- icon: ChevronRight -->
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></span>
+                      </span>
+                    </div>
+                  </div>
+                  <ul class="mt-4 space-y-1.5 t-proseXS text-graphite">
+                    <li>header row: t-metaSM on bg-well; sorted column goes cobalt with a chevron.</li>
+                    <li>even rows: bg-well — the graph-paper version of zebra striping.</li>
+                    <li>numerals: tabular-nums, right-aligned, always.</li>
+                    <li>editing cell: cobalt border + soft ring + the caret. the ring is the "live" signal.</li>
+                  </ul>
+                </div>
+              </section>
+
+              <!-- Graph -->
+              <section data-dms-section="graph" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Graph — bar, line, donut</h3>
+                    <span class="t-metaSM text-pencil">graph.* — series order: cobalt · go · amber · brick · graphite</span>
+                  </div>
+                  <div class="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- bar -->
+                    <div class="border border-rule rounded-lg p-4">
+                      <p class="t-displaySM">weekday traffic, route 9</p>
+                      <p class="t-metaXS text-pencil mt-0.5">traffic_counts · daily mean, may 2026</p>
+                      <div class="mt-4 flex items-end gap-2.5 h-32 border-b border-rule">
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:62%"></div>
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:71%"></div>
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:68%"></div>
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:84%"></div>
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:96%"></div>
+                        <div class="flex-1 rounded-t-sm bg-graphite" style="height:41%"></div>
+                        <div class="flex-1 rounded-t-sm bg-graphite" style="height:33%"></div>
+                      </div>
+                      <div class="mt-1.5 grid grid-cols-7 t-metaXS text-pencil text-center"><span>mon</span><span>tue</span><span>wed</span><span>thu</span><span>fri</span><span>sat</span><span>sun</span></div>
+                      <div class="mt-3 flex gap-4"><span class="inline-flex items-center gap-1.5 t-metaXS text-graphite"><span class="w-2 h-2 rounded-sm bg-cobalt"></span>weekday</span><span class="inline-flex items-center gap-1.5 t-metaXS text-graphite"><span class="w-2 h-2 rounded-sm bg-graphite"></span>weekend</span></div>
+                    </div>
+                    <!-- line -->
+                    <div class="border border-rule rounded-lg p-4">
+                      <p class="t-displaySM">sightings per week</p>
+                      <p class="t-metaXS text-pencil mt-0.5">bird_sightings · spring 2026</p>
+                      <div class="mt-4 h-32 relative">
+                        <!-- decorative -->
+                        <svg viewBox="0 0 300 110" class="w-full h-full" preserveAspectRatio="none" aria-hidden="true">
+                          <g stroke="var(--t-rule)" stroke-width="1"><line x1="0" y1="27" x2="300" y2="27"/><line x1="0" y1="55" x2="300" y2="55"/><line x1="0" y1="82" x2="300" y2="82"/><line x1="0" y1="109" x2="300" y2="109"/></g>
+                          <polyline points="0,88 43,72 86,80 129,52 172,58 215,34 258,40 300,18" fill="none" stroke="var(--t-cobalt)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                          <polyline points="0,96 43,92 86,90 129,86 172,84 215,78 258,80 300,72" fill="none" stroke="var(--t-graphite)" stroke-width="1.5" stroke-dasharray="4 4" stroke-linejoin="round" stroke-linecap="round"/>
+                        </svg>
+                      </div>
+                      <div class="mt-1.5 flex justify-between t-metaXS text-pencil"><span>apr</span><span>may</span><span>jun</span></div>
+                      <div class="mt-3 flex gap-4"><span class="inline-flex items-center gap-1.5 t-metaXS text-graphite"><span class="w-2 h-2 rounded-sm bg-cobalt"></span>2026</span><span class="inline-flex items-center gap-1.5 t-metaXS text-graphite"><span class="w-2 h-2 rounded-sm bg-graphite"></span>2025 (context)</span></div>
+                    </div>
+                    <!-- donut -->
+                    <div class="border border-rule rounded-lg p-4">
+                      <p class="t-displaySM">parcels by status</p>
+                      <p class="t-metaXS text-pencil mt-0.5">parcels · land-bank map, june</p>
+                      <div class="mt-4 h-32 flex items-center justify-center">
+                        <!-- decorative -->
+                        <svg viewBox="0 0 120 120" class="h-full" aria-hidden="true">
+                          <circle cx="60" cy="60" r="44" fill="none" stroke="var(--t-well)" stroke-width="16"/>
+                          <circle cx="60" cy="60" r="44" fill="none" stroke="var(--t-cobalt)" stroke-width="16" stroke-dasharray="121 276" transform="rotate(-90 60 60)"/>
+                          <circle cx="60" cy="60" r="44" fill="none" stroke="var(--t-go)" stroke-width="16" stroke-dasharray="77 276" stroke-dashoffset="-121" transform="rotate(-90 60 60)"/>
+                          <circle cx="60" cy="60" r="44" fill="none" stroke="var(--t-amber)" stroke-width="16" stroke-dasharray="50 276" stroke-dashoffset="-198" transform="rotate(-90 60 60)"/>
+                          <text x="60" y="57" text-anchor="middle" fill="var(--t-ink)" style="font:650 20px Inter,sans-serif">9.8k</text>
+                          <text x="60" y="74" text-anchor="middle" fill="var(--t-pencil)" style="font:500 8px 'IBM Plex Mono',monospace;letter-spacing:0.08em">PARCELS</text>
+                        </svg>
+                      </div>
+                      <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-graphite"><span class="w-2 h-2 rounded-sm bg-cobalt"></span>vacant 44%</span><span class="inline-flex items-center gap-1.5 t-metaXS text-graphite"><span class="w-2 h-2 rounded-sm bg-go"></span>sold 28%</span><span class="inline-flex items-center gap-1.5 t-metaXS text-graphite"><span class="w-2 h-2 rounded-sm bg-amber"></span>pending 18%</span><span class="inline-flex items-center gap-1.5 t-metaXS text-graphite"><span class="w-2 h-2 rounded-sm bg-well border border-rule"></span>other 10%</span></div>
+                    </div>
+                  </div>
+                  <p class="t-proseSM text-graphite border-t border-rule mt-6 pt-4">Chart chrome: title is displaySM, subtitle metaXS pencil, axis labels metaXS pencil, gridlines border-rule (they read as the graph paper they are), legend metaXS with 8px square keys. Series 1 is always cobalt; graphite is the comparison series and never leads.</p>
+                </div>
+              </section>
+
+              <!-- Map -->
+              <section data-dms-section="map" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">Map — a sheet with drawings on it</h3>
+                    <span class="t-metaSM text-pencil">map.* — MapLibre chrome</span>
+                  </div>
+                  <div class="mt-4 relative h-72 t6-sheet border border-rule rounded-lg overflow-hidden">
+                    <!-- decorative -->
+                    <svg viewBox="0 0 800 300" class="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                      <path d="M60 250 C180 220 260 240 360 200 S 600 160 760 120" fill="none" stroke="var(--t-rule-strong)" stroke-width="5" stroke-linecap="round"/>
+                      <path d="M300 20 C320 100 340 180 330 290" fill="none" stroke="var(--t-rule-strong)" stroke-width="3" stroke-linecap="round"/>
+                      <polygon points="380,80 470,70 490,140 400,155" fill="var(--t-cobalt-soft)" stroke="var(--t-cobalt)" stroke-width="1.5" stroke-linejoin="round"/>
+                      <polygon points="500,75 585,90 570,160 495,145" fill="var(--t-go-soft)" stroke="var(--t-go)" stroke-width="1.5" stroke-linejoin="round"/>
+                      <polygon points="405,165 490,150 505,225 420,235" fill="var(--t-amber-soft)" stroke="var(--t-amber)" stroke-width="1.5" stroke-linejoin="round"/>
+                      <polygon points="130,90 215,80 230,150 145,165" fill="var(--t-cobalt-soft)" stroke="var(--t-cobalt)" stroke-width="1.5" stroke-linejoin="round"/>
+                      <circle cx="435" cy="112" r="4" fill="var(--t-cobalt)"/>
+                    </svg>
+                    <!-- zoom control stack -->
+                    <div class="absolute top-3 right-3 flex flex-col border border-rule rounded-md overflow-hidden shadow-lift">
+                      <span class="w-8 h-8 bg-panel flex items-center justify-center text-ink border-b border-rule">
+                        <!-- icon: Plus -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+                      <span class="w-8 h-8 bg-panel flex items-center justify-center text-ink">
+                        <!-- icon: Minus -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M5 12h14"/></svg></span>
+                    </div>
+                    <!-- legend card -->
+                    <div class="absolute bottom-3 left-3 bg-panel border border-rule rounded-md shadow-lift p-3">
+                      <p class="t-metaSM text-pencil">parcel status</p>
+                      <div class="mt-2 space-y-1.5">
+                        <p class="inline-flex items-center gap-2 t-proseXS text-graphite"><span class="w-3 h-3 rounded-sm bg-cobaltSoft border border-cobalt"></span>vacant</p><br/>
+                        <p class="inline-flex items-center gap-2 t-proseXS text-graphite"><span class="w-3 h-3 rounded-sm bg-goSoft border border-go"></span>sold</p><br/>
+                        <p class="inline-flex items-center gap-2 t-proseXS text-graphite"><span class="w-3 h-3 rounded-sm bg-amberSoft border border-amber"></span>pending</p>
+                      </div>
+                    </div>
+                    <!-- attribution -->
+                    <p class="absolute bottom-1.5 right-2 t-metaXS text-pencil">© openstreetmap · parcels: county land bank</p>
+                  </div>
+                  <p class="t-proseSM text-graphite mt-4">The basemap is the sheet itself — t6-sheet with roads in ruleStrong. Data layers use soft fills with their solid token as the stroke, so the map reads like a marked-up drawing, not a satellite photo. Controls and legend are ordinary panels: border, rounded-md, shadow-lift.</p>
+                  <p class="t-noteMD text-graphite mt-3 -rotate-1 inline-block">yes, the map is literally graph paper. it was always going to be ↖</p>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- footer link block -->
+        <div data-dms-group="footer" class="w-full">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-8">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="footer-links" class="col-span-12 p-3">
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+                  <span class="t-metaSM text-pencil">tessera design system · v6</span>
+                  <a href="theme.html" class="t-metaSM text-graphite hover:text-ink">1 theme</a>
+                  <a href="layouts.html" class="t-metaSM text-graphite hover:text-ink">2 layouts</a>
+                  <a href="grid.html" class="t-metaSM text-graphite hover:text-ink">3 grid</a>
+                  <a href="components.html" class="t-metaSM text-cobalt">4 components</a>
+                  <a href="patterns.html" class="t-metaSM text-graphite hover:text-ink">5 patterns</a>
+                  <a href="../pages/beta-landing.html" class="t-metaSM text-graphite hover:text-ink">beta landing ↗</a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tessera · Components</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="../_shared.css"/>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { bone:'#F4F1EA', limestone:'#E8E2D5', parchment:'#FBF9F4', slate:'#2A2F36', graphite:'#4A5160', fog:'#A7ADB6', oxide:'#B5532C', tile:'#7F1D1D', verdigris:'#3F8F7F', ochre:'#C7910F', lapis:'#3B5BA5', grout:{light:'#D9D2C2', dark:'#1A1D22'} },
+  fontFamily: { display:['Tiempos Headline','Newsreader','Georgia','serif'], fine:['Tiempos Fine','Tiempos Headline','Newsreader','Georgia','serif'], sans:['IBM Plex Sans','system-ui','sans-serif'], mono:['IBM Plex Mono','ui-monospace','monospace'] },
+  boxShadow: { lift:'0 1px 2px rgba(42,47,54,0.04)' },
+  maxWidth: { content:'1280px', measure:'620px' },
+}}};
+</script>
+</head>
+
+<body class="bg-bone text-slate font-sans">
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LAYOUT `app` — the design system documents itself as the brand:
+     persistent SideNav + slim TopNav, the same chrome a Tessera product
+     page ships. Bands use wrapper2 = mr-auto max-w-content pl-12 pr-8.
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="min-h-screen bg-bone" data-dms-layout="app">
+<div class="flex min-h-screen">
+
+  <!-- ─────────── SideNav (Layout chrome, style `main`) ─────────── -->
+  <nav class="w-64 flex-none border-r border-grout-light bg-bone hidden lg:flex flex-col" aria-label="Design system">
+    <div class="px-6 pt-7 pb-6 border-b border-grout-light">
+      <a href="theme.html" class="flex items-center gap-3">
+        <!-- decorative --><svg class="w-7 h-7" viewBox="0 0 96 96" fill="none" aria-hidden="true"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
+        <span>
+          <span class="block t-displayXS">Tessera</span>
+          <span class="block t-metaXS text-graphite mt-0.5">Design system · v3</span>
+        </span>
+      </a>
+    </div>
+    <div class="flex-1 px-3 py-6 space-y-7">
+      <div>
+        <div class="t-metaXS text-fog px-3 mb-2">Foundation</div>
+        <a href="theme.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Theme — tokens</a>
+        <a href="layouts.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Layouts — page chrome</a>
+        <a href="grid.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Grid — opus tessellatum</a>
+      </div>
+      <div>
+        <div class="t-metaXS text-fog px-3 mb-2">Catalogue</div>
+        <a href="components.html" aria-current="page" class="flex items-center gap-2.5 px-3 py-2 t-proseSM font-medium text-slate border-l-2 border-oxide bg-parchment">
+          <span class="w-1.5 h-1.5 bg-oxide rotate-45 flex-none"></span>Components</a>
+        <a href="patterns.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Patterns</a>
+      </div>
+      <div>
+        <div class="t-metaXS text-fog px-3 mb-2">Example pages</div>
+        <a href="../pages/product-landing.html" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite hover:text-slate border-l-2 border-transparent">
+          <span class="w-1.5 h-1.5 bg-grout-light flex-none"></span>Product landing
+          <!-- icon: ArrowUpRight --><svg class="w-3.5 h-3.5 ml-auto text-fog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M6 18 18 6"/><path d="M8 6h10v10"/></svg></a>
+      </div>
+    </div>
+    <div class="px-6 py-5 border-t border-grout-light">
+      <span class="t-metaXS text-fog">v3 · 2026-07 · AGPL-3.0</span>
+    </div>
+  </nav>
+
+  <!-- ─────────── Content column ─────────── -->
+  <div class="flex-1 min-w-0">
+
+    <!-- slim TopNav: breadcrumb + page counter -->
+    <div class="w-full bg-parchment border-b border-grout-light" data-dms-group="topnav">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8 h-12 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="t-metaSM text-graphite">Design system</span>
+          <!-- icon: ChevronRight --><svg class="w-3 h-3 text-fog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M9 5l7 7-7 7"/></svg>
+          <span class="t-metaSM text-slate">Components</span>
+        </div>
+        <div class="flex items-center gap-5">
+          <span class="t-metaXS text-fog">4 / 5</span>
+          <a href="../pages/product-landing.html" class="t-metaSM text-oxide hover:text-tile">Product landing →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 01 · PAGE HEADER · LayoutGroup `header` (unboxed, on bone) ═══ -->
+    <div class="w-full border-b border-grout-light" data-dms-group="header">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8 pt-12 pb-10" data-dms-section="page-title">
+        <div class="inline-block tsr-tabula mb-5"><span class="t-metaSM text-graphite">Catalogue · primitives</span></div>
+        <h1 class="t-displayXL max-w-[18ch]">Components — every primitive, in the brand&rsquo;s hand</h1>
+        <p class="t-proseLG text-graphite mt-5 max-w-measure">This page is the contract for the primitive layer. Each component below is shown in its default style, its named variants, and every state the theme translation must skin — a live render that doesn&rsquo;t match it is a bug. Keyboard focus everywhere is the global <span class="t-metaMD">:focus-visible</span> ring from <span class="t-metaMD">_shared.css</span>: 2px bone, then 2px slate — the vermiculatum contour.</p>
+      </div>
+    </div>
+
+    <!-- ═══ § 02 · NAVIGATION · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Navigation</div>
+        <h2 class="t-displayLG mb-2">TopNav · SideNav · menus</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">The hardest primitives to underspecify. Every depth, indicator, and state the nav trees can reach is depicted here — a state missing from this page is a state the live nav renders in someone else&rsquo;s clothes.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- TopNav, marketing flavor -->
+          <div class="col-span-12 p-3" data-dms-section="nav-topnav">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6">
+              <div class="t-metaSM text-graphite mb-4">TopNav — marketing flavor · logo, two-level menu, utility pair, mobile toggle</div>
+
+              <div class="border border-grout-light bg-bone">
+                <div class="flex items-center gap-8 h-16 px-6">
+                  <a href="#" class="flex items-center gap-2.5 flex-none">
+                    <!-- decorative --><svg class="w-7 h-7" viewBox="0 0 96 96" fill="none" aria-hidden="true"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
+                    <span class="t-displaySM">Tessera</span>
+                  </a>
+                  <nav class="hidden md:flex items-center h-full t-proseSM" aria-label="Marketing">
+                    <a href="#" aria-current="page" class="h-full inline-flex items-center gap-1 px-3 border-b-2 border-oxide text-slate font-medium">Product
+                      <!-- icon: ChevronDown --><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg></a>
+                    <a href="#" class="h-full inline-flex items-center px-3 border-b-2 border-transparent text-graphite">Patterns</a>
+                    <a href="#" class="h-full inline-flex items-center px-3 border-b-2 border-transparent text-graphite">Hosted</a>
+                    <a href="#" class="h-full inline-flex items-center px-3 border-b-2 border-transparent text-slate">Theory</a>
+                    <a href="#" class="h-full inline-flex items-center px-3 border-b-2 border-transparent text-graphite">Docs</a>
+                  </nav>
+                  <div class="ml-auto flex items-center gap-3">
+                    <span class="hidden md:block h-5 w-px bg-grout-light"></span>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-proseSM font-medium px-3 py-1.5 rounded-[2px] text-graphite hover:text-slate hover:bg-limestone">Sign in</button>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-proseSM font-medium px-3 py-1.5 rounded-[2px] bg-slate text-parchment hover:bg-grout-dark shadow-lift">Get started</button>
+                    <button class="md:hidden tsr-press cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-[2px] border border-grout-light text-slate hover:bg-limestone" aria-label="Open menu">
+                      <!-- icon: Menu --><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <!-- open submenu flyout under "Product" -->
+                <div class="px-6 pb-6 flex items-start gap-5">
+                  <div class="w-64 ml-0 md:ml-[152px] bg-parchment border border-grout-light shadow-lift py-2">
+                    <a href="#" class="block px-4 py-2 t-proseSM text-slate bg-limestone">Pages — typed rows</a>
+                    <a href="#" class="block px-4 py-2 t-proseSM text-graphite hover:text-slate">Datasets &amp; views</a>
+                    <a href="#" class="block px-4 py-2 t-proseSM text-graphite hover:text-slate">Themes</a>
+                    <div class="border-t border-grout-light my-1.5"></div>
+                    <a href="#" class="flex items-center px-4 py-2 t-proseSM text-graphite hover:text-slate">Changelog
+                      <!-- icon: ArrowUpRight --><svg class="w-3.5 h-3.5 ml-auto text-fog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M6 18 18 6"/><path d="M8 6h10v10"/></svg></a>
+                  </div>
+                  <span class="t-metaXS text-fog mt-2">submenu flyout · open · first item hovered</span>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-x-6 gap-y-1 mt-4">
+                <span class="t-metaXS text-fog">active — slate medium · 2px oxide underline</span>
+                <span class="t-metaXS text-fog">hover — graphite → slate (shown on theory)</span>
+                <span class="t-metaXS text-fog">expandable — chevrondown indicator</span>
+                <span class="t-metaXS text-fog">mobile toggle — bordered square, menu glyph</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SideNav, app flavor -->
+          <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="nav-sidenav">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">SideNav — app flavor · three depths, all states</div>
+
+              <div class="max-w-sm border border-grout-light bg-bone flex flex-col">
+                <!-- logo header -->
+                <div class="px-5 pt-5 pb-4 border-b border-grout-light">
+                  <a href="#" class="flex items-center gap-2.5">
+                    <!-- icon: TileMark --><svg class="w-6 h-6 text-slate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><rect x="4" y="4" width="16" height="16"/><path d="M12 8.5l3.5 3.5-3.5 3.5L8.5 12 12 8.5Z" class="text-oxide"/></svg>
+                    <span>
+                      <span class="block t-displayXS">MitigateNY</span>
+                      <span class="block t-metaXS text-graphite mt-0.5">Hazard mitigation</span>
+                    </span>
+                  </a>
+                </div>
+                <!-- menu -->
+                <div class="px-2 py-4 space-y-5">
+                  <div>
+                    <div class="t-metaXS text-fog px-3 mb-2">Data</div>
+                    <a href="#" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite border-l-2 border-transparent">
+                      <!-- icon: Page --><svg class="w-4 h-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M6 3h9l4 4v14H6V3Z"/><path d="M15 3v4h4"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>Overview
+                      <span class="ml-auto t-metaXS text-fog">level-1 · default</span></a>
+                    <a href="#" aria-current="page" class="flex items-center gap-2.5 px-3 py-2 t-proseSM font-medium text-slate border-l-2 border-oxide bg-parchment">
+                      <!-- icon: Database --><svg class="w-4 h-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 5.5c0-1.4 3.1-2.5 7-2.5s7 1.1 7 2.5-3.1 2.5-7 2.5-7-1.1-7-2.5Z"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13"/><path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg>Datasets
+                      <span class="w-1.5 h-1.5 bg-oxide rotate-45 flex-none ml-2"></span>
+                      <span class="ml-auto t-metaXS text-fog">active</span></a>
+                    <a href="#" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-slate bg-limestone/60 border-l-2 border-transparent">
+                      <!-- icon: Table --><svg class="w-4 h-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><rect x="3" y="4.5" width="18" height="15"/><path d="M3 9.5h18"/><path d="M9 9.5v10"/><path d="M15 9.5v10"/></svg>Views
+                      <span class="ml-auto t-metaXS text-fog">hover</span></a>
+                    <!-- expanded level-1 with level-2 nest -->
+                    <a href="#" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite border-l-2 border-transparent">
+                      <!-- icon: Map --><svg class="w-4 h-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14"/><path d="M15 6v14"/></svg>Geography
+                      <!-- icon: ChevronUp --><svg class="w-3.5 h-3.5 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 15l7-7 7 7"/></svg>
+                      <span class="ml-auto t-metaXS text-fog">expanded</span></a>
+                    <div class="border-l border-grout-light ml-5">
+                      <a href="#" class="flex items-center gap-2.5 pl-4 pr-3 py-1.5 t-proseSM text-graphite">
+                        <span class="w-1 h-1 bg-grout-light rotate-45 flex-none"></span>Flood zones
+                        <span class="ml-auto t-metaXS text-fog">level-2</span></a>
+                      <a href="#" class="flex items-center gap-2.5 pl-4 pr-3 py-1.5 t-proseSM font-medium text-slate">
+                        <span class="w-1 h-1 bg-oxide rotate-45 flex-none"></span>Parcels
+                        <span class="ml-auto t-metaXS text-fog">level-2 · active</span></a>
+                      <a href="#" class="flex items-center gap-2.5 pl-8 pr-3 py-1.5 t-proseXS text-graphite">
+                        <span class="w-1 h-1 bg-grout-light rotate-45 flex-none"></span>2020 revaluation
+                        <span class="ml-auto t-metaXS text-fog">level-3</span></a>
+                      <a href="#" class="flex items-center gap-2.5 pl-4 pr-3 py-1.5 t-proseSM text-graphite">
+                        <span class="w-1 h-1 bg-grout-light rotate-45 flex-none"></span>Watersheds</a>
+                    </div>
+                    <a href="#" class="flex items-center gap-2.5 px-3 py-2 t-proseSM text-graphite border-l-2 border-transparent">
+                      <!-- icon: Settings --><svg class="w-4 h-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 4v16"/><path d="M12 4v16"/><path d="M19 4v16"/><rect x="3.5" y="8" width="3" height="3" fill="#FBF9F4"/><rect x="10.5" y="13" width="3" height="3" fill="#FBF9F4"/><rect x="17.5" y="5" width="3" height="3" fill="#FBF9F4"/></svg>Settings
+                      <!-- icon: ChevronDown --><svg class="w-3.5 h-3.5 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg>
+                      <span class="ml-auto t-metaXS text-fog">collapsed</span></a>
+                  </div>
+                </div>
+                <!-- bottom utility slot -->
+                <div class="mt-2 px-5 py-4 border-t border-grout-light flex items-center gap-2.5">
+                  <!-- icon: User --><svg class="w-4 h-4 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-6 7-6s7 2.1 7 6"/></svg>
+                  <span class="t-proseSM text-graphite">am3081</span>
+                  <span class="ml-auto t-metaXS text-fog">utility slot</span>
+                </div>
+              </div>
+
+              <p class="t-proseXS text-graphite mt-4">The active tile is set: 2px oxide left rule, parchment fill, medium ink, an oxide tessera at the label&rsquo;s end. Deeper levels indent along a grout hairline and shrink the tessera; level 3 steps down to <span class="t-metaMD">proseXS</span>.</p>
+            </div>
+          </div>
+
+          <!-- NavigableMenu + Breadcrumb -->
+          <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="nav-menu">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">NavigableMenu — closed trigger, open popover</div>
+
+              <div class="flex items-start gap-6 flex-wrap">
+                <div>
+                  <div class="t-metaXS text-fog mb-2">closed</div>
+                  <button class="tsr-press cursor-pointer inline-flex items-center gap-2 t-proseSM font-medium px-3 py-1.5 rounded-[2px] border border-grout-light text-graphite hover:text-slate hover:bg-limestone">Section menu
+                    <!-- icon: ChevronDown --><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg></button>
+                </div>
+                <div>
+                  <div class="t-metaXS text-fog mb-2">open · second item focused</div>
+                  <div class="w-56 bg-parchment border border-grout-light shadow-lift py-1.5">
+                    <a href="#" class="flex items-center gap-2.5 px-3.5 py-2 t-proseSM text-graphite">
+                      <!-- icon: Pencil --><svg class="w-4 h-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M4 20l1.2-4.8L17 3.4l3.6 3.6L8.8 18.8 4 20Z"/><path d="M14.5 5.9l3.6 3.6"/></svg>Edit section</a>
+                    <a href="#" class="flex items-center gap-2.5 px-3.5 py-2 t-proseSM text-slate bg-limestone">
+                      <!-- icon: Copy --><svg class="w-4 h-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><rect x="8.5" y="8.5" width="12" height="12"/><path d="M5.5 15.5h-2v-12h12v2"/></svg>Duplicate</a>
+                    <a href="#" class="flex items-center gap-2.5 px-3.5 py-2 t-proseSM text-graphite">
+                      <!-- icon: Download --><svg class="w-4 h-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M12 4v11"/><path d="M7.5 11l4.5 4.5L16.5 11"/><path d="M4 19.5h16"/></svg>Export rows</a>
+                    <div class="border-t border-grout-light my-1.5"></div>
+                    <a href="#" class="flex items-center gap-2.5 px-3.5 py-2 t-proseSM text-tile">
+                      <!-- icon: Trash --><svg class="w-4 h-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M4 7h16"/><path d="M9 7V4.5h6V7"/><path d="M6.5 7l1 13h9l1-13"/></svg>Delete section</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="t-metaSM text-graphite mt-8 mb-3 pt-5 border-t border-grout-light">Breadcrumb — the slim TopNav&rsquo;s spine</div>
+              <div class="flex items-center gap-2 bg-bone border border-grout-light px-4 h-11">
+                <span class="t-metaSM text-graphite">Design system</span>
+                <!-- icon: ChevronRight --><svg class="w-3 h-3 text-fog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M9 5l7 7-7 7"/></svg>
+                <span class="t-metaSM text-slate">Components</span>
+              </div>
+              <p class="t-proseXS text-graphite mt-3">Ancestors in graphite, current page in slate, a chevron between — <span class="t-metaMD">metaSM</span> throughout. Never more than one row.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 03 · FORM & INTERACTION · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Form &amp; interaction</div>
+        <h2 class="t-displayLG mb-2">Pressed like tiles</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">Interactive elements carry the 2px radius — the one concession to the hand. On press they set: down 1px, lift gone, 100ms. Nothing glows, nothing swells.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Button -->
+          <div class="col-span-12 p-3" data-dms-section="button">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6">
+              <div class="t-metaSM text-graphite mb-5">Button — four named styles × five states</div>
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
+
+                <div class="space-y-3">
+                  <div class="t-metaXS text-fog">default · primary</div>
+                  <div><button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-slate text-parchment hover:bg-grout-dark shadow-lift">Publish page</button></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-grout-dark text-parchment shadow-lift">Publish page</button><span class="block t-metaXS text-fog mt-1">hover</span></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-slate text-parchment shadow-lift" style="box-shadow:var(--focus-ring)">Publish page</button><span class="block t-metaXS text-fog mt-1">focus-visible</span></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-slate text-parchment opacity-50 cursor-not-allowed">Publish page</button><span class="block t-metaXS text-fog mt-1">disabled</span></div>
+                </div>
+
+                <div class="space-y-3">
+                  <div class="t-metaXS text-fog">secondary · outline</div>
+                  <div><button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] border border-slate text-slate hover:bg-limestone">View source</button></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] border border-slate text-slate bg-limestone">View source</button><span class="block t-metaXS text-fog mt-1">hover</span></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] border border-slate text-slate" style="box-shadow:var(--focus-ring)">View source</button><span class="block t-metaXS text-fog mt-1">focus-visible</span></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] border border-slate text-slate opacity-50 cursor-not-allowed">View source</button><span class="block t-metaXS text-fog mt-1">disabled</span></div>
+                </div>
+
+                <div class="space-y-3">
+                  <div class="t-metaXS text-fog">tertiary · plain</div>
+                  <div><button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] text-graphite hover:text-slate hover:bg-limestone">Cancel</button></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] text-slate bg-limestone">Cancel</button><span class="block t-metaXS text-fog mt-1">hover</span></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] text-graphite" style="box-shadow:var(--focus-ring)">Cancel</button><span class="block t-metaXS text-fog mt-1">focus-visible</span></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] text-graphite opacity-50 cursor-not-allowed">Cancel</button><span class="block t-metaXS text-fog mt-1">disabled</span></div>
+                </div>
+
+                <div class="space-y-3">
+                  <div class="t-metaXS text-fog">danger</div>
+                  <div><button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-oxide text-parchment hover:bg-tile shadow-lift">Delete view</button></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-tile text-parchment shadow-lift">Delete view</button><span class="block t-metaXS text-fog mt-1">hover</span></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-oxide text-parchment shadow-lift" style="box-shadow:var(--focus-ring)">Delete view</button><span class="block t-metaXS text-fog mt-1">focus-visible</span></div>
+                  <div><button class="inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-oxide text-parchment opacity-50 cursor-not-allowed">Delete view</button><span class="block t-metaXS text-fog mt-1">disabled</span></div>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-end gap-x-8 gap-y-4 mt-8 pt-6 border-t border-grout-light">
+                <div>
+                  <div class="t-metaXS text-fog mb-2">sizes · sm / default / lg</div>
+                  <div class="flex items-end gap-3">
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-proseXS font-medium px-3 py-1.5 rounded-[2px] bg-slate text-parchment hover:bg-grout-dark shadow-lift">Add row</button>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-slate text-parchment hover:bg-grout-dark shadow-lift">Add row</button>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-prose font-medium px-5 py-3 rounded-[2px] bg-slate text-parchment hover:bg-grout-dark shadow-lift">Add row</button>
+                  </div>
+                </div>
+                <div>
+                  <div class="t-metaXS text-fog mb-2">icon-leading</div>
+                  <button class="tsr-press cursor-pointer inline-flex items-center justify-center gap-2 t-proseSM font-medium px-4 py-2.5 rounded-[2px] border border-slate text-slate hover:bg-limestone">
+                    <!-- icon: Plus --><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M12 4v16"/><path d="M4 12h16"/></svg>Add section</button>
+                </div>
+                <p class="t-proseXS text-graphite max-w-xs">Active state is the press: <span class="t-metaMD">.tsr-press</span> moves the tile down 1px and drops the lift for the duration of the press.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input -->
+          <div class="col-span-12 lg:col-span-6 p-3" data-dms-section="input">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-5">Input · Textarea — flat fields, no inner shadow</div>
+              <div class="space-y-5 max-w-md">
+                <div>
+                  <label class="block t-metaSM text-graphite mb-1.5">Site name</label>
+                  <div class="w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light text-fog">Name this site</div>
+                  <span class="block t-metaXS text-fog mt-1">default · placeholder</span>
+                </div>
+                <div>
+                  <label class="block t-metaSM text-graphite mb-1.5">Site name</label>
+                  <div class="w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-slate text-slate" style="box-shadow:var(--focus-ring)">Sullivan county land bank</div>
+                  <span class="block t-metaXS text-fog mt-1">focused · border-slate + vermiculatum ring</span>
+                </div>
+                <div>
+                  <label class="block t-metaSM text-graphite mb-1.5">Site name</label>
+                  <div class="w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light text-slate">Sullivan county land bank</div>
+                  <span class="block t-metaXS text-fog mt-1">filled</span>
+                </div>
+                <div>
+                  <label class="block t-metaSM text-graphite mb-1.5">Subdomain</label>
+                  <div class="w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-tile text-slate">sullivan land bank</div>
+                  <p class="t-proseXS text-tile mt-1.5">Subdomains cannot contain spaces.</p>
+                </div>
+                <div>
+                  <label class="block t-metaSM text-graphite mb-1.5">Owner</label>
+                  <div class="w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-limestone/50 border border-grout-light text-fog cursor-not-allowed">am3081</div>
+                  <span class="block t-metaXS text-fog mt-1">disabled</span>
+                </div>
+                <div>
+                  <label class="block t-metaSM text-graphite mb-1.5">Description</label>
+                  <div class="w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light text-slate min-h-[84px]">Parcels acquired by the county land bank since 2019, joined to assessment rolls.</div>
+                  <span class="block t-metaXS text-fog mt-1">textarea</span>
+                </div>
+                <div>
+                  <div class="t-metaXS text-fog mb-2">inline edit — field with confirm / discard</div>
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1 t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-slate text-slate">Claims by county</div>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-[2px] border border-grout-light text-verdigris hover:bg-limestone" aria-label="Confirm">
+                      <!-- icon: Check --><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M4 12.5l5.5 5.5L20 7.5"/></svg></button>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-[2px] border border-grout-light text-graphite hover:bg-limestone" aria-label="Discard">
+                      <!-- icon: Close --><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 5l14 14"/><path d="M19 5 5 19"/></svg></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs · Switch · FieldSet -->
+          <div class="col-span-12 lg:col-span-6 p-3" data-dms-section="tabs-switch-fieldset">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-5">Tabs — underline style</div>
+              <div class="flex gap-6 border-b border-grout-light">
+                <span class="pb-2.5 -mb-px t-proseSM font-medium text-slate border-b-2 border-oxide">Overview</span>
+                <span class="pb-2.5 -mb-px t-proseSM text-slate">Claims</span>
+                <span class="pb-2.5 -mb-px t-proseSM text-graphite">Policies</span>
+                <span class="pb-2.5 -mb-px t-proseSM text-fog cursor-not-allowed">Exports</span>
+              </div>
+              <div class="flex gap-6 mt-1.5">
+                <span class="t-metaXS text-fog">active</span>
+                <span class="t-metaXS text-fog">hover</span>
+                <span class="t-metaXS text-fog">default</span>
+                <span class="t-metaXS text-fog">disabled</span>
+              </div>
+
+              <div class="t-metaSM text-graphite mt-8 mb-4 pt-5 border-t border-grout-light">Switch — set, or not set</div>
+              <div class="space-y-3.5">
+                <div class="flex items-center gap-3">
+                  <span class="inline-flex w-9 h-5 rounded-full bg-grout-light p-0.5"><span class="w-4 h-4 rounded-full bg-parchment shadow-lift"></span></span>
+                  <span class="t-proseSM text-slate">Public page</span>
+                  <span class="ml-auto t-metaXS text-fog">off</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="inline-flex w-9 h-5 rounded-full bg-slate p-0.5 justify-end"><span class="w-4 h-4 rounded-full bg-parchment shadow-lift"></span></span>
+                  <span class="t-proseSM text-slate">Public page</span>
+                  <span class="ml-auto t-metaXS text-fog">on · slate track, never green</span>
+                </div>
+                <div class="flex items-center gap-3 opacity-50 cursor-not-allowed">
+                  <span class="inline-flex w-9 h-5 rounded-full bg-grout-light p-0.5"><span class="w-4 h-4 rounded-full bg-parchment"></span></span>
+                  <span class="t-proseSM text-slate">Public page</span>
+                  <span class="ml-auto t-metaXS text-fog">disabled</span>
+                </div>
+              </div>
+
+              <div class="t-metaSM text-graphite mt-8 mb-4 pt-5 border-t border-grout-light">FieldSet · Label — grouped fields with help text</div>
+              <fieldset class="border border-grout-light p-5">
+                <legend class="t-metaSM text-graphite px-2">Site identity</legend>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block t-metaSM text-graphite mb-1.5">Display name</label>
+                    <div class="w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light text-slate">MitigateNY</div>
+                  </div>
+                  <div>
+                    <label class="block t-metaSM text-graphite mb-1.5">Contact email</label>
+                    <div class="w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light text-fog">team@example.gov</div>
+                    <p class="t-proseXS text-graphite mt-1.5">Shown in the footer of every published page.</p>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <!-- MultiSelect -->
+          <div class="col-span-12 p-3" data-dms-section="multiselect">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6">
+              <div class="t-metaSM text-graphite mb-1">MultiSelect — the selection primitive, all modes</div>
+              <p class="t-proseXS text-graphite mb-5 max-w-measure">One primitive serves single-select, multi-select with token chips, searchable menus, and two-column tabular menus. Roughly twenty-five theme keys hang on what is shown here.</p>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-7">
+
+                <div>
+                  <div class="t-metaXS text-fog mb-2">closed trigger · placeholder</div>
+                  <div class="flex items-center justify-between w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light">
+                    <span class="text-fog">Select counties</span>
+                    <!-- icon: ChevronDown --><svg class="w-4 h-4 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="t-metaXS text-fog mb-2">single-select mode · value chosen</div>
+                  <div class="flex items-center justify-between w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light">
+                    <span class="text-slate">Sullivan</span>
+                    <!-- icon: ChevronDown --><svg class="w-4 h-4 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="t-metaXS text-fog mb-2">multi-select · token chips</div>
+                  <div class="flex items-center justify-between w-full px-3 py-2 rounded-[2px] bg-parchment border border-grout-light">
+                    <span class="flex flex-wrap gap-1.5">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-limestone t-proseXS text-slate">Sullivan
+                        <!-- icon: Close --><svg class="w-3 h-3 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 5l14 14"/><path d="M19 5 5 19"/></svg></span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-limestone t-proseXS text-slate">Ulster
+                        <!-- icon: Close --><svg class="w-3 h-3 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 5l14 14"/><path d="M19 5 5 19"/></svg></span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-limestone t-proseXS text-slate">Orange
+                        <!-- icon: Close --><svg class="w-3 h-3 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 5l14 14"/><path d="M19 5 5 19"/></svg></span>
+                    </span>
+                    <!-- icon: ChevronDown --><svg class="w-4 h-4 text-graphite flex-none ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="t-metaXS text-fog mb-2">open · search, hover, selected</div>
+                  <div class="flex items-center justify-between w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-slate">
+                    <span class="text-fog">Select counties</span>
+                    <!-- icon: ChevronUp --><svg class="w-4 h-4 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 15l7-7 7 7"/></svg>
+                  </div>
+                  <div class="mt-1 bg-parchment border border-grout-light shadow-lift">
+                    <div class="flex items-center gap-2 px-3 py-2 border-b border-grout-light">
+                      <!-- icon: Search --><svg class="w-3.5 h-3.5 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l6 6"/></svg>
+                      <span class="t-proseSM text-fog">Filter options</span>
+                    </div>
+                    <div class="py-1">
+                      <div class="px-3.5 py-2 t-proseSM text-graphite">Broome</div>
+                      <div class="px-3.5 py-2 t-proseSM text-slate bg-limestone">Dutchess</div>
+                      <div class="flex items-center justify-between px-3.5 py-2 t-proseSM font-medium text-slate">Sullivan
+                        <!-- icon: Check --><svg class="w-4 h-4 text-oxide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M4 12.5l5.5 5.5L20 7.5"/></svg></div>
+                      <div class="px-3.5 py-2 t-proseSM text-graphite">Ulster</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="t-metaXS text-fog mb-2">tabular mode · two aligned columns</div>
+                  <div class="bg-parchment border border-grout-light shadow-lift py-1">
+                    <div class="flex items-center justify-between px-3.5 py-2"><span class="t-proseSM text-graphite">nfip_claims_v6</span><span class="t-metaMD text-graphite">2,061,447</span></div>
+                    <div class="flex items-center justify-between px-3.5 py-2 bg-limestone"><span class="t-proseSM text-slate">policies_in_force</span><span class="t-metaMD text-slate">1,483,220</span></div>
+                    <div class="flex items-center justify-between px-3.5 py-2"><span class="t-proseSM text-graphite">repetitive_loss</span><span class="t-metaMD text-graphite">28,404</span></div>
+                    <div class="flex items-center justify-between px-3.5 py-2"><span class="t-proseSM text-graphite">parcel_rolls_2020</span><span class="t-metaMD text-graphite">4,712,882</span></div>
+                  </div>
+                  <p class="t-proseXS text-graphite mt-2">Names in <span class="t-metaMD">proseSM</span>, counts right-aligned in <span class="t-metaMD">metaMD</span> tabular.</p>
+                </div>
+
+                <div>
+                  <div class="t-metaXS text-fog mb-2">error state</div>
+                  <div class="flex items-center justify-between w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-tile">
+                    <span class="text-fog">Select counties</span>
+                    <!-- icon: ChevronDown --><svg class="w-4 h-4 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg>
+                  </div>
+                  <p class="t-proseXS text-tile mt-1.5">Select at least one county.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 04 · OVERLAYS · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Overlays</div>
+        <h2 class="t-displayLG mb-2">Panels over a dimmed floor</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">Overlays are parchment tiles with square corners, laid over a slate scrim at 40%. They arrive with the settle — 180ms — and never blur what is beneath them. Static snapshots follow; each stage shows the scrim as shipped.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Dialog xs + lg -->
+          <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="dialog-xs">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">Dialog · size xs</div>
+              <div class="relative bg-bone border border-grout-light min-h-[260px] flex items-center justify-center p-6">
+                <div class="absolute inset-0" style="background:rgba(42,47,54,0.4)"></div>
+                <div class="relative w-full max-w-[260px] bg-parchment border border-grout-light p-5">
+                  <h3 class="t-displayXS mb-2">Rename this view?</h3>
+                  <p class="t-proseSM text-graphite mb-5">Sections bound to it keep their bindings.</p>
+                  <div class="flex justify-end gap-2">
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center t-proseXS font-medium px-3 py-1.5 rounded-[2px] text-graphite hover:text-slate hover:bg-limestone">Cancel</button>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center t-proseXS font-medium px-3 py-1.5 rounded-[2px] bg-slate text-parchment hover:bg-grout-dark shadow-lift">Confirm</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-span-12 lg:col-span-8 p-3" data-dms-section="dialog-lg">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">Dialog · size lg</div>
+              <div class="relative bg-bone border border-grout-light min-h-[260px] flex items-center justify-center p-6">
+                <div class="absolute inset-0" style="background:rgba(42,47,54,0.4)"></div>
+                <div class="relative w-full max-w-lg bg-parchment border border-grout-light p-6">
+                  <h3 class="t-displayXS mb-2">Attach a dataset</h3>
+                  <p class="t-proseSM text-graphite mb-4">Choose the source this section reads from. Columns and spans are set afterwards, in the section toolbar.</p>
+                  <div class="flex items-center justify-between w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light mb-5">
+                    <span class="text-slate">nfip_claims_v6</span>
+                    <!-- icon: ChevronDown --><svg class="w-4 h-4 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg>
+                  </div>
+                  <div class="flex justify-end gap-2">
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center t-proseSM font-medium px-4 py-2.5 rounded-[2px] text-graphite hover:text-slate hover:bg-limestone">Cancel</button>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-slate text-parchment hover:bg-grout-dark shadow-lift">Confirm</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal -->
+          <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="modal">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">Modal — header rule, body, footer rule</div>
+              <div class="relative bg-bone border border-grout-light min-h-[340px] flex items-center justify-center p-6">
+                <div class="absolute inset-0" style="background:rgba(42,47,54,0.4)"></div>
+                <div class="relative w-full max-w-xl bg-parchment border border-grout-light">
+                  <div class="flex items-center justify-between px-6 py-4 border-b border-grout-light">
+                    <h3 class="t-displayXS">Configure data source</h3>
+                    <button class="cursor-pointer text-graphite hover:text-slate" aria-label="Close">
+                      <!-- icon: Close --><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 5l14 14"/><path d="M19 5 5 19"/></svg></button>
+                  </div>
+                  <div class="px-6 py-5 space-y-4">
+                    <p class="t-proseSM text-graphite">The section reads view 41 of <span class="t-metaMD">nfip_claims_v6</span>. Changing the view re-fetches columns; spans are preserved where names match.</p>
+                    <div>
+                      <label class="block t-metaSM text-graphite mb-1.5">View</label>
+                      <div class="flex items-center justify-between w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light">
+                        <span class="text-slate">41 · claims by county</span>
+                        <!-- icon: ChevronDown --><svg class="w-4 h-4 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex justify-end gap-2 px-6 py-4 border-t border-grout-light">
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center t-proseSM font-medium px-4 py-2.5 rounded-[2px] text-graphite hover:text-slate hover:bg-limestone">Cancel</button>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-slate text-parchment hover:bg-grout-dark shadow-lift">Save changes</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Drawer -->
+          <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="drawer">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">Drawer — right-anchored panel</div>
+              <div class="relative bg-bone border border-grout-light min-h-[340px] overflow-hidden">
+                <div class="absolute inset-0" style="background:rgba(42,47,54,0.4)"></div>
+                <div class="absolute inset-y-0 right-0 w-72 bg-parchment border-l border-grout-light flex flex-col">
+                  <div class="flex items-center justify-between px-5 py-4 border-b border-grout-light">
+                    <h3 class="t-displayXS">Section settings</h3>
+                    <button class="cursor-pointer text-graphite hover:text-slate" aria-label="Close">
+                      <!-- icon: Close --><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 5l14 14"/><path d="M19 5 5 19"/></svg></button>
+                  </div>
+                  <div class="px-5 py-4 space-y-4">
+                    <div>
+                      <label class="block t-metaSM text-graphite mb-1.5">Span</label>
+                      <div class="flex items-center justify-between w-full t-proseSM px-3 py-2.5 rounded-[2px] bg-parchment border border-grout-light">
+                        <span class="text-slate">8 of 12</span>
+                        <!-- icon: ChevronDown --><svg class="w-4 h-4 text-graphite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 9l7 7 7-7"/></svg>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <span class="inline-flex w-9 h-5 rounded-full bg-slate p-0.5 justify-end"><span class="w-4 h-4 rounded-full bg-parchment shadow-lift"></span></span>
+                      <span class="t-proseSM text-slate">Show header</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Popup + DeleteModal -->
+          <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="popup">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">Popup — tooltip on a dark tile, no scrim</div>
+              <div class="bg-bone border border-grout-light min-h-[180px] flex flex-col items-center justify-center gap-2 p-6">
+                <div class="bg-grout-dark text-parchment t-proseXS px-2.5 py-1.5">Refreshed 04:00 EST · view 41</div>
+                <!-- decorative --><svg class="w-3 h-1.5 text-grout-dark -mt-2" viewBox="0 0 12 6" fill="currentColor"><path d="M0 0h12L6 6 0 0Z"/></svg>
+                <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-9 h-9 rounded-[2px] border border-grout-light text-graphite hover:bg-limestone" aria-label="Data freshness">
+                  <!-- icon: Clock --><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.25"/><path d="M12 7v5.5l3.5 2"/></svg></button>
+              </div>
+              <p class="t-proseXS text-graphite mt-3">The one reversed surface: grout-dark ground, parchment ink, <span class="t-metaMD">proseXS</span>. Tooltips float without a scrim.</p>
+            </div>
+          </div>
+
+          <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="delete-modal">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">DeleteModal — destructive confirmation</div>
+              <div class="relative bg-bone border border-grout-light min-h-[240px] flex items-center justify-center p-6">
+                <div class="absolute inset-0" style="background:rgba(42,47,54,0.4)"></div>
+                <div class="relative w-full max-w-md bg-parchment border border-grout-light p-6">
+                  <div class="flex gap-3.5">
+                    <!-- icon: Alert --><svg class="w-6 h-6 text-tile flex-none mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M12 3.5 22 20H2L12 3.5Z"/><path d="M12 10v4.5"/><rect x="11.3" y="16.6" width="1.4" height="1.4" fill="currentColor" stroke="none"/></svg>
+                    <div>
+                      <h3 class="t-displayXS mb-1.5">Delete this view?</h3>
+                      <p class="t-proseSM text-graphite">The row at id 2060672 will be deleted. Twelve sections read from it; each will show an error state until rebound.</p>
+                    </div>
+                  </div>
+                  <div class="flex justify-end gap-2 mt-6">
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center t-proseSM font-medium px-4 py-2.5 rounded-[2px] text-graphite hover:text-slate hover:bg-limestone">Cancel</button>
+                    <button class="tsr-press cursor-pointer inline-flex items-center justify-center t-proseSM font-medium px-4 py-2.5 rounded-[2px] bg-oxide text-parchment hover:bg-tile shadow-lift">Delete view</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 05 · CONTAINERS & ATOMS · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Containers &amp; atoms</div>
+        <h2 class="t-displayLG mb-2">The dataCard is the workhorse</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">Authors compose most pages out of Card sections: a data source, chosen columns, spans on the cells grid. Everything a Card can render — images, links, formatted numbers, full-bleed media — is depicted here so a live Card never improvises.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- dataCard · grid mode -->
+          <div class="col-span-12 p-3" data-dms-section="datacard-grid">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6">
+              <div class="t-metaSM text-graphite mb-1">dataCard · grid mode — one card per row of the source</div>
+              <p class="t-proseXS text-graphite mb-4">cardsGrid: <span class="t-metaMD">grid-cols-[repeat(auto-fill,minmax(280px,1fr))]</span> · the gutter is padding, not gap — grout, as everywhere.</p>
+              <div class="bg-bone border border-grout-light">
+                <div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
+                  <div class="p-3">
+                    <div class="bg-parchment border border-grout-light shadow-lift p-5 h-full">
+                      <div class="t-displayXS mb-1.5">Claims by county</div>
+                      <div class="t-metaMD text-slate mb-3">2,061,447 rows</div>
+                      <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-verdigris/15 text-verdigris border border-verdigris/30">Published</span>
+                        <span class="t-metaSM text-fog">2026-06-28</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="p-3">
+                    <div class="bg-parchment border border-grout-light shadow-lift p-5 h-full">
+                      <div class="t-displayXS mb-1.5">Policies in force</div>
+                      <div class="t-metaMD text-slate mb-3">1,483,220 rows</div>
+                      <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-limestone text-graphite border border-grout-light">Draft</span>
+                        <span class="t-metaSM text-fog">2026-06-30</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="p-3">
+                    <div class="bg-parchment border border-grout-light shadow-lift p-5 h-full">
+                      <div class="t-displayXS mb-1.5">Repetitive loss parcels</div>
+                      <div class="t-metaMD text-slate mb-3">28,404 rows</div>
+                      <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-ochre/15 text-ochre border border-ochre/30">Stale view</span>
+                        <span class="t-metaSM text-fog">2026-05-11</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- dataCard · cells mode -->
+          <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="datacard-cells">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-1">dataCard · cells mode — one row, columns as cells on a 12-col cellsGrid</div>
+              <p class="t-proseXS text-graphite mb-4">Cell header is <span class="t-metaMD">metaXS</span> graphite; values are <span class="t-metaMD">proseSM</span>, or <span class="t-metaMD">metaMD</span> when numeric.</p>
+              <div class="bg-bone border border-grout-light p-3">
+                <div class="bg-parchment border border-grout-light shadow-lift">
+                  <div class="grid grid-cols-12 gap-0">
+                    <div class="col-span-12 sm:col-span-4 sm:row-span-2 p-3">
+                      <!-- decorative --><svg class="w-full h-full min-h-[120px] border border-grout-light" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice"><rect width="200" height="150" fill="#F4F1EA"/><g transform="translate(56 33) scale(0.9)"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></g></svg>
+                    </div>
+                    <div class="col-span-6 sm:col-span-4 p-3">
+                      <div class="t-metaXS text-graphite mb-1">County</div>
+                      <div class="t-proseSM text-slate">Sullivan</div>
+                    </div>
+                    <div class="col-span-6 sm:col-span-4 p-3">
+                      <div class="t-metaXS text-graphite mb-1">Watershed</div>
+                      <div class="t-proseSM text-slate">Upper Delaware</div>
+                    </div>
+                    <div class="col-span-6 sm:col-span-4 p-3">
+                      <div class="t-metaXS text-graphite mb-1">Claims</div>
+                      <div class="t-metaMD text-slate">3,412</div>
+                    </div>
+                    <div class="col-span-6 sm:col-span-4 p-3">
+                      <div class="t-metaXS text-graphite mb-1">Source</div>
+                      <a href="#" class="t-proseSM text-oxide hover:text-tile">nfip_claims_v6 →</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="t-proseXS text-graphite mt-3">Image cells may set <span class="t-metaMD">fullBleed</span> — the media escapes the cell padding to the card edge. The section title above a Card is <span class="t-metaMD">displayXS</span>.</p>
+            </div>
+          </div>
+
+          <!-- dataCard · row mode + generic Card -->
+          <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="datacard-rows">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">dataCard · row mode — compact, one line per row</div>
+              <div class="space-y-2">
+                <div class="flex items-center gap-4 bg-parchment border border-grout-light shadow-lift px-4 py-2.5">
+                  <span class="t-proseSM font-medium text-slate">Claims by county</span>
+                  <span class="t-metaMD text-graphite">2,061,447</span>
+                  <span class="ml-auto inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-verdigris/15 text-verdigris border border-verdigris/30">Published</span>
+                </div>
+                <div class="flex items-center gap-4 bg-parchment border border-grout-light shadow-lift px-4 py-2.5">
+                  <span class="t-proseSM font-medium text-slate">Policies in force</span>
+                  <span class="t-metaMD text-graphite">1,483,220</span>
+                  <span class="ml-auto inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-limestone text-graphite border border-grout-light">Draft</span>
+                </div>
+                <div class="flex items-center gap-4 bg-parchment border border-grout-light shadow-lift px-4 py-2.5">
+                  <span class="t-proseSM font-medium text-slate">Repetitive loss parcels</span>
+                  <span class="t-metaMD text-graphite">28,404</span>
+                  <span class="ml-auto inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-ochre/15 text-ochre border border-ochre/30">Stale view</span>
+                </div>
+              </div>
+
+              <div class="t-metaSM text-graphite mt-7 mb-3 pt-5 border-t border-grout-light">Card — the generic container</div>
+              <div class="bg-parchment border border-grout-light shadow-lift p-5">
+                <div class="t-displayXS mb-1.5">About this dataset</div>
+                <p class="t-proseSM text-graphite">NFIP redacted claims, updated nightly from the state clearinghouse. Rows failing validation are held for review.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pill · Pagination · Icon -->
+          <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="pill-pagination-icon">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">Pill — five variants, always bordered</div>
+              <div class="flex flex-wrap gap-2.5">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-limestone text-graphite border border-grout-light">Draft</span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-verdigris/15 text-verdigris border border-verdigris/30">Published</span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-ochre/15 text-ochre border border-ochre/30">Stale view</span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-tile/10 text-tile border border-tile/30">Failed load</span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full t-proseXS font-medium bg-oxide/10 text-oxide border border-oxide/30">Featured</span>
+              </div>
+
+              <div class="t-metaSM text-graphite mt-7 mb-4 pt-5 border-t border-grout-light">Pagination — current tile is set in slate</div>
+              <nav class="flex items-center gap-1" aria-label="Pagination">
+                <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-[2px] border border-grout-light text-graphite hover:bg-limestone" aria-label="Previous page">
+                  <!-- icon: ChevronLeft --><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M15 5l-7 7 7 7"/></svg></button>
+                <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-[2px] t-metaMD text-graphite hover:bg-limestone">1</button>
+                <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-[2px] t-metaMD text-graphite hover:bg-limestone">2</button>
+                <button class="inline-flex items-center justify-center w-8 h-8 rounded-[2px] t-metaMD bg-slate text-parchment" aria-current="page">3</button>
+                <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-[2px] t-metaMD text-graphite hover:bg-limestone">4</button>
+                <span class="inline-flex items-center justify-center w-8 h-8 t-metaMD text-fog">…</span>
+                <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-[2px] t-metaMD text-graphite hover:bg-limestone">12</button>
+                <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-[2px] border border-grout-light text-graphite hover:bg-limestone" aria-label="Next page">
+                  <!-- icon: ChevronRight --><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M9 5l7 7-7 7"/></svg></button>
+              </nav>
+
+              <div class="t-metaSM text-graphite mt-7 mb-4 pt-5 border-t border-grout-light">Icon — 24px inline, ink-colored by default</div>
+              <div class="flex items-center gap-5 text-slate">
+                <!-- icon: Database --><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M5 5.5c0-1.4 3.1-2.5 7-2.5s7 1.1 7 2.5-3.1 2.5-7 2.5-7-1.1-7-2.5Z"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13"/><path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg>
+                <!-- icon: Chart --><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><rect x="5" y="12" width="3.5" height="7.5"/><rect x="10.25" y="6" width="3.5" height="13.5"/><rect x="15.5" y="9.5" width="3.5" height="10"/></svg>
+                <!-- icon: Map --><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14"/><path d="M15 6v14"/></svg>
+                <span class="t-proseSM text-graphite">Icons take <span class="t-metaMD">currentColor</span>; accent color only when the state earns it.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logo -->
+          <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="logo">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-5">Logo — four lockups</div>
+              <div class="grid grid-cols-2 gap-6">
+                <div>
+                  <div class="t-metaXS text-fog mb-3">mark only</div>
+                  <!-- decorative --><svg class="w-12 h-12" viewBox="0 0 96 96" fill="none"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
+                </div>
+                <div>
+                  <div class="t-metaXS text-fog mb-3">horizontal</div>
+                  <div class="flex items-center gap-3">
+                    <!-- decorative --><svg class="w-8 h-8" viewBox="0 0 96 96" fill="none"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
+                    <span class="t-displaySM">Tessera</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="t-metaXS text-fog mb-3">stacked</div>
+                  <div class="flex flex-col items-center gap-2 w-max">
+                    <!-- decorative --><svg class="w-10 h-10" viewBox="0 0 96 96" fill="none"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></svg>
+                    <span class="t-displayXS">Tessera</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="t-metaXS text-fog mb-3">monochrome · slate</div>
+                  <div class="flex items-center gap-3">
+                    <!-- decorative --><svg class="w-8 h-8" viewBox="0 0 96 96" fill="none"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#2A2F36" transform="rotate(9 48 76)"/></svg>
+                    <span class="t-displaySM">Tessera</span>
+                  </div>
+                </div>
+              </div>
+              <p class="t-proseXS text-graphite mt-5">The mark is a composed monogram — five tesserae suggesting the T, the stem tile set at nine degrees. Monochrome for favicons and single-ink contexts; never outlined in an accent, never on a photograph.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ § 06 · RICH CONTENT · LayoutGroup `content` ═══ -->
+    <div class="w-full py-10 border-b border-grout-light" data-dms-group="content">
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8">
+        <div class="t-metaSM text-oxide mb-1">Rich content</div>
+        <h2 class="t-displayLG mb-2">Prose, tables, charts, maps</h2>
+        <p class="t-prose text-graphite max-w-measure mb-2">The content primitives inherit everything from the theme page: display tokens for headings, the measure for long-form, mono for anything counted, and the five mineral series for anything drawn.</p>
+
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Lexical -->
+          <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="lexical">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 lg:p-8 h-full">
+              <div class="t-metaSM text-graphite mb-6">Lexical — the rich-text surface</div>
+              <article class="max-w-measure">
+                <h1 class="t-displayLG mb-4">On placing</h1>
+                <p class="t-prose mb-5">A page is a row. A chart is a row. A map is a row. When the <strong class="font-medium">representation</strong> is one thing, the renderings can be <em>many</em> — the same claims table becomes a county dashboard, a printed appendix, and an <a href="#" class="text-oxide underline underline-offset-2 hover:text-tile">open data endpoint</a> without being copied once.</p>
+                <h2 class="t-displayMD mb-3">The course sets the figure</h2>
+                <p class="t-prose mb-4">Authors place sections the way a workshop set tesserae: one at a time, against a fixed grid, each earning its position.</p>
+                <ul class="space-y-2 mb-5">
+                  <li class="flex gap-2.5 t-prose"><span class="w-1.5 h-1.5 bg-oxide rotate-45 mt-2.5 flex-none"></span>Place the data — bind the section to a view.</li>
+                  <li class="flex gap-2.5 t-prose"><span class="w-1.5 h-1.5 bg-oxide rotate-45 mt-2.5 flex-none"></span>Set the layout — spans on the 12-column grid.</li>
+                  <li class="flex gap-2.5 t-prose"><span class="w-1.5 h-1.5 bg-oxide rotate-45 mt-2.5 flex-none"></span>Publish — the mosaic is the composition, not the tile.</li>
+                </ul>
+                <blockquote class="border-l-2 border-oxide pl-5 my-6">
+                  <p class="t-displayItalicMD">&ldquo;Our pages and our datasets used to drift. Now they&rsquo;re the same row, read two ways.&rdquo;</p>
+                </blockquote>
+                <h3 class="t-displayXS mb-2">Reading a view by hand</h3>
+                <p class="t-prose mb-3">The CLI resolves a view id like <code class="t-metaMD bg-bone px-1.5 py-0.5">41</code> against the app and type before fetching:</p>
+                <pre class="t-metaMD bg-bone border border-grout-light p-4 overflow-x-auto mb-6">dms dataset dump nfip_claims_v6 \
+  --view 41 --format json</pre>
+                <figure>
+                  <!-- decorative --><svg class="w-full border border-grout-light" viewBox="0 0 560 240" preserveAspectRatio="xMidYMid slice"><rect width="560" height="240" fill="#F4F1EA"/><path d="M0 190 Q 140 150 280 168 T 560 140 V240 H0 Z" fill="#E8E2D5"/><path d="M0 205 Q 180 175 340 190 T 560 178 V240 H0 Z" fill="#D9D2C2" opacity="0.55"/><g transform="translate(252 68) scale(0.66)"><rect x="8" y="8" width="24" height="24" fill="#2A2F36"/><rect x="36" y="8" width="24" height="24" fill="#2A2F36"/><rect x="64" y="8" width="24" height="24" fill="#3B5BA5"/><rect x="36" y="36" width="24" height="24" fill="#2A2F36"/><rect x="36" y="64" width="24" height="24" fill="#B5532C" transform="rotate(9 48 76)"/></g></svg>
+                  <figcaption class="t-proseXS text-graphite mt-2">The Upper Delaware course, drawn from the 2026 parcel roll. Captions are <span class="t-metaMD">proseXS</span> graphite.</figcaption>
+                </figure>
+              </article>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="table">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6 h-full">
+              <div class="t-metaSM text-graphite mb-4">Table (Spreadsheet) — sortable, alternating, paginated</div>
+              <table class="w-full border-collapse">
+                <thead>
+                  <tr class="border-b border-slate">
+                    <th class="text-left py-2 pr-3"><span class="inline-flex items-center gap-1.5 t-metaSM text-graphite font-normal">County
+                      <!-- icon: Sort --><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M8 5v14"/><path d="M4.5 15.5 8 19l3.5-3.5"/><path d="M16 19V5"/><path d="M12.5 8.5 16 5l3.5 3.5"/></svg></span></th>
+                    <th class="text-right py-2 pr-3 t-metaSM text-graphite font-normal">Claims</th>
+                    <th class="text-right py-2 t-metaSM text-graphite font-normal">Total paid</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-grout-light"><td class="py-2 pr-3 t-proseSM text-slate">Suffolk</td><td class="py-2 pr-3 text-right t-metaMD text-slate">48,902</td><td class="py-2 text-right t-metaMD text-slate">$1,204,881,340</td></tr>
+                  <tr class="border-b border-grout-light bg-bone"><td class="py-2 pr-3 t-proseSM text-slate">Nassau</td><td class="py-2 pr-3 text-right t-metaMD text-slate">41,777</td><td class="py-2 text-right t-metaMD text-slate">$981,203,455</td></tr>
+                  <tr class="border-b border-grout-light bg-limestone"><td class="py-2 pr-3 t-proseSM text-slate">Westchester</td><td class="py-2 pr-3 text-right t-metaMD text-slate">12,481</td><td class="py-2 text-right t-metaMD text-slate">$214,730,118</td></tr>
+                  <tr class="border-b border-grout-light bg-bone"><td class="py-2 pr-3 t-proseSM text-slate">Orange</td><td class="py-2 pr-3 text-right t-metaMD text-slate">3,214</td><td class="py-2 text-right t-metaMD text-slate">$48,119,802</td></tr>
+                  <tr class="border-b border-grout-light"><td class="py-2 pr-3 t-proseSM text-slate">Broome</td><td class="py-2 pr-3 text-right t-metaMD text-slate">2,987</td><td class="py-2 text-right t-metaMD text-slate">$41,552,190</td></tr>
+                  <tr class="border-b border-grout-light bg-bone"><td class="py-2 pr-3 t-proseSM text-slate">Greene</td><td class="py-2 pr-3 text-right t-metaMD text-slate">1,102</td><td class="py-2 text-right t-metaMD text-slate">$12,930,441</td></tr>
+                </tbody>
+              </table>
+              <div class="flex items-center justify-between mt-3">
+                <span class="t-metaSM text-graphite">rows 1–6 of 62</span>
+                <div class="flex items-center gap-1">
+                  <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded-[2px] border border-grout-light text-graphite hover:bg-limestone" aria-label="Previous page">
+                    <!-- icon: ChevronLeft --><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M15 5l-7 7 7 7"/></svg></button>
+                  <button class="inline-flex items-center justify-center w-7 h-7 rounded-[2px] t-metaMD bg-slate text-parchment" aria-current="page">1</button>
+                  <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded-[2px] t-metaMD text-graphite hover:bg-limestone">2</button>
+                  <button class="tsr-press cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded-[2px] border border-grout-light text-graphite hover:bg-limestone" aria-label="Next page">
+                    <!-- icon: ChevronRight --><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M9 5l7 7-7 7"/></svg></button>
+                </div>
+              </div>
+              <p class="t-proseXS text-graphite mt-2">Row 3 shown hovered (limestone); even rows tint bone. Numerics are <span class="t-metaMD">metaMD</span> tabular, right-aligned.</p>
+
+              <div class="t-metaXS text-fog mt-6 mb-2">empty state</div>
+              <div class="border border-grout-light">
+                <div class="border-b border-slate px-3 py-2 t-metaSM text-graphite">County</div>
+                <div class="px-3 py-6 t-proseSM text-graphite text-center">No rows match the current filters.</div>
+              </div>
+
+              <div class="t-metaXS text-fog mt-6 mb-2">editing — the open cell takes an oxide dashed outline</div>
+              <div class="flex border border-grout-light">
+                <div class="flex-1 px-3 py-2 t-proseSM text-slate border-r border-grout-light">Sullivan</div>
+                <div class="flex-1 px-3 py-2 t-metaMD text-slate" style="outline:1.5px dashed #B5532C;outline-offset:-1.5px">3,412</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Graph -->
+          <div class="col-span-12 p-3" data-dms-section="graph">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6">
+              <div class="t-metaSM text-graphite mb-1">Graph — five mineral series, bone plot, hairline grid</div>
+              <p class="t-proseXS text-graphite mb-5 max-w-measure">No chartjunk: no plot borders, no drop shadows, no gradients. Gridlines are grout-light hairlines; axis labels are <span class="t-metaMD">metaXS</span>; the series order is fixed on the theme page.</p>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                <div>
+                  <div class="t-metaSM text-graphite mb-3">Claims by county · bar</div>
+                  <!-- decorative --><svg class="w-full" viewBox="0 0 300 160"><rect width="300" height="160" fill="#F4F1EA"/><line x1="0" y1="40" x2="300" y2="40" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="80" x2="300" y2="80" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="120" x2="300" y2="120" stroke="#D9D2C2" stroke-width="1"/><rect x="18" y="28" width="30" height="124" fill="#B5532C"/><rect x="66" y="46" width="30" height="106" fill="#B5532C"/><rect x="114" y="98" width="30" height="54" fill="#B5532C"/><rect x="162" y="116" width="30" height="36" fill="#B5532C"/><rect x="210" y="126" width="30" height="26" fill="#B5532C"/><rect x="258" y="140" width="30" height="12" fill="#B5532C"/><line x1="0" y1="152" x2="300" y2="152" stroke="#D9D2C2" stroke-width="1"/></svg>
+                  <div class="flex t-metaXS text-graphite mt-1.5 text-center"><span class="flex-1">SUF</span><span class="flex-1">NAS</span><span class="flex-1">WES</span><span class="flex-1">ORA</span><span class="flex-1">BRO</span><span class="flex-1">GRE</span></div>
+                </div>
+
+                <div>
+                  <div class="t-metaSM text-graphite mb-3">Claims vs. policies · line</div>
+                  <!-- decorative --><svg class="w-full" viewBox="0 0 300 160"><rect width="300" height="160" fill="#F4F1EA"/><line x1="0" y1="40" x2="300" y2="40" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="80" x2="300" y2="80" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="120" x2="300" y2="120" stroke="#D9D2C2" stroke-width="1"/><line x1="0" y1="152" x2="300" y2="152" stroke="#D9D2C2" stroke-width="1"/><polyline points="10,128 68,112 126,120 184,84 242,64 292,40" fill="none" stroke="#B5532C" stroke-width="1.5"/><polyline points="10,140 68,136 126,128 184,124 242,112 292,108" fill="none" stroke="#3F8F7F" stroke-width="1.5"/></svg>
+                  <div class="flex t-metaXS text-graphite mt-1.5 text-center"><span class="flex-1">2021</span><span class="flex-1">2022</span><span class="flex-1">2023</span><span class="flex-1">2024</span><span class="flex-1">2025</span><span class="flex-1">2026</span></div>
+                  <div class="flex gap-4 mt-2">
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5" style="background:#B5532C"></span><span class="t-metaXS text-graphite">claims</span></span>
+                    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5" style="background:#3F8F7F"></span><span class="t-metaXS text-graphite">policies</span></span>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="t-metaSM text-graphite mb-3">Paid by hazard · donut</div>
+                  <div class="flex items-center gap-5">
+                    <div class="relative w-36 h-36 flex-none">
+                      <!-- decorative --><svg class="w-36 h-36" viewBox="0 0 160 160"><circle cx="80" cy="80" r="54" fill="none" stroke="#F4F1EA" stroke-width="22"/><circle cx="80" cy="80" r="54" fill="none" stroke="#B5532C" stroke-width="22" stroke-dasharray="152.7 186.6" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#3F8F7F" stroke-width="22" stroke-dasharray="101.8 237.5" stroke-dashoffset="-152.7" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#3B5BA5" stroke-width="22" stroke-dasharray="50.9 288.4" stroke-dashoffset="-254.5" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#C7910F" stroke-width="22" stroke-dasharray="33.9 305.4" stroke-dashoffset="-305.4" transform="rotate(-90 80 80)"/></svg>
+                      <div class="absolute inset-0 flex items-center justify-center"><span class="t-metaMD text-slate">$2.5B</span></div>
+                    </div>
+                    <div class="space-y-1.5">
+                      <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#B5532C"></span><span class="t-metaXS text-graphite">flood · 45%</span></div>
+                      <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#3F8F7F"></span><span class="t-metaXS text-graphite">coastal · 30%</span></div>
+                      <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#2A2F36"></span><span class="t-metaXS text-graphite">wind · 15%</span></div>
+                      <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 flex-none" style="background:#C7910F"></span><span class="t-metaXS text-graphite">ice · 10%</span></div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Map -->
+          <div class="col-span-12 p-3" data-dms-section="map">
+            <div class="bg-parchment border border-grout-light shadow-lift p-6">
+              <div class="t-metaSM text-graphite mb-1">Map — mineral basemap, cartographic chrome</div>
+              <p class="t-proseXS text-graphite mb-4 max-w-measure">Limestone land on bone water, grout-light boundaries. Highlights are verdigris fills; the pin is the drafted MapPin with its tessera pupil. Controls and legend sit as parchment tiles inside the frame.</p>
+              <div class="relative border border-grout-light overflow-hidden h-72">
+                <!-- decorative --><svg class="absolute inset-0 w-full h-full" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid slice"><rect width="800" height="320" fill="#F4F1EA"/><path d="M0 0h520c30 40 12 96-24 132-32 32-40 88-16 128 16 26 12 44 0 60H0Z" fill="#E8E2D5"/><path d="M640 0h160v130c-44 8-84-16-104-52-16-30-40-56-56-78Z" fill="#E8E2D5"/><path d="M160 0v96c0 40 32 64 64 76" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M300 0v70c0 52-24 92-56 118" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M0 150h120c48 0 92 24 116 58" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M420 0v60c0 60 36 96 64 120" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M120 150v170" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M236 208c40 24 56 64 60 112" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M300 70 420 60" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M160 96c48-8 104-16 140-26" fill="none" stroke="#D9D2C2" stroke-width="1.5"/><path d="M244 128c36 28 96 44 156 40l40 52c-28 36-84 48-136 32-44-14-72-64-60-124Z" fill="#3F8F7F" fill-opacity="0.3" stroke="#3F8F7F" stroke-width="1.5"/></svg>
+                <!-- icon: MapPin --><svg class="absolute left-[38%] top-[42%] w-7 h-7 text-oxide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M12 21s-6.5-5.4-6.5-10a6.5 6.5 0 0 1 13 0c0 4.6-6.5 10-6.5 10Z"/><path d="M12 8.6l2.4 2.4-2.4 2.4-2.4-2.4L12 8.6Z"/></svg>
+                <div class="absolute top-3 right-3 flex flex-col border border-grout-light shadow-lift">
+                  <button class="cursor-pointer inline-flex items-center justify-center w-8 h-8 bg-parchment text-slate hover:bg-limestone border-b border-grout-light" aria-label="Zoom in">
+                    <!-- icon: Plus --><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M12 4v16"/><path d="M4 12h16"/></svg></button>
+                  <button class="cursor-pointer inline-flex items-center justify-center w-8 h-8 bg-parchment text-slate hover:bg-limestone" aria-label="Zoom out">
+                    <!-- decorative --><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M4 12h16"/></svg></button>
+                </div>
+                <div class="absolute bottom-3 left-3 bg-parchment border border-grout-light shadow-lift p-3">
+                  <div class="t-metaXS text-graphite mb-2">SFHA coverage</div>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-2"><span class="w-3 h-3 flex-none border" style="background:rgba(93,138,133,0.3);border-color:#3F8F7F"></span><span class="t-proseXS text-graphite">Special flood hazard area</span></div>
+                    <div class="flex items-center gap-2"><span class="w-3 h-3 flex-none bg-limestone border border-grout-light"></span><span class="t-proseXS text-graphite">County land</span></div>
+                  </div>
+                </div>
+                <div class="absolute bottom-0 right-0 bg-parchment px-2 py-0.5 border-l border-t border-grout-light"><span class="t-metaXS text-graphite">© openstreetmap contributors</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- footer link block (§7.0.3) -->
+    <div class="w-full bg-limestone border-t border-grout-light" data-dms-group="footer">
+      <div class="tsr-frieze-meander"></div>
+      <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-8 py-8 flex flex-wrap items-center gap-x-6 gap-y-2">
+        <span class="t-metaSM text-graphite">Tessera design system · v3</span>
+        <a class="t-proseSM text-graphite hover:text-slate" href="theme.html">Theme</a>
+        <a class="t-proseSM text-graphite hover:text-slate" href="layouts.html">Layouts</a>
+        <a class="t-proseSM text-graphite hover:text-slate" href="grid.html">Grid</a>
+        <a class="t-proseSM text-oxide font-medium" href="components.html" aria-current="page">Components</a>
+        <a class="t-proseSM text-graphite hover:text-slate" href="patterns.html">Patterns</a>
+        <a class="t-proseSM text-graphite hover:text-slate" href="../pages/product-landing.html">Product landing</a>
+        <span class="t-metaXS text-fog ml-auto">4 / 5 · 2026-07</span>
+      </div>
+    </div>
+
+  </div><!-- /content column -->
+</div>
+</div><!-- /layout -->
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

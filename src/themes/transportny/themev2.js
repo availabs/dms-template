@@ -60,9 +60,9 @@ const textSettings = {
     slashKeys: [
       "displayMax", "displayHero", "displayXL", "displayLG", "displayMD", "displaySM", "displayXS",
       "displayItalicLG", "displayItalicMD",
-      "proseLG", "prose", "proseSM", "proseXS",
+      "proseLG", "prose", "proseSM", "proseXS", "prosePre",
       "metaMD", "metaSM", "metaXS", "metaAccent", "chip",
-      "kicker", "cardTitle", "cardTitleSM",
+      "kicker", "cardTitle", "cardTitleSM", "labelSM", "btnPrimary", "btnOutline",
       "statNum", "statXL", "statLG", "statMD",
     ],
   },
@@ -99,6 +99,8 @@ const textSettings = {
     prose:   `${F_SANS} text-[14.5px] leading-[1.65] text-slate-700`,
     proseSM: `${F_SANS} text-[12.5px] leading-[1.55] text-slate-600`,
     proseXS: `${F_SANS} text-[11.5px] leading-[1.5] text-slate-500`,
+    // prose that preserves authored line breaks (ticket steps-to-reproduce, multi-line notes)
+    prosePre: `${F_SANS} text-[14px] leading-[1.65] text-slate-700 whitespace-pre-line`,
 
     // ── Meta ladder (mono) — kickers, metadata, codes ──
     // The `!` (important) suffix on font/size/color overrides the
@@ -127,6 +129,15 @@ const textSettings = {
     cardTitle: `${F_DISP} font-medium text-[18px] leading-[1.15] tracking-tight uppercase ${INK}`,
     // Compact card title — Oswald uppercase 15px (mode / metric cards; cardTitle is 18px)
     cardTitleSM: `${F_DISP} font-medium text-[15px] leading-[1.15] tracking-tight uppercase ${INK}`,
+    // Proper-case display label — small stat-box / lifecycle-step labels ("In progress",
+    // "Resolved / closed") where the meta ladder's uppercase would shout. Oswald 12.5px medium.
+    labelSM: `${F_DISP} font-medium text-[12.5px] leading-[1.3] text-slate-700`,
+    // Primary action link-as-button — the brand press-button (blue face, darker bottom edge,
+    // Oswald caps). For links that should read as buttons (header-band actions like "Add ticket").
+    // `!` beats link/paragraph defaults (text color, underline).
+    btnPrimary: `inline-flex items-center w-fit h-9 px-3.5 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+    // Secondary/outline action link-as-button — quiet neighbor to btnPrimary ("All tickets").
+    btnOutline: `inline-flex items-center w-fit h-9 px-3.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
     // Stat giant — mono tabular figure (KPI / coverage numbers). Vertical margin
     // gives the big number breathing room from the label above + sublabel below
     // (statNum is used only on stat cards, so this margin is effectively per-instance).
@@ -1579,6 +1590,21 @@ const filters = {
       filtersWrapper:               "w-full",
       input:                        "w-full h-10 px-3 flex items-center text-[13px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/10 rounded-[6px] bg-white focus:outline-none focus:border-[#1F3F8F]",
     },
+    { // 5 · filter_panel_light — filter_panel for LIGHT content bands (control-room
+      // tickets): same stacked white-box controls, slate label instead of white
+      // (filter_panel's white/60 label was tuned for the dark `filter_bar` band and
+      // disappears on the gray content band). Keys restated — named styles inherit
+      // from styles[0], not from filter_panel.
+      name: "filter_panel_light",
+      placement: "stacked",
+      controlStyle: "multiselect_with_search",
+      filterLabel:                  "font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 mb-1.5",
+      labelWrapperStacked:          "w-full",
+      conditionRowStacked:          "w-full flex flex-col gap-1",
+      filterSettingsWrapperStacked: "w-full",
+      filtersWrapper:               "w-full",
+      input:                        "w-full h-10 px-3 flex items-center text-[13px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/10 rounded-[6px] bg-white focus:outline-none focus:border-[#1F3F8F]",
+    },
   ],
 };
 
@@ -2244,7 +2270,22 @@ const dataBar = {
     muted:   "bg-[#37576B]",   // region-rank: rest
     warn:    "bg-[#E8843F]",   // corridor WZ share < 50%
     alert:   "bg-[#D6453B]",   // corridor WZ share ≥ 50%
+    success: "bg-[#10B981]",   // resolution / completion progress (control-room tickets)
   },
+};
+
+// flow_step column type — lifecycle flow-strip boxes (control-room tickets summary).
+// Brand pass over the columnType's neutral defaults: Oswald labels/counts, ink figures.
+// Read via getComponentTheme(theme, 'flowStep').
+const flowStep = {
+  wrapper: "w-full h-full flex items-center",
+  box: "flex-1 min-w-0 h-full rounded-md border border-slate-200 bg-slate-50/60 p-3 flex items-center gap-2",
+  boxTint: "flex-1 min-w-0 h-full rounded-md border border-emerald-200 bg-emerald-50/50 p-3 flex items-center gap-2",
+  dot: "size-2.5 rounded-full shrink-0",
+  dots: { neutral: "bg-slate-300", info: "bg-sky-400", warn: "bg-amber-400", done: "bg-emerald-500" },
+  label: `${F_DISP} font-medium text-[12.5px] text-slate-700 truncate`,
+  count: `ml-auto pl-2 ${F_DISP} font-semibold text-[18px] tabular-nums text-[#0F1722]`,
+  connector: "shrink-0 text-slate-300 text-[16px] pl-1 -mr-1 select-none",
 };
 
 // data_color_cell column type — the seasonality heat grid's 5-stop amber scale,
@@ -2297,6 +2338,7 @@ const transportnyTheme = {
   pill,
   dataBar,
   dataColorCell,
+  flowStep,
   pagination,
   icon: iconTheme,
 

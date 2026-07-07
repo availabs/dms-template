@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tessera DS · 1/5 — Theme tokens</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cinzel:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../_shared.css"/>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { basalt:'#111417', slab:'#191E23', flint:'#21272E', mortar:'#333B44', chalk:'#E4E6DE', ash:'#98A2A8', smoke:'#5C666D', phosphor:'#45D68C', amber:'#E0A83C', oxide:'#E06A4E', verdigris:'#5BC0B0', lazuli:'#6B9BD8', porphyry:'#B287C9' },
+  fontFamily: { mono:['JetBrains Mono','ui-monospace','Menlo','monospace'], display:['JetBrains Mono','ui-monospace','Menlo','monospace'], incise:['Cinzel','Trajan Pro','Georgia','serif'] },
+  boxShadow: { glow:'0 0 24px rgba(69,214,140,0.22)', 'glow-sm':'0 0 10px rgba(69,214,140,0.28)' },
+  maxWidth: { content:'1280px', measure:'68ch' },
+}}};
+</script>
+</head>
+
+<body class="bg-basalt text-chalk font-mono">
+<!-- ════════════════════════════════════════════════════════════════
+     Layout `default` — marketing chrome. Bands centre with mx-auto
+     (no SideNav to hug — the documented exception; product bands on
+     Layout `app` use mr-auto, see layouts.html).
+     ════════════════════════════════════════════════════════════════ -->
+<div class="min-h-screen bg-basalt" data-dms-layout="default">
+
+  <!-- TopNav · doubles as design-system navigation (skill §7.0.1) -->
+  <header class="sticky top-0 z-50 w-full bg-basalt border-b border-mortar" data-dms-group="topnav">
+    <div class="mx-auto w-full max-w-content px-6 h-14 flex items-center justify-between">
+      <a href="../pages/product-landing.html" class="flex items-center gap-3">
+        <!-- decorative --><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="2.5" width="19" height="19" stroke="#333B44" stroke-width="1.5"/><rect x="7" y="7" width="10" height="10" fill="#45D68C"/></svg>
+        <span class="t-inciseSM text-chalk">TESSERA</span>
+        <span class="t-metaXS text-smoke hidden sm:inline">design system v4</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6" aria-label="Design system">
+        <a href="theme.html" aria-current="page" class="t-metaSM text-phosphor border-b-2 border-phosphor pb-1">theme</a>
+        <a href="layouts.html" class="t-metaSM text-ash hover:text-chalk pb-1">layouts</a>
+        <a href="grid.html" class="t-metaSM text-ash hover:text-chalk pb-1">grid</a>
+        <a href="components.html" class="t-metaSM text-ash hover:text-chalk pb-1">components</a>
+        <a href="patterns.html" class="t-metaSM text-ash hover:text-chalk pb-1">patterns</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <button onclick="document.body.classList.toggle('dms-annotated')" class="t-metaXS text-smoke hover:text-chalk border border-mortar px-2 py-1">annotate</button>
+        <span class="t-metaSM text-smoke">1 / 5</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─────────── header band ─────────── -->
+  <section class="w-full bg-basalt tes-cellgrid border-b border-mortar" data-dms-group="header">
+    <div class="mx-auto w-full max-w-content px-6 py-4">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-8 p-3" data-dms-section="page-title">
+          <div class="py-8">
+            <p class="t-metaSM text-phosphor mb-4">$ man tessera-theme</p>
+            <h1 class="t-displayXL">Tokens<span class="text-smoke">.</span></h1>
+            <p class="t-prose text-ash mt-5 max-w-measure">Tessera is a terminal run on stone. The character cell — the smallest unit a
+            console can set — is a tessera: a small square block placed in courses on a grid until a larger surface composes.
+            This page is the brand's vocabulary before it is composed into anything: thirteen mineral colors, fourteen type
+            tokens in four roles, one icon set cut on a 24px grid, a 4px space scale, a radius of zero, and the motion and
+            ornament rules that keep the surface quiet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 01 · COLOR ─────────── -->
+  <section class="w-full bg-basalt py-4" data-dms-group="content">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 p-3" data-dms-section="color-intro">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[01]</span>
+            <h2 class="t-displayLG">Color</h2>
+            <span class="t-metaSM text-smoke">stone · ink · phosphor</span>
+          </div>
+          <p class="t-prose text-ash mt-4 max-w-measure">Surfaces are dark stone; ink is chalk; the accents are the six phosphors —
+          the ANSI palette named as minerals. Ground holds ≥ 85% of any surface. Phosphor green is the interaction color:
+          prompts, focus, primary actions, success. The other phosphors appear only in the role listed on their chip.
+          <span class="text-chalk">Tessera is dark-only by decision</span> — the screen is stone, and stone is dark. There is no
+          light mode to drift out of sync.</p>
+        </div>
+
+        <!-- stone -->
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="color-stone">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="px-5 pt-4 pb-3 border-b border-mortar"><span class="t-metaSM text-ash">Stone — surfaces</span></div>
+            <div class="p-5 space-y-4">
+              <div><div class="h-14 bg-basalt border border-mortar"></div><div class="flex justify-between mt-2"><span class="t-proseSM">basalt</span><span class="t-proseSM text-smoke">#111417</span></div><p class="t-proseXS text-smoke">page ground</p></div>
+              <div><div class="h-14 bg-slab border border-mortar"></div><div class="flex justify-between mt-2"><span class="t-proseSM">slab</span><span class="t-proseSM text-smoke">#191E23</span></div><p class="t-proseXS text-smoke">panel surface, cards</p></div>
+              <div><div class="h-14 bg-flint border border-mortar"></div><div class="flex justify-between mt-2"><span class="t-proseSM">flint</span><span class="t-proseSM text-smoke">#21272E</span></div><p class="t-proseXS text-smoke">raised surface, input wells, hover fill</p></div>
+              <div><div class="h-14 bg-mortar"></div><div class="flex justify-between mt-2"><span class="t-proseSM">mortar</span><span class="t-proseSM text-smoke">#333B44</span></div><p class="t-proseXS text-smoke">hairline rules, borders — the grout line</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ink -->
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="color-ink">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="px-5 pt-4 pb-3 border-b border-mortar"><span class="t-metaSM text-ash">Ink — chalk on slate</span></div>
+            <div class="p-5 space-y-4">
+              <div><div class="h-14 bg-chalk"></div><div class="flex justify-between mt-2"><span class="t-proseSM">chalk</span><span class="t-proseSM text-smoke">#E4E6DE</span></div><p class="t-proseXS text-smoke">primary ink · 14.7:1 on basalt</p></div>
+              <div><div class="h-14 bg-ash"></div><div class="flex justify-between mt-2"><span class="t-proseSM">ash</span><span class="t-proseSM text-smoke">#98A2A8</span></div><p class="t-proseXS text-smoke">secondary ink, captions · 7.1:1</p></div>
+              <div><div class="h-14 bg-smoke"></div><div class="flex justify-between mt-2"><span class="t-proseSM">smoke</span><span class="t-proseSM text-smoke">#5C666D</span></div><p class="t-proseXS text-smoke">tertiary, disabled · 3.2:1 — large/meta only</p></div>
+              <div class="pt-2 border-t border-mortar"><p class="t-proseXS text-smoke">Inverse video (selection, primary hover) sets basalt ink on chalk or phosphor ground. Never white; never pure black.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- phosphor -->
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="color-phosphor">
+          <div class="border border-mortar bg-slab h-full">
+            <div class="px-5 pt-4 pb-3 border-b border-mortar"><span class="t-metaSM text-ash">Phosphor — ANSI as minerals</span></div>
+            <div class="p-5 space-y-3">
+              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-phosphor shrink-0"></div><div><div class="flex gap-3"><span class="t-proseSM">phosphor</span><span class="t-proseSM text-smoke">#45D68C</span></div><p class="t-proseXS text-smoke">interaction · success · the prompt</p></div></div>
+              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-amber shrink-0"></div><div><div class="flex gap-3"><span class="t-proseSM">amber</span><span class="t-proseSM text-smoke">#E0A83C</span></div><p class="t-proseXS text-smoke">warning · pending</p></div></div>
+              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-oxide shrink-0"></div><div><div class="flex gap-3"><span class="t-proseSM">oxide</span><span class="t-proseSM text-smoke">#E06A4E</span></div><p class="t-proseXS text-smoke">danger · destructive · fired clay</p></div></div>
+              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-verdigris shrink-0"></div><div><div class="flex gap-3"><span class="t-proseSM">verdigris</span><span class="t-proseSM text-smoke">#5BC0B0</span></div><p class="t-proseXS text-smoke">links · info · copper oxide</p></div></div>
+              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-lazuli shrink-0"></div><div><div class="flex gap-3"><span class="t-proseSM">lazuli</span><span class="t-proseSM text-smoke">#6B9BD8</span></div><p class="t-proseXS text-smoke">chart series only · lapis</p></div></div>
+              <div class="flex items-center gap-3"><div class="w-10 h-10 bg-porphyry shrink-0"></div><div><div class="flex gap-3"><span class="t-proseSM">porphyry</span><span class="t-proseSM text-smoke">#B287C9</span></div><p class="t-proseXS text-smoke">chart series only · purple stone</p></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- semantics + contrast -->
+        <div class="col-span-12 md:col-span-6 p-3" data-dms-section="color-semantics">
+          <div class="border border-mortar bg-slab p-5 h-full">
+            <span class="t-metaSM text-ash">Semantic mapping</span>
+            <table class="w-full mt-4 t-proseSM">
+              <thead><tr class="text-left border-b border-mortar"><th class="t-metaXS text-smoke font-medium py-2">state</th><th class="t-metaXS text-smoke font-medium py-2">color</th><th class="t-metaXS text-smoke font-medium py-2">tag form</th></tr></thead>
+              <tbody class="divide-y divide-mortar/60">
+                <tr><td class="py-2 text-ash">success · ok · live</td><td class="py-2 text-phosphor">phosphor</td><td class="py-2"><span class="t-metaXS text-phosphor border border-phosphor/40 px-1.5 py-0.5">[ OK ]</span></td></tr>
+                <tr><td class="py-2 text-ash">warning · pending</td><td class="py-2 text-amber">amber</td><td class="py-2"><span class="t-metaXS text-amber border border-amber/40 px-1.5 py-0.5">[ WARN ]</span></td></tr>
+                <tr><td class="py-2 text-ash">danger · error</td><td class="py-2 text-oxide">oxide</td><td class="py-2"><span class="t-metaXS text-oxide border border-oxide/40 px-1.5 py-0.5">[ FAIL ]</span></td></tr>
+                <tr><td class="py-2 text-ash">info · reference</td><td class="py-2 text-verdigris">verdigris</td><td class="py-2"><span class="t-metaXS text-verdigris border border-verdigris/40 px-1.5 py-0.5">[ INFO ]</span></td></tr>
+                <tr><td class="py-2 text-ash">neutral · draft</td><td class="py-2 text-ash">ash</td><td class="py-2"><span class="t-metaXS text-ash border border-mortar px-1.5 py-0.5">[ DRAFT ]</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 p-3" data-dms-section="color-contrast">
+          <div class="border border-mortar bg-slab p-5 h-full">
+            <span class="t-metaSM text-ash">Measured contrast (WCAG 2.1)</span>
+            <table class="w-full mt-4 t-proseSM tabular-nums">
+              <thead><tr class="text-left border-b border-mortar"><th class="t-metaXS text-smoke font-medium py-2">pair</th><th class="t-metaXS text-smoke font-medium py-2">ratio</th><th class="t-metaXS text-smoke font-medium py-2">passes</th></tr></thead>
+              <tbody class="divide-y divide-mortar/60">
+                <tr><td class="py-1.5 text-ash">chalk / basalt</td><td class="py-1.5">14.7 : 1</td><td class="py-1.5 text-phosphor">AAA</td></tr>
+                <tr><td class="py-1.5 text-ash">chalk / slab · flint</td><td class="py-1.5">13.3 · 12.0</td><td class="py-1.5 text-phosphor">AAA</td></tr>
+                <tr><td class="py-1.5 text-ash">ash / basalt</td><td class="py-1.5">7.1 : 1</td><td class="py-1.5 text-phosphor">AAA</td></tr>
+                <tr><td class="py-1.5 text-ash">smoke / basalt</td><td class="py-1.5">3.2 : 1</td><td class="py-1.5 text-amber">AA large/meta only</td></tr>
+                <tr><td class="py-1.5 text-ash">phosphor / basalt</td><td class="py-1.5">9.9 : 1</td><td class="py-1.5 text-phosphor">AAA</td></tr>
+                <tr><td class="py-1.5 text-ash">basalt / phosphor (button)</td><td class="py-1.5">9.9 : 1</td><td class="py-1.5 text-phosphor">AAA</td></tr>
+                <tr><td class="py-1.5 text-ash">amber · verdigris / basalt</td><td class="py-1.5">8.7 · 8.5</td><td class="py-1.5 text-phosphor">AAA</td></tr>
+                <tr><td class="py-1.5 text-ash">oxide · lazuli · porphyry / basalt</td><td class="py-1.5">5.6 · 6.4 · 6.3</td><td class="py-1.5 text-phosphor">AA (AAA large)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 02 · TYPE ─────────── -->
+  <section class="w-full bg-slab border-y border-mortar py-4" data-dms-group="content_slab">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 p-3" data-dms-section="type-intro">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[02]</span>
+            <h2 class="t-displayLG">Type</h2>
+            <span class="t-metaSM text-smoke">14 tokens · 4 roles · two families</span>
+          </div>
+          <p class="t-prose text-ash mt-4 max-w-measure">One terminal face carries three roles: <span class="text-chalk">JetBrains Mono</span>
+          is display (bold, raised), prose (regular, running output), and meta (medium, uppercase, tracked — labels and chrome).
+          The fourth role is the stone's own voice: <span class="text-chalk">Cinzel</span>, an incised Roman capital, reserved for
+          inscriptions — the wordmark, band inscriptions, the colophon. Every text string on every page of this deliverable
+          resolves to one of these fourteen tokens; color, italic, <span class="tabular-nums">tabular-nums</span>, and
+          call-site uppercase are modifier axes, not new tokens.</p>
+        </div>
+
+        <!-- display role -->
+        <div class="col-span-12 p-3" data-dms-section="type-display">
+          <div class="border border-mortar bg-basalt">
+            <div class="px-5 pt-4 pb-3 border-b border-mortar flex justify-between"><span class="t-metaSM text-ash">display — the raised voice</span><span class="t-metaXS text-smoke">JetBrains Mono 700/600</span></div>
+            <div class="p-5 divide-y divide-mortar/60">
+              <div class="py-4 grid grid-cols-12 gap-0 items-baseline"><div class="col-span-12 md:col-span-3"><p class="t-proseSM text-phosphor">t-displayHero</p><p class="t-proseXS text-smoke">700 · clamp(32px, 4.6vw, 54px)/1.08 · −0.035em</p></div><div class="col-span-12 md:col-span-9"><p class="t-displayHero">One row. Every rendering.</p></div></div>
+              <div class="py-4 grid grid-cols-12 gap-0 items-baseline"><div class="col-span-12 md:col-span-3"><p class="t-proseSM text-phosphor">t-displayXL</p><p class="t-proseXS text-smoke">700 · clamp(26px, 3vw, 38px)/1.12 · −0.03em</p></div><div class="col-span-12 md:col-span-9"><p class="t-displayXL">Compose against the grid.</p></div></div>
+              <div class="py-4 grid grid-cols-12 gap-0 items-baseline"><div class="col-span-12 md:col-span-3"><p class="t-proseSM text-phosphor">t-displayLG</p><p class="t-proseXS text-smoke">700 · 27px/1.2 · −0.02em</p></div><div class="col-span-12 md:col-span-9"><p class="t-displayLG">A section is a cell.</p></div></div>
+              <div class="py-4 grid grid-cols-12 gap-0 items-baseline"><div class="col-span-12 md:col-span-3"><p class="t-proseSM text-phosphor">t-displayMD</p><p class="t-proseXS text-smoke">600 · 20px/1.3 · −0.015em</p></div><div class="col-span-12 md:col-span-9"><p class="t-displayMD">Draft, review, publish.</p></div></div>
+              <div class="py-4 grid grid-cols-12 gap-0 items-baseline"><div class="col-span-12 md:col-span-3"><p class="t-proseSM text-phosphor">t-displaySM</p><p class="t-proseXS text-smoke">600 · 16px/1.4 · −0.01em</p></div><div class="col-span-12 md:col-span-9"><p class="t-displaySM">Column types and card hints</p></div></div>
+              <p class="t-proseXS text-smoke py-3">Folded, not tokens: KPI numerals are <span class="text-ash">displayXL/LG + tabular-nums</span>; a phosphor-lit hero line is <span class="text-ash">displayHero + text-phosphor + .tes-glow</span>; card titles at 20px are displayMD, never an invented 21px.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- prose + meta roles -->
+        <div class="col-span-12 md:col-span-7 p-3" data-dms-section="type-prose">
+          <div class="border border-mortar bg-basalt h-full">
+            <div class="px-5 pt-4 pb-3 border-b border-mortar flex justify-between"><span class="t-metaSM text-ash">prose — the running output</span><span class="t-metaXS text-smoke">JetBrains Mono 400</span></div>
+            <div class="p-5 divide-y divide-mortar/60">
+              <div class="py-4"><p class="t-proseSM text-phosphor">t-proseLG <span class="text-smoke">· 400 · 17px/1.7</span></p><p class="t-proseLG mt-2">A page is a row. A chart is a row. A join is two rows pointing at each other.</p></div>
+              <div class="py-4"><p class="t-proseSM text-phosphor">t-prose <span class="text-smoke">· 400 · 14.5px/1.75 · the default</span></p><p class="t-prose mt-2 text-ash">Pages, data tables, charts, and maps aren't four products glued together — they're four ways of rendering the same typed row. Body copy runs at a 68ch measure; mono is wide, so the measure token does the restraining.</p></div>
+              <div class="py-4"><p class="t-proseSM text-phosphor">t-proseSM <span class="text-smoke">· 400 · 13px/1.65 · table cells, captions</span></p><p class="t-proseSM mt-2 text-ash">2,041 rows · updated 2026-07-02 · source npmrds2</p></div>
+              <div class="py-4"><p class="t-proseSM text-phosphor">t-proseXS <span class="text-smoke">· 400 · 11.5px/1.55 · footnotes, helper text</span></p><p class="t-proseXS mt-2 text-smoke">Rows remain portable between hosted and self-hosted instances.</p></div>
+              <p class="t-proseXS text-smoke py-3">Folded: code samples are prose/proseSM + text-phosphor on flint wells — not a code token; italic proof lines are prose + italic.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-5 p-3" data-dms-section="type-meta">
+          <div class="border border-mortar bg-basalt h-full">
+            <div class="px-5 pt-4 pb-3 border-b border-mortar flex justify-between"><span class="t-metaSM text-ash">meta — labels &amp; chrome</span><span class="t-metaXS text-smoke">JBM 500 · uppercase</span></div>
+            <div class="p-5 divide-y divide-mortar/60">
+              <div class="py-4"><p class="t-proseSM text-phosphor">t-metaMD <span class="text-smoke">· 12.5px · 0.08em</span></p><p class="t-metaMD mt-2 text-ash">Datasets · 12 views</p></div>
+              <div class="py-4"><p class="t-proseSM text-phosphor">t-metaSM <span class="text-smoke">· 11px · 0.1em</span></p><p class="t-metaSM mt-2 text-ash">$ tessera render --as table</p></div>
+              <div class="py-4"><p class="t-proseSM text-phosphor">t-metaXS <span class="text-smoke">· 10px · 0.12em</span></p><p class="t-metaXS mt-2 text-smoke">updated 14:02 · view 2060672</p></div>
+              <p class="t-proseXS text-smoke py-3">Folded: table headers, pill labels, breadcrumbs, and the prompt eyebrow are all metaSM/XS with color modifiers — one label voice, no variants.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- incise role -->
+        <div class="col-span-12 p-3" data-dms-section="type-incise">
+          <div class="border border-mortar bg-basalt">
+            <div class="px-5 pt-4 pb-3 border-b border-mortar flex justify-between"><span class="t-metaSM text-ash">incise — the lapidary voice (rare)</span><span class="t-metaXS text-smoke">Cinzel 600</span></div>
+            <div class="p-5 grid grid-cols-12 gap-0">
+              <div class="col-span-12 md:col-span-6 py-4"><p class="t-proseSM text-phosphor">t-inciseLG <span class="text-smoke">· 600 · 28px/1.25 · 0.08em</span></p><p class="t-inciseLG mt-3">Tessera</p></div>
+              <div class="col-span-12 md:col-span-6 py-4"><p class="t-proseSM text-phosphor">t-inciseSM <span class="text-smoke">· 600 · 14px/1.4 · 0.18em</span></p><p class="t-inciseSM mt-3 text-ash">Set in course · MMXXVI</p></div>
+              <div class="col-span-12 border-t border-mortar pt-3"><p class="t-proseXS text-smoke">Usage is rationed: the wordmark, one inscription per marketing band at most, the footer colophon. Never on buttons, inputs, table chrome, or body copy. If a surface has two inscriptions, remove one.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- modifier axes -->
+        <div class="col-span-12 p-3" data-dms-section="type-modifiers">
+          <div class="border border-mortar bg-basalt p-5">
+            <span class="t-metaSM text-ash">Modifier axes — applied at the call site, never new tokens</span>
+            <div class="grid grid-cols-12 gap-0 mt-4">
+              <div class="col-span-12 md:col-span-3 py-2 md:pr-4"><p class="t-proseSM text-chalk">color</p><p class="t-proseXS text-smoke mt-1">ink tokens + phosphors: <span class="text-ash">prose + text-ash</span> is still prose.</p></div>
+              <div class="col-span-12 md:col-span-3 py-2 md:px-4 md:border-l border-mortar"><p class="t-proseSM text-chalk tabular-nums">tabular-nums</p><p class="t-proseXS text-smoke mt-1">mono is inherently tabular; declare it anyway on KPI + table cells for fallback stacks.</p></div>
+              <div class="col-span-12 md:col-span-3 py-2 md:px-4 md:border-l border-mortar"><p class="t-proseSM text-chalk italic">italic</p><p class="t-proseXS text-smoke mt-1">quotes and proof lines: prose + italic. JetBrains Mono ships a true italic.</p></div>
+              <div class="col-span-12 md:col-span-3 py-2 md:pl-4 md:border-l border-mortar"><p class="t-proseSM text-chalk">surface</p><p class="t-proseXS text-smoke mt-1">a code well is proseSM + bg-flint + text-phosphor; the token doesn't change.</p></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 03 · ICONS ─────────── -->
+  <section class="w-full bg-basalt py-4" data-dms-group="content">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 p-3" data-dms-section="icons-intro">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[03]</span>
+            <h2 class="t-displayLG">Icons</h2>
+            <span class="t-metaSM text-smoke">63 glyphs · cut, not drawn</span>
+          </div>
+          <p class="t-prose text-ash mt-4 max-w-measure">A custom set on a 24px grid: 1.75px stroke, <span class="text-chalk">square caps,
+          mitre joins</span>, no rounded corners. Wherever another set would use a dot, this one sets a small filled square —
+          the cell is the atom. Registry source: <span class="text-phosphor">theme/icons.js</span>; names are the API
+          (<span class="text-ash">theme.Icons[name]</span>). Every svg in this deliverable is tagged
+          <span class="text-ash">&lt;!-- icon: Name --&gt;</span> or <span class="text-ash">&lt;!-- decorative --&gt;</span>.</p>
+        </div>
+
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="icons-sizes">
+          <div class="border border-mortar bg-slab p-5 h-full">
+            <span class="t-metaSM text-ash">Sizing — 16 · 24 · 32</span>
+            <div class="flex items-end gap-8 mt-6">
+              <div class="text-center"><!-- icon: Terminal --><svg class="w-4 h-4 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="4" width="18" height="16"/><path d="m6.5 9 3.5 3-3.5 3"/><rect x="12.5" y="14.25" width="4.5" height="1.75" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">16</p></div>
+              <div class="text-center"><!-- icon: Terminal --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="4" width="18" height="16"/><path d="m6.5 9 3.5 3-3.5 3"/><rect x="12.5" y="14.25" width="4.5" height="1.75" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">24</p></div>
+              <div class="text-center"><!-- icon: Terminal --><svg class="w-8 h-8 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="4" width="18" height="16"/><path d="m6.5 9 3.5 3-3.5 3"/><rect x="12.5" y="14.25" width="4.5" height="1.75" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">32</p></div>
+            </div>
+            <p class="t-proseXS text-smoke mt-6">Default ink is chalk; phosphor only when the icon itself is the interactive affordance. 16px inline with meta text; 24px in chrome; 32px in empty states.</p>
+          </div>
+        </div>
+
+        <div class="col-span-12 md:col-span-8 p-3" data-dms-section="icons-catalog">
+          <div class="border border-mortar bg-slab p-5">
+            <span class="t-metaSM text-ash">Catalog — every registered name</span>
+
+            <p class="t-metaXS text-smoke mt-5 mb-2">brand / console</p>
+            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-px bg-mortar/60 border border-mortar/60">
+              <div class="bg-slab p-3 text-center"><!-- icon: Terminal --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="4" width="18" height="16"/><path d="m6.5 9 3.5 3-3.5 3"/><rect x="12.5" y="14.25" width="4.5" height="1.75" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Terminal</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Prompt --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="m5 7 5 5-5 5"/><path d="M13 19h7"/></svg><p class="t-metaXS text-smoke mt-2">Prompt</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Cursor --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="8" y="5" width="8" height="14" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Cursor</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Tessera --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="3" width="18" height="18"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/><rect x="15" y="9" width="6" height="6" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Tessera</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Code --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/></svg><p class="t-metaXS text-smoke mt-2">Code</p></div>
+            </div>
+
+            <p class="t-metaXS text-smoke mt-5 mb-2">navigation / chrome</p>
+            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-px bg-mortar/60 border border-mortar/60">
+              <div class="bg-slab p-3 text-center"><!-- icon: Menu --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 6h16M4 12h16M4 18h16"/></svg><p class="t-metaXS text-smoke mt-2">Menu</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Close --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="m6 6 12 12M18 6 6 18"/></svg><p class="t-metaXS text-smoke mt-2">Close</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: ChevronDown --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="m6 9 6 6 6-6"/></svg><p class="t-metaXS text-smoke mt-2">ChevronDown</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: ChevronUp --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="m6 15 6-6 6 6"/></svg><p class="t-metaXS text-smoke mt-2">ChevronUp</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: ChevronRight --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="m9 6 6 6-6 6"/></svg><p class="t-metaXS text-smoke mt-2">ChevronRight</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: ChevronLeft --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="m15 6-6 6 6 6"/></svg><p class="t-metaXS text-smoke mt-2">ChevronLeft</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: CaretDown --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none"><path d="M6.5 9h11L12 16 6.5 9Z" fill="currentColor"/></svg><p class="t-metaXS text-smoke mt-2">CaretDown</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: ArrowRight --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 12h15m-5.5-5.5L19 12l-5.5 5.5"/></svg><p class="t-metaXS text-smoke mt-2">ArrowRight</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: ArrowLeft --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M20 12H5m5.5-5.5L5 12l5.5 5.5"/></svg><p class="t-metaXS text-smoke mt-2">ArrowLeft</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: ArrowUpRight --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M7 17 17 7M9.5 7H17v7.5"/></svg><p class="t-metaXS text-smoke mt-2">ArrowUpRight</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Search --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><p class="t-metaXS text-smoke mt-2">Search</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Ellipsis --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none"><rect x="4.25" y="10.75" width="2.5" height="2.5" fill="currentColor"/><rect x="10.75" y="10.75" width="2.5" height="2.5" fill="currentColor"/><rect x="17.25" y="10.75" width="2.5" height="2.5" fill="currentColor"/></svg><p class="t-metaXS text-smoke mt-2">Ellipsis</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: EllipsisV --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none"><rect x="10.75" y="4.25" width="2.5" height="2.5" fill="currentColor"/><rect x="10.75" y="10.75" width="2.5" height="2.5" fill="currentColor"/><rect x="10.75" y="17.25" width="2.5" height="2.5" fill="currentColor"/></svg><p class="t-metaXS text-smoke mt-2">EllipsisV</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Grip --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none"><rect x="8" y="4.5" width="2.5" height="2.5" fill="currentColor"/><rect x="13.5" y="4.5" width="2.5" height="2.5" fill="currentColor"/><rect x="8" y="10.75" width="2.5" height="2.5" fill="currentColor"/><rect x="13.5" y="10.75" width="2.5" height="2.5" fill="currentColor"/><rect x="8" y="17" width="2.5" height="2.5" fill="currentColor"/><rect x="13.5" y="17" width="2.5" height="2.5" fill="currentColor"/></svg><p class="t-metaXS text-smoke mt-2">Grip</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: External --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M18 13.5V20H4V6h6.5"/><path d="M14 4h6v6"/><path d="M20 4 11 13"/></svg><p class="t-metaXS text-smoke mt-2">External</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Home --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 11 12 4l8 7v9h-5.5v-6h-5v6H4v-9Z"/></svg><p class="t-metaXS text-smoke mt-2">Home</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: LogOut --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M10 4H4v16h6"/><path d="m15 8 4 4-4 4M9 12h10"/></svg><p class="t-metaXS text-smoke mt-2">LogOut</p></div>
+            </div>
+
+            <p class="t-metaXS text-smoke mt-5 mb-2">renderings</p>
+            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-px bg-mortar/60 border border-mortar/60">
+              <div class="bg-slab p-3 text-center"><!-- icon: Page --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 3h8l4 4v14H6V3Z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg><p class="t-metaXS text-smoke mt-2">Page</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Table --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="5" width="18" height="14"/><path d="M3 9.5h18M9 9.5V19M15 9.5V19"/></svg><p class="t-metaXS text-smoke mt-2">Table</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: ChartBar --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="4" y="11" width="4" height="9"/><rect x="10" y="4" width="4" height="16"/><rect x="16" y="14" width="4" height="6"/></svg><p class="t-metaXS text-smoke mt-2">ChartBar</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: ChartLine --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 16.5 9 10l4 3.5L19.5 6"/><rect x="3" y="15.25" width="2.5" height="2.5" fill="currentColor" stroke="none"/><rect x="7.75" y="8.75" width="2.5" height="2.5" fill="currentColor" stroke="none"/><rect x="11.75" y="12.25" width="2.5" height="2.5" fill="currentColor" stroke="none"/><rect x="18.25" y="4.75" width="2.5" height="2.5" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">ChartLine</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Map --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg><p class="t-metaXS text-smoke mt-2">Map</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Lexical --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 6h16M4 11h16M4 16h9"/><rect x="15.5" y="15" width="4.5" height="1.75" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Lexical</p></div>
+            </div>
+
+            <p class="t-metaXS text-smoke mt-5 mb-2">data / structure</p>
+            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-px bg-mortar/60 border border-mortar/60">
+              <div class="bg-slab p-3 text-center"><!-- icon: Database --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="5" y="3.5" width="14" height="4.5"/><rect x="5" y="9.75" width="14" height="4.5"/><rect x="5" y="16" width="14" height="4.5"/></svg><p class="t-metaXS text-smoke mt-2">Database</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Layers --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 12.5 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg><p class="t-metaXS text-smoke mt-2">Layers</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Join --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="8" width="8" height="8"/><rect x="13" y="8" width="8" height="8"/><path d="M11 12h2"/></svg><p class="t-metaXS text-smoke mt-2">Join</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Folder --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 19.5V5.5h7l2 3h9v11H3Z"/></svg><p class="t-metaXS text-smoke mt-2">Folder</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: FolderOpen --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 19.5V5.5h7l2 3h8v3"/><path d="M21 11.5 18.5 19.5H3l3-8h15Z"/></svg><p class="t-metaXS text-smoke mt-2">FolderOpen</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Filter --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 5h16l-6 7v6.5l-4-2V12L4 5Z"/></svg><p class="t-metaXS text-smoke mt-2">Filter</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: SortAsc --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 6h12M4 12h8M4 18h5"/><path d="M18 19V8m-3.5 3.5L18 8l3.5 3.5"/></svg><p class="t-metaXS text-smoke mt-2">SortAsc</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: SortDesc --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 6h5M4 12h8M4 18h12"/><path d="M18 5v11m-3.5-3.5L18 16l3.5-3.5"/></svg><p class="t-metaXS text-smoke mt-2">SortDesc</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Branch --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="4.5" y="4.5" width="5" height="5"/><rect x="4.5" y="14.5" width="5" height="5"/><rect x="14.5" y="4.5" width="5" height="5"/><path d="M7 9.5v5M17 9.5V12a3 3 0 0 1-3 3h-2.5"/></svg><p class="t-metaXS text-smoke mt-2">Branch</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Server --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="4" y="4" width="16" height="7"/><rect x="4" y="13" width="16" height="7"/><rect x="6.5" y="6.5" width="2" height="2" fill="currentColor" stroke="none"/><rect x="6.5" y="15.5" width="2" height="2" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Server</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Cloud --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M7 18.5h10.5a3.5 3.5 0 0 0 .6-6.95A5.75 5.75 0 0 0 7 9.7a4.4 4.4 0 0 0 0 8.8Z"/></svg><p class="t-metaXS text-smoke mt-2">Cloud</p></div>
+            </div>
+
+            <p class="t-metaXS text-smoke mt-5 mb-2">actions</p>
+            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-px bg-mortar/60 border border-mortar/60">
+              <div class="bg-slab p-3 text-center"><!-- icon: Plus --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 5v14M5 12h14"/></svg><p class="t-metaXS text-smoke mt-2">Plus</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Minus --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 12h14"/></svg><p class="t-metaXS text-smoke mt-2">Minus</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Check --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="m4.5 12.5 5 5L19.5 6.5"/></svg><p class="t-metaXS text-smoke mt-2">Check</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Edit --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 20v-4L16 4l4 4L8 20H4Z"/><path d="m13 7 4 4"/></svg><p class="t-metaXS text-smoke mt-2">Edit</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Trash --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 7h14M9.5 7V4h5v3M7 7l1 13h8l1-13"/><path d="M10.25 10.5v6M13.75 10.5v6"/></svg><p class="t-metaXS text-smoke mt-2">Trash</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Copy --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="9" y="9" width="11" height="11"/><path d="M5 15V4h11"/></svg><p class="t-metaXS text-smoke mt-2">Copy</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Download --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5"/><path d="M4 20h16"/></svg><p class="t-metaXS text-smoke mt-2">Download</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Upload --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 20h16"/></svg><p class="t-metaXS text-smoke mt-2">Upload</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Link --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M10.5 7H5v10h5.5"/><path d="M13.5 7H19v10h-5.5"/><path d="M9 12h6"/></svg><p class="t-metaXS text-smoke mt-2">Link</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Play --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M8 5v14l11-7L8 5Z"/></svg><p class="t-metaXS text-smoke mt-2">Play</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Refresh --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M20 5v6h-6"/><path d="M20 11A8 8 0 1 0 17.7 16.7"/></svg><p class="t-metaXS text-smoke mt-2">Refresh</p></div>
+            </div>
+
+            <p class="t-metaXS text-smoke mt-5 mb-2">state / feedback</p>
+            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-px bg-mortar/60 border border-mortar/60">
+              <div class="bg-slab p-3 text-center"><!-- icon: Info --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="4" y="4" width="16" height="16"/><rect x="10.75" y="7" width="2.5" height="2.5" fill="currentColor" stroke="none"/><path d="M12 12v5"/></svg><p class="t-metaXS text-smoke mt-2">Info</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Warning --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.5 22 20.5H2L12 3.5Z"/><path d="M12 10v4"/><rect x="10.9" y="16" width="2.2" height="2.2" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Warning</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Error --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 2.5 21.5 12 12 21.5 2.5 12 12 2.5Z"/><path d="m9.5 9.5 5 5m0-5-5 5"/></svg><p class="t-metaXS text-smoke mt-2">Error</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Eye --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M2.5 12S6.5 5.5 12 5.5 21.5 12 21.5 12 17.5 18.5 12 18.5 2.5 12 2.5 12Z"/><rect x="10.25" y="10.25" width="3.5" height="3.5" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Eye</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: EyeOff --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M2.5 12S6.5 5.5 12 5.5c2 0 3.8.9 5.3 2M21.5 12s-4 6.5-9.5 6.5c-2 0-3.8-.9-5.3-2"/><path d="M4 20 20 4"/></svg><p class="t-metaXS text-smoke mt-2">EyeOff</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Lock --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="5" y="11" width="14" height="9"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/><rect x="10.75" y="14.25" width="2.5" height="2.5" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Lock</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Key --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><circle cx="7.5" cy="16.5" r="3.75"/><path d="M10.5 13.5 20 4M15 9l3 3M17.5 6.5l2 2"/></svg><p class="t-metaXS text-smoke mt-2">Key</p></div>
+            </div>
+
+            <p class="t-metaXS text-smoke mt-5 mb-2">people / time / meta</p>
+            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-px bg-mortar/60 border border-mortar/60">
+              <div class="bg-slab p-3 text-center"><!-- icon: User --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c.5-4 3.5-6 7.5-6s7 2 7.5 6"/></svg><p class="t-metaXS text-smoke mt-2">User</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Users --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 19.5c.4-3.5 3-5.25 6.5-5.25s6.1 1.75 6.5 5.25"/><path d="M15.5 5.5a3.5 3.5 0 0 1 0 6.5M18 14.75c2 .8 3.2 2.4 3.5 4.75"/></svg><p class="t-metaXS text-smoke mt-2">Users</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Calendar --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><rect x="4" y="5" width="16" height="15"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/><rect x="13.75" y="13.5" width="2.5" height="2.5" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Calendar</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Clock --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg><p class="t-metaXS text-smoke mt-2">Clock</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Settings --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 6.5h18M3 12h18M3 17.5h18"/><rect x="13.75" y="5.25" width="2.5" height="2.5" fill="currentColor" stroke="none"/><rect x="6.75" y="10.75" width="2.5" height="2.5" fill="currentColor" stroke="none"/><rect x="15.75" y="16.25" width="2.5" height="2.5" fill="currentColor" stroke="none"/></svg><p class="t-metaXS text-smoke mt-2">Settings</p></div>
+              <div class="bg-slab p-3 text-center"><!-- icon: Book --><svg class="w-6 h-6 mx-auto text-chalk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3.5h13.5V17H6.5A2.5 2.5 0 0 0 4 19.5V6a2.5 2.5 0 0 1 2.5-2.5"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22h13V17"/></svg><p class="t-metaXS text-smoke mt-2">Book</p></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 04 · SPACE / RADIUS / ELEVATION ─────────── -->
+  <section class="w-full bg-slab border-y border-mortar py-4" data-dms-group="content_slab">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 p-3" data-dms-section="space-intro">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[04]</span>
+            <h2 class="t-displayLG">Space · radius · elevation</h2>
+          </div>
+        </div>
+
+        <div class="col-span-12 md:col-span-6 p-3" data-dms-section="space-scale">
+          <div class="border border-mortar bg-basalt p-5 h-full">
+            <span class="t-metaSM text-ash">Space — 4px base</span>
+            <div class="mt-4 space-y-2">
+              <div class="flex items-center gap-4"><span class="t-proseXS text-smoke w-8 tabular-nums">4</span><div class="h-3 bg-phosphor/70" style="width:4px"></div></div>
+              <div class="flex items-center gap-4"><span class="t-proseXS text-smoke w-8 tabular-nums">8</span><div class="h-3 bg-phosphor/70" style="width:8px"></div></div>
+              <div class="flex items-center gap-4"><span class="t-proseXS text-smoke w-8 tabular-nums">12</span><div class="h-3 bg-phosphor/70" style="width:12px"></div></div>
+              <div class="flex items-center gap-4"><span class="t-proseXS text-smoke w-8 tabular-nums">16</span><div class="h-3 bg-phosphor/70" style="width:16px"></div></div>
+              <div class="flex items-center gap-4"><span class="t-proseXS text-smoke w-8 tabular-nums">24</span><div class="h-3 bg-phosphor/70" style="width:24px"></div></div>
+              <div class="flex items-center gap-4"><span class="t-proseXS text-smoke w-8 tabular-nums">32</span><div class="h-3 bg-phosphor/70" style="width:32px"></div></div>
+              <div class="flex items-center gap-4"><span class="t-proseXS text-smoke w-8 tabular-nums">48</span><div class="h-3 bg-phosphor/70" style="width:48px"></div></div>
+              <div class="flex items-center gap-4"><span class="t-proseXS text-smoke w-8 tabular-nums">64</span><div class="h-3 bg-phosphor/70" style="width:64px"></div></div>
+              <div class="flex items-center gap-4"><span class="t-proseXS text-smoke w-8 tabular-nums">96</span><div class="h-3 bg-phosphor/70" style="width:96px"></div></div>
+            </div>
+            <p class="t-proseXS text-smoke mt-4">12px (p-3) is load-bearing: it is the section gutter — the grout width. Component padding favors 16/20/24.</p>
+          </div>
+        </div>
+
+        <div class="col-span-12 md:col-span-6 p-3" data-dms-section="radius-elevation">
+          <div class="border border-mortar bg-basalt p-5 h-full">
+            <span class="t-metaSM text-ash">Radius — one value</span>
+            <div class="flex items-center gap-5 mt-4">
+              <div class="w-16 h-16 bg-flint border border-mortar"></div>
+              <p class="t-proseSM text-ash">0px, everywhere. A character cell has no corners to round. Affordance comes from inverse video and the focus frame, never from softness.</p>
+            </div>
+            <span class="t-metaSM text-ash block mt-8">Elevation — three stops</span>
+            <div class="grid grid-cols-3 gap-3 mt-4">
+              <div class="h-20 bg-basalt border border-mortar flex items-end p-2"><span class="t-metaXS text-smoke">flat</span></div>
+              <div class="h-20 bg-slab border border-mortar flex items-end p-2"><span class="t-metaXS text-smoke">set · slab + mortar</span></div>
+              <div class="h-20 bg-slab border border-phosphor/50 shadow-glow flex items-end p-2"><span class="t-metaXS text-smoke">lit · focus/hero only</span></div>
+            </div>
+            <p class="t-proseXS text-smoke mt-4">No drop shadows. Depth is which stone you're standing on, not how far the card floats. The phosphor halo (shadow-glow) marks the focused or featured surface — one per viewport.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 05 · MOTION ─────────── -->
+  <section class="w-full bg-basalt py-4" data-dms-group="content">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 p-3" data-dms-section="motion-intro">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[05]</span>
+            <h2 class="t-displayLG">Motion</h2>
+            <span class="t-metaSM text-smoke">set, don't slide</span>
+          </div>
+        </div>
+
+        <div class="col-span-12 md:col-span-7 p-3" data-dms-section="motion-spec">
+          <div class="border border-mortar bg-slab p-5 h-full">
+            <table class="w-full t-proseSM">
+              <thead><tr class="text-left border-b border-mortar"><th class="t-metaXS text-smoke font-medium py-2">moment</th><th class="t-metaXS text-smoke font-medium py-2">spec</th></tr></thead>
+              <tbody class="divide-y divide-mortar/60">
+                <tr><td class="py-2.5 text-ash">state flip (hover, tab, toggle)</td><td class="py-2.5">90ms · steps(1) or cubic-bezier(.2,0,.1,1)</td></tr>
+                <tr><td class="py-2.5 text-ash">reveal (section, menu, modal)</td><td class="py-2.5">140ms · opacity 0→1 + translateY(4px)→0 — a tile set down</td></tr>
+                <tr><td class="py-2.5 text-ash">cursor blink</td><td class="py-2.5">1.1s · steps(1) — the only loop the brand permits</td></tr>
+                <tr><td class="py-2.5 text-ash">hero assembly (three.js)</td><td class="py-2.5">courses settle row by row, then stillness; runs once</td></tr>
+                <tr><td class="py-2.5 text-ash">prefers-reduced-motion</td><td class="py-2.5">blink stops; reveals render placed; hero renders composed</td></tr>
+              </tbody>
+            </table>
+            <p class="t-proseXS text-smoke mt-4">Banned: parallax, marquees, looping backgrounds, eases longer than 200ms, anything that moves while the reader is still.</p>
+          </div>
+        </div>
+
+        <div class="col-span-12 md:col-span-5 p-3" data-dms-section="motion-demo">
+          <div class="border border-mortar bg-slab p-5 h-full">
+            <span class="t-metaSM text-ash">Live: inverse video + the cursor</span>
+            <div class="mt-4 space-y-3">
+              <a href="#" class="tes-inverse-phosphor block border border-phosphor text-phosphor t-metaSM px-4 py-2.5 w-max">[ hover me ]</a>
+              <p class="t-prose text-chalk tes-cursor">tessera is ready</p>
+            </div>
+            <p class="t-proseXS text-smoke mt-4">Hover flips ink and ground in one step — no fade. The blink is steps(1): a cell is lit or it is not.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 06 · ORNAMENT ─────────── -->
+  <section class="w-full bg-slab border-y border-mortar py-4" data-dms-group="content_slab">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 p-3" data-dms-section="ornament-intro">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[06]</span>
+            <h2 class="t-displayLG">Ornament</h2>
+            <span class="t-metaSM text-smoke">five sanctioned marks · one per band, at most</span>
+          </div>
+          <p class="t-prose text-ash mt-4 max-w-measure">The surface is ~90% plain stone. Ornament is punctuation, drawn only from this set —
+          anything else is graffiti.</p>
+        </div>
+
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="ornament-cellgrid">
+          <div class="border border-mortar bg-basalt h-full">
+            <div class="h-28 tes-cellgrid border-b border-mortar"></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">1 · The cell grid</p><p class="t-proseXS text-smoke mt-1">.tes-cellgrid — the character matrix as faint mortar lines. Hero and tinted bands only; never behind running prose.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="ornament-cursor">
+          <div class="border border-mortar bg-basalt h-full">
+            <div class="h-28 flex items-center justify-center border-b border-mortar"><span class="t-displayLG tes-cursor">ready</span></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">2 · The block cursor</p><p class="t-proseXS text-smoke mt-1">.tes-cursor — the signature tessera. Ends the hero headline, marks live/waiting states. One per surface.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="ornament-tty">
+          <div class="border border-mortar bg-basalt h-full">
+            <div class="h-28 border-b border-mortar p-3">
+              <div class="border border-mortar h-full">
+                <div class="border-b border-mortar px-3 py-1.5 flex justify-between"><span class="t-metaXS text-ash">tty1 · tessera</span><span class="t-metaXS text-smoke">80×24</span></div>
+                <p class="px-3 py-2 t-proseXS text-phosphor">$ _</p>
+              </div>
+            </div>
+            <div class="p-4"><p class="t-proseSM text-chalk">3 · The tty frame</p><p class="t-proseXS text-smoke mt-1">A labelled titlebar on a mortar frame — the brand's "terminal window" chrome for demos and code surfaces.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 p-3" data-dms-section="ornament-course">
+          <div class="border border-mortar bg-basalt h-full">
+            <div class="h-20 flex items-center justify-center gap-1.5 border-b border-mortar">
+              <div class="w-2.5 h-2.5 bg-mortar"></div><div class="w-2.5 h-2.5 bg-mortar"></div><div class="w-2.5 h-2.5 bg-phosphor"></div><div class="w-2.5 h-2.5 bg-mortar"></div><div class="w-2.5 h-2.5 bg-flint"></div><div class="w-2.5 h-2.5 bg-mortar"></div><div class="w-2.5 h-2.5 bg-flint"></div>
+            </div>
+            <div class="p-4"><p class="t-proseSM text-chalk">4 · The tessera course</p><p class="t-proseXS text-smoke mt-1">One row of set cells, at most one lit — band punctuation for the hero and the footer. Never tiled into a field.</p></div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 p-3" data-dms-section="ornament-rule">
+          <div class="border border-mortar bg-basalt h-full">
+            <div class="h-20 flex flex-col justify-center px-8 border-b border-mortar"><hr class="tes-rule"/></div>
+            <div class="p-4"><p class="t-proseSM text-chalk">5 · The incised rule</p><p class="t-proseXS text-smoke mt-1">.tes-rule — a groove cut into the stone (dark line over light). Long-form dividers; pairs with the incise voice.</p></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 07 · VOICE ─────────── -->
+  <section class="w-full bg-basalt py-4" data-dms-group="content">
+    <div class="mx-auto w-full max-w-content px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <div class="col-span-12 p-3" data-dms-section="voice-intro">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-mortar pb-3">
+            <span class="t-metaSM text-phosphor">[07]</span>
+            <h2 class="t-displayLG">Voice</h2>
+            <span class="t-metaSM text-smoke">man-page register</span>
+          </div>
+        </div>
+
+        <div class="col-span-12 md:col-span-5 p-3" data-dms-section="voice-principles">
+          <div class="border border-mortar bg-slab p-5 h-full">
+            <span class="t-metaSM text-ash">Principles</span>
+            <ul class="mt-4 space-y-3 t-proseSM text-ash">
+              <li><span class="text-chalk">Specific over evocative.</span> "A typed row in data_items" beats "a flexible building block."</li>
+              <li><span class="text-chalk">Lowercase where the terminal would be.</span> Prompts, statuses, and system strings are lowercase; sentences are sentences.</li>
+              <li><span class="text-chalk">Exit codes, not apologies.</span> Errors say what failed, where, and what to try. No "oops."</li>
+              <li><span class="text-chalk">No exclamation marks, no superlatives.</span> The system is right because it's right.</li>
+              <li><span class="text-chalk">The verbs of authoring:</span> compose, place, set, render, publish.</li>
+              <li><span class="text-chalk">Earned metaphor.</span> Tessera/mosaic language appears only when it names a real property of the system.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-span-12 md:col-span-7 p-3" data-dms-section="voice-strings">
+          <div class="border border-mortar bg-slab p-5 h-full">
+            <span class="t-metaSM text-ash">Sample strings</span>
+            <table class="w-full mt-4 t-proseSM">
+              <tbody class="divide-y divide-mortar/60">
+                <tr><td class="py-2.5 t-metaXS text-smoke align-top w-28">button</td><td class="py-2.5 text-chalk">[ try tessera ] · [ run query ] · [ publish ]</td></tr>
+                <tr><td class="py-2.5 t-metaXS text-smoke align-top">empty</td><td class="py-2.5 text-ash">no rows returned — add a source to begin composing.</td></tr>
+                <tr><td class="py-2.5 t-metaXS text-smoke align-top">error</td><td class="py-2.5 text-ash">error: view 2060672 could not be loaded — the row may be deleted, or your token expired. <span class="text-oxide">exit 1</span></td></tr>
+                <tr><td class="py-2.5 t-metaXS text-smoke align-top">success</td><td class="py-2.5 text-ash">published · 14 sections · <span class="text-phosphor">exit 0</span></td></tr>
+                <tr><td class="py-2.5 t-metaXS text-smoke align-top">loading</td><td class="py-2.5 text-ash">querying npmrds2 …</td></tr>
+                <tr><td class="py-2.5 t-metaXS text-smoke align-top">avoid</td><td class="py-2.5 text-smoke line-through">Unleash the power of your data!</td></tr>
+              </tbody>
+            </table>
+            <p class="t-proseXS text-smoke mt-4">Terminology: <span class="text-ash">tessera</span> (the unit — a typed row; lowercase in technical copy), <span class="text-ash">mosaic</span> (the composed site — used sparingly), <span class="text-ash">grout</span> (internal name for spacing tokens; never customer-facing), <span class="text-ash">pattern</span> (the existing DMS term, kept).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── footer link block (§7.0.3) ─────────── -->
+  <footer class="w-full bg-slab border-t border-mortar" data-dms-group="footer">
+    <div class="mx-auto w-full max-w-content px-6 py-4">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 p-3" data-dms-section="footer-links">
+          <div class="flex items-center gap-1.5 mb-6">
+            <div class="w-2 h-2 bg-mortar"></div><div class="w-2 h-2 bg-phosphor"></div><div class="w-2 h-2 bg-mortar"></div><div class="w-2 h-2 bg-flint"></div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+              <p class="t-metaXS text-smoke mb-3">design system</p>
+              <ul class="space-y-2 t-proseSM">
+                <li><a class="text-phosphor" href="theme.html">1 · theme — you are here</a></li>
+                <li><a class="text-ash hover:text-chalk" href="layouts.html">2 · layouts</a></li>
+                <li><a class="text-ash hover:text-chalk" href="grid.html">3 · grid</a></li>
+                <li><a class="text-ash hover:text-chalk" href="components.html">4 · components</a></li>
+                <li><a class="text-ash hover:text-chalk" href="patterns.html">5 · patterns</a></li>
+              </ul>
+            </div>
+            <div>
+              <p class="t-metaXS text-smoke mb-3">example pages</p>
+              <ul class="space-y-2 t-proseSM"><li><a class="text-ash hover:text-chalk" href="../pages/product-landing.html">product landing</a></li></ul>
+            </div>
+            <div>
+              <p class="t-metaXS text-smoke mb-3">artifacts</p>
+              <ul class="space-y-2 t-proseSM text-ash"><li>_shared.css — canonical</li><li>theme/icons.js — registry</li><li>theme/tailwind.additions.js</li></ul>
+            </div>
+            <div class="md:text-right">
+              <p class="t-inciseSM text-ash">Tessera</p>
+              <p class="t-proseXS text-smoke mt-2">design system v4 · set 2026-07-02</p>
+              <p class="t-proseXS text-phosphor mt-1">exit 0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- floating design-system navigation widget (§7.0.2 — documentation scaffolding, never ships live) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'JetBrains Mono',monospace;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:#191E23;border:1px solid #333B44;padding:12px 0;min-width:220px;box-shadow:0 4px 20px rgba(0,0,0,0.5);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#5C666D;padding:0 16px 8px;border-bottom:1px solid #333B44;margin-bottom:4px;">Tessera design system</div>
+    <a href="theme.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#45D68C;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">1</span> theme ▮</a>
+    <a href="layouts.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">2</span> layouts</a>
+    <a href="grid.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">3</span> grid</a>
+    <a href="components.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">4</span> components</a>
+    <a href="patterns.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">5</span> patterns</a>
+    <div style="border-top:1px solid #333B44;margin:4px 0;"></div>
+    <a href="../pages/product-landing.html" style="display:flex;gap:8px;padding:6px 16px;font-size:13px;color:#E4E6DE;text-decoration:none;"><span style="color:#5C666D;min-width:14px;">◦</span> product landing</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px)':'translateY(0)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;background:#111417;color:#45D68C;border:1px solid #333B44;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+          aria-label="Design system navigation">
+    <!-- decorative --><svg xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px;" viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="3" width="6" height="6"/><rect x="11" y="3" width="6" height="6"/><rect x="3" y="11" width="6" height="6"/><rect x="11" y="11" width="6" height="6"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
