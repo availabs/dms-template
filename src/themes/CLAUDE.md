@@ -70,3 +70,11 @@ Only after those four answer "no" should you reach for a custom section componen
 See [THEME_EDITING_GUIDE.md](./THEME_EDITING_GUIDE.md) for the mechanical details of theme file structure (`options/styles`, named styles, merging, registered widgets/column types, etc.).
 
 See `src/dms/skills/card-layout.md` for the full surface of Card-section authoring knobs.
+
+## Custom theme components worth knowing about
+
+- **`transportny/components/ReportRouteList`** — a route-editor panel for "report" pages (created
+  from the `npmrds_sub` pattern's **Report Page** template). A report is just a page; graphs are
+  ordinary page sections that self-bind to the routes assigned to them. See
+  [its README](./transportny/components/ReportRouteList/README.md) for the storage model, the
+  self-binding mechanism, and gotchas before touching this component.
