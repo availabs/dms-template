@@ -438,7 +438,7 @@ const theme = {
     styles: [
       {
         name: 'default Buttons',
-        button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[14px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-5 py-2.5`,
+        button: `cursor-pointer inline-flex items-center gap-2 bg-white hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-3 py-[6px] ring ring-[#E0EBF0]`,
       },
       {
         name: 'plain',
@@ -484,47 +484,123 @@ const theme = {
   },
 
   table: {
-    tableContainer:
-      "relative flex flex-col w-full h-full overflow-x-auto scrollbar-sm border rounded-t-[12px]",
-    tableContainerNoPagination: "rounded-b-[12px]",
-    tableContainer1:
-      "flex flex-col no-wrap min-h-[200px] max-h-[calc(78vh_-_10px)] overflow-y-auto scrollbar-sm",
-    headerContainer: "sticky top-0 grid ",
-    thead: "flex justify-between",
-    theadfrozen: "",
-    thContainer:
-      "w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c] border-x",
-    thContainerBg: "bg-[#F3F8F9] text-gray-900",
-    thContainerBgSelected: "bg-gray-50 text-gray-900",
-    cell: "relative flex items-center min-h-[36px]  border border-slate-50",
-    cellInner: `
+    options: { activeStyle: 0 },
+    styles: [
+      {
+        name: "mny",
+        tableContainer:
+            "relative flex flex-col w-full h-full min-h-[200px] max-h-[calc(100vh_-_90px)] overflow-y-auto overflow-x-auto scrollbar-sm border rounded-t-[12px]",
+        tableContainerNoPagination: "rounded-b-[12px]",
+        headerContainer: "sticky top-0 grid ",
+        headerLeftGutter: 'flex justify-between sticky left-0 z-[1]',
+        headerWrapper: "flex justify-between",
+        colResizer: "z-5 -ml-2 w-[1px] hover:w-[2px] bg-gray-200 hover:bg-gray-400",
+        headerWrapperFrozen: "",
+        headerCellContainer:
+            "w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c]",
+        headerCellContainerBg: "bg-[#F3F8F9] text-gray-900",
+        headerCellContainerBgSelected: "bg-gray-50 text-gray-900",
+        pivotGroupHeader: "bg-[#F3F8F9] text-[#37576B] text-center border-b border-r border-[#E0EBF0]",
+        cell: "relative flex items-center min-h-[36px]  border border-slate-50",
+        cellInner: `
           w-full min-h-full flex flex-wrap items-center truncate py-1 px-2
           font-['Proxima_Nova'] font-[400] text-[14px] text-[#37576B] leading-[20px]
       `,
-    cellBg: "bg-white",
-    cellBgSelected: "bg-blue-50",
-    cellFrozenCol: "",
-    paginationContainer:
-      "w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between",
-    paginationInfoContainer: "",
-    paginationPagesInfo:
-      "font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
-    paginationRowsInfo: "text-xs font-[Proxima Nova] leading-[14px]",
-    paginationControlsContainer:
-      "flex flex-row items-center border rounded-[8px] overflow-hidden",
-    pageRangeItem:
-      "cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]",
-    pageRangeItemInactive: "bg-white text-[#2D3E4C]",
-    pageRangeItemActive: "bg-[#2D3E4C] text-white",
-    openOutContainer:
-      "w-[420px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
-    openOutContainerWrapper: "absolute inset-0 right-0 h-full w-full z-[100]",
-    openOutHeader:
-      "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
-    openOutValue:
-      "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
-    openOutTitle:
-      "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]",
+        cellBgOdd: 'bg-gray-50 hover:bg-gray-100',
+        cellBgEven: 'bg-white hover:bg-gray-100',
+        cellBg: 'bg-white hover:bg-gray-100',
+        totalCell: 'hover:bg-gray-150',
+        wrapText: 'whitespace-pre-wrap',
+        cellEditableTextBox: 'absolute border focus:outline-none min-w-[180px] min-h-[50px] z-[10] whitespace-pre-wrap',
+        cellBgSelected: "bg-blue-50 hover:bg-blue-100",
+        cellFrozenCol: "",
+        cellInvalid: 'bg-red-50 hover:bg-red-100',
+        paginationContainer:
+            "w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between",
+        paginationInfoContainer: "",
+        paginationPagesInfo:
+            "font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
+        paginationRowsInfo: "text-xs font-[Proxima Nova] leading-[14px]",
+        paginationControlsContainer:
+            "flex flex-row items-center border rounded-[8px] overflow-hidden",
+        pageRangeItem:
+            "cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]",
+        pageRangeItemInactive: "bg-white text-[#2D3E4C]",
+        pageRangeItemActive: "bg-[#2D3E4C] text-white",
+        openOutContainer:
+            "w-[420px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
+        openOutContainerWrapper: "absolute inset-0 right-0 h-full w-full z-[100]",
+        openOutHeader:
+            "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
+        openOutValue:
+            "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
+        openOutTitle:
+            "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]",
+        totalRow: 'bg-gray-100 sticky bottom-0 z-[3]',
+        stripedRow: 'even:bg-gray-50',
+        gutterCellWrapper: `flex text-xs items-center justify-center cursor-pointer sticky left-0 z-[1]`,
+        gutterCellWrapperNotSelected: 'bg-gray-50 text-gray-500',
+        gutterCellWrapperSelected: 'bg-blue-100 text-gray-900',
+        openOutCloseIconContainer: 'w-full flex justify-end',
+        openOutCloseIconWrapper: 'w-fit h-fit p-[8px] text-[#37576B] border border-[#E0EBF0] rounded-full cursor-pointer',
+        openOutCloseIcon: 'XMark',
+        openOutContainerWrapperBgColor: '#00000066',
+        openOutIconWrapper: 'px-2 cursor-pointer bg-transparent text-gray-500 hover:text-gray-600',
+        headerCellWrapper: 'relative w-full',
+        headerCellBtn: 'group inline-flex items-center w-full justify-between gap-x-1.5 rounded-md cursor-pointer',
+        headerCellLabel: 'truncate select-none',
+        headerCellBtnActive: 'bg-gray-300',
+        headerCellFnIconClass: 'text-gray-400',
+        headerCellCountIcon: 'TallyMark',
+        headerCellListIcon: 'LeftToRightListBullet',
+        headerCellSumIcon: 'Sum',
+        headerCellAvgIcon: 'Avg',
+        headerCellGroupIcon: 'Group',
+        headerCellSortAscIcon: 'SortAsc',
+        headerCellSortDescIcon: 'SortDesc',
+        headerCellMenuIcon: 'ArrowDown',
+        headerCellMenuIconClass: 'text-gray-400 group-hover:text-gray-600 transition ease-in-out duration-200 print:hidden',
+        headerCellIconWrapper: 'flex items-center',
+        headerCellMenu: 'py-0.5 flex flex-col gap-0.5 items-center px-1 text-xs text-gray-600 font-regular max-h-[500px] min-w-[180px] ' +
+            'z-[10] overflow-auto scrollbar-sm bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5',
+        headerCellControlWrapper: 'w-full group px-2 py-1 flex justify-between items-center rounded-md hover:bg-gray-100',
+        headerCellControlLabel: 'w-fit font-regular text-gray-500 cursor-default',
+        headerCellControl: 'p-0.5 w-full rounded-md bg-white group-hover:bg-gray-100 cursor-pointer'
+      },
+      {
+        name: "basic",
+        tableContainer: "relative flex flex-col w-full h-full overflow-x-auto scrollbar-sm border rounded-t-[12px]",
+        tableContainerNoPagination: "rounded-b-[12px]",
+        tableContainer1: "flex flex-col no-wrap min-h-[200px] max-h-[calc(78vh_-_10px)] overflow-y-auto scrollbar-sm",
+        headerContainer: "sticky top-0 grid ",
+        thead: "flex justify-between",
+        theadfrozen: "",
+        thContainer: "w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c] border-x",
+        thContainerBgSelected: "bg-gray-50 text-gray-900",
+        thContainerBg: "bg-[#F3F8F9] text-gray-900",
+        cell: "relative flex items-center min-h-[36px]  border border-slate-50",
+        cellInner: `
+          w-full min-h-full flex flex-wrap items-center truncate py-1 px-2
+          font-['Proxima_Nova'] font-[400] text-[14px] text-[#37576B] leading-[20px]
+      `,
+        cellBg: "bg-white",
+        cellBgSelected: "bg-blue-50",
+        cellFrozenCol: "",
+        paginationInfoContainer: "",
+        paginationPagesInfo: "font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
+        paginationRowsInfo: "text-xs font-[Proxima Nova] leading-[14px]",
+        paginationContainer: "w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between",
+        paginationControlsContainer: "flex flex-row items-center border rounded-[8px] overflow-hidden",
+        pageRangeItem: "cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]",
+        pageRangeItemInactive: "bg-white text-[#2D3E4C]",
+        pageRangeItemActive: "bg-[#2D3E4C] text-white",
+        openOutContainer: "w-[420px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
+        openOutContainerWrapper: "absolute inset-0 right-0 h-full w-full z-[100]",
+        openOutHeader: "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
+        openOutValue: "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
+        openOutTitle: "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]"
+      }
+    ]
   },
   attribution: {
     wrapper: "w-full flex flex-col gap-[4px] text-[#2D3E4C] text-xs",
