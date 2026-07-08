@@ -80,6 +80,7 @@ GRAPH_TEMPLATE_MAP = {
     ("Route Bar Graph", "hoursOfDelay", "day", "travel_time_all"): "tmc_delay_bar_graph_day",
     ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_passenger"): "tmc_co2_grid_graph_passenger",
     ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_truck"): "tmc_co2_grid_graph_truck",
+    ("Route Bar Graph", "hoursOfDelay", "weekday", "travel_time_all"): "tmc_delay_bar_graph_weekday",
 }
 
 # Old per-graph-type displayData defaults (old graph components fall back to
@@ -231,6 +232,17 @@ CO2_EXPR_TRUCK = (
     f"(({_CO2_TRUCK_FACTOR.format(s=_SPEED_TRUCK_EXPR)}) "
     f"* ({_AADT_TRUCK_EXPR} * table1.miles) / 1000000) as avg_co2_emissions")
 
+# "weekday" resolution (old getResolution(): `trim(to_char(date, 'day'))`) groups
+# rows by day-of-week name instead of calendar date — e.g. "Hours of Delay by
+# weekday" sums delay across every Monday in the range into one bar, every
+# Tuesday into another, etc. Same DELAY_EXPR/join as the day-resolution
+# template; only the grouping column differs. Uses ISO day-of-week (1=Monday..
+# 7=Sunday, ClickHouse `toDayOfWeek(date, 1)`) as a plain sortable integer
+# rather than a name string, so "sort": "asc" orders Monday->Sunday correctly
+# (a future author-facing label lookup for 1-7 -> day name is a display
+# refinement, not attempted here — conversion correctness over pixel parity).
+WEEKDAY_EXPR = "toDayOfWeek(ds.date, 1) as weekday"
+
 TEMPLATE_SPECS = {
     "tmc_speed_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
@@ -261,6 +273,14 @@ TEMPLATE_SPECS = {
         "graphType": "GridGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
                   "target": "color", "fn": "avg"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_delay_bar_graph_weekday": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": WEEKDAY_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                  "target": "yAxis", "fn": "sum"},
         "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
     },
 }
@@ -480,11 +500,16 @@ def ensure_graph_templates(needed_names, templates, dry_run):
     for name in missing:
         spec = TEMPLATE_SPECS[name]
         state = json.loads(json.dumps(base_state))  # deep copy
-        # x-axis: swap the base's epoch column for the spec's (e.g. date)
-        x_src = next(c for c in state["externalSource"]["columns"]
-                     if c.get("name") == spec["xAxis"])
-        x_col = {**x_src, "show": True, "target": "xAxis", "group": True,
-                 "sort": "asc"}
+        # x-axis: either a plain existing-column name (e.g. "date") swapped in
+        # from the base's epoch column, or (for a calculated grouping, e.g.
+        # weekday-name buckets) a full column dict supplied as-is.
+        if isinstance(spec["xAxis"], dict):
+            x_col = spec["xAxis"]
+        else:
+            x_src = next(c for c in state["externalSource"]["columns"]
+                         if c.get("name") == spec["xAxis"])
+            x_col = {**x_src, "show": True, "target": "xAxis", "group": True,
+                     "sort": "asc"}
         series_col = next(c for c in state["columns"]
                           if c.get("name") == "__series")
         state["columns"] = [spec["yAxis"], x_col, series_col]
