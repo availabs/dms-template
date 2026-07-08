@@ -78,6 +78,8 @@ GRAPH_TEMPLATE_MAP = {
     ("Route Bar Graph", "speed", "day", "travel_time_all"): "tmc_speed_bar_graph_day",
     ("Route Bar Graph", "travelTime", "day", "travel_time_all"): "tmc_travel_time_bar_graph_day",
     ("Route Bar Graph", "hoursOfDelay", "day", "travel_time_all"): "tmc_delay_bar_graph_day",
+    ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_passenger"): "tmc_co2_grid_graph_passenger",
+    ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_truck"): "tmc_co2_grid_graph_truck",
 }
 
 # Old per-graph-type displayData defaults (old graph components fall back to
@@ -110,16 +112,21 @@ ALL_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday",
 # `tmc_travel_time_line_graph` row's stateJson (externalSource/display/etc.
 # stay consistent with what the UI produced) with targeted mutations.
 SPEED_EXPR = "((table1.miles * 3600)/ ds.travel_time_all_vehicles) as speed"
-# Old hoursOfDelay (avail-falcor getHoursOfDelay.js): per-epoch
-# max(0, tt - miles/max(20, 0.6*speedlimit)*3600)/3600, summed — then weighted
-# by a per-epoch AADT share (aadtDistributions.js). The threshold part is
-# expressible as a calculated column against the ny_2025_tmc_meta ClickHouse
-# view (source 1946 / view 3298 — has miles + avg_speedlimit); the AADT
-# epoch-distribution weighting needs that JS matrix loaded as a joinable table
-# first, so converted delay graphs are UNWEIGHTED (per-vehicle delay-hours)
-# until then. Logged as a gap on every conversion that maps one.
-DELAY_EXPR = ("greatest(0, ds.travel_time_all_vehicles - ((table1.miles / "
-              "greatest(20, table1.avg_speedlimit * 0.6)) * 3600)) / 3600 "
+# Old hoursOfDelay (avail-falcor getHoursOfDelay.js's calcDelay/getAADT): per
+# epoch, raw_delay = max(0, tt - miles/max(20, 0.6*speedlimit)*3600)/3600,
+# weighted by AADT/facil * the epoch's AADT-distribution share, summed. The
+# threshold part joins the ny_2025_tmc_meta ClickHouse view (source 1946/view
+# 3298 — miles, avg_speedlimit, aadt, faciltype, congestion_level,
+# directionality, f_system); the weighting joins aadt_distributions (source
+# 2056/view 3524 — see calculated-join-key notes in
+# planning/tasks/current/old-reports-conversion.md) via a computed dist_key.
+# This is the "travel_time_all" dataColumn variant (AADT = table1.aadt
+# directly, no truck/passenger split, no overrides.aadt — that override is
+# still a gap).
+DELAY_EXPR = ("(greatest(0, ds.travel_time_all_vehicles - ((table1.miles / "
+              "greatest(20, table1.avg_speedlimit * 0.6)) * 3600)) / 3600) "
+              "* (table1.aadt / (if(table1.faciltype > 1, 2, 1))) "
+              "* arrayElement(table2.distributions, ds.epoch + 1) "
               "as hours_of_delay")
 META_1946_JOIN = {
     "source": 1946, "view": 3298,
@@ -136,6 +143,94 @@ META_1946_JOIN = {
     "joinColumns": [{"dsColumn": "tmc", "joinSourceColumn": "tmc"}],
     "mergeStrategy": "join", "type": "left",
 }
+# dist_key mirrors old getDist(): WEEKEND collapses to [weekdayType, roadType],
+# WEEKDAY needs congestion_level + directionality + roadType — all only
+# available on table1 (ny_2025_tmc_meta), joined as a calculated dsColumn
+# expression (the platform fix verified in the round-3 notes) rather than a
+# plain column so it can reference an already-joined alias.
+DIST_KEY_EXPR = (
+    "if(toDayOfWeek(ds.date, 2) IN (6,7), "
+    "concat('WEEKEND_', if(table1.f_system < 3, 'FREEWAY', 'NONFREEWAY')), "
+    "concat('WEEKDAY_', table1.congestion_level, '_', table1.directionality, '_', "
+    "if(table1.f_system < 3, 'FREEWAY', 'NONFREEWAY'))) as dist_key"
+)
+AADT_DIST_JOIN = {
+    "source": 2056, "view": 3524,
+    "sourceInfo": {
+        "name": "aadt_distributions",
+        "columns": [{"name": "key", "type": "string"},
+                    {"name": "distributions", "type": "array"}],
+        "source_id": 2056, "env": "npmrds2", "srcEnv": "npmrds2",
+        "isDms": False, "baseUrl": "", "type": "aadt_distributions",
+        "view_id": 3524,
+    },
+    "joinColumns": [{"dsColumn": DIST_KEY_EXPR, "joinSourceColumn": "key"}],
+    "mergeStrategy": "join", "type": "left",
+}
+# CO2 emissions (avail-falcor getCo2Emissions.js's calcEmissions/getCo2/
+# forCars/forTrucks): per epoch, split AADT into car
+# (table1.aadt - (aadt_singl + aadt_combi)) vs truck (aadt_singl + aadt_combi),
+# weight by the same AADT-distribution share as Hours-of-Delay
+# (table2.distributions via the dist_key join, see DELAY_EXPR/DIST_KEY_EXPR
+# above), convert to VMT, then run VMT through a 15-bucket piecewise-linear
+# speed→emission-factor regression (separate car/truck coefficient tables) and
+# divide by 1e6 (matches getCo2Emissions.js's `sum / 1000000`). No
+# overrides.aadt or overrides.baseSpeed support yet — both still-open gaps
+# (see planning/tasks/current/old-reports-conversion.md), same treatment as
+# the weighted-delay column's overrides.aadt gap. Report 751 only exercises
+# the travel_time_truck/travel_time_passenger variants (its 4 route comps are
+# 2 passenger + 2 truck, no travel_time_all comps) — a travel_time_all variant
+# (car+truck summed, per getCo2()'s 'travel_time_all' case) is not built since
+# nothing needs it yet.
+_CO2_CAR_FACTOR = ("multiIf("
+    "{s} < 5, ({s} * -335.3) + 2756, "
+    "{s} < 10, ({s} * -83.73) + 1498, "
+    "{s} < 15, ({s} * -28.08) + 942, "
+    "{s} < 20, ({s} * -14.25) + 734, "
+    "{s} < 25, ({s} * -9.466) + 639, "
+    "{s} < 30, ({s} * -8.471) + 614, "
+    "{s} < 35, ({s} * -3.775) + 473, "
+    "{s} < 40, ({s} * -2.259) + 420, "
+    "{s} < 45, ({s} * -1.685) + 397, "
+    "{s} < 50, ({s} * -1.131) + 372, "
+    "{s} < 55, ({s} * -0.473) + 339, "
+    "{s} < 60, ({s} * 0.0686) + 309, "
+    "{s} < 65, ({s} * 0.7814) + 267, "
+    "{s} < 70, ({s} * 2.3722) + 163, "
+    "({s} * 3.7348) + 68)")
+_CO2_TRUCK_FACTOR = ("multiIf("
+    "{s} < 5, ({s} * -1508.86) + 11551.62, "
+    "{s} < 10, ({s} * -312) + 5567.34, "
+    "{s} < 15, ({s} * -78.35) + 3230.75, "
+    "{s} < 20, ({s} * -56.38) + 2901.32, "
+    "{s} < 25, ({s} * -34.75) + 2468.71, "
+    "{s} < 30, ({s} * -12.02) + 1900.28, "
+    "{s} < 35, ({s} * -48.01) + 2980.11, "
+    "{s} < 40, ({s} * -13.48) + 1771.60, "
+    "{s} < 45, ({s} * -10.71) + 1660.88, "
+    "{s} < 50, ({s} * -13.84) + 1801.47, "
+    "{s} < 55, ({s} * -12.68) + 1743.63, "
+    "{s} < 60, ({s} * 7.60) + 1464.06, "
+    "{s} < 65, ({s} * 11.17) + 337.87, "
+    "{s} < 70, ({s} * 10.35) + 391.40, "
+    "({s} * 15.37) + 40.07)")
+_SPEED_CAR_EXPR = ("(table1.miles * (3600.0 / "
+                    "coalesce(ds.travel_time_passenger_vehicles, ds.travel_time_all_vehicles)))")
+_SPEED_TRUCK_EXPR = ("(table1.miles * (3600.0 / "
+                      "coalesce(ds.travel_time_freight_trucks, ds.travel_time_all_vehicles)))")
+_AADT_CAR_EXPR = ("((table1.aadt - (table1.aadt_singl + table1.aadt_combi)) "
+                   "/ if(table1.faciltype > 1, 2, 1) "
+                   "* arrayElement(table2.distributions, ds.epoch + 1))")
+_AADT_TRUCK_EXPR = ("((table1.aadt_singl + table1.aadt_combi) "
+                     "/ if(table1.faciltype > 1, 2, 1) "
+                     "* arrayElement(table2.distributions, ds.epoch + 1))")
+CO2_EXPR_PASSENGER = (
+    f"(({_CO2_CAR_FACTOR.format(s=_SPEED_CAR_EXPR)}) "
+    f"* ({_AADT_CAR_EXPR} * table1.miles) / 1000000) as avg_co2_emissions")
+CO2_EXPR_TRUCK = (
+    f"(({_CO2_TRUCK_FACTOR.format(s=_SPEED_TRUCK_EXPR)}) "
+    f"* ({_AADT_TRUCK_EXPR} * table1.miles) / 1000000) as avg_co2_emissions")
+
 TEMPLATE_SPECS = {
     "tmc_speed_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
@@ -151,7 +246,22 @@ TEMPLATE_SPECS = {
         "graphType": "BarGraph", "xAxis": "date",
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
-        "join": META_1946_JOIN,
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    # GridGraph shape (xAxis=epoch, target=color) mirroring the existing
+    # tmc_speed_grid_graph — "avg" fn averages each epoch's value across the
+    # dates in range, same convention already verified live for speed.
+    "tmc_co2_grid_graph_passenger": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
+                  "target": "color", "fn": "avg"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_co2_grid_graph_truck": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
+                  "target": "color", "fn": "avg"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
     },
 }
 TEMPLATE_BASE_NAME = "tmc_travel_time_line_graph"
@@ -380,7 +490,7 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         state["columns"] = [spec["yAxis"], x_col, series_col]
         state["display"]["graphType"] = spec["graphType"]
         if spec.get("join"):
-            state["join"] = {"sources": {"table1": spec["join"]}}
+            state["join"] = {"sources": spec["join"]}
         if dry_run:
             print(f"[dry-run] would create template '{name}'")
             templates[name] = {"id": None, "data": {"name": name,
@@ -686,11 +796,6 @@ def convert_report(old_id, dry_run=False, replace=False):
         tmpl_name = GRAPH_TEMPLATE_MAP.get(key)
         if tmpl_name and tmpl_name in graph_templates:
             convertible.append((g, info, graph_templates[tmpl_name]))
-            if info["measure"] == "hoursOfDelay":
-                gaps.append({"kind": "delay_unweighted", "graph": g.get("id"),
-                             "detail": "threshold delay only — old AADT "
-                                       "epoch-distribution weighting needs "
-                                       "aadtDistributions loaded as a table"})
         else:
             skipped.append(g)
             gaps.append({"kind": "unmapped_graph", "detail": {
