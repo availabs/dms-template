@@ -40,6 +40,9 @@ import {
   AvatarStackView,
 } from './admin.columnTypes';
 
+import editorMockup from './EditorMockup.config';
+import NavLinkWidget from './NavLinkWidget';
+
 import { icons } from './design_system_v6/theme/icons.js';
 import sharedCss from './design_system_v6/_shared.css?raw';
 
@@ -347,8 +350,11 @@ const topnav = {
     layoutContainer1: `sticky top-0 z-40 t6-topnav-joints`,
     layoutContainer2: `w-full bg-[${c.paper}] border-b border-[${c.rule}] t6-topnav-hatch`,
 
-    topnavWrapper: `w-full h-16 flex items-center px-6`,
-    topnavContent: `flex items-center w-full h-full max-w-[1200px] mx-auto justify-between gap-4`,
+    // Container geometry mirrors the marketing bands exactly (mx-auto
+    // max-w-[1200px] px-6 lg:px-8, padding INSIDE the max-width box) so nav
+    // content and page content share the same left/right edges.
+    topnavWrapper: `w-full h-16 flex items-center`,
+    topnavContent: `flex items-center w-full h-full max-w-[1200px] mx-auto px-6 lg:px-8 justify-between gap-4`,
 
     leftMenuContainer: `flex items-center gap-6`,
     centerMenuContainer: `hidden lg:flex items-center flex-1 h-full overflow-visible gap-1`,
@@ -520,23 +526,30 @@ const logo = {
   options: { activeStyle: 0 },
   styles: [
     {
+      // The mark renders as a CSS-masked div (`.t6-logo-mark`, theme-extras
+      // block) so it picks up var(--t-cobalt) in both lamps — an <img> of the
+      // SVG would freeze the light-mode cobalt. The same SVG asset doubles as
+      // the favicon (index.html), where the baked cobalt is what shows.
       name: 'default',
-      logoWrapper: `inline-flex items-center gap-2.5 px-3 py-3`,
+      // No horizontal padding of its own — the surrounding container (TopNav
+      // content px, SideNav header px-5) provides it, so the mark left-aligns
+      // with band content exactly as the mockups do.
+      logoWrapper: `inline-flex items-center gap-2.5 py-3`,
       img: '',
       imgWrapper: ``,
       imgClass: `h-7 w-auto`,
-      logoAltImg: `inline-flex h-7 w-7 rounded-md items-center justify-center bg-[${c.cobalt}] text-[${c.accentInk}] ${FONT_SANS} text-sm font-semibold`,
+      logoAltImg: `inline-flex h-7 w-7 t6-logo-mark`,
       title: 'Tessera',
       titleWrapper: `t-displaySM text-[${c.ink}]`,
       linkPath: '/',
     },
     {
       name: 'compact',
-      logoWrapper: `inline-flex items-center justify-center px-3 py-3`,
+      logoWrapper: `inline-flex items-center justify-center py-3`,
       img: '',
       imgWrapper: ``,
       imgClass: `h-6 w-auto`,
-      logoAltImg: `inline-flex h-6 w-6 rounded-md items-center justify-center bg-[${c.cobalt}] text-[${c.accentInk}] ${FONT_SANS} text-xs font-semibold`,
+      logoAltImg: `inline-flex h-6 w-6 t6-logo-mark`,
       title: '',
       titleWrapper: `sr-only`,
       linkPath: '/',
@@ -987,6 +1000,43 @@ const pagesTheme = {
      "browser window with a live canvas" illustration used for the landing
      hero's mid-drag editor, features' "edit in place", and features' "the
      sheet" mini-diagram. */
+  // UserMenu widget (avatar + identity + auth dropdown + edit toggle) in the
+  // v6 voice: mono identity text, hairline-bordered avatar/login chrome,
+  // cobalt only on hover. Read via getComponentTheme('pages.userMenu').
+  userMenu: {
+    options: { activeStyle: 0 },
+    styles: [{
+      name: 'default',
+
+      // UserMenu (avatar + identity)
+      userMenuContainer: `flex flex-1 w-full items-center gap-2 min-w-0`,
+      avatarWrapper: `flex justify-center items-center p-1`,
+      avatar: `size-7 rounded-full border border-[${c.ruleStrong}] bg-[${c.panel}] flex items-center justify-center`,
+      avatarIcon: `size-4 text-[${c.graphite}]`,
+      infoWrapper: `flex-1 min-w-0 py-1 pr-1 @max-[150px]:hidden text-left`,
+      emailText: `${FONT_MONO} text-[11px] leading-tight text-[${c.ink}] truncate`,
+      groupText: `${FONT_MONO} text-[10px] uppercase tracking-[0.06em] text-[${c.pencil}] truncate`,
+
+      // EditControl (edit/view page toggle)
+      editControlWrapper: `flex justify-center items-center`,
+      iconWrapper: `size-8 flex items-center justify-center rounded-md border border-[${c.rule}] bg-[${c.panel}] text-[${c.graphite}] hover:text-[${c.cobalt}] hover:border-[${c.ruleStrong}] cursor-pointer transition-colors duration-150`,
+      icon: `size-[18px]`,
+      viewIcon: 'ViewPage',
+      editIcon: 'EditPage',
+
+      // Login (unauthenticated)
+      loginWrapper: `flex items-center justify-center`,
+      loginLink: `flex items-center gap-1.5 px-2 py-1.5 rounded-md ${FONT_MONO} text-[13px] font-medium text-[${c.graphite}] hover:text-[${c.ink}] cursor-pointer transition-colors duration-150`,
+      loginIcon: `size-[18px]`,
+      loginText: `hidden`,
+
+      // Auth-ed shell
+      authContainer: `@container w-full`,
+      authWrapper: `flex items-center gap-1`,
+      userMenuWrapper: `flex items-center flex-1 w-full min-w-0 rounded-md cursor-pointer hover:bg-[${c.well}] transition-colors duration-150`,
+    }],
+  },
+
   editorMockup: {
     wrapper: `relative`,
     frame: `bg-[${c.panel}] border border-[${c.rule}] rounded-lg shadow-[${c.shadowLift}] overflow-hidden`,
@@ -1306,7 +1356,44 @@ const columnTypes = {
   avatar_stack:   { ViewComp: AvatarStackView,   EditComp: () => null },
 };
 
-const pageComponents = {};
+// Theme-shipped section components — auto-registered by the page pattern's
+// siteConfig via registerComponents(theme.pageComponents). The component,
+// its config, and its skin all live in this theme folder, not in the library.
+const pageComponents = {
+  EditorMockup: editorMockup,
+};
+
+// Theme-shipped nav-menu widgets — merged over the library's default widgets
+// map (Logo, ThemeToggle, …); referenced from pattern data by key.
+const widgets = {
+  NavLink: {
+    label: 'Nav Link',
+    component: NavLinkWidget,
+  },
+};
+
+/* ---------- Secondary nav (hand-authored main nav) ------------------------ */
+/* The marketing TopNav lists features + docs together, which spans two
+   patterns — a page-derived ('main') nav can't produce that, so the items are
+   authored here. view.jsx/edit index.jsx read theme.navOptions.secondaryNav
+   .navItems through dataItemsNav; a pattern opts in via
+   data.theme.layout.options.topNav.nav: 'secondary'. Item shape matches page
+   dataItems (url_slug drives the path; no `parent`, not 'draft'). */
+const navOptions = {
+  secondaryNav: {
+    navItems: [
+      { id: 'nav_features', name: 'features', url_slug: 'features', index: 0 },
+      { id: 'nav_docs',     name: 'docs',     url_slug: 'docs',     index: 1 },
+    ],
+  },
+};
+
+// Skin for the NavLink widget: the TopNav's mono chrome voice, plus the
+// cobalt CTA treatment for style:'button' instances.
+const navLinkWidget = {
+  plain: `${FONT_MONO} text-[13px] font-medium px-3 py-1.5 text-[${c.graphite}] hover:text-[${c.ink}] transition-colors duration-150`,
+  button: `inline-flex items-center gap-1.5 ${FONT_MONO} text-[13px] font-medium text-[${c.accentInk}] bg-[${c.cobalt}] hover:bg-[${c.cobaltDeep}] rounded-md px-3.5 py-2 transition-colors duration-150`,
+};
 
 /* ---------- Fonts + injected CSS ------------------------------------------ */
 /* loadThemeFonts injects these into <head> once when the theme resolves.
@@ -1500,11 +1587,26 @@ const fonts = [
       .t6-joint-corner-bl { bottom: -4.5px; left: -4.5px; }
       .t6-joint-corner-br { bottom: -4.5px; right: -4.5px; }
 
-      /* Band centering: bands default to mr-auto (hug the SideNav — the
-         product treatment). The 'marketing' layout style marks its content
-         column with .t6-center-bands, flipping every band to the mockups'
-         centred mx-auto. Unlayered rule, so it beats the Tailwind utility. */
+      /* Band centering: bands default to mr-auto + pl-6 lg:pl-12 / pr-6
+         lg:pr-8 (hug the SideNav — the product treatment, per docs.html).
+         The 'marketing' layout style marks its content column with
+         .t6-center-bands, flipping every band to the mockups' marketing
+         geometry: centred mx-auto with symmetric px-6 lg:px-8 — identical to
+         the TopNav content box, so nav and page content edges align exactly.
+         Unlayered rules, so they beat the Tailwind utilities. */
       .t6-center-bands .t6-band-inner { margin-inline: auto; }
+      @media (min-width: 1024px) {
+        .t6-center-bands .t6-band-inner { padding-left: 2rem; padding-right: 2rem; }
+      }
+
+      /* The brand mark, drawn theme-aware: the SVG asset is used as an alpha
+         mask over a cobalt-var background, so the mark follows the light/dark
+         palette (a plain <img> would freeze the baked light-mode cobalt). */
+      .t6-logo-mark {
+        background-color: var(--t-cobalt);
+        -webkit-mask: url('/themes/tessera/tessera-mark-v6.svg') center / contain no-repeat;
+        mask: url('/themes/tessera/tessera-mark-v6.svg') center / contain no-repeat;
+      }
     `,
   },
 ];
@@ -1566,6 +1668,9 @@ const tesseraThemeV6 = {
   // Extension slots
   columnTypes,
   pageComponents,
+  widgets,
+  navLinkWidget,
+  navOptions,
 };
 
 export default tesseraThemeV6;
