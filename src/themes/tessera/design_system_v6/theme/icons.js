@@ -63,6 +63,9 @@ export const icons = {
   /* ── actions ───────────────────────────────────────────────────────── */
   Plus: (p) => svg(p, [P("M12 5v14M5 12h14", { key: "a" })]),
   Minus: (p) => svg(p, [P("M5 12h14", { key: "a" })]),
+  // XMark: required by the DMS TopNav/MultiSelect/NavigableMenu contract
+  // (close/remove affordances) — added for the theme translation.
+  XMark: (p) => svg(p, [P("M6 6l12 12M18 6L6 18", { key: "a" })]),
   X: (p) => svg(p, [P("M6 6l12 12M18 6L6 18", { key: "a" })]),
   Check: (p) => svg(p, [P("M4.5 12.5l5 5L19.5 7", { key: "a" })]),
   Pencil: (p) => svg(p, [P("M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z", { key: "a" }), P("M14.5 6.8l2.7 2.7", { key: "b" })]),
