@@ -25,8 +25,10 @@
 
    Known v0 gaps (see README notes at the bottom of this file's summary):
    - Logo renders the wordmark as text (no SVG asset exported yet).
-   - The t6-joint squares and edge-pattern rails are mockup chrome the theme
-     can't inject via class strings; bands ship without them.
+   - Edge-pattern rails ship via ::before/::after on the band wrappers; the
+     t6-joint squares ship as real elements via the LayoutGroup theme's
+     `decorations` array (plus ::before/::after on the TopNav's sticky
+     wrapper, and `selectedJoints` on the EditorMockup's selected block).
    ============================================================================= */
 
 import {
@@ -232,7 +234,7 @@ const layout = {
   styles: [
     {
       name: 'default',
-      outerWrapper: `bg-[${c.paper}]`,
+      outerWrapper: `bg-[${c.paper}] t6-page-grain`,
       wrapper: `relative isolate flex min-h-svh w-full max-lg:flex-col`,
       wrapper2: `flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen`,
       wrapper3: `flex flex-1 items-start`,
@@ -240,7 +242,7 @@ const layout = {
     },
     {
       name: 'app',
-      outerWrapper: `bg-[${c.paper}]`,
+      outerWrapper: `bg-[${c.paper}] t6-page-grain`,
       wrapper: `relative isolate flex min-h-svh w-full max-lg:flex-col`,
       wrapper2: `flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen`,
       wrapper3: `flex flex-1 items-start`,
@@ -248,11 +250,21 @@ const layout = {
     },
     {
       name: 'bare',
-      outerWrapper: `bg-[${c.paper}]`,
+      outerWrapper: `bg-[${c.paper}] t6-page-grain`,
       wrapper: `relative isolate flex min-h-svh w-full`,
       wrapper2: `flex-1 flex flex-col w-full min-h-screen`,
       wrapper3: `flex flex-1`,
       childWrapper: `flex-1 flex flex-col h-full`,
+    },
+    {
+      // Marketing layout — same chrome as 'default', but bands centre
+      // (mx-auto, the mockups' marketing treatment) instead of hugging the
+      // SideNav. `.t6-center-bands` flips every `.t6-band-inner` inside it
+      // (CSS in the theme-extras block). Patterns opt in via
+      // `data.theme.layout.options.activeStyle: 'marketing'`; unmentioned
+      // keys inherit from styles[0].
+      name: 'marketing',
+      childWrapper: `flex-1 flex flex-col h-full t6-center-bands`,
     },
   ],
 };
@@ -269,31 +281,41 @@ const layoutGroup = {
   styles: [
     {
       // The default content band — flat paper, hairline bottom rule.
+      // t6-band-content: 16px edge-hatch strips (t6-ticks flavor), CSS in
+      // the theme-extras style block below (mirrors the mockups' per-band
+      // edge-pattern strips — every 'content' band shares one flavor here
+      // rather than the mockups' band-by-band variety, a scoped simplification).
       name: 'content',
-      wrapper1: `w-full flex flex-row border-b border-[${c.rule}]`,
-      wrapper2: `flex flex-1 w-full flex-col relative max-w-[1200px] mr-auto pl-6 lg:pl-12 pr-6 lg:pr-8 py-8 ${FONT_SANS} text-base font-normal leading-relaxed text-[${c.ink}] min-h-[100px]`,
+      wrapper1: `w-full flex flex-row border-b border-[${c.rule}] t6-band-content`,
+      wrapper2: `flex flex-1 w-full flex-col relative max-w-[1200px] mr-auto t6-band-inner pl-6 lg:pl-12 pr-6 lg:pr-8 py-8 ${FONT_SANS} text-base font-normal leading-relaxed text-[${c.ink}] min-h-[100px]`,
       wrapper3: '',
+      decorations: ['t6-joint t6-joint-rail-bl', 't6-joint t6-joint-rail-br'],
     },
     {
-      // Page-title band — same surface, more head-room.
+      // Page-title band — same surface, more head-room. t6-band-sheet
+      // dissolves the graph-paper grid into the band (the hero's signature
+      // texture); t6-band-header adds the hatched edge strips.
       name: 'header',
-      wrapper1: `w-full flex flex-row border-b border-[${c.rule}]`,
-      wrapper2: `flex flex-1 w-full flex-col relative max-w-[1200px] mr-auto pl-6 lg:pl-12 pr-6 lg:pr-8 pt-12 pb-8 ${FONT_SANS} text-[${c.ink}]`,
+      wrapper1: `w-full flex flex-row border-b border-[${c.rule}] t6-band-sheet t6-band-header`,
+      wrapper2: `flex flex-1 w-full flex-col relative max-w-[1200px] mr-auto t6-band-inner pl-6 lg:pl-12 pr-6 lg:pr-8 pt-12 pb-8 ${FONT_SANS} text-[${c.ink}]`,
       wrapper3: '',
+      decorations: ['t6-joint t6-joint-rail-bl', 't6-joint t6-joint-rail-br'],
     },
     {
       // Feature band — the sheet grid appears (and dissolves into paper).
       name: 'feature',
-      wrapper1: `w-full flex flex-row border-b border-[${c.rule}] t6-band-sheet`,
-      wrapper2: `flex flex-1 w-full flex-col relative max-w-[1200px] mr-auto pl-6 lg:pl-12 pr-6 lg:pr-8 py-12 ${FONT_SANS} text-[${c.ink}]`,
+      wrapper1: `w-full flex flex-row border-b border-[${c.rule}] t6-band-sheet t6-band-feature`,
+      wrapper2: `flex flex-1 w-full flex-col relative max-w-[1200px] mr-auto t6-band-inner pl-6 lg:pl-12 pr-6 lg:pr-8 py-12 ${FONT_SANS} text-[${c.ink}]`,
       wrapper3: '',
+      decorations: ['t6-joint t6-joint-rail-bl', 't6-joint t6-joint-rail-br'],
     },
     {
       // Board band — the dark drafting board (does not invert in dark mode).
       name: 'board',
-      wrapper1: `w-full flex flex-row t6-board`,
-      wrapper2: `flex flex-1 w-full flex-col relative max-w-[1200px] mr-auto pl-6 lg:pl-12 pr-6 lg:pr-8 py-12 ${FONT_SANS} text-[${c.chalk}]`,
+      wrapper1: `w-full flex flex-row t6-board t6-band-board`,
+      wrapper2: `flex flex-1 w-full flex-col relative max-w-[1200px] mr-auto t6-band-inner pl-6 lg:pl-12 pr-6 lg:pr-8 py-12 ${FONT_SANS} text-[${c.chalk}]`,
       wrapper3: '',
+      decorations: ['t6-joint t6-joint-rail-bl', 't6-joint t6-joint-rail-br'],
     },
     {
       // Centred sign-in / sign-up panel — the one intentionally centred band.
@@ -303,10 +325,11 @@ const layoutGroup = {
       wrapper3: '',
     },
     {
-      // Footer band — hairline top rule, quiet.
+      // Footer band — hairline top rule, quiet. No edge strips (mockup's
+      // plain <footer> carries none either).
       name: 'footer',
       wrapper1: `w-full flex flex-row border-t border-[${c.rule}] mt-12`,
-      wrapper2: `flex flex-1 w-full flex-col max-w-[1200px] mr-auto pl-6 lg:pl-12 pr-6 lg:pr-8 py-10`,
+      wrapper2: `flex flex-1 w-full flex-col max-w-[1200px] mr-auto t6-band-inner pl-6 lg:pl-12 pr-6 lg:pr-8 py-10`,
       wrapper3: '',
     },
   ],
@@ -321,8 +344,8 @@ const topnav = {
   styles: [{
     name: 'default',
 
-    layoutContainer1: `sticky top-0 z-40`,
-    layoutContainer2: `w-full bg-[${c.paper}] border-b border-[${c.rule}]`,
+    layoutContainer1: `sticky top-0 z-40 t6-topnav-joints`,
+    layoutContainer2: `w-full bg-[${c.paper}] border-b border-[${c.rule}] t6-topnav-hatch`,
 
     topnavWrapper: `w-full h-16 flex items-center px-6`,
     topnavContent: `flex items-center w-full h-full max-w-[1200px] mx-auto justify-between gap-4`,
@@ -437,7 +460,7 @@ const sidenav = {
     subMenuParentWrapper: `flex flex-col`,
     subMenuTitle: `hidden`,
 
-    bottomMenuWrapper: `mt-auto border-t border-[${c.rule}] px-5 py-4 bg-[${c.paper}]`,
+    bottomMenuWrapper: `mt-auto border-t border-[${c.rule}] px-5 py-4 bg-[${c.paper}] flex flex-col items-start gap-2.5`,
 
     sectionDivider: `my-3 border-t border-[${c.rule}]`,
     sectionHeading: `px-2 pb-2 pt-4 ${FONT_MONO} text-[10px] font-medium uppercase tracking-[0.08em] text-[${c.pencil}]`,
@@ -651,6 +674,24 @@ const label = {
 const icon = {
   wrapper: `inline-flex items-center justify-center`,
   default: `w-4 h-4 stroke-[${c.ink}]`,
+};
+
+/* ---------- iconStyles — colored-square icon chips ------------------------ */
+/* Resolved by the lexical `icon` node's optional `styleKey`
+   ({type:'icon', iconName:'Pencil', styleKey:'productChip'}). Matches the
+   mockups' capability-tile / concept-card icon treatment: a cobalt-soft
+   rounded square housing the glyph. `docChip` is the same idea at the
+   slightly smaller size the docs concept cards use. */
+
+const iconStyles = {
+  productChip: {
+    box: `inline-flex w-9 h-9 rounded-md bg-[${c.cobaltSoft}] text-[${c.cobalt}] items-center justify-center flex-none`,
+    icon: `w-5 h-5`,
+  },
+  docChip: {
+    box: `inline-flex w-8 h-8 rounded-md bg-[${c.cobaltSoft}] text-[${c.cobalt}] items-center justify-center flex-none`,
+    icon: `w-4 h-4`,
+  },
 };
 
 /* ---------- Dialog (flat theme) ------------------------------------------- */
@@ -940,6 +981,62 @@ const pagesTheme = {
       wrapper: `inline-flex items-center gap-1.5 ${FONT_MONO} text-[10px] uppercase tracking-[0.08em] text-[${c.pencil}]`,
       link: `text-[${c.graphite}] hover:text-[${c.ink}] underline underline-offset-[2px]`,
     }],
+  },
+  /* Brand skin for the generic EditorMockup section component (see
+     patterns/page/.../ComponentRegistry/EditorMockup.{jsx,theme.js}) — the
+     "browser window with a live canvas" illustration used for the landing
+     hero's mid-drag editor, features' "edit in place", and features' "the
+     sheet" mini-diagram. */
+  editorMockup: {
+    wrapper: `relative`,
+    frame: `bg-[${c.panel}] border border-[${c.rule}] rounded-lg shadow-[${c.shadowLift}] overflow-hidden`,
+    titlebar: `h-11 border-b border-[${c.rule}] flex items-center gap-2 px-4`,
+    trafficLights: `flex gap-1.5`,
+    trafficDot: `w-2.5 h-2.5 rounded-full border border-[${c.ruleStrong}]`,
+    path: `${FONT_MONO} text-[13px] text-[${c.graphite}] ml-3 truncate`,
+    badge: `inline-flex items-center gap-1.5 ${FONT_MONO} text-[11px] text-[${c.amber}] bg-[${c.amberSoft}] rounded-full px-2 py-0.5`,
+    cta: `inline-flex items-center gap-1.5 ${FONT_MONO} text-[12px] text-[${c.accentInk}] bg-[${c.cobalt}] rounded-md px-2.5 py-1`,
+    ctaIcon: `w-3.5 h-3.5`,
+    body: `flex`,
+    sidebar: `hidden md:flex flex-col w-48 flex-none border-r border-[${c.rule}] py-3 px-2.5 gap-0.5`,
+    sidebarItem: `flex items-center gap-2 px-2 py-1.5 rounded-md ${FONT_SANS} text-sm text-[${c.graphite}]`,
+    sidebarItemActive: `flex items-center gap-2 px-2 py-1.5 rounded-md bg-[${c.cobaltSoft}] text-[${c.cobalt}] ${FONT_SANS} text-sm font-medium`,
+    sidebarIcon: `w-3.5 h-3.5`,
+    canvas: `flex-1 min-w-0 relative t6-sheet p-4 sm:p-6`,
+    canvasGrid: `relative grid grid-cols-12 gap-1.5`,
+    blockPanel: `bg-[${c.panel}] border border-[${c.rule}] rounded-md px-4 py-3`,
+    blockTitle: `t-displayMD`,
+    blockSubtitle: `t-proseXS text-[${c.graphite}] mt-0.5`,
+    statLabel: `t-metaXS text-[${c.pencil}]`,
+    statValue: `t-displayLG tabular-nums`,
+    tablePanel: `bg-[${c.panel}] border border-[${c.rule}] rounded-md overflow-hidden`,
+    tableHeader: `px-3 py-2 border-b border-[${c.rule}]`,
+    tableHeaderLabel: `t-metaSM text-[${c.graphite}]`,
+    tableRow: `px-3 py-1.5 flex justify-between t-proseXS`,
+    tableRowMeta: `text-[${c.pencil}] tabular-nums`,
+    dropzone: `h-full min-h-[104px] border-2 border-dashed rounded-md flex items-center justify-center`,
+    dropzoneLabel: `t-metaSM text-[${c.cobalt}]`,
+    selectedPanel: `relative border-2 border-[${c.cobalt}] rounded-md bg-[${c.panel}] px-4 py-4`,
+    selectedJoints: [
+      't6-joint t6-joint-corner-tl',
+      't6-joint t6-joint-corner-tr',
+      't6-joint t6-joint-corner-bl',
+      't6-joint t6-joint-corner-br',
+    ],
+    selectedToolbar: `absolute -top-4 right-2 flex items-center gap-2 bg-[${c.panel}] border border-[${c.rule}] rounded-md px-2 py-1 shadow-[${c.shadowLift}]`,
+    selectedToolbarIcon: `w-3.5 h-3.5 text-[${c.graphite}]`,
+    selectedText: `t-proseSM`,
+    labeledPanel: `bg-[${c.panel}] border border-[${c.rule}] rounded-md px-3 py-6 flex items-center justify-between`,
+    labeledText: `t-metaSM text-[${c.graphite}]`,
+    labeledMeta: `t-metaXS text-[${c.cobalt}]`,
+    dragCard: `absolute bottom-6 right-4 sm:right-10 w-48 sm:w-56 bg-[${c.panel}] border border-[${c.cobalt}] rounded-lg p-3 z-10`,
+    dragCardHeader: `flex items-center gap-1.5 pb-2`,
+    dragCardGrip: `w-3.5 h-3.5 text-[${c.pencil}]`,
+    dragCardLabel: `t-metaXS text-[${c.graphite}]`,
+    dragCardBars: `flex items-end gap-1 h-14`,
+    dragCardBar: `flex-1 rounded-t-sm bg-[${c.cobalt}]`,
+    annotationTopRight: `hidden lg:block absolute -top-4 right-10 rotate-2 t-noteLG text-[${c.cobalt}]`,
+    annotationBottomLeft: `hidden lg:block absolute -bottom-7 left-10 -rotate-2 t-noteMD text-[${c.graphite}]`,
   },
   complexFilters: {
     groupWrapper: `border border-[${c.rule}] bg-[${c.well}] rounded-lg p-3 mb-2`,
@@ -1286,6 +1383,128 @@ const fonts = [
         background-size: 100% 100%, 24px 24px, 24px 24px;
         background-color: var(--t-paper);
       }
+
+      /* Page-level grain (the "paper" surface texture from _shared.css'
+         body rule) — reapplied on the Layout outerWrapper because that
+         wrapper's own opaque bg-paper otherwise sits in front of <body>
+         and hides its background-image entirely. */
+      .t6-page-grain {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.35 0 0 0 0 0.33 0.05 0 0 0 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+        background-size: 120px 120px;
+      }
+
+      /* Per-band 16px edge-hatch strips at the viewport edges (zed-style
+         "drafting frame") — the mockups use two absolutely-positioned
+         divs per band; a class-string LayoutGroup theme can't add extra
+         DOM nodes, so this reproduces the same effect with ::before/::after
+         on the band wrapper itself. Each named band style picks ONE
+         pattern flavor (the mockups vary per individual band instance —
+         hatch/backhatch/dashes/ticks/rungs — a finer variety this pass
+         doesn't reproduce; see the task doc). Joint squares (the little
+         7px tiles where dividers meet the strips) are real elements from
+         the layoutGroup styles' \`decorations\` arrays — see the joint
+         rules further down.
+         Hidden below xl (1280px), matching the mockups' hidden xl:block. */
+      .t6-band-header, .t6-band-content, .t6-band-feature, .t6-band-board {
+        position: relative;
+      }
+      @media (min-width: 1280px) {
+        .t6-band-header::before, .t6-band-header::after,
+        .t6-band-content::before, .t6-band-content::after,
+        .t6-band-feature::before, .t6-band-feature::after,
+        .t6-band-board::before, .t6-band-board::after {
+          content: '';
+          position: absolute;
+          top: 0; bottom: 0;
+          width: 16px;
+        }
+        .t6-band-header::before, .t6-band-feature::before { left: 0; border-right: 1px solid var(--t-rule); }
+        .t6-band-header::after,  .t6-band-feature::after  { right: 0; border-left: 1px solid var(--t-rule); }
+        .t6-band-header::before, .t6-band-header::after,
+        .t6-band-feature::before, .t6-band-feature::after {
+          background-image: repeating-linear-gradient(
+            45deg, var(--t-grid) 0, var(--t-grid) 1px, transparent 1px, transparent 6px);
+        }
+        .t6-band-content::before { left: 0; border-right: 1px solid var(--t-rule); }
+        .t6-band-content::after  { right: 0; border-left: 1px solid var(--t-rule); }
+        .t6-band-content::before, .t6-band-content::after {
+          background-image: repeating-linear-gradient(to bottom, var(--t-pattern) 0 1px, transparent 1px 8px);
+          background-size: 6px 100%;
+          background-position: center top;
+          background-repeat: no-repeat;
+        }
+        .t6-band-board::before { left: 0; border-right: 1px solid var(--t-board-2); }
+        .t6-band-board::after  { right: 0; border-left: 1px solid var(--t-board-2); }
+        .t6-band-board::before, .t6-band-board::after {
+          background-image: repeating-linear-gradient(to bottom, rgba(233, 234, 238, 0.16) 0 1px, transparent 1px 8px);
+          background-size: 6px 100%;
+          background-position: center top;
+          background-repeat: no-repeat;
+        }
+      }
+
+      /* TopNav gets the same hatch treatment as the mockups' sticky header. */
+      .t6-topnav-hatch {
+        position: relative;
+      }
+      @media (min-width: 1280px) {
+        .t6-topnav-hatch::before, .t6-topnav-hatch::after {
+          content: '';
+          position: absolute;
+          top: 0; bottom: 0;
+          width: 16px;
+          background-image: repeating-linear-gradient(
+            45deg, var(--t-grid) 0, var(--t-grid) 1px, transparent 1px, transparent 6px);
+        }
+        .t6-topnav-hatch::before { left: 0; border-right: 1px solid var(--t-rule); }
+        .t6-topnav-hatch::after  { right: 0; border-left: 1px solid var(--t-rule); }
+      }
+
+      /* ── Joint squares (the little 7px tessera tiles) ──────────────────
+         .t6-joint itself comes from the injected _shared.css; these are the
+         positioning flavors. Rail joints pin where a band's bottom rule
+         crosses the 16px edge strips (the mockups' .t6-divider joints) —
+         rendered as real elements via the LayoutGroup theme's decorations
+         array, since the band wrapper's ::before/::after are spent on the
+         strips. Hidden below xl with the strips. z-10 lifts the tile's
+         lower half above the next band's opaque background. */
+      .t6-joint-rail-bl, .t6-joint-rail-br { display: none; }
+      @media (min-width: 1280px) {
+        .t6-joint-rail-bl, .t6-joint-rail-br { display: block; z-index: 10; }
+        .t6-joint-rail-bl { bottom: -3.5px; left: 12.5px; }
+        .t6-joint-rail-br { bottom: -3.5px; right: 12.5px; }
+      }
+
+      /* TopNav's pair, straddling its bottom rule — the nav's own
+         ::before/::after are free (the hatch strips live on the inner
+         container), so no extra DOM is needed here. */
+      @media (min-width: 1280px) {
+        .t6-topnav-joints::before, .t6-topnav-joints::after {
+          content: '';
+          position: absolute;
+          bottom: -3.5px;
+          width: 7px; height: 7px;
+          z-index: 10;
+          pointer-events: none;
+          background: var(--t-panel);
+          border: 1px solid var(--t-rule-strong);
+        }
+        .t6-topnav-joints::before { left: 12.5px; }
+        .t6-topnav-joints::after  { right: 12.5px; }
+      }
+
+      /* Corner handles on the EditorMockup's selected section (the mockup's
+         four .t6-joint spans on the cobalt selection border). */
+      .t6-joint-corner-tl { top: -4.5px;    left: -4.5px; }
+      .t6-joint-corner-tr { top: -4.5px;    right: -4.5px; }
+      .t6-joint-corner-bl { bottom: -4.5px; left: -4.5px; }
+      .t6-joint-corner-br { bottom: -4.5px; right: -4.5px; }
+
+      /* Band centering: bands default to mr-auto (hug the SideNav — the
+         product treatment). The 'marketing' layout style marks its content
+         column with .t6-center-bands, flipping every band to the mockups'
+         centred mx-auto. Unlayered rule, so it beats the Tailwind utility. */
+      .t6-center-bands .t6-band-inner { margin-inline: auto; }
     `,
   },
 ];
@@ -1329,6 +1548,7 @@ const tesseraThemeV6 = {
   card,
   pill,
   icon,
+  iconStyles,
 
   // Rich content / data
   lexical,
