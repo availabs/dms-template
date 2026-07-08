@@ -105,6 +105,17 @@ MEASURE_NAMES = {
     "avg_speedlimit": "Average Speed Limit", "aadt": "AADT", "vmt": "VMT",
 }
 
+# Old graph types whose renderer actually reads `report.colorRange` (the
+# `isColorfull: true` flag in transportNY's tmc_graphs/index.jsx GRAPH_TYPES
+# registry — confirmed against each component's own source, not just the
+# flag: RouteBarGraph.jsx/RouteMap.jsx/TmcGridGraph.jsx/RouteDifferenceGraph.jsx/
+# TmcDifferenceGrid.jsx all build a d3 color scale from it). A report can carry
+# a non-empty `color_range` while having zero graphs of these types (e.g.
+# report 1070's lone "Route Line Graph", which never reads colorRange at all)
+# — same false-positive-gap class as round 3's peak_flags/month_setting fix.
+COLOR_RANGE_GRAPH_TYPES = {"Route Bar Graph", "Route Map", "TMC Grid Graph",
+                           "Route Difference Graph", "TMC Difference Grid"}
+
 ALL_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday",
                 "saturday", "sunday"}
 
@@ -655,10 +666,24 @@ def analyze_graph(g, comps_by_id, gaps):
             "title": title.strip(), "description": description}
 
 
-def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph):
-    if old_graph.get("layout"):
+def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
+                             color_range=None):
+    # Old `layout.w` (react-grid-layout, 12-col) maps directly onto the
+    # section's own `size` field (colspan) — confirmed the npmrds_sub pattern
+    # (row 2100394) has `theme.selectedTheme: "transportnyv2"`, whose
+    # `sectionArray` theme (transportNY's `dms_themes/transportny/themev2.js`)
+    # ships the SAME 12-col numeric `sizes` scale ("1".."12", defaultSize
+    # "12") — a 1:1 copy, no bucketing needed. `h`/`x`/`y` have no equivalent
+    # (sections stack linearly; the theme's `rowspan` is a compound-card
+    # span-behind-a-sibling concept, not a pixel/row height, so it's not a
+    # faithful target for old `h`) and remain gap-logged.
+    layout = old_graph.get("layout") or {}
+    w = layout.get("w")
+    size = str(w) if isinstance(w, int) and 1 <= w <= 12 else None
+    remaining_layout = {k: v for k, v in layout.items() if k != "w"}
+    if remaining_layout:
         gaps.append({"kind": "graph_layout", "graph": old_graph.get("id"),
-                     "detail": old_graph["layout"]})
+                     "detail": remaining_layout})
     state = json.loads(tmpl["data"]["stateJson"])
     # UI-created sections always carry state.data (see page_10's sections);
     # template stateJson doesn't. BarGraph crashes on undefined viewData
@@ -666,12 +691,22 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph):
     state.setdefault("data", [])
     if info["description"]:
         state.setdefault("display", {})["description"] = info["description"]
+    # Old report.color_range → this graph's own color scale, for the graph
+    # types that actually render one (see COLOR_RANGE_GRAPH_TYPES). Matches
+    # the existing display.colors shape ({type: "palette", value: [...]}) —
+    # useGenericPlotOptions (ui/components/graph/utils.js) consumes
+    # colors.value directly as the D3 color-scale range, so this is a real,
+    # already-wired primitive, not new capability.
+    if color_range and old_graph.get("type") in COLOR_RANGE_GRAPH_TYPES:
+        state.setdefault("display", {})["colors"] = {
+            "type": "palette", "value": color_range}
     state_json = json.dumps(state)
     return {
         "type": COMPONENT_TYPE,
         "group": "default",
         "level": "0",
         "title": info["title"],
+        **({"size": size} if size else {}),
         "parent": json.dumps({"id": str(page_id), "ref": f"npmrdsv5+{PAGE_TYPE}"}),
         "trackingId": tracking_id,
         "element": {
@@ -800,9 +835,6 @@ def convert_report(old_id, dry_run=False, replace=False):
     if old.get("station_comps"):
         gaps.append({"kind": "station_comps",
                      "detail": f"{len(old['station_comps'])} station comps not converted"})
-    if old.get("color_range"):
-        gaps.append({"kind": "color_range", "detail": old["color_range"]})
-
     # -- per-graph analysis + template mapping
     comps_by_id = {rc.get("compId"): rc for rc in route_comps if rc.get("compId")}
     graph_templates = load_graph_templates()
@@ -829,6 +861,14 @@ def convert_report(old_id, dry_run=False, replace=False):
                 "dataColumn": info["data_column"],
                 "reason": ("no template mapping" if not tmpl_name
                            else f"template '{tmpl_name}' not found in DB")}})
+
+    # `color_range` is only a real gap if a colorful-type graph (see
+    # COLOR_RANGE_GRAPH_TYPES) actually failed to convert — for one that DID
+    # convert, build_graph_section_data below wires the real color_range into
+    # the new template's display.colors.value, so there's nothing lost.
+    if old.get("color_range") and any(
+            g.get("type") in COLOR_RANGE_GRAPH_TYPES for g in skipped):
+        gaps.append({"kind": "color_range", "detail": old["color_range"]})
 
     graph_tracking_ids = [str(uuid.uuid4()) for _ in convertible]
     # invert per-graph comp assignment → per-comp graph tracking-id list
@@ -891,7 +931,8 @@ def convert_report(old_id, dry_run=False, replace=False):
     section_datas = [build_cloned_section_data(page_id, rrl_tmpl, str(uuid.uuid4()))]
     for (g, info, tmpl), tid in zip(convertible, graph_tracking_ids):
         section_datas.append(
-            build_graph_section_data(page_id, tmpl, tid, info, gaps, g))
+            build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
+                                     color_range=old.get("color_range")))
     section_datas.append(build_cloned_section_data(page_id, sheet_tmpl, str(uuid.uuid4())))
 
     draft_ids = []
