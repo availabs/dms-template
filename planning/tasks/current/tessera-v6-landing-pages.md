@@ -196,6 +196,15 @@ User feedback: the main (marketing) pattern's bands should be centered (they wer
 
 **Not done / accepted:** the full `.t6-divider` hatched strip between bands (joints-only approximation); the mockups' per-band-instance edge-pattern variety (unchanged from Pass 3). New screenshots: `scratchpad/tessera/shots/{landing-centered-joints,docs-hug-check,features-joints-check,selected-handles,landing-dark-joints-full,joint-*}.png`.
 
+### Cleanup pass — move EditorMockup + NavLink widget out of the library into the theme (2026-07-08)
+
+Per user direction, the two tessera-specific pieces Fidelity Pass 2 had added to the `src/dms` submodule now live in the theme folder instead, using the theme's own extension slots:
+
+- **`EditorMockup`** → `src/themes/tessera/EditorMockup.{jsx,theme.js,config.jsx}`, registered via `theme.pageComponents` (auto-registered by the page pattern's siteConfig through `registerComponents` — the slot already existed, previously empty). Removed from `ComponentRegistry/index.jsx` and `patterns/page/defaultTheme.js`; the 3 library files deleted. Live sections (`element-type: "EditorMockup"`) resolve identically since `registerComponents` feeds the same registry the section renderer reads.
+- **`NavLink` widget** → `src/themes/tessera/NavLinkWidget.{jsx,theme.js}`, registered via a new `widgets` key on the theme (Layout reads `theme.widgets` from the *merged* theme, so theme-level widgets merge over the library's defaults — no library change needed). Removed from `ui/widgets/index.jsx` + `ui/defaultTheme.js`; the 2 library files deleted. Bonus: the theme now defines a branded `navLinkWidget` skin (mono chrome voice, cobalt button via `c.*` tokens) — previously it rendered with the library's generic gray/blue defaults.
+- **Stays in the library:** `ThemeToggle` (brand-neutral, reusable by any theme) and the `LayoutGroup` `decorations` enrichment (generic mechanism, not tessera-specific).
+- Verified: all 3 pages render with 0 console errors; EditorMockup illustrations + corner handles intact; NavLinks render in topnav (Pages pattern) and sidenav bottomMenu (Docs pattern). Screenshots: `shots/{landing,features,docs}-theme-move.png`, `shots/docs-sidenav-bottom.png`.
+
 ## Testing Checklist
 
 - [x] `dms site tree` confirms target pattern before any writes

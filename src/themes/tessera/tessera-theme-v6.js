@@ -40,6 +40,9 @@ import {
   AvatarStackView,
 } from './admin.columnTypes';
 
+import editorMockup from './EditorMockup.config';
+import NavLinkWidget from './NavLinkWidget';
+
 import { icons } from './design_system_v6/theme/icons.js';
 import sharedCss from './design_system_v6/_shared.css?raw';
 
@@ -1306,7 +1309,28 @@ const columnTypes = {
   avatar_stack:   { ViewComp: AvatarStackView,   EditComp: () => null },
 };
 
-const pageComponents = {};
+// Theme-shipped section components — auto-registered by the page pattern's
+// siteConfig via registerComponents(theme.pageComponents). The component,
+// its config, and its skin all live in this theme folder, not in the library.
+const pageComponents = {
+  EditorMockup: editorMockup,
+};
+
+// Theme-shipped nav-menu widgets — merged over the library's default widgets
+// map (Logo, ThemeToggle, …); referenced from pattern data by key.
+const widgets = {
+  NavLink: {
+    label: 'Nav Link',
+    component: NavLinkWidget,
+  },
+};
+
+// Skin for the NavLink widget: the TopNav's mono chrome voice, plus the
+// cobalt CTA treatment for style:'button' instances.
+const navLinkWidget = {
+  plain: `${FONT_MONO} text-[13px] font-medium px-3 py-1.5 text-[${c.graphite}] hover:text-[${c.ink}] transition-colors duration-150`,
+  button: `inline-flex items-center gap-1.5 ${FONT_MONO} text-[13px] font-medium text-[${c.accentInk}] bg-[${c.cobalt}] hover:bg-[${c.cobaltDeep}] rounded-md px-3.5 py-2 transition-colors duration-150`,
+};
 
 /* ---------- Fonts + injected CSS ------------------------------------------ */
 /* loadThemeFonts injects these into <head> once when the theme resolves.
@@ -1566,6 +1590,8 @@ const tesseraThemeV6 = {
   // Extension slots
   columnTypes,
   pageComponents,
+  widgets,
+  navLinkWidget,
 };
 
 export default tesseraThemeV6;
