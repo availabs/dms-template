@@ -698,8 +698,14 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
     # colors.value directly as the D3 color-scale range, so this is a real,
     # already-wired primitive, not new capability.
     if color_range and old_graph.get("type") in COLOR_RANGE_GRAPH_TYPES:
-        state.setdefault("display", {})["colors"] = {
-            "type": "palette", "value": color_range}
+        colors_cfg = {"type": "palette", "value": color_range}
+        # BarGraph colors by series by default (one color per route) — these
+        # converted reports are single-series magnitude charts (the old
+        # client colored each bar by its own value: "more delay = darker"),
+        # so opt into BarGraph's byValue coloring mode to match.
+        if state.get("display", {}).get("graphType") == "BarGraph":
+            colors_cfg["byValue"] = True
+        state.setdefault("display", {})["colors"] = colors_cfg
     state_json = json.dumps(state)
     return {
         "type": COMPONENT_TYPE,
