@@ -226,10 +226,20 @@ _CO2_TRUCK_FACTOR = ("multiIf("
     "{s} < 65, ({s} * 11.17) + 337.87, "
     "{s} < 70, ({s} * 10.35) + 391.40, "
     "({s} * 15.37) + 40.07)")
+# The CH fact table's travel-time columns are plain Float64 (NOT Nullable) —
+# missing readings are stored as 0, not NULL (confirmed on TMC 120P05153/2019:
+# 71,009 of 103,856 rows have travel_time_freight_trucks = 0, touching all 288
+# epochs). A bare coalesce() therefore never fires, and 3600/0 = inf poisons
+# every epoch's avg (ClickHouse serializes inf as JSON null → blank graphs).
+# nullIf(col, 0) restores the old Postgres semantic, where missing values were
+# real NULLs and COALESCE(truck, all_vehicles) fell back per-row (old
+# getCo2Emissions.js makeQuery). Both 0 → NULL result → avg skips the row.
 _SPEED_CAR_EXPR = ("(table1.miles * (3600.0 / "
-                    "coalesce(ds.travel_time_passenger_vehicles, ds.travel_time_all_vehicles)))")
+                    "coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), "
+                    "nullIf(ds.travel_time_all_vehicles, 0))))")
 _SPEED_TRUCK_EXPR = ("(table1.miles * (3600.0 / "
-                      "coalesce(ds.travel_time_freight_trucks, ds.travel_time_all_vehicles)))")
+                      "coalesce(nullIf(ds.travel_time_freight_trucks, 0), "
+                      "nullIf(ds.travel_time_all_vehicles, 0))))")
 _AADT_CAR_EXPR = ("((table1.aadt - (table1.aadt_singl + table1.aadt_combi)) "
                    "/ if(table1.faciltype > 1, 2, 1) "
                    "* arrayElement(table2.distributions, ds.epoch + 1))")
@@ -242,6 +252,65 @@ CO2_EXPR_PASSENGER = (
 CO2_EXPR_TRUCK = (
     f"(({_CO2_TRUCK_FACTOR.format(s=_SPEED_TRUCK_EXPR)}) "
     f"* ({_AADT_TRUCK_EXPR} * table1.miles) / 1000000) as avg_co2_emissions")
+
+# ── overrides.aadt (old getHoursOfDelay.js getAADT / getCo2Emissions.js
+# calcEmissions) ─────────────────────────────────────────────────────────────
+# Old semantics, confirmed against the source:
+#   - delay (getAADT): a TRUTHY override replaces the AADT wholesale
+#     (`if (aadtOverride) return aadtOverride;` — before the facil /
+#     distribution weighting); falsy ('0', '', null) falls through to the real
+#     column, i.e. a '0' override is query-inert (same class as the peak
+#     flags — see report 1061 comp-7).
+#   - CO₂ (calcEmissions): the override is a TOTAL AADT redistributed by the
+#     real car/truck proportions: `(aadt_override * (aadt_car / aadt_total))
+#     || aadt_car` — the JS `||` falls back to the real value when the product
+#     is 0 or NaN (aadt_total = aadt_car + aadt_truck = table1.aadt, so
+#     NaN ⇔ table1.aadt = 0; we only substitute overrides > 0, so the SQL
+#     `if(table1.aadt > 0, ...)` guard reproduces every reachable branch).
+# The override lives per route comp, but the calculated column is shared by
+# every comparison-series arm of a graph — so it's applied per GRAPH, and only
+# when every assigned comp agrees on one truthy value (disagreement →
+# `aadt_override_mixed` gap, same treatment as mixed resolution/dataColumn).
+# Substitution happens on the section's CLONED template stateJson (the same
+# place color_range is wired), so the template rows themselves stay
+# override-free.
+_AADT_DELAY_FRAGMENT = "(table1.aadt / (if(table1.faciltype > 1, 2, 1)))"
+_AADT_DELAY_OVERRIDE = "({ov} / (if(table1.faciltype > 1, 2, 1)))"
+_AADT_CAR_OVERRIDE = (
+    "(if(table1.aadt > 0, "
+    "{ov} * ((table1.aadt - (table1.aadt_singl + table1.aadt_combi)) / table1.aadt), "
+    "(table1.aadt - (table1.aadt_singl + table1.aadt_combi))) "
+    "/ if(table1.faciltype > 1, 2, 1) "
+    "* arrayElement(table2.distributions, ds.epoch + 1))")
+_AADT_TRUCK_OVERRIDE = (
+    "(if(table1.aadt > 0, "
+    "{ov} * ((table1.aadt_singl + table1.aadt_combi) / table1.aadt), "
+    "(table1.aadt_singl + table1.aadt_combi)) "
+    "/ if(table1.faciltype > 1, 2, 1) "
+    "* arrayElement(table2.distributions, ds.epoch + 1))")
+AADT_OVERRIDE_SUBS = [
+    (_AADT_DELAY_FRAGMENT, _AADT_DELAY_OVERRIDE),
+    (_AADT_CAR_EXPR, _AADT_CAR_OVERRIDE),
+    (_AADT_TRUCK_EXPR, _AADT_TRUCK_OVERRIDE),
+]
+# Guard against the fragments drifting out of sync with the expressions they
+# must match inside live template rows (which were written from these same
+# constants) — a silent mismatch would convert the graph WITHOUT the override.
+assert _AADT_DELAY_FRAGMENT in DELAY_EXPR
+
+
+def aadt_override_of(rc):
+    """A comp's effective overrides.aadt: a positive number, or None.
+    Falsy values ('0', '', null) are query-inert in the old tool (getAADT's
+    `if (aadtOverride)`), so they are treated as no-override, not a gap."""
+    v = ((rc.get("settings") or {}).get("overrides") or {}).get("aadt")
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    if not (f > 0):
+        return None
+    return int(f) if f == int(f) else f
 
 # "weekday" resolution (old getResolution(): `trim(to_char(date, 'day'))`) groups
 # rows by day-of-week name instead of calendar date — e.g. "Hours of Delay by
@@ -435,9 +504,17 @@ def route_settings_gaps(settings, comp_name, gaps):
     # by title-label helpers (store/index.js ~2719-2746), never by
     # shouldReloadData. Since startTime/endTime/startDate/endDate are already
     # converted into the route entry, no separate handling is needed.
-    if settings.get("overrides"):
+    # `aadt` is handled per-graph now (baked into the cloned calculated column
+    # when every assigned comp agrees — see graph_aadt_overrides in
+    # convert_report; disagreement gets its own aadt_override_mixed gap, and a
+    # falsy '0' override is query-inert in the old tool, getAADT's
+    # `if (aadtOverride)`). Other override keys (baseSpeed, thresholdSpeed, …)
+    # remain unimplemented and still gap-log here.
+    other_overrides = {k: v for k, v in (settings.get("overrides") or {}).items()
+                       if k != "aadt"}
+    if other_overrides:
         gaps.append({"kind": "overrides", "route": comp_name,
-                     "detail": settings["overrides"]})
+                     "detail": other_overrides})
     if settings.get("relativeDate"):
         gaps.append({"kind": "relative_date", "route": comp_name,
                      "detail": settings["relativeDate"]})
@@ -667,7 +744,7 @@ def analyze_graph(g, comps_by_id, gaps):
 
 
 def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
-                             color_range=None):
+                             color_range=None, aadt_override=None):
     # Old `layout.w` (react-grid-layout, 12-col) maps directly onto the
     # section's own `size` field (colspan) — confirmed the npmrds_sub pattern
     # (row 2100394) has `theme.selectedTheme: "transportnyv2"`, whose
@@ -706,6 +783,29 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         if state.get("display", {}).get("graphType") == "BarGraph":
             colors_cfg["byValue"] = True
         state.setdefault("display", {})["colors"] = colors_cfg
+    # overrides.aadt → substitute the AADT term(s) inside the cloned calculated
+    # column expression(s) (see AADT_OVERRIDE_SUBS above for the old-tool
+    # semantics each replacement reproduces). Zero matches on a template that
+    # was expected to consume AADT means the template row drifted from this
+    # script's expression constants — gap-log loudly rather than silently
+    # converting without the override.
+    if aadt_override is not None:
+        hits = 0
+        for col in state.get("columns", []):
+            name = col.get("name")
+            if col.get("type") != "calculated" or not isinstance(name, str):
+                continue
+            for frag, repl in AADT_OVERRIDE_SUBS:
+                if frag in name:
+                    name = name.replace(frag, repl.format(ov=aadt_override))
+                    hits += 1
+            col["name"] = name
+        if hits == 0:
+            gaps.append({"kind": "aadt_override_not_applied",
+                         "graph": old_graph.get("id"),
+                         "detail": f"override {aadt_override}: no known AADT "
+                                   f"fragment in template "
+                                   f"'{tmpl['data'].get('name')}'"})
     state_json = json.dumps(state)
     return {
         "type": COMPONENT_TYPE,
@@ -868,6 +968,30 @@ def convert_report(old_id, dry_run=False, replace=False):
                 "reason": ("no template mapping" if not tmpl_name
                            else f"template '{tmpl_name}' not found in DB")}})
 
+    # overrides.aadt — decide per convertible graph whether the override can
+    # be baked into its cloned calculated column. Only templates whose
+    # expressions read table1.aadt consume it (delay/CO₂) — on anything else
+    # the override was query-inert in the old tool too (getAADT is only called
+    # from the delay/CO₂ calcs), so nothing is lost or logged. Overrides on
+    # comps feeding SKIPPED graphs are subsumed by those graphs' own
+    # unmapped_graph gaps (the whole graph is lost, not just its override).
+    graph_aadt_overrides = []
+    for g, info, tmpl in convertible:
+        per_comp = [aadt_override_of(comps_by_id[c]) for c in info["assigned"]]
+        distinct = set(per_comp)
+        consuming = "table1.aadt" in (tmpl["data"].get("stateJson") or "")
+        value = None
+        if consuming and distinct != {None}:
+            if len(distinct) == 1:
+                value = per_comp[0]
+            else:
+                # per-comp overrides diverge but the calculated column is
+                # shared across every comparison-series arm — can't express
+                gaps.append({"kind": "aadt_override_mixed",
+                             "graph": g.get("id"),
+                             "detail": sorted(str(x) for x in distinct)})
+        graph_aadt_overrides.append(value)
+
     # `color_range` is only a real gap if a colorful-type graph (see
     # COLOR_RANGE_GRAPH_TYPES) actually failed to convert — for one that DID
     # convert, build_graph_section_data below wires the real color_range into
@@ -935,10 +1059,12 @@ def convert_report(old_id, dry_run=False, replace=False):
     rrl_tmpl = template_section_by_type(page_template, "ReportRouteList")
     sheet_tmpl = template_section_by_type(page_template, "Spreadsheet")
     section_datas = [build_cloned_section_data(page_id, rrl_tmpl, str(uuid.uuid4()))]
-    for (g, info, tmpl), tid in zip(convertible, graph_tracking_ids):
+    for (g, info, tmpl), tid, aadt_ov in zip(convertible, graph_tracking_ids,
+                                             graph_aadt_overrides):
         section_datas.append(
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
-                                     color_range=old.get("color_range")))
+                                     color_range=old.get("color_range"),
+                                     aadt_override=aadt_ov))
     section_datas.append(build_cloned_section_data(page_id, sheet_tmpl, str(uuid.uuid4())))
 
     draft_ids = []
