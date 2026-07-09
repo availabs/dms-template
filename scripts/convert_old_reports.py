@@ -86,6 +86,29 @@ GRAPH_TEMPLATE_MAP = {
     ("Hours of Delay Graph", "hoursOfDelay", "hour", "travel_time_all"): "tmc_delay_bar_graph_hour_tmc",
     ("Hours of Delay Graph", "hoursOfDelay", "15-minutes", "travel_time_all"): "tmc_delay_bar_graph_15min_tmc",
     ("Hours of Delay Graph", "hoursOfDelay", "month", "travel_time_all"): "tmc_delay_bar_graph_month_tmc",
+    # First use of the pgFederated cross-engine join (round 16): LOTTR/TTTR read
+    # live from 1410's Postgres table via ClickHouse's postgresql() table
+    # function. Grouped by the comparison-series discriminator only (__series,
+    # not tmc) — the dynamic per-route fan-out bundles each assigned route
+    # comp's whole TMC list into ONE arm, so this produces one row per ROUTE
+    # (Route Info Box's real grain). The joined table is a specific year
+    # (s1410_v2587_pm_3 = 2021) — period-matched to report 796's own date
+    # range, not "current" — so this template only produces real (non-blank)
+    # values for reports whose max year falls in 1410's real coverage
+    # (2021-2025); a different report year needs its own template pointed at
+    # the matching s1410_v{view_id}_pm_3 table.
+    ("Route Info Box", "speed", "5-minutes", "travel_time_all"): "route_info_box_reliability_2021",
+    # TMC Info Box only ever renders one route at a time (analyze_graph's
+    # single-comp default above, matching Hours of Delay Graph's real old
+    # semantics) — so this groups by a plain, real `tmc` column directly (no
+    # __series categorize column needed), same shape as
+    # tmc_delay_bar_graph_5min. comparisonSeries stays enabled purely for its
+    # dynamic per-route filter scoping (real tmc+date WHERE clause), not to
+    # produce multiple series/rows. Joined against s1410_v2567_pm_3 = 2023,
+    # matching report 1045's comp-28/comp-6/comp-5 (2023) — comp-8's
+    # "All-time Average" label is a known minor year mismatch (its own range
+    # is 2017-2024), same class of tradeoff as Route Info Box's period-match.
+    ("TMC Info Box", "speed", "5-minutes", "travel_time_all"): "tmc_info_box_reliability_2023",
 }
 
 # Old per-graph-type displayData defaults (old graph components fall back to
@@ -785,30 +808,34 @@ def analyze_graph(g, comps_by_id, gaps):
     measure (displayData), resolution, dataColumn, assigned comps, title,
     description. Old semantics: a graph shows state.activeRouteComponents
     (default: every comp); state.resolution overrides the comps' own.
-    "Hours of Delay Graph" is a documented exception (HoursOfDelayGraph.jsx,
-    confirmed against GeneralGraphComp.jsx): generateGraphData([route], ...)
-    destructures only the FIRST matching active comp — getActiveRouteComponents()
-    defaults to [routes[0].compId], never "every comp" like the general case
-    above — and getDisplayData() hardcodes 'hoursOfDelay', ignoring
-    state.displayData entirely (the same DEFAULT_DISPLAY_DATA mislabel class
-    the census flagged, but this graph type has no user-choosable measure at
-    all, so there's nothing to default)."""
+    "Hours of Delay Graph" and "TMC Info Box" are documented exceptions
+    (HoursOfDelayGraph.jsx/TmcInfoBox.jsx, confirmed against
+    GeneralGraphComp.jsx): generateGraphData([route], ...) destructures only
+    the FIRST matching active comp — getActiveRouteComponents() defaults to
+    [routes[0].compId], never "every comp" like the general case below. Only
+    "Hours of Delay Graph" also hardcodes its measure ('hoursOfDelay',
+    ignoring state.displayData) — TMC Info Box keeps the normal
+    displayData[0] measure resolution, it's single-route-only, not
+    single-measure-only."""
     state = g.get("state") or {}
     gtype = g.get("type")
-    if gtype == "Hours of Delay Graph":
+    if gtype in ("Hours of Delay Graph", "TMC Info Box"):
         order = list(comps_by_id)  # insertion order == old route_comps order
         active = state.get("activeRouteComponents") or []
         chosen = next((c for c in order if c in active), None) or (
             order[0] if order else None)
         assigned = [chosen] if chosen else []
+    else:
+        assigned = [c for c in (state.get("activeRouteComponents") or [])
+                    if c in comps_by_id] or list(comps_by_id)
+
+    if gtype == "Hours of Delay Graph":
         measure = "hoursOfDelay"
         cost_per_hour = state.get("costPerHour")
         if cost_per_hour:
             gaps.append({"kind": "cost_per_hour_not_applied", "graph": g.get("id"),
                          "detail": cost_per_hour})
     else:
-        assigned = [c for c in (state.get("activeRouteComponents") or [])
-                    if c in comps_by_id] or list(comps_by_id)
         dd = state.get("displayData")
         measures = [m for m in dd if m != "none"] if isinstance(dd, list) else []
         measure = measures[0] if measures else DEFAULT_DISPLAY_DATA.get(gtype, "speed")
