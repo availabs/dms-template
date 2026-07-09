@@ -82,6 +82,10 @@ GRAPH_TEMPLATE_MAP = {
     ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_truck"): "tmc_co2_grid_graph_truck",
     ("Route Bar Graph", "hoursOfDelay", "weekday", "travel_time_all"): "tmc_delay_bar_graph_weekday",
     ("Hours of Delay Graph", "hoursOfDelay", "5-minutes", "travel_time_all"): "tmc_delay_bar_graph_5min",
+    ("Hours of Delay Graph", "hoursOfDelay", "day", "travel_time_all"): "tmc_delay_bar_graph_day_tmc",
+    ("Hours of Delay Graph", "hoursOfDelay", "hour", "travel_time_all"): "tmc_delay_bar_graph_hour_tmc",
+    ("Hours of Delay Graph", "hoursOfDelay", "15-minutes", "travel_time_all"): "tmc_delay_bar_graph_15min_tmc",
+    ("Hours of Delay Graph", "hoursOfDelay", "month", "travel_time_all"): "tmc_delay_bar_graph_month_tmc",
 }
 
 # Old per-graph-type displayData defaults (old graph components fall back to
@@ -324,6 +328,19 @@ def aadt_override_of(rc):
 # refinement, not attempted here — conversion correctness over pixel parity).
 WEEKDAY_EXPR = "toDayOfWeek(ds.date, 1) as weekday"
 
+# "Hours of Delay Graph" per-resolution xAxis buckets beyond 5-minutes/day
+# (round 12, 2026-07-09) — same queryHelpers.js getResolution() switch as
+# WEEKDAY_EXPR above: hour buckets epoch into 0-23 (`(epoch/12)::integer`, 12
+# 5-minute epochs per hour); 15-minutes buckets epoch into 0-95
+# (`(epoch/3)::integer`); month truncates the date to its first-of-month
+# (`npmrds_month(date)`). All aggregate across the WHOLE date range into that
+# bucket (e.g. hour bucket 7 sums every 7:00-7:55 epoch on every date in
+# range) — same "bounded, not per-timestamp" shape as the 5-minutes/epoch
+# template, just a coarser bucket.
+HOUR_EXPR = "intDiv(ds.epoch, 12) as hour"
+QUARTER_HOUR_EXPR = "intDiv(ds.epoch, 3) as quarter_hour"
+MONTH_EXPR = "toStartOfMonth(ds.date) as month"
+
 # "Hours of Delay Graph" (old HoursOfDelayGraph.jsx) is NOT the same shape as
 # the Route-Bar-Graph delay templates above: generateGraphData([route], ...)
 # destructures only the FIRST active route comp (getActiveRouteComponents()
@@ -334,10 +351,17 @@ WEEKDAY_EXPR = "toDayOfWeek(ds.date, 1) as weekday"
 # by resolution, via a real `tmc` categorize column instead of the
 # comparison-series `__series` discriminator every other template uses (this
 # graph type never fans out across routes, so there's nothing to discriminate
-# by route — `tmc` is the real per-series dimension). At 5-minutes resolution
-# (131 of 138 real instances; getResolution() groups by `epoch`, 0-287,
-# aggregated across the whole date range — bounded, not per-timestamp), the
-# xAxis is the same `epoch` column the base line-graph template already has.
+# by route — `tmc` is the real per-series dimension). Built at 5-minutes (round
+# 11) and day/hour/15-minutes/month (round 12) — every real resolution value
+# the corpus actually uses. `resolution: 'NONE'` (3 ancient "version 2"
+# reports, ids 269/270/271) is deliberately NOT one of these: confirmed
+# against the old client (`utils/resolutionFormats.js`'s RESOLUTIONS map,
+# `'NONE': {name: 'None (data download only)', ...}`, and explicitly filtered
+# out of the real UI dropdown's `resolutions` export) — it's a genuine
+# "no chart, raw data download only" sentinel in the old tool itself, not a
+# malformed/ambiguous value to fix. Correctly stays gap-logged as
+# `unmapped_graph` (same "no chart equivalent" treatment as Route Map/Bar
+# Graph Summary), same as every other graph type with no chart equivalent.
 TEMPLATE_SPECS = {
     "tmc_speed_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
@@ -380,6 +404,42 @@ TEMPLATE_SPECS = {
     },
     "tmc_delay_bar_graph_5min": {
         "graphType": "BarGraph", "xAxis": "epoch", "categorize": "tmc",
+        "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                  "target": "yAxis", "fn": "sum"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    # Same per-TMC shape as tmc_delay_bar_graph_5min above, at day resolution.
+    # Named distinctly from tmc_delay_bar_graph_day (Route Bar Graph's
+    # route-wide-sum/__series shape) since both would otherwise collide.
+    "tmc_delay_bar_graph_day_tmc": {
+        "graphType": "BarGraph", "xAxis": "date", "categorize": "tmc",
+        "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                  "target": "yAxis", "fn": "sum"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_delay_bar_graph_hour_tmc": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": HOUR_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "categorize": "tmc",
+        "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                  "target": "yAxis", "fn": "sum"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_delay_bar_graph_15min_tmc": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": QUARTER_HOUR_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "categorize": "tmc",
+        "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                  "target": "yAxis", "fn": "sum"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_delay_bar_graph_month_tmc": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": MONTH_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "categorize": "tmc",
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
         "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
