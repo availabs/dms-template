@@ -81,6 +81,7 @@ GRAPH_TEMPLATE_MAP = {
     ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_passenger"): "tmc_co2_grid_graph_passenger",
     ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_truck"): "tmc_co2_grid_graph_truck",
     ("Route Bar Graph", "hoursOfDelay", "weekday", "travel_time_all"): "tmc_delay_bar_graph_weekday",
+    ("Hours of Delay Graph", "hoursOfDelay", "5-minutes", "travel_time_all"): "tmc_delay_bar_graph_5min",
 }
 
 # Old per-graph-type displayData defaults (old graph components fall back to
@@ -323,6 +324,20 @@ def aadt_override_of(rc):
 # refinement, not attempted here — conversion correctness over pixel parity).
 WEEKDAY_EXPR = "toDayOfWeek(ds.date, 1) as weekday"
 
+# "Hours of Delay Graph" (old HoursOfDelayGraph.jsx) is NOT the same shape as
+# the Route-Bar-Graph delay templates above: generateGraphData([route], ...)
+# destructures only the FIRST active route comp (getActiveRouteComponents()
+# defaults to [routes[0].compId], never "every comp" — see analyze_graph's
+# special case below), and renders ONE BAR SERIES PER TMC in that route
+# (`keys: route.tmcArray`), not a route-wide sum. Same DELAY_EXPR/join as the
+# day/weekday templates; only the grouping differs — group by TMC as well as
+# by resolution, via a real `tmc` categorize column instead of the
+# comparison-series `__series` discriminator every other template uses (this
+# graph type never fans out across routes, so there's nothing to discriminate
+# by route — `tmc` is the real per-series dimension). At 5-minutes resolution
+# (131 of 138 real instances; getResolution() groups by `epoch`, 0-287,
+# aggregated across the whole date range — bounded, not per-timestamp), the
+# xAxis is the same `epoch` column the base line-graph template already has.
 TEMPLATE_SPECS = {
     "tmc_speed_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
@@ -359,6 +374,12 @@ TEMPLATE_SPECS = {
         "graphType": "BarGraph",
         "xAxis": {"type": "calculated", "show": True, "name": WEEKDAY_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                  "target": "yAxis", "fn": "sum"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_delay_bar_graph_5min": {
+        "graphType": "BarGraph", "xAxis": "epoch", "categorize": "tmc",
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
         "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
@@ -598,9 +619,25 @@ def ensure_graph_templates(needed_names, templates, dry_run):
                          if c.get("name") == spec["xAxis"])
             x_col = {**x_src, "show": True, "target": "xAxis", "group": True,
                      "sort": "asc"}
-        series_col = next(c for c in state["columns"]
-                          if c.get("name") == "__series")
-        state["columns"] = [spec["yAxis"], x_col, series_col]
+        # Categorize column: every existing template keeps the base's
+        # comparison-series `__series` discriminator (none of them fan out
+        # across routes on their own — comparison-series is a section-level
+        # overlay). A spec-supplied `categorize` (e.g. "tmc", for a per-TMC
+        # breakdown like Hours of Delay Graph) replaces it with a real,
+        # grouped data column instead — same plain-name-or-full-dict shape as
+        # xAxis above.
+        cat_spec = spec.get("categorize")
+        if cat_spec is None:
+            cat_col = next(c for c in state["columns"]
+                           if c.get("name") == "__series")
+        elif isinstance(cat_spec, dict):
+            cat_col = cat_spec
+        else:
+            cat_src = next(c for c in state["externalSource"]["columns"]
+                           if c.get("name") == cat_spec)
+            cat_col = {**cat_src, "show": True, "target": "categorize",
+                       "group": True}
+        state["columns"] = [spec["yAxis"], x_col, cat_col]
         state["display"]["graphType"] = spec["graphType"]
         if spec.get("join"):
             state["join"] = {"sources": spec["join"]}
@@ -687,17 +724,37 @@ def analyze_graph(g, comps_by_id, gaps):
     """Extract the conversion-relevant facts from an old graph_comp:
     measure (displayData), resolution, dataColumn, assigned comps, title,
     description. Old semantics: a graph shows state.activeRouteComponents
-    (default: every comp); state.resolution overrides the comps' own."""
+    (default: every comp); state.resolution overrides the comps' own.
+    "Hours of Delay Graph" is a documented exception (HoursOfDelayGraph.jsx,
+    confirmed against GeneralGraphComp.jsx): generateGraphData([route], ...)
+    destructures only the FIRST matching active comp — getActiveRouteComponents()
+    defaults to [routes[0].compId], never "every comp" like the general case
+    above — and getDisplayData() hardcodes 'hoursOfDelay', ignoring
+    state.displayData entirely (the same DEFAULT_DISPLAY_DATA mislabel class
+    the census flagged, but this graph type has no user-choosable measure at
+    all, so there's nothing to default)."""
     state = g.get("state") or {}
     gtype = g.get("type")
-    assigned = [c for c in (state.get("activeRouteComponents") or [])
-                if c in comps_by_id] or list(comps_by_id)
-    dd = state.get("displayData")
-    measures = [m for m in dd if m != "none"] if isinstance(dd, list) else []
-    measure = measures[0] if measures else DEFAULT_DISPLAY_DATA.get(gtype, "speed")
-    if len(measures) > 1:
-        gaps.append({"kind": "extra_measures_dropped", "graph": g.get("id"),
-                     "detail": measures[1:]})
+    if gtype == "Hours of Delay Graph":
+        order = list(comps_by_id)  # insertion order == old route_comps order
+        active = state.get("activeRouteComponents") or []
+        chosen = next((c for c in order if c in active), None) or (
+            order[0] if order else None)
+        assigned = [chosen] if chosen else []
+        measure = "hoursOfDelay"
+        cost_per_hour = state.get("costPerHour")
+        if cost_per_hour:
+            gaps.append({"kind": "cost_per_hour_not_applied", "graph": g.get("id"),
+                         "detail": cost_per_hour})
+    else:
+        assigned = [c for c in (state.get("activeRouteComponents") or [])
+                    if c in comps_by_id] or list(comps_by_id)
+        dd = state.get("displayData")
+        measures = [m for m in dd if m != "none"] if isinstance(dd, list) else []
+        measure = measures[0] if measures else DEFAULT_DISPLAY_DATA.get(gtype, "speed")
+        if len(measures) > 1:
+            gaps.append({"kind": "extra_measures_dropped", "graph": g.get("id"),
+                         "detail": measures[1:]})
     # BUG FIX (2026-07-08): when resolution/dataColumn is ambiguous across the
     # assigned comps (no explicit state override), this used to fall back to
     # `next(iter(some_set), None)` — Python set iteration order for strings is
@@ -711,10 +768,26 @@ def analyze_graph(g, comps_by_id, gaps):
     # documentation gap. Fix: when ambiguous, resolve to None so template
     # lookup deterministically fails and the graph is skipped (gap-logged),
     # never silently converted on a guessed value.
+    # Absent/null comp resolution means 5-minutes, not "unknown" (verified
+    # 2026-07-08 against the old client both ways: comps are CREATED with
+    # resolution '5-minutes' — transportNY analysis/reports/store/index.js
+    # ~1887 — and the graph layer's getResolution() falls back to '5-minutes'
+    # when the setting is missing, graphClasses/GeneralGraphComp.jsx:306).
     resolutions = {(comps_by_id[c].get("settings") or {}).get("resolution")
+                   or "5-minutes"
                    for c in assigned}
-    if state.get("resolution"):
-        resolution = state["resolution"]
+    # Ancient reports (ids ~211-271, a "version": 2 client shape) store a whole
+    # route-comp OBJECT under state.resolution where every later report stores
+    # a plain string — treat non-strings as absent (fall back to the comps' own
+    # resolution) and gap-log, don't crash on the unhashable dict.
+    state_resolution = state.get("resolution")
+    if state_resolution and not isinstance(state_resolution, str):
+        gaps.append({"kind": "malformed_state_resolution", "graph": g.get("id"),
+                     "detail": f"non-string state.resolution "
+                               f"({type(state_resolution).__name__}) ignored"})
+        state_resolution = None
+    if state_resolution:
+        resolution = state_resolution
     elif len(resolutions) == 1:
         resolution = next(iter(resolutions))
     else:
