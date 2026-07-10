@@ -121,8 +121,8 @@ INFO_BOX_BUCKET = ("speed", "5-minutes", "travel_time_all")
 # table names confirmed 2026-07-09 via data_manager.views) — no coverage
 # outside 2021-2025.
 PM3_VIEW_BY_YEAR = {2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425}
-INFO_BOX_TITLES = {"route": "Route Reliability (LOTTR / TTTR, {bin}, {year})",
-                    "tmc": "TMC Reliability (LOTTR / TTTR, {bin}, {year})"}
+INFO_BOX_TITLES = {"route": "Route Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})",
+                    "tmc": "TMC Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})"}
 
 # ── Round 21: per-report/per-comp reliability BIN selection ─────────────────
 # Every Info Box template hardcoded the pm3 join's reliability bin to 'amp'
@@ -844,10 +844,19 @@ def ensure_pm3_join_template(grain, year, bin_, templates, dry_run):
     fetch never fires (no console error — usePageFilterSync just no-ops).
     `bin_` must be one of RELIABILITY_BIN_BY_PEAK_FLAG's values (amp/midd/
     pmp) or 'we' — the caller (graph_reliability_bin) never passes anything
-    else."""
+    else.
+
+    Round 22 adds a freeflow column (`pm3.speed_pctl_85`) alongside LOTTR/
+    TTTR — unlike those two, 1410's speed percentiles are a plain per-TMC/
+    per-route value with no bin dimension at all (round 21's schema check:
+    121 columns, 52,127 rows = 52,127 distinct TMCs, one row per TMC), so it
+    rides along on the same join regardless of `bin_`, same class of change
+    as adding another column to an existing join (no new join, no new year/
+    bin resolution). A template already minted before this round (round 21's
+    two live `tmc_info_box_reliability_2023_amp`/`_pmp` rows) is missing the
+    column — rather than mint a new name (which would orphan the row a live
+    report already references), update it in place via `dms raw update`."""
     name = f"{grain}_info_box_reliability_{year}_{bin_}"
-    if name in templates:
-        return templates
     base = templates.get(TEMPLATE_BASE_NAME)
     if not base:
         raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
@@ -858,15 +867,35 @@ def ensure_pm3_join_template(grain, year, bin_, templates, dry_run):
                  "name": f"pm3.lottr_{bin_}_lottr as lottr_{bin_}", "fn": "avg"}
     tttr_col = {"type": "calculated", "show": True,
                 "name": f"pm3.tttr_{bin_}_tttr as tttr_{bin_}", "fn": "avg"}
+    freeflow_col = {"type": "calculated", "show": True,
+                    "name": "pm3.speed_pctl_85 as freeflow", "fn": "avg"}
     if grain == "route":
         series_col = next(c for c in base_state["columns"]
                           if c.get("name") == "__series")
-        columns = [series_col, lottr_col, tttr_col]
+        columns = [series_col, lottr_col, tttr_col, freeflow_col]
     else:  # "tmc"
         tmc_src = next(c for c in base_state["externalSource"]["columns"]
                        if c.get("name") == "tmc" and c.get("source_id") == 583)
         tmc_col = {**tmc_src, "show": True, "target": "categorize", "group": True}
-        columns = [lottr_col, tttr_col, tmc_col]
+        columns = [lottr_col, tttr_col, freeflow_col, tmc_col]
+
+    existing = templates.get(name)
+    if existing is not None:
+        existing_state = json.loads(existing["data"]["stateJson"])
+        if any(c.get("name") == freeflow_col["name"]
+               for c in existing_state.get("columns", [])):
+            return templates  # already upgraded
+        existing_state["columns"] = columns
+        new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
+                    "updatedAt": now_iso()}
+        if dry_run:
+            print(f"[dry-run] would add freeflow column to template '{name}'")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} "
+                  f"(added freeflow column)")
+        templates[name] = {"id": existing["id"], "data": new_data}
+        return templates
 
     state = {
         "externalSource": base_state["externalSource"],
