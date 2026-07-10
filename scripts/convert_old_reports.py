@@ -86,6 +86,26 @@ GRAPH_TEMPLATE_MAP = {
     ("Hours of Delay Graph", "hoursOfDelay", "hour", "travel_time_all"): "tmc_delay_bar_graph_hour_tmc",
     ("Hours of Delay Graph", "hoursOfDelay", "15-minutes", "travel_time_all"): "tmc_delay_bar_graph_15min_tmc",
     ("Hours of Delay Graph", "hoursOfDelay", "month", "travel_time_all"): "tmc_delay_bar_graph_month_tmc",
+    # Round 29: Route Bar Graph speed/travelTime at the resolutions beyond
+    # `day` (round-27 census's #1 buildable lever — same measures already
+    # proven, just missing resolution coverage). Same route-wide (`__series`)
+    # categorize shape as the existing day templates; xAxis bucketing exprs
+    # (HOUR_EXPR/QUARTER_HOUR_EXPR/MONTH_EXPR/WEEKDAY_EXPR) already exist from
+    # round 12's Hours-of-Delay-Graph work, reused verbatim — see TEMPLATE_SPECS.
+    ("Route Bar Graph", "speed", "5-minutes", "travel_time_all"): "tmc_speed_bar_graph_5min",
+    ("Route Bar Graph", "speed", "hour", "travel_time_all"): "tmc_speed_bar_graph_hour",
+    ("Route Bar Graph", "speed", "15-minutes", "travel_time_all"): "tmc_speed_bar_graph_15min",
+    ("Route Bar Graph", "speed", "month", "travel_time_all"): "tmc_speed_bar_graph_month",
+    ("Route Bar Graph", "speed", "weekday", "travel_time_all"): "tmc_speed_bar_graph_weekday",
+    ("Route Bar Graph", "travelTime", "5-minutes", "travel_time_all"): "tmc_travel_time_bar_graph_5min",
+    ("Route Bar Graph", "travelTime", "hour", "travel_time_all"): "tmc_travel_time_bar_graph_hour",
+    ("Route Bar Graph", "travelTime", "month", "travel_time_all"): "tmc_travel_time_bar_graph_month",
+    ("Route Bar Graph", "travelTime", "weekday", "travel_time_all"): "tmc_travel_time_bar_graph_weekday",
+    # TMC Grid Graph already has speed/5-minutes (tmc_speed_grid_graph, one of
+    # the 3 hand-built originals) — this is the same resolution, the other
+    # already-proven measure (TRAVEL_TIME_EXPR), same GridGraph shape as the
+    # CO2 grid templates below.
+    ("TMC Grid Graph", "travelTime", "5-minutes", "travel_time_all"): "tmc_travel_time_grid_graph",
     # Route Info Box / TMC Info Box deliberately have NO entries here — see
     # INFO_BOX_GRAIN below, they can't use one static template name.
 }
@@ -112,11 +132,20 @@ GRAPH_TEMPLATE_MAP = {
 # filter scoping (real tmc+date WHERE clause), not to produce multiple
 # series/rows.
 INFO_BOX_GRAIN = {"Route Info Box": "route", "TMC Info Box": "tmc"}
-# The one (measure, resolution, dataColumn) bucket the join currently
-# supports (round 18's two demo reports both fell in this bucket) — a graph
-# outside it still gap-logs as unmapped, same as any uncovered
-# GRAPH_TEMPLATE_MAP combination.
-INFO_BOX_BUCKET = ("speed", "5-minutes", "travel_time_all")
+# The one (measure, dataColumn) bucket the join currently supports (round 18's
+# two demo reports both fell in this bucket) — a graph outside it still
+# gap-logs as unmapped, same as any uncovered GRAPH_TEMPLATE_MAP combination.
+# Deliberately NOT resolution (round 30, 2026-07-10, user-caught): confirmed by
+# reading transportNY's real RouteInfoBox.jsx/TmcInfoBox.jsx directly —
+# generateGraphData never reads `resolution` at all (each row's value comes
+# from `reducer(data, tmcGraph, year)`/`allReducer(...)`, keyed on route/tmc +
+# year only). Unlike a real chart, an Info Box has no shared x-axis to
+# reconcile, so the assigned comps disagreeing on resolution was never a real
+# ambiguity for these two graph types — gating on it here was applying a
+# genuine chart-only concern (analyze_graph's mixed-resolution guard, correct
+# for Route Line/Bar Graph etc.) to a component that doesn't consume the
+# value at all.
+INFO_BOX_BUCKET = ("speed", "travel_time_all")
 # source 1410's per-year pm3 views (documentation/npmrds-data-sources.md,
 # table names confirmed 2026-07-09 via data_manager.views) — no coverage
 # outside 2021-2025.
@@ -255,7 +284,17 @@ TRAVEL_TIME_EXPR = ("nullIf(ds.travel_time_all_vehicles, 0) "
 # This is the "travel_time_all" dataColumn variant (AADT = table1.aadt
 # directly, no truck/passenger split, no overrides.aadt — that override is
 # still a gap).
-DELAY_EXPR = ("(greatest(0, ds.travel_time_all_vehicles - ((table1.miles / "
+# nullIf(col, 0) — same 0-as-missing fix as SPEED_EXPR/TRAVEL_TIME_EXPR (round
+# 23), closing that round's own "noticed, NOT fixed" follow-up: greatest(0, x)
+# floors a NEGATIVE result to 0 but does nothing for x already computed FROM a
+# 0-valued travel_time_all_vehicles (the CH fact table's missing-reading
+# sentinel) — that silently produced a real, non-null "0 hours of delay" for
+# an epoch with no data, indistinguishable from a genuinely congestion-free
+# epoch. With nullIf, a missing epoch's whole hours_of_delay expression
+# becomes NULL (greatest()/arithmetic all propagate NULL in ClickHouse), which
+# the downstream sum() aggregate correctly skips — same NULL-skipping
+# semantic as the old Postgres-backed tool, restored.
+DELAY_EXPR = ("(greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.miles / "
               "greatest(20, table1.avg_speedlimit * 0.6)) * 3600)) / 3600) "
               "* (table1.aadt / (if(table1.faciltype > 1, 2, 1))) "
               "* arrayElement(table2.distributions, ds.epoch + 1) "
@@ -558,6 +597,82 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
         "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    # Round 29 (2026-07-10): Route Bar Graph speed/travelTime at every
+    # resolution beyond `day` — round 27 census's #1 buildable lever. Same
+    # route-wide (no `categorize`, defaults to `__series`) shape as
+    # tmc_speed_bar_graph_day/tmc_travel_time_bar_graph_day above; only the
+    # xAxis bucketing expression differs, reusing HOUR_EXPR/QUARTER_HOUR_EXPR/
+    # MONTH_EXPR/WEEKDAY_EXPR verbatim from round 12's Hours-of-Delay-Graph
+    # work (already proven live there) — no new SQL, no new join, no new
+    # measure semantics, purely a resolution clone.
+    "tmc_speed_bar_graph_5min": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "yAxis", "fn": "avg"},
+    },
+    "tmc_speed_bar_graph_hour": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": HOUR_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "yAxis", "fn": "avg"},
+    },
+    "tmc_speed_bar_graph_15min": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": QUARTER_HOUR_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "yAxis", "fn": "avg"},
+    },
+    "tmc_speed_bar_graph_month": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": MONTH_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "yAxis", "fn": "avg"},
+    },
+    "tmc_speed_bar_graph_weekday": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": WEEKDAY_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "yAxis", "fn": "avg"},
+    },
+    "tmc_travel_time_bar_graph_5min": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "yAxis", "fn": "avg"},
+    },
+    "tmc_travel_time_bar_graph_hour": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": HOUR_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "yAxis", "fn": "avg"},
+    },
+    "tmc_travel_time_bar_graph_month": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": MONTH_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "yAxis", "fn": "avg"},
+    },
+    "tmc_travel_time_bar_graph_weekday": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": WEEKDAY_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "yAxis", "fn": "avg"},
+    },
+    # TMC Grid Graph shape (xAxis=epoch, target=color) mirroring
+    # tmc_speed_grid_graph/the CO2 grid templates above — travelTime is the
+    # other already-proven measure at this graph type's one supported
+    # resolution (5-minutes).
+    "tmc_travel_time_grid_graph": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "color", "fn": "avg"},
     },
 }
 TEMPLATE_BASE_NAME = "tmc_travel_time_line_graph"
@@ -1261,8 +1376,12 @@ def analyze_graph(g, comps_by_id, gaps):
         resolution = next(iter(resolutions))
     else:
         resolution = None
-        gaps.append({"kind": "mixed_resolutions_on_graph", "graph": g.get("id"),
-                     "detail": sorted(map(str, resolutions))})
+        # Route/TMC Info Box never read `resolution` (see INFO_BOX_BUCKET's
+        # comment) — a real ambiguity for a chart with one shared x-axis, but
+        # not a real gap for these two, so don't clutter the report with it.
+        if gtype not in INFO_BOX_GRAIN:
+            gaps.append({"kind": "mixed_resolutions_on_graph", "graph": g.get("id"),
+                         "detail": sorted(map(str, resolutions))})
     data_columns = {(comps_by_id[c].get("settings") or {}).get("dataColumn")
                     for c in assigned}
     if len(data_columns) == 1:
@@ -1505,7 +1624,7 @@ def convert_report(old_id, dry_run=False, replace=False):
         if not grain:
             continue
         gid = g.get("id")
-        if (info["measure"], info["resolution"], info["data_column"]) != INFO_BOX_BUCKET:
+        if (info["measure"], info["data_column"]) != INFO_BOX_BUCKET:
             continue  # outside the join's bucket — falls through to the
                       # generic "no template mapping" gap below, same as any
                       # other uncovered GRAPH_TEMPLATE_MAP combination

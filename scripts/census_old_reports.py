@@ -39,8 +39,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from convert_old_reports import (  # noqa: E402
     REPO, GRAPH_TEMPLATE_MAP, TEMPLATE_SPECS, COLOR_RANGE_GRAPH_TYPES,
     ROUTES_CATALOG_TABLE, INFO_BOX_GRAIN, INFO_BOX_BUCKET, PM3_VIEW_BY_YEAR,
+    ROUTE_COMPARE_BUCKET, MEASURE_EXPR,
     analyze_graph, flatten_route_comps, route_settings_gaps,
-    aadt_override_of, graph_max_year, psql_old, psql_new,
+    aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
 )
 
 OUT_DIR = os.path.join(REPO, "scratchpad/npmrds-sub/old-reports/census")
@@ -128,21 +129,33 @@ def analyze_report(old):
     for g, info in analyzed:
         key = (info["type"], info["measure"], info["resolution"],
                info["data_column"])
-        # Route/TMC Info Box aren't in GRAPH_TEMPLATE_MAP (they're
-        # period-matched per report, see convert_old_reports.py's
-        # INFO_BOX_GRAIN) — mirror that dynamic check here so the census
-        # doesn't under-count them as unmapped.
+        # Route/TMC Info Box and Route Compare Component aren't in
+        # GRAPH_TEMPLATE_MAP (they're resolved dynamically per report/graph —
+        # see convert_old_reports.py's INFO_BOX_GRAIN / ROUTE_COMPARE_BUCKET
+        # branches in convert_report) — mirror those dynamic checks here so
+        # the census doesn't mis-count them.
         grain = INFO_BOX_GRAIN.get(info["type"])
-        year = graph_max_year(info, comps_by_id) if grain else None
-        if grain and key[1:] == INFO_BOX_BUCKET and year in PM3_VIEW_BY_YEAR:
-            mapped.append((g, info, f"{grain}_info_box_reliability_{year}"))
-        elif not grain and GRAPH_TEMPLATE_MAP.get(key):
+        is_route_compare = info["type"] == "Route Compare Component"
+        if grain:
+            in_bucket = (info["measure"], info["data_column"]) == INFO_BOX_BUCKET
+            year = graph_max_year(info, comps_by_id) if in_bucket else None
+            bin_ = graph_reliability_bin(info, comps_by_id) if in_bucket else None
+            if in_bucket and year in PM3_VIEW_BY_YEAR and bin_ is not None:
+                mapped.append((g, info,
+                               f"{grain}_info_box_reliability_{year}_{bin_}"))
+                continue
+        elif is_route_compare:
+            if (info["measure"] in MEASURE_EXPR and key[1:] == ROUTE_COMPARE_BUCKET
+                    and len(info["assigned"]) >= 2):
+                mapped.append((g, info, f"route_compare_{info['measure']}"))
+                continue
+        elif GRAPH_TEMPLATE_MAP.get(key):
             mapped.append((g, info, GRAPH_TEMPLATE_MAP[key]))
-        else:
-            unmapped_keys.append(key)
-            skipped_graphs.append(g)
-            gaps.append({"kind": "unmapped_graph", "detail": {
-                "graph": g.get("id"), "key": list(map(str, key))}})
+            continue
+        unmapped_keys.append(key)
+        skipped_graphs.append(g)
+        gaps.append({"kind": "unmapped_graph", "detail": {
+            "graph": g.get("id"), "key": list(map(str, key))}})
 
     # overrides.aadt per mapped graph (mirrors convert_report)
     aadt_applied = 0
