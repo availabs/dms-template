@@ -1022,18 +1022,26 @@ def ensure_pm3_join_template(grain, year, bin_, templates, dry_run):
     return templates
 
 
-def ensure_route_compare_template(measure, base_label, gid, templates, dry_run):
-    """Mint (or reuse) a Route Compare Component Spreadsheet template for
-    `measure`, anchored to `base_label` (the __series comparison-series label
-    of the graph's base/'Main' comp). One row per assigned comp via the same
-    __series fan-out Route Info Box already uses (round 18) — confirmed live
-    (`tmc_speed_grid_graph`/`tmc_speed_line_graph`) that __series carries the
-    comparison-series entry's literal `label` text at runtime, so a window
-    function can key off it directly. `base_label` is baked into the delta
-    column's SQL as a literal, so — like ensure_pm3_join_template — this mints
-    one template per graph rather than one shared across the corpus (a
-    report's base route can't be a shared constant); name is keyed off the old
-    graph id so re-running the same report's conversion reuses it.
+def ensure_route_compare_template(measure, templates, dry_run):
+    """Mint (or reuse) a SHARED, generic Route Compare Component Spreadsheet
+    template for `measure` — one row per assigned comp via the same __series
+    fan-out Route Info Box already uses (round 18), plus a delta column
+    showing each row's %-difference from the ANCHOR (whichever comp is first
+    in the page's own route list — dms-server's __ANCHOR__(<expr>) mechanism,
+    see utils.js/query_sets/clickhouse.js, resolves this dynamically per
+    request from seriesVariants[0], the same way comparisonSeries already
+    resolves every other route dynamically from the page's own route list).
+
+    Unlike ensure_pm3_join_template, this does NOT mint one template per
+    report/graph: nothing report-specific is baked into the SQL (no base
+    route, no literal label) — the anchor is resolved live from whichever
+    route the page's author currently has first in their list, exactly
+    mirroring the old tool's own "first selected route is Main" convention.
+    So one template covers every report in this bucket, and stays correct if
+    an author later changes which route is the anchor or adds/removes compare
+    routes — no re-conversion needed. This is what makes the template usable
+    from a future self-service "pick a template, add your routes" authoring
+    UI rather than a conversion-pipeline-only artifact.
 
     Old RouteCompareComponent.jsx (transportNY) renders
     abs((compare-base)/base*100) plus a separate up/down arrow; here the
@@ -1042,7 +1050,7 @@ def ensure_route_compare_template(measure, base_label, gid, templates, dry_run):
     (non-abs) diff is used instead — same information, a signed number
     instead of abs value + separate arrow glyph."""
     raw_expr, alias = MEASURE_EXPR[measure].rsplit(" as ", 1)
-    name = f"route_compare_{measure}_{gid.replace('-', '_')}"
+    name = f"route_compare_{measure}"
     existing = templates.get(name)
     if existing is not None:
         return templates
@@ -1052,11 +1060,10 @@ def ensure_route_compare_template(measure, base_label, gid, templates, dry_run):
     base_state = json.loads(base["data"]["stateJson"])
     series_col = next(c for c in base_state["columns"]
                       if c.get("name") == "__series")
-    escaped_label = base_label.replace("'", "''")
     value_col = {"type": "calculated", "show": True,
                  "name": f"{raw_expr} as {alias}", "fn": "avg"}
     agg_expr = f"avg({raw_expr})"
-    anchor = f"first_value({agg_expr}) OVER (ORDER BY (__series != '{escaped_label}'))"
+    anchor = f"__ANCHOR__({agg_expr})"
     delta_col = {
         "type": "delta", "display": "calculated", "show": True,
         "deltaGoodDirection": GOOD_DIRECTION_BY_MEASURE.get(measure, "up"),
@@ -1071,7 +1078,18 @@ def ensure_route_compare_template(measure, base_label, gid, templates, dry_run):
         # column-fn dropdowns) whose SQL passthrough behavior in applyFn is
         # identical to leaving fn unset — it only changes this count.
         "fn": "exempt",
-        "name": f"(({agg_expr} - {anchor}) / {anchor} * 100) as {alias}_delta",
+        # round(...) matters beyond cosmetics: the anchor's own row computes
+        # `avg(expr)` twice — once inline, once inside __ANCHOR__'s subquery —
+        # and ClickHouse's two evaluations aren't bit-identical, leaving a
+        # ~1e-14 floating-point residual instead of exact 0. DeltaView's
+        # neutral/gray "no change" state (ui/columnTypes/delta.jsx) is a
+        # strict `n === 0` check, so that residual fell through to the
+        # colored arrow branch — flipping red/green at random (whichever way
+        # the noise happened to round) and making the anchor row impossible
+        # to visually distinguish (found live, 2026-07-10). Rounding to 2
+        # decimals is far coarser than the noise floor, so the anchor always
+        # comes back as a clean, exact 0.
+        "name": f"round(({agg_expr} - {anchor}) / {anchor} * 100, 2) as {alias}_delta",
     }
     columns = [series_col, value_col, delta_col]
     state = {
@@ -1089,7 +1107,7 @@ def ensure_route_compare_template(measure, base_label, gid, templates, dry_run):
         "comparisonSeries": base_state.get("comparisonSeries"),
     }
     if dry_run:
-        print(f"[dry-run] would create template '{name}' (base='{base_label}')")
+        print(f"[dry-run] would create template '{name}'")
         templates[name] = {"id": None, "data": {"name": name,
                            "stateJson": json.dumps(state),
                            "elementType": "Spreadsheet",
@@ -1107,7 +1125,7 @@ def ensure_route_compare_template(measure, base_label, gid, templates, dry_run):
     }
     r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
     templates[name] = {"id": r["id"], "data": data}
-    print(f"created template '{name}' id={r['id']} (base='{base_label}')")
+    print(f"created template '{name}' id={r['id']}")
     return templates
 
 
@@ -1538,17 +1556,9 @@ def convert_report(old_id, dry_run=False, replace=False):
                                    f"(one base + at least one compare row)"})
             route_compare_gap_logged.add(gid)
             continue
-        base_comp = info["assigned"][0]
-        base_label = (comps_by_id.get(base_comp, {}).get("name") or "").strip()
-        if not base_label:
-            gaps.append({"kind": "route_compare_base_label_missing", "graph": gid,
-                         "detail": f"base comp {base_comp} has no name to anchor "
-                                   f"the delta on"})
-            route_compare_gap_logged.add(gid)
-            continue
         graph_templates = ensure_route_compare_template(
-            info["measure"], base_label, gid, graph_templates, dry_run)
-        route_compare_tmpl_name[gid] = f"route_compare_{info['measure']}_{gid.replace('-', '_')}"
+            info["measure"], graph_templates, dry_run)
+        route_compare_tmpl_name[gid] = f"route_compare_{info['measure']}"
 
     convertible, skipped = [], []
     for g, info in analyzed:
