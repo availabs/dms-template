@@ -192,7 +192,23 @@ ALL_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday",
 # Templates the converter can mint if missing. Each is built from the existing
 # `tmc_travel_time_line_graph` row's stateJson (externalSource/display/etc.
 # stay consistent with what the UI produced) with targeted mutations.
-SPEED_EXPR = "((table1.miles * 3600)/ ds.travel_time_all_vehicles) as speed"
+# nullIf(col, 0) — same 0-as-missing fix as _SPEED_CAR_EXPR/_SPEED_TRUCK_EXPR
+# below (round 9), applied here to close round 9's own "noticed, NOT fixed"
+# follow-up (round 23): the CH fact table stores 0 (not NULL) for missing
+# travel_time_all_vehicles readings, so the bare division poisons avg() with
+# inf wherever a 0-row exists (ClickHouse serializes the resulting inf as JSON
+# null). No car/truck fallback column to coalesce into here (this expr's own
+# source IS travel_time_all_vehicles) — nullIf alone restores the old
+# NULL-skipping Postgres semantic.
+SPEED_EXPR = ("((table1.miles * 3600) / nullIf(ds.travel_time_all_vehicles, 0)) "
+              "as speed")
+# Same fix, for the plain (non-calculated) travel_time_all_vehicles column
+# tmc_travel_time_bar_graph_day averages directly — round 9 flagged that
+# averaging raw 0-rows silently drags the mean down vs. the old NULL-skipping
+# behavior, without the inf/null symptom (no division involved here, just a
+# direct avg). Recast as a calculated column so nullIf can apply.
+TRAVEL_TIME_EXPR = ("nullIf(ds.travel_time_all_vehicles, 0) "
+                     "as travel_time_all_vehicles")
 # Old hoursOfDelay (avail-falcor getHoursOfDelay.js's calcDelay/getAADT): per
 # epoch, raw_delay = max(0, tt - miles/max(20, 0.6*speedlimit)*3600)/3600,
 # weighted by AADT/facil * the epoch's AADT-distribution share, summed. The
@@ -434,8 +450,8 @@ TEMPLATE_SPECS = {
     },
     "tmc_travel_time_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
-        "yAxis": {"name": "travel_time_all_vehicles", "type": "number",
-                  "source_id": 583, "show": True, "target": "yAxis", "fn": "avg"},
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "yAxis", "fn": "avg"},
     },
     "tmc_delay_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
@@ -722,7 +738,34 @@ def load_graph_templates():
 
 def ensure_graph_templates(needed_names, templates, dry_run):
     """Mint missing avl_graph_template rows from TEMPLATE_SPECS, built on the
-    base template's stateJson so externalSource/display stay UI-consistent."""
+    base template's stateJson so externalSource/display stay UI-consistent.
+    Also detects yAxis-expression drift on already-existing rows (e.g. round
+    23's SPEED_EXPR/TRAVEL_TIME_EXPR nullIf fix) and updates them in place —
+    same update-in-place idiom ensure_pm3_join_template uses for the freeflow
+    column, applied here so a live template never silently goes stale against
+    its own TEMPLATE_SPECS entry."""
+    for name in needed_names:
+        if name not in templates or name not in TEMPLATE_SPECS:
+            continue
+        spec = TEMPLATE_SPECS[name]
+        existing = templates[name]
+        existing_state = json.loads(existing["data"]["stateJson"])
+        cols = existing_state["columns"]
+        y_idx = next((i for i, c in enumerate(cols) if c.get("target") == "yAxis"), None)
+        if y_idx is None or cols[y_idx].get("name") == spec["yAxis"]["name"]:
+            continue  # no drift
+        cols[y_idx] = dict(spec["yAxis"])
+        new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
+                    "updatedAt": now_iso()}
+        if dry_run:
+            print(f"[dry-run] would update drifted template '{name}' "
+                  f"id={existing['id']} (yAxis expr changed)")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} "
+                  f"(yAxis expr drift fix)")
+        templates[name] = {"id": existing["id"], "data": new_data}
+
     missing = [n for n in needed_names if n not in templates and n in TEMPLATE_SPECS]
     if not missing:
         return templates
