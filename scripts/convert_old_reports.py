@@ -121,8 +121,36 @@ INFO_BOX_BUCKET = ("speed", "5-minutes", "travel_time_all")
 # table names confirmed 2026-07-09 via data_manager.views) — no coverage
 # outside 2021-2025.
 PM3_VIEW_BY_YEAR = {2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425}
-INFO_BOX_TITLES = {"route": "Route Reliability (LOTTR / TTTR, {year})",
-                    "tmc": "TMC Reliability (LOTTR / TTTR, {year})"}
+INFO_BOX_TITLES = {"route": "Route Reliability (LOTTR / TTTR, {bin}, {year})",
+                    "tmc": "TMC Reliability (LOTTR / TTTR, {bin}, {year})"}
+
+# ── Round 21: per-report/per-comp reliability BIN selection ─────────────────
+# Every Info Box template hardcoded the pm3 join's reliability bin to 'amp'
+# (AM peak), regardless of what the report's own comps actually asked for.
+# 1410's real schema (confirmed 2026-07-10, direct `information_schema.columns`
+# read against `gis_datasets.s1410_v3425_pm_3`) only carries FOUR precomputed
+# LOTTR bins — amp/midd/pmp/we — plus a 5th, ovn, for TTTR ONLY (no
+# `lottr_ovn_lottr` column exists at all). There is no "all hours"/"no time
+# filter" bin and no live way to compute one (round 14: LOTTR/TTTR's real
+# two-stage bin-average-then-percentile math can't run in the platform's
+# single-query pipeline) — so a comp whose peak setting doesn't land on
+# EXACTLY one of these four named periods has no real data to show, and gets
+# gap-logged rather than approximated. User-confirmed (2026-07-10): this
+# includes the old tool's own "all three peaks on" setting (07:00-19:00, no
+# time-of-day restriction) — genuinely no precomputed value exists for that,
+# not just an unbuilt query — and any other custom/arbitrary time window for
+# the same reason. Only two shapes map unambiguously to a real bin:
+#   - exactly one of amPeak/offPeak/pmPeak true (others false) → amp/midd/pmp
+#   - weekdays flagged weekend-only (no weekday day true) → we
+# Everything else (0 or 2-3 peak flags true, mixed weekday+weekend, a custom
+# startTime/endTime with no peak flag at all) resolves to None — never
+# curve-fit to the "closest" bin, since that would silently show one time
+# period's real number as if it were computed for a different one.
+RELIABILITY_BIN_BY_PEAK_FLAG = {"amPeak": "amp", "offPeak": "midd", "pmPeak": "pmp"}
+RELIABILITY_BIN_LABELS = {"amp": "AM Peak", "midd": "Midday", "pmp": "PM Peak",
+                          "we": "Weekend"}
+WEEKDAY_NAMES = ("monday", "tuesday", "wednesday", "thursday", "friday")
+WEEKEND_NAMES = ("saturday", "sunday")
 
 # Old per-graph-type displayData defaults (old graph components fall back to
 # these when state.displayData is absent — see e.g. HybridGraphComp line ~100).
@@ -777,18 +805,47 @@ def graph_max_year(info, comps_by_id):
     return max(years) if years else None
 
 
-def ensure_pm3_join_template(grain, year, templates, dry_run):
-    """Mint (or reuse) `{grain}_info_box_reliability_{year}` — a Spreadsheet
-    template joining 1410's pm3 view for `year` via the pgFederated
-    mechanism (round 16), grouped by route (the `__series` comparison-series
-    discriminator) or by TMC (a plain `tmc` column) per `grain`. Built on
-    TEMPLATE_BASE_NAME's stateJson for externalSource/filters/
-    comparisonSeries/customBuckets/display._functions — the same base
-    ensure_graph_templates() uses above. Round 18 found the hard way that
-    building `display` from scratch instead of copying the base's silently
-    drops fetchMode and the comparison_series subscriber, and the fetch
-    never fires (no console error — usePageFilterSync just no-ops)."""
-    name = f"{grain}_info_box_reliability_{year}"
+def comp_reliability_bin(settings):
+    """Resolve one route comp's FHWA reliability bin (amp/midd/pmp/we), or
+    None if it doesn't land unambiguously on one of the four 1410 actually
+    carries. See the RELIABILITY_BIN_BY_PEAK_FLAG comment above for why this
+    never curve-fits an approximate answer."""
+    weekdays = settings.get("weekdays") or {}
+    has_weekday = any(weekdays.get(d) for d in WEEKDAY_NAMES)
+    has_weekend = any(weekdays.get(d) for d in WEEKEND_NAMES)
+    if has_weekend and not has_weekday:
+        return "we"
+    if has_weekend and has_weekday:
+        return None  # spans both a weekday-scoped bin and WE — neither fits
+    peaks_on = [f for f in ("amPeak", "offPeak", "pmPeak") if settings.get(f)]
+    return RELIABILITY_BIN_BY_PEAK_FLAG[peaks_on[0]] if len(peaks_on) == 1 else None
+
+
+def graph_reliability_bin(info, comps_by_id):
+    """The single bin every one of a graph's assigned comps agrees on, or
+    None if undetermined/mixed. Same consensus-set idiom as the
+    resolution/dataColumn checks in analyze_graph — never guesses when
+    comps disagree."""
+    bins = {comp_reliability_bin((comps_by_id.get(cid) or {}).get("settings") or {})
+            for cid in info["assigned"]}
+    return next(iter(bins)) if len(bins) == 1 else None
+
+
+def ensure_pm3_join_template(grain, year, bin_, templates, dry_run):
+    """Mint (or reuse) `{grain}_info_box_reliability_{year}_{bin_}` — a
+    Spreadsheet template joining 1410's pm3 view for `year`/`bin_` via the
+    pgFederated mechanism (round 16), grouped by route (the `__series`
+    comparison-series discriminator) or by TMC (a plain `tmc` column) per
+    `grain`. Built on TEMPLATE_BASE_NAME's stateJson for externalSource/
+    filters/comparisonSeries/customBuckets/display._functions — the same
+    base ensure_graph_templates() uses above. Round 18 found the hard way
+    that building `display` from scratch instead of copying the base's
+    silently drops fetchMode and the comparison_series subscriber, and the
+    fetch never fires (no console error — usePageFilterSync just no-ops).
+    `bin_` must be one of RELIABILITY_BIN_BY_PEAK_FLAG's values (amp/midd/
+    pmp) or 'we' — the caller (graph_reliability_bin) never passes anything
+    else."""
+    name = f"{grain}_info_box_reliability_{year}_{bin_}"
     if name in templates:
         return templates
     base = templates.get(TEMPLATE_BASE_NAME)
@@ -798,9 +855,9 @@ def ensure_pm3_join_template(grain, year, templates, dry_run):
     view_id = PM3_VIEW_BY_YEAR[year]
 
     lottr_col = {"type": "calculated", "show": True,
-                 "name": "pm3.lottr_amp_lottr as lottr_amp", "fn": "avg"}
+                 "name": f"pm3.lottr_{bin_}_lottr as lottr_{bin_}", "fn": "avg"}
     tttr_col = {"type": "calculated", "show": True,
-                "name": "pm3.tttr_amp_tttr as tttr_amp", "fn": "avg"}
+                "name": f"pm3.tttr_{bin_}_tttr as tttr_{bin_}", "fn": "avg"}
     if grain == "route":
         series_col = next(c for c in base_state["columns"]
                           if c.get("name") == "__series")
@@ -817,7 +874,8 @@ def ensure_pm3_join_template(grain, year, templates, dry_run):
         "filters": base_state.get("filters") or {"op": "AND", "groups": []},
         "display": {
             "usePagination": True, "pageSize": 50, "hideExternalToggle": True,
-            "title": {"title": INFO_BOX_TITLES[grain].format(year=year)},
+            "title": {"title": INFO_BOX_TITLES[grain].format(
+                year=year, bin=RELIABILITY_BIN_LABELS[bin_])},
             "showAttribution": True, "fetchMode": "force",
             "_functions": base_state["display"]["_functions"],
         },
@@ -1223,6 +1281,7 @@ def convert_report(old_id, dry_run=False, replace=False):
     # graph (see INFO_BOX_GRAIN above) before the main mapping pass below, so
     # it can use the same graph_templates lookup as every other graph type.
     info_box_tmpl_name = {}
+    info_box_bin_year = {}
     info_box_gap_logged = set()
     for g, info in analyzed:
         grain = INFO_BOX_GRAIN.get(info["type"])
@@ -1234,6 +1293,7 @@ def convert_report(old_id, dry_run=False, replace=False):
                       # generic "no template mapping" gap below, same as any
                       # other uncovered GRAPH_TEMPLATE_MAP combination
         year = graph_max_year(info, comps_by_id)
+        bin_ = graph_reliability_bin(info, comps_by_id)
         if year is None:
             gaps.append({"kind": "info_box_year_undetermined", "graph": gid,
                          "detail": "no assigned comp has a startDate/endDate "
@@ -1244,9 +1304,19 @@ def convert_report(old_id, dry_run=False, replace=False):
                          "detail": f"max year {year} outside 1410's "
                                    f"{min(PM3_VIEW_BY_YEAR)}-{max(PM3_VIEW_BY_YEAR)} coverage"})
             info_box_gap_logged.add(gid)
+        elif bin_ is None:
+            gaps.append({"kind": "info_box_bin_undetermined", "graph": gid,
+                         "detail": "assigned comp(s) don't land unambiguously on "
+                                   "exactly one of 1410's real bins (amp/midd/pmp/"
+                                   "we) — e.g. 0 or 2-3 peak flags true, a mixed "
+                                   "weekday+weekend selection, or a custom "
+                                   "startTime/endTime with no peak flag; no "
+                                   "precomputed value exists for any of those"})
+            info_box_gap_logged.add(gid)
         else:
-            graph_templates = ensure_pm3_join_template(grain, year, graph_templates, dry_run)
-            info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}"
+            graph_templates = ensure_pm3_join_template(grain, year, bin_, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}_{bin_}"
+            info_box_bin_year[gid] = (year, bin_)
 
     convertible, skipped = [], []
     for g, info in analyzed:
@@ -1362,6 +1432,18 @@ def convert_report(old_id, dry_run=False, replace=False):
     section_datas = [build_cloned_section_data(page_id, rrl_tmpl, str(uuid.uuid4()))]
     for (g, info, tmpl), tid, aadt_ov in zip(convertible, graph_tracking_ids,
                                              graph_aadt_overrides):
+        # Info Box sections all render an otherwise-identical "TMC/Route Info
+        # Box, Speed" title (the old report's own title template — see
+        # analyze_graph) with no year/bin in it at all; build_graph_section_data
+        # always uses this title verbatim, so a template's own bin-aware title
+        # (ensure_pm3_join_template's INFO_BOX_TITLES) never reaches the page.
+        # Two sibling Info Box sections on one page can now show DIFFERENT
+        # bins (round 21) — append the bin/year here so they're visually
+        # distinguishable without reading raw column headers.
+        bin_year = info_box_bin_year.get(g.get("id"))
+        if bin_year:
+            year_, bin_ = bin_year
+            info["title"] = f"{info['title']} ({RELIABILITY_BIN_LABELS[bin_]}, {year_})"
         section_datas.append(
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
