@@ -86,30 +86,43 @@ GRAPH_TEMPLATE_MAP = {
     ("Hours of Delay Graph", "hoursOfDelay", "hour", "travel_time_all"): "tmc_delay_bar_graph_hour_tmc",
     ("Hours of Delay Graph", "hoursOfDelay", "15-minutes", "travel_time_all"): "tmc_delay_bar_graph_15min_tmc",
     ("Hours of Delay Graph", "hoursOfDelay", "month", "travel_time_all"): "tmc_delay_bar_graph_month_tmc",
-    # First use of the pgFederated cross-engine join (round 16): LOTTR/TTTR read
-    # live from 1410's Postgres table via ClickHouse's postgresql() table
-    # function. Grouped by the comparison-series discriminator only (__series,
-    # not tmc) — the dynamic per-route fan-out bundles each assigned route
-    # comp's whole TMC list into ONE arm, so this produces one row per ROUTE
-    # (Route Info Box's real grain). The joined table is a specific year
-    # (s1410_v2587_pm_3 = 2021) — period-matched to report 796's own date
-    # range, not "current" — so this template only produces real (non-blank)
-    # values for reports whose max year falls in 1410's real coverage
-    # (2021-2025); a different report year needs its own template pointed at
-    # the matching s1410_v{view_id}_pm_3 table.
-    ("Route Info Box", "speed", "5-minutes", "travel_time_all"): "route_info_box_reliability_2021",
-    # TMC Info Box only ever renders one route at a time (analyze_graph's
-    # single-comp default above, matching Hours of Delay Graph's real old
-    # semantics) — so this groups by a plain, real `tmc` column directly (no
-    # __series categorize column needed), same shape as
-    # tmc_delay_bar_graph_5min. comparisonSeries stays enabled purely for its
-    # dynamic per-route filter scoping (real tmc+date WHERE clause), not to
-    # produce multiple series/rows. Joined against s1410_v2567_pm_3 = 2023,
-    # matching report 1045's comp-28/comp-6/comp-5 (2023) — comp-8's
-    # "All-time Average" label is a known minor year mismatch (its own range
-    # is 2017-2024), same class of tradeoff as Route Info Box's period-match.
-    ("TMC Info Box", "speed", "5-minutes", "travel_time_all"): "tmc_info_box_reliability_2023",
+    # Route Info Box / TMC Info Box deliberately have NO entries here — see
+    # INFO_BOX_GRAIN below, they can't use one static template name.
 }
+
+# ── Route/TMC Info Box: LOTTR/TTTR via the pgFederated cross-engine join
+# (round 16) ─────────────────────────────────────────────────────────────
+# Unlike every entry above, these two graph types can't use one static
+# template name: the join must be period-matched to the report's own max
+# year (round 17 product decision — never substitute a different year's
+# data), and source 1410 publishes one Postgres view per year. Round 18
+# proved the mechanism by hand-building one template per grain
+# (route_info_box_reliability_2021 / tmc_info_box_reliability_2023) for two
+# demo reports; graph_max_year() + ensure_pm3_join_template() below
+# generalize that to any year in 1410's real coverage so a new report
+# doesn't need a human to notice its year and hand-build a template first.
+#
+# Route Info Box groups by the comparison-series discriminator (__series,
+# not tmc) — the dynamic per-route fan-out bundles each assigned route
+# comp's whole TMC list into ONE arm, so this produces one row per ROUTE
+# (its real grain). TMC Info Box only ever renders one route at a time
+# (analyze_graph's single-comp default above, matching Hours of Delay
+# Graph's real old semantics) — so it groups by a plain, real `tmc` column
+# instead; comparisonSeries stays enabled purely for its dynamic per-route
+# filter scoping (real tmc+date WHERE clause), not to produce multiple
+# series/rows.
+INFO_BOX_GRAIN = {"Route Info Box": "route", "TMC Info Box": "tmc"}
+# The one (measure, resolution, dataColumn) bucket the join currently
+# supports (round 18's two demo reports both fell in this bucket) — a graph
+# outside it still gap-logs as unmapped, same as any uncovered
+# GRAPH_TEMPLATE_MAP combination.
+INFO_BOX_BUCKET = ("speed", "5-minutes", "travel_time_all")
+# source 1410's per-year pm3 views (documentation/npmrds-data-sources.md,
+# table names confirmed 2026-07-09 via data_manager.views) — no coverage
+# outside 2021-2025.
+PM3_VIEW_BY_YEAR = {2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425}
+INFO_BOX_TITLES = {"route": "Route Reliability (LOTTR / TTTR, {year})",
+                    "tmc": "TMC Reliability (LOTTR / TTTR, {year})"}
 
 # Old per-graph-type displayData defaults (old graph components fall back to
 # these when state.displayData is absent — see e.g. HybridGraphComp line ~100).
@@ -747,6 +760,100 @@ def ensure_graph_templates(needed_names, templates, dry_run):
     return templates
 
 
+def graph_max_year(info, comps_by_id):
+    """Latest calendar year touched by this graph's assigned comps'
+    startDate/endDate. Used to period-match the pm3 (1410) join to the
+    report's own year, never a different one (round 17). Same yyyymmdd
+    validation as to_datetime_str — ancient (~report ids 211-271) "version
+    2" comps can carry a whole object under settings.startDate/endDate
+    instead of a plain 8-digit int; skip those rather than crash."""
+    years = set()
+    for cid in info["assigned"]:
+        settings = (comps_by_id.get(cid) or {}).get("settings") or {}
+        for k in ("startDate", "endDate"):
+            s = str(settings.get(k) or "")
+            if len(s) == 8 and s.isdigit():
+                years.add(int(s[:4]))
+    return max(years) if years else None
+
+
+def ensure_pm3_join_template(grain, year, templates, dry_run):
+    """Mint (or reuse) `{grain}_info_box_reliability_{year}` — a Spreadsheet
+    template joining 1410's pm3 view for `year` via the pgFederated
+    mechanism (round 16), grouped by route (the `__series` comparison-series
+    discriminator) or by TMC (a plain `tmc` column) per `grain`. Built on
+    TEMPLATE_BASE_NAME's stateJson for externalSource/filters/
+    comparisonSeries/customBuckets/display._functions — the same base
+    ensure_graph_templates() uses above. Round 18 found the hard way that
+    building `display` from scratch instead of copying the base's silently
+    drops fetchMode and the comparison_series subscriber, and the fetch
+    never fires (no console error — usePageFilterSync just no-ops)."""
+    name = f"{grain}_info_box_reliability_{year}"
+    if name in templates:
+        return templates
+    base = templates.get(TEMPLATE_BASE_NAME)
+    if not base:
+        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+    base_state = json.loads(base["data"]["stateJson"])
+    view_id = PM3_VIEW_BY_YEAR[year]
+
+    lottr_col = {"type": "calculated", "show": True,
+                 "name": "pm3.lottr_amp_lottr as lottr_amp", "fn": "avg"}
+    tttr_col = {"type": "calculated", "show": True,
+                "name": "pm3.tttr_amp_tttr as tttr_amp", "fn": "avg"}
+    if grain == "route":
+        series_col = next(c for c in base_state["columns"]
+                          if c.get("name") == "__series")
+        columns = [series_col, lottr_col, tttr_col]
+    else:  # "tmc"
+        tmc_src = next(c for c in base_state["externalSource"]["columns"]
+                       if c.get("name") == "tmc" and c.get("source_id") == 583)
+        tmc_col = {**tmc_src, "show": True, "target": "categorize", "group": True}
+        columns = [lottr_col, tttr_col, tmc_col]
+
+    state = {
+        "externalSource": base_state["externalSource"],
+        "columns": columns,
+        "filters": base_state.get("filters") or {"op": "AND", "groups": []},
+        "display": {
+            "usePagination": True, "pageSize": 50, "hideExternalToggle": True,
+            "title": {"title": INFO_BOX_TITLES[grain].format(year=year)},
+            "showAttribution": True, "fetchMode": "force",
+            "_functions": base_state["display"]["_functions"],
+        },
+        "join": {"sources": {"pm3": {
+            "pgFederated": {"pgEnv": "npmrds2", "table": f"s1410_v{view_id}_pm_3",
+                            "schema": "gis_datasets"},
+            "joinColumns": [{"dsColumn": "tmc", "joinSourceColumn": "tmc"}],
+            "mergeStrategy": "join", "type": "left",
+        }}},
+        "customBuckets": base_state.get("customBuckets"),
+        "comparisonSeries": base_state.get("comparisonSeries"),
+    }
+
+    if dry_run:
+        print(f"[dry-run] would create template '{name}'")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "Spreadsheet",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "layoutJson": base["data"].get("layoutJson"),
+        "elementType": "Spreadsheet", "componentType": "Spreadsheet",
+        "includesLayout": base["data"].get("includesLayout", False),
+        "includesSource": base["data"].get("includesSource", True),
+        "createdAt": now_iso(), "createdBy": base["data"].get("createdBy"),
+        "updatedAt": now_iso(), "updatedBy": base["data"].get("updatedBy"),
+    }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']}")
+    return templates
+
+
 _TMC_RESOLVE_CACHE = {}
 
 
@@ -1109,24 +1216,58 @@ def convert_report(old_id, dry_run=False, replace=False):
                 for g in old.get("graph_comps") or []]
     needed = {GRAPH_TEMPLATE_MAP.get((i["type"], i["measure"], i["resolution"],
                                       i["data_column"]))
-              for _, i in analyzed} - {None}
+              for _, i in analyzed if i["type"] not in INFO_BOX_GRAIN} - {None}
     graph_templates = ensure_graph_templates(needed, graph_templates, dry_run)
+
+    # Route/TMC Info Box: resolve + mint the period-matched pm3 template per
+    # graph (see INFO_BOX_GRAIN above) before the main mapping pass below, so
+    # it can use the same graph_templates lookup as every other graph type.
+    info_box_tmpl_name = {}
+    info_box_gap_logged = set()
+    for g, info in analyzed:
+        grain = INFO_BOX_GRAIN.get(info["type"])
+        if not grain:
+            continue
+        gid = g.get("id")
+        if (info["measure"], info["resolution"], info["data_column"]) != INFO_BOX_BUCKET:
+            continue  # outside the join's bucket — falls through to the
+                      # generic "no template mapping" gap below, same as any
+                      # other uncovered GRAPH_TEMPLATE_MAP combination
+        year = graph_max_year(info, comps_by_id)
+        if year is None:
+            gaps.append({"kind": "info_box_year_undetermined", "graph": gid,
+                         "detail": "no assigned comp has a startDate/endDate "
+                                   "to period-match the pm3 join"})
+            info_box_gap_logged.add(gid)
+        elif year not in PM3_VIEW_BY_YEAR:
+            gaps.append({"kind": "info_box_year_outside_pm3_coverage", "graph": gid,
+                         "detail": f"max year {year} outside 1410's "
+                                   f"{min(PM3_VIEW_BY_YEAR)}-{max(PM3_VIEW_BY_YEAR)} coverage"})
+            info_box_gap_logged.add(gid)
+        else:
+            graph_templates = ensure_pm3_join_template(grain, year, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}"
 
     convertible, skipped = [], []
     for g, info in analyzed:
+        gid = g.get("id")
+        is_info_box = info["type"] in INFO_BOX_GRAIN
         key = (info["type"], info["measure"], info["resolution"],
                info["data_column"])
-        tmpl_name = GRAPH_TEMPLATE_MAP.get(key)
+        tmpl_name = (info_box_tmpl_name.get(gid) if is_info_box
+                    else GRAPH_TEMPLATE_MAP.get(key))
         if tmpl_name and tmpl_name in graph_templates:
             convertible.append((g, info, graph_templates[tmpl_name]))
-        else:
-            skipped.append(g)
-            gaps.append({"kind": "unmapped_graph", "detail": {
-                "graph": g.get("id"), "graph_type": info["type"],
-                "measure": info["measure"], "resolution": info["resolution"],
-                "dataColumn": info["data_column"],
-                "reason": ("no template mapping" if not tmpl_name
-                           else f"template '{tmpl_name}' not found in DB")}})
+            continue
+        skipped.append(g)
+        if gid in info_box_gap_logged:
+            continue  # specific reason already gap-logged above
+        gaps.append({"kind": "unmapped_graph", "detail": {
+            "graph": gid, "graph_type": info["type"],
+            "measure": info["measure"], "resolution": info["resolution"],
+            "dataColumn": info["data_column"],
+            "reason": ("no template mapping" if not tmpl_name
+                       else f"template '{tmpl_name}' not found in DB")}})
 
     # overrides.aadt — decide per convertible graph whether the override can
     # be baked into its cloned calculated column. Only templates whose
