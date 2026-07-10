@@ -152,6 +152,41 @@ RELIABILITY_BIN_LABELS = {"amp": "AM Peak", "midd": "Midday", "pmp": "PM Peak",
 WEEKDAY_NAMES = ("monday", "tuesday", "wednesday", "thursday", "friday")
 WEEKEND_NAMES = ("saturday", "sunday")
 
+# ── Route Compare Component: base + N compare rows, %-diff-from-base via a
+# `delta` column (round 24) ─────────────────────────────────────────────────
+# Old RouteCompareComponent.jsx (transportNY): getActiveRouteComponents()
+# reads state.activeRouteComponents as [main, ...rest] — first entry is the
+# base/"Main" row, the rest are compare rows. analyze_graph doesn't special-
+# case this type (unlike Hours of Delay Graph/TMC Info Box), so info["assigned"]
+# already preserves that exact order — first assigned comp = base.
+# Scope: only the ("speed", "5-minutes", "travel_time_all") bucket this round
+# (178 of the corpus's 226 instances, 95 reports) — the same
+# "prove one capability, then generalize" pattern as every other measure in
+# this task. Other measure/resolution/dataColumn combos stay gap-logged.
+ROUTE_COMPARE_BUCKET = ("speed", "5-minutes", "travel_time_all")
+# MEASURE_EXPR is defined below, after SPEED_EXPR (see TEMPLATE_BASE_NAME
+# region) — it references that constant.
+# "Good" direction per measure for the delta column's arrow/color (mirrors old
+# tmc_graphs/utils/dataTypes.js's `reverseColors` flag: reverseColors False ->
+# higher is good -> deltaGoodDirection 'up'; True -> lower is good -> 'down').
+# Only measures actually in MEASURE_EXPR need an entry; unknown measures
+# default to 'up' in ensure_route_compare_template.
+# NOTE (2026-07-10): old dataTypes.js has NO entry at all for LOTTR/TTTR/PHED/
+# truck travel-time-reliability-index — those aren't part of this catalog
+# (they only ever appear as free-text InfoBox displayData labels, see round
+# 13/18). Every analogous "index" measure that IS in dataTypes.js
+# (bufferTime/planningTime/miseryIndex/travelTimeIndex/percentile95/97/avgTT)
+# is reverseColors: True (lower is better) — consistent with LOTTR/TTTR's own
+# FHWA definition (a ratio near 1.0 = reliable; live-captured values in this
+# task file, e.g. round 18's 1.05-1.63, are ratios, not percentages) and with
+# what round 20's DAMA-side pm3/map21 code assumes. This conflicts with a
+# verbal note that higher-LOTTR-is-good — flagged, not resolved; not needed
+# until Route Compare Component covers the "indices" bucket (out of scope
+# this round; LOTTR/TTTR aren't in ROUTE_COMPARE_BUCKET at all).
+GOOD_DIRECTION_BY_MEASURE = {"speed": "up", "travelTime": "down",
+                             "hoursOfDelay": "down", "co2Emissions": "down",
+                             "dataQuality": "up", "freeflow": "up"}
+
 # Old per-graph-type displayData defaults (old graph components fall back to
 # these when state.displayData is absent — see e.g. HybridGraphComp line ~100).
 DEFAULT_DISPLAY_DATA = {
@@ -526,6 +561,9 @@ TEMPLATE_SPECS = {
     },
 }
 TEMPLATE_BASE_NAME = "tmc_travel_time_line_graph"
+# Route Compare Component's per-measure raw expression (see ROUTE_COMPARE_BUCKET
+# above) — only speed is in scope this round.
+MEASURE_EXPR = {"speed": SPEED_EXPR}
 
 
 # ── Low-level helpers ────────────────────────────────────────────────────────
@@ -984,6 +1022,95 @@ def ensure_pm3_join_template(grain, year, bin_, templates, dry_run):
     return templates
 
 
+def ensure_route_compare_template(measure, base_label, gid, templates, dry_run):
+    """Mint (or reuse) a Route Compare Component Spreadsheet template for
+    `measure`, anchored to `base_label` (the __series comparison-series label
+    of the graph's base/'Main' comp). One row per assigned comp via the same
+    __series fan-out Route Info Box already uses (round 18) — confirmed live
+    (`tmc_speed_grid_graph`/`tmc_speed_line_graph`) that __series carries the
+    comparison-series entry's literal `label` text at runtime, so a window
+    function can key off it directly. `base_label` is baked into the delta
+    column's SQL as a literal, so — like ensure_pm3_join_template — this mints
+    one template per graph rather than one shared across the corpus (a
+    report's base route can't be a shared constant); name is keyed off the old
+    graph id so re-running the same report's conversion reuses it.
+
+    Old RouteCompareComponent.jsx (transportNY) renders
+    abs((compare-base)/base*100) plus a separate up/down arrow; here the
+    `delta` column type's own arrow/color derive from the SIGNED value
+    directly (DeltaView: arrow follows the value's own sign), so the raw
+    (non-abs) diff is used instead — same information, a signed number
+    instead of abs value + separate arrow glyph."""
+    raw_expr, alias = MEASURE_EXPR[measure].rsplit(" as ", 1)
+    name = f"route_compare_{measure}_{gid.replace('-', '_')}"
+    existing = templates.get(name)
+    if existing is not None:
+        return templates
+    base = templates.get(TEMPLATE_BASE_NAME)
+    if not base:
+        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+    base_state = json.loads(base["data"]["stateJson"])
+    series_col = next(c for c in base_state["columns"]
+                      if c.get("name") == "__series")
+    escaped_label = base_label.replace("'", "''")
+    value_col = {"type": "calculated", "show": True,
+                 "name": f"{raw_expr} as {alias}", "fn": "avg"}
+    agg_expr = f"avg({raw_expr})"
+    anchor = f"first_value({agg_expr}) OVER (ORDER BY (__series != '{escaped_label}'))"
+    delta_col = {
+        "type": "delta", "display": "calculated", "show": True,
+        "deltaGoodDirection": GOOD_DIRECTION_BY_MEASURE.get(measure, "up"),
+        # fn: "exempt" ("already aggregated server-side", see graph_new/
+        # components/utils.js's AggFuncs comment) — without it, getData.js's
+        # groupNoFnCondition heuristic (every non-grouped column needs a
+        # truthy .fn) treats this column as if it needed wrapping, marks the
+        # whole section invalidState, and the row-data fetch never fires
+        # (found live-verifying this section: __series/length loaded fine,
+        # the actual data request silently never went out). "exempt" is a
+        # real author-facing fn option (Spreadsheet/graph_new/graph/Card
+        # column-fn dropdowns) whose SQL passthrough behavior in applyFn is
+        # identical to leaving fn unset — it only changes this count.
+        "fn": "exempt",
+        "name": f"(({agg_expr} - {anchor}) / {anchor} * 100) as {alias}_delta",
+    }
+    columns = [series_col, value_col, delta_col]
+    state = {
+        "externalSource": base_state["externalSource"],
+        "columns": columns,
+        "filters": base_state.get("filters") or {"op": "AND", "groups": []},
+        "display": {
+            "usePagination": True, "pageSize": 50, "hideExternalToggle": True,
+            "title": {"title": f"Route Compare, {MEASURE_NAMES.get(measure, measure)}"},
+            "showAttribution": True, "fetchMode": "force",
+            "_functions": base_state["display"]["_functions"],
+        },
+        "join": base_state.get("join"),
+        "customBuckets": base_state.get("customBuckets"),
+        "comparisonSeries": base_state.get("comparisonSeries"),
+    }
+    if dry_run:
+        print(f"[dry-run] would create template '{name}' (base='{base_label}')")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "Spreadsheet",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "layoutJson": base["data"].get("layoutJson"),
+        "elementType": "Spreadsheet", "componentType": "Spreadsheet",
+        "includesLayout": base["data"].get("includesLayout", False),
+        "includesSource": base["data"].get("includesSource", True),
+        "createdAt": now_iso(), "createdBy": base["data"].get("createdBy"),
+        "updatedAt": now_iso(), "updatedBy": base["data"].get("updatedBy"),
+    }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']} (base='{base_label}')")
+    return templates
+
+
 _TMC_RESOLVE_CACHE = {}
 
 
@@ -1390,19 +1517,54 @@ def convert_report(old_id, dry_run=False, replace=False):
             info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}_{bin_}"
             info_box_bin_year[gid] = (year, bin_)
 
+    # Route Compare Component: base (first assigned comp) + N compare rows,
+    # %-diff-from-base via a delta column (round 24) — see
+    # ensure_route_compare_template above. Only ROUTE_COMPARE_BUCKET is
+    # supported this round; anything else falls through to the generic
+    # unmapped_graph gap below, same as any other uncovered combination.
+    route_compare_tmpl_name = {}
+    route_compare_gap_logged = set()
+    for g, info in analyzed:
+        if info["type"] != "Route Compare Component":
+            continue
+        gid = g.get("id")
+        if info["measure"] not in MEASURE_EXPR:
+            continue  # outside this round's supported measure — generic gap below
+        if (info["measure"], info["resolution"], info["data_column"]) != ROUTE_COMPARE_BUCKET:
+            continue
+        if len(info["assigned"]) < 2:
+            gaps.append({"kind": "route_compare_insufficient_comps", "graph": gid,
+                         "detail": f"{len(info['assigned'])} assigned comp(s), need >= 2 "
+                                   f"(one base + at least one compare row)"})
+            route_compare_gap_logged.add(gid)
+            continue
+        base_comp = info["assigned"][0]
+        base_label = (comps_by_id.get(base_comp, {}).get("name") or "").strip()
+        if not base_label:
+            gaps.append({"kind": "route_compare_base_label_missing", "graph": gid,
+                         "detail": f"base comp {base_comp} has no name to anchor "
+                                   f"the delta on"})
+            route_compare_gap_logged.add(gid)
+            continue
+        graph_templates = ensure_route_compare_template(
+            info["measure"], base_label, gid, graph_templates, dry_run)
+        route_compare_tmpl_name[gid] = f"route_compare_{info['measure']}_{gid.replace('-', '_')}"
+
     convertible, skipped = [], []
     for g, info in analyzed:
         gid = g.get("id")
         is_info_box = info["type"] in INFO_BOX_GRAIN
+        is_route_compare = info["type"] == "Route Compare Component"
         key = (info["type"], info["measure"], info["resolution"],
                info["data_column"])
         tmpl_name = (info_box_tmpl_name.get(gid) if is_info_box
+                    else route_compare_tmpl_name.get(gid) if is_route_compare
                     else GRAPH_TEMPLATE_MAP.get(key))
         if tmpl_name and tmpl_name in graph_templates:
             convertible.append((g, info, graph_templates[tmpl_name]))
             continue
         skipped.append(g)
-        if gid in info_box_gap_logged:
+        if gid in info_box_gap_logged or gid in route_compare_gap_logged:
             continue  # specific reason already gap-logged above
         gaps.append({"kind": "unmapped_graph", "detail": {
             "graph": gid, "graph_type": info["type"],
