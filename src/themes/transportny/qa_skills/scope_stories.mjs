@@ -1,5 +1,5 @@
 // qa_skills · scope_stories — helper for the "scope user stories" skill.
-//   list                 → print the sitemgmt_pages rows in the Scoping stage (page_key,name,desc)
+//   list                 → print the sitemgmt_pages rows in the Proposed stage (page_key,name,desc)
 //   write <stories.json> → create proposed stories from {page_key:[story,...]} (idempotent)
 // Falcor-only (no CLI) so it runs from anywhere; needs DMS_AUTH_TOKEN + (optional) DMS_HOST.
 import { createFalcorClient } from "../../../dms/packages/dms/cli/src/client.js";

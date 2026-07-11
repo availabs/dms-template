@@ -135,10 +135,12 @@ const textSettings = {
     labelSM: `${F_DISP} font-medium text-[12.5px] leading-[1.3] text-slate-700`,
     // Primary action link-as-button — the brand press-button (blue face, darker bottom edge,
     // Oswald caps). For links that should read as buttons (header-band actions like "Add ticket").
-    // `!` beats link/paragraph defaults (text color, underline).
-    btnPrimary: `inline-flex items-center w-fit h-9 px-3.5 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+    // `!` beats link/paragraph defaults (text color, underline) AND the dataCard value-cell
+    // paddings (px-3 pb-3) that leak in when the token styles a Card value wrapper — without
+    // py-0! the injected pb pushed the label off vertical center inside the fixed h-9.
+    btnPrimary: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
     // Secondary/outline action link-as-button — quiet neighbor to btnPrimary ("All tickets").
-    btnOutline: `inline-flex items-center w-fit h-9 px-3.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+    btnOutline: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
     // Stat giant — mono tabular figure (KPI / coverage numbers). Vertical margin
     // gives the big number breathing room from the label above + sublabel below
     // (statNum is used only on stat cards, so this margin is effectively per-instance).
@@ -286,6 +288,17 @@ const layoutGroup = {
       wrapper1: "w-full bg-[#E4E8EE] py-2",
       wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 flex flex-col gap-6",
       wrapper3: "",
+    },
+    // workbench — full-screen tool surface (Freight Atlas map v2): NO max-width,
+    // NO gutters, NO band padding. The single section (padding "p-0") fills
+    // everything beside the sidenav; height comes from the section's element
+    // (the Map component's `screen` = 100vh option). overflow-hidden so the map
+    // owns the viewport with no page scroll.
+    {
+      name: "workbench",
+      wrapper1: "w-full h-screen overflow-hidden bg-[#ECEEF2]",
+      wrapper2: "w-full h-full",
+      wrapper3: "h-full",
     },
     // card — ONE white card floating on the grey pane, holding a run of sections as a
     // single composed unit (no inter-section grey gutters). The white surface + border
@@ -973,6 +986,11 @@ const dataCard = {
       itemBorder:                    "border border-zinc-950/5",
       cardBorder:                    "border border-zinc-950/10",
       cellBorderBelow:               "border-b border-zinc-950/5",
+      // form-mode action rows (allowAdddNew "add" / allowEditInView save+cancel) — bottom-right,
+      // like the mockups' modal/form footers. The wrapper is a cell in the card's cells GRID, so
+      // it must span the full row (col-span-full) before justify-self-end can right-align it.
+      formAddNewItemWrapper:         "col-span-full w-fit justify-self-end self-end pt-2",
+      formEditButtonsWrapper:        "col-span-full w-fit justify-self-end self-end flex gap-1 pt-2",
       imgXS:      "max-w-16 max-h-16",
       imgSM:      "max-w-24 max-h-24",
       imgMD:      "max-w-32 max-h-32",
@@ -2290,6 +2308,25 @@ const flowStep = {
   connector: "shrink-0 text-slate-300 text-[16px] pl-1 -mr-1 select-none",
 };
 
+// stacked_bar column type — segmented distribution bars (control-room overview: stage
+// distribution + tickets open/done per pattern). Track/legend get the brand voice (mockup's
+// 8px #e2e8f0 track + metaXS legend); segment colours come from each column's `segments`
+// config (inline hex — the control-room stage palette), with `fills` as the themed keys.
+// Read via getComponentTheme(theme, 'stackedBar').
+const stackedBar = {
+  wrapper: "w-full",
+  track: "w-full flex h-2 rounded-[4px] bg-[#e2e8f0] overflow-hidden",
+  segment: "h-full shrink-0",
+  legend: `pt-1.5 ${F_MONO} text-[10px] uppercase tracking-[0.18em] text-slate-400 tabular-nums`,
+  empty: `pt-1.5 ${F_MONO} text-[10px] uppercase tracking-[0.18em] text-slate-400`,
+  fills: {
+    primary: "bg-[#1F3F8F]",
+    muted:   "bg-[#37576B]",
+    success: "bg-[#10B981]",
+    alert:   "bg-[#FCA5A5]",   // open tickets (mockup's soft red)
+  },
+};
+
 // data_color_cell column type — the seasonality heat grid's 5-stop amber scale,
 // shaded within each region row. Read via getComponentTheme(theme, 'dataColorCell').
 const dataColorCell = {
@@ -2341,6 +2378,7 @@ const transportnyTheme = {
   dataBar,
   dataColorCell,
   flowStep,
+  stackedBar,
   pagination,
   icon: iconTheme,
 

@@ -36,6 +36,21 @@
         { f: "beta-landing.html", t: "Beta landing" },
         { f: "features.html", t: "Features" },
         { f: "docs.html", t: "Docs landing" },
+        { f: "login.html", t: "Sign in" },
+      ],
+    },
+    {
+      key: "admin",
+      label: "Admin pages",
+      dir: "pages",
+      landing: "admin-site.html",
+      pages: [
+        { f: "admin-site.html", t: "Site — overview" },
+        { f: "admin-pattern-overview.html", t: "Pattern — overview" },
+        { f: "admin-pattern-pages.html", t: "Pattern — pages" },
+        { f: "admin-pattern-access.html", t: "Pattern — access" },
+        { f: "admin-pattern-data.html", t: "Pattern — data" },
+        { f: "admin-pattern-activity.html", t: "Pattern — activity" },
       ],
     },
   ];

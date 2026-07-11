@@ -98,7 +98,12 @@ design_system_v6/
 ├── pages/
 │   ├── beta-landing.html      the anchor example page (see below)
 │   ├── features.html          marketing features page — Layout default
-│   └── docs.html              docs landing — Layout app (SideNav + search)
+│   ├── docs.html              docs landing — Layout app (SideNav + search)
+│   ├── login.html             sign-in — Layout bare (patterns.html §06)
+│   └── admin-*.html           ADMIN pages (v6.7, control-room chrome) —
+│                              see planning/tessera/tasks/current/
+│                              tessera-v6-admin-pages.md; admin-site.html
+│                              is the first of the set
 └── theme/                     artifacts for the theme translation
     ├── icons.js                 icon registry — SOURCE OF TRUTH
     ├── index.css.additions      pointer shim → ../_shared.css
@@ -140,6 +145,27 @@ slim TopNav adds a docs search field with a `/` key hint. Bands (all
 (`npx tessera new` · `tessera dataset upload` · `tessera publish`), four
 concept cards, a popular-guides list in the flush-row style, and a help
 band linking the known-issues board. All guide links are placeholders.
+
+`pages/admin-*.html` (v6.7) — design versions of the DMS **admin pattern**
+(task doc: `planning/tessera/tasks/current/tessera-v6-admin-pages.md`).
+Layout `app` with the **control-room SideNav trial**: w-56, mono `t-metaMD`
+lowercase labels, 2px cobalt left-rule active state (vs the docs sidenav's
+rounded pill), and an env + user block at the bottom. The sidenav is
+site-scoped only (overview/themes/people/tenants) — patterns are NOT listed
+there (production sites run 50–100+ patterns; the overview table is the
+pattern nav). Density rule: the working surface is the feature — header +
+stats compress into one ~90px strip. Admin pages carry their own compact footer
+block, and the other pages gain a single `admin` link — a documented
+deviation from the every-page-lists-everything footer rule, to keep footers
+sane as the admin set grows.
+
+`pages/login.html` (v6.6) — the sign-in page, Layout `bare` per the
+documented auth pattern (patterns.html §06): no product chrome, one
+centered card on the fading sheet — the only panel on the page. Email +
+password fields, a forgot link, and an invite-only note routing to the
+landing's request form (no self-signup during the beta). Mode follows the
+choice stored by any other page. The live "sign in" footer links on the
+marketing pages point here.
 
 **Alignment note:** this page uses Layout `default` (marketing) — bands
 centre with `mx-auto`, the documented exception (no SideNav to hug).

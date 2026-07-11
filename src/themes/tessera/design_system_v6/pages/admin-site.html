@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>tessera · admin — site</title>
+<!-- apply stored light/dark choice before first paint -->
+<script>(function(){try{var t=localStorage.getItem("t6-theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: {
+    paper:"var(--t-paper)", panel:"var(--t-panel)", well:"var(--t-well)",
+    ink:"var(--t-ink)", graphite:"var(--t-graphite)", pencil:"var(--t-pencil)",
+    rule:"var(--t-rule)", ruleStrong:"var(--t-rule-strong)",
+    cobalt:"var(--t-cobalt)", cobaltDeep:"var(--t-cobalt-deep)", cobaltSoft:"var(--t-cobalt-soft)", accentInk:"var(--t-accent-ink)",
+    marker:"var(--t-marker)", markerSoft:"var(--t-marker-soft)",
+    go:"var(--t-go)", goSoft:"var(--t-go-soft)", amber:"var(--t-amber)", amberSoft:"var(--t-amber-soft)",
+    brick:"var(--t-brick)", brickSoft:"var(--t-brick-soft)",
+    board:"var(--t-board)", board2:"var(--t-board-2)", chalk:"var(--t-chalk)", chalkDim:"var(--t-chalk-dim)",
+    scrim:"var(--t-scrim)",
+  },
+  fontFamily: {
+    display:['"IBM Plex Sans"',"system-ui","sans-serif"], sans:['"IBM Plex Sans"',"system-ui","sans-serif"],
+    mono:['"IBM Plex Mono"',"ui-monospace","monospace"], note:["Caveat",'"Segoe Print"',"cursive"],
+  },
+  boxShadow: { lift:"var(--t-shadow-lift)", drag:"var(--t-shadow-drag)" },
+  maxWidth: { content:"1200px", measure:"640px" },
+}}};
+</script>
+<link rel="stylesheet" href="../_shared.css"/>
+</head>
+
+<!-- Layout: app — ADMIN chrome, "control room" SideNav trial (v6.7):
+     denser rows, mono lowercase labels, 2px left-rule active state instead
+     of the docs sidenav's rounded pill. Annotation off. -->
+<body class="text-ink font-sans">
+<div data-dms-layout="app" class="min-h-screen">
+  <div class="flex min-h-screen">
+
+    <!-- SideNav (Layout app · control room) -->
+    <aside class="hidden lg:flex w-56 flex-none flex-col border-r border-rule">
+      <div class="h-14 flex items-center gap-2.5 px-4 border-b border-rule">
+        <a href="beta-landing.html" class="flex items-center gap-2.5">
+          <!-- icon: Tile -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-cobalt" aria-hidden="true"><path d="M8 2.5v19M16 2.5v19M2.5 8h19M2.5 16h19" opacity="0.45"/><rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.1" fill="currentColor" stroke="none" transform="rotate(-8 12 12)"/></svg>
+          <span class="t-displaySM">Tessera</span>
+        </a>
+        <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">admin</span>
+      </div>
+      <nav class="flex-1 overflow-y-auto py-4 px-2">
+        <div class="t-metaXS text-pencil px-3 pb-1.5">site</div>
+        <a href="admin-site.html" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-cobalt bg-cobaltSoft text-cobalt t-metaMD">
+          <!-- icon: Home -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 11L12 4.5 19.5 11"/><path d="M6.5 9.5v10h11v-10"/></svg>
+          overview</a>
+        <a href="#" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Layers -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 3.5l8.5 4.5L12 12.5 3.5 8 12 3.5Z"/><path d="M3.5 12.5L12 17l8.5-4.5"/><path d="M3.5 17L12 21.5 20.5 17"/></svg>
+          themes</a>
+        <a href="#" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Users -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="9.5" cy="9" r="3.2"/><path d="M3.5 19c1-2.7 3.2-4 6-4s5 1.3 6 4"/><path d="M15.5 6.2a3.2 3.2 0 0 1 0 5.6M17.5 15.3c1.6.6 2.6 1.8 3 3.7"/></svg>
+          people</a>
+        <a href="#" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Globe -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5S14.4 18.2 12 20.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5Z"/></svg>
+          tenants</a>
+      </nav>
+      <div class="border-t border-rule px-4 py-3">
+        <p class="t-metaXS text-pencil">mitigat-ny-prod · prod</p>
+        <div class="flex items-center gap-2 mt-2">
+          <span class="w-6 h-6 rounded-md bg-cobalt text-accentInk flex items-center justify-center t-metaXS">m</span>
+          <span class="t-metaSM text-graphite truncate">admin@availabs.org</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- content column -->
+    <div class="flex-1 min-w-0 flex flex-col">
+      <!-- TopNav (Layout app): breadcrumb + view site + mode toggle -->
+      <header class="h-14 flex-none border-b border-rule flex items-center gap-3 px-5 lg:px-8">
+        <span class="t-metaMD text-graphite">admin</span>
+        <span class="t-metaMD text-pencil">/</span>
+        <span class="t-metaMD text-cobalt">overview</span>
+        <span class="flex-1"></span>
+        <a href="#" class="hidden sm:inline-flex items-center gap-1.5 t-metaSM text-graphite border border-rule rounded-md px-3 py-1.5 hover:text-ink hover:border-ruleStrong">
+          view site
+          <!-- icon: ArrowUpRight -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6.5 17.5l11-11M8.5 6.5h9v9"/></svg>
+        </a>
+        <button onclick="var r=document.documentElement;var d=r.getAttribute('data-theme')==='dark';if(d){r.removeAttribute('data-theme')}else{r.setAttribute('data-theme','dark')}try{localStorage.setItem('t6-theme',d?'light':'dark')}catch(e){}" aria-label="Toggle dark mode" class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite hover:text-ink hover:border-ruleStrong">
+          <span class="t6-when-light"><!-- icon: Moon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></span>
+          <span class="t6-when-dark"><!-- icon: Sun -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6L17 7M7 17l-1.4 1.4M18.4 18.4L17 17M7 7L5.6 5.6"/></svg></span>
+        </button>
+      </header>
+
+      <main class="flex-1">
+
+        <!-- ═══ LayoutGroup: header strip (compact — identity + stats ≤150px) ═══ -->
+        <div data-dms-group="header" class="w-full border-b border-rule relative">
+          <span class="t6-joint" style="left:-3.5px;bottom:-3.5px;"></span>
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-3">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="site-header" class="col-span-12 p-2">
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2.5">
+                      <h1 class="t-displayMD truncate">MitigateNY</h1>
+                      <span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span>
+                    </div>
+                    <p class="t-metaSM text-pencil mt-1">mitigateny.availabs.org · app mitigat-ny-prod</p>
+                  </div>
+                  <span class="flex-1"></span>
+                  <div class="flex items-stretch divide-x divide-rule border border-rule rounded-lg bg-panel overflow-hidden">
+                    <div class="px-4 py-2">
+                      <p class="text-xl font-semibold tracking-[-0.015em] tabular-nums leading-none">47</p>
+                      <p class="t-metaXS text-pencil mt-1">patterns</p>
+                    </div>
+                    <div class="px-4 py-2">
+                      <p class="text-xl font-semibold tracking-[-0.015em] tabular-nums leading-none">25</p>
+                      <p class="t-metaXS text-pencil mt-1">subdomains</p>
+                    </div>
+                    <div class="px-4 py-2 hidden sm:block">
+                      <p class="text-xl font-semibold tracking-[-0.015em] tabular-nums leading-none">6</p>
+                      <p class="t-metaXS text-pencil mt-1">types</p>
+                    </div>
+                    <div class="px-4 py-2 hidden sm:block">
+                      <p class="text-xl font-semibold tracking-[-0.015em] tabular-nums leading-none text-amber">7</p>
+                      <p class="t-metaXS text-pencil mt-1">no access</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ LayoutGroup: patterns — THE page ═══ -->
+        <div data-dms-group="content" class="w-full">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-3">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="patterns-toolbar" class="col-span-12 p-2">
+                <div class="flex items-center gap-3">
+                  <label class="flex flex-1 items-center gap-2.5 border border-ruleStrong rounded-md px-3.5 h-10 bg-panel text-graphite focus-within:border-cobalt">
+                    <!-- icon: Search -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 flex-none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15.5 15.5L20 20"/></svg>
+                    <input class="flex-1 min-w-0 bg-transparent t-proseSM placeholder:text-pencil outline-none" placeholder="filter 47 patterns by name, url, or subdomain"/>
+                    <span class="t-metaXS text-pencil border border-rule rounded px-1.5 hidden md:block">/</span>
+                  </label>
+                  <button class="inline-flex items-center gap-2 t-proseSM font-medium text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-md px-4 h-10 flex-none">
+                    <!-- icon: Plus -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    add pattern
+                  </button>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 mt-2.5">
+                  <span class="t-metaSM text-pencil">patterns · 47</span>
+                  <button class="inline-flex items-center gap-1 t-metaXS text-graphite border border-rule rounded-md px-2 py-1 hover:border-ruleStrong">
+                    sort: subdomain
+                    <!-- icon: ChevronDown --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+                  </button>
+                  <span class="hidden lg:flex items-center gap-1.5">
+                    <button class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">all 47</button>
+                    <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">page 39</button>
+                    <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">forms 3</button>
+                    <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">datasets 2</button>
+                    <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">auth 1</button>
+                    <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">mapeditor 1</button>
+                    <button class="t-metaXS text-brick bg-brickSoft rounded-full px-2 py-0.5">? 1</button>
+                  </span>
+                </div>
+              </section>
+
+              <section data-dms-section="patterns-table" class="col-span-12 p-2">
+                <div class="bg-panel border border-rule rounded-lg overflow-hidden">
+                  <div class="overflow-x-auto">
+                    <table class="w-full border-collapse text-sm">
+                      <thead class="border-b border-ruleStrong">
+                        <tr>
+                          <th class="text-left t-metaXS text-pencil px-4 py-2.5 font-medium">pattern</th>
+                          <th class="text-left t-metaXS text-pencil px-4 py-2.5 font-medium">type</th>
+                          <th class="text-right t-metaXS text-pencil px-4 py-2.5 font-medium hidden sm:table-cell">id</th>
+                          <th class="px-4 py-2.5"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">all subdomains</span>
+                              <span class="t-metaXS text-pencil">14 patterns</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">(unnamed)</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-brick bg-brickSoft rounded-full px-2 py-0.5">?</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">None</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="admin-pattern-overview.html" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_2025</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">985070</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="admin-pattern-overview.html" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <span class="t-proseSM font-medium text-graphite">admin</span>
+                            <p class="t-metaXS text-pencil mt-0.5">/admin</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil">—</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end"><span class="inline-flex items-center gap-1.5 t-metaXS text-pencil"><!-- icon: Lock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg> no access</span></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_Auth</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/auth</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-amber bg-amberSoft rounded-full px-2 py-0.5">auth</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1427078</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><span class="w-4"></span><span class="w-4"></span></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">Datasets</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/cenrep</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5">datasets</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1499610</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">county_data_site</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/county_data</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">572462</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">county_data_site</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/county_data_site</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1411304</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">datasets_test</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/datasets_test</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5">datasets</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">2248246</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">test-meta-forms</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/forms</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-graphite bg-well border border-rule rounded-full px-2 py-0.5">forms</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">736402</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">planning-guide</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/guide</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1603896</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">Map Editor Test</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/mapeditortest</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">mapeditor</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1920082</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_Playground</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/playground</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1006405</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">status</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/status</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">2177054</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <span class="t-proseSM font-medium text-graphite">tests</span>
+                            <p class="t-metaXS text-pencil mt-0.5">/test</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil">—</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end"><span class="inline-flex items-center gap-1.5 t-metaXS text-pencil"><!-- icon: Lock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg> no access</span></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">allegany2024</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">allegany2024.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">allegany-2024</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1065543</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">buildings</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">buildings.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <span class="t-proseSM font-medium text-graphite">bild</span>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil">—</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end"><span class="inline-flex items-center gap-1.5 t-metaXS text-pencil"><!-- icon: Lock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg> no access</span></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">chemung2025</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">chemung2025.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_Chemung2025</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1592725</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">county_template</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">county_template.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_County_Template</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1300890</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">countytemplate</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">countytemplate.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">county_template2_copy</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/_copy</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1393430</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">delaware2021</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">delaware2021.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">delaware-2021</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">597989</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">fulton2021</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">fulton2021.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">fulton-2021</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">892955</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">hamilton2021</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">hamilton2021.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">hamilton-2021</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">892976</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">nassau</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">nassau.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_Nassau</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">2112438</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">niagara2022</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">niagara2022.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">niagara-2022</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1065541</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">plants</span>
+                              <span class="t-metaXS text-pencil">7 patterns</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">plants.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">plants</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1165539</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">plants_copy</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/_copy</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1902546</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">plants-admin</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/admin</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1165580</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">my_plant_database</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/data</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-graphite bg-well border border-rule rounded-full px-2 py-0.5">forms</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1197975</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">plant-data</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/data</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-graphite bg-well border border-rule rounded-full px-2 py-0.5">forms</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1165589</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <span class="t-proseSM font-medium text-graphite">my_plant_page</span>
+                            <p class="t-metaXS text-pencil mt-0.5">/my-plant-page</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil">—</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end"><span class="inline-flex items-center gap-1.5 t-metaXS text-pencil"><!-- icon: Lock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg> no access</span></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">my_admin_page</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/my_admin_page</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1201837</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">putnamcsc</span>
+                              <span class="t-metaXS text-pencil">2 patterns</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">putnamcsc.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">putnamcsc</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1623476</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">putnamcsc_admin</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/admin</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1626133</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">redesign3</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">redesign3.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">redesign-backup</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1335353</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">schenectady2021</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">schenectady2021.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">schenectady-2021</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">1065542</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">schenectady2026</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">schenectady2026.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_schenectady2026</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">2135694</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">schoharie</span>
+                              <span class="t-metaXS text-pencil">2 patterns</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">schoharie.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">schohariecounty</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">671388</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">schoharie2024</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/draft</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">726222</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">shmpcopy</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">shmpcopy.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">shmpcopy</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">985071</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">suffolk</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">suffolk.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <span class="t-proseSM font-medium text-graphite">MitigateNY_County_Template_Suffolk</span>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil">—</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end"><span class="inline-flex items-center gap-1.5 t-metaXS text-pencil"><!-- icon: Lock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg> no access</span></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">suffolk_draft</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">suffolk_draft.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_County_Template_Suffolk_copy</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">2249247</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">suffolkold</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">suffolkold.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_suffolkold</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">2124066</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">sullivan2021</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">sullivan2021.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">sullivan-2021</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">668719</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">sullivan2026</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">sullivan2026.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_sullivan</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">2043199</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">westchester</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">westchester.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <span class="t-proseSM font-medium text-graphite">MitigateNY_County_Template_Westchester</span>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil">—</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end"><span class="inline-flex items-center gap-1.5 t-metaXS text-pencil"><!-- icon: Lock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg> no access</span></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">westchester-ai</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">westchester-ai.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <a href="#" class="t-proseSM font-medium hover:text-cobalt">MitigateNY_County_Template_Westchester_copy</a>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil tabular-nums">2244223</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit pattern" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><button aria-label="Duplicate pattern" class="hover:text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button><button aria-label="Delete pattern" class="hover:text-brick"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-well">
+                          <td colspan="4" class="px-4 py-1.5">
+                            <div class="flex items-baseline gap-2.5">
+                              <span class="t-metaSM text-graphite">westchester2026</span>
+                              <span class="t-metaXS text-pencil">1 pattern</span>
+                              <span class="flex-1"></span>
+                              <span class="t-metaXS text-pencil hidden md:block">westchester2026.mitigateny.availabs.org</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150">
+                          <td class="px-4 py-2">
+                            <span class="t-proseSM font-medium text-graphite">MitigateNY_westchester</span>
+                            <p class="t-metaXS text-pencil mt-0.5">/</p>
+                          </td>
+                          <td class="px-4 py-2"><span class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">page</span></td>
+                          <td class="px-4 py-2 text-right hidden sm:table-cell"><span class="t-metaSM text-pencil">—</span></td>
+                          <td class="px-4 py-2"><div class="flex items-center justify-end"><span class="inline-flex items-center gap-1.5 t-metaXS text-pencil"><!-- icon: Lock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg> no access</span></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="px-4 py-2.5 border-t border-rule flex items-center gap-3">
+                    <span class="t-metaXS text-pencil">47 patterns · 7 you can't open</span>
+                    <span class="flex-1"></span>
+                    <span class="t-metaXS text-pencil">grouped by subdomain · auth can't be duplicated or deleted</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- footer link block (compact admin variant) -->
+      <footer data-dms-group="footer" class="w-full border-t border-rule">
+        <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-6">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <span class="t-metaXS text-pencil">admin pages</span>
+            <span class="t-metaXS text-cobalt">site (this page)</span>
+            <a href="admin-pattern-overview.html" class="t-metaXS text-pencil hover:text-graphite">overview</a>
+            <a href="admin-pattern-pages.html" class="t-metaXS text-pencil hover:text-graphite">pages</a>
+            <a href="admin-pattern-access.html" class="t-metaXS text-pencil hover:text-graphite">access</a>
+            <a href="admin-pattern-data.html" class="t-metaXS text-pencil hover:text-graphite">data</a>
+            <a href="admin-pattern-activity.html" class="t-metaXS text-pencil hover:text-graphite">activity</a>
+            <span class="flex-1"></span>
+            <span class="t-metaXS text-pencil">design system</span>
+            <a href="../design-system/theme.html" class="t-metaXS text-pencil hover:text-graphite">theme</a>
+            <a href="../design-system/patterns.html" class="t-metaXS text-pencil hover:text-graphite">patterns</a>
+            <a href="beta-landing.html" class="t-metaXS text-pencil hover:text-graphite">beta landing</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+  </div>
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>
