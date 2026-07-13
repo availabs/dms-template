@@ -14,4 +14,5 @@ module.exports = function registerExtra({ registerDatatype }) {
   registerDatatype('pm3', require('./pm3'));
   registerDatatype('now_playing', require('./now_playing'));
   registerDatatype('enhance_nfip_claims_v2', require('./mny/enhance_nfip_claims_v2'));
+  registerDatatype('actions_location', require('./mny/actions_location'));
 };
