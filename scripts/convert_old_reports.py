@@ -130,6 +130,22 @@ GRAPH_TEMPLATE_MAP = {
     ("Bar Graph Summary", "speed", "5-minutes", "travel_time_all"): "tmc_speed_summary_bar_graph",
     ("Bar Graph Summary", "speed", "day", "travel_time_all"): "tmc_speed_summary_bar_graph",
     ("Bar Graph Summary", "speed", "15-minutes", "travel_time_all"): "tmc_speed_summary_bar_graph",
+    # Round 36: the remaining Phase A summary measures. travelTime and
+    # hoursOfDelay are whole-range aggregates (resolution-irrelevant) — every
+    # real resolution key the corpus uses maps to the one template, same as
+    # speed above. avgHoursOfDelay is the bucket-grain-dependent exception:
+    # one template per real resolution; its mixed-resolution (None) keys are a
+    # REAL ambiguity (the value genuinely differs by resolution) and stay
+    # gap-logged.
+    ("Bar Graph Summary", "travelTime", "5-minutes", "travel_time_all"): "tmc_travel_time_summary_bar_graph",
+    ("Bar Graph Summary", "travelTime", "15-minutes", "travel_time_all"): "tmc_travel_time_summary_bar_graph",
+    ("Bar Graph Summary", "travelTime", "day", "travel_time_all"): "tmc_travel_time_summary_bar_graph",
+    ("Bar Graph Summary", "travelTime", "weekday", "travel_time_all"): "tmc_travel_time_summary_bar_graph",
+    ("Bar Graph Summary", "hoursOfDelay", "5-minutes", "travel_time_all"): "tmc_delay_summary_bar_graph",
+    ("Bar Graph Summary", "hoursOfDelay", "day", "travel_time_all"): "tmc_delay_summary_bar_graph",
+    ("Bar Graph Summary", "avgHoursOfDelay", "5-minutes", "travel_time_all"): "tmc_avg_delay_summary_bar_graph_5min",
+    ("Bar Graph Summary", "avgHoursOfDelay", "day", "travel_time_all"): "tmc_avg_delay_summary_bar_graph_day",
+    ("Bar Graph Summary", "avgHoursOfDelay", "weekday", "travel_time_all"): "tmc_avg_delay_summary_bar_graph_weekday",
     # Route Info Box / TMC Info Box deliberately have NO entries here — see
     # INFO_BOX_GRAIN below, they can't use one static template name.
 }
@@ -365,6 +381,41 @@ DELAY_EXPR = ("(greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.mi
 # extra wrapping fn is needed or correct.
 AVG_DELAY_EXPR = (f"(sum({DELAY_EXPR.rsplit(' as ', 1)[0]}) "
                   "/ count(DISTINCT ds.date)) as avg_hours_of_delay")
+
+
+# Bar Graph Summary avgHoursOfDelay (round 36): the summary bar is the old
+# meanReducer over the SAME per-(tmc, resolution-bucket) rows AVG_DELAY_EXPR
+# models per bucket — i.e. a TWO-LEVEL fold (per-bucket sum ÷ per-bucket
+# distinct-date count, then a plain mean across buckets) whose inner grouping
+# key is resolution-dependent (queryHelpers.getResolution: 5-minutes → epoch
+# across dates, day → date, weekday → day-of-week). Same map-combinator
+# strategy as SPEED_EXPR/TRAVEL_TIME_EXPR, with a composite (tmc|bucket)
+# String key so ONE parameterized expression covers every resolution; the
+# element-wise mapValues division pairs each bucket's delay sum with its
+# distinct-date count. coalesce(...,0) is load-bearing twice: (1) it keeps
+# sumMap/uniqExactMap key sets aligned (Map values can't be Nullable — round
+# 34; an all-missing bucket dropped from one map but not the other would
+# misalign the division), and (2) it reproduces the old tool's semantics —
+# missing-reading rows (tt=0) contributed 0 delay AND counted toward the
+# bucket's divisor there too. Divisor is DISTINCT DATES, not the old
+# numEpochs/epochsInTimeRange rowcount: identical at 5-minutes/day grain
+# (proven offline on report 787's arms, worst rel err 1.6e-15 vs two-step
+# ground truth), deliberately more correct at weekday grain where the old
+# rowcount divisor overstates sparse-data averages by up to +283% on the same
+# fixture — the round-32/round-17 "surface correct" choice, documented in the
+# task file. fn:"exempt" (self-aggregating).
+def _avg_delay_summary_expr(bucket_expr):
+    key = f"concat(ds.tmc, '|', toString({bucket_expr}))"
+    inner = DELAY_EXPR.rsplit(" as ", 1)[0]
+    return ("arrayAvg(arrayMap((s, d) -> s / d, "
+            f"mapValues(sumMap(map({key}, coalesce({inner}, 0)))), "
+            f"mapValues(uniqExactMap(map({key}, ds.date))))) "
+            "as avg_hours_of_delay")
+
+
+AVG_DELAY_SUMMARY_5MIN_EXPR = _avg_delay_summary_expr("ds.epoch")
+AVG_DELAY_SUMMARY_DAY_EXPR = _avg_delay_summary_expr("ds.date")
+AVG_DELAY_SUMMARY_WEEKDAY_EXPR = _avg_delay_summary_expr("toDayOfWeek(ds.date)")
 META_1946_JOIN = {
     "source": 1946, "view": 3298,
     "sourceInfo": {
@@ -860,6 +911,60 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": SPEED_SUMMARY_EXPR,
                   "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
         "join": {"table1": META_1946_JOIN},
+        "display": {"legend": {"show": False}},
+    },
+    # Round 36: the remaining Phase A summary measures — same round-34 summary
+    # shape (one bar per comparison-series arm, whole-range aggregate, legend
+    # hidden). travelTime is TRAVEL_TIME_EXPR verbatim (the old
+    # travelTimeAllReducer IS the same two-level fold — round 35's unification
+    # argument applies unchanged; no join override needed, the expression only
+    # touches ds columns). hoursOfDelay is sum(DELAY_EXPR) — the old
+    # sumReducer over bucket sums collapses to one plain sum, so the ordinary
+    # fn:"sum" path applies and resolution cancels out entirely.
+    "tmc_travel_time_summary_bar_graph": {
+        "graphType": "BarGraph", "xAxis": "__series", "categorize": False,
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Travel Time (min)"},
+        "display": {"legend": {"show": False}},
+    },
+    "tmc_delay_summary_bar_graph": {
+        "graphType": "BarGraph", "xAxis": "__series", "categorize": False,
+        "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                  "target": "yAxis", "fn": "sum",
+                  "customName": "Hours of Delay"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "display": {"legend": {"show": False}},
+    },
+    # avgHoursOfDelay is the one summary measure where resolution changes the
+    # value (bucket-grain-dependent mean) — one template per resolution the
+    # corpus actually uses (survey in the round-36 task-file notes: 63×5-min,
+    # 12×day, 1×weekday); see _avg_delay_summary_expr above for the formula.
+    "tmc_avg_delay_summary_bar_graph_5min": {
+        "graphType": "BarGraph", "xAxis": "__series", "categorize": False,
+        "yAxis": {"type": "calculated", "show": True,
+                  "name": AVG_DELAY_SUMMARY_5MIN_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "display": {"legend": {"show": False}},
+    },
+    "tmc_avg_delay_summary_bar_graph_day": {
+        "graphType": "BarGraph", "xAxis": "__series", "categorize": False,
+        "yAxis": {"type": "calculated", "show": True,
+                  "name": AVG_DELAY_SUMMARY_DAY_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "display": {"legend": {"show": False}},
+    },
+    "tmc_avg_delay_summary_bar_graph_weekday": {
+        "graphType": "BarGraph", "xAxis": "__series", "categorize": False,
+        "yAxis": {"type": "calculated", "show": True,
+                  "name": AVG_DELAY_SUMMARY_WEEKDAY_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
         "display": {"legend": {"show": False}},
     },
 }
