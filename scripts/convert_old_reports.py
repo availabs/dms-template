@@ -280,41 +280,44 @@ ALL_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday",
 # Templates the converter can mint if missing. Each is built from the existing
 # `tmc_travel_time_line_graph` row's stateJson (externalSource/display/etc.
 # stay consistent with what the UI produced) with targeted mutations.
-# nullIf(col, 0) — same 0-as-missing fix as _SPEED_CAR_EXPR/_SPEED_TRUCK_EXPR
-# below (round 9), applied here to close round 9's own "noticed, NOT fixed"
-# follow-up (round 23): the CH fact table stores 0 (not NULL) for missing
-# travel_time_all_vehicles readings, so the bare division poisons avg() with
-# inf wherever a 0-row exists (ClickHouse serializes the resulting inf as JSON
-# null). No car/truck fallback column to coalesce into here (this expr's own
-# source IS travel_time_all_vehicles) — nullIf alone restores the old
-# NULL-skipping Postgres semantic.
-SPEED_EXPR = ("((table1.miles * 3600) / nullIf(ds.travel_time_all_vehicles, 0)) "
-              "as speed")
-# Bar Graph Summary (round 34): ONE whole-range value per route/arm — the old
-# speedAllReducer (transportNY tmc_graphs/utils/dataTypes.js): route speed =
-# total miles * 3600 / sum over TMCs of (mean travel time per TMC). A
-# two-level aggregate within one arm, expressed flat via ClickHouse map
-# combinators: avgMapIf computes the per-TMC means inside a single aggregate
-# pass (the -If leg reproduces nullIf(tt,0)'s 0-as-missing skip — Map values
-# can't be Nullable, avgMap over nullIf() 500s, confirmed live), maxMap picks
-# each TMC's (constant) joined miles, arraySum composes across TMCs.
-# fn:"exempt" (self-aggregating, round 25/32 precedent). Live-verified
-# 2026-07-13 against report 520 comp-1 ("WB Arterial Weave 2018", 3 TMCs,
-# 2018 Mon-Fri epochs 84-227): 23.0307 mph vs the old UI's displayed 23.05
-# (0.09% residual — holidays/data-revision noise, not the epoch boundary),
-# vs 26.02 (+13%) under the avg-of-per-row-speeds semantics every
-# pre-round-34 speed template still uses (backport pending — task file).
-SPEED_SUMMARY_EXPR = (
+# Old-faithful two-level route speed (round 34/35): the old tool's
+# speedReducer family (transportNY tmc_graphs/utils/dataTypes.js) is a
+# TWO-LEVEL aggregate — mean travel time per TMC first, then compose across
+# the route's TMCs: route speed = total miles * 3600 / sum over TMCs of
+# (mean tt per TMC). Expressed flat via ClickHouse map combinators: avgMapIf
+# computes the per-TMC means inside a single aggregate pass (the -If leg
+# reproduces nullIf(tt,0)'s 0-as-missing skip — Map values can't be Nullable,
+# avgMap over nullIf() 500s, confirmed live; the CH fact table stores 0, not
+# NULL, for missing readings — round 9/23), maxMap picks each TMC's
+# (constant) joined miles, arraySum composes across TMCs. fn:"exempt"
+# (self-aggregating, round 25/32 precedent). The SAME expression is correct
+# at every grouping (round 35, verified against two-step ground truth SQL:
+# whole-range, per-date and per-epoch GROUP BY all match exactly): per
+# x-bucket it equals the old per-bin speedReducer; a single-TMC group
+# degrades to miles*3600/avg(tt) = the old speedTmcReducer. Replaces the
+# per-row approximation avg(miles*3600/nullIf(tt,0)) used in rounds 1-34,
+# which round 34 measured at +13% off the old UI's displayed value
+# (26.02 vs 23.03 on report 520 comp-1, "WB Arterial Weave 2018").
+SPEED_EXPR = (
     "(arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) * 3600) / "
     "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
     "ds.travel_time_all_vehicles != 0))) as speed")
-# Same fix, for the plain (non-calculated) travel_time_all_vehicles column
-# tmc_travel_time_bar_graph_day averages directly — round 9 flagged that
-# averaging raw 0-rows silently drags the mean down vs. the old NULL-skipping
-# behavior, without the inf/null symptom (no division involved here, just a
-# direct avg). Recast as a calculated column so nullIf can apply.
-TRAVEL_TIME_EXPR = ("nullIf(ds.travel_time_all_vehicles, 0) "
-                     "as travel_time_all_vehicles")
+# Bar Graph Summary (round 34) proved this expression live first (one
+# whole-range value per arm, old allReducer semantics); round 35 unified the
+# constants — keeping the summary's own name so its TEMPLATE_SPECS entry
+# reads naturally and, load-bearing, stays byte-identical (no spurious drift
+# on the already-live-verified summary template).
+SPEED_SUMMARY_EXPR = SPEED_EXPR
+# Old-faithful route travel time (round 35): same two-level shape — the old
+# travelTime measure is the ROUTE TRAVERSAL time in MINUTES (sum over TMCs of
+# each TMC's mean tt, / 60), not the mean single-segment time in seconds that
+# rounds 1-34 rendered (avg(tt) — wrong quantity AND scale; round 34 measured
+# 103.5s vs the old tool's 4.58min on the report-520 fixture). Same avgMapIf
+# 0-as-missing skip as SPEED_EXPR (subsumes round 23's nullIf fix).
+TRAVEL_TIME_EXPR = (
+    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
+    "ds.travel_time_all_vehicles != 0))) / 60 "
+    "as travel_time_all_vehicles")
 # Old hoursOfDelay (avail-falcor getHoursOfDelay.js's calcDelay/getAADT): per
 # epoch, raw_delay = max(0, tt - miles/max(20, 0.6*speedlimit)*3600)/3600,
 # weighted by AADT/facil * the epoch's AADT-distribution share, summed. The
@@ -580,15 +583,42 @@ MONTH_EXPR = "toStartOfMonth(ds.date) as month"
 # `unmapped_graph` (same "no chart equivalent" treatment as Route Map/Bar
 # Graph Summary), same as every other graph type with no chart equivalent.
 TEMPLATE_SPECS = {
+    # Round 35: the 3 hand-built originals (the pre-converter, UI-authored
+    # rows every other template is minted from) brought under spec governance
+    # so ensure_graph_templates' drift detection reaches them — they were the
+    # only live speed/TT templates NOT updated by round 23's nullIf fix
+    # (confirmed by dumping the rows: both speed ones still carried the bare
+    # `(table1.miles * 3600)/ ds.travel_time_all_vehicles` division, and the
+    # travel-time one averaged the plain non-calculated column). Their
+    # xAxis/categorize/join stay whatever the live rows already have (drift
+    # replaces only the yAxis dict); the spec shapes below match the live
+    # rows so a from-scratch mint would also be correct.
+    "tmc_speed_line_graph": {
+        "graphType": "LineGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
+    },
+    "tmc_travel_time_line_graph": {
+        "graphType": "LineGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Travel Time (min)"},
+    },
+    "tmc_speed_grid_graph": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "color", "fn": "exempt", "customName": "Speed (mph)"},
+    },
     "tmc_speed_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
         "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
     },
     "tmc_travel_time_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Travel Time (min)"},
     },
     "tmc_delay_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
@@ -672,61 +702,65 @@ TEMPLATE_SPECS = {
     "tmc_speed_bar_graph_5min": {
         "graphType": "BarGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
     },
     "tmc_speed_bar_graph_hour": {
         "graphType": "BarGraph",
         "xAxis": {"type": "calculated", "show": True, "name": HOUR_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
     },
     "tmc_speed_bar_graph_15min": {
         "graphType": "BarGraph",
         "xAxis": {"type": "calculated", "show": True, "name": QUARTER_HOUR_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
     },
     "tmc_speed_bar_graph_month": {
         "graphType": "BarGraph",
         "xAxis": {"type": "calculated", "show": True, "name": MONTH_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
     },
     "tmc_speed_bar_graph_weekday": {
         "graphType": "BarGraph",
         "xAxis": {"type": "calculated", "show": True, "name": WEEKDAY_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
     },
     "tmc_travel_time_bar_graph_5min": {
         "graphType": "BarGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Travel Time (min)"},
     },
     "tmc_travel_time_bar_graph_hour": {
         "graphType": "BarGraph",
         "xAxis": {"type": "calculated", "show": True, "name": HOUR_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Travel Time (min)"},
     },
     "tmc_travel_time_bar_graph_month": {
         "graphType": "BarGraph",
         "xAxis": {"type": "calculated", "show": True, "name": MONTH_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Travel Time (min)"},
     },
     "tmc_travel_time_bar_graph_weekday": {
         "graphType": "BarGraph",
         "xAxis": {"type": "calculated", "show": True, "name": WEEKDAY_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
-                  "target": "yAxis", "fn": "avg"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Travel Time (min)"},
     },
     # TMC Grid Graph shape (xAxis=epoch, target=color) mirroring
     # tmc_speed_grid_graph/the CO2 grid templates above — travelTime is the
@@ -735,7 +769,8 @@ TEMPLATE_SPECS = {
     "tmc_travel_time_grid_graph": {
         "graphType": "GridGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
-                  "target": "color", "fn": "avg"},
+                  "target": "color", "fn": "exempt",
+                  "customName": "Travel Time (min)"},
     },
     # Round 32 (2026-07-10): avgHoursOfDelay — see AVG_DELAY_EXPR's own comment
     # for the formula derivation. `fn: "exempt"` throughout since the
@@ -1151,7 +1186,14 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         existing = templates[name]
         existing_state = json.loads(existing["data"]["stateJson"])
         cols = existing_state["columns"]
-        y_idx = next((i for i, c in enumerate(cols) if c.get("target") == "yAxis"), None)
+        # Match the value column by the spec's own target — GridGraph value
+        # columns are target "color", not "yAxis" (round 35: the hardcoded
+        # "yAxis" lookup made every grid template silently invisible to
+        # drift detection; caught in the backport dry-run when both grid
+        # specs failed to fire).
+        y_target = spec["yAxis"].get("target", "yAxis")
+        y_idx = next((i for i, c in enumerate(cols)
+                      if c.get("target") == y_target), None)
         # Drift = the whole yAxis column dict (not just the expression name —
         # fn/customName changes matter too, e.g. round 34's summary legend
         # fix) or any spec display patch key the live row doesn't match.
@@ -1442,17 +1484,20 @@ def ensure_route_compare_template(measure, templates, dry_run):
     raw_expr, alias = MEASURE_EXPR[measure].rsplit(" as ", 1)
     name = f"route_compare_{measure}"
     existing = templates.get(name)
-    if existing is not None:
-        return templates
-    base = templates.get(TEMPLATE_BASE_NAME)
-    if not base:
-        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
-    base_state = json.loads(base["data"]["stateJson"])
-    series_col = next(c for c in base_state["columns"]
-                      if c.get("name") == "__series")
+    # Round 35: MEASURE_EXPR entries are now SELF-AGGREGATING (the two-level
+    # map-combinator route expressions, fn "exempt") — no avg() wrapping
+    # anywhere in this template (avg(<aggregate>) is invalid SQL). The
+    # whole-range single value per arm this component wants is exactly what
+    # the expression computes — and it is now the old tool's real
+    # route-level semantics (round 34's ground truth), not the
+    # per-row-average approximation rounds 25-34 rendered. customName keeps
+    # the ~200-char expression out of the table header (TableHeaderCell
+    # falls back to the column's full name otherwise — same label-fallback
+    # class as round 34's summary legend squeeze).
     value_col = {"type": "calculated", "show": True,
-                 "name": f"{raw_expr} as {alias}", "fn": "avg"}
-    agg_expr = f"avg({raw_expr})"
+                 "name": f"{raw_expr} as {alias}", "fn": "exempt",
+                 "customName": MEASURE_NAMES.get(measure, measure)}
+    agg_expr = raw_expr
     anchor = f"__ANCHOR__({agg_expr})"
     delta_col = {
         "type": "delta", "display": "calculated", "show": True,
@@ -1469,18 +1514,50 @@ def ensure_route_compare_template(measure, templates, dry_run):
         # identical to leaving fn unset — it only changes this count.
         "fn": "exempt",
         # round(...) matters beyond cosmetics: the anchor's own row computes
-        # `avg(expr)` twice — once inline, once inside __ANCHOR__'s subquery —
-        # and ClickHouse's two evaluations aren't bit-identical, leaving a
-        # ~1e-14 floating-point residual instead of exact 0. DeltaView's
-        # neutral/gray "no change" state (ui/columnTypes/delta.jsx) is a
-        # strict `n === 0` check, so that residual fell through to the
-        # colored arrow branch — flipping red/green at random (whichever way
-        # the noise happened to round) and making the anchor row impossible
-        # to visually distinguish (found live, 2026-07-10). Rounding to 2
-        # decimals is far coarser than the noise floor, so the anchor always
-        # comes back as a clean, exact 0.
+        # the aggregate expression twice — once inline, once inside
+        # __ANCHOR__'s subquery — and ClickHouse's two evaluations aren't
+        # bit-identical, leaving a ~1e-14 floating-point residual instead of
+        # exact 0. DeltaView's neutral/gray "no change" state
+        # (ui/columnTypes/delta.jsx) is a strict `n === 0` check, so that
+        # residual fell through to the colored arrow branch — flipping
+        # red/green at random (whichever way the noise happened to round)
+        # and making the anchor row impossible to visually distinguish
+        # (found live, 2026-07-10). Rounding to 2 decimals is far coarser
+        # than the noise floor, so the anchor always comes back as a clean,
+        # exact 0.
         "name": f"round(({agg_expr} - {anchor}) / {anchor} * 100, 2) as {alias}_delta",
+        "customName": "% vs Main",
     }
+    if existing is not None:
+        # Round 35 drift detection — same update-in-place idiom as
+        # ensure_graph_templates. This function used to mint once and return
+        # early, so a live route_compare_* row silently went stale whenever
+        # MEASURE_EXPR changed (exactly what the round-35 speed/TT backport
+        # does). Column 0 is the __series col this function itself minted;
+        # only the value/delta columns are spec-derived.
+        ex_state = json.loads(existing["data"]["stateJson"])
+        ex_cols = ex_state.get("columns") or []
+        if len(ex_cols) == 3 and ex_cols[1] == value_col and ex_cols[2] == delta_col:
+            return templates  # no drift
+        ex_state["columns"] = [ex_cols[0], value_col, delta_col]
+        new_data = {**existing["data"],
+                    "stateJson": json.dumps(ex_state),
+                    "updatedAt": now_iso()}
+        if dry_run:
+            print(f"[dry-run] would update drifted template '{name}' "
+                  f"id={existing['id']} (value/delta expr changed)")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} "
+                  f"(value/delta expr drift fix)")
+        templates[name] = {"id": existing["id"], "data": new_data}
+        return templates
+    base = templates.get(TEMPLATE_BASE_NAME)
+    if not base:
+        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+    base_state = json.loads(base["data"]["stateJson"])
+    series_col = next(c for c in base_state["columns"]
+                      if c.get("name") == "__series")
     columns = [series_col, value_col, delta_col]
     state = {
         "externalSource": base_state["externalSource"],
