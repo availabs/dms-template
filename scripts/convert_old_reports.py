@@ -118,6 +118,18 @@ GRAPH_TEMPLATE_MAP = {
     ("Route Bar Graph", "avgHoursOfDelay", "hour", "travel_time_all"): "tmc_avg_delay_bar_graph_hour",
     ("Route Bar Graph", "avgHoursOfDelay", "month", "travel_time_all"): "tmc_avg_delay_bar_graph_month",
     ("TMC Grid Graph", "avgHoursOfDelay", "5-minutes", "travel_time_all"): "tmc_avg_delay_grid_graph",
+    # Round 34 (2026-07-13): Bar Graph Summary — one bar per route comp, each
+    # bar ONE whole-date-range aggregate (old allReducer semantics; see
+    # SPEED_SUMMARY_EXPR). Resolution never affects a whole-range aggregate
+    # (same class as Info Box, round 31), so every real resolution key maps
+    # to the ONE summary template. None-resolution keys (the mixed-resolution
+    # ambiguity sentinel) still gap-log — a resolution-agnostic lookup bypass
+    # is a follow-up; static keys only for now. Speed only this round; the
+    # other Phase A measures (travelTime/hoursOfDelay/avgHoursOfDelay) follow
+    # the scoped plan in the task file.
+    ("Bar Graph Summary", "speed", "5-minutes", "travel_time_all"): "tmc_speed_summary_bar_graph",
+    ("Bar Graph Summary", "speed", "day", "travel_time_all"): "tmc_speed_summary_bar_graph",
+    ("Bar Graph Summary", "speed", "15-minutes", "travel_time_all"): "tmc_speed_summary_bar_graph",
     # Route Info Box / TMC Info Box deliberately have NO entries here — see
     # INFO_BOX_GRAIN below, they can't use one static template name.
 }
@@ -278,6 +290,24 @@ ALL_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday",
 # NULL-skipping Postgres semantic.
 SPEED_EXPR = ("((table1.miles * 3600) / nullIf(ds.travel_time_all_vehicles, 0)) "
               "as speed")
+# Bar Graph Summary (round 34): ONE whole-range value per route/arm — the old
+# speedAllReducer (transportNY tmc_graphs/utils/dataTypes.js): route speed =
+# total miles * 3600 / sum over TMCs of (mean travel time per TMC). A
+# two-level aggregate within one arm, expressed flat via ClickHouse map
+# combinators: avgMapIf computes the per-TMC means inside a single aggregate
+# pass (the -If leg reproduces nullIf(tt,0)'s 0-as-missing skip — Map values
+# can't be Nullable, avgMap over nullIf() 500s, confirmed live), maxMap picks
+# each TMC's (constant) joined miles, arraySum composes across TMCs.
+# fn:"exempt" (self-aggregating, round 25/32 precedent). Live-verified
+# 2026-07-13 against report 520 comp-1 ("WB Arterial Weave 2018", 3 TMCs,
+# 2018 Mon-Fri epochs 84-227): 23.0307 mph vs the old UI's displayed 23.05
+# (0.09% residual — holidays/data-revision noise, not the epoch boundary),
+# vs 26.02 (+13%) under the avg-of-per-row-speeds semantics every
+# pre-round-34 speed template still uses (backport pending — task file).
+SPEED_SUMMARY_EXPR = (
+    "(arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) * 3600) / "
+    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
+    "ds.travel_time_all_vehicles != 0))) as speed")
 # Same fix, for the plain (non-calculated) travel_time_all_vehicles column
 # tmc_travel_time_bar_graph_day averages directly — round 9 flagged that
 # averaging raw 0-rows silently drags the mean down vs. the old NULL-skipping
@@ -771,6 +801,32 @@ TEMPLATE_SPECS = {
                   "target": "color", "fn": "exempt"},
         "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
     },
+    # Round 34 (2026-07-13): Bar Graph Summary — the comparison-series
+    # discriminator itself is the x axis (one bar per arm, one whole-range
+    # aggregate each; groupBy __series only — the proven Info Box query
+    # shape). "categorize": False (not None/absent) tells
+    # ensure_graph_templates to OMIT the base's __series categorize column
+    # instead of inheriting it — the same column can't be both axes, and a
+    # duplicate "__series" entry would collide in every name-keyed column map
+    # downstream. Old per-route bar colors are NOT reproduced yet (bars render
+    # in a single palette color; same treatment as converted line graphs,
+    # which use the template palette rather than the old comps' saved colors).
+    # display.legend.show=False: old Bar Graph Summary has no legend (the
+    # x-axis labels already name each bar) — and, load-bearing, not cosmetic:
+    # BarGraph.jsx lays the legend out as an unconstrained flex sibling of the
+    # flex-1 chart, so a legend label as long as this raw expression (the
+    # legend key falls back to the column's full name) takes the entire row
+    # and squeezes the chart to 0 width — confirmed live on report 520's
+    # first render (3 bars present in the SVG, container 0px wide). Same
+    # mechanism class as the parked round-9 "bar-graph width squeeze".
+    # customName covers any remaining label fallbacks (tooltips etc.).
+    "tmc_speed_summary_bar_graph": {
+        "graphType": "BarGraph", "xAxis": "__series", "categorize": False,
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_SUMMARY_EXPR,
+                  "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
+        "join": {"table1": META_1946_JOIN},
+        "display": {"legend": {"show": False}},
+    },
 }
 TEMPLATE_BASE_NAME = "tmc_travel_time_line_graph"
 # Route Compare Component's per-measure raw expression (see ROUTE_COMPARE_BUCKET
@@ -931,6 +987,67 @@ def route_settings_gaps(settings, comp_name, gaps):
                      "detail": settings["relativeDate"]})
 
 
+_MONTH_NAMES = {"01": "January", "02": "February", "03": "March",
+                "04": "April", "05": "May", "06": "June", "07": "July",
+                "08": "August", "09": "September", "10": "October",
+                "11": "November", "12": "December"}
+
+
+def _comp_year_string(s):
+    # transportNY reports/store/index.js getYearString — including its quirky
+    # `${end}-${start}` order for multi-year advanced ranges, kept verbatim.
+    if s.get("year") != "advanced" and not s.get("useRelativeDateControls"):
+        return str(s.get("year"))
+    start, end = str(s.get("startDate"))[:4], str(s.get("endDate"))[:4]
+    return start if start == end else f"{end}-{start}"
+
+
+def _comp_month_string(s):
+    month = s.get("month")
+    if month == "all":
+        return f"Jan-Dec, {s.get('year')}"
+    if month != "advanced" and not s.get("useRelativeDateControls"):
+        name = _MONTH_NAMES.get(str(month).zfill(2))
+        return f"{name[:3]}, {s.get('year')}" if name else str(month)
+    start, end = str(s.get("startDate")), str(s.get("endDate"))
+    m1, m2, y1, y2 = start[4:6], end[4:6], start[:4], end[:4]
+    if y1 == y2:
+        if m1 == m2:
+            return f"{_MONTH_NAMES[m1][:3]}, {y1}"
+        return f"{_MONTH_NAMES[m1][:3]}-{_MONTH_NAMES[m2][:3]}, {y1}"
+    return _comp_year_string(s)
+
+
+def _comp_date_string(s):
+    start, end = str(s.get("startDate")), str(s.get("endDate"))
+    if start == end:
+        return f"{_MONTH_NAMES[start[4:6]][:3]} {int(start[6:])}, {start[:4]}"
+    return _comp_month_string(s)
+
+
+def route_comp_display_name(rc, old_route):
+    """Old client's getRouteCompName (transportNY reports/store/index.js:2703):
+    a comp's display name is settings.compTitle with {name}/{year}/{month}/
+    {date} substituted (getYearString/getMonthString/getDateString ported
+    above); plain route name when compTitle is empty. Without this, sibling
+    comps of the same route (e.g. report 520's five "WB Arterial Weave" comps
+    differing only in year/time window) all get the bare route name — and
+    since comp names become comparison-series `__series` labels, every graph
+    visually merges them into one series (caught live by the user on the
+    first report_520 conversion, 2026-07-13)."""
+    name = rc.get("name") or (old_route or {}).get("name") or ""
+    s = rc.get("settings") or {}
+    if not s.get("compTitle"):
+        return name
+    try:
+        return (s["compTitle"].replace("{name}", name)
+                .replace("{year}", _comp_year_string(s))
+                .replace("{month}", _comp_month_string(s))
+                .replace("{date}", _comp_date_string(s)))
+    except Exception:
+        return name  # malformed settings — keep converting on the plain name
+
+
 def build_route_entry(rc, old_route, graph_tracking_ids, old_report_id, gaps,
                       tmc_override=None):
     settings = rc.get("settings") or {}
@@ -1035,9 +1152,19 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         existing_state = json.loads(existing["data"]["stateJson"])
         cols = existing_state["columns"]
         y_idx = next((i for i, c in enumerate(cols) if c.get("target") == "yAxis"), None)
-        if y_idx is None or cols[y_idx].get("name") == spec["yAxis"]["name"]:
+        # Drift = the whole yAxis column dict (not just the expression name —
+        # fn/customName changes matter too, e.g. round 34's summary legend
+        # fix) or any spec display patch key the live row doesn't match.
+        display_patch = spec.get("display") or {}
+        existing_display = existing_state.get("display") or {}
+        display_drift = any(existing_display.get(k) != v
+                            for k, v in display_patch.items())
+        if y_idx is None or (cols[y_idx] == dict(spec["yAxis"])
+                             and not display_drift):
             continue  # no drift
         cols[y_idx] = dict(spec["yAxis"])
+        for k, v in display_patch.items():
+            existing_state.setdefault("display", {})[k] = v
         new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
                     "updatedAt": now_iso()}
         if dry_run:
@@ -1064,6 +1191,17 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         # weekday-name buckets) a full column dict supplied as-is.
         if isinstance(spec["xAxis"], dict):
             x_col = spec["xAxis"]
+        elif spec["xAxis"] == "__series":
+            # Bar Graph Summary shape (round 34): the comparison-series
+            # discriminator IS the x axis — one bar per arm. `__series` isn't
+            # in externalSource.columns (it's the base stateJson's own
+            # synthesized comparison-series column), so retarget that one.
+            # No "sort": arms should keep their comparisonSeries order, not
+            # re-sort alphabetically (BarGraph only sorts when the index
+            # column carries a sort key).
+            x_src = next(c for c in state["columns"]
+                         if c.get("name") == "__series")
+            x_col = {**x_src, "target": "xAxis"}
         else:
             x_src = next(c for c in state["externalSource"]["columns"]
                          if c.get("name") == spec["xAxis"])
@@ -1075,9 +1213,13 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         # overlay). A spec-supplied `categorize` (e.g. "tmc", for a per-TMC
         # breakdown like Hours of Delay Graph) replaces it with a real,
         # grouped data column instead — same plain-name-or-full-dict shape as
-        # xAxis above.
+        # xAxis above. `categorize: False` omits the column entirely (Bar
+        # Graph Summary — __series is already the x axis; a duplicate entry
+        # of the same name would collide in every name-keyed column map).
         cat_spec = spec.get("categorize")
-        if cat_spec is None:
+        if cat_spec is False:
+            cat_col = None
+        elif cat_spec is None:
             cat_col = next(c for c in state["columns"]
                            if c.get("name") == "__series")
         elif isinstance(cat_spec, dict):
@@ -1087,8 +1229,11 @@ def ensure_graph_templates(needed_names, templates, dry_run):
                            if c.get("name") == cat_spec)
             cat_col = {**cat_src, "show": True, "target": "categorize",
                        "group": True}
-        state["columns"] = [spec["yAxis"], x_col, cat_col]
+        state["columns"] = [spec["yAxis"], x_col] + (
+            [cat_col] if cat_col else [])
         state["display"]["graphType"] = spec["graphType"]
+        for k, v in (spec.get("display") or {}).items():
+            state["display"][k] = v
         if spec.get("join"):
             state["join"] = {"sources": spec["join"]}
         if dry_run:
@@ -1732,6 +1877,26 @@ def convert_report(old_id, dry_run=False, replace=False):
     if old.get("station_comps"):
         gaps.append({"kind": "station_comps",
                      "detail": f"{len(old['station_comps'])} station comps not converted"})
+    # Stamp each comp with its old-client display name (settings.compTitle
+    # substitution — see route_comp_display_name). These become the
+    # comparison-series `__series` labels, so sibling comps of one route MUST
+    # get distinct names or their arms visually merge into one series. Any
+    # residual collision (two comps whose resolved titles are literally
+    # identical) is deduped with the compId — the old client keyed rows by
+    # compId and only DISPLAYED the name, so duplicates were harmless there;
+    # here the label IS the series key.
+    seen_names = {}
+    for rc in route_comps:
+        name = route_comp_display_name(rc, old_routes.get(str(rc.get("routeId"))))
+        if name in seen_names:
+            deduped = f"{name} ({rc.get('compId')})"
+            gaps.append({"kind": "route_name_deduped", "route": name,
+                         "detail": f"{rc.get('compId')} renamed to '{deduped}' "
+                                   f"(same resolved title as {seen_names[name]})"})
+            name = deduped
+        else:
+            seen_names[name] = rc.get("compId")
+        rc["name"] = name
     # -- per-graph analysis + template mapping
     comps_by_id = {rc.get("compId"): rc for rc in route_comps if rc.get("compId")}
     graph_templates = load_graph_templates()
