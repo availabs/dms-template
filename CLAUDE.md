@@ -130,7 +130,12 @@ dms page list --format json > scratchpad/my-site/pages.json
 
 ## Task Management
 
-The DMS library (in `src/dms/`) has a planning system for tracking work. **Before implementing any task, read `src/dms/planning/planning-rules.md`** — it defines the workflow for task files, progress tracking, and completion. The task file in `planning/tasks/current/` is the source of truth for implementation status and must be updated as work progresses, not just at the end.
+There are two separate planning systems, split by what the task touches:
+
+- **`planning/` (repo root)** — tasks that touch dms-template itself: `src/themes/`, `data-types/`, deployment/config, site content coordination. Read `planning/planning-rules.md` before implementing.
+- **`src/dms/planning/`** — tasks that touch the `@availabs/dms` library submodule. Read `src/dms/planning/planning-rules.md` before implementing.
+
+**Before implementing any task, read the relevant `planning-rules.md`** — it defines the workflow for task files, progress tracking, and completion. The task file in the matching `planning/tasks/current/` is the source of truth for implementation status and must be updated as work progresses, not just at the end. If a root-level task turns out to require a library change, continue that part of the work under `src/dms/planning/` instead.
 
 ## Naming Conventions
 

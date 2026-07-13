@@ -1,0 +1,7 @@
+/* Tessera v6 — production CSS additions.
+   Canonical content lives in ../_shared.css (browsers MIME-block
+   stylesheets without a .css extension under plain http.server, so the
+   canonical file keeps the .css name and this shim points at it —
+   skill §8.0.5, one-source rule). At theme-translation time, inline
+   _shared.css here. */
+@import url("../_shared.css");

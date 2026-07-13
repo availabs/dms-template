@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><link rel="stylesheet" href="_card.css"></head>
+<body>
+  <svg viewBox="0 0 560 180" width="100%" height="180" font-family="IBM Plex Mono, monospace" font-size="11">
+    <!-- axes -->
+    <line x1="40" y1="20" x2="40" y2="150" stroke="#D9D2C2" stroke-width="1"/>
+    <line x1="40" y1="150" x2="540" y2="150" stroke="#D9D2C2" stroke-width="1"/>
+
+    <!-- horizontal gridlines (hairline) -->
+    <line x1="40" y1="115" x2="540" y2="115" stroke="#D9D2C2" stroke-width="1" stroke-dasharray="2 4"/>
+    <line x1="40" y1="80" x2="540" y2="80" stroke="#D9D2C2" stroke-width="1" stroke-dasharray="2 4"/>
+    <line x1="40" y1="45" x2="540" y2="45" stroke="#D9D2C2" stroke-width="1" stroke-dasharray="2 4"/>
+
+    <!-- bars: 12 weeks, two series -->
+    <g>
+      <!-- series 1 (oxide) -->
+      <rect x="50"  y="92" width="14" height="58" fill="#B5532C"/>
+      <rect x="90"  y="84" width="14" height="66" fill="#B5532C"/>
+      <rect x="130" y="74" width="14" height="76" fill="#B5532C"/>
+      <rect x="170" y="58" width="14" height="92" fill="#B5532C"/>
+      <rect x="210" y="50" width="14" height="100" fill="#B5532C"/>
+      <rect x="250" y="38" width="14" height="112" fill="#B5532C"/>
+      <rect x="290" y="42" width="14" height="108" fill="#B5532C"/>
+      <rect x="330" y="46" width="14" height="104" fill="#B5532C"/>
+      <rect x="370" y="56" width="14" height="94" fill="#B5532C"/>
+      <rect x="410" y="68" width="14" height="82" fill="#B5532C"/>
+      <rect x="450" y="78" width="14" height="72" fill="#B5532C"/>
+      <rect x="490" y="86" width="14" height="64" fill="#B5532C"/>
+
+      <!-- series 2 (verdigris) overlaid -->
+      <rect x="66"  y="110" width="14" height="40" fill="#5D8A85"/>
+      <rect x="106" y="106" width="14" height="44" fill="#5D8A85"/>
+      <rect x="146" y="100" width="14" height="50" fill="#5D8A85"/>
+      <rect x="186" y="92"  width="14" height="58" fill="#5D8A85"/>
+      <rect x="226" y="86"  width="14" height="64" fill="#5D8A85"/>
+      <rect x="266" y="80"  width="14" height="70" fill="#5D8A85"/>
+      <rect x="306" y="82"  width="14" height="68" fill="#5D8A85"/>
+      <rect x="346" y="84"  width="14" height="66" fill="#5D8A85"/>
+      <rect x="386" y="90"  width="14" height="60" fill="#5D8A85"/>
+      <rect x="426" y="96"  width="14" height="54" fill="#5D8A85"/>
+      <rect x="466" y="102" width="14" height="48" fill="#5D8A85"/>
+      <rect x="506" y="106" width="14" height="44" fill="#5D8A85"/>
+    </g>
+
+    <!-- axis labels -->
+    <text x="40" y="168" fill="#A7ADB6">W01</text>
+    <text x="250" y="168" fill="#A7ADB6">W26</text>
+    <text x="500" y="168" fill="#A7ADB6">W52</text>
+
+    <text x="20" y="153" fill="#A7ADB6" text-anchor="end">0</text>
+    <text x="20" y="118" fill="#A7ADB6" text-anchor="end">50</text>
+    <text x="20" y="83"  fill="#A7ADB6" text-anchor="end">100</text>
+    <text x="20" y="48"  fill="#A7ADB6" text-anchor="end">150</text>
+
+    <!-- legend -->
+    <g transform="translate(40 -2)">
+      <rect x="0" y="0" width="8" height="8" fill="#B5532C"/>
+      <text x="14" y="8" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#4A5160">unique listeners</text>
+      <rect x="140" y="0" width="8" height="8" fill="#5D8A85"/>
+      <text x="154" y="8" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#4A5160">avg session, min</text>
+    </g>
+  </svg>
+</body></html>

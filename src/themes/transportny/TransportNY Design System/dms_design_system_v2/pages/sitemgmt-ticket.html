@@ -47,20 +47,31 @@
       </aside>
 
       <div class="flex flex-1 items-start">
-        <div class="flex-1 min-w-0 flex flex-col">
-          <main class="mr-auto w-full max-w-[1280px] pl-12 pr-8 py-8">
-            <a href="sitemgmt-tickets.html" class="font-mono text-[11px] text-slate-500 hover:text-slate-800">← all tickets</a>
-            <div id="ticket" class="mt-3"></div>
-          </main>
-          <footer class="w-full bg-white border-t border-zinc-950/10 mt-6">
-            <div class="mr-auto w-full max-w-[1280px] pl-12 pr-8 py-4 flex items-center justify-between">
-              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
-                <a href="sitemgmt-overview.html" class="hover:text-slate-900">control room</a>
-                <a href="sitemgmt-tickets.html" class="hover:text-slate-900">tickets</a>
-              </div>
-              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS · QA v0.1 · mockup</span>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMB BAR ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <nav class="h-11 flex items-center font-mono text-[10.5px] uppercase tracking-[0.18em]" aria-label="Breadcrumb">
+                <a href="sitemgmt-overview.html" class="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#0f1722]"><svg class="size-4 text-[#37576B] relative -top-[1px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10"/></svg>Site Management</a>
+                <span class="text-slate-300 px-2">/</span>
+                <a href="sitemgmt-tickets.html" class="text-slate-500 hover:text-[#0f1722]">Tickets</a>
+                <span class="text-slate-300 px-2">/</span>
+                <span id="crumb" class="text-[#0f1722]"></span>
+              </nav>
             </div>
-          </footer>
+          </div>
+
+          <!-- ═════════ HEADER BAND (filled by JS) ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-5"><div id="hdr"></div></div>
+          </div>
+
+          <!-- ═════════ CONTENT BAND (filled by JS) ═════════ -->
+          <div class="w-full bg-[#ECEEF2] pt-6 pb-12">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8"><div id="ticket"></div></div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -87,20 +98,30 @@
   if(!t){ t = S.tickets.find(function(x){ return x.severity==='Blocker'; }) || S.tickets[0]; }
   var p = S.page(t.page);
   var surfLabel = p ? S.surface(p.surface).label : '';
+  var src = S.sourceOf(t);
 
   // --- header block ---
   var header =
-    '<div class="mb-5">'
+    '<div>'
+    + '<div class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-slate-400 mb-2">// ticket</div>'
     + '<div class="flex items-center flex-wrap gap-2 mb-2">'
     +   '<span class="font-mono text-[12px] text-slate-400">#'+esc(t.id)+'</span>'
     +   badge(t.severity, S.sevColor[t.severity])
     +   pill(t.priority, S.prioColor[t.priority])
     +   statusBadge(t.status)
+    +   badge(S.sourceLabel[src]+' found', S.sourceColor[src])
     + '</div>'
     + '<h1 class="font-display text-[26px] font-medium text-slate-900 leading-tight">'+esc(t.title)+'</h1>'
     + (p ? '<div class="mt-1.5 font-proxima text-[13px] text-slate-500">target · '
         + '<a href="sitemgmt-page.html?id='+encodeURIComponent(p.id)+'" class="text-blue-600 hover:text-blue-800 font-medium">'+esc(surfLabel)+' / '+esc(p.name)+'</a>'
-        + ' <span class="font-mono text-[11px] text-slate-400">'+esc(p.route)+'</span></div>' : '')
+        + ' <span class="font-mono text-[11px] text-slate-400">'+esc(p.route)+'</span>'
+        + ' · page is <span class="inline-flex items-center rounded px-1.5 py-[1px] text-[10px] font-medium '+S.stageColor[S.stageOf(p)]+'">'+esc(S.stageOf(p))+'</span></div>' : '')
+    + '<div class="mt-3 flex gap-2">'
+    +   (S.isOpen(t)
+          ? '<button class="font-proxima text-[13px] px-4 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-700">Mark resolved</button>'
+          : '<button class="font-proxima text-[13px] px-4 py-1.5 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50">Reopen</button>')
+    +   '<a href="sitemgmt-tickets.html" class="font-proxima text-[13px] px-4 py-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50">All tickets</a>'
+    + '</div>'
     + '</div>';
 
   // --- left card sections ---
@@ -145,6 +166,7 @@
     + '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-5">'
     +   '<div class="font-display text-[14px] font-medium text-slate-800 border-b border-slate-100 pb-2 mb-1">Details</div>'
     +   field('status', statusBadge(t.status))
+    +   field('source', badge(S.sourceLabel[src], S.sourceColor[src]))
     +   field('assignee', esc(t.assignee))
     +   field('reporter', esc(t.reporter))
     +   field('severity', badge(t.severity, S.sevColor[t.severity]))
@@ -180,9 +202,10 @@
     + '</div>';
 
   // --- assemble ---
+  document.getElementById('crumb').textContent = '#'+t.id;
+  document.getElementById('hdr').innerHTML = header;
   document.getElementById('ticket').innerHTML =
-    header
-    + '<div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">'
+    '<div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">'
     +   '<div>'+left+'</div>'
     +   rail
     + '</div>'

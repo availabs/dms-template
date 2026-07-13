@@ -35,6 +35,7 @@ import LogoNav from "./LogoNav";
 import QuickLinks from "./QuickLinks";
 import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
+import ReportRouteList from "./components/ReportRouteList"
 
 import icons from "./icons";
 
@@ -60,9 +61,9 @@ const textSettings = {
     slashKeys: [
       "displayMax", "displayHero", "displayXL", "displayLG", "displayMD", "displaySM", "displayXS",
       "displayItalicLG", "displayItalicMD",
-      "proseLG", "prose", "proseSM", "proseXS",
+      "proseLG", "prose", "proseSM", "proseXS", "prosePre",
       "metaMD", "metaSM", "metaXS", "metaAccent", "chip",
-      "kicker", "cardTitle", "cardTitleSM",
+      "kicker", "cardTitle", "cardTitleSM", "labelSM", "btnPrimary", "btnOutline",
       "statNum", "statXL", "statLG", "statMD",
     ],
   },
@@ -99,6 +100,8 @@ const textSettings = {
     prose:   `${F_SANS} text-[14.5px] leading-[1.65] text-slate-700`,
     proseSM: `${F_SANS} text-[12.5px] leading-[1.55] text-slate-600`,
     proseXS: `${F_SANS} text-[11.5px] leading-[1.5] text-slate-500`,
+    // prose that preserves authored line breaks (ticket steps-to-reproduce, multi-line notes)
+    prosePre: `${F_SANS} text-[14px] leading-[1.65] text-slate-700 whitespace-pre-line`,
 
     // ── Meta ladder (mono) — kickers, metadata, codes ──
     // The `!` (important) suffix on font/size/color overrides the
@@ -127,6 +130,17 @@ const textSettings = {
     cardTitle: `${F_DISP} font-medium text-[18px] leading-[1.15] tracking-tight uppercase ${INK}`,
     // Compact card title — Oswald uppercase 15px (mode / metric cards; cardTitle is 18px)
     cardTitleSM: `${F_DISP} font-medium text-[15px] leading-[1.15] tracking-tight uppercase ${INK}`,
+    // Proper-case display label — small stat-box / lifecycle-step labels ("In progress",
+    // "Resolved / closed") where the meta ladder's uppercase would shout. Oswald 12.5px medium.
+    labelSM: `${F_DISP} font-medium text-[12.5px] leading-[1.3] text-slate-700`,
+    // Primary action link-as-button — the brand press-button (blue face, darker bottom edge,
+    // Oswald caps). For links that should read as buttons (header-band actions like "Add ticket").
+    // `!` beats link/paragraph defaults (text color, underline) AND the dataCard value-cell
+    // paddings (px-3 pb-3) that leak in when the token styles a Card value wrapper — without
+    // py-0! the injected pb pushed the label off vertical center inside the fixed h-9.
+    btnPrimary: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+    // Secondary/outline action link-as-button — quiet neighbor to btnPrimary ("All tickets").
+    btnOutline: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
     // Stat giant — mono tabular figure (KPI / coverage numbers). Vertical margin
     // gives the big number breathing room from the label above + sublabel below
     // (statNum is used only on stat cards, so this margin is effectively per-instance).
@@ -233,16 +247,16 @@ const layout = {
       outerWrapper: "bg-white",
       wrapper:      "relative isolate flex min-h-svh w-full max-lg:flex-col",
       wrapper2:     "flex-1 flex flex-col items-stretch max-w-full min-h-screen",
-      wrapper3:     "flex flex-1 items-start",
-      childWrapper: "flex-1 flex flex-col h-full",
+      wrapper3:     "flex flex-1 items-start min-w-0",
+      childWrapper: "flex-1 flex flex-col h-full min-w-0",
     },
     {
       name: "app",
       outerWrapper: "bg-[#ECEEF2]",
       wrapper:      "relative isolate flex min-h-svh w-full max-lg:flex-col",
       wrapper2:     "flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60",
-      wrapper3:     "flex flex-1 items-start",
-      childWrapper: "flex-1 flex flex-col h-full bg-[#ECEEF2]",
+      wrapper3:     "flex flex-1 items-start min-w-0",
+      childWrapper: "flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0",
     },
     {
       name: "bare",
@@ -275,6 +289,17 @@ const layoutGroup = {
       wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 flex flex-col gap-6",
       wrapper3: "",
     },
+    // workbench — full-screen tool surface (Freight Atlas map v2): NO max-width,
+    // NO gutters, NO band padding. The single section (padding "p-0") fills
+    // everything beside the sidenav; height comes from the section's element
+    // (the Map component's `screen` = 100vh option). overflow-hidden so the map
+    // owns the viewport with no page scroll.
+    {
+      name: "workbench",
+      wrapper1: "w-full h-screen overflow-hidden bg-[#ECEEF2]",
+      wrapper2: "w-full h-full",
+      wrapper3: "h-full",
+    },
     // card — ONE white card floating on the grey pane, holding a run of sections as a
     // single composed unit (no inter-section grey gutters). The white surface + border
     // + rounding live on wrapper3 (the innermost band layer that directly wraps the
@@ -299,6 +324,16 @@ const layoutGroup = {
       name: "header",
       wrapper1: "w-full bg-white border-b border-zinc-950/10",
       wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2 flex flex-col gap-4",
+      wrapper3: "",
+    },
+    {
+      // breadcrumb — slim white bar (h-11) for a breadcrumb row, matching the datasets
+      // pages shell: full-width white band + hairline bottom border, content boxed to the
+      // same max-w-[1480px]/pl-12 as the content bands so the crumb left-aligns with them.
+      // Additive: only pages that opt a group into theme:"breadcrumb" use it.
+      name: "breadcrumb",
+      wrapper1: "w-full bg-white border-b border-zinc-950/10",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 h-11 flex items-center",
       wrapper3: "",
     },
     {
@@ -658,6 +693,18 @@ const multiselect = {
       error:            "mt-1 text-[12px] text-[#EF4444]",
     },
     {
+      // Prominent "primary control" — a featured single-select like the page-status
+      // pipeline-stage selector (mockup: bordered button + ring, display-16px value).
+      // Pick it per column with `activeStyle: "field"` on the column config. Inherits the
+      // menu / caret / token keys from `default` (styles[0]); only the trigger differs.
+      name: "field",
+      inputWrapper:      "flex w-full items-center gap-2 h-11 px-3 rounded-[6px] border border-[#37576B] ring-2 ring-[#37576B]/15 bg-white hover:bg-slate-50 cursor-pointer",
+      caretWrapper:      "ml-auto pl-1 text-slate-500",
+      input:             "flex-1 bg-transparent font-display text-[16px] font-medium text-[#0F1722] placeholder:text-slate-400 focus:outline-none",
+      singleValue:       "font-display text-[16px] font-medium text-[#0F1722]",
+      singlePlaceholder: "font-display text-[16px] text-slate-400",
+    },
+    {
       name: "compact",
       inputWrapper: "flex items-center gap-1.5 h-8 px-2.5 rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white text-[12px] cursor-pointer transition-colors",
       caretWrapper: "ml-1 text-slate-500",
@@ -927,10 +974,23 @@ const dataCard = {
       headerValueWrapperBorderBelow: "border-b border-zinc-950/5 rounded-none",
       value:                         "px-3 pb-3 text-[14px] text-[#0F1722]",
       valueWrapper:                  "min-h-[20px]",
+      // header↔value layout (Card `headerValueLayout`): col = stacked (the default,
+      // matching headerValueWrapper's `flex flex-col`), row = label-left / value-right.
+      // The row variants use `flex-row!` so they override headerValueWrapper's baked-in
+      // `flex-col`; without these keys `row` silently produced no direction (mis-stacked).
+      itemFlexCol:                   "flex-col",
+      itemFlexRow:                   "flex-row! items-center justify-between gap-3",
+      itemFlexColReverse:            "flex-col-reverse",
+      itemFlexRowReverse:            "flex-row-reverse! items-center justify-between gap-3",
       description:                   "font-proxima text-[12px] font-light text-slate-500 px-3 pb-2",
       itemBorder:                    "border border-zinc-950/5",
       cardBorder:                    "border border-zinc-950/10",
       cellBorderBelow:               "border-b border-zinc-950/5",
+      // form-mode action rows (allowAdddNew "add" / allowEditInView save+cancel) — bottom-right,
+      // like the mockups' modal/form footers. The wrapper is a cell in the card's cells GRID, so
+      // it must span the full row (col-span-full) before justify-self-end can right-align it.
+      formAddNewItemWrapper:         "col-span-full w-fit justify-self-end self-end pt-2",
+      formEditButtonsWrapper:        "col-span-full w-fit justify-self-end self-end flex gap-1 pt-2",
       imgXS:      "max-w-16 max-h-16",
       imgSM:      "max-w-24 max-h-24",
       imgMD:      "max-w-32 max-h-32",
@@ -1083,6 +1143,16 @@ const dataCard = {
       metaSM:  `${F_MONO} text-[11px]! uppercase tracking-wider text-white/60!`,
       metaXS:  `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-white/50!`,
       proseSM: `${F_SANS} text-[13px]! leading-[1.6] text-white/80!`,
+    },
+    {
+      // "rowaligned" — for label-left / value-right fact rows (`headerValueLayout:'row'`). The default
+      // header/value carry asymmetric vertical padding (header pt-3 pb-1, value pb-3) tuned for STACKED
+      // cells; in a row that padding offsets the label vs the value text. Here both get horizontal-only
+      // padding so, with the row's `items-center`, the label and value baselines align. Fonts come from
+      // the column's headerFontStyle/valueFontStyle. Pick via the section "Card style" (display.cardStyle).
+      name: "rowaligned",
+      header: "px-3",
+      value:  "px-3",
     },
   ],
 };
@@ -1276,6 +1346,19 @@ const table = {
       // style: tighter labels, more breathing room in the body, denser
       // information than the dashboard default.
       name: "report",
+      headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
+      headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
+      cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
+      cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2.5 px-4 font-[400] text-[13px] leading-[18px] text-slate-700",
+    },
+    {
+      // Flush table for COMPOSED CARDS — the section's compound card (border + radius)
+      // frames the table, so the table drops its own container border / rounding / shadow
+      // (keeps bg + scroll). Cells/header inherit the `report` treatment. Set per-section
+      // via `display.tableStyle: "flush"`, pairing a padding-0 body section under a header
+      // section so a lexical/Card title + the table read as one card (mockup panel look).
+      name: "flush",
+      tableContainer:                 "flex flex-col bg-white overflow-x-auto overflow-y-auto max-h-[calc(78vh_-_10px)]",
       headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
       headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
       cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
@@ -1520,6 +1603,21 @@ const filters = {
       placement: "stacked",
       controlStyle: "multiselect_with_search",
       filterLabel:                  "font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5",
+      labelWrapperStacked:          "w-full",
+      conditionRowStacked:          "w-full flex flex-col gap-1",
+      filterSettingsWrapperStacked: "w-full",
+      filtersWrapper:               "w-full",
+      input:                        "w-full h-10 px-3 flex items-center text-[13px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/10 rounded-[6px] bg-white focus:outline-none focus:border-[#1F3F8F]",
+    },
+    { // 5 · filter_panel_light — filter_panel for LIGHT content bands (control-room
+      // tickets): same stacked white-box controls, slate label instead of white
+      // (filter_panel's white/60 label was tuned for the dark `filter_bar` band and
+      // disappears on the gray content band). Keys restated — named styles inherit
+      // from styles[0], not from filter_panel.
+      name: "filter_panel_light",
+      placement: "stacked",
+      controlStyle: "multiselect_with_search",
+      filterLabel:                  "font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 mb-1.5",
       labelWrapperStacked:          "w-full",
       conditionRowStacked:          "w-full flex flex-col gap-1",
       filterSettingsWrapperStacked: "w-full",
@@ -1811,21 +1909,194 @@ const pages = {
 // ─────────────────────────────────────────────────────────────────────────────
 const datasets = {
   breadcrumbs: {
-    nav:       "border-b border-zinc-950/10 flex h-10 bg-white",
-    ol:        "w-full px-8 flex items-center space-x-3",
+    nav:       "w-full bg-white border-b border-zinc-950/10",
+    ol:        "mr-auto w-full max-w-[1480px] pl-12 pr-8 h-11 flex items-center font-mono text-[10.5px] uppercase tracking-[0.18em]",
     li:        "flex items-center",
-    link:      "font-mono text-[11px] uppercase tracking-[0.16em] text-slate-500 hover:text-[#0F1722]",
-    homeLink:  "text-slate-400 hover:text-[#1F3F8F]",
-    separator: "size-4 text-slate-300 mx-1",
+    separator: "px-2 text-slate-300",
+    homeLink:  "inline-flex items-center gap-1.5 text-slate-500 hover:text-[#0f1722]",
+    homeIcon:  "size-4 relative -top-[2px] text-[#37576B]",
+    homeLabel: "",
+    link:      "text-slate-500 hover:text-[#0f1722]",
+    current:   "text-[#0f1722]",
   },
   datasetsList: {
-    pageWrapper:    "mx-auto max-w-[1280px] w-full px-8 py-8",
-    categoryHeader: "font-display uppercase text-[14px] tracking-wide text-slate-700 mb-3",
-    cardGrid:       "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
-    datasetCard:    "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 hover:border-[#37576B] transition-colors cursor-pointer",
-    datasetTitle:   "font-display uppercase text-[14px] tracking-wide text-[#0F1722]",
-    datasetMeta:    "font-mono text-[11px] uppercase tracking-wide text-slate-500 mt-1",
-    datasetDesc:    "font-proxima text-[13px] text-slate-600 mt-2 leading-relaxed",
+    categorySwatches: ["#1F3F8F", "#B45309", "#37576B", "#047857", "#0F2D4D", "#7C3AED", "#0E7490", "#9D174D"],
+    pageWrapper:    "w-full",
+    iconMd:         "size-5 text-slate-500",
+    header:         "w-full bg-white border-b border-zinc-950/10 pl-12 pr-8 py-4 flex flex-col gap-2",
+    count:          "font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500",
+    toolbar:        "flex flex-row items-center gap-2",
+    toolbarSearch:  "flex-1 min-w-[240px]",
+    viewSwitcher:   "inline-flex items-center gap-0.5 rounded-[8px] border border-zinc-950/10 bg-white p-1",
+    viewBtn:        "size-9 inline-flex items-center justify-center rounded-[6px] text-slate-500 hover:bg-slate-50",
+    viewBtnActive:  "size-9 inline-flex items-center justify-center rounded-[6px] bg-[#1F3F8F] text-white",
+    viewBtnIcon:    "size-4",
+    newBtn:         "inline-flex items-center text-slate-500 hover:text-[#1F3F8F]",
+    body:           "flex flex-row gap-6 bg-[#ECEEF2] pl-12 pr-8 pt-6 pb-12",
+    sidebar:        "w-60 shrink-0 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 sticky top-4 self-start flex flex-col gap-0.5 max-h-[calc(100svh-7rem)] overflow-y-auto",
+    sidebarItem:        "flex items-center gap-2 px-2 py-1.5 rounded-[6px] text-slate-700 font-proxima text-[13px] hover:bg-slate-50",
+    sidebarItemActive:  "flex items-center gap-2 px-2 py-1.5 rounded-[6px] bg-[#1F3F8F]/10 text-[#1F3F8F] font-proxima text-[13px] font-semibold",
+    sidebarItemText:    "flex-1 min-w-0 truncate flex items-center gap-2",
+    sidebarDot:         "size-2 rounded-full shrink-0",
+    sidebarBadge:       "ml-auto shrink-0 font-mono text-[11px] tabular-nums text-slate-400",
+    sidebarSubItem:       "flex items-center pl-7 pr-2 py-1.5 rounded-[6px] text-slate-600 font-proxima text-[12.5px] hover:bg-slate-50",
+    sidebarSubItemActive: "flex items-center pl-7 pr-2 py-1.5 rounded-[6px] bg-[#1F3F8F]/10 text-[#1F3F8F] font-proxima text-[12.5px] font-semibold",
+    sourceGrid:     "flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 content-start",
+    sourceStack:    "flex-1 flex flex-col gap-3",
+    card:           "group relative flex flex-col rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors",
+    cardFull:       "group relative flex items-start gap-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors",
+    cardFullMain:   "flex-1 min-w-0",
+    cardBadges:     "flex items-center flex-wrap gap-2 mb-2",
+    typeBadge:      "inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-zinc-950/10 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-600",
+    typeBadgeIcon:  "size-3",
+    categoryPill:   "inline-flex items-center gap-1.5 px-2.5 h-6 rounded-[4px] bg-[var(--cat)] text-white font-display uppercase text-[11px] tracking-wide",
+    categoryDot:    "hidden",
+    subCategoryPill:"inline-flex items-center px-2 h-6 rounded-[4px] bg-slate-100 text-slate-600 font-proxima text-[11px] hover:bg-slate-200",
+    cardTitle:      "block font-display font-medium text-[18px] leading-[1.25] text-[#0f1722] hover:text-[#1F3F8F]",
+    cardDescription:"mt-2 font-proxima text-[12.5px] text-slate-600 leading-[1.55] line-clamp-2",
+    cardView:       "shrink-0 mt-3 font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]",
+    tableWrap:      "flex-1 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden self-start",
+    table:          "w-full text-left border-collapse",
+    theadRow:       "bg-slate-50 border-b border-zinc-950/10",
+    th:             "px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 font-medium border-b border-zinc-950/10",
+    tr:             "border-b border-zinc-950/5 hover:bg-slate-50/60",
+    td:             "px-4 py-2.5 font-proxima text-[12.5px] text-slate-700 align-middle",
+    tdName:         "font-proxima font-medium text-[#0f1722] hover:text-[#1F3F8F]",
+    tdMuted:        "px-4 py-2.5 font-proxima text-[12.5px] text-slate-500 align-middle max-w-[44ch] truncate",
+    tableCatWrap:   "flex flex-wrap items-center gap-x-3 gap-y-1",
+    tableCatItem:   "inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700 hover:text-[#1F3F8F]",
+    tableCatDot:    "size-2 rounded-full",
+  },
+  sourcePage: {
+    pageWrapper:   "w-full min-w-0 flex flex-col flex-1",
+    // full-bleed gray content band — flex-1 fills to the page bottom; min-w-0 so a wide child
+    // (Table) scrolls within itself rather than widening the page
+    body:          "w-full min-w-0 bg-[#ECEEF2] flex-1 flex flex-col",
+    // full-bleed white band; its bottom hairline is the tab-underline track
+    header:        "w-full bg-white border-b border-zinc-950/10",
+    headerInner:   "mr-auto w-full max-w-[1480px] pl-12 pr-8 pt-4 flex items-center justify-between gap-6",
+    title:         "min-w-0 font-display font-semibold text-[26px] leading-none tracking-tight uppercase text-[#0F1722] truncate",
+    headerRight:   "flex items-center gap-2 shrink-0",
+    headerActionBtn: "h-8 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider hover:bg-slate-50 cursor-pointer",
+    versionLabel:  "font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
+    versionSelect: "h-9 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 pl-3 pr-2 font-mono tabular-nums text-[12px] text-[#0F1722] hover:bg-slate-50",
+    tabBarWrap:    "mr-auto w-full max-w-[1480px] pl-12 pr-8 mt-3 border-b border-zinc-950/10 -mb-px",
+    tabNav:        "flex items-end gap-1",
+    tab:           "px-4 h-10 inline-flex items-center font-display uppercase text-[13px] tracking-wide border-b-[3px] -mb-px transition-colors",
+    tabActive:     "border-[#FACC15] text-[#0f1722]",
+    tabInactive:   "border-transparent text-slate-600 hover:text-[#0f1722]",
+    loading:       "px-12 py-8 font-proxima text-slate-400",
+  },
+  sourceOverview: {
+    // grid is the aligned inner container (matches breadcrumb/header max-w-[1480px] pl-12);
+    // the gray band + bottom-fill live on the SourcePage `body` band.
+    grid:        "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-12 grid grid-cols-12 gap-6",
+    mainCol:     "col-span-12 lg:col-span-8 space-y-6",
+    sideCol:     "col-span-12 lg:col-span-4 space-y-6",
+
+    eyebrow:   "font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2",
+    editBtn:   "absolute top-4 right-4 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 hover:text-[#1F3F8F] cursor-pointer",
+    editIcon:  "size-3.5",
+    adminPill: "ml-1.5 inline-flex items-center px-1.5 h-4 rounded-[3px] text-[8.5px] bg-[#0a0e13] text-white uppercase tracking-wide",
+
+    descCard:  "relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6",
+    descProse: "font-proxima text-[14px] leading-[1.7] text-slate-700 space-y-3 max-w-[68ch]",
+
+    colCard:        "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden",
+    colHeader:      "h-11 px-4 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60",
+    colHeaderTitle: "font-display font-medium text-[14px] text-[#2D3E4C] flex-1",
+    colEditBtn:     "h-7 inline-flex items-center px-2.5 rounded-[6px] border border-zinc-950/10 bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider hover:bg-slate-50",
+    colMetaLink:    "h-7 inline-flex items-center px-2.5 rounded-[6px] font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] hover:bg-slate-50",
+    table:          "w-full text-left border-collapse",
+    theadRow:       "bg-slate-50 border-b border-zinc-950/10",
+    th:             "px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium",
+    thReq:          "px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium text-center",
+    tr:             "border-b border-zinc-950/5",
+    trAlt:          "border-b border-zinc-950/5 bg-slate-50/40",
+    tdName:         "px-4 py-2 font-mono text-[12px] text-[#0f1722]",
+    tdType:         "px-4 py-2 font-proxima text-[12.5px] text-slate-500",
+    tdDesc:         "px-4 py-2 font-proxima text-[12.5px] text-slate-700",
+    tdReq:          "px-4 py-2 text-center",
+    reqYes:         "text-[#10B981]",
+    reqNo:          "text-slate-300",
+    tdEmpty:        "px-4 py-6 text-center font-proxima text-[12.5px] text-slate-400",
+    colFooter:      "w-full px-4 py-2 border-t border-zinc-950/5 bg-slate-50/60 text-left font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-400 hover:text-slate-700",
+
+    glanceCard:      "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4",
+    glanceList:      "space-y-1.5 font-proxima text-[12.5px]",
+    glanceRow:       "flex justify-between items-center",
+    glanceLabel:     "text-slate-500",
+    glanceValue:     "text-[#0f1722]",
+    glanceValueNum:  "text-[#0f1722] font-mono tabular-nums",
+    glanceValueEdit: "flex items-center gap-1 text-[#0f1722]",
+    glanceInput:     "w-28 text-right font-proxima text-[12.5px] rounded-[4px] border border-zinc-950/15 px-1 py-0.5",
+    glanceEditBtn:   "inline-flex items-center justify-center size-5 rounded-[4px] text-slate-300 hover:text-[#1F3F8F] opacity-0 group-hover:opacity-100 cursor-pointer",
+    glanceEditIcon:  "size-3",
+
+    catCard: "relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4",
+    catHelp: "mt-2 font-proxima text-[11.5px] text-slate-500 leading-[1.5]",
+    catSwatches: ["#1F3F8F", "#B45309", "#37576B", "#047857", "#0F2D4D", "#7C3AED", "#0E7490", "#9D174D"],
+    catPills:    "flex flex-wrap gap-1.5 items-center",
+    catPill:     "inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] bg-[var(--cat)] text-white font-display uppercase text-[11px] tracking-wide",
+    catDot:      "hidden",
+    catSubPill:  "inline-flex items-center px-2 h-6 rounded-[4px] bg-slate-100 text-slate-600 font-proxima text-[11px]",
+    catEmpty:    "font-proxima text-[12.5px] text-slate-400",
+
+    verCard:               "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm",
+    verHeader:             "h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 rounded-t-[7px]",
+    verHeaderTitle:        "font-display font-medium text-[14px] text-[#2D3E4C] flex-1",
+    verHeaderCount:        "font-mono text-[10px] uppercase tracking-wider text-slate-500",
+    verList:               "divide-y divide-zinc-950/5",
+    verEmpty:              "p-4 font-proxima text-[12.5px] text-slate-400",
+    verRow:                "p-3",
+    verRowTop:             "flex items-center gap-2",
+    verRowMain:            "flex-1 min-w-0",
+    verNameRow:            "flex items-center gap-2",
+    verName:               "font-display font-medium text-[13.5px] text-[#0f1722] hover:text-[#1F3F8F]",
+    verCurrentBadge:       "inline-flex items-center px-1.5 h-4 rounded-[3px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[9px] uppercase tracking-wider text-[#065F46]",
+    verMeta:               "font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5",
+    verDownloadWrap:       "relative shrink-0",
+    verDownloadBtn:        "h-8 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 font-mono text-[10px] uppercase tracking-wider hover:bg-slate-50",
+    verDownloadBtnPrimary: "h-8 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] bg-[#1F3F8F] text-white font-mono text-[10px] uppercase tracking-wider hover:bg-[#16307A]",
+    verDownloadIcon:       "size-3.5",
+    verCaretIcon:          "size-3",
+    verMenu:               "absolute right-0 top-full mt-1 z-20 w-48 p-1 rounded-[8px] border border-zinc-950/10 bg-white shadow-lg",
+    verMenuItem:           "flex items-center gap-2 px-2.5 py-1.5 rounded-[5px] font-proxima text-[12.5px] text-[#0f1722] hover:bg-slate-50",
+    verMenuIcon:           "size-3.5 text-slate-400",
+    verMenuLabel:          "flex-1",
+  },
+  categories: {
+    categoryItem:          "inline-flex items-center gap-1 pl-2 pr-1 h-6 rounded-[4px] bg-slate-100 text-slate-600 font-proxima text-[11.5px] my-0.5",
+    categoryItemInner:     "truncate",
+    categoryItemRemoveBtn: "inline-flex items-center justify-center size-4 rounded-[3px] text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer",
+    removeIcon:            "size-3",
+    categoryItemBold:      "inline-flex items-center gap-1 pl-2 pr-1 h-6 rounded-[4px] bg-[#37576B]/10 text-[#0F2D4D] font-display uppercase text-[11px] tracking-wide my-0.5",
+    spanner:               "hidden",
+    plus:                  "inline-flex items-center justify-center size-5 rounded-[4px] text-slate-400 hover:text-[#1F3F8F] hover:bg-slate-100 cursor-pointer",
+    plusIcon:              "size-3",
+    categoryListWrapper:        "flex flex-wrap items-center gap-1 py-0.5",
+    categoryListWrapperEditing: "flex flex-wrap items-center gap-1 py-1.5 border-b border-zinc-950/5",
+    categoryListRow:            "flex flex-wrap items-center gap-1",
+    categoryListRowEditing:     "flex flex-wrap items-center gap-1",
+    categoryListAddBtn:         "flex items-center",
+    categoryListSubRow:         "flex flex-wrap items-center gap-1 ml-3",
+    sourceCategoriesNewWrapper: "flex flex-col gap-2 mt-2 pt-2 border-t border-zinc-950/5",
+    stopBtn:                    "w-fit font-mono text-[10px] uppercase tracking-wider text-slate-500 hover:text-[#0f1722] underline cursor-pointer",
+    input:                      "w-full font-proxima text-[12.5px] rounded-[4px] border border-zinc-950/15 px-2 py-1 outline-none focus:border-[#1F3F8F]",
+    categoryAdderWrapper:       "w-full",
+    categoryAdderInner:         "flex flex-col gap-0.5",
+    categoryAdderInputRow:      "",
+    categoryAdderHint:          "font-mono text-[10px] uppercase tracking-wider text-slate-400",
+  },
+  gisPages: {
+    tableWrap:         "w-full max-w-full min-w-0 flex flex-col overflow-hidden bg-white border-t border-zinc-950/10",
+    tableLoadingMsg:   "px-6 py-4 font-proxima text-slate-400",
+    metaOuter:         "overflow-auto flex flex-1 w-full flex-col bg-white relative font-proxima p-4",
+    metaInner:         "w-full",
+  },
+  gisMap: {
+    mapPageWrapper:   "w-full",
+    mapHeightWrapper: "w-full h-[calc(100svh-150px)] min-h-[460px]",
   },
   metadataComp: {
     wrapper:    "rounded-[8px] border border-zinc-950/10 bg-white p-6 shadow-sm",
@@ -1979,6 +2250,7 @@ const navOptions = {
 const pageComponents = {
   AddPageButton,
   Header,
+  ReportRouteList,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2018,6 +2290,40 @@ const dataBar = {
     muted:   "bg-[#37576B]",   // region-rank: rest
     warn:    "bg-[#E8843F]",   // corridor WZ share < 50%
     alert:   "bg-[#D6453B]",   // corridor WZ share ≥ 50%
+    success: "bg-[#10B981]",   // resolution / completion progress (control-room tickets)
+  },
+};
+
+// flow_step column type — lifecycle flow-strip boxes (control-room tickets summary).
+// Brand pass over the columnType's neutral defaults: Oswald labels/counts, ink figures.
+// Read via getComponentTheme(theme, 'flowStep').
+const flowStep = {
+  wrapper: "w-full h-full flex items-center",
+  box: "flex-1 min-w-0 h-full rounded-md border border-slate-200 bg-slate-50/60 p-3 flex items-center gap-2",
+  boxTint: "flex-1 min-w-0 h-full rounded-md border border-emerald-200 bg-emerald-50/50 p-3 flex items-center gap-2",
+  dot: "size-2.5 rounded-full shrink-0",
+  dots: { neutral: "bg-slate-300", info: "bg-sky-400", warn: "bg-amber-400", done: "bg-emerald-500" },
+  label: `${F_DISP} font-medium text-[12.5px] text-slate-700 truncate`,
+  count: `ml-auto pl-2 ${F_DISP} font-semibold text-[18px] tabular-nums text-[#0F1722]`,
+  connector: "shrink-0 text-slate-300 text-[16px] pl-1 -mr-1 select-none",
+};
+
+// stacked_bar column type — segmented distribution bars (control-room overview: stage
+// distribution + tickets open/done per pattern). Track/legend get the brand voice (mockup's
+// 8px #e2e8f0 track + metaXS legend); segment colours come from each column's `segments`
+// config (inline hex — the control-room stage palette), with `fills` as the themed keys.
+// Read via getComponentTheme(theme, 'stackedBar').
+const stackedBar = {
+  wrapper: "w-full",
+  track: "w-full flex h-2 rounded-[4px] bg-[#e2e8f0] overflow-hidden",
+  segment: "h-full shrink-0",
+  legend: `pt-1.5 ${F_MONO} text-[10px] uppercase tracking-[0.18em] text-slate-400 tabular-nums`,
+  empty: `pt-1.5 ${F_MONO} text-[10px] uppercase tracking-[0.18em] text-slate-400`,
+  fills: {
+    primary: "bg-[#1F3F8F]",
+    muted:   "bg-[#37576B]",
+    success: "bg-[#10B981]",
+    alert:   "bg-[#FCA5A5]",   // open tickets (mockup's soft red)
   },
 };
 
@@ -2071,6 +2377,8 @@ const transportnyTheme = {
   pill,
   dataBar,
   dataColorCell,
+  flowStep,
+  stackedBar,
   pagination,
   icon: iconTheme,
 

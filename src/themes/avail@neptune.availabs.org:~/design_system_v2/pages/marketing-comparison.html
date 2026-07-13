@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hosted vs self-host — Tessera</title>
+  <link rel="stylesheet" href="../design-system/_dms-page.css">
+  <style>
+    /* ----- Comparison page helpers --------------------------------------- */
+
+    .logo-mockup {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      text-decoration: none;
+    }
+    .logo-mockup .mark-tile {
+      width: 14px;
+      height: 14px;
+      background: var(--color-oxide);
+      display: inline-block;
+      transform: translateY(2px);
+    }
+
+    .marketing-nav-link {
+      text-decoration: none;
+      padding: 4px 0;
+      border-bottom: 1px solid transparent;
+    }
+    .marketing-nav-link--active {
+      color: var(--color-slate);
+      border-bottom-color: var(--color-slate);
+    }
+    .marketing-nav-link:hover { color: var(--color-slate); }
+
+    .comparison-hero h1 {
+      margin: var(--space-3) 0 var(--space-5);
+      max-width: 880px;
+      text-wrap: balance;
+    }
+    .comparison-hero p {
+      margin: 0;
+      max-width: 620px;
+    }
+
+    /* The comparison table */
+    .compare-card {
+      border: 1px solid var(--color-grout-light);
+      background: var(--color-parchment);
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .compare-table thead tr {
+      border-bottom: 1px solid var(--color-slate);
+    }
+    .compare-table th {
+      text-align: left;
+      padding: var(--space-4) var(--space-5);
+    }
+    .compare-table th.col-hosted {
+      background: rgba(181, 83, 44, 0.05);
+      color: var(--color-oxide);
+    }
+    .compare-table .cat-row td {
+      background: var(--color-limestone);
+      padding: 10px var(--space-5);
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .compare-table tbody tr.row {
+      border-bottom: 1px solid var(--color-grout-light);
+    }
+    .compare-table tbody tr.row:last-child {
+      border-bottom: 0;
+    }
+    .compare-table td.body {
+      padding: 12px var(--space-5);
+    }
+    .compare-table td.value {
+      padding: 12px var(--space-5);
+    }
+    .compare-table td.value.col-hosted {
+      background: rgba(181, 83, 44, 0.04);
+    }
+
+    .compare-actions {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+      flex-wrap: wrap;
+    }
+
+    .arrow-glyph {
+      display: inline-block;
+      width: 0.85em;
+      margin-left: 4px;
+      line-height: 1;
+    }
+
+    /* Footer (matches marketing-homepage) */
+    .marketing-footer {
+      background: var(--color-bone);
+      border-top: 1px solid var(--color-grout-light);
+      padding: var(--space-8) 0 var(--space-7);
+      width: 100%;
+    }
+    .marketing-footer-inner {
+      max-width: var(--grid-max);
+      margin: 0 auto;
+      padding: 0 var(--space-5);
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1fr 2.2fr;
+      gap: var(--space-8);
+      margin-bottom: var(--space-8);
+    }
+    @media (max-width: 900px) { .footer-top { grid-template-columns: 1fr; } }
+    .footer-brand { display: flex; flex-direction: column; gap: var(--space-4); max-width: 280px; }
+    .footer-tag {
+      margin: 0;
+    }
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-6);
+    }
+    @media (max-width: 900px) { .footer-links { grid-template-columns: repeat(2, 1fr); } }
+    .footer-group .designator-mono {
+      margin-bottom: var(--space-3);
+    }
+    .footer-group ul { list-style: none; padding: 0; margin: 0; }
+    .footer-group li { margin-bottom: 8px; }
+    .footer-group a {
+      text-decoration: none;
+    }
+    .footer-group a:hover { text-decoration: underline; }
+    .footer-frieze {
+      height: 28px;
+      margin-bottom: var(--space-6);
+      opacity: 0.45;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          var(--color-slate) 0 8px,
+          transparent 8px 14px,
+          var(--color-oxide) 14px 18px,
+          transparent 18px 28px,
+          var(--color-slate) 28px 32px,
+          transparent 32px 44px
+        );
+    }
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-5);
+      flex-wrap: wrap;
+    }
+    .footer-bottom .colophon { max-width: 480px; }
+  </style>
+</head>
+<body>
+
+<div class="dms-layout-outer">
+  <div class="dms-layout-wrapper">
+    <div class="dms-layout-wrapper2">
+
+      <!-- TopNav -->
+      <nav class="dms-topnav">
+        <div class="dms-topnav-inner">
+          <div class="dms-topnav-left">
+            <a href="marketing-homepage.html" class="logo-mockup" aria-label="Tessera home">
+              <span class="mark-tile"></span>
+              <span class="word t-displaySM">Tessera</span>
+            </a>
+          </div>
+          <div class="dms-topnav-right" style="gap: var(--space-5);">
+            <a href="#" class="marketing-nav-link t-proseSM ink-graphite weight-500">Product</a>
+            <a href="#" class="marketing-nav-link t-proseSM ink-graphite weight-500">Patterns</a>
+            <a href="marketing-comparison.html" class="marketing-nav-link marketing-nav-link--active t-proseSM ink-slate weight-500">Hosted</a>
+            <a href="marketing-theory.html" class="marketing-nav-link t-proseSM ink-graphite weight-500">Theory</a>
+            <a href="#" class="marketing-nav-link t-proseSM ink-graphite weight-500">Docs</a>
+            <span style="width:1px;height:18px;background:var(--color-grout-light);"></span>
+            <a href="#" class="t-proseSM ink-slate" style="text-decoration: none;">Sign in</a>
+            <a href="#" class="btn btn-primary btn-sm">Get started</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="dms-layout-wrapper3">
+        <div class="dms-layout-child">
+
+          <!-- Header band -->
+          <section class="dms-group-header">
+            <div class="dms-group-header-inner">
+              <div class="comparison-hero">
+                <div class="dms-page-meta">
+                  <span>tessera</span>
+                  <span class="sep">/</span>
+                  <span>hosted vs self-host</span>
+                </div>
+                <h1 class="t-displayXL">Two doors. Same engine.</h1>
+                <p class="t-proseLG ink-graphite">
+                  Tessera is open-source. You can run the engine yourself, on any modern Linux host with a Postgres database. We also operate the hosted service for teams who would rather place tiles than configure servers. The two surfaces share a feature set; they differ in who operates the floor underneath.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Comparison table -->
+          <section class="dms-group-content">
+            <div class="dms-group-content-inner">
+              <div class="dms-section">
+                <div class="dms-section-eyebrow"><span class="mark"></span>CAPABILITY MATRIX</div>
+
+                <div class="compare-card">
+                  <table class="compare-table">
+                    <thead>
+                      <tr>
+                        <th class="t-metaSM tabular">Capability</th>
+                        <th class="t-metaSM tabular">Self-host</th>
+                        <th class="col-hosted t-metaSM tabular">Hosted</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="cat-row"><td colspan="3" class="t-metaSM ink-fog">Engine</td></tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Same Tessera engine</td>
+                        <td class="value t-metaMD"><span class="weight-500">yes</span></td>
+                        <td class="value col-hosted t-metaMD"><span class="weight-500">yes</span></td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Open-source (AGPL-3.0)</td>
+                        <td class="value t-metaMD"><span class="weight-500">yes</span></td>
+                        <td class="value col-hosted t-metaMD"><span class="weight-500">yes</span></td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Patterns, themes, datasets</td>
+                        <td class="value t-metaMD"><span class="weight-500">yes</span></td>
+                        <td class="value col-hosted t-metaMD"><span class="weight-500">yes</span></td>
+                      </tr>
+
+                      <tr class="cat-row"><td colspan="3" class="t-metaSM ink-fog">Operate</td></tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Your hardware</td>
+                        <td class="value t-metaMD"><span class="weight-500">yes</span></td>
+                        <td class="value col-hosted t-metaMD"><span class="ink-fog">&mdash;</span></td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Backups &amp; retention</td>
+                        <td class="value t-metaMD">on you</td>
+                        <td class="value col-hosted t-metaMD">daily / 30d</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">CDN &amp; edge caching</td>
+                        <td class="value t-metaMD">bring own</td>
+                        <td class="value col-hosted t-metaMD">included</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">DDoS / WAF</td>
+                        <td class="value t-metaMD">bring own</td>
+                        <td class="value col-hosted t-metaMD">included</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Status page</td>
+                        <td class="value t-metaMD"><span class="ink-fog">&mdash;</span></td>
+                        <td class="value col-hosted t-metaMD">status.tessera.io</td>
+                      </tr>
+
+                      <tr class="cat-row"><td colspan="3" class="t-metaSM ink-fog">Compliance</td></tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">SOC 2</td>
+                        <td class="value t-metaMD"><span class="ink-fog">&mdash;</span></td>
+                        <td class="value col-hosted t-metaMD">Type II in progress</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Audit log export</td>
+                        <td class="value t-metaMD">DIY</td>
+                        <td class="value col-hosted t-metaMD">JSON / Parquet</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Custom DPA</td>
+                        <td class="value t-metaMD"><span class="ink-fog">&mdash;</span></td>
+                        <td class="value col-hosted t-metaMD">Civic plan and up</td>
+                      </tr>
+
+                      <tr class="cat-row"><td colspan="3" class="t-metaSM ink-fog">Cost</td></tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">License</td>
+                        <td class="value t-metaMD">free</td>
+                        <td class="value col-hosted t-metaMD">monthly</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Hardware</td>
+                        <td class="value t-metaMD">you pay</td>
+                        <td class="value col-hosted t-metaMD">included</td>
+                      </tr>
+                      <tr class="row">
+                        <td class="body t-proseSM">Support</td>
+                        <td class="value t-metaMD">community</td>
+                        <td class="value col-hosted t-metaMD">office hours</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="compare-actions">
+                  <a href="#" class="btn btn-primary">Host your own <span class="arrow-glyph">&rarr;</span></a>
+                  <a href="#" class="btn btn-secondary">See pricing <span class="arrow-glyph">&rarr;</span></a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Marketing footer -->
+          <footer class="marketing-footer">
+            <div class="marketing-footer-inner">
+              <div class="footer-top">
+                <div class="footer-brand">
+                  <span class="logo-mockup">
+                    <span class="mark-tile"></span>
+                    <span class="word t-displaySM">Tessera</span>
+                  </span>
+                  <p class="footer-tag t-prose italic ink-graphite">A typed row that can be a page, a section, a dataset, a query, or a theme.</p>
+                </div>
+
+                <div class="footer-links">
+                  <div class="footer-group">
+                    <div class="designator-mono t-metaSM ink-graphite">Product</div>
+                    <ul>
+                      <li><a href="marketing-homepage.html" class="t-proseSM">Overview</a></li>
+                      <li><a href="#" class="t-proseSM">Patterns</a></li>
+                      <li><a href="#" class="t-proseSM">Themes</a></li>
+                      <li><a href="#" class="t-proseSM">Datasets</a></li>
+                      <li><a href="#" class="t-proseSM">Roadmap</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono t-metaSM ink-graphite">Hosted</div>
+                    <ul>
+                      <li><a href="marketing-comparison.html" class="t-proseSM">Pricing</a></li>
+                      <li><a href="#" class="t-proseSM">Civic plan</a></li>
+                      <li><a href="#" class="t-proseSM">Press plan</a></li>
+                      <li><a href="#" class="t-proseSM">Status</a></li>
+                      <li><a href="#" class="t-proseSM">Security</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono t-metaSM ink-graphite">Open source</div>
+                    <ul>
+                      <li><a href="#" class="t-proseSM">GitHub</a></li>
+                      <li><a href="#" class="t-proseSM">Releases</a></li>
+                      <li><a href="#" class="t-proseSM">Contributing</a></li>
+                      <li><a href="#" class="t-proseSM">License</a></li>
+                      <li><a href="#" class="t-proseSM">Acknowledgements</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono t-metaSM ink-graphite">Theory</div>
+                    <ul>
+                      <li><a href="marketing-theory.html" class="t-proseSM">On placing</a></li>
+                      <li><a href="#" class="t-proseSM">Representation primacy</a></li>
+                      <li><a href="#" class="t-proseSM">Durability</a></li>
+                      <li><a href="#" class="t-proseSM">Field notes</a></li>
+                    </ul>
+                  </div>
+                  <div class="footer-group">
+                    <div class="designator-mono t-metaSM ink-graphite">Community</div>
+                    <ul>
+                      <li><a href="#" class="t-proseSM">Forum</a></li>
+                      <li><a href="#" class="t-proseSM">Office hours</a></li>
+                      <li><a href="#" class="t-proseSM">Showcase</a></li>
+                      <li><a href="#" class="t-proseSM">Letters</a></li>
+                      <li><a href="#" class="t-proseSM">Mastodon</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="footer-frieze" aria-hidden="true"></div>
+
+              <div class="footer-bottom t-metaSM ink-graphite">
+                <div class="colophon">
+                  Tessera is open source, AGPL-3.0. The hosted service is operated by an independent cooperative.
+                </div>
+                <div>
+                  <span>v0.1 preview</span>
+                  <span>&middot;</span>
+                  <span>2026</span>
+                </div>
+              </div>
+              <div class="t-metaXS ink-fog" style="margin-top: var(--space-3); text-align: right;">
+                design system ·
+                <a href="../design-system/theme.html" style="color: inherit;">theme</a> ·
+                <a href="../design-system/layouts.html" style="color: inherit;">layouts</a> ·
+                <a href="../design-system/grid.html" style="color: inherit;">grid</a> ·
+                <a href="../design-system/components.html" style="color: inherit;">components</a> ·
+                <a href="../design-system/patterns.html" style="color: inherit;">patterns</a>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

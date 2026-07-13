@@ -2,11 +2,12 @@ import LogoNav from './LogoNav'
 import QuickLinks from './QuickLinks'
 import Header from './components/Header'
 import AddPageButton from './components/AddPageButton'
-
+import ReportRouteList from "./components/ReportRouteList/index"
 const theme = {
   pageComponents: {
     "AddPageButton": AddPageButton,
-    Header
+    Header,
+    ReportRouteList
   },
   "navOptions": {
     "authMenu": {

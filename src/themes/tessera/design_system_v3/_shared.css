@@ -1,0 +1,317 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Tessera Design System v3 — canonical shared CSS
+   ONE source of truth. design-system/*.html and pages/*.html link this
+   file as ../_shared.css. theme/index.css.additions is a pointer shim.
+   Everything here is something the theme translation must mirror; keep it
+   small — every styling decision that CAN be a Tailwind utility, is.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Webfonts ─────────────────────────────────────────────────────────────
+   Tiempos Headline + Tiempos Fine ship in this repo (public/fonts/tessera/
+   tiempos/, served at /fonts/…). Newsreader + IBM Plex load from the Google
+   Fonts CDN in each page's <head> and back every stack, so mockups degrade
+   gracefully when served outside the project root. */
+
+@font-face { font-family: "Tiempos Headline"; src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-Regular-BF66457a508e31a.otf") format("opentype"), url("/fonts/tessera/tiempos/TestTiemposHeadline-Regular-BF66457a508e31a.otf") format("opentype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Tiempos Headline"; src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-RegularItalic-BF66457a5091d70.otf") format("opentype"), url("/fonts/tessera/tiempos/TestTiemposHeadline-RegularItalic-BF66457a5091d70.otf") format("opentype"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Tiempos Headline"; src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-Medium-BF66457a509b4ec.otf") format("opentype"), url("/fonts/tessera/tiempos/TestTiemposHeadline-Medium-BF66457a509b4ec.otf") format("opentype"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Tiempos Headline"; src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-MediumItalic-BF66457a50b4260.otf") format("opentype"), url("/fonts/tessera/tiempos/TestTiemposHeadline-MediumItalic-BF66457a50b4260.otf") format("opentype"); font-weight: 500; font-style: italic; font-display: swap; }
+@font-face { font-family: "Tiempos Headline"; src: url("../../../../public/fonts/tessera/tiempos/TestTiemposHeadline-Semibold-BF66457a509040b.otf") format("opentype"), url("/fonts/tessera/tiempos/TestTiemposHeadline-Semibold-BF66457a509040b.otf") format("opentype"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Tiempos Fine"; src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-Regular-BF66457a50e8bc9.otf") format("opentype"), url("/fonts/tessera/tiempos/TestTiemposFine-Regular-BF66457a50e8bc9.otf") format("opentype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Tiempos Fine"; src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-RegularItalic-BF66457a50e36f9.otf") format("opentype"), url("/fonts/tessera/tiempos/TestTiemposFine-RegularItalic-BF66457a50e36f9.otf") format("opentype"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Tiempos Fine"; src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-Medium-BF66457a50e62cd.otf") format("opentype"), url("/fonts/tessera/tiempos/TestTiemposFine-Medium-BF66457a50e62cd.otf") format("opentype"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Tiempos Fine"; src: url("../../../../public/fonts/tessera/tiempos/TestTiemposFine-MediumItalic-BF66457a511be83.otf") format("opentype"), url("/fonts/tessera/tiempos/TestTiemposFine-MediumItalic-BF66457a511be83.otf") format("opentype"); font-weight: 500; font-style: italic; font-display: swap; }
+
+/* ── Brand font-family classes (plain CSS — the rule: never rely on the
+      per-page tailwind.config block for family resolution) ─────────────── */
+
+.font-display { font-family: "Tiempos Headline", "Newsreader", Georgia, "Times New Roman", serif; }
+.font-fine    { font-family: "Tiempos Fine", "Tiempos Headline", "Newsreader", Georgia, serif; }
+.font-sans    { font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+.font-mono    { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* ── Tokens ──────────────────────────────────────────────────────────────
+   Mirrored 1:1 by the theme translation. The mockups mostly use Tailwind
+   utilities (bg-bone, text-slate via the inline config); the variables are
+   the named contract and feed the few utilities below. */
+
+:root {
+  /* surface — the floor (~85% of any composition) */
+  --color-bone:        #F4F1EA;
+  --color-limestone:   #E8E2D5;
+  --color-parchment:   #FBF9F4;
+  --color-grout-light: #D9D2C2;
+  /* ink */
+  --color-slate:       #2A2F36;
+  --color-graphite:    #4A5160;
+  --color-fog:         #A7ADB6;
+  --color-grout-dark:  #1A1D22;
+  /* accent — the inlay (≤15%, never decoration) */
+  --color-oxide:       #B5532C;
+  --color-tile:        #7F1D1D;
+  --color-verdigris:   #3F8F7F;
+  --color-ochre:       #C7910F;
+  --color-lapis:       #3B5BA5;
+
+  /* semantic status (accents doing work) */
+  --status-success: var(--color-verdigris);
+  --status-warning: var(--color-ochre);
+  --status-danger:  var(--color-tile);
+  --status-info:    var(--color-lapis);
+
+  /* chart series — never more than five, never rainbow */
+  --series-1: var(--color-oxide);
+  --series-2: var(--color-lapis);
+  --series-3: var(--color-verdigris);
+  --series-4: var(--color-ochre);
+  --series-5: var(--color-tile);
+
+  /* grout scale (spacing, 4px base) */
+  --space-1: 4px;  --space-2: 8px;   --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px;  --space-7: 48px; --space-8: 64px;
+  --space-9: 96px; --space-10: 128px;
+
+  /* radius — tiles have square corners */
+  --radius-0: 0;      /* default: surfaces, cards, modals, charts, sections */
+  --radius-1: 2px;    /* interactive affordance: buttons, inputs, chips     */
+  --radius-pill: 999px; /* pills only */
+
+  /* elevation — flat by default, a single lift */
+  --shadow-lift: 0 1px 2px rgba(42, 47, 54, 0.04);
+
+  /* motion — snap, don't ease */
+  --dur-snap: 100ms;                       /* tile placement, hover        */
+  --dur-settle: 180ms;                     /* panel moves, drawer          */
+  --ease-snap: cubic-bezier(0.2, 0, 0.1, 1);
+
+  /* vermiculatum ring — the double contour around the focused element */
+  --focus-ring: 0 0 0 2px var(--color-bone), 0 0 0 4px var(--color-slate);
+
+  --measure-prose: 620px;                  /* long-form column measure     */
+  --scrim: rgba(42, 47, 54, 0.4);
+}
+
+/* dark — "photographs of stone at night", tokens only in v3 (component
+   dark variants are translation work). Opt-in via [data-theme="dark"]. */
+[data-theme="dark"] {
+  --color-bone:        #1A1D22;
+  --color-parchment:   #232830;
+  --color-limestone:   #14171B;
+  --color-grout-light: #2F343C;
+  --color-slate:       #F4F1EA;
+  --color-graphite:    #C8C2B3;
+  --color-fog:         #6E7480;
+  --color-grout-dark:  #F4F1EA;
+  --shadow-lift: none;
+}
+
+/* ── Stone ────────────────────────────────────────────────────────────────────────
+   Every surface carries a faint mineral grain (feTurbulence, slate-tinted,
+   ~4–7% peak alpha) so the system feels cut from stone rather than drawn
+   on glass. Limestone — the rougher stone — grains a step harder. The
+   grain is texture, not ornament: it never carries meaning and never
+   competes with ink. */
+
+body,
+.bg-bone,
+.bg-parchment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.165 0 0 0 0 0.184 0 0 0 0 0.212 0.09 0 0 0 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+.bg-limestone {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.165 0 0 0 0 0.184 0 0 0 0 0.212 0.16 0 0 0 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+
+::selection { background: var(--color-slate); color: var(--color-bone); }
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ── Type tokens — textSettings.styles[0].* ──────────────────────────────
+   Sixteen tokens, four roles. Color, tabular-nums, italic-on-prose,
+   uppercase+tracking, and surface are MODIFIER AXES applied at the call
+   site — they never mint new tokens. Every visible piece of text on every
+   page in this deliverable resolves to one of these classes. */
+
+.t-displayHero       { font-family: "Tiempos Fine", "Tiempos Headline", "Newsreader", Georgia, serif; font-size: 76px; line-height: 1.04; font-weight: 500; letter-spacing: -0.02em; }
+.t-displayXL         { font-family: "Tiempos Headline", "Newsreader", Georgia, serif; font-size: 48px; line-height: 1.08; font-weight: 500; letter-spacing: -0.012em; }
+.t-displayLG         { font-family: "Tiempos Headline", "Newsreader", Georgia, serif; font-size: 36px; line-height: 1.08; font-weight: 500; letter-spacing: -0.012em; }
+.t-displayMD         { font-family: "Tiempos Headline", "Newsreader", Georgia, serif; font-size: 28px; line-height: 1.2;  font-weight: 500; letter-spacing: -0.012em; }
+.t-displaySM         { font-family: "Tiempos Headline", "Newsreader", Georgia, serif; font-size: 22px; line-height: 1.2;  font-weight: 500; letter-spacing: -0.008em; }
+.t-displayXS         { font-family: "Tiempos Headline", "Newsreader", Georgia, serif; font-size: 18px; line-height: 1.25; font-weight: 500; letter-spacing: -0.005em; }
+
+.t-displayItalicHero { font-family: "Tiempos Fine", "Tiempos Headline", "Newsreader", Georgia, serif; font-size: 64px; line-height: 1.05; font-weight: 400; font-style: italic; letter-spacing: -0.018em; }
+.t-displayItalicLG   { font-family: "Tiempos Headline", "Newsreader", Georgia, serif; font-size: 40px; line-height: 1.18; font-weight: 400; font-style: italic; letter-spacing: -0.012em; }
+.t-displayItalicMD   { font-family: "Tiempos Headline", "Newsreader", Georgia, serif; font-size: 26px; line-height: 1.35; font-weight: 400; font-style: italic; }
+
+.t-proseLG           { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 20px; line-height: 1.55; font-weight: 400; }
+.t-prose             { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 16px; line-height: 1.55; font-weight: 400; }
+.t-proseSM           { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 14px; line-height: 1.5;  font-weight: 400; }
+.t-proseXS           { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 12px; line-height: 1.45; font-weight: 400; }
+
+.t-metaMD            { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 14px; line-height: 1.45; font-weight: 400; font-variant-numeric: tabular-nums; }
+.t-metaSM            { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; line-height: 1.4;  font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; }
+.t-metaXS            { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 10px; line-height: 1.4;  font-weight: 400; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* responsive step-down for the two hero-scale tokens */
+@media (max-width: 1024px) {
+  .t-displayHero { font-size: 56px; }
+  .t-displayItalicHero { font-size: 48px; }
+}
+@media (max-width: 640px) {
+  .t-displayHero { font-size: 42px; }
+  .t-displayItalicHero { font-size: 36px; }
+  .t-displayXL { font-size: 36px; }
+}
+
+/* ── Brand surface utilities (things Tailwind can't express) ───────────── */
+
+/* the press: interactive elements set like a tile — down 1px, shadow gone */
+.tsr-press { transition: transform var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap); }
+.tsr-press:active { transform: translateY(1px); box-shadow: none; }
+
+/* tabula ansata — the "handled tablet" designator chip. Dovetail end-caps
+   via clip-path; use for LayoutGroup designators on marketing surfaces. */
+.tsr-tabula {
+  clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 7px 100%, 0 50%);
+  padding: 5px 18px;
+  background: var(--color-limestone);
+}
+
+/* frieze · tessera course — a single course of set tiles. Sanctioned at
+   band boundaries only (hero base, footer top, theory designator). */
+.tsr-frieze-tiles {
+  height: 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='12'%3E%3Crect x='2'  y='2' width='8' height='8' fill='%23D9D2C2'/%3E%3Crect x='18' y='2' width='8' height='8' fill='%23E8E2D5'/%3E%3Crect x='34' y='2' width='8' height='8' fill='%23B5532C'/%3E%3Crect x='50' y='2' width='8' height='8' fill='%23E8E2D5'/%3E%3Crect x='66' y='2' width='8' height='8' fill='%23D9D2C2'/%3E%3Crect x='82' y='2' width='8' height='8' fill='%233B5BA5'/%3E%3Crect x='98' y='2' width='8' height='8' fill='%23E8E2D5'/%3E%3Crect x='114' y='2' width='8' height='8' fill='%23D9D2C2'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+}
+
+/* frieze · meander — the running key, drafted as a single 1.2px line.
+   Quieter than the tile course; for footers and long-form section breaks. */
+.tsr-frieze-meander {
+  height: 12px;
+  opacity: 0.45;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='12'%3E%3Cg fill='none' stroke='%232A2F36' stroke-width='1.2'%3E%3Cpath d='M0 1.5 H16'/%3E%3Cpath d='M14.5 1.5 V10.5 H4.5 V5.5 H9.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+}
+
+/* ── Tessellated edges (v3.2) ─────────────────────────────────────────────
+   From the mosaic sources (references/tessera/): a mosaic never draws a
+   line — it sets a course of tiles; a slab is cut, not ruled. These
+   utilities replace the continuous 1px chrome on marketing surfaces.
+   Stones + accents stay in the frieze palette; the per-tile jitter
+   (position ±0.6px, size 10.4–11.6px, rotation ±2.5°) is baked into the
+   SVGs, generated deterministically (seeded — regenerate rather than
+   hand-tweak; keep the seed if you only change colors). */
+
+/* tessera course — a panel framed by one course of set tiles (the bordered
+   panels in the mosaic references). Grout gaps are transparent;
+   background-clip keeps the panel's own surface out of them so the floor
+   shows through. Accents: one oxide + one lapis per opposing edge pair. */
+.tsr-course {
+  border: 18px solid transparent;
+  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='148' height='148'%3E%3Crect x='20.2' y='3.7' width='10.8' height='11.1' fill='%23D9D2C2' transform='rotate(0.1 25.6 9.3)'/%3E%3Crect x='33.8' y='3.4' width='11.5' height='10.5' fill='%23D9D2C2' transform='rotate(-1.5 39.6 8.7)'/%3E%3Crect x='47.2' y='3' width='10.5' height='10.9' fill='%23D9D2C2' transform='rotate(0.9 52.5 8.5)'/%3E%3Crect x='60.8' y='3.5' width='11.4' height='11.3' fill='%23D9D2C2' transform='rotate(0 66.5 9.2)'/%3E%3Crect x='75.6' y='3.3' width='11.5' height='10.5' fill='%23CFC6B2' transform='rotate(-2.4 81.4 8.6)'/%3E%3Crect x='89.7' y='3.7' width='11.3' height='11.4' fill='%23C5BBA4' transform='rotate(1.2 95.4 9.4)'/%3E%3Crect x='103.8' y='3.6' width='10.8' height='10.6' fill='%23D9D2C2' transform='rotate(-1 109.2 8.9)'/%3E%3Crect x='117.7' y='2.9' width='10.8' height='11.4' fill='%23C5BBA4' transform='rotate(-0.2 123.1 8.6)'/%3E%3Crect x='134' y='19.7' width='10.9' height='10.8' fill='%23D9D2C2' transform='rotate(-0.7 139.5 25.1)'/%3E%3Crect x='133.5' y='33.2' width='11.1' height='10.9' fill='%23C5BBA4' transform='rotate(-2.1 139.1 38.7)'/%3E%3Crect x='133.3' y='47.5' width='11' height='10.9' fill='%23D9D2C2' transform='rotate(-2.1 138.8 53)'/%3E%3Crect x='134.1' y='61.9' width='10.6' height='10.5' fill='%23C5BBA4' transform='rotate(0.6 139.4 67.2)'/%3E%3Crect x='133.5' y='75.7' width='10.7' height='11' fill='%23D9D2C2' transform='rotate(0.9 138.9 81.2)'/%3E%3Crect x='133.1' y='89.2' width='10.6' height='11.1' fill='%23CFC6B2' transform='rotate(1.4 138.4 94.8)'/%3E%3Crect x='133.6' y='103.3' width='10.9' height='10.8' fill='%23C5BBA4' transform='rotate(-1 139 108.7)'/%3E%3Crect x='133.1' y='117.9' width='10.7' height='11.1' fill='%23D9D2C2' transform='rotate(0.9 138.5 123.5)'/%3E%3Crect x='19.4' y='133' width='10.6' height='11.4' fill='%23E8E2D5' transform='rotate(-0.2 24.7 138.7)'/%3E%3Crect x='33.5' y='133.3' width='10.8' height='10.4' fill='%23C5BBA4' transform='rotate(2.5 38.9 138.5)'/%3E%3Crect x='47.9' y='133.7' width='11.1' height='11.1' fill='%23CFC6B2' transform='rotate(2.4 53.5 139.3)'/%3E%3Crect x='61.5' y='133.8' width='10.7' height='11' fill='%23CFC6B2' transform='rotate(0 66.9 139.3)'/%3E%3Crect x='75.8' y='133.4' width='11.3' height='11' fill='%23D9D2C2' transform='rotate(0.4 81.5 138.9)'/%3E%3Crect x='89.8' y='134.1' width='11' height='10.8' fill='%23D9D2C2' transform='rotate(1.9 95.3 139.5)'/%3E%3Crect x='103.1' y='133.2' width='10.7' height='10.8' fill='%23CFC6B2' transform='rotate(0.8 108.5 138.6)'/%3E%3Crect x='117.4' y='133.1' width='10.7' height='11.1' fill='%23C5BBA4' transform='rotate(0.5 122.8 138.7)'/%3E%3Crect x='2.9' y='19.5' width='11.5' height='11.5' fill='%23D9D2C2' transform='rotate(-1.9 8.7 25.3)'/%3E%3Crect x='3.8' y='33.1' width='10.8' height='10.8' fill='%23C5BBA4' transform='rotate(1.7 9.2 38.5)'/%3E%3Crect x='3.6' y='47.5' width='10.7' height='11.1' fill='%23E8E2D5' transform='rotate(2.2 9 53.1)'/%3E%3Crect x='3.3' y='61.9' width='11.6' height='10.5' fill='%23E8E2D5' transform='rotate(-1.7 9.1 67.2)'/%3E%3Crect x='2.8' y='75.9' width='11.3' height='11.1' fill='%23D9D2C2' transform='rotate(-0.1 8.5 81.5)'/%3E%3Crect x='2.9' y='89.8' width='11.4' height='11.3' fill='%23E8E2D5' transform='rotate(-0.9 8.6 95.5)'/%3E%3Crect x='4' y='104.1' width='10.7' height='10.5' fill='%23D9D2C2' transform='rotate(0.4 9.4 109.4)'/%3E%3Crect x='3.5' y='116.9' width='10.9' height='11.4' fill='%23D9D2C2' transform='rotate(-1.4 9 122.6)'/%3E%3Crect x='3.2' y='3.6' width='11.1' height='11.1' fill='%23D9D2C2' transform='rotate(-1.9 8.8 9.2)'/%3E%3Crect x='133.3' y='2.9' width='10.5' height='11.6' fill='%23D9D2C2' transform='rotate(-2.1 138.6 8.7)'/%3E%3Crect x='133' y='132.9' width='10.9' height='11.2' fill='%23C5BBA4' transform='rotate(-2.5 138.5 138.5)'/%3E%3Crect x='4.1' y='133.5' width='11' height='10.5' fill='%23D9D2C2' transform='rotate(-1.7 9.6 138.8)'/%3E%3C/svg%3E");
+  border-image-slice: 18;
+  border-image-repeat: repeat;
+  background-clip: padding-box;
+}
+
+/* tessera course · dark — slate stones, a single oxide tile on the top
+   edge. For the emblema frame (the featured panel), replacing the drafted
+   border-slate double rule. */
+.tsr-course-dark {
+  border: 18px solid transparent;
+  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='148' height='148'%3E%3Crect x='19.6' y='4.1' width='10.8' height='11' fill='%234A5160' transform='rotate(1 25 9.6)'/%3E%3Crect x='34.1' y='4' width='10.6' height='10.7' fill='%231A1D22' transform='rotate(0 39.4 9.4)'/%3E%3Crect x='46.8' y='2.9' width='11.3' height='11.3' fill='%232A2F36' transform='rotate(-0.9 52.5 8.6)'/%3E%3Crect x='61.7' y='3.8' width='10.7' height='11.2' fill='%234A5160' transform='rotate(0.2 67.1 9.4)'/%3E%3Crect x='75.7' y='3.7' width='11' height='10.6' fill='%234A5160' transform='rotate(0.1 81.2 9)'/%3E%3Crect x='89.5' y='3.4' width='11.3' height='11.6' fill='%23B5532C' transform='rotate(1.9 95.2 9.2)'/%3E%3Crect x='103.7' y='4.1' width='11.5' height='11' fill='%234A5160' transform='rotate(2.2 109.5 9.6)'/%3E%3Crect x='117.7' y='3.3' width='11.1' height='10.4' fill='%234A5160' transform='rotate(0.5 123.3 8.5)'/%3E%3Crect x='133.7' y='20.2' width='11.5' height='10.4' fill='%232A2F36' transform='rotate(-2.3 139.5 25.4)'/%3E%3Crect x='133.2' y='33.3' width='10.5' height='11' fill='%232A2F36' transform='rotate(-1.4 138.5 38.8)'/%3E%3Crect x='133.9' y='47.2' width='11.3' height='11.3' fill='%232A2F36' transform='rotate(1.6 139.6 52.9)'/%3E%3Crect x='133.6' y='61.7' width='11' height='10.6' fill='%231A1D22' transform='rotate(-2 139.1 67)'/%3E%3Crect x='133.6' y='75.5' width='10.4' height='10.6' fill='%234A5160' transform='rotate(0.2 138.8 80.8)'/%3E%3Crect x='134' y='90' width='11' height='11.1' fill='%234A5160' transform='rotate(2.2 139.5 95.6)'/%3E%3Crect x='132.9' y='103.7' width='11.3' height='10.5' fill='%231A1D22' transform='rotate(2.2 138.6 109)'/%3E%3Crect x='134.1' y='118' width='10.4' height='10.6' fill='%231A1D22' transform='rotate(1.1 139.3 123.3)'/%3E%3Crect x='19.2' y='134' width='10.9' height='10.4' fill='%232A2F36' transform='rotate(0.9 24.7 139.2)'/%3E%3Crect x='33.2' y='133.1' width='11.1' height='10.7' fill='%232A2F36' transform='rotate(1.9 38.8 138.5)'/%3E%3Crect x='47.6' y='133.9' width='10.5' height='10.9' fill='%234A5160' transform='rotate(1.9 52.9 139.4)'/%3E%3Crect x='61.9' y='133.5' width='10.6' height='10.5' fill='%232A2F36' transform='rotate(0 67.2 138.8)'/%3E%3Crect x='76.2' y='134' width='10.7' height='11.2' fill='%234A5160' transform='rotate(0.7 81.6 139.6)'/%3E%3Crect x='89.6' y='133.4' width='11.1' height='11.4' fill='%232A2F36' transform='rotate(1.5 95.1 139.1)'/%3E%3Crect x='104.3' y='134.1' width='10.5' height='10.7' fill='%231A1D22' transform='rotate(2.5 109.6 139.5)'/%3E%3Crect x='117.4' y='134' width='10.6' height='11.2' fill='%231A1D22' transform='rotate(0.7 122.7 139.6)'/%3E%3Crect x='2.9' y='19.8' width='11.5' height='11' fill='%234A5160' transform='rotate(-2.3 8.7 25.3)'/%3E%3Crect x='4' y='33' width='10.8' height='11.2' fill='%232A2F36' transform='rotate(0.4 9.4 38.6)'/%3E%3Crect x='3.4' y='47.5' width='11.1' height='10.6' fill='%231A1D22' transform='rotate(-1.7 9 52.8)'/%3E%3Crect x='3.1' y='62.1' width='10.8' height='10.6' fill='%231A1D22' transform='rotate(0.1 8.5 67.4)'/%3E%3Crect x='2.9' y='75.8' width='11.5' height='11.5' fill='%234A5160' transform='rotate(-1.5 8.7 81.6)'/%3E%3Crect x='3.1' y='89' width='10.8' height='11.1' fill='%232A2F36' transform='rotate(-0.3 8.5 94.6)'/%3E%3Crect x='3.5' y='102.9' width='11.5' height='11.2' fill='%234A5160' transform='rotate(0.5 9.3 108.5)'/%3E%3Crect x='3.9' y='117.2' width='10.6' height='10.6' fill='%232A2F36' transform='rotate(0.5 9.2 122.5)'/%3E%3Crect x='3' y='3.1' width='11.2' height='11.1' fill='%234A5160' transform='rotate(-2 8.6 8.7)'/%3E%3Crect x='133.9' y='3.3' width='10.4' height='10.4' fill='%232A2F36' transform='rotate(-0.2 139.1 8.5)'/%3E%3Crect x='133.1' y='133.2' width='11.5' height='10.6' fill='%232A2F36' transform='rotate(2.5 138.9 138.5)'/%3E%3Crect x='4.2' y='133.2' width='10.4' height='10.9' fill='%232A2F36' transform='rotate(-1.5 9.4 138.6)'/%3E%3C/svg%3E");
+  border-image-slice: 18;
+  border-image-repeat: repeat;
+  background-clip: padding-box;
+}
+
+/* slab — a cut stone tablet: the silhouette steps in and out a few px,
+   like courses ending unevenly. Steps are fixed-size (px) at proportional
+   stations (%) so the wobble reads the same on any panel. box-shadow is
+   clipped away with the silhouette, so the lift is a drop-shadow filter. */
+.tsr-slab {
+  clip-path: polygon(
+    0 5px, 6% 5px, 6% 2px, 17% 2px, 17% 4px, 32% 4px, 32% 0, 51% 0, 51% 3px, 67% 3px, 67% 1px, 83% 1px, 83% 4px, 96% 4px, 96% 1px, 100% 1px,
+    100% 13%, calc(100% - 3px) 13%, calc(100% - 3px) 31%, calc(100% - 1px) 31%, calc(100% - 1px) 47%, calc(100% - 4px) 47%, calc(100% - 4px) 66%, calc(100% - 2px) 66%, calc(100% - 2px) 82%, calc(100% - 5px) 82%, calc(100% - 5px) 94%, calc(100% - 2px) 94%, calc(100% - 2px) 100%,
+    78% 100%, 78% calc(100% - 3px), 62% calc(100% - 3px), 62% calc(100% - 1px), 45% calc(100% - 1px), 45% calc(100% - 4px), 28% calc(100% - 4px), 28% calc(100% - 2px), 12% calc(100% - 2px), 12% calc(100% - 5px), 4% calc(100% - 5px), 4% calc(100% - 2px), 0 calc(100% - 2px),
+    0 88%, 3px 88%, 3px 69%, 1px 69%, 1px 52%, 4px 52%, 4px 34%, 2px 34%, 2px 18%, 5px 18%, 5px 8%, 0 8%
+  );
+  filter: drop-shadow(0 1px 1px rgba(42, 47, 54, 0.10)) drop-shadow(0 4px 14px rgba(42, 47, 54, 0.06));
+}
+
+/* slab · b — a second cut. Alternate with .tsr-slab when slabs sit side
+   by side so neighbouring silhouettes don't repeat. */
+.tsr-slab-b {
+  clip-path: polygon(
+    0 2px, 9% 2px, 9% 5px, 22% 5px, 22% 1px, 38% 1px, 38% 4px, 57% 4px, 57% 0, 74% 0, 74% 3px, 90% 3px, 90% 1px, 100% 1px,
+    100% 9%, calc(100% - 4px) 9%, calc(100% - 4px) 27%, calc(100% - 1px) 27%, calc(100% - 1px) 44%, calc(100% - 3px) 44%, calc(100% - 3px) 61%, calc(100% - 5px) 61%, calc(100% - 5px) 78%, calc(100% - 2px) 78%, calc(100% - 2px) 91%, calc(100% - 4px) 91%, calc(100% - 4px) 100%,
+    82% 100%, 82% calc(100% - 2px), 66% calc(100% - 2px), 66% calc(100% - 5px), 49% calc(100% - 5px), 49% calc(100% - 1px), 33% calc(100% - 1px), 33% calc(100% - 4px), 18% calc(100% - 4px), 18% calc(100% - 2px), 7% calc(100% - 2px), 7% calc(100% - 4px), 0 calc(100% - 4px),
+    0 92%, 2px 92%, 2px 74%, 5px 74%, 5px 58%, 1px 58%, 1px 40%, 4px 40%, 4px 25%, 2px 25%, 2px 12%, 0 12%
+  );
+  filter: drop-shadow(0 1px 1px rgba(42, 47, 54, 0.10)) drop-shadow(0 4px 14px rgba(42, 47, 54, 0.06));
+}
+
+/* rule — a broken grout hairline: one hand-laid course of long stones.
+   Replaces continuous border-t/-b band separators (an empty 3px div,
+   used like the friezes). */
+.tsr-rule {
+  height: 3px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='3'%3E%3Crect x='0' y='1' width='22.8' height='1.7' fill='%23D9D2C2'/%3E%3Crect x='25.6' y='1.1' width='32.5' height='1.9' fill='%23D9D2C2'/%3E%3Crect x='61.7' y='1' width='26.2' height='2' fill='%23D9D2C2'/%3E%3Crect x='91.4' y='1' width='21.2' height='1.7' fill='%23D9D2C2'/%3E%3Crect x='115.7' y='1.1' width='4.3' height='1.8' fill='%23D9D2C2'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+}
+
+/* cut — a hand-cut tile: four unequal corner chips in place of
+   rounded-[2px] on buttons and small interactive tiles. clip-path
+   swallows the outer vermiculatum ring, so focus falls back to an
+   inset double ring. */
+.tsr-cut {
+  clip-path: polygon(3px 0, calc(100% - 2px) 0, 100% 2.5px, 100% calc(100% - 3.5px), calc(100% - 3px) 100%, 2px 100%, 0 calc(100% - 2.5px), 0 3px);
+}
+.tsr-cut:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--color-bone), inset 0 0 0 4px var(--color-slate);
+}
+
+/* course underline — the active-nav mark set as a run of small tiles
+   rather than a drafted 2px rule. */
+.tsr-underline {
+  background-image: repeating-linear-gradient(to right, var(--color-oxide) 0 6px, transparent 6px 9px);
+  background-size: 100% 2px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+}
+
+/* ── DMS annotation overlay (documentation scaffolding, never shipped) ───
+   Toggled by <body class="dms-annotated">; used on layouts / grid / theme
+   pages so reviewers see the Layout → LayoutGroup → Section skeleton. */
+
+.dms-annotated [data-dms-layout],
+.dms-annotated [data-dms-group],
+.dms-annotated [data-dms-section] { position: relative; }
+.dms-annotated [data-dms-layout]  { outline: 1px dashed rgba(42, 47, 54, 0.35); outline-offset: -1px; }
+.dms-annotated [data-dms-group]   { outline: 1px dashed rgba(181, 83, 44, 0.35); outline-offset: -1px; }
+.dms-annotated [data-dms-section] { outline: 1px dashed rgba(93, 138, 133, 0.4); outline-offset: -1px; }
+.dms-annotated [data-dms-layout]::before,
+.dms-annotated [data-dms-group]::before,
+.dms-annotated [data-dms-section]::before {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 1px 6px; position: absolute; top: 0; z-index: 40;
+  pointer-events: none; color: #FBF9F4;
+}
+.dms-annotated [data-dms-layout]::before  { content: "layout · " attr(data-dms-layout);   left: 0;  background: rgba(42, 47, 54, 0.85); }
+.dms-annotated [data-dms-group]::before   { content: "group · " attr(data-dms-group);     left: 0;  background: rgba(181, 83, 44, 0.85); }
+.dms-annotated [data-dms-section]::before { content: "section · " attr(data-dms-section); right: 0; background: rgba(93, 138, 133, 0.85); }
+
+/* ── Reduced motion — everything lands already-placed ──────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

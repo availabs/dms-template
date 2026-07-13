@@ -162,6 +162,118 @@
     };
   };
 
+  // ── QA WORKFLOW process model (6-stage) ────────────────────────────────────
+  // AI review is a TRIGGER (it adds tickets), not a stage. The visible pipeline is:
+  //   Proposed → Design → Implemented → QA → Dev Acceptance → Client Acceptance
+  //   (reopens on new features). Mirrors the live sitemgmt build.
+  SITEMGMT.STAGES = ['Proposed', 'Design', 'Implemented', 'QA', 'Dev Acceptance', 'Client Acceptance'];
+  SITEMGMT.stageColor = {
+    'Proposed':          'bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200',
+    'Design':            'bg-violet-100 text-violet-700 ring-1 ring-violet-200',
+    'Implemented':       'bg-amber-100 text-amber-800 ring-1 ring-amber-200',
+    'QA':                'bg-sky-100 text-sky-700 ring-1 ring-sky-200',
+    'Dev Acceptance':    'bg-teal-100 text-teal-700 ring-1 ring-teal-200',
+    'Client Acceptance': 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200',
+  };
+  // gate flags derived from the curated data (in the live build these are real toggles)
+  SITEMGMT.gatesFor = function (p) {
+    return {
+      ai_reviewed:     (p.build !== 'Not started'),
+      dev_ready:       (p.qa === 'Approved' || p.qa === 'Conditional sign-off'),
+      client_approved: (p.qa === 'Approved' && p.build === 'Published'),
+    };
+  };
+  // map the curated build/qa/ticket data onto the 6 stages (yields a realistic spread).
+  SITEMGMT.stageOf = function (p) {
+    var openT = this.openTicketsFor(p.id), open = openT.length;
+    var hasMajor = openT.some(function (t) { return t.severity === 'Blocker' || t.severity === 'Major'; });
+    if (p.build === 'Not started') return 'Proposed';
+    if (p.build === 'In progress') return 'Design';
+    if (hasMajor) return 'Implemented';        // built, but real defects open → still implementing
+    if (open > 0) return 'QA';                  // only minor/polish open → in QA
+    if (p.qa === 'Approved') return p.build === 'Published' ? 'Client Acceptance' : 'Dev Acceptance';
+    if (p.qa === 'Conditional sign-off') return 'Dev Acceptance';
+    return 'QA';                                // Needs QA / In review / Changes requested, no open tickets
+  };
+  SITEMGMT.nextStepOf = function (p) {
+    var st = this.stageOf(p), open = this.openTicketsFor(p.id).length;
+    if (st === 'Proposed') return 'Scope & accept the user stories';
+    if (st === 'Design') return 'Review & approve the design mockup';
+    if (st === 'Implemented') return open > 0 ? 'Resolve ' + open + ' open ticket' + (open === 1 ? '' : 's') : 'Send to QA';
+    if (st === 'QA') return open > 0 ? 'Resolve ' + open + ' QA ticket' + (open === 1 ? '' : 's') + ', then dev sign-off' : 'Dev: sign off for client';
+    if (st === 'Dev Acceptance') return 'Send to client for acceptance';
+    return 'Done — reopens on new features';
+  };
+  // effort weighting per severity → "work completed" sense
+  SITEMGMT.sevWeight = { Blocker: 5, Major: 3, Minor: 2, Polish: 1 };
+  SITEMGMT.effortFor = function (id) {
+    var done = 0, total = 0;
+    this.ticketsFor(id).forEach(function (t) { var w = SITEMGMT.sevWeight[t.severity] || 1; total += w; if (!SITEMGMT.isOpen(t)) done += w; });
+    return { done: done, total: total, pct: total ? Math.round(100 * done / total) : 0 };
+  };
+  // page description + user stories / features (what the page does)
+  SITEMGMT.pageMeta = {
+    'fa2:maps_gallery': { desc: 'A browsable gallery of NYSDOT freight map products — thumbnails link through to the full interactive maps and downloadable layers.',
+      stories: ['As a planner, I can browse every freight map product in one gallery.', 'As a user, I can filter the gallery by mode and topic.', 'As a user, I can open a thumbnail into the full interactive map.', 'As an analyst, I can download the underlying layer for any map.'] },
+    'fa2:home': { desc: 'The Freight Atlas landing page — a hero stat strip (bottleneck, truck-parking, PHFS, NHFP) and entry points into the atlas surfaces.',
+      stories: ['As a visitor, I see headline freight metrics for NY at a glance.', 'As a user, I can navigate to each atlas surface from the home page.', 'As an editor, the stat strip is bound to real datasets, not placeholders.'] },
+    'tsmo2:home': { desc: 'The TSMO program home — congestion, reliability and incident highlights with a year control over the v2 series.',
+      stories: ['As a manager, I see current TSMO performance at a glance.', 'As a user, I can switch the reporting year.', 'As a user, I can drill into congestion, reliability and incidents.'] },
+  };
+  SITEMGMT.descFor = function (id) { var m = this.pageMeta[id], p = this.page(id); return (m && m.desc) || (p.name + ' — a page on the ' + ((this.surface(p.surface) || {}).label || p.surface) + ' surface.'); };
+  SITEMGMT.storiesFor = function (id) { var m = this.pageMeta[id], p = this.page(id); return (m && m.stories) || ['As a user, I can view ' + p.name + '.', 'The page matches the approved design.', 'Content is bound to a real data source.', 'The page is responsive and accessible.']; };
+  // page → its design-system mockup file (the "live page" view). Irregular names overridden; else a
+  // surface-prefix + slug convention. '' when the page has no mockup. Shared by the overview + design pages.
+  SITEMGMT.designFile = {
+    'tsmo2:home': 'tsmo-home.html', 'tsmo2:congestion_v2': 'tsmo-congestion.html', 'tsmo2:reliability_v2': 'tsmo-reliability.html',
+    'tsmo2:workzones_v2': 'tsmo-workzones.html', 'tsmo2:incidents_v2': 'tsmo-incidents.html', 'tsmo2:corridor_view': 'tsmo-corridor.html',
+    'tsmo2:incident_view': 'tsmo-incident-view.html', 'tsmo2:incident_search': 'tsmo-incident-search.html', 'tsmo2:about': 'tsmo-about.html',
+    'tsmo2:methodology': 'tsmo-methodology.html',
+    'fa2:home': 'freight-atlas-home.html', 'fa2:maps_gallery': 'freight-atlas-gallery.html', 'fa2:freight_atlas': 'freight-atlas-map.html',
+    'fa2:about': 'freight-atlas-about.html',
+    'npmrds_dms:map_21': 'map-21.html', 'npmrds2:map_21': 'map-21.html',
+  };
+  SITEMGMT.fileFor = function (id) {
+    if (this.designFile[id]) return this.designFile[id];
+    var p = this.page(id); if (!p) return '';
+    var pre = p.surface === 'tsmo2' ? 'tsmo-' : (p.surface === 'fa2' || p.surface === 'freightatlas2') ? 'freight-atlas-' : '';
+    if (!pre) return '';
+    var slug = String(p.route || '').replace(/^\//, '').replace(/_v\d+$/, '').replace(/_/g, '-');
+    return slug ? pre + slug + '.html' : '';
+  };
+  // chronological timeline of the page's QA activity (ticket opens / resolutions / comments)
+  SITEMGMT.timelineFor = function (id) {
+    var ev = [];
+    this.ticketsFor(id).forEach(function (t) {
+      ev.push({ when: t.opened, kind: 'opened', sev: t.severity, source: SITEMGMT.sourceOf(t), text: 'Ticket #' + t.id + ' opened — ' + t.title });
+      if (!SITEMGMT.isOpen(t)) ev.push({ when: t.updated, kind: 'resolved', text: 'Ticket #' + t.id + ' ' + String(t.status).toLowerCase() + ' — ' + t.title });
+      (t.comments || []).forEach(function (c) { ev.push({ when: c.when, kind: 'comment', text: c.who + ': ' + c.text }); });
+    });
+    return ev.sort(function (a, b) { return a.when < b.when ? 1 : (a.when > b.when ? -1 : 0); });
+  };
+  // ticket source — AI review adds the QA-found tickets; clients & devs add the rest
+  SITEMGMT.sourceOf = function (t) { return t.reporter === 'Client' ? 'client' : t.reporter === 'QA' ? 'ai' : 'dev'; };
+  SITEMGMT.sourceLabel = { ai: 'AI', dev: 'Dev', client: 'Client' };
+  SITEMGMT.sourceColor = { ai: 'bg-sky-100 text-sky-700', dev: 'bg-slate-100 text-slate-600', client: 'bg-[#0a0e13] text-white' };
+  SITEMGMT.stageCounts = function () {
+    var c = {}; this.STAGES.forEach(function (s) { c[s] = 0; });
+    this.pages.forEach(function (p) { c[SITEMGMT.stageOf(p)]++; });
+    return c;
+  };
+  // per-pattern (surface) rollup: pages, page-count by stage, open/closed tickets, effort %
+  SITEMGMT.surfaceRollup = function (key) {
+    var ps = this.pages.filter(function (p) { return p.surface === key; });
+    var sc = {}; this.STAGES.forEach(function (s) { sc[s] = 0; });
+    ps.forEach(function (p) { sc[SITEMGMT.stageOf(p)]++; });
+    var open = 0, closed = 0, eDone = 0, eTot = 0;
+    this.tickets.forEach(function (t) {
+      var pg = SITEMGMT.page(t.page); if (!pg || pg.surface !== key) return;
+      var w = SITEMGMT.sevWeight[t.severity] || 1; eTot += w;
+      if (SITEMGMT.isOpen(t)) open++; else { closed++; eDone += w; }
+    });
+    return { pages: ps.length, stages: sc, open: open, closed: closed, workPct: eTot ? Math.round(100 * eDone / eTot) : 100 };
+  };
+
   if (typeof window !== 'undefined') window.SITEMGMT = SITEMGMT;
   if (typeof module !== 'undefined' && module.exports) module.exports = SITEMGMT;
 })();

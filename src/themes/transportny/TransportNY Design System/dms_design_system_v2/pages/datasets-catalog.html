@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Data Catalog · Datasets · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  datasets-catalog.html · SURFACE 1 of 2 — THE DATASETS PATTERN CATALOG (DatasetsList/index.jsx),
+  bound to the npmrds2 pgEnv. ONE surface, two roles: reads as a public data catalog; admin
+  affordances (New source, per-card edit, Tasks/Settings nav, the hidden-category buckets) are the
+  SAME page with auth-gated chrome — tagged `// admin`, wrapped in isUserAuthed() gates. Layout `app`
+  · dark Datasets SideNav. Breadcrumbs bar (datasets.breadcrumbs: Data Sources › path) + compact
+  header → straight to the list. Card: top-level CATEGORY pill (prominent) + type icon, name,
+  meta = subcategory · geom · rows · views · vintage, structured last-updated. Real npmrds2 areas
+  from the category-tagging pass: 49 production across 5 areas; Sandbox / Data Processing / Inactive
+  are filtered_categories — hidden, admin-revealable. No status/format chips: catalog is
+  production-only (status implicit); formats live on the source page's download panel. -->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ════════ SIDENAV · Datasets (Catalog active) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <a href="datasets-catalog.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white"><!-- icon: Database --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg></div>
+              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">Datasets</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · npmrds2</div></div>
+            </a>
+            <div class="px-3 pt-3"><button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] hover:border-[#3a4555] flex items-center gap-2 text-slate-400 hover:text-slate-300"><!-- icon: Search --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-proxima text-[13px] flex-1 text-left">Search datasets</span></button></div>
+
+            <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Browse</div>
+            <a href="datasets-catalog.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><!-- icon: Grid --><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg><span class="flex-1">Data Catalog</span><span class="font-mono text-[11px] tabular-nums text-slate-400">49</span></a>
+            <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Book --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg><span class="flex-1">Documentation</span></a>
+            <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Code --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8 6-6 6 6 6m8-12 6 6-6 6"/></svg><span class="flex-1">API &amp; Developers</span></a>
+
+            <!-- // admin — the Manage group is gated by isUserAuthed(['create-source','manage-tasks']); public visitors never see it -->
+            <div class="px-4 pt-4 pb-1 flex items-center gap-2"><span class="font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Manage</span><span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[9px] font-medium bg-[#0a0e13] text-white font-display uppercase tracking-wide">admin</span></div>
+            <a href="datasets-catalog.html" class="font-proxima text-[13px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><!-- icon: Plus --><svg class="size-4 mr-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg><span class="flex-1">New source</span></a>
+            <a class="font-proxima text-[13px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><!-- icon: Activity --><svg class="size-4 mr-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="flex-1">Tasks</span><span class="font-mono text-[10px] tabular-nums text-amber-500/80">2</span></a>
+            <a class="font-proxima text-[13px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><!-- icon: Cog --><svg class="size-4 mr-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg><span class="flex-1">Settings</span></a>
+
+            <!-- role switch — makes the dual-role nature explicit; flips the gates above -->
+            <div class="mt-auto border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><!-- icon: View --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Viewing as · Public</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">no login required</div></div>
+              <a href="login.html" class="font-mono text-[9.5px] uppercase tracking-wider text-[#FACC15] hover:text-[#EAAD43]">Sign in</a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ BREADCRUMB BAR · datasets.breadcrumbs · IDENTICAL markup on every page (fixed h-11 → no jitter) ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="breadcrumbs">
+              <nav class="h-11 flex items-center font-mono text-[10.5px] uppercase tracking-[0.18em]" aria-label="Breadcrumb">
+                <a href="datasets-catalog.html" class="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#0f1722]"><!-- icon: Database (root) --><svg class="size-4 text-[#37576B] relative -top-[2px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>Data Sources</a>
+                <span class="text-slate-300 px-2">/</span>
+                <span class="text-[#0f1722]">Catalog</span>
+                <span class="text-slate-300 px-2">/</span>
+                <span class="text-slate-400">all areas</span>
+              </nav>
+            </div>
+          </div>
+
+          <!-- ═════════ HEADER · compact title row ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-5 flex items-end justify-between gap-6" data-dms-section="page-header">
+                <div class="min-w-0">
+                  <div class="flex items-baseline gap-3 flex-wrap">
+                    <h1 class="font-display font-semibold text-[26px] leading-none tracking-tight uppercase text-[#0F1722]">Data Catalog<span class="text-[#CA8A04]">.</span></h1>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">49 datasets · 5 areas</span>
+                  </div>
+                </div>
+                <!-- // admin — gated by isUserAuthed(['create-source']) -->
+                <a href="datasets-catalog.html" class="tny-press inline-flex items-center gap-2 h-9 px-3.5 flex-shrink-0 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[12px] tracking-wide rounded-[6px]"><!-- icon: Plus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>New source<span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[9px] bg-[#0a0e13]/30 text-white/90 tracking-wide">admin</span></a>
+            </div>
+          </div>
+
+          <!-- ═════════ CATALOG · category rail + source cards ═════════ -->
+          <div class="w-full bg-[#ECEEF2] pt-6 pb-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6" data-dms-section="catalog">
+
+              <!-- CATEGORY RAIL -->
+              <aside class="col-span-12 lg:col-span-3">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 sticky top-4">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Browse by area</div>
+                  <a class="flex items-center justify-between px-2 py-1.5 rounded-[6px] bg-[#1F3F8F]/10 text-[#1F3F8F] font-proxima text-[13px] font-semibold"><span>All datasets</span><span class="font-mono text-[11px] tabular-nums">49</span></a>
+                  <div class="mt-1 space-y-0.5">
+                    <a class="flex items-center justify-between px-2 py-1.5 rounded-[6px] hover:bg-slate-50 text-slate-700 font-proxima text-[13px]"><span class="inline-flex items-center gap-2"><span class="size-2 rounded-full bg-[#1F3F8F]"></span>Freight Atlas</span><span class="font-mono text-[11px] tabular-nums text-slate-400">33</span></a>
+                    <a class="flex items-center justify-between px-2 py-1.5 rounded-[6px] hover:bg-slate-50 text-slate-700 font-proxima text-[13px]"><span class="inline-flex items-center gap-2"><span class="size-2 rounded-full bg-[#B45309]"></span>TSMO</span><span class="font-mono text-[11px] tabular-nums text-slate-400">5</span></a>
+                    <a class="flex items-center justify-between px-2 py-1.5 rounded-[6px] hover:bg-slate-50 text-slate-700 font-proxima text-[13px]"><span class="inline-flex items-center gap-2"><span class="size-2 rounded-full bg-[#37576B]"></span>NPMRDS</span><span class="font-mono text-[11px] tabular-nums text-slate-400">5</span></a>
+                    <a class="flex items-center justify-between px-2 py-1.5 rounded-[6px] hover:bg-slate-50 text-slate-700 font-proxima text-[13px]"><span class="inline-flex items-center gap-2"><span class="size-2 rounded-full bg-[#047857]"></span>Transit</span><span class="font-mono text-[11px] tabular-nums text-slate-400">3</span></a>
+                    <a class="flex items-center justify-between px-2 py-1.5 rounded-[6px] hover:bg-slate-50 text-slate-700 font-proxima text-[13px]"><span class="inline-flex items-center gap-2"><span class="size-2 rounded-full bg-[#0F2D4D]"></span>Geographies</span><span class="font-mono text-[11px] tabular-nums text-slate-400">3</span></a>
+                  </div>
+
+                  <div class="mt-4 pt-3 border-t border-zinc-950/05">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Type</div>
+                    <div class="flex flex-wrap gap-1.5">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase text-[#0F2D4D]"><!-- icon: Map --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-[#37576B]/20 bg-[#37576B]/10 font-mono text-[10px] uppercase text-[#0F2D4D]"><!-- icon: Table --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>CSV</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-zinc-950/10 bg-slate-100 font-mono text-[10px] uppercase text-slate-600"><!-- icon: Server --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><path d="M7 7h.01M7 17h.01"/></svg>Internal</span>
+                    </div>
+                  </div>
+
+                  <!-- // admin — the filtered_categories buckets (Sandbox / Data Processing / Inactive) are hidden
+                       from the public catalog; isUserAuthed(['view-hidden-categories']) reveals this block -->
+                  <div class="mt-4 pt-3 border-t border-dashed border-[#CA8A04]/30">
+                    <div class="flex items-center gap-2 mb-2"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">Hidden</span><span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[9px] font-medium bg-[#0a0e13] text-white font-display uppercase tracking-wide">admin</span></div>
+                    <div class="space-y-0.5 opacity-90">
+                      <a class="flex items-center justify-between px-2 py-1.5 rounded-[6px] hover:bg-slate-50 text-slate-500 font-proxima text-[12.5px]"><span>Sandbox</span><span class="font-mono text-[11px] tabular-nums text-slate-400">39</span></a>
+                      <a class="flex items-center justify-between px-2 py-1.5 rounded-[6px] hover:bg-slate-50 text-slate-500 font-proxima text-[12.5px]"><span>Data Processing</span><span class="font-mono text-[11px] tabular-nums text-slate-400">6</span></a>
+                      <a class="flex items-center justify-between px-2 py-1.5 rounded-[6px] hover:bg-slate-50 text-slate-500 font-proxima text-[12.5px]"><span>Inactive</span><span class="font-mono text-[11px] tabular-nums text-slate-400">272</span></a>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+
+              <!-- SOURCE CARDS -->
+              <div class="col-span-12 lg:col-span-9">
+                <!-- search + sort bar -->
+                <div class="flex flex-wrap items-center gap-2 mb-5">
+                  <div class="h-11 flex-1 min-w-[260px] inline-flex items-center gap-2.5 rounded-[8px] bg-white border border-zinc-950/15 ring-1 ring-[#37576B]/10 shadow-sm px-3.5">
+                    <!-- icon: Search --><svg class="size-[18px] text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+                    <span class="font-proxima text-[14px] text-slate-500 flex-1">Search 49 datasets — try "tmc", "ports", or "transit"…</span>
+                    <kbd class="hidden sm:inline-flex items-center justify-center size-5 rounded border border-zinc-950/10 bg-slate-50 font-mono text-[11px] text-slate-400">/</kbd>
+                  </div>
+                  <div class="h-11 inline-flex items-center gap-2 rounded-[8px] bg-white border border-zinc-950/10 px-3.5 font-mono text-[10.5px] uppercase tracking-wider text-slate-600">sort · recently refreshed <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></div>
+                  <!-- view switcher · grid / full-width cards / table (interactive · setView) -->
+                  <div class="h-11 inline-flex items-center gap-0.5 rounded-[8px] border border-zinc-950/10 bg-white p-1">
+                    <button id="vb-grid" onclick="setView('grid')" title="Grid" class="size-9 inline-flex items-center justify-center rounded-[6px] bg-[#1F3F8F] text-white"><!-- icon: Grid --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg></button>
+                    <button id="vb-cards" onclick="setView('cards')" title="Full-width cards" class="size-9 inline-flex items-center justify-center rounded-[6px] text-slate-500 hover:bg-slate-50"><!-- icon: Rows --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg></button>
+                    <button id="vb-table" onclick="setView('table')" title="Table" class="size-9 inline-flex items-center justify-center rounded-[6px] text-slate-500 hover:bg-slate-50"><!-- icon: List --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+                  </div>
+                </div>
+
+                <!-- view: grid · 2-up cards (default) -->
+                <div id="view-grid" class="grid grid-cols-12 gap-6">
+
+                  <!-- Source 1 · Primary Freight Network (Freight Atlas / Road Network · GIS) -->
+                  <div class="group col-span-12 md:col-span-6 relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                    <!-- // admin — per-card quick edit, isUserAuthed(['update-source']); opacity-0 until row hover -->
+                    <button class="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 opacity-0 group-hover:opacity-100 hover:text-[#1F3F8F]" title="Edit source · admin"><!-- icon: Pencil --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="inline-flex items-center h-6 px-2.5 rounded-[4px] bg-[#1F3F8F] text-white font-display uppercase text-[11px] tracking-wide">Freight Atlas</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><!-- icon: Map (GIS) --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                    </div>
+                    <a href="datasets-source.html" class="block font-display font-medium text-[18px] leading-[1.25] text-[#0f1722] hover:text-[#1F3F8F]">Primary Freight Network</a>
+                    <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">primary_freight_network</div>
+                    <p class="mt-2 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">FCHN + PHFS routes with truck AADT, truck share, and the added 2023 segments (+4,497 mi beyond PHFS).</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="px-1.5 py-0.5 rounded bg-slate-100">Road Network</span><span>· Line</span><span>· 5,642 rows</span><span>· 3 views</span><span>· v2023</span></div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                      <span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400"><!-- icon: Clock --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated <span class="text-slate-600 tabular-nums">Mar 2026</span></span>
+                      <a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a>
+                    </div>
+                  </div>
+
+                  <!-- Source 2 · Truck Parking Inventory (Freight Atlas / Freight Facilities · GIS · new) -->
+                  <div class="group col-span-12 md:col-span-6 relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                    <button class="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 opacity-0 group-hover:opacity-100 hover:text-[#1F3F8F]" title="Edit source · admin"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="inline-flex items-center h-6 px-2.5 rounded-[4px] bg-[#1F3F8F] text-white font-display uppercase text-[11px] tracking-wide">Freight Atlas</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                      <span class="inline-flex items-center px-2 h-5 rounded-[4px] border border-[#EAAD43]/30 bg-[#EAAD43]/15 font-mono text-[9.5px] uppercase tracking-wider text-[#7C5A12]">new 2024</span>
+                    </div>
+                    <a href="datasets-source.html" class="block font-display font-medium text-[18px] leading-[1.25] text-[#0f1722] hover:text-[#1F3F8F]">Truck Parking Inventory</a>
+                    <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">truck_parking</div>
+                    <p class="mt-2 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">216 in-state + 47 buffer sites; public/private, space counts, amenities, hourly utilization. Appendix E.</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="px-1.5 py-0.5 rounded bg-slate-100">Freight Facilities</span><span>· Point</span><span>· 263 rows</span><span>· 2 views</span><span>· v2024</span></div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                      <span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated <span class="text-slate-600 tabular-nums">May 2026</span></span>
+                      <a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a>
+                    </div>
+                  </div>
+
+                  <!-- Source 3 · NPMRDS TMC Identification (NPMRDS / TMC Network · GIS) -->
+                  <div class="group col-span-12 md:col-span-6 relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                    <button class="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 opacity-0 group-hover:opacity-100 hover:text-[#1F3F8F]" title="Edit source · admin"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="inline-flex items-center h-6 px-2.5 rounded-[4px] bg-[#37576B] text-white font-display uppercase text-[11px] tracking-wide">NPMRDS</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                    </div>
+                    <a href="datasets-source.html" class="block font-display font-medium text-[18px] leading-[1.25] text-[#0f1722] hover:text-[#1F3F8F]">NPMRDS TMC Identification</a>
+                    <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">npmrds_tmc_identification</div>
+                    <p class="mt-2 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The TMC network reference — segment geometry, road name, direction, miles, and F-system, by vintage.</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="px-1.5 py-0.5 rounded bg-slate-100">TMC Network</span><span>· Line</span><span>· 412k rows</span><span>· 8 views</span><span>· v2025</span></div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                      <span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated <span class="text-slate-600 tabular-nums">Jun 2026</span></span>
+                      <a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a>
+                    </div>
+                  </div>
+
+                  <!-- Source 4 · TRANSEARCH Commodity Flows (Freight Atlas / Commodity Flows · CSV/OD) -->
+                  <div class="group col-span-12 md:col-span-6 relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                    <button class="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 opacity-0 group-hover:opacity-100 hover:text-[#1F3F8F]" title="Edit source · admin"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="inline-flex items-center h-6 px-2.5 rounded-[4px] bg-[#1F3F8F] text-white font-display uppercase text-[11px] tracking-wide">Freight Atlas</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-[#37576B]/20 bg-[#37576B]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><!-- icon: Table (CSV) --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>CSV</span>
+                    </div>
+                    <a href="datasets-source.html" class="block font-display font-medium text-[18px] leading-[1.25] text-[#0f1722] hover:text-[#1F3F8F]">Commodity Flows (OD)</a>
+                    <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">transearch_od</div>
+                    <p class="mt-2 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Origin–destination tons &amp; value by mode and commodity; 2021 observed + 2050 forecast. TRANSEARCH.</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="px-1.5 py-0.5 rounded bg-slate-100">Commodity Flows</span><span>· Table/OD</span><span>· 184k rows</span><span>· 1 view</span><span>· v2021/2050</span></div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                      <span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated <span class="text-slate-600 tabular-nums">Jan 2026</span></span>
+                      <a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a>
+                    </div>
+                  </div>
+
+                  <!-- Source 5 · TRANSCOM Incident Events (TSMO / Incidents · Internal · live) -->
+                  <div class="group col-span-12 md:col-span-6 relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                    <button class="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 opacity-0 group-hover:opacity-100 hover:text-[#1F3F8F]" title="Edit source · admin"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="inline-flex items-center h-6 px-2.5 rounded-[4px] bg-[#B45309] text-white font-display uppercase text-[11px] tracking-wide">TSMO</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-zinc-950/10 bg-slate-100 font-mono text-[10px] uppercase tracking-wider text-slate-600"><!-- icon: Server (Internal) --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><path d="M7 7h.01M7 17h.01"/></svg>Internal</span>
+                    </div>
+                    <a href="datasets-source.html" class="block font-display font-medium text-[18px] leading-[1.25] text-[#0f1722] hover:text-[#1F3F8F]">TRANSCOM Incident Events</a>
+                    <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">transcom_events</div>
+                    <p class="mt-2 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">Real-time incident &amp; event feed — type, severity, lanes affected, duration; per-TMC expansion for delay.</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="px-1.5 py-0.5 rounded bg-slate-100">Incidents</span><span>· Table</span><span>· 1.2M rows</span><span>· 1 view</span><span>· v2025</span></div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                      <span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span><span class="text-emerald-600">Live</span> <span class="text-slate-600 tabular-nums">2h ago</span></span>
+                      <a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a>
+                    </div>
+                  </div>
+
+                  <!-- Source 6 · MPO Boundaries (Geographies / Boundaries · GIS) -->
+                  <div class="group col-span-12 md:col-span-6 relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                    <button class="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 opacity-0 group-hover:opacity-100 hover:text-[#1F3F8F]" title="Edit source · admin"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="inline-flex items-center h-6 px-2.5 rounded-[4px] bg-[#0F2D4D] text-white font-display uppercase text-[11px] tracking-wide">Geographies</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                    </div>
+                    <a href="datasets-source.html" class="block font-display font-medium text-[18px] leading-[1.25] text-[#0f1722] hover:text-[#1F3F8F]">MPO Boundaries</a>
+                    <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">mpo_boundaries</div>
+                    <p class="mt-2 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">All 14 New York Metropolitan Planning Organization boundaries for regional rollups and joins.</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="px-1.5 py-0.5 rounded bg-slate-100">Boundaries</span><span>· Polygon</span><span>· 14 rows</span><span>· 1 view</span><span>· v2024</span></div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                      <span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated <span class="text-slate-600 tabular-nums">Feb 2026</span></span>
+                      <a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a>
+                    </div>
+                  </div>
+
+                  <!-- Source 7 · NYSDOT Regions (Geographies / Regions · GIS) -->
+                  <div class="group col-span-12 md:col-span-6 relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                    <button class="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 opacity-0 group-hover:opacity-100 hover:text-[#1F3F8F]" title="Edit source · admin"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="inline-flex items-center h-6 px-2.5 rounded-[4px] bg-[#0F2D4D] text-white font-display uppercase text-[11px] tracking-wide">Geographies</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                    </div>
+                    <a href="datasets-source.html" class="block font-display font-medium text-[18px] leading-[1.25] text-[#0f1722] hover:text-[#1F3F8F]">NYSDOT Regions</a>
+                    <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">nysdot_regions</div>
+                    <p class="mt-2 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The 11 NYSDOT administrative regions — the standard rollup geography for statewide reporting.</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="px-1.5 py-0.5 rounded bg-slate-100">Regions</span><span>· Polygon</span><span>· 11 rows</span><span>· 1 view</span><span>· v2024</span></div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                      <span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated <span class="text-slate-600 tabular-nums">Feb 2026</span></span>
+                      <a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a>
+                    </div>
+                  </div>
+
+                  <!-- Source 8 · Transit Ridership (Transit / Ridership · CSV) -->
+                  <div class="group col-span-12 md:col-span-6 relative rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 hover:border-[#37576B] transition-colors">
+                    <button class="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 opacity-0 group-hover:opacity-100 hover:text-[#1F3F8F]" title="Edit source · admin"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="inline-flex items-center h-6 px-2.5 rounded-[4px] bg-[#047857] text-white font-display uppercase text-[11px] tracking-wide">Transit</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] border border-[#37576B]/20 bg-[#37576B]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>CSV</span>
+                    </div>
+                    <a href="datasets-source.html" class="block font-display font-medium text-[18px] leading-[1.25] text-[#0f1722] hover:text-[#1F3F8F]">Transit Ridership (NTD)</a>
+                    <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">ntd_ridership</div>
+                    <p class="mt-2 font-proxima text-[12.5px] text-slate-600 leading-[1.55]">National Transit Database annual ridership by agency &amp; mode — unlinked trips, revenue miles, fares.</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="px-1.5 py-0.5 rounded bg-slate-100">Ridership</span><span>· Table</span><span>· 38k rows</span><span>· 2 views</span><span>· v2023</span></div>
+                    <div class="mt-3 pt-3 border-t border-zinc-950/05 flex items-center justify-between">
+                      <span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated <span class="text-slate-600 tabular-nums">Apr 2026</span></span>
+                      <a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- view: full-width cards · 1-up (hidden until selected) -->
+                <div id="view-cards" class="hidden space-y-3">
+                  <a href="datasets-source.html" class="group flex items-center gap-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-3.5 hover:border-[#37576B] transition-colors">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center h-5 px-2 rounded-[4px] bg-[#1F3F8F] text-white font-display uppercase text-[10.5px] tracking-wide">Freight Atlas</span>
+                        <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                      </div>
+                      <div class="flex items-baseline gap-2 flex-wrap"><span class="font-display font-medium text-[16px] leading-tight text-[#0f1722] group-hover:text-[#1F3F8F]">Primary Freight Network</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">primary_freight_network</span></div>
+                      <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.5] truncate">FCHN + PHFS routes with truck AADT, truck share, and the added 2023 segments (+4,497 mi beyond PHFS).</p>
+                    </div>
+                    <div class="hidden lg:block flex-shrink-0 text-right"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Line · 5,642 rows · 3 views</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1 inline-flex items-center gap-1 justify-end"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated Mar 2026 · v2023</div></div>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] flex-shrink-0">view →</span>
+                  </a>
+
+                  <a href="datasets-source.html" class="group flex items-center gap-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-3.5 hover:border-[#37576B] transition-colors">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center h-5 px-2 rounded-[4px] bg-[#1F3F8F] text-white font-display uppercase text-[10.5px] tracking-wide">Freight Atlas</span>
+                        <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                        <span class="inline-flex items-center px-2 h-5 rounded-[4px] border border-[#EAAD43]/30 bg-[#EAAD43]/15 font-mono text-[9.5px] uppercase tracking-wider text-[#7C5A12]">new 2024</span>
+                      </div>
+                      <div class="flex items-baseline gap-2 flex-wrap"><span class="font-display font-medium text-[16px] leading-tight text-[#0f1722] group-hover:text-[#1F3F8F]">Truck Parking Inventory</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">truck_parking</span></div>
+                      <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.5] truncate">216 in-state + 47 buffer sites; public/private, space counts, amenities, hourly utilization. Appendix E.</p>
+                    </div>
+                    <div class="hidden lg:block flex-shrink-0 text-right"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Point · 263 rows · 2 views</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1 inline-flex items-center gap-1 justify-end"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated May 2026 · v2024</div></div>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] flex-shrink-0">view →</span>
+                  </a>
+
+                  <a href="datasets-source.html" class="group flex items-center gap-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-3.5 hover:border-[#37576B] transition-colors">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center h-5 px-2 rounded-[4px] bg-[#37576B] text-white font-display uppercase text-[10.5px] tracking-wide">NPMRDS</span>
+                        <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                      </div>
+                      <div class="flex items-baseline gap-2 flex-wrap"><span class="font-display font-medium text-[16px] leading-tight text-[#0f1722] group-hover:text-[#1F3F8F]">NPMRDS TMC Identification</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">npmrds_tmc_identification</span></div>
+                      <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.5] truncate">The TMC network reference — segment geometry, road name, direction, miles, and F-system, by vintage.</p>
+                    </div>
+                    <div class="hidden lg:block flex-shrink-0 text-right"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Line · 412k rows · 8 views</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1 inline-flex items-center gap-1 justify-end"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated Jun 2026 · v2025</div></div>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] flex-shrink-0">view →</span>
+                  </a>
+
+                  <a href="datasets-source.html" class="group flex items-center gap-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-3.5 hover:border-[#37576B] transition-colors">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center h-5 px-2 rounded-[4px] bg-[#1F3F8F] text-white font-display uppercase text-[10.5px] tracking-wide">Freight Atlas</span>
+                        <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded-[4px] border border-[#37576B]/20 bg-[#37576B]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>CSV</span>
+                      </div>
+                      <div class="flex items-baseline gap-2 flex-wrap"><span class="font-display font-medium text-[16px] leading-tight text-[#0f1722] group-hover:text-[#1F3F8F]">Commodity Flows (OD)</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">transearch_od</span></div>
+                      <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.5] truncate">Origin–destination tons &amp; value by mode and commodity; 2021 observed + 2050 forecast. TRANSEARCH.</p>
+                    </div>
+                    <div class="hidden lg:block flex-shrink-0 text-right"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Table/OD · 184k rows · 1 view</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1 inline-flex items-center gap-1 justify-end"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated Jan 2026 · v2021/2050</div></div>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] flex-shrink-0">view →</span>
+                  </a>
+
+                  <a href="datasets-source.html" class="group flex items-center gap-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-3.5 hover:border-[#37576B] transition-colors">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center h-5 px-2 rounded-[4px] bg-[#B45309] text-white font-display uppercase text-[10.5px] tracking-wide">TSMO</span>
+                        <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded-[4px] border border-zinc-950/10 bg-slate-100 font-mono text-[10px] uppercase tracking-wider text-slate-600"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><path d="M7 7h.01M7 17h.01"/></svg>Internal</span>
+                      </div>
+                      <div class="flex items-baseline gap-2 flex-wrap"><span class="font-display font-medium text-[16px] leading-tight text-[#0f1722] group-hover:text-[#1F3F8F]">TRANSCOM Incident Events</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">transcom_events</span></div>
+                      <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.5] truncate">Real-time incident &amp; event feed — type, severity, lanes affected, duration; per-TMC expansion for delay.</p>
+                    </div>
+                    <div class="hidden lg:block flex-shrink-0 text-right"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Table · 1.2M rows · 1 view</div><div class="font-mono text-[10px] uppercase tracking-wider text-emerald-600 mt-1 inline-flex items-center gap-1 justify-end"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>Live · 2h ago</div></div>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] flex-shrink-0">view →</span>
+                  </a>
+
+                  <a href="datasets-source.html" class="group flex items-center gap-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-3.5 hover:border-[#37576B] transition-colors">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center h-5 px-2 rounded-[4px] bg-[#0F2D4D] text-white font-display uppercase text-[10.5px] tracking-wide">Geographies</span>
+                        <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                      </div>
+                      <div class="flex items-baseline gap-2 flex-wrap"><span class="font-display font-medium text-[16px] leading-tight text-[#0f1722] group-hover:text-[#1F3F8F]">MPO Boundaries</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">mpo_boundaries</span></div>
+                      <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.5] truncate">All 14 New York Metropolitan Planning Organization boundaries for regional rollups and joins.</p>
+                    </div>
+                    <div class="hidden lg:block flex-shrink-0 text-right"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Polygon · 14 rows · 1 view</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1 inline-flex items-center gap-1 justify-end"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated Feb 2026 · v2024</div></div>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] flex-shrink-0">view →</span>
+                  </a>
+
+                  <a href="datasets-source.html" class="group flex items-center gap-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-3.5 hover:border-[#37576B] transition-colors">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center h-5 px-2 rounded-[4px] bg-[#0F2D4D] text-white font-display uppercase text-[10.5px] tracking-wide">Geographies</span>
+                        <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded-[4px] border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7"/></svg>GIS</span>
+                      </div>
+                      <div class="flex items-baseline gap-2 flex-wrap"><span class="font-display font-medium text-[16px] leading-tight text-[#0f1722] group-hover:text-[#1F3F8F]">NYSDOT Regions</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">nysdot_regions</span></div>
+                      <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.5] truncate">The 11 NYSDOT administrative regions — the standard rollup geography for statewide reporting.</p>
+                    </div>
+                    <div class="hidden lg:block flex-shrink-0 text-right"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Polygon · 11 rows · 1 view</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1 inline-flex items-center gap-1 justify-end"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated Feb 2026 · v2024</div></div>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] flex-shrink-0">view →</span>
+                  </a>
+
+                  <a href="datasets-source.html" class="group flex items-center gap-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-5 py-3.5 hover:border-[#37576B] transition-colors">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center h-5 px-2 rounded-[4px] bg-[#047857] text-white font-display uppercase text-[10.5px] tracking-wide">Transit</span>
+                        <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded-[4px] border border-[#37576B]/20 bg-[#37576B]/10 font-mono text-[10px] uppercase tracking-wider text-[#0F2D4D]"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>CSV</span>
+                      </div>
+                      <div class="flex items-baseline gap-2 flex-wrap"><span class="font-display font-medium text-[16px] leading-tight text-[#0f1722] group-hover:text-[#1F3F8F]">Transit Ridership (NTD)</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">ntd_ridership</span></div>
+                      <p class="mt-1 font-proxima text-[12.5px] text-slate-600 leading-[1.5] truncate">National Transit Database annual ridership by agency &amp; mode — unlinked trips, revenue miles, fares.</p>
+                    </div>
+                    <div class="hidden lg:block flex-shrink-0 text-right"><div class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Table · 38k rows · 2 views</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-1 inline-flex items-center gap-1 justify-end"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>Updated Apr 2026 · v2023</div></div>
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] flex-shrink-0">view →</span>
+                  </a>
+                </div>
+
+                <!-- view: table / list (hidden until selected) -->
+                <div id="view-table" class="hidden rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-50 border-b border-zinc-950/10">
+                        <th class="px-4 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Dataset</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Category</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Type</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Geom</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium text-right">Rows</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium text-right">Ver.</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Updated</th>
+                        <th class="px-3 py-2.5"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="font-proxima text-[12.5px] text-slate-700">
+                      <tr class="border-b border-zinc-950/05 hover:bg-slate-50/60">
+                        <td class="px-4 py-2"><a href="datasets-source.html" class="font-medium text-[#0f1722] hover:text-[#1F3F8F]">Primary Freight Network</a><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">primary_freight_network</div></td>
+                        <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#1F3F8F]"></span>Freight Atlas</span></td>
+                        <td class="px-3 py-2 text-slate-500">GIS</td><td class="px-3 py-2 text-slate-500">Line</td>
+                        <td class="px-3 py-2 text-right font-mono tabular-nums">5,642</td><td class="px-3 py-2 text-right font-mono tabular-nums">3</td>
+                        <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Mar 2026</td>
+                        <td class="px-3 py-2 text-right"><a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a></td>
+                      </tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-slate-50/60">
+                        <td class="px-4 py-2"><a href="datasets-source.html" class="font-medium text-[#0f1722] hover:text-[#1F3F8F]">Truck Parking Inventory</a><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">truck_parking</div></td>
+                        <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#1F3F8F]"></span>Freight Atlas</span></td>
+                        <td class="px-3 py-2 text-slate-500">GIS</td><td class="px-3 py-2 text-slate-500">Point</td>
+                        <td class="px-3 py-2 text-right font-mono tabular-nums">263</td><td class="px-3 py-2 text-right font-mono tabular-nums">2</td>
+                        <td class="px-3 py-2 font-mono text-[11px] text-slate-500">May 2026</td>
+                        <td class="px-3 py-2 text-right"><a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a></td>
+                      </tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-slate-50/60">
+                        <td class="px-4 py-2"><a href="datasets-source.html" class="font-medium text-[#0f1722] hover:text-[#1F3F8F]">NPMRDS TMC Identification</a><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">npmrds_tmc_identification</div></td>
+                        <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#37576B]"></span>NPMRDS</span></td>
+                        <td class="px-3 py-2 text-slate-500">GIS</td><td class="px-3 py-2 text-slate-500">Line</td>
+                        <td class="px-3 py-2 text-right font-mono tabular-nums">412k</td><td class="px-3 py-2 text-right font-mono tabular-nums">8</td>
+                        <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Jun 2026</td>
+                        <td class="px-3 py-2 text-right"><a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a></td>
+                      </tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-slate-50/60">
+                        <td class="px-4 py-2"><a href="datasets-source.html" class="font-medium text-[#0f1722] hover:text-[#1F3F8F]">Commodity Flows (OD)</a><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">transearch_od</div></td>
+                        <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#1F3F8F]"></span>Freight Atlas</span></td>
+                        <td class="px-3 py-2 text-slate-500">CSV</td><td class="px-3 py-2 text-slate-500">Table/OD</td>
+                        <td class="px-3 py-2 text-right font-mono tabular-nums">184k</td><td class="px-3 py-2 text-right font-mono tabular-nums">1</td>
+                        <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Jan 2026</td>
+                        <td class="px-3 py-2 text-right"><a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a></td>
+                      </tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-slate-50/60">
+                        <td class="px-4 py-2"><a href="datasets-source.html" class="font-medium text-[#0f1722] hover:text-[#1F3F8F]">TRANSCOM Incident Events</a><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">transcom_events</div></td>
+                        <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#B45309]"></span>TSMO</span></td>
+                        <td class="px-3 py-2 text-slate-500">Internal</td><td class="px-3 py-2 text-slate-500">Table</td>
+                        <td class="px-3 py-2 text-right font-mono tabular-nums">1.2M</td><td class="px-3 py-2 text-right font-mono tabular-nums">1</td>
+                        <td class="px-3 py-2"><span class="inline-flex items-center gap-1 font-mono text-[11px] text-emerald-600"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>2h ago</span></td>
+                        <td class="px-3 py-2 text-right"><a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a></td>
+                      </tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-slate-50/60">
+                        <td class="px-4 py-2"><a href="datasets-source.html" class="font-medium text-[#0f1722] hover:text-[#1F3F8F]">MPO Boundaries</a><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">mpo_boundaries</div></td>
+                        <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#0F2D4D]"></span>Geographies</span></td>
+                        <td class="px-3 py-2 text-slate-500">GIS</td><td class="px-3 py-2 text-slate-500">Polygon</td>
+                        <td class="px-3 py-2 text-right font-mono tabular-nums">14</td><td class="px-3 py-2 text-right font-mono tabular-nums">1</td>
+                        <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Feb 2026</td>
+                        <td class="px-3 py-2 text-right"><a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a></td>
+                      </tr>
+                      <tr class="border-b border-zinc-950/05 hover:bg-slate-50/60">
+                        <td class="px-4 py-2"><a href="datasets-source.html" class="font-medium text-[#0f1722] hover:text-[#1F3F8F]">NYSDOT Regions</a><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">nysdot_regions</div></td>
+                        <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#0F2D4D]"></span>Geographies</span></td>
+                        <td class="px-3 py-2 text-slate-500">GIS</td><td class="px-3 py-2 text-slate-500">Polygon</td>
+                        <td class="px-3 py-2 text-right font-mono tabular-nums">11</td><td class="px-3 py-2 text-right font-mono tabular-nums">1</td>
+                        <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Feb 2026</td>
+                        <td class="px-3 py-2 text-right"><a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a></td>
+                      </tr>
+                      <tr class="hover:bg-slate-50/60">
+                        <td class="px-4 py-2"><a href="datasets-source.html" class="font-medium text-[#0f1722] hover:text-[#1F3F8F]">Transit Ridership (NTD)</a><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">ntd_ridership</div></td>
+                        <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full bg-[#047857]"></span>Transit</span></td>
+                        <td class="px-3 py-2 text-slate-500">CSV</td><td class="px-3 py-2 text-slate-500">Table</td>
+                        <td class="px-3 py-2 text-right font-mono tabular-nums">38k</td><td class="px-3 py-2 text-right font-mono tabular-nums">2</td>
+                        <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Apr 2026</td>
+                        <td class="px-3 py-2 text-right"><a href="datasets-source.html" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">view →</a></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- pagination -->
+                <div class="mt-6 flex items-center justify-between">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">showing 8 of 49</div>
+                  <div class="flex items-center gap-1">
+                    <button class="size-8 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400"><!-- icon: ChevronLeft --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg></button>
+                    <button class="size-8 inline-flex items-center justify-center rounded-[6px] bg-[#1F3F8F] text-white font-mono text-[12px]">1</button>
+                    <button class="size-8 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-600 font-mono text-[12px]">2</button>
+                    <button class="size-8 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-600 font-mono text-[12px]">3</button>
+                    <button class="size-8 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-600"><!-- icon: ChevronRight --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 18 6-6-6-6"/></svg></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+<script>
+  // catalog view switcher — toggles the three layout containers + the active button
+  function setView(m) {
+    ['grid', 'cards', 'table'].forEach(function (v) {
+      document.getElementById('view-' + v).classList.toggle('hidden', v !== m);
+      document.getElementById('vb-' + v).className =
+        'size-9 inline-flex items-center justify-center rounded-[6px] ' +
+        (v === m ? 'bg-[#1F3F8F] text-white' : 'text-slate-500 hover:bg-slate-50');
+    });
+  }
+</script>
+</body>
+</html>

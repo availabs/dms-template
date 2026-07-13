@@ -105,8 +105,22 @@ dms_design_system_v2/
     ├── freight-atlas-insights.html· six-goal dashboards + data stories (level-2 goal sub-nav)
     ├── freight-atlas-data.html    · data catalog (datasets pattern over npmrds2, category rail)
     ├── freight-atlas-dataset.html · single Source page (Overview/Table/Map/Metadata + downloads)
-    └── freight-atlas-about.html   · About & The Plan (six goals, report library, what-changed)
+    ├── freight-atlas-about.html   · About & The Plan (six goals, report library, what-changed)
+    │   ── Datasets (the datasets pattern as its own product surface) ──
+    ├── datasets-catalog.html      · data catalog · rail + source cards (public + auth-gated admin)
+    └── datasets-source.html       · single Source page · Overview tab (description, metadata, downloads)
 ```
+
+The two `datasets-*.html` pages mock the **datasets pattern (DataManager) as its
+own product surface** — the generic, un-skinned counterpart to the Freight-Atlas
+pages above (which are the *public skin* of the same pattern). One surface serves
+both roles: it reads as a public data catalog, and every admin affordance (New
+source, per-card edit, the Admin tab, Add version, the hidden Sandbox / Data
+Processing / Inactive category buckets) is the **same page** with `isUserAuthed()`-gated
+chrome, tagged with the `admin` Pill. The catalog rail + source-card and the
+source-page header/tabs/overview compositions are documented in
+`design-system/patterns.html` (§08–09). Real `npmrds2` taxonomy from the
+category-tagging pass: 49 production sources across 5 areas.
 
 The seven `freight-atlas-*.html` pages are a fully-realized mockup of the
 **redesigned NYS Freight Atlas** (the 2024 State Freight Plan tasks AVAIL

@@ -1,0 +1,123 @@
+/* Albany County Land Bank · design-system shared CSS
+ *
+ * Loaded by every mockup in design-system/ and pages/ via
+ *   <link rel="stylesheet" href="../_shared.css"/>
+ * Brand webfonts load per-page from the Google Fonts CDN
+ * (Archivo + Public Sans + IBM Plex Mono) — see any page <head>.
+ *
+ * Everything here is a rule that can't be a plain Tailwind utility:
+ *   - the three brand font-family classes (with Archivo's width axis)
+ *   - the plat-map hero texture (stacked gradients)
+ *   - the record-paper card surfaces
+ *   - the parcel-plate hatch fill
+ *   - the press effect + status-dot pulse
+ * When this system is translated to a live theme, this file mirrors
+ * into theme/index.css.additions.
+ */
+
+body {
+  font-family: "Public Sans", system-ui, sans-serif;
+  background: #F2F5F6;
+  color: #16232C;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Brand font roles ─────────────────────────────────────────────
+ * display — Archivo, opened up to 118% width: sturdy civic lettering
+ *           that echoes the wide-tracked caps of the ACLB wordmark.
+ * prose   — Public Sans, the U.S. public-sector typeface.
+ * meta    — IBM Plex Mono for parcel IDs, ledger data, chrome labels.
+ */
+.font-display { font-family: "Archivo", "Franklin Gothic Medium", sans-serif; font-stretch: 118%; }
+.font-prose   { font-family: "Public Sans", system-ui, sans-serif; }
+.font-meta    { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+/* ── Surfaces ─────────────────────────────────────────────────────── */
+.lb-paper      { background: #F2F5F6; }   /* the page pane            */
+.lb-paper-tint { background: #EAEFF1; }   /* alternating band         */
+.lb-card {                                 /* white record card        */
+  background: #FFFFFF;
+  border: 1px solid rgba(22, 35, 44, 0.10);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(22, 35, 44, 0.05);
+}
+.lb-card-ink   { background: #16232C; color: #fff; border-radius: 6px; }
+.lb-card-tint  { background: #F7FAFB; }
+
+/* ── Plat-map texture ─────────────────────────────────────────────
+ * A survey-sheet grid: fine block lines at two scales with a faint
+ * sky wash. Used behind heroes and the ink footer (dark variant).
+ */
+.lb-plat {
+  background:
+    radial-gradient(ellipse 60% 50% at 78% 18%, rgba(10, 167, 228, 0.07), transparent 65%),
+    repeating-linear-gradient(0deg,  transparent 0 47px, rgba(22, 35, 44, 0.055) 47px 48px),
+    repeating-linear-gradient(90deg, transparent 0 61px, rgba(22, 35, 44, 0.055) 61px 62px),
+    repeating-linear-gradient(0deg,  transparent 0 189px, rgba(22, 35, 44, 0.075) 189px 190.5px),
+    repeating-linear-gradient(90deg, transparent 0 233px, rgba(22, 35, 44, 0.075) 233px 234.5px),
+    #EDF2F4;
+}
+.lb-plat-ink {
+  background:
+    radial-gradient(ellipse 55% 45% at 80% 0%, rgba(10, 167, 228, 0.12), transparent 60%),
+    repeating-linear-gradient(0deg,  transparent 0 47px, rgba(255, 255, 255, 0.045) 47px 48px),
+    repeating-linear-gradient(90deg, transparent 0 61px, rgba(255, 255, 255, 0.045) 61px 62px),
+    #16232C;
+}
+
+/* ── Parcel plate ─────────────────────────────────────────────────
+ * The lot-geometry thumbnail drawn on property cards. The plate is
+ * the survey paper; .lb-lot is the parcel polygon itself, hatched
+ * like an area fill on a plat sheet.
+ */
+.lb-plate {
+  background:
+    repeating-linear-gradient(0deg,  transparent 0 11px, rgba(22, 35, 44, 0.05) 11px 12px),
+    repeating-linear-gradient(90deg, transparent 0 11px, rgba(22, 35, 44, 0.05) 11px 12px),
+    #F0F4F2;
+}
+.lb-lot {
+  background:
+    repeating-linear-gradient(45deg, rgba(85, 164, 48, 0.28) 0 2px, transparent 2px 7px),
+    rgba(140, 198, 62, 0.14);
+  border: 1.5px solid #55A430;
+}
+.lb-lot-sky {
+  background:
+    repeating-linear-gradient(45deg, rgba(10, 167, 228, 0.26) 0 2px, transparent 2px 7px),
+    rgba(10, 167, 228, 0.10);
+  border: 1.5px solid #0B87BC;
+}
+.lb-lot-slate {
+  background:
+    repeating-linear-gradient(45deg, rgba(90, 110, 124, 0.24) 0 2px, transparent 2px 7px),
+    rgba(90, 110, 124, 0.10);
+  border: 1.5px solid #5A6E7C;
+}
+
+/* ── Interaction helpers ─────────────────────────────────────────── */
+.lb-press          { border-bottom-width: 3px; transition: all 0.08s ease; }
+.lb-press:active   { border-bottom-width: 1px; margin-top: 2px; }
+
+.dot-pulse { animation: lb-pulse 2.4s ease-in-out infinite; }
+@keyframes lb-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+:focus-visible { outline: 2px solid #0B87BC; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-pulse { animation: none; }
+  .lb-press, .lb-press:active { transition: none; }
+}
+
+/* ── Annotation overlay (design-system docs only) ─────────────────
+ * <body class="dms-annotated"> reveals structural badges on
+ * [data-dms-layout] / [data-dms-group] / [data-dms-section].
+ */
+.dms-annotated [data-dms-group]   { position: relative; outline: 1px dashed rgba(11, 135, 188, 0.5); outline-offset: -1px; }
+.dms-annotated [data-dms-group]::before {
+  content: "group · " attr(data-dms-group);
+  position: absolute; top: 0; right: 0; z-index: 40;
+  font-family: "IBM Plex Mono", monospace; font-size: 9px; letter-spacing: 0.08em;
+  background: #0B87BC; color: #fff; padding: 1px 6px;
+}
+.dms-annotated [data-dms-section] { outline: 1px dotted rgba(85, 164, 48, 0.55); outline-offset: -3px; }

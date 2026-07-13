@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Patterns · Tessera docs</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/logos/favicon.svg" />
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#F4F1EA"/>
+  <rect x="60" y="60" width="80" height="80" fill="#B5532C"/>
+  <text x="100" y="180" text-anchor="middle" font-family="Georgia, serif" font-size="20" fill="#2A2F36">T</text>
+</svg>
+</template>
+
+<div id="app"></div>
+<script type="text/babel">
+
+// ---- bundled components ----
+
+// === Wordmark.jsx ===
+// Wordmark.jsx — inline-SVG version of the Tessera wordmark.
+// Uses currentColor so it inherits color from its parent.
+
+function Wordmark({ size = 28, accent = "#B5532C", color = "currentColor" }) {
+  // viewBox 460 96 — 4.79:1 ratio
+  const w = size * 4.79;
+  return (
+    <svg
+      viewBox="0 0 460 96"
+      width={w}
+      height={size}
+      fill="none"
+      aria-label="Tessera"
+      role="img"
+    >
+      <rect x="20" y="32" width="32" height="32" fill={accent} />
+      <text
+        x="68"
+        y="64"
+        fontFamily='"Newsreader", "Tiempos Headline", Georgia, serif'
+        fontWeight="500"
+        fontSize="56"
+        letterSpacing="-0.012em"
+        fill={color}
+      >
+        Tessera
+      </text>
+    </svg>
+  );
+}
+
+function Monogram({ size = 24, color = "currentColor", accent }) {
+  return (
+    <svg viewBox="0 0 96 96" width={size} height={size} fill="none" aria-hidden="true">
+      <rect x="14" y="14" width="18" height="18" fill={color} />
+      <rect x="34" y="14" width="18" height="18" fill={accent || color} />
+      <rect x="54" y="14" width="18" height="18" fill={color} />
+      <rect x="34" y="34" width="18" height="18" fill={color} />
+      <rect x="34" y="54" width="18" height="18" fill={color} />
+    </svg>
+  );
+}
+
+Object.assign(window, { Wordmark, Monogram });
+
+
+// === DocsHeader.jsx ===
+// DocsHeader.jsx
+function DocsHeader() {
+  return (
+    <header style={dhStyles.bar}>
+      <div style={dhStyles.inner}>
+        <a href="#" style={dhStyles.brand}>
+          <Wordmark size={22} />
+          <span style={dhStyles.docsLabel}>Docs</span>
+        </a>
+        <nav style={dhStyles.nav}>
+          <a href="#" style={dhStyles.link}>Guides</a>
+          <a href="#" style={{ ...dhStyles.link, color: "var(--fg)", borderBottom: "1px solid var(--fg)" }}>Reference</a>
+          <a href="#" style={dhStyles.link}>Patterns</a>
+          <a href="#" style={dhStyles.link}>Theory</a>
+        </nav>
+        <div style={dhStyles.right}>
+          <span style={dhStyles.version}>v0.14.2</span>
+          <a href="#" style={dhStyles.search}>
+            <i data-lucide="search" style={{ width: 12, height: 12 }}></i>
+            <span>Search&hellip;</span>
+            <span style={dhStyles.kbd}>/</span>
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+const dhStyles = {
+  bar: {
+    background: "var(--bg)",
+    borderBottom: "1px solid var(--rule)",
+    position: "sticky",
+    top: 0,
+    zIndex: 5,
+  },
+  inner: {
+    maxWidth: 1280,
+    margin: "0 auto",
+    padding: "14px 32px",
+    display: "grid",
+    gridTemplateColumns: "auto 1fr auto",
+    alignItems: "center",
+    gap: 48,
+  },
+  brand: { display: "inline-flex", alignItems: "center", gap: 12, textDecoration: "none", color: "var(--fg)" },
+  docsLabel: {
+    fontFamily: "var(--font-mono)",
+    fontSize: 11,
+    color: "var(--fg-muted)",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    paddingLeft: 12,
+    borderLeft: "1px solid var(--rule)",
+  },
+  nav: { display: "flex", gap: 24 },
+  link: {
+    fontFamily: "var(--font-sans)",
+    fontSize: 14,
+    fontWeight: 500,
+    color: "var(--fg-muted)",
+    textDecoration: "none",
+    padding: "4px 0",
+  },
+  right: { display: "flex", alignItems: "center", gap: 16 },
+  version: {
+    fontFamily: "var(--font-mono)",
+    fontSize: 11,
+    color: "var(--fg-muted)",
+    border: "1px solid var(--rule)",
+    padding: "3px 8px",
+    borderRadius: 2,
+  },
+  search: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    border: "1px solid var(--rule)",
+    background: "var(--bg-raised)",
+    padding: "5px 10px 5px 12px",
+    width: 220,
+    fontFamily: "var(--font-sans)",
+    fontSize: 12,
+    color: "var(--fg-subtle)",
+    textDecoration: "none",
+    borderRadius: 2,
+  },
+  kbd: {
+    marginLeft: "auto",
+    fontFamily: "var(--font-mono)",
+    fontSize: 10,
+    border: "1px solid var(--rule)",
+    padding: "0 5px",
+    background: "var(--bg)",
+    color: "var(--fg-muted)",
+  },
+};
+
+Object.assign(window, { DocsHeader });
+
+
+// === DocsSidebar.jsx ===
+// DocsSidebar.jsx
+function DocsSidebar({ active = "ref-patterns" }) {
+  const tree = [
+    {
+      label: "Getting started",
+      items: [
+        ["intro",       "Introduction"],
+        ["install",     "Install"],
+        ["first-site",  "Your first site"],
+        ["concepts",    "Core concepts"],
+      ],
+    },
+    {
+      label: "Reference",
+      items: [
+        ["ref-rows",     "Rows"],
+        ["ref-patterns", "Patterns"],
+        ["ref-datasets", "Datasets"],
+        ["ref-themes",   "Themes"],
+        ["ref-queries",  "Queries"],
+      ],
+    },
+    {
+      label: "Renderings",
+      items: [
+        ["ren-table",     "Table"],
+        ["ren-calendar",  "Calendar"],
+        ["ren-prose",     "Prose"],
+        ["ren-chart",     "Chart"],
+        ["ren-map",       "Map"],
+      ],
+    },
+    {
+      label: "Operations",
+      items: [
+        ["ops-deploy",   "Deploy"],
+        ["ops-backup",   "Backup & restore"],
+        ["ops-audit",    "Audit log"],
+      ],
+    },
+  ];
+  return (
+    <aside style={dsStyles.aside}>
+      <nav style={dsStyles.nav}>
+        {tree.map((g) => (
+          <div key={g.label} style={{ marginBottom: 20 }}>
+            <div className="designator-mono" style={{ padding: "0 0 8px" }}>{g.label}</div>
+            <ul style={dsStyles.ul}>
+              {g.items.map(([id, label]) => (
+                <li key={id}>
+                  <a href="#" style={{
+                    ...dsStyles.link,
+                    color: id === active ? "var(--fg)" : "var(--fg-muted)",
+                    fontWeight: id === active ? 500 : 400,
+                    background: id === active ? "var(--bg-sunken)" : "transparent",
+                  }}>
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
+const dsStyles = {
+  aside: { width: 240, flexShrink: 0, padding: "32px 16px 32px 0" },
+  nav: { position: "sticky", top: 80 },
+  ul: { listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 1 },
+  link: {
+    display: "block",
+    fontFamily: "var(--font-sans)",
+    fontSize: 13,
+    color: "var(--fg-muted)",
+    textDecoration: "none",
+    padding: "5px 10px",
+    borderRadius: 2,
+  },
+};
+
+Object.assign(window, { DocsSidebar });
+
+
+// === OnThisPage.jsx ===
+// OnThisPage.jsx — right rail.
+function OnThisPage({ items, active }) {
+  return (
+    <aside style={otpStyles.aside}>
+      <div className="designator-mono">On this page</div>
+      <ul style={otpStyles.ul}>
+        {items.map((it) => (
+          <li key={it.id} style={{ paddingLeft: (it.depth - 2) * 12 }}>
+            <a href={`#${it.id}`} style={{
+              ...otpStyles.link,
+              color: it.id === active ? "var(--fg)" : "var(--fg-muted)",
+              borderLeft: it.id === active ? "1px solid var(--fg)" : "1px solid transparent",
+            }}>
+              {it.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
+const otpStyles = {
+  aside: { width: 200, flexShrink: 0, padding: "32px 0 32px 16px" },
+  ul: { listStyle: "none", padding: 0, margin: "12px 0 0", display: "flex", flexDirection: "column", gap: 1 },
+  link: {
+    display: "block",
+    fontFamily: "var(--font-sans)",
+    fontSize: 12,
+    color: "var(--fg-muted)",
+    textDecoration: "none",
+    padding: "5px 0 5px 12px",
+    lineHeight: 1.4,
+  },
+};
+
+Object.assign(window, { OnThisPage });
+
+
+// === CodeBlock.jsx ===
+// CodeBlock.jsx
+function CodeBlock({ caption, language, children }) {
+  return (
+    <figure style={cbStyles.fig}>
+      <pre style={cbStyles.pre}><code>{children}</code></pre>
+      {(caption || language) && (
+        <figcaption style={cbStyles.cap}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-subtle)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            {language || "code"}
+          </span>
+          {caption && <span style={{ fontFamily: "var(--font-sans)", fontSize: 12, color: "var(--fg-muted)" }}>{caption}</span>}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
+const cbStyles = {
+  fig: { margin: "16px 0 24px" },
+  pre: {
+    fontFamily: "var(--font-mono)",
+    fontSize: 13,
+    lineHeight: 1.55,
+    background: "var(--bg-sunken)",
+    border: "1px solid var(--rule)",
+    padding: "16px 20px",
+    margin: 0,
+    overflowX: "auto",
+    fontVariantNumeric: "tabular-nums",
+    color: "var(--fg)",
+    whiteSpace: "pre",
+  },
+  cap: {
+    marginTop: 8,
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+};
+
+Object.assign(window, { CodeBlock });
+
+
+
+
+function DocsPage() {
+  const otp = [
+    { id: "overview",  label: "Overview",            depth: 2 },
+    { id: "anatomy",   label: "Anatomy of a pattern", depth: 2 },
+    { id: "kinds",     label: "Kinds",               depth: 2 },
+    { id: "kinds-tab", label: "Table",               depth: 3 },
+    { id: "kinds-cal", label: "Calendar",            depth: 3 },
+    { id: "kinds-pro", label: "Prose",               depth: 3 },
+    { id: "compose",   label: "Composing a page",    depth: 2 },
+    { id: "publish",   label: "Publishing",          depth: 2 },
+    { id: "see-also",  label: "See also",            depth: 2 },
+  ];
+
+  return (
+    <>
+      <DocsHeader />
+
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px", display: "flex", gap: 32, alignItems: "flex-start" }}>
+        <DocsSidebar active="ref-patterns" />
+
+        <article style={{ flex: 1, minWidth: 0, padding: "32px 0 96px", maxWidth: 720 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-muted)", letterSpacing: "0.06em", textTransform: "uppercase", display: "flex", gap: 12, alignItems: "center" }}>
+            <span>Reference</span>
+            <span style={{ color: "var(--fg-subtle)" }}>/</span>
+            <span style={{ color: "var(--fg)" }}>Patterns</span>
+          </div>
+
+          <h1 id="overview" style={hStyles.h1}>Patterns</h1>
+
+          <p style={pStyles.lede}>
+            A pattern is the shape of a section. It tells Tessera which rows
+            to fetch, how to fetch them, and how to render them. The same
+            primitive that backs a homepage block also backs a chart, a
+            table, or a map.
+          </p>
+
+          <p style={pStyles.body}>
+            Patterns are stored as ordinary rows in the <code>patterns</code>
+            table. They reference a dataset, a query, and a rendering. A
+            pattern is small &mdash; the rendering is just metadata. The
+            data is somewhere else.
+          </p>
+
+          <h2 id="anatomy" style={hStyles.h2}>Anatomy of a pattern</h2>
+
+          <p style={pStyles.body}>
+            A pattern is a typed row with four required fields and several
+            optional ones.
+          </p>
+
+          <CodeBlock language="sql" caption="The minimum schema, abbreviated.">
+{`CREATE TABLE patterns (
+  id         bigint PRIMARY KEY,
+  slug       text   NOT NULL UNIQUE,
+  renders_as text   NOT NULL,   -- 'table' | 'calendar' | 'prose' | 'chart' | 'map'
+  dataset    text,              -- e.g. 'shows' or NULL for prose
+  query      text,              -- SQL or query DSL fragment
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);`}
+          </CodeBlock>
+
+          <p style={pStyles.body}>
+            Slugs are namespaced: <code>station.now_playing</code>,
+            <code>civic.indicator_grid</code>, <code>archive.bibliography</code>.
+            The first segment denotes the site, the second denotes the
+            pattern's role within that site.
+          </p>
+
+          <h2 id="kinds" style={hStyles.h2}>Kinds</h2>
+
+          <p style={pStyles.body}>
+            Tessera ships five built-in renderings. Custom renderings may be
+            registered by a theme; see <a href="#">Themes &rarr; Custom
+            renderings</a>.
+          </p>
+
+          <h3 id="kinds-tab" style={hStyles.h3}>Table</h3>
+          <p style={pStyles.body}>
+            A typed grid. Tabular figures, alternating row tints,
+            hairline dividers. The most common pattern; the workhorse of
+            the system.
+          </p>
+
+          <CodeBlock language="tessera">
+{`pattern: station.archive
+renders_as: table
+dataset: shows
+query: |
+  SELECT * FROM shows
+  ORDER BY date DESC
+  LIMIT 24`}
+          </CodeBlock>
+
+          <h3 id="kinds-cal" style={hStyles.h3}>Calendar</h3>
+          <p style={pStyles.body}>
+            A grid keyed on a time column. Hour-of-day on the
+            horizontal axis, day-of-week on the vertical. Custom keying
+            via <code>calendar.key_x</code> and <code>calendar.key_y</code>.
+          </p>
+
+          <h3 id="kinds-pro" style={hStyles.h3}>Prose</h3>
+          <p style={pStyles.body}>
+            A single typed row treated as long-form. Use this for "About"
+            pages, theory essays, and any surface where the row <em>is</em>
+            the page.
+          </p>
+
+          <h2 id="compose" style={hStyles.h2}>Composing a page</h2>
+
+          <p style={pStyles.body}>
+            A page is itself a row of kind <code>page</code> that points
+            at a list of patterns. The page does not store its sections;
+            it stores their slugs.
+          </p>
+
+          <CodeBlock language="json" caption="A page row, with an ordered list of pattern slugs.">
+{`{
+  "id":   2060672,
+  "slug": "station.home",
+  "kind": "page",
+  "sections": [
+    "station.now_playing",
+    "station.schedule",
+    "station.archive"
+  ]
+}`}
+          </CodeBlock>
+
+          <h2 id="publish" style={hStyles.h2}>Publishing</h2>
+
+          <p style={pStyles.body}>
+            Publishing snapshots a page and its constituent patterns into
+            an immutable revision. Old revisions are addressable; rollback
+            is a row insert.
+          </p>
+
+          <h2 id="see-also" style={hStyles.h2}>See also</h2>
+          <ul style={pStyles.ul}>
+            <li><a href="#">Rows &mdash; the underlying primitive</a></li>
+            <li><a href="#">Datasets &mdash; how data is sourced</a></li>
+            <li><a href="#">Themes &mdash; custom renderings</a></li>
+            <li><a href="#">Queries &mdash; the query DSL</a></li>
+          </ul>
+
+          {/* Footer */}
+          <hr style={{ borderTop: "1px solid var(--rule)", margin: "48px 0 24px" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            <a href="#" style={{ color: "inherit", textDecoration: "none" }}>← Rows</a>
+            <a href="#" style={{ color: "var(--fg-muted)", textDecoration: "none" }}>Edit this page on GitHub</a>
+            <a href="#" style={{ color: "inherit", textDecoration: "none" }}>Datasets →</a>
+          </div>
+        </article>
+
+        <OnThisPage items={otp} active="kinds" />
+      </div>
+    </>
+  );
+}
+
+const hStyles = {
+  h1: {
+    fontFamily: "var(--font-display)",
+    fontWeight: 500,
+    fontSize: 52,
+    letterSpacing: "-0.018em",
+    lineHeight: 1.05,
+    margin: "16px 0 24px",
+    color: "var(--fg)",
+    textWrap: "balance",
+  },
+  h2: {
+    fontFamily: "var(--font-display)",
+    fontWeight: 500,
+    fontSize: 28,
+    letterSpacing: "-0.008em",
+    lineHeight: 1.2,
+    margin: "56px 0 16px",
+    color: "var(--fg)",
+    paddingTop: 16,
+    borderTop: "1px solid var(--rule)",
+  },
+  h3: {
+    fontFamily: "var(--font-display)",
+    fontWeight: 500,
+    fontSize: 20,
+    letterSpacing: "-0.005em",
+    margin: "32px 0 12px",
+    color: "var(--fg)",
+  },
+};
+
+const pStyles = {
+  lede: {
+    fontFamily: "var(--font-specimen)",
+    fontStyle: "italic",
+    fontSize: 22,
+    lineHeight: 1.5,
+    color: "var(--fg)",
+    margin: "0 0 32px",
+  },
+  body: {
+    fontFamily: "var(--font-sans)",
+    fontSize: 16,
+    lineHeight: 1.65,
+    color: "var(--fg)",
+    margin: "0 0 16px",
+    textWrap: "pretty",
+  },
+  ul: {
+    fontFamily: "var(--font-sans)",
+    fontSize: 16,
+    lineHeight: 1.7,
+    color: "var(--fg)",
+    padding: "0 0 0 18px",
+    margin: "0 0 16px",
+  },
+};
+
+const root = ReactDOM.createRoot(document.getElementById("app"));
+root.render(<DocsPage />);
+
+setTimeout(() => window.lucide && window.lucide.createIcons(), 200);
+const obs = new MutationObserver(() => window.lucide && window.lucide.createIcons());
+obs.observe(document.body, { childList: true, subtree: true });
+
+</script>
+</body>
+</html>

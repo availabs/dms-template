@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Albany County Land Bank · Properties</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<body class="lb-paper">
+
+<!--
+  properties.html · EXAMPLE PAGE 3 of 3 — the property portfolio dashboard.
+  Layout `default` (public chrome). An interactive DMS page: the filter band
+  writes page variables; every data section below reacts. Bands: page header
+  with freshness strip · filter band · KPI strip · map + status donut ·
+  three charts · fresh listings · full ledger table · attribution.
+  All figures are real (ACLB property records via AlbanyCountyLandbankData.xlsx,
+  June 2026): 1,314 records · 199 in inventory · 60 for sale · 1,115 sold.
+  Map pins plot 176 geocoded current-inventory parcels at true coordinates.
+-->
+
+<div class="min-h-svh flex flex-col" data-dms-layout="default">
+
+  <!-- ═══ Utility strip ═══ -->
+  <div class="w-full bg-ink text-white/80">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-8 flex items-center justify-between gap-4">
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em] truncate">A public authority of Albany County, New York</span>
+      <span class="hidden sm:flex items-center gap-4 font-meta text-[9.5px] uppercase tracking-[0.12em] text-white/60 shrink-0">
+        <span class="inline-flex items-center gap-1.5"><!-- icon: Phone --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>(518) 407-0309</span>
+        <span class="inline-flex items-center gap-1.5"><!-- icon: Clock --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>Mon–Fri 9:30–4:30</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══ TopNav · product (Properties active) ═══ -->
+  <header class="w-full bg-white border-b border-ink/10 sticky top-0 z-50">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-16 flex items-center gap-8">
+      <a href="home.html" class="flex items-center shrink-0">
+        <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-10 w-auto"/>
+      </a>
+      <nav class="flex-1 flex items-center justify-end gap-1 font-prose text-[13.5px] font-semibold">
+        <a href="home.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Home</a>
+        <a href="about.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">About</a>
+        <a href="properties.html" class="px-3 h-16 flex items-center text-skydeep border-b-2 border-sky -mb-px">Properties</a>
+      </nav>
+      <a href="properties.html" class="lb-press hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-md bg-skydeep hover:bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold shrink-0">
+        <!-- icon: Lot --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+        Browse properties
+      </a>
+      <button class="md:hidden text-ink" aria-label="Open menu"><!-- icon: Menu --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg></button>
+    </div>
+  </header>
+
+  <!-- ═══ PAGE HEADER · LayoutGroup header ═══ -->
+  <div class="w-full lb-plat border-b border-ink/10" data-dms-group="header">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-10">
+      <div class="grid grid-cols-12 gap-0 items-end">
+        <div class="col-span-12 lg:col-span-8 p-3" data-dms-section="page-header">
+          <div class="flex items-center gap-2.5 mb-3">
+            <span class="size-2 bg-leaf"></span>
+            <span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Property portfolio · Public data</span>
+            <span class="hidden md:inline-flex items-center gap-1.5 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist border-l border-ink/10 pl-3">
+              <span class="size-1.5 rounded-full bg-field dot-pulse"></span>updated June 29, 2026
+            </span>
+          </div>
+          <h1 class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink">The portfolio, parcel by parcel</h1>
+          <p class="font-prose text-[15px] leading-[1.65] text-slate mt-3 max-w-[640px]">Every property the Land Bank has ever held — 1,314 records since 2015 — with its status, price, and survey. What's for sale today, what's being rehabbed, and what's already back on the tax rolls.</p>
+        </div>
+        <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="page-actions">
+          <div class="flex lg:justify-end gap-3">
+            <a href="#ledger" class="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-white hover:bg-paper border border-ink/15 text-ink font-prose text-[13.5px] font-semibold">
+              <!-- icon: Download --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4.5-4.5M12 15 7.5 10.5M4 21h16"/></svg>
+              Download CSV
+            </a>
+            <a href="#forsale" class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-field hover:bg-forest border-b-[3px] border-forest text-white font-prose text-[13.5px] font-semibold">For-sale list</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FILTER BAND · writes page variables; sections below react ═══ -->
+  <div class="w-full bg-white border-b border-ink/10" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-4">
+      <div class="grid grid-cols-12 gap-0 items-center" data-dms-section="filters">
+        <div class="col-span-12 lg:col-span-4 p-1.5">
+          <label class="relative block">
+            <span class="sr-only">Search address or parcel ID</span>
+            <!-- icon: Search --><svg class="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 5 5"/></svg>
+            <input type="text" placeholder="Search address or parcel ID…" class="w-full h-10 pl-9 pr-3 rounded bg-white border border-ink/15 font-prose text-[13.5px] text-ink placeholder:text-mist focus:border-skydeep focus:outline-none"/>
+          </label>
+        </div>
+        <div class="col-span-6 sm:col-span-3 lg:col-span-2 p-1.5">
+          <button class="w-full h-10 px-3 rounded bg-white border border-ink/15 hover:border-skydeep/50 flex items-center justify-between gap-2 font-prose text-[13.5px] text-ink">
+            <span class="truncate"><span class="text-mist">Status:</span> All</span>
+            <!-- icon: ChevronDown --><svg class="size-4 text-mist shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+        <div class="col-span-6 sm:col-span-3 lg:col-span-2 p-1.5">
+          <button class="w-full h-10 px-3 rounded bg-white border border-ink/15 hover:border-skydeep/50 flex items-center justify-between gap-2 font-prose text-[13.5px] text-ink">
+            <span class="truncate"><span class="text-mist">Neighborhood:</span> All</span>
+            <!-- icon: ChevronDown --><svg class="size-4 text-mist shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+        <div class="col-span-6 sm:col-span-3 lg:col-span-2 p-1.5">
+          <button class="w-full h-10 px-3 rounded bg-white border border-ink/15 hover:border-skydeep/50 flex items-center justify-between gap-2 font-prose text-[13.5px] text-ink">
+            <span class="truncate"><span class="text-mist">Type:</span> All</span>
+            <!-- icon: ChevronDown --><svg class="size-4 text-mist shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+        <div class="col-span-6 sm:col-span-3 lg:col-span-2 p-1.5 flex items-center justify-between gap-2">
+          <button class="flex-1 h-10 px-3 rounded bg-white border border-ink/15 hover:border-skydeep/50 flex items-center justify-between gap-2 font-prose text-[13.5px] text-ink">
+            <span class="truncate"><span class="text-mist">City:</span> All</span>
+            <!-- icon: ChevronDown --><svg class="size-4 text-mist shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+        <div class="col-span-12 lg:col-span-12 px-1.5 pt-1 flex items-center justify-between">
+          <span class="font-meta font-medium text-[11px] text-mist">1,314 records · 176 mapped</span>
+          <button class="font-prose text-[12px] font-semibold text-skydeep hover:text-ink inline-flex items-center gap-1">
+            <!-- icon: Close --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg>
+            Reset filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ KPI STRIP ═══ -->
+  <div class="w-full lb-paper py-6" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3" data-dms-section="kpi-inventory">
+          <div class="lb-card p-4 h-full border-t-2 border-t-sky">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">In inventory</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">199</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">parcels held today</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3" data-dms-section="kpi-forsale">
+          <div class="lb-card p-4 h-full border-t-2 border-t-field">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">For sale</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-forest tabular-nums mt-1">60</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">open for applications</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3" data-dms-section="kpi-pending">
+          <div class="lb-card p-4 h-full border-t-2 border-t-amber">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Sale pending</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">17</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">approved · closing</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3" data-dms-section="kpi-sold">
+          <div class="lb-card p-4 h-full border-t-2 border-t-ink">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Sold since 2015</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">1,115</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">returned to productive use</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3" data-dms-section="kpi-median">
+          <div class="lb-card p-4 h-full border-t-2 border-t-leaf">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Median asking</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">$600</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">for-sale vacant lots</div>
+          </div>
+        </div>
+        <div class="col-span-6 md:col-span-4 xl:col-span-2 p-3" data-dms-section="kpi-days">
+          <div class="lb-card p-4 h-full border-t-2 border-t-steel">
+            <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">Avg days held</div>
+            <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-ink tabular-nums mt-1">2,611</div>
+            <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">≈ 7.2 years per parcel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAP + STATUS DONUT ═══ -->
+  <div class="w-full lb-paper pb-6" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- map · span 8 -->
+        <div class="col-span-12 lg:col-span-8 p-3" data-dms-section="map">
+          <div class="lb-card overflow-hidden h-full flex flex-col">
+            <div class="px-5 py-4 border-b border-ink/10 flex items-center justify-between gap-3">
+              <div>
+                <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Where the inventory is</div>
+                <div class="font-prose text-[12px] text-slate mt-0.5">Current holdings, plotted at their true coordinates</div>
+              </div>
+              <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist shrink-0">176 of 199 geocoded</span>
+            </div>
+            <div class="lb-plate relative flex-1 min-h-[420px]">
+              <!-- decorative — Albany County map: Hudson River band + 176 real parcel points -->
+              <svg viewBox="0 0 760 560" class="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map of Albany County showing 176 land bank parcels concentrated in West Hill, Arbor Hill, and the South End">
+                <path d="M 709 -4 C 700 80 688 170 664 250 C 640 330 570 330 542 380 C 514 430 498 480 492 564" fill="none" stroke="#0AA7E4" stroke-opacity="0.22" stroke-width="18" stroke-linecap="round"/>
+                <text transform="translate(688,110) rotate(78)" font-family="'IBM Plex Mono', monospace" font-size="10" letter-spacing="0.12em" fill="#0A6E99" opacity="0.55">HUDSON RIVER</text>
+                <g font-family="'IBM Plex Mono', monospace" font-size="10" letter-spacing="0.1em" fill="#475A66" style="paint-order:stroke" stroke="#F0F4F2" stroke-width="3">
+                  <text x="404" y="336" text-anchor="middle">WEST HILL</text>
+                  <text x="497" y="356" text-anchor="start">ARBOR HILL</text>
+                  <text x="449" y="482" text-anchor="middle">SOUTH END</text>
+                  <text x="196" y="308" text-anchor="middle">EAGLE HILL</text>
+                  <text x="242" y="394" text-anchor="middle">BUCKINGHAM POND</text>
+                  <text x="345" y="474" text-anchor="middle">DELAWARE AVE</text>
+                  <text x="540" y="322" text-anchor="middle">NORTH ALBANY</text>
+                  <text x="225" y="158" text-anchor="middle">COLONIE</text>
+                  <text x="648" y="26" text-anchor="end">COHOES</text>
+                </g>
+                <g fill="#8195A1" stroke="#FFFFFF" stroke-width="1.2" opacity="0.95" data-status="process" data-count="25"><circle cx="374.9" cy="202.2" r="4"/><circle cx="408.8" cy="344.6" r="4"/><circle cx="420.4" cy="357.7" r="4"/><circle cx="439.7" cy="361.6" r="4"/><circle cx="442.9" cy="434.3" r="4"/><circle cx="443.1" cy="434.5" r="4"/><circle cx="443.3" cy="362.3" r="4"/><circle cx="443.4" cy="434.6" r="4"/><circle cx="447.0" cy="440.7" r="4"/><circle cx="451.7" cy="367.3" r="4"/><circle cx="461.6" cy="433.8" r="4"/><circle cx="461.7" cy="433.6" r="4"/><circle cx="461.8" cy="436.0" r="4"/><circle cx="461.8" cy="436.0" r="4"/><circle cx="463.4" cy="433.2" r="4"/><circle cx="463.7" cy="432.7" r="4"/><circle cx="463.8" cy="432.9" r="4"/><circle cx="474.5" cy="380.6" r="4"/><circle cx="477.9" cy="383.1" r="4"/><circle cx="480.3" cy="371.5" r="4"/><circle cx="483.4" cy="387.3" r="4"/><circle cx="518.5" cy="344.0" r="4"/><circle cx="518.8" cy="344.1" r="4"/><circle cx="519.1" cy="344.1" r="4"/><circle cx="526.8" cy="346.1" r="4"/></g>
+                <g fill="#CE5B4E" stroke="#FFFFFF" stroke-width="1.2" opacity="0.95" data-status="hold" data-count="12"><circle cx="343.8" cy="332.0" r="4"/><circle cx="393.7" cy="334.1" r="4"/><circle cx="394.3" cy="333.2" r="4"/><circle cx="394.7" cy="333.2" r="4"/><circle cx="428.9" cy="440.6" r="4"/><circle cx="431.1" cy="355.5" r="4"/><circle cx="431.4" cy="355.5" r="4"/><circle cx="450.8" cy="441.4" r="4"/><circle cx="476.6" cy="439.2" r="4"/><circle cx="476.9" cy="438.6" r="4"/><circle cx="477.5" cy="438.7" r="4"/><circle cx="662.7" cy="210.4" r="4"/></g>
+                <g fill="#8B6FC7" stroke="#FFFFFF" stroke-width="1.2" opacity="0.95" data-status="codev" data-count="11"><circle cx="395.7" cy="355.9" r="4"/><circle cx="396.7" cy="354.4" r="4"/><circle cx="397.2" cy="356.9" r="4"/><circle cx="450.5" cy="369.2" r="4"/><circle cx="451.3" cy="370.3" r="4"/><circle cx="451.8" cy="370.6" r="4"/><circle cx="452.4" cy="369.6" r="4"/><circle cx="452.7" cy="367.4" r="4"/><circle cx="453.0" cy="370.7" r="4"/><circle cx="453.0" cy="371.1" r="4"/><circle cx="454.6" cy="372.0" r="4"/></g>
+                <g fill="#E0940B" stroke="#FFFFFF" stroke-width="1.2" opacity="0.95" data-status="pending" data-count="15"><circle cx="209.9" cy="373.2" r="4"/><circle cx="327.9" cy="332.6" r="4"/><circle cx="398.8" cy="335.2" r="4"/><circle cx="441.8" cy="454.0" r="4"/><circle cx="454.2" cy="444.0" r="4"/><circle cx="484.6" cy="368.3" r="4"/><circle cx="485.0" cy="368.5" r="4"/><circle cx="485.6" cy="368.9" r="4"/><circle cx="485.7" cy="369.2" r="4"/><circle cx="486.1" cy="368.4" r="4"/><circle cx="486.6" cy="369.3" r="4"/><circle cx="486.8" cy="369.5" r="4"/><circle cx="525.0" cy="345.6" r="4"/><circle cx="525.3" cy="345.7" r="4"/><circle cx="525.7" cy="345.7" r="4"/></g>
+                <g fill="#0AA7E4" stroke="#FFFFFF" stroke-width="1.2" opacity="0.95" data-status="rehab" data-count="56"><circle cx="423.3" cy="353.6" r="4"/><circle cx="428.5" cy="352.8" r="4"/><circle cx="433.3" cy="441.0" r="4"/><circle cx="433.7" cy="440.9" r="4"/><circle cx="434.0" cy="441.0" r="4"/><circle cx="434.4" cy="441.1" r="4"/><circle cx="434.7" cy="441.2" r="4"/><circle cx="435.0" cy="441.0" r="4"/><circle cx="435.7" cy="360.6" r="4"/><circle cx="436.8" cy="370.4" r="4"/><circle cx="437.7" cy="356.2" r="4"/><circle cx="439.1" cy="362.4" r="4"/><circle cx="440.0" cy="361.7" r="4"/><circle cx="440.6" cy="362.1" r="4"/><circle cx="441.0" cy="355.1" r="4"/><circle cx="441.7" cy="360.3" r="4"/><circle cx="443.1" cy="362.6" r="4"/><circle cx="444.6" cy="364.8" r="4"/><circle cx="446.0" cy="361.0" r="4"/><circle cx="446.2" cy="364.6" r="4"/><circle cx="446.3" cy="361.0" r="4"/><circle cx="446.4" cy="438.9" r="4"/><circle cx="446.5" cy="364.8" r="4"/><circle cx="446.5" cy="366.0" r="4"/><circle cx="446.6" cy="441.0" r="4"/><circle cx="446.7" cy="364.9" r="4"/><circle cx="447.2" cy="361.8" r="4"/><circle cx="447.3" cy="364.9" r="4"/><circle cx="447.5" cy="362.0" r="4"/><circle cx="447.6" cy="365.0" r="4"/><circle cx="447.9" cy="365.1" r="4"/><circle cx="448.1" cy="437.8" r="4"/><circle cx="448.5" cy="363.6" r="4"/><circle cx="448.8" cy="363.7" r="4"/><circle cx="449.1" cy="363.8" r="4"/><circle cx="449.1" cy="365.6" r="4"/><circle cx="449.4" cy="365.7" r="4"/><circle cx="449.6" cy="367.3" r="4"/><circle cx="449.9" cy="362.7" r="4"/><circle cx="449.9" cy="366.4" r="4"/><circle cx="450.4" cy="366.7" r="4"/><circle cx="450.6" cy="439.2" r="4"/><circle cx="454.7" cy="443.6" r="4"/><circle cx="455.0" cy="439.7" r="4"/><circle cx="457.1" cy="440.6" r="4"/><circle cx="461.5" cy="436.2" r="4"/><circle cx="462.0" cy="423.8" r="4"/><circle cx="463.1" cy="434.0" r="4"/><circle cx="463.2" cy="433.8" r="4"/><circle cx="463.4" cy="433.4" r="4"/><circle cx="469.2" cy="415.4" r="4"/><circle cx="481.4" cy="372.1" r="4"/><circle cx="481.6" cy="372.2" r="4"/><circle cx="492.7" cy="391.5" r="4"/><circle cx="492.8" cy="391.4" r="4"/><circle cx="528.7" cy="340.2" r="4"/></g>
+                <g fill="#55A430" stroke="#FFFFFF" stroke-width="1.2" opacity="0.95" data-status="forsale" data-count="57"><circle cx="52.3" cy="227.2" r="4"/><circle cx="95.1" cy="107.9" r="4"/><circle cx="176.9" cy="193.3" r="4"/><circle cx="176.9" cy="193.3" r="4"/><circle cx="190.8" cy="130.7" r="4"/><circle cx="191.0" cy="325.6" r="4"/><circle cx="191.1" cy="325.8" r="4"/><circle cx="191.5" cy="327.0" r="4"/><circle cx="191.6" cy="327.2" r="4"/><circle cx="191.6" cy="327.8" r="4"/><circle cx="192.1" cy="327.4" r="4"/><circle cx="192.4" cy="327.5" r="4"/><circle cx="199.8" cy="333.7" r="4"/><circle cx="202.5" cy="332.0" r="4"/><circle cx="234.1" cy="345.5" r="4"/><circle cx="238.1" cy="363.1" r="4"/><circle cx="238.4" cy="362.8" r="4"/><circle cx="239.8" cy="361.9" r="4"/><circle cx="244.0" cy="358.3" r="4"/><circle cx="244.4" cy="358.6" r="4"/><circle cx="246.9" cy="356.6" r="4"/><circle cx="304.6" cy="427.2" r="4"/><circle cx="333.5" cy="257.0" r="4"/><circle cx="344.2" cy="449.0" r="4"/><circle cx="344.6" cy="448.8" r="4"/><circle cx="344.9" cy="448.7" r="4"/><circle cx="345.2" cy="448.5" r="4"/><circle cx="345.6" cy="448.4" r="4"/><circle cx="383.7" cy="323.2" r="4"/><circle cx="407.5" cy="438.6" r="4"/><circle cx="419.7" cy="460.2" r="4"/><circle cx="419.9" cy="460.3" r="4"/><circle cx="423.3" cy="433.0" r="4"/><circle cx="427.0" cy="424.6" r="4"/><circle cx="435.9" cy="442.9" r="4"/><circle cx="436.0" cy="428.1" r="4"/><circle cx="436.5" cy="439.0" r="4"/><circle cx="437.0" cy="429.2" r="4"/><circle cx="437.6" cy="429.4" r="4"/><circle cx="438.9" cy="431.3" r="4"/><circle cx="439.0" cy="430.9" r="4"/><circle cx="439.3" cy="431.4" r="4"/><circle cx="439.8" cy="431.3" r="4"/><circle cx="442.0" cy="432.0" r="4"/><circle cx="442.8" cy="445.2" r="4"/><circle cx="443.5" cy="429.8" r="4"/><circle cx="443.9" cy="429.8" r="4"/><circle cx="443.9" cy="442.6" r="4"/><circle cx="444.0" cy="434.5" r="4"/><circle cx="444.3" cy="429.9" r="4"/><circle cx="444.8" cy="444.2" r="4"/><circle cx="450.6" cy="436.2" r="4"/><circle cx="454.6" cy="420.9" r="4"/><circle cx="463.4" cy="433.0" r="4"/><circle cx="472.7" cy="384.5" r="4"/><circle cx="479.7" cy="374.7" r="4"/><circle cx="673.0" cy="33.9" r="4"/></g>
+              </svg>
+            </div>
+            <div class="px-5 py-3 border-t border-ink/10 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-slate"><span class="size-2.5 rounded-full bg-field"></span>For Sale · 57</span>
+              <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-slate"><span class="size-2.5 rounded-full bg-sky"></span>ACLB Rehab · 56</span>
+              <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-slate"><span class="size-2.5 rounded-full bg-amber"></span>Sale Pending · 15</span>
+              <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-slate"><span class="size-2.5 rounded-full bg-violet"></span>Co-Dev · 11</span>
+              <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-slate"><span class="size-2.5 rounded-full bg-steel"></span>In Process · 25</span>
+              <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-slate"><span class="size-2.5 rounded-full bg-rose"></span>On Hold · 12</span>
+              <span class="ml-auto font-prose text-[11px] text-mist">Rural Hilltowns parcels sit outside this frame</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- donut · span 4 -->
+        <div class="col-span-12 lg:col-span-4 p-3" data-dms-section="status-donut">
+          <div class="lb-card p-5 h-full flex flex-col">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Inventory by status</div>
+            <div class="font-prose text-[12px] text-slate mt-0.5 mb-4">199 parcels held today</div>
+            <div class="flex items-center justify-center py-2">
+              <!-- decorative — status donut, real counts -->
+              <svg viewBox="0 0 180 180" class="w-44 h-44" role="img" aria-label="Donut chart: current inventory by status. For Sale 60, ACLB Rehab 57, In Process 30, Sale Pending 17, On Hold 13, Co-Development 11, Unclassified 11.">
+                <g transform="rotate(-90 90 90)">
+                  <circle cx="90" cy="90" r="70" fill="none" stroke="#4C9129" stroke-width="26" stroke-dasharray="132.6 439.82" stroke-dashoffset="0"/>
+                  <circle cx="90" cy="90" r="70" fill="none" stroke="#0AA7E4" stroke-width="26" stroke-dasharray="126 439.82" stroke-dashoffset="-132.6"/>
+                  <circle cx="90" cy="90" r="70" fill="none" stroke="#E0940B" stroke-width="26" stroke-dasharray="37.6 439.82" stroke-dashoffset="-258.6"/>
+                  <circle cx="90" cy="90" r="70" fill="none" stroke="#8195A1" stroke-width="26" stroke-dasharray="66.3 439.82" stroke-dashoffset="-296.2"/>
+                  <circle cx="90" cy="90" r="70" fill="none" stroke="#8B6FC7" stroke-width="26" stroke-dasharray="24.3 439.82" stroke-dashoffset="-362.5"/>
+                  <circle cx="90" cy="90" r="70" fill="none" stroke="#CE5B4E" stroke-width="26" stroke-dasharray="28.7 439.82" stroke-dashoffset="-386.8"/>
+                  <circle cx="90" cy="90" r="70" fill="none" stroke="#D5DEE2" stroke-width="26" stroke-dasharray="24.32 439.82" stroke-dashoffset="-415.5"/>
+                </g>
+                <text x="90" y="86" text-anchor="middle" font-family="'Archivo', sans-serif" font-weight="700" font-size="34" fill="#16232C">199</text>
+                <text x="90" y="104" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" letter-spacing="0.1em" fill="#8CA0AB">PARCELS</text>
+              </svg>
+            </div>
+            <div class="mt-3 space-y-1.5 font-prose text-[12.5px]">
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-field shrink-0"></span><span class="flex-1 text-slate">For Sale</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">60</span></div>
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-sky shrink-0"></span><span class="flex-1 text-slate">ACLB Rehab</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">57</span></div>
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-steel shrink-0"></span><span class="flex-1 text-slate">In Process</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">30</span></div>
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-amber shrink-0"></span><span class="flex-1 text-slate">Sale Pending</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">17</span></div>
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-rose shrink-0"></span><span class="flex-1 text-slate">On Hold</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">13</span></div>
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-violet shrink-0"></span><span class="flex-1 text-slate">Co-Development</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">11</span></div>
+              <div class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-[#D5DEE2] shrink-0"></span><span class="flex-1 text-slate">Unclassified</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">11</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CHARTS ROW ═══ -->
+  <div class="w-full lb-paper pb-6" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- sales by year · span 5 -->
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="chart-sales-year">
+          <div class="lb-card p-5 h-full flex flex-col">
+            <div class="flex items-baseline justify-between">
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Properties sold by year</div>
+              <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">1,115 total</span>
+            </div>
+            <div class="font-prose text-[12px] text-slate mt-0.5 mb-4">2026 is a partial year (through June)</div>
+            <!-- decorative — annual sales bar chart, real values -->
+            <svg viewBox="0 0 640 190" class="w-full mt-auto" role="img" aria-label="Bar chart of properties sold per year from 2015 to 2026, peaking at 170 in 2021">
+              <g stroke="rgba(22,35,44,0.07)" stroke-width="1">
+                <line x1="0" y1="12" x2="640" y2="12"/><line x1="0" y1="91" x2="640" y2="91"/>
+              </g>
+              <g fill="#0AA7E4">
+                <rect x="8"   y="161.6" width="36" height="8.4"   rx="1.5" opacity="0.65"/>
+                <rect x="61"  y="139.3" width="36" height="30.7"  rx="1.5" opacity="0.65"/>
+                <rect x="114" y="25"    width="36" height="145"   rx="1.5" opacity="0.85"/>
+                <rect x="167" y="43.6"  width="36" height="126.4" rx="1.5" opacity="0.85"/>
+                <rect x="220" y="42.7"  width="36" height="127.3" rx="1.5" opacity="0.85"/>
+                <rect x="273" y="19.4"  width="36" height="150.6" rx="1.5" opacity="0.85"/>
+                <rect x="326" y="12"    width="36" height="158"   rx="1.5"/>
+                <rect x="379" y="56.6"  width="36" height="113.4" rx="1.5" opacity="0.85"/>
+                <rect x="432" y="120.7" width="36" height="49.3"  rx="1.5" opacity="0.65"/>
+                <rect x="485" y="143"   width="36" height="27"    rx="1.5" opacity="0.65"/>
+                <rect x="538" y="90.1"  width="36" height="79.9"  rx="1.5" opacity="0.85"/>
+                <rect x="591" y="149.6" width="36" height="20.4"  rx="1.5" opacity="0.45"/>
+              </g>
+              <line x1="0" y1="170" x2="640" y2="170" stroke="rgba(22,35,44,0.2)" stroke-width="1"/>
+              <g font-family="'IBM Plex Mono', monospace" font-size="9.5" fill="#8CA0AB" text-anchor="middle">
+                <text x="26" y="184">'15</text><text x="79" y="184">'16</text><text x="132" y="184">'17</text><text x="185" y="184">'18</text><text x="238" y="184">'19</text><text x="291" y="184">'20</text><text x="344" y="184">'21</text><text x="397" y="184">'22</text><text x="450" y="184">'23</text><text x="503" y="184">'24</text><text x="556" y="184">'25</text><text x="609" y="184">'26</text>
+              </g>
+              <text x="344" y="8" font-family="'IBM Plex Mono', monospace" font-size="10" fill="#0A6E99" text-anchor="middle">170</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- inventory by class · span 4 -->
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3" data-dms-section="chart-class">
+          <div class="lb-card p-5 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Inventory by property type</div>
+            <div class="font-prose text-[12px] text-slate mt-0.5 mb-5">What the Land Bank holds today</div>
+            <div class="space-y-4">
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">Residential vacant lots</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">163</span></div>
+                <div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-sky" style="width:100%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">Residential buildings</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">22</span></div>
+                <div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-sky" style="width:13.5%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">Not yet classified</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">12</span></div>
+                <div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-steel" style="width:7.4%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] font-semibold text-ink">Commercial</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">2</span></div>
+                <div class="h-3 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-sky" style="width:1.5%"></div></div>
+              </div>
+            </div>
+            <p class="font-prose text-[12px] leading-[1.5] text-mist mt-5 pt-4 border-t border-ink/5">Four in five parcels are vacant lots — the quiet backbone of side-yard and infill programs.</p>
+          </div>
+        </div>
+
+        <!-- for-sale by neighborhood · span 3 -->
+        <div class="col-span-12 md:col-span-6 lg:col-span-3 p-3" data-dms-section="chart-neighborhood">
+          <div class="lb-card p-5 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">For sale, by neighborhood</div>
+            <div class="font-prose text-[12px] text-slate mt-0.5 mb-5">60 active listings</div>
+            <div class="space-y-3">
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] text-slate">South End</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">19</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:100%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] text-slate">Eagle Hill</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">8</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:42%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] text-slate">Buckingham Pond</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">6</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:31.5%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] text-slate">Colonie</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">5</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:26.3%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] text-slate">Delaware Avenue</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">5</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:26.3%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] text-slate">Campus Area</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">3</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field" style="width:15.8%"></div></div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between mb-1"><span class="font-prose text-[12.5px] text-slate">All others</span><span class="font-meta font-medium text-[11px] text-ink tabular-nums">14</span></div>
+                <div class="h-2.5 rounded-sm bg-papertint overflow-hidden"><div class="h-full bg-field/45" style="width:73.7%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FRESH ON THE LIST ═══ -->
+  <div id="forsale" class="w-full lb-paper-tint border-y border-ink/5 py-10" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3 flex flex-wrap items-end justify-between gap-4" data-dms-section="fresh-header">
+        <div>
+          <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">June 2026 list</span></div>
+          <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Fresh on the list</h2>
+        </div>
+        <span class="font-prose text-[12px] text-slate">Every listing includes the parcel survey — vacant lots don't photograph well; their geometry tells the story.</span>
+      </div>
+      <div class="grid grid-cols-12 gap-0 mt-2">
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="fresh-1">
+          <div class="lb-card overflow-hidden h-full">
+            <div class="lb-plate h-36 relative flex items-center justify-center">
+              <div class="lb-lot" style="width:52%; height:34%"></div>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="bottom:22%; left:50%; transform:translateX(-50%)">90′</span>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="left:78%; top:50%; transform:translateY(-50%)">40′</span>
+              <span class="absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest font-prose text-[12px] font-semibold bg-white/80 border border-field/20">For Sale</span>
+            </div>
+            <div class="p-4 border-t border-ink/10">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Gray Fox Lane</div>
+                  <div class="font-prose text-[12px] text-slate mt-0.5">Campus Area · Albany 12203</div>
+                </div>
+                <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink tabular-nums shrink-0">$2,500</div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-ink/5 font-meta font-medium text-[11px] text-slate">SBL 41.13-4-37 · zoned MU-CI</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="fresh-2">
+          <div class="lb-card overflow-hidden h-full">
+            <div class="lb-plate h-36 relative flex items-center justify-center">
+              <div class="lb-lot" style="width:16%; height:70%"></div>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="bottom:8%; left:50%; transform:translateX(-50%)">25′</span>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="left:60%; top:50%; transform:translateY(-50%)">110′</span>
+              <span class="absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest font-prose text-[12px] font-semibold bg-white/80 border border-field/20">For Sale</span>
+            </div>
+            <div class="p-4 border-t border-ink/10">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">793 Livingston Avenue</div>
+                  <div class="font-prose text-[12px] text-slate mt-0.5">West Hill · Albany 12206</div>
+                </div>
+                <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink tabular-nums shrink-0">$1,000</div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-ink/5 font-meta font-medium text-[11px] text-slate">SBL 65.21-1-25 · zoned R-2</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-4 p-3" data-dms-section="fresh-3">
+          <div class="lb-card overflow-hidden h-full">
+            <div class="lb-plate h-36 relative flex items-center justify-center">
+              <div class="lb-lot" style="width:15%; height:66%"></div>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="bottom:10%; left:50%; transform:translateX(-50%)">21′</span>
+              <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="left:59%; top:50%; transform:translateY(-50%)">99′</span>
+              <span class="absolute top-3 left-3 inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest font-prose text-[12px] font-semibold bg-white/80 border border-field/20">For Sale</span>
+            </div>
+            <div class="p-4 border-t border-ink/10">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">172 Orange Street</div>
+                  <div class="font-prose text-[12px] text-slate mt-0.5">Sheridan Hollow · Albany 12210</div>
+                </div>
+                <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink tabular-nums shrink-0">$600</div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-ink/5 font-meta font-medium text-[11px] text-slate">SBL 65.81-6-48 · zoned R-T</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FULL LEDGER ═══ -->
+  <div id="ledger" class="w-full lb-paper py-10" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="grid grid-cols-12 gap-0">
+        <!-- fused header + table: compound card, shared-edge padding zeroed -->
+        <div class="col-span-12 px-3 pt-3 pb-0" data-dms-section="ledger-header">
+          <div class="lb-card rounded-b-none border-b-0 px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">The property ledger</div>
+              <div class="font-prose text-[12px] text-slate mt-0.5">Every record, past and present — filters above apply here too</div>
+            </div>
+            <span class="font-meta font-medium text-[11px] text-mist tabular-nums">1–10 of 1,314</span>
+          </div>
+        </div>
+        <div class="col-span-12 px-3 pt-0 pb-3" data-dms-section="ledger-table">
+          <div class="lb-card rounded-t-none overflow-x-auto">
+            <table class="w-full min-w-[860px]">
+              <thead>
+                <tr class="border-b border-ink/10 bg-papertint/60">
+                  <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate"><span class="inline-flex items-center gap-1">Parcel <!-- icon: ChevronDown --><svg class="size-3 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></th>
+                  <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Address</th>
+                  <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Neighborhood</th>
+                  <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Type</th>
+                  <th class="text-left px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Status</th>
+                  <th class="text-right px-4 py-2.5 font-prose text-[12px] font-semibold text-slate"><span class="inline-flex items-center gap-1">Price <!-- icon: ChevronDown --><svg class="size-3 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></th>
+                  <th class="text-right px-4 py-2.5 font-prose text-[12px] font-semibold text-slate">Days held</th>
+                </tr>
+              </thead>
+              <tbody class="font-prose text-[13px]">
+                <tr class="border-b border-ink/5 hover:bg-sky/[0.04]">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">76.49-6-65</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">49 Park Avenue</td>
+                  <td class="px-4 py-2.5 text-slate">Mansion</td>
+                  <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$5,000</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">1,142</td>
+                </tr>
+                <tr class="border-b border-ink/5 hover:bg-sky/[0.04] bg-papertint/30">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">65.74-3-13</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">64 Third Street</td>
+                  <td class="px-4 py-2.5 text-slate">Arbor Hill</td>
+                  <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$3,000</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">1,738</td>
+                </tr>
+                <tr class="border-b border-ink/5 hover:bg-sky/[0.04]">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">41.13-4-37</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">Gray Fox Lane</td>
+                  <td class="px-4 py-2.5 text-slate">Campus Area</td>
+                  <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$2,500</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">1,931</td>
+                </tr>
+                <tr class="border-b border-ink/5 hover:bg-sky/[0.04] bg-papertint/30">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">76.65-3-32</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">10 Alexander Street</td>
+                  <td class="px-4 py-2.5 text-slate">South End</td>
+                  <td class="px-4 py-2.5 text-slate">Residential building</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-sky/10 text-skydeep text-[12px] font-semibold">ACLB Rehab</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$24,900</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">1,212</td>
+                </tr>
+                <tr class="border-b border-ink/5 hover:bg-sky/[0.04]">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">65.56-3-64</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">352 First Street</td>
+                  <td class="px-4 py-2.5 text-slate">West Hill</td>
+                  <td class="px-4 py-2.5 text-slate">Residential building</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-sky/10 text-skydeep text-[12px] font-semibold">ACLB Rehab</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$14,900</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">1,931</td>
+                </tr>
+                <tr class="border-b border-ink/5 hover:bg-sky/[0.04] bg-papertint/30">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">65.66-1-36</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">185 Colonie Street</td>
+                  <td class="px-4 py-2.5 text-slate">Arbor Hill</td>
+                  <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-amber/10 text-amberdeep text-[12px] font-semibold">Sale Pending</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$600</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">2,596</td>
+                </tr>
+                <tr class="border-b border-ink/5 hover:bg-sky/[0.04]">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">65.64-4-36</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">123 Henry Johnson Blvd</td>
+                  <td class="px-4 py-2.5 text-slate">West Hill</td>
+                  <td class="px-4 py-2.5 text-slate">Residential building</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-violet/10 text-violetdeep text-[12px] font-semibold">Co-Development</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-mist">—</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">2,806</td>
+                </tr>
+                <tr class="border-b border-ink/5 hover:bg-sky/[0.04] bg-papertint/30">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">65.21-1-25</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">793 Livingston Avenue</td>
+                  <td class="px-4 py-2.5 text-slate">West Hill</td>
+                  <td class="px-4 py-2.5 text-slate">Vacant lot</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$1,000</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">1,881</td>
+                </tr>
+                <tr class="border-b border-ink/5 hover:bg-sky/[0.04]">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">76.64-4-38</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">79 Elizabeth Street</td>
+                  <td class="px-4 py-2.5 text-slate">South End</td>
+                  <td class="px-4 py-2.5 text-slate">Residential building</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-ink/5 text-slate text-[12px] font-semibold">Sold</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$199,000</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">2,161</td>
+                </tr>
+                <tr class="hover:bg-sky/[0.04] bg-papertint/30">
+                  <td class="px-4 py-2.5 font-meta font-medium text-[11px] text-skydeep">65.64-7-28</td>
+                  <td class="px-4 py-2.5 font-semibold text-ink">257 Second Street</td>
+                  <td class="px-4 py-2.5 text-slate">West Hill</td>
+                  <td class="px-4 py-2.5 text-slate">Residential building</td>
+                  <td class="px-4 py-2.5"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-ink/5 text-slate text-[12px] font-semibold">Sold</span></td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$150,000</td>
+                  <td class="px-4 py-2.5 text-right font-meta font-medium text-[12px] text-slate tabular-nums">1,931</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="px-4 py-3 border-t border-ink/10 flex items-center justify-between">
+              <span class="font-prose text-[12px] text-slate">Sold prices are recorded sale amounts; listings show asking price.</span>
+              <div class="flex items-center gap-1">
+                <button class="size-8 rounded border border-ink/15 flex items-center justify-center text-mist" disabled aria-label="Previous page"><!-- icon: ChevronRight --><svg class="size-4 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+                <button class="size-8 rounded bg-skydeep text-white font-prose text-[12px] font-semibold">1</button>
+                <button class="size-8 rounded border border-ink/15 text-slate font-prose text-[12px] font-semibold hover:border-skydeep/50">2</button>
+                <button class="size-8 rounded border border-ink/15 text-slate font-prose text-[12px] font-semibold hover:border-skydeep/50">3</button>
+                <span class="font-meta text-[11px] text-mist px-1">…</span>
+                <button class="size-8 rounded border border-ink/15 text-slate font-prose text-[12px] font-semibold hover:border-skydeep/50">132</button>
+                <button class="size-8 rounded border border-ink/15 flex items-center justify-center text-slate hover:border-skydeep/50" aria-label="Next page"><!-- icon: ChevronRight --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- attribution -->
+        <div class="col-span-12 p-3" data-dms-section="attribution">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 h-7 px-3 rounded-full bg-white border border-ink/10 font-meta font-medium text-[10px] uppercase tracking-[0.12em] text-slate">
+              <!-- icon: FileText --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg>
+              Source · ACLB property records · June 2026
+            </span>
+            <span class="font-prose text-[12px] text-mist">Records are public under the Freedom of Information Law. Coordinates geocoded from street addresses; 23 rural parcels pending.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="w-full lb-plat-ink mt-auto" data-dms-group="footer">
+    <div class="mx-auto w-full max-w-[1240px] px-6 pt-12 pb-6">
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="footer-brand">
+          <div class="bg-white rounded-md px-3 py-2 inline-block"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-9 w-auto"/></div>
+          <p class="font-prose text-[13.5px] leading-[1.55] text-white/70 mt-4 max-w-[380px]">A not-for-profit corporation revitalizing neighborhoods by returning vacant, abandoned, and tax-foreclosed properties to productive use.</p>
+          <div class="mt-4 flex items-center gap-2 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/40">
+            <!-- icon: Landmark --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5H3l9-5ZM5 8v9m4.5-9v9m5-9v9M19 8v9M3 21h18"/></svg>
+            Empowering opportunity · strengthening communities
+          </div>
+        </div>
+        <div class="col-span-6 sm:col-span-4 lg:col-span-2 p-3" data-dms-section="footer-explore">
+          <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40 mb-3">Explore</div>
+          <nav class="space-y-2 font-prose text-[13.5px] font-semibold text-white/75">
+            <a href="home.html" class="block hover:text-white">Home</a>
+            <a href="about.html" class="block hover:text-white">About</a>
+            <a href="properties.html" class="block hover:text-white">Properties</a>
+            <a href="properties.html" class="block hover:text-white">For-sale list</a>
+          </nav>
+        </div>
+        <div class="col-span-6 sm:col-span-4 lg:col-span-2 p-3" data-dms-section="footer-account">
+          <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40 mb-3">Accountability</div>
+          <nav class="space-y-2 font-prose text-[13.5px] font-semibold text-white/75">
+            <a href="about.html" class="block hover:text-white">Board &amp; committees</a>
+            <a href="about.html" class="block hover:text-white">Annual reports</a>
+            <a href="about.html" class="block hover:text-white">Policies</a>
+            <a href="about.html" class="block hover:text-white">Resolutions</a>
+          </nav>
+        </div>
+        <div class="col-span-12 sm:col-span-4 lg:col-span-3 p-3" data-dms-section="footer-visit">
+          <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40 mb-3">Visit or call</div>
+          <div class="space-y-2.5 font-prose text-[13.5px] leading-[1.55] text-white/75">
+            <div class="flex gap-2.5"><!-- icon: MapPin --><svg class="size-4 mt-0.5 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>111 Washington Avenue, Suite 601<br/>Albany, NY 12210</span></div>
+            <div class="flex gap-2.5"><!-- icon: Phone --><svg class="size-4 mt-0.5 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span>(518) 407-0309</span></div>
+            <div class="flex gap-2.5"><!-- icon: Mail --><svg class="size-4 mt-0.5 shrink-0 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3 7 9 6 9-6"/></svg><span>info@albanycountylandbank.org</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-5 border-t border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <span class="font-prose text-[12px] text-white/50">© 2026 Albany County Land Bank Corporation. Records and reports available under the Freedom of Information Law.</span>
+        <nav class="flex gap-4 font-prose text-[12px] font-semibold text-white/60">
+          <a href="#" class="hover:text-white">Facebook</a><a href="#" class="hover:text-white">Instagram</a><a href="#" class="hover:text-white">YouTube</a><a href="#" class="hover:text-white">LinkedIn</a>
+        </nav>
+      </div>
+    </div>
+    <!-- doc-only index strip (design-system scaffolding — not product chrome) -->
+    <div class="border-t border-white/10 bg-black/20">
+      <div class="mx-auto w-full max-w-[1240px] px-6 py-3 flex flex-wrap items-center gap-x-5 gap-y-1">
+        <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/35">Design system</span>
+        <nav class="flex flex-wrap gap-x-4 gap-y-1 font-meta text-[10px] text-white/50">
+          <a href="../design-system/theme.html" class="hover:text-white">theme</a>
+          <a href="../design-system/layouts.html" class="hover:text-white">layouts</a>
+          <a href="../design-system/grid.html" class="hover:text-white">grid</a>
+          <a href="../design-system/components.html" class="hover:text-white">components</a>
+          <a href="../design-system/patterns.html" class="hover:text-white">patterns</a>
+          <span class="text-white/25">·</span>
+          <a href="home.html" class="hover:text-white">home</a>
+          <a href="about.html" class="hover:text-white">about</a>
+          <a href="properties.html" class="text-leaf">properties</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- floating design-system navigation widget (documentation scaffolding — never ships) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:8px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:0 16px 8px;border-bottom:1px solid rgba(22,35,44,0.08);margin-bottom:4px;">ACLB Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">1</span>Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">2</span>Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">3</span>Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">4</span>Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">5</span>Patterns</a>
+    <div style="height:1px;background:rgba(22,35,44,0.08);margin:6px 0;"></div>
+    <a href="home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Home</a>
+    <a href="about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>About</a>
+    <a href="properties.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#0A6E99;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:8px;background:#16232C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.25);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

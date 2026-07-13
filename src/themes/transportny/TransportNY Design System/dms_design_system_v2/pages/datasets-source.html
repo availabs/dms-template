@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Truck Parking Inventory · Source · Datasets · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  datasets-source.html · SURFACE 2 of 2 — THE SINGLE SOURCE PAGE (SourcePage.jsx), OVERVIEW tab active.
+  Management-oriented (description · at-a-glance · categories · columns), as opposed to the public,
+  download-heavy Table view (freight-atlas-dataset.html shows that same source on its Table tab).
+  Tab bar = Overview · Table · Map · Metadata + Admin (admin-gated); version selector = MultiSelect single.
+  ONE surface, two roles: edit pencils, Add version, the Admin tab, Edit columns are all `// admin`,
+  wrapped in isUserAuthed() gates; a public visitor sees only read content + downloads + API.
+  Worked example: Truck Parking Inventory (truck_parking · gis_dataset · Freight Atlas). -->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+      <div class="flex flex-1 items-start">
+
+        <!-- ════════ SIDENAV · Datasets (Catalog active) ════════ -->
+        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
+          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
+            <a href="datasets-catalog.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
+              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white"><!-- icon: Database --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg></div>
+              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">Datasets</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · npmrds2</div></div>
+            </a>
+            <div class="px-3 pt-3"><button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] hover:border-[#3a4555] flex items-center gap-2 text-slate-400 hover:text-slate-300"><!-- icon: Search --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-proxima text-[13px] flex-1 text-left">Search datasets</span></button></div>
+
+            <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Browse</div>
+            <a href="datasets-catalog.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><!-- icon: Grid --><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg><span class="flex-1">Data Catalog</span><span class="font-mono text-[11px] tabular-nums text-slate-400">49</span></a>
+            <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Book --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg><span class="flex-1">Documentation</span></a>
+            <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><!-- icon: Code --><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8 6-6 6 6 6m8-12 6 6-6 6"/></svg><span class="flex-1">API &amp; Developers</span></a>
+
+            <!-- // admin — gated by isUserAuthed(['create-source','manage-tasks']) -->
+            <div class="px-4 pt-4 pb-1 flex items-center gap-2"><span class="font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Manage</span><span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[9px] font-medium bg-[#0a0e13] text-white font-display uppercase tracking-wide">admin</span></div>
+            <a href="datasets-catalog.html" class="font-proxima text-[13px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><!-- icon: Plus --><svg class="size-4 mr-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg><span class="flex-1">New source</span></a>
+            <a class="font-proxima text-[13px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><!-- icon: Activity --><svg class="size-4 mr-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="flex-1">Tasks</span><span class="font-mono text-[10px] tabular-nums text-amber-500/80">2</span></a>
+            <a class="font-proxima text-[13px] flex items-center px-4 py-2 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent"><!-- icon: Cog --><svg class="size-4 mr-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg><span class="flex-1">Settings</span></a>
+
+            <div class="mt-auto border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><!-- icon: View --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Viewing as · Public</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">no login required</div></div>
+              <a href="login.html" class="font-mono text-[9.5px] uppercase tracking-wider text-[#FACC15] hover:text-[#EAAD43]">Sign in</a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+
+          <!-- ═════════ BREADCRUMB BAR · datasets.breadcrumbs · IDENTICAL markup on every page (fixed h-11 → no jitter) ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="breadcrumbs">
+              <nav class="h-11 flex items-center font-mono text-[10.5px] uppercase tracking-[0.18em]" aria-label="Breadcrumb">
+                <a href="datasets-catalog.html" class="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#0f1722]"><!-- icon: Database (root) --><svg class="size-4 text-[#37576B] relative -top-[2px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>Data Sources</a>
+                <span class="text-slate-300 px-2">/</span>
+                <a href="datasets-catalog.html" class="text-slate-500 hover:text-[#0f1722]">Freight Atlas</a>
+                <span class="text-slate-300 px-2">/</span>
+                <span class="text-[#0f1722]">Truck Parking Inventory</span>
+              </nav>
+            </div>
+          </div>
+
+          <!-- ═════════ PAGE HEADER · source title + tabs ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 pt-4" data-dms-section="page-header">
+              <div class="flex items-center justify-between gap-6">
+                <div class="min-w-0 flex items-center gap-3 flex-wrap">
+                  <h1 class="font-display font-semibold text-[26px] leading-none tracking-tight uppercase text-[#0F1722]">Truck Parking Inventory<span class="text-[#CA8A04]">.</span></h1>
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>production</span>
+                  <span class="inline-flex items-center px-2 h-5 rounded-[4px] border border-[#EAAD43]/30 bg-[#EAAD43]/15 font-mono text-[9.5px] uppercase tracking-wider text-[#7C5A12]">new 2024</span>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <!-- Version selector · MultiSelect single -->
+                  <div class="h-9 inline-flex items-center gap-2 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 pl-3 pr-2">
+                    <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">version</span>
+                    <span class="font-mono tabular-nums text-[12px] text-[#0F1722] font-medium">v2024 · current</span>
+                    <!-- icon: CaretDown --><svg class="size-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                  </div>
+                  <!-- // admin — Add version, gated by isUserAuthed(['create-view']) -->
+                  <button class="h-8 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-600 hover:bg-slate-50 font-mono text-[10px] uppercase tracking-wider"><!-- icon: Plus --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>Add version<span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[8.5px] bg-[#0a0e13] text-white tracking-wide">admin</span></button>
+                </div>
+              </div>
+
+              <!-- Tabs -->
+              <div class="mt-3 flex items-center gap-1 border-b border-zinc-950/10 -mb-px">
+                <button id="tb-overview" onclick="setTab('overview')" class="px-4 h-10 inline-flex items-center font-display uppercase text-[13px] tracking-wide relative text-[#0f1722]">Overview<span class="tab-underline absolute left-0 right-0 -bottom-px h-[3px] bg-[#FACC15]"></span></button>
+                <button id="tb-table" onclick="setTab('table')" class="px-4 h-10 inline-flex items-center font-display uppercase text-[13px] tracking-wide relative text-slate-600 hover:text-[#0f1722]">Table<span class="tab-underline absolute left-0 right-0 -bottom-px h-[3px] bg-[#FACC15] hidden"></span></button>
+                <button id="tb-map" onclick="setTab('map')" class="px-4 h-10 inline-flex items-center font-display uppercase text-[13px] tracking-wide relative text-slate-600 hover:text-[#0f1722]">Map<span class="tab-underline absolute left-0 right-0 -bottom-px h-[3px] bg-[#FACC15] hidden"></span></button>
+                <!-- Metadata is admin-only — reached from the Admin tab (setTab('metadata')), not a public tab -->
+                <!-- // admin — Admin tab, gated by isUserAuthed(['update-source']) -->
+                <button id="tb-admin" onclick="setTab('admin')" class="px-4 h-10 inline-flex items-center gap-1.5 font-display uppercase text-[13px] tracking-wide relative text-slate-600 hover:text-[#0f1722]">Admin<span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[9px] bg-[#0a0e13] text-white tracking-wide">admin</span><span class="tab-underline absolute left-0 right-0 -bottom-px h-[3px] bg-[#FACC15] hidden"></span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════ TAB BODIES · toggled by the tab bar (setTab) ═══════ -->
+          <div id="tab-overview">
+          <!-- ═════════ OVERVIEW ═════════ -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6" data-dms-section="overview">
+
+              <!-- MAIN · description + columns (col 8) -->
+              <div class="col-span-12 lg:col-span-8 space-y-6">
+
+                <!-- Description (Lexical prose) -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-6 relative">
+                  <!-- // admin — inline description edit, isUserAuthed(['update-source']) -->
+                  <button class="absolute top-4 right-4 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 hover:text-[#1F3F8F]" title="Edit description · admin"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                  <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04] mb-3">// description</div>
+                  <div class="font-proxima text-[14px] leading-[1.7] text-slate-700 space-y-3 max-w-[68ch]">
+                    <p>The Truck Parking Inventory catalogs every known commercial truck-parking facility in New York State, compiled for the 2024 NYS Freight Plan's Appendix E truck-parking study. It merges public rest areas and travel plazas with private truck stops, capturing capacity, amenities, and observed overnight utilization.</p>
+                    <p>Each record carries ownership (public or private), designated truck spaces, an amenities list (bathroom, shower, food, EV charging), and a mean overnight occupancy rate derived from Trucker Path and satellite imagery. The 47 buffer sites fall within a 15-mile band outside the state line and are flagged for cross-border trip planning.</p>
+                    <p>Use this layer to identify parking shortfalls along the Primary Freight Network, to site new capacity, and to support the federal Jason's Law parking-survey requirements.</p>
+                  </div>
+                </div>
+
+                <!-- Columns summary (config.attributes) -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="h-11 px-4 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Columns · 9</span>
+                    <!-- // admin — Edit columns opens the Metadata editor (MetadataComp), isUserAuthed(['update-source']) -->
+                    <button class="h-7 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] border border-zinc-950/10 bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider hover:bg-slate-50">Edit columns<span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[8.5px] bg-[#0a0e13] text-white tracking-wide">admin</span></button>
+                    <a class="h-7 inline-flex items-center px-2.5 rounded-[6px] font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] hover:bg-slate-50">Full metadata →</a>
+                  </div>
+                  <table class="w-full text-left border-collapse">
+                    <thead><tr class="bg-slate-50 border-b border-zinc-950/10"><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Column</th><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Type</th><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Description</th><th class="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium text-center">Req</th></tr></thead>
+                    <tbody class="font-proxima text-[12.5px] text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 font-mono text-[12px] text-[#0f1722]">location_name</td><td class="px-4 py-2 text-slate-500">text</td><td class="px-4 py-2">Facility / rest-area name</td><td class="px-4 py-2 text-center text-[#10B981]">●</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-4 py-2 font-mono text-[12px] text-[#0f1722]">county</td><td class="px-4 py-2 text-slate-500">text</td><td class="px-4 py-2">County of the site</td><td class="px-4 py-2 text-center text-slate-300">○</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 font-mono text-[12px] text-[#0f1722]">ownership</td><td class="px-4 py-2 text-slate-500">enum</td><td class="px-4 py-2">Public or Private operator</td><td class="px-4 py-2 text-center text-[#10B981]">●</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-4 py-2 font-mono text-[12px] text-[#0f1722]">spaces</td><td class="px-4 py-2 text-slate-500">integer</td><td class="px-4 py-2">Designated truck spaces</td><td class="px-4 py-2 text-center text-[#10B981]">●</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-4 py-2 font-mono text-[12px] text-[#0f1722]">amenities</td><td class="px-4 py-2 text-slate-500">text[]</td><td class="px-4 py-2">Bathroom, shower, food, EV charging</td><td class="px-4 py-2 text-center text-slate-300">○</td></tr>
+                      <tr><td class="px-4 py-2 font-mono text-[12px] text-[#0f1722]">geom</td><td class="px-4 py-2 text-slate-500">geometry(Point)</td><td class="px-4 py-2">Site location · EPSG:4326</td><td class="px-4 py-2 text-center text-[#10B981]">●</td></tr>
+                    </tbody>
+                  </table>
+                  <div class="px-4 py-2 border-t border-zinc-950/05 bg-slate-50/60 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-400">+ 3 more · operator, util_overnight, source_ref</div>
+                </div>
+              </div>
+
+              <!-- SIDE · at a glance + categories + download + API (col 4) -->
+              <div class="col-span-12 lg:col-span-4 space-y-6">
+
+                <!-- At a glance -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">At a glance</div>
+                  <dl class="space-y-1.5 font-proxima text-[12.5px]">
+                    <div class="flex justify-between"><dt class="text-slate-500">Type</dt><dd class="text-[#0f1722]">GIS · gis_dataset</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Geometry</dt><dd class="text-[#0f1722]">Point</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Rows</dt><dd class="text-[#0f1722] font-mono tabular-nums">263</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Versions</dt><dd class="text-[#0f1722] font-mono tabular-nums">2</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Vintage</dt><dd class="text-[#0f1722]">2024</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Update interval</dt><dd class="text-[#0f1722]">Annual</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">CRS</dt><dd class="text-[#0f1722] font-mono">EPSG:4326</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">License</dt><dd class="text-[#0f1722]">Public domain</dd></div>
+                  </dl>
+                </div>
+
+                <!-- Categories (the category-tagging pass) -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4 relative">
+                  <!-- // admin — edit categories opens the category editor, isUserAuthed(['update-source']) -->
+                  <button class="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-[6px] border border-zinc-950/10 bg-white text-slate-400 hover:text-[#1F3F8F]" title="Edit categories · admin"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Categories</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 text-[#0F2D4D]">Freight Atlas</span>
+                    <span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#37576B]/20 bg-[#37576B]/10 text-[#0F2D4D]">Freight Facilities</span>
+                  </div>
+                  <div class="mt-2 font-proxima text-[11.5px] text-slate-500 leading-[1.5]">Drives placement in the catalog rail and the public site nav. <span class="text-slate-400">categories[][]</span></div>
+                </div>
+
+                <!-- Versions · per-view download menu (ExternalVersionControls · OUTPUT_FILE_TYPES) -->
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm">
+                  <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 rounded-t-[7px]"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Versions</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-500">2 versions</span></div>
+                  <div class="divide-y divide-zinc-950/05">
+
+                    <!-- v2024 (current) · download menu OPEN -->
+                    <div class="p-3">
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2">
+                            <span class="font-display font-medium text-[13.5px] text-[#0f1722]">v2024</span>
+                            <span class="inline-flex items-center px-1.5 h-4 rounded-[3px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[9px] uppercase tracking-wider text-[#065F46]">current</span>
+                          </div>
+                          <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">263 rows · published May 2026</div>
+                        </div>
+                        <div class="relative">
+                          <button class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] bg-[#1F3F8F] text-white font-mono text-[10px] uppercase tracking-wider"><!-- icon: Download --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>Download<!-- icon: CaretUp --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                          <!-- open dropdown · OVERLAYS the rows below (absolute · reserves no space) -->
+                          <div class="absolute right-0 top-full mt-1 z-20 tny-menu w-48 p-1">
+                            <a class="flex items-center gap-2 px-2.5 py-1.5 rounded-[5px] hover:bg-slate-50 font-proxima text-[12.5px] text-[#0f1722]"><!-- icon: Download --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg><span class="flex-1">GeoJSON</span></a>
+                            <a class="flex items-center gap-2 px-2.5 py-1.5 rounded-[5px] hover:bg-slate-50 font-proxima text-[12.5px] text-[#0f1722]"><!-- icon: Download --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg><span class="flex-1">ESRI Shapefile</span></a>
+                            <a class="flex items-center gap-2 px-2.5 py-1.5 rounded-[5px] hover:bg-slate-50 font-proxima text-[12.5px] text-[#0f1722]"><!-- icon: Download --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg><span class="flex-1">GPKG</span></a>
+                            <a class="flex items-center gap-2 px-2.5 py-1.5 rounded-[5px] hover:bg-slate-50 font-proxima text-[12.5px] text-[#0f1722]"><!-- icon: Download --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg><span class="flex-1">CSV</span></a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- v2023 · collapsed (menu trigger) -->
+                    <div class="p-3">
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 min-w-0">
+                          <span class="font-display font-medium text-[13.5px] text-[#0f1722]">v2023</span>
+                          <div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">241 rows · published Aug 2025</div>
+                        </div>
+                        <button class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 hover:bg-slate-50 font-mono text-[10px] uppercase tracking-wider"><!-- icon: Download --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>Download<!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- // admin — Falcor API + tile endpoints, gated by isUserAuthed(['view-source-api']); public visitors never see it -->
+                <div class="rounded-[8px] border border-dashed border-[#CA8A04]/40 bg-white shadow-sm p-4">
+                  <div class="flex items-center gap-2 mb-2">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 flex-1">Falcor API · npmrds2</div>
+                    <span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[9px] font-medium bg-[#0a0e13] text-white font-display uppercase tracking-wide">admin</span>
+                  </div>
+                  <div class="rounded-[6px] bg-[#0F2D4D] text-slate-100 p-3 font-mono text-[11px] leading-[1.6] overflow-x-auto">['uda', 'npmrds2',<br/>&nbsp;&nbsp;'sources', 'byId', 1187,<br/>&nbsp;&nbsp;'views', 'byId', 'latest',<br/>&nbsp;&nbsp;'data', { from: 0, to: 262 }]</div>
+                  <div class="mt-2 font-proxima text-[11.5px] text-slate-500">Vector tiles: <span class="tny-mono">…/tiles/truck_parking/{z}/{x}/{y}.pbf</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div><!-- /tab-overview -->
+
+          <!-- ═════════ TAB · TABLE (sourceTable / DataWrapper) ═════════ -->
+          <div id="tab-table" class="hidden">
+            <!-- full-bleed spreadsheet · fills the content area, sticky header, scrolls -->
+            <div class="w-full bg-white border-t border-zinc-950/10" data-dms-group="content">
+              <div class="flex flex-col h-[calc(100svh-178px)] min-h-[420px]" data-dms-section="table">
+                <div class="h-11 px-6 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60 flex-shrink-0">
+                  <span class="font-display font-medium text-[13px] text-[#2D3E4C]">263 rows · 9 columns</span>
+                  <span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">v2024</span>
+                  <div class="flex-1"></div>
+                  <button class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] border border-zinc-950/10 bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider hover:bg-slate-50"><!-- icon: Filter --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filter</button>
+                  <button class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] border border-zinc-950/10 bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider hover:bg-slate-50"><!-- icon: Columns --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M9 3v18M15 3v18"/></svg>Columns</button>
+                  <button class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] border border-zinc-950/10 bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider hover:bg-slate-50"><!-- icon: Download --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>XLSX</button>
+                </div>
+                <div class="flex-1 overflow-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 z-10"><tr class="bg-[#0F2D4D] text-white">
+                      <th class="px-6 py-2 font-mono text-[10px] uppercase tracking-wider font-medium">Location</th>
+                      <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-wider font-medium">County</th>
+                      <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-wider font-medium">Owner</th>
+                      <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-wider font-medium text-right">Spaces</th>
+                      <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-wider font-medium">Amenities</th>
+                      <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-wider font-medium text-right">Overnight</th>
+                      <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-wider font-medium">Operator</th>
+                      <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-wider font-medium">Source</th>
+                    </tr></thead>
+                    <tbody class="font-proxima text-[12.5px] text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-6 py-1.5 text-[#0f1722]">I-90 Pembroke Travel Plaza</td><td class="px-3 py-1.5">Genesee</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Public</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">64</td><td class="px-3 py-1.5 text-slate-500">Bath · Food · EV</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">98%</td><td class="px-3 py-1.5 text-slate-500">NYSTA</td><td class="px-3 py-1.5 text-slate-500">Jason's Law</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-6 py-1.5 text-[#0f1722]">TA Travel Center · Maybrook</td><td class="px-3 py-1.5">Orange</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#37576B]"></span>Private</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">120</td><td class="px-3 py-1.5 text-slate-500">Bath · Shower · Food</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">100%</td><td class="px-3 py-1.5 text-slate-500">TA</td><td class="px-3 py-1.5 text-slate-500">Trucker Path</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-6 py-1.5 text-[#0f1722]">I-81 Whitney Point Rest Area</td><td class="px-3 py-1.5">Broome</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Public</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">22</td><td class="px-3 py-1.5 text-slate-500">Bath</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-amber-700">86%</td><td class="px-3 py-1.5 text-slate-500">NYSDOT</td><td class="px-3 py-1.5 text-slate-500">Jason's Law</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-6 py-1.5 text-[#0f1722]">Love's · Bath</td><td class="px-3 py-1.5">Steuben</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#37576B]"></span>Private</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">78</td><td class="px-3 py-1.5 text-slate-500">Bath · Shower · Food · EV</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">94%</td><td class="px-3 py-1.5 text-slate-500">Love's</td><td class="px-3 py-1.5 text-slate-500">Trucker Path</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-6 py-1.5 text-[#0f1722]">I-87 Ulster Travel Plaza</td><td class="px-3 py-1.5">Ulster</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Public</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">48</td><td class="px-3 py-1.5 text-slate-500">Bath · Food</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">97%</td><td class="px-3 py-1.5 text-slate-500">NYSTA</td><td class="px-3 py-1.5 text-slate-500">Jason's Law</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-6 py-1.5 text-[#0f1722]">Hunts Point Market lot</td><td class="px-3 py-1.5">Bronx</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#37576B]"></span>Private</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">31</td><td class="px-3 py-1.5 text-slate-500">—</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">100%</td><td class="px-3 py-1.5 text-slate-500">Private</td><td class="px-3 py-1.5 text-slate-500">Field survey</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-6 py-1.5 text-[#0f1722]">I-86 Erwin Rest Area</td><td class="px-3 py-1.5">Steuben</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Public</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">18</td><td class="px-3 py-1.5 text-slate-500">Bath</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-amber-700">81%</td><td class="px-3 py-1.5 text-slate-500">NYSDOT</td><td class="px-3 py-1.5 text-slate-500">Jason's Law</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-6 py-1.5 text-[#0f1722]">Pilot · Fultonville</td><td class="px-3 py-1.5">Montgomery</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#37576B]"></span>Private</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">90</td><td class="px-3 py-1.5 text-slate-500">Bath · Shower · Food</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">96%</td><td class="px-3 py-1.5 text-slate-500">Pilot</td><td class="px-3 py-1.5 text-slate-500">Trucker Path</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-6 py-1.5 text-[#0f1722]">I-90 Schodack Travel Plaza</td><td class="px-3 py-1.5">Rensselaer</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Public</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">56</td><td class="px-3 py-1.5 text-slate-500">Bath · Food · EV</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">92%</td><td class="px-3 py-1.5 text-slate-500">NYSTA</td><td class="px-3 py-1.5 text-slate-500">Jason's Law</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-6 py-1.5 text-[#0f1722]">Petro · Binghamton</td><td class="px-3 py-1.5">Broome</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#37576B]"></span>Private</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">110</td><td class="px-3 py-1.5 text-slate-500">Bath · Shower · Food</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">99%</td><td class="px-3 py-1.5 text-slate-500">Petro</td><td class="px-3 py-1.5 text-slate-500">Trucker Path</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-6 py-1.5 text-[#0f1722]">I-88 Oneonta Rest Area</td><td class="px-3 py-1.5">Otsego</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Public</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">16</td><td class="px-3 py-1.5 text-slate-500">Bath</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-amber-700">74%</td><td class="px-3 py-1.5 text-slate-500">NYSDOT</td><td class="px-3 py-1.5 text-slate-500">Jason's Law</td></tr>
+                      <tr class="border-b border-zinc-950/05 bg-slate-50/40"><td class="px-6 py-1.5 text-[#0f1722]">TA · Dansville</td><td class="px-3 py-1.5">Livingston</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#37576B]"></span>Private</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">84</td><td class="px-3 py-1.5 text-slate-500">Bath · Shower · Food</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">95%</td><td class="px-3 py-1.5 text-slate-500">TA</td><td class="px-3 py-1.5 text-slate-500">Trucker Path</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-6 py-1.5 text-[#0f1722]">I-84 Fishkill Rest Area</td><td class="px-3 py-1.5">Dutchess</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>Public</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">28</td><td class="px-3 py-1.5 text-slate-500">Bath · Food</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-amber-700">88%</td><td class="px-3 py-1.5 text-slate-500">NYSDOT</td><td class="px-3 py-1.5 text-slate-500">Jason's Law</td></tr>
+                      <tr><td class="px-6 py-1.5 text-[#0f1722]">Flying J · Bath</td><td class="px-3 py-1.5">Steuben</td><td class="px-3 py-1.5"><span class="inline-flex items-center gap-1"><span class="size-1.5 rounded-full bg-[#37576B]"></span>Private</span></td><td class="px-3 py-1.5 text-right font-mono tabular-nums">102</td><td class="px-3 py-1.5 text-slate-500">Bath · Shower · Food · EV</td><td class="px-3 py-1.5 text-right font-mono tabular-nums text-rose-700">97%</td><td class="px-3 py-1.5 text-slate-500">Flying J</td><td class="px-3 py-1.5 text-slate-500">Trucker Path</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="h-9 px-6 flex items-center justify-between border-t border-zinc-950/10 bg-slate-50/60 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex-shrink-0">
+                  <span>rows 1–14 of 263</span>
+                  <div class="flex items-center gap-1"><button class="size-7 inline-flex items-center justify-center rounded border border-zinc-950/10 bg-white text-slate-400"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg></button><span class="px-2">1 / 19</span><button class="size-7 inline-flex items-center justify-center rounded border border-zinc-950/10 bg-white text-slate-600"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 18 6-6-6-6"/></svg></button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ TAB · MAP (gis_dataset Map · symbology) ═════════ -->
+          <div id="tab-map" class="hidden">
+            <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+              <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="map">
+                <div class="relative h-[calc(100svh-244px)] min-h-[460px] rounded-[8px] border border-zinc-950/10 overflow-hidden shadow-sm tny-map">
+                  <div class="absolute top-3 left-3"><span class="px-2.5 h-8 inline-flex items-center rounded-[6px] bg-white/90 border border-zinc-950/10 font-mono text-[10px] uppercase tracking-wider text-slate-600">truck_parking · 263 points</span></div>
+                  <div class="absolute top-3 right-3 flex flex-col rounded-[6px] overflow-hidden border border-zinc-950/10 bg-white/90 font-display text-[16px] text-slate-600">
+                    <button class="size-8 inline-flex items-center justify-center hover:bg-slate-50 border-b border-zinc-950/10">+</button>
+                    <button class="size-8 inline-flex items-center justify-center hover:bg-slate-50">−</button>
+                  </div>
+                  <span class="absolute size-2.5 rounded-full bg-[#1F3F8F] ring-2 ring-white shadow" style="top:30%;left:24%"></span>
+                  <span class="absolute size-2.5 rounded-full bg-[#37576B] ring-2 ring-white shadow" style="top:48%;left:40%"></span>
+                  <span class="absolute size-2.5 rounded-full bg-[#1F3F8F] ring-2 ring-white shadow" style="top:58%;left:30%"></span>
+                  <span class="absolute size-2.5 rounded-full bg-[#37576B] ring-2 ring-white shadow" style="top:42%;left:60%"></span>
+                  <span class="absolute size-2.5 rounded-full bg-[#1F3F8F] ring-2 ring-white shadow" style="top:66%;left:55%"></span>
+                  <span class="absolute size-2.5 rounded-full bg-[#1F3F8F] ring-2 ring-white shadow" style="top:36%;left:46%"></span>
+                  <span class="absolute size-2.5 rounded-full bg-[#37576B] ring-2 ring-white shadow" style="top:54%;left:70%"></span>
+                  <span class="absolute size-2.5 rounded-full bg-[#1F3F8F] ring-2 ring-white shadow" style="top:72%;left:38%"></span>
+                  <div class="absolute bottom-3 left-3 w-52 rounded-[8px] bg-white/95 border border-zinc-950/10 shadow-sm p-3">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Ownership</div>
+                    <div class="space-y-1.5 font-proxima text-[12px] text-slate-700">
+                      <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-[#1F3F8F]"></span>Public</span><span class="font-mono tabular-nums text-slate-400">142</span></div>
+                      <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2.5 rounded-full bg-[#37576B]"></span>Private</span><span class="font-mono tabular-nums text-slate-400">121</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ TAB · METADATA (MetadataComp · column editor) ═════════ -->
+          <div id="tab-metadata" class="hidden">
+            <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+              <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8" data-dms-section="metadata">
+                <!-- admin sub-page · reached from the Admin tab -->
+                <div class="flex items-center gap-3 mb-4">
+                  <button onclick="setTab('admin')" class="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-[6px] border border-zinc-950/15 bg-white text-slate-600 hover:bg-slate-50 font-mono text-[10px] uppercase tracking-wider"><!-- icon: ChevronLeft --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg>Admin</button>
+                  <span class="font-display font-medium text-[16px] text-[#0f1722]">Advanced metadata · columns</span>
+                  <span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[9px] font-medium bg-[#0a0e13] text-white font-display uppercase tracking-wide">admin</span>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="h-12 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
+                    <span class="font-display font-medium text-[14px] text-[#2D3E4C]">Columns · 9</span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>validated</span>
+                    <div class="flex-1"></div>
+                    <!-- // admin — Add field, isUserAuthed(['update-source']) -->
+                    <button class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] bg-[#1F3F8F] text-white font-mono text-[10px] uppercase tracking-wider"><!-- icon: Plus --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>Add field<span class="inline-flex items-center px-1.5 h-4 rounded-[3px] text-[8.5px] bg-[#0a0e13]/40 tracking-wide">admin</span></button>
+                  </div>
+                  <table class="w-full text-left border-collapse">
+                    <thead><tr class="bg-slate-50 border-b border-zinc-950/10">
+                      <th class="w-8 px-2 py-2.5"></th>
+                      <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Name</th>
+                      <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Display name</th>
+                      <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Type</th>
+                      <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium text-center">Req</th>
+                      <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Description</th>
+                      <th class="w-8 px-2 py-2.5"></th>
+                    </tr></thead>
+                    <tbody class="font-proxima text-[12.5px] text-slate-700">
+                      <tr class="border-b border-zinc-950/05 group hover:bg-slate-50/40"><td class="px-2 py-2 text-slate-300 text-center cursor-grab">⠿</td><td class="px-3 py-2 font-mono text-[12px] text-[#0f1722]">location_name</td><td class="px-3 py-2">Location</td><td class="px-3 py-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-slate-100 font-mono text-[10.5px] text-slate-600">text</span></td><td class="px-3 py-2 text-center text-[#10B981]">●</td><td class="px-3 py-2 text-slate-500">Facility / rest-area name</td><td class="px-2 py-2 text-center text-slate-300 group-hover:text-rose-500 cursor-pointer">×</td></tr>
+                      <tr class="border-b border-zinc-950/05 group hover:bg-slate-50/40"><td class="px-2 py-2 text-slate-300 text-center cursor-grab">⠿</td><td class="px-3 py-2 font-mono text-[12px] text-[#0f1722]">county</td><td class="px-3 py-2">County</td><td class="px-3 py-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-slate-100 font-mono text-[10.5px] text-slate-600">text</span></td><td class="px-3 py-2 text-center text-slate-300">○</td><td class="px-3 py-2 text-slate-500">County of the site</td><td class="px-2 py-2 text-center text-slate-300 group-hover:text-rose-500 cursor-pointer">×</td></tr>
+                      <tr class="border-b border-zinc-950/05 group hover:bg-slate-50/40"><td class="px-2 py-2 text-slate-300 text-center cursor-grab">⠿</td><td class="px-3 py-2 font-mono text-[12px] text-[#0f1722]">ownership</td><td class="px-3 py-2">Owner</td><td class="px-3 py-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-[#1F3F8F]/10 text-[#1F3F8F] font-mono text-[10.5px]">select · 2</span></td><td class="px-3 py-2 text-center text-[#10B981]">●</td><td class="px-3 py-2 text-slate-500">Public or Private operator</td><td class="px-2 py-2 text-center text-slate-300 group-hover:text-rose-500 cursor-pointer">×</td></tr>
+                      <tr class="border-b border-zinc-950/05 group hover:bg-slate-50/40"><td class="px-2 py-2 text-slate-300 text-center cursor-grab">⠿</td><td class="px-3 py-2 font-mono text-[12px] text-[#0f1722]">spaces</td><td class="px-3 py-2">Spaces</td><td class="px-3 py-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-slate-100 font-mono text-[10.5px] text-slate-600">integer</span></td><td class="px-3 py-2 text-center text-[#10B981]">●</td><td class="px-3 py-2 text-slate-500">Designated truck spaces</td><td class="px-2 py-2 text-center text-slate-300 group-hover:text-rose-500 cursor-pointer">×</td></tr>
+                      <tr class="border-b border-zinc-950/05 group hover:bg-slate-50/40"><td class="px-2 py-2 text-slate-300 text-center cursor-grab">⠿</td><td class="px-3 py-2 font-mono text-[12px] text-[#0f1722]">amenities</td><td class="px-3 py-2">Amenities</td><td class="px-3 py-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-slate-100 font-mono text-[10.5px] text-slate-600">text[]</span></td><td class="px-3 py-2 text-center text-slate-300">○</td><td class="px-3 py-2 text-slate-500">Bathroom, shower, food, EV</td><td class="px-2 py-2 text-center text-slate-300 group-hover:text-rose-500 cursor-pointer">×</td></tr>
+                      <tr class="border-b border-zinc-950/05 group hover:bg-slate-50/40"><td class="px-2 py-2 text-slate-300 text-center cursor-grab">⠿</td><td class="px-3 py-2 font-mono text-[12px] text-[#0f1722]">util_overnight</td><td class="px-3 py-2">Overnight use</td><td class="px-3 py-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-slate-100 font-mono text-[10.5px] text-slate-600">numeric</span></td><td class="px-3 py-2 text-center text-slate-300">○</td><td class="px-3 py-2 text-slate-500">Mean overnight occupancy %</td><td class="px-2 py-2 text-center text-slate-300 group-hover:text-rose-500 cursor-pointer">×</td></tr>
+                      <tr class="border-b border-zinc-950/05 group hover:bg-slate-50/40"><td class="px-2 py-2 text-slate-300 text-center cursor-grab">⠿</td><td class="px-3 py-2 font-mono text-[12px] text-[#0f1722]">operator</td><td class="px-3 py-2">Operator</td><td class="px-3 py-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-slate-100 font-mono text-[10.5px] text-slate-600">text</span></td><td class="px-3 py-2 text-center text-slate-300">○</td><td class="px-3 py-2 text-slate-500">Brand / operating company</td><td class="px-2 py-2 text-center text-slate-300 group-hover:text-rose-500 cursor-pointer">×</td></tr>
+                      <tr class="border-b border-zinc-950/05 group hover:bg-slate-50/40"><td class="px-2 py-2 text-slate-300 text-center cursor-grab">⠿</td><td class="px-3 py-2 font-mono text-[12px] text-[#0f1722]">source_ref</td><td class="px-3 py-2">Source</td><td class="px-3 py-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-slate-100 font-mono text-[10.5px] text-slate-600">text</span></td><td class="px-3 py-2 text-center text-slate-300">○</td><td class="px-3 py-2 text-slate-500">Jason's Law / Trucker Path</td><td class="px-2 py-2 text-center text-slate-300 group-hover:text-rose-500 cursor-pointer">×</td></tr>
+                      <tr class="group hover:bg-slate-50/40"><td class="px-2 py-2 text-slate-300 text-center cursor-grab">⠿</td><td class="px-3 py-2 font-mono text-[12px] text-[#0f1722]">geom</td><td class="px-3 py-2">Geometry</td><td class="px-3 py-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] bg-[#37576B]/10 text-[#37576B] font-mono text-[10.5px]">geometry(Point)</span></td><td class="px-3 py-2 text-center text-[#10B981]">●</td><td class="px-3 py-2 text-slate-500">Site location · EPSG:4326</td><td class="px-2 py-2 text-center text-slate-300 group-hover:text-rose-500 cursor-pointer">×</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ TAB · ADMIN (admin.jsx + version.jsx) — entire tab is admin-gated ═════════ -->
+          <div id="tab-admin" class="hidden">
+            <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+              <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6" data-dms-section="admin">
+
+                <!-- versions + schedule -->
+                <div class="col-span-12 lg:col-span-7 space-y-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-12 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Versions</span><button class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-[6px] bg-[#1F3F8F] text-white font-mono text-[10px] uppercase tracking-wider"><!-- icon: Plus --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>Add version</button></div>
+                    <table class="w-full text-left border-collapse">
+                      <thead><tr class="bg-slate-50 border-b border-zinc-950/10"><th class="px-4 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Version</th><th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium text-right">Rows</th><th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Published</th><th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Status</th><th class="px-3 py-2.5"></th></tr></thead>
+                      <tbody class="font-proxima text-[12.5px] text-slate-700">
+                        <tr class="border-b border-zinc-950/05"><td class="px-4 py-2.5 font-display font-medium text-[#0f1722]">v2024 <span class="ml-1 inline-flex items-center px-1.5 h-4 rounded-[3px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[9px] uppercase tracking-wider text-[#065F46]">current</span></td><td class="px-3 py-2.5 text-right font-mono tabular-nums">263</td><td class="px-3 py-2.5 font-mono text-[11px] text-slate-500">May 2026</td><td class="px-3 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>published</span></td><td class="px-3 py-2.5 text-right"><div class="inline-flex gap-1"><button class="h-7 px-2 rounded-[5px] border border-zinc-950/10 bg-white text-slate-600 font-mono text-[9.5px] uppercase tracking-wider hover:bg-slate-50">Clear data</button><button class="h-7 px-2 rounded-[5px] border border-[#EF4444]/30 text-[#991B1B] font-mono text-[9.5px] uppercase tracking-wider hover:bg-[#EF4444]/10">Delete</button></div></td></tr>
+                        <tr><td class="px-4 py-2.5 font-display font-medium text-[#0f1722]">v2023</td><td class="px-3 py-2.5 text-right font-mono tabular-nums">241</td><td class="px-3 py-2.5 font-mono text-[11px] text-slate-500">Aug 2025</td><td class="px-3 py-2.5"><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500"><span class="size-1.5 rounded-full bg-slate-400"></span>archived</span></td><td class="px-3 py-2.5 text-right"><div class="inline-flex gap-1"><button class="h-7 px-2 rounded-[5px] border border-zinc-950/10 bg-white text-slate-600 font-mono text-[9.5px] uppercase tracking-wider hover:bg-slate-50">Clear data</button><button class="h-7 px-2 rounded-[5px] border border-[#EF4444]/30 text-[#991B1B] font-mono text-[9.5px] uppercase tracking-wider hover:bg-[#EF4444]/10">Delete</button></div></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="flex items-center gap-2 mb-3"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 flex-1">Data loader · schedule</span><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>active</span></div>
+                    <dl class="grid grid-cols-2 gap-y-1.5 font-proxima text-[12.5px]">
+                      <dt class="text-slate-500">Cron</dt><dd class="text-[#0f1722] font-mono">0 2 * * *  ·  daily 02:00</dd>
+                      <dt class="text-slate-500">Last run</dt><dd class="text-[#0f1722]">May 14 2026 · 02:00 ✓</dd>
+                      <dt class="text-slate-500">Next run</dt><dd class="text-[#0f1722]">tomorrow · 02:00</dd>
+                    </dl>
+                    <div class="mt-3 flex gap-2"><button class="tny-press h-8 px-3 rounded-[6px] bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-mono text-[10px] uppercase tracking-wider">Run now</button><button class="h-8 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-600 font-mono text-[10px] uppercase tracking-wider hover:bg-slate-50">Edit schedule</button></div>
+                  </div>
+
+                  <!-- Tasks · run history (UdaTasks · etl_contexts) — loads, publishes, download creations -->
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-12 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Tasks</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">last 30 days</span><a class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] hover:text-[#16307A]">View all →</a></div>
+                    <table class="w-full text-left border-collapse">
+                      <thead><tr class="bg-slate-50 border-b border-zinc-950/10">
+                        <th class="px-4 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Task</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Status</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">Started</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium text-right">Duration</th>
+                        <th class="px-3 py-2.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 font-medium">By</th>
+                      </tr></thead>
+                      <tbody class="font-proxima text-[12.5px] text-slate-700">
+                        <tr class="border-b border-zinc-950/05">
+                          <td class="px-4 py-2"><div class="text-[#0f1722]">Data load</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">v2024</div></td>
+                          <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#1F3F8F]/30 bg-[#1F3F8F]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#0F2D4D]"><span class="size-1.5 rounded-full bg-[#1F3F8F] dot-pulse"></span>running</span></td>
+                          <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Jun 28 · 02:00</td>
+                          <td class="px-3 py-2 text-right font-mono tabular-nums text-slate-500">0m 48s…</td>
+                          <td class="px-3 py-2 text-slate-500">scheduler</td>
+                        </tr>
+                        <tr class="border-b border-zinc-950/05">
+                          <td class="px-4 py-2"><div class="text-[#0f1722]">Create download · GeoJSON</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">v2024</div></td>
+                          <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>done</span></td>
+                          <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Jun 26 · 14:32</td>
+                          <td class="px-3 py-2 text-right font-mono tabular-nums">8s</td>
+                          <td class="px-3 py-2 text-slate-500">a.morrison</td>
+                        </tr>
+                        <tr class="border-b border-zinc-950/05">
+                          <td class="px-4 py-2"><div class="text-[#0f1722]">Data load</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">v2024</div></td>
+                          <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>done</span></td>
+                          <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Jun 26 · 02:00</td>
+                          <td class="px-3 py-2 text-right font-mono tabular-nums">3m 12s</td>
+                          <td class="px-3 py-2 text-slate-500">scheduler</td>
+                        </tr>
+                        <tr class="border-b border-zinc-950/05">
+                          <td class="px-4 py-2"><div class="text-[#0f1722]">Create download · CSV</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">v2024</div></td>
+                          <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>done</span></td>
+                          <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Jun 24 · 11:05</td>
+                          <td class="px-3 py-2 text-right font-mono tabular-nums">6s</td>
+                          <td class="px-3 py-2 text-slate-500">a.morrison</td>
+                        </tr>
+                        <tr class="border-b border-zinc-950/05">
+                          <td class="px-4 py-2"><div class="text-[#0f1722]">Data load</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">v2024</div></td>
+                          <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/30 bg-[#EF4444]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B]" title="source endpoint timed out"><span class="size-1.5 rounded-full bg-[#EF4444]"></span>error</span></td>
+                          <td class="px-3 py-2 font-mono text-[11px] text-slate-500">Jun 19 · 02:00</td>
+                          <td class="px-3 py-2 text-right font-mono tabular-nums">1m 04s</td>
+                          <td class="px-3 py-2 text-slate-500">scheduler</td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-2"><div class="text-[#0f1722]">Publish</div><div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">v2024</div></td>
+                          <td class="px-3 py-2"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>done</span></td>
+                          <td class="px-3 py-2 font-mono text-[11px] text-slate-500">May 14 · 09:12</td>
+                          <td class="px-3 py-2 text-right font-mono tabular-nums">2m 41s</td>
+                          <td class="px-3 py-2 text-slate-500">a.morrison</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- settings + access + danger -->
+                <div class="col-span-12 lg:col-span-5 space-y-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-3">Source settings</div>
+                    <label class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600">Name</label>
+                    <input value="Truck Parking Inventory" class="mt-1 mb-3 w-full h-9 px-3 rounded-[6px] border border-zinc-950/15 bg-white font-proxima text-[13px] text-[#0f1722]"/>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                      <div><label class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600">Type</label><div class="mt-1 h-9 px-3 rounded-[6px] border border-zinc-950/10 bg-slate-50 flex items-center font-mono text-[12px] text-slate-500">gis_dataset</div></div>
+                      <div><label class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600">Update interval</label><button class="mt-1 w-full h-9 px-3 rounded-[6px] border border-zinc-950/15 bg-white flex items-center justify-between font-proxima text-[13px] text-[#0f1722]">Annual <svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+                    </div>
+                    <label class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-600">Categories</label>
+                    <div class="mt-1.5 flex flex-wrap gap-1.5"><span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#1F3F8F]/20 bg-[#1F3F8F]/10 text-[#0F2D4D]">Freight Atlas</span><span class="inline-flex items-center gap-1.5 px-2 h-6 rounded-[4px] text-[11.5px] font-medium border border-[#37576B]/20 bg-[#37576B]/10 text-[#0F2D4D]">Freight Facilities</span><button class="inline-flex items-center gap-1 px-2 h-6 rounded-[4px] border border-dashed border-zinc-950/20 text-slate-500 font-mono text-[10px] uppercase tracking-wider hover:bg-slate-50">+ edit</button></div>
+                  </div>
+
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="flex items-center gap-2"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 flex-1">Schema · metadata</span><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[9.5px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>validated</span></div>
+                    <div class="mt-2 flex items-center justify-between"><span class="font-proxima text-[12.5px] text-slate-600">9 columns · 4 required</span><button onclick="setTab('metadata')" class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] hover:text-[#16307A]">Edit columns →</button></div>
+                  </div>
+
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                    <div class="flex items-center gap-2 mb-3"><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 flex-1">Access</span><button class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F] hover:text-[#16307A]">Manage →</button></div>
+                    <dl class="space-y-2 font-proxima text-[12.5px]">
+                      <div class="flex items-center justify-between"><dt class="text-slate-500">Public</dt><dd class="inline-flex items-center gap-1.5 text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>View &amp; download</dd></div>
+                      <div class="flex items-center justify-between"><dt class="text-slate-500">Editors</dt><dd class="text-[#0f1722]">3 users · 1 group</dd></div>
+                      <div class="flex items-center justify-between"><dt class="text-slate-500">Owner</dt><dd class="text-[#0f1722]">NYSDOT · Freight</dd></div>
+                    </dl>
+                  </div>
+
+                  <div class="rounded-[8px] border border-[#EF4444]/30 bg-[#EF4444]/[0.03] p-4">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#991B1B] mb-1.5">Danger zone</div>
+                    <p class="font-proxima text-[12px] text-slate-600 leading-[1.5] mb-3">Deleting the source removes all versions, data rows, and downloads. This cannot be undone.</p>
+                    <button class="h-9 px-3.5 inline-flex items-center gap-2 rounded-[6px] border border-[#EF4444]/40 bg-white text-[#991B1B] font-display uppercase text-[12px] tracking-wide hover:bg-[#EF4444]/10"><!-- icon: Trash --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Delete source</button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+<script>
+  // source page tab bar — toggles the tab-body containers + the active underline.
+  // metadata has no public tab button (admin-only): it shows its body but keeps Admin highlighted.
+  function setTab(t) {
+    ['overview', 'table', 'map', 'metadata', 'admin'].forEach(function (x) {
+      document.getElementById('tab-' + x).classList.toggle('hidden', x !== t);
+    });
+    var active = (t === 'metadata') ? 'admin' : t;
+    ['overview', 'table', 'map', 'admin'].forEach(function (x) {
+      var b = document.getElementById('tb-' + x);
+      b.querySelector('.tab-underline').classList.toggle('hidden', x !== active);
+      b.classList.toggle('text-[#0f1722]', x === active);
+      b.classList.toggle('text-slate-600', x !== active);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ACLB Design System · Components</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      ink:'#16232C', slate:'#475A66', mist:'#8CA0AB',
+      paper:'#F2F5F6', papertint:'#EAEFF1',
+      sky:'#0AA7E4', skydeep:'#0A6E99',
+      leaf:'#8CC63E', field:'#4C9129', forest:'#33641B',
+      amber:'#E0940B', amberdeep:'#8F5E08',
+      violet:'#8B6FC7', violetdeep:'#6C50A8',
+      rose:'#CE5B4E', rosedeep:'#B03E31',
+      steel:'#8195A1'
+    } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..800&family=Public+Sans:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="../_shared.css"/>
+</head>
+<body class="lb-paper">
+
+<!--
+  components.html · DESIGN SYSTEM 4 of 5 — every primitive in ACLB skin.
+  Layout `default` (DS chrome). One band per category: navigation · forms &
+  interaction · overlays · containers & atoms · rich content. Every primitive
+  used on home/about/properties appears here with its states; overlays are
+  static snapshots. If a primitive isn't shown here, it can't ship.
+-->
+
+<div class="min-h-svh flex flex-col" data-dms-layout="default">
+
+  <!-- ═══ Utility strip ═══ -->
+  <div class="w-full bg-ink text-white/80">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-8 flex items-center justify-between">
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em]">Albany County Land Bank Corporation · Design System</span>
+      <span class="font-meta text-[9.5px] uppercase tracking-[0.16em] text-white/50">v0.1 · 2026</span>
+    </div>
+  </div>
+
+  <!-- ═══ TopNav · design-system variant (Components active) ═══ -->
+  <header class="w-full bg-white border-b border-ink/10 sticky top-0 z-50">
+    <div class="mx-auto w-full max-w-[1240px] px-6 h-16 flex items-center gap-8">
+      <a href="theme.html" class="flex items-center gap-3 shrink-0">
+        <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-9 w-auto"/>
+      </a>
+      <span class="hidden md:inline font-meta text-[10px] uppercase tracking-[0.16em] text-mist border-l border-ink/10 pl-4">Design System</span>
+      <nav class="flex-1 flex items-center justify-end gap-1 font-prose text-[13.5px] font-semibold">
+        <a href="theme.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Theme</a>
+        <a href="layouts.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Layouts</a>
+        <a href="grid.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Grid</a>
+        <a href="components.html" class="px-3 h-16 flex items-center text-skydeep border-b-2 border-sky -mb-px">Components</a>
+        <a href="patterns.html" class="px-3 h-16 flex items-center text-slate hover:text-ink border-b-2 border-transparent">Patterns</a>
+      </nav>
+      <span class="font-meta text-[10px] text-mist tabular-nums shrink-0">4 / 5</span>
+    </div>
+  </header>
+
+  <!-- ═══ HERO ═══ -->
+  <div class="w-full lb-plat border-b border-ink/10" data-dms-group="hero">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-14" data-dms-section="page-header">
+      <div class="flex items-center gap-2.5 mb-3">
+        <span class="size-2 bg-leaf"></span>
+        <span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">Catalogue · Primitives</span>
+      </div>
+      <h1 class="font-display font-bold text-[54px] leading-[1.04] tracking-[-0.015em] text-ink max-w-[820px]">Every primitive, in uniform.</h1>
+      <p class="font-prose text-[17.5px] leading-[1.6] text-slate mt-4 max-w-[720px]">One band per category; every state that ships is depicted. The translation into the live theme reads this page as the contract — a primitive or state that isn't shown here can't be themed, and falls back to platform defaults.</p>
+    </div>
+  </div>
+
+  <!-- ═══ § 01 · NAVIGATION ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="nav-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">§ 01</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Navigation</h2>
+      </div>
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- TopNav product -->
+        <div class="col-span-12 p-3" data-dms-section="topnav-product">
+          <div class="lb-card p-6">
+            <div class="flex items-baseline justify-between mb-4"><span class="font-display font-semibold text-[17px] leading-[1.3] text-ink">TopNav · product</span><span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">used on: home · about · properties</span></div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-4 space-y-4 overflow-x-auto">
+              <!-- default state -->
+              <div class="bg-white border border-ink/10 rounded-md min-w-[760px]">
+                <div class="px-6 h-16 flex items-center gap-8">
+                  <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-10 w-auto shrink-0"/>
+                  <nav class="flex-1 flex items-center justify-end gap-1 font-prose text-[13.5px] font-semibold">
+                    <span class="px-3 h-16 flex items-center text-skydeep border-b-2 border-sky">Home</span>
+                    <span class="px-3 h-16 flex items-center text-slate border-b-2 border-transparent">About</span>
+                    <span class="px-3 h-16 flex items-center text-slate border-b-2 border-transparent">Properties</span>
+                  </nav>
+                  <span class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-skydeep border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold shrink-0"><!-- icon: Lot --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>Browse properties</span>
+                </div>
+              </div>
+              <!-- hover + open submenu state -->
+              <div class="bg-white border border-ink/10 rounded-md min-w-[760px] relative pb-40">
+                <div class="px-6 h-16 flex items-center gap-8">
+                  <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-10 w-auto shrink-0"/>
+                  <nav class="flex-1 flex items-center justify-end gap-1 font-prose text-[13.5px] font-semibold">
+                    <span class="px-3 h-16 flex items-center text-slate border-b-2 border-transparent">Home</span>
+                    <span class="px-3 h-16 flex items-center gap-1 text-ink bg-paper border-b-2 border-transparent relative">About <!-- icon: ChevronDown --><svg class="size-3.5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                      <!-- level-2 flyout -->
+                      <span class="absolute top-16 left-0 w-56 bg-white rounded-md border border-ink/10 shadow-lg py-1.5 font-prose text-[13.5px] font-semibold z-10">
+                        <span class="block px-4 py-2 text-slate">Our mission</span>
+                        <span class="block px-4 py-2 text-skydeep bg-sky/[0.06]">Board &amp; committees</span>
+                        <span class="block px-4 py-2 text-slate">Annual reports</span>
+                      </span>
+                    </span>
+                    <span class="px-3 h-16 flex items-center text-slate border-b-2 border-transparent">Properties</span>
+                  </nav>
+                </div>
+                <span class="absolute bottom-3 left-6 font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">hover parent + open level-2 flyout · active child highlighted</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SideNav + mobile -->
+        <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="sidenav">
+          <div class="lb-card p-6 h-full">
+            <div class="flex items-baseline justify-between mb-4"><span class="font-display font-semibold text-[17px] leading-[1.3] text-ink">SideNav · Layout app</span><span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">staff record editor</span></div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-4 flex gap-4">
+              <div class="w-60 shrink-0 bg-ink rounded-md overflow-hidden">
+                <div class="h-14 bg-black/25 border-b border-white/10 flex items-center px-3 gap-2.5">
+                  <span class="bg-white rounded px-1.5 py-1"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-5 w-auto"/></span>
+                  <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/60">Staff console</span>
+                </div>
+                <div class="px-4 pt-3 pb-1 font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-white/40">Portfolio</div>
+                <div class="py-1 font-prose text-[13.5px] font-semibold">
+                  <span class="flex items-center px-4 py-2.5 bg-white/10 text-white border-l-[3px] border-leaf"><!-- icon: Lot --><svg class="size-[18px] mr-3 text-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>Dashboard</span>
+                  <span class="flex items-center px-4 py-2.5 text-white/70 border-l-[3px] border-transparent"><!-- icon: Building --><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17M15 8h4v13M3 21h18"/><path d="M8 7h2m-2 4h2m-2 4h2"/></svg><span class="flex-1">Properties</span><!-- icon: ChevronDown --><svg class="size-3 text-white/40 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+                  <span class="flex items-center pl-11 pr-4 py-2 text-[12px] text-white/60">For-sale list</span>
+                  <span class="flex items-center pl-11 pr-4 py-2 text-[12px] text-leaf">Applications</span>
+                  <span class="flex items-center pl-11 pr-4 py-2 text-[12px] text-white/60">Maintenance</span>
+                  <span class="flex items-center px-4 py-2.5 text-white/70 border-l-[3px] border-transparent"><!-- icon: FileText --><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5M9 12h6m-6 4h6"/></svg><span class="flex-1">Reports</span><!-- icon: ChevronRight --><svg class="size-3 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+                  <span class="flex items-center px-4 py-2.5 text-white/70 border-l-[3px] border-transparent"><!-- icon: Users --><svg class="size-[18px] mr-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3.5 3.5 0 0 1 0 6.6M21 20a6 6 0 0 0-4-5.5"/></svg>Applicants</span>
+                </div>
+                <div class="border-t border-white/10 mt-2 py-2.5 px-4 flex items-center gap-2.5">
+                  <span class="size-7 rounded-full bg-skydeep flex items-center justify-center text-white font-prose text-[11px] font-semibold">AM</span>
+                  <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-white/50">staff · signed in</span>
+                </div>
+              </div>
+              <div class="flex-1 font-prose text-[12px] leading-[1.5] text-slate space-y-2 py-2">
+                <p><span class="font-semibold text-ink">Level-1 active:</span> bg-white/10 · white text · leaf rail (border-l-[3px]).</p>
+                <p><span class="font-semibold text-ink">Level-2:</span> indented pl-11, 12px, white/60; active child in leaf.</p>
+                <p><span class="font-semibold text-ink">Indicators:</span> ChevronDown rotated when expanded, ChevronRight collapsed.</p>
+                <p><span class="font-semibold text-ink">Bottom slot:</span> user chip + role in metaXS.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="mobile-nav">
+          <div class="lb-card p-6 h-full">
+            <div class="flex items-baseline justify-between mb-4"><span class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Mobile menu + NavigableMenu</span></div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-4 flex flex-wrap gap-4">
+              <!-- mobile sheet -->
+              <div class="w-[240px] bg-white border border-ink/10 rounded-md overflow-hidden">
+                <div class="px-4 h-12 flex items-center justify-between border-b border-ink/10">
+                  <img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-7 w-auto"/>
+                  <!-- icon: Close --><svg class="size-5 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg>
+                </div>
+                <div class="py-2 font-prose text-[13.5px] font-semibold">
+                  <span class="block px-4 py-2.5 text-skydeep border-l-[3px] border-leaf bg-sky/[0.05]">Home</span>
+                  <span class="block px-4 py-2.5 text-slate border-l-[3px] border-transparent">About</span>
+                  <span class="block px-4 py-2.5 text-slate border-l-[3px] border-transparent">Properties</span>
+                  <div class="px-4 pt-3 pb-2"><span class="lb-press inline-flex w-full justify-center items-center gap-2 h-10 rounded-md bg-skydeep border-b-[3px] border-ink/40 text-white text-[13.5px] font-semibold">Browse properties</span></div>
+                </div>
+              </div>
+              <!-- navigable menu -->
+              <div class="w-[200px] self-start bg-white rounded-md border border-ink/10 shadow-lg py-1.5 font-prose text-[13.5px]">
+                <span class="block px-4 py-2 text-slate">Duplicate section</span>
+                <span class="block px-4 py-2 text-ink bg-sky/[0.08] font-semibold">Move up</span>
+                <span class="block px-4 py-2 text-slate">Move down</span>
+                <span class="block px-4 py-2 text-rosedeep">Delete section</span>
+                <div class="border-t border-ink/5 mt-1.5 pt-1.5 px-4 pb-1 font-meta font-medium text-[9.5px] uppercase tracking-[0.12em] text-mist">↑↓ navigate · ⏎ select</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ § 02 · FORMS & INTERACTION ═══ -->
+  <div class="w-full lb-paper-tint border-y border-ink/5 py-12" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="forms-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">§ 02</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Forms &amp; interaction</h2>
+      </div>
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- Buttons -->
+        <div class="col-span-12 p-3" data-dms-section="buttons">
+          <div class="lb-card p-6">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Button</div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-5 grid sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">primary · default / hover / focus</div><div class="flex flex-wrap gap-2">
+                <span class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-skydeep border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold">Submit application</span>
+                <span class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-ink border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold">Submit application</span>
+                <span class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-skydeep border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold ring-2 ring-skydeep/40 ring-offset-2">Submit application</span>
+              </div></div>
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">cta-green · default / hover</div><div class="flex flex-wrap gap-2">
+                <span class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-field border-b-[3px] border-forest text-white font-prose text-[13.5px] font-semibold">For-sale list</span>
+                <span class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-forest border-b-[3px] border-forest text-white font-prose text-[13.5px] font-semibold">For-sale list</span>
+              </div></div>
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">secondary · default / hover</div><div class="flex flex-wrap gap-2">
+                <span class="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-white border border-ink/15 text-ink font-prose text-[13.5px] font-semibold">Download CSV</span>
+                <span class="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-paper border border-ink/15 text-ink font-prose text-[13.5px] font-semibold">Download CSV</span>
+              </div></div>
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">ghost · default / hover</div><div class="flex flex-wrap gap-2 items-center">
+                <span class="inline-flex items-center gap-1.5 font-prose text-[13.5px] font-semibold text-skydeep">Reset filters</span>
+                <span class="inline-flex items-center gap-1.5 font-prose text-[13.5px] font-semibold text-ink">Reset filters</span>
+              </div></div>
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">danger</div>
+                <span class="lb-press inline-flex items-center gap-2 h-10 px-4 rounded-md bg-rose border-b-[3px] border-rosedeep text-white font-prose text-[13.5px] font-semibold">Remove listing</span>
+              </div>
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">disabled</div>
+                <span class="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-papertint text-mist font-prose text-[13.5px] font-semibold cursor-not-allowed">Submit application</span>
+              </div>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-4">The press effect (<span class="font-meta text-[11px]">.lb-press</span>) collapses the 3px bottom border on :active — buttons physically press. Focus is a 2px skydeep ring, offset 2.</p>
+          </div>
+        </div>
+
+        <!-- Inputs -->
+        <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="inputs">
+          <div class="lb-card p-6 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Input · Textarea</div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-5 grid sm:grid-cols-2 gap-5">
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-1.5">default</div><input type="text" placeholder="Street address…" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-prose text-[13.5px] text-ink placeholder:text-mist focus:border-skydeep focus:outline-none"/></div>
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-1.5">focus</div><input type="text" value="49 Park Avenue" class="w-full h-10 px-3 rounded bg-white border border-skydeep font-prose text-[13.5px] text-ink focus:outline-none"/></div>
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-1.5">error</div><input type="text" value="49 Park Aven" class="w-full h-10 px-3 rounded bg-white border border-rose font-prose text-[13.5px] text-ink focus:outline-none"/><div class="mt-1 flex items-center gap-1.5 font-prose text-[12px] text-rosedeep"><!-- icon: CircleAlert --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3.5v.5"/></svg>Enter a full street address, including the suffix.</div></div>
+              <div><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-1.5">disabled</div><input type="text" value="Albany County" disabled class="w-full h-10 px-3 rounded bg-papertint border border-ink/10 font-prose text-[13.5px] text-mist"/></div>
+              <div class="sm:col-span-2"><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-1.5">search input (with icon)</div><label class="relative block"><!-- icon: Search --><svg class="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 5 5"/></svg><input type="text" placeholder="Search address or parcel ID…" class="w-full h-10 pl-9 pr-3 rounded bg-white border border-ink/15 font-prose text-[13.5px] text-ink placeholder:text-mist focus:border-skydeep focus:outline-none"/></label></div>
+              <div class="sm:col-span-2"><div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-1.5">textarea</div><textarea rows="3" placeholder="Describe your plan for the property…" class="w-full p-3 rounded bg-white border border-ink/15 font-prose text-[13.5px] text-ink placeholder:text-mist focus:border-skydeep focus:outline-none resize-none"></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Switch / Tabs / FieldSet -->
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="switch-tabs">
+          <div class="lb-card p-6 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Tabs · Switch · FieldSet</div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-5 space-y-6">
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">tabs</div>
+                <div class="flex border-b border-ink/10 font-prose text-[13.5px] font-semibold">
+                  <span class="px-4 h-10 flex items-center text-skydeep border-b-2 border-sky -mb-px">For sale</span>
+                  <span class="px-4 h-10 flex items-center text-slate border-b-2 border-transparent">Sold</span>
+                  <span class="px-4 h-10 flex items-center text-slate border-b-2 border-transparent">All records</span>
+                </div>
+              </div>
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">switch · off / on / disabled</div>
+                <div class="flex items-center gap-6">
+                  <span class="inline-flex items-center gap-2"><span class="w-9 h-5 rounded-full bg-papertint border border-ink/15 relative"><span class="absolute left-0.5 top-1/2 -translate-y-1/2 size-4 rounded-full bg-white border border-ink/10"></span></span><span class="font-prose text-[12px] font-semibold text-slate">Off</span></span>
+                  <span class="inline-flex items-center gap-2"><span class="w-9 h-5 rounded-full bg-field relative"><span class="absolute right-0.5 top-1/2 -translate-y-1/2 size-4 rounded-full bg-white"></span></span><span class="font-prose text-[12px] font-semibold text-slate">On</span></span>
+                  <span class="inline-flex items-center gap-2 opacity-50"><span class="w-9 h-5 rounded-full bg-papertint border border-ink/15 relative"><span class="absolute left-0.5 top-1/2 -translate-y-1/2 size-4 rounded-full bg-white border border-ink/10"></span></span><span class="font-prose text-[12px] font-semibold text-mist">Disabled</span></span>
+                </div>
+              </div>
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">fieldset + label + help</div>
+                <fieldset class="rounded-md border border-ink/10 bg-white p-4">
+                  <legend class="px-1.5 font-prose text-[12px] font-semibold text-ink">Applicant</legend>
+                  <label class="block font-prose text-[12px] font-semibold text-ink mb-1">Email address</label>
+                  <input type="text" placeholder="you@example.org" class="w-full h-10 px-3 rounded bg-white border border-ink/15 font-prose text-[13.5px] text-ink placeholder:text-mist focus:border-skydeep focus:outline-none"/>
+                  <p class="font-prose text-[12px] text-mist mt-1.5">We only use this to reach you about this application.</p>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MultiSelect -->
+        <div class="col-span-12 p-3" data-dms-section="multiselect">
+          <div class="lb-card p-6">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">MultiSelect</div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-5 grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">closed trigger</div>
+                <span class="w-full h-10 px-3 rounded bg-white border border-ink/15 flex items-center justify-between gap-2 font-prose text-[13.5px] text-ink"><span><span class="text-mist">Status:</span> All</span><!-- icon: ChevronDown --><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+              </div>
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">open · single-select</div>
+                <span class="w-full h-10 px-3 rounded bg-white border border-skydeep flex items-center justify-between gap-2 font-prose text-[13.5px] text-ink"><span><span class="text-mist">City:</span> Albany</span><!-- icon: ChevronDown --><svg class="size-4 text-skydeep rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+                <div class="mt-1 w-full bg-white rounded-md border border-ink/10 shadow-lg py-1 font-prose text-[13.5px]">
+                  <span class="flex items-center justify-between px-3 py-2 text-skydeep bg-sky/[0.06] font-semibold">Albany <!-- icon: Check --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg></span>
+                  <span class="block px-3 py-2 text-slate">Cohoes</span>
+                  <span class="block px-3 py-2 text-slate">Watervliet</span>
+                </div>
+              </div>
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">multi-select · token chips + menu</div>
+                <span class="w-full min-h-10 px-2 py-1.5 rounded bg-white border border-skydeep flex items-center flex-wrap gap-1.5 font-prose text-[13.5px]">
+                  <span class="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-sky/10 text-skydeep text-[12px] font-semibold">For Sale <!-- icon: Close --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg></span>
+                  <span class="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-sky/10 text-skydeep text-[12px] font-semibold">Sale Pending <!-- icon: Close --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg></span>
+                </span>
+                <div class="mt-1 w-full bg-white rounded-md border border-ink/10 shadow-lg py-1 font-prose text-[13.5px]">
+                  <span class="flex items-center gap-2.5 px-3 py-2"><span class="size-4 rounded border border-skydeep bg-skydeep flex items-center justify-center text-white"><!-- icon: Check --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg></span><span class="text-ink font-semibold">For Sale</span></span>
+                  <span class="flex items-center gap-2.5 px-3 py-2"><span class="size-4 rounded border border-ink/20 bg-white"></span><span class="text-slate">ACLB Rehab</span></span>
+                  <span class="flex items-center gap-2.5 px-3 py-2"><span class="size-4 rounded border border-skydeep bg-skydeep flex items-center justify-center text-white"><!-- icon: Check --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg></span><span class="text-ink font-semibold">Sale Pending</span></span>
+                </div>
+              </div>
+              <div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mb-2">disabled</div>
+                <span class="w-full h-10 px-3 rounded bg-papertint border border-ink/10 flex items-center justify-between gap-2 font-prose text-[13.5px] text-mist"><span>School district: All</span><!-- icon: ChevronDown --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ § 03 · OVERLAYS ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="overlays-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">§ 03</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Overlays <span class="font-prose text-[13.5px] font-semibold text-mist">· static snapshots</span></h2>
+      </div>
+      <div class="grid grid-cols-12 gap-0">
+        <div class="col-span-12 lg:col-span-6 p-3" data-dms-section="dialog">
+          <div class="lb-card p-6 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Dialog · sm / Modal header</div>
+            <div class="rounded-md bg-ink/40 p-6 space-y-6">
+              <div class="max-w-sm mx-auto bg-white rounded-md shadow-lg p-5">
+                <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Save this search?</div>
+                <p class="font-prose text-[13.5px] leading-[1.55] text-slate mt-1.5">We'll email you when a new property matches these filters.</p>
+                <div class="mt-4 flex justify-end gap-2">
+                  <span class="inline-flex items-center h-10 px-4 rounded-md bg-white border border-ink/15 text-ink font-prose text-[13.5px] font-semibold">Cancel</span>
+                  <span class="lb-press inline-flex items-center h-10 px-4 rounded-md bg-skydeep border-b-[3px] border-ink/40 text-white font-prose text-[13.5px] font-semibold">Save search</span>
+                </div>
+              </div>
+              <div class="max-w-lg mx-auto bg-white rounded-md shadow-lg overflow-hidden">
+                <div class="px-5 h-12 flex items-center justify-between border-b border-ink/10 bg-papertint/50">
+                  <span class="font-display font-semibold text-[17px] text-ink">Property record · 49 Park Avenue</span>
+                  <!-- icon: Close --><svg class="size-5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg>
+                </div>
+                <div class="p-5 font-prose text-[13.5px] leading-[1.55] text-slate">Modal: a persistent panel with its own header row, used for full record views. Body composes any primitives.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-span-12 lg:col-span-6 p-3" data-dms-section="drawer-popup">
+          <div class="lb-card p-6 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Drawer · Popup · DeleteModal</div>
+            <div class="rounded-md bg-ink/40 p-6 relative overflow-hidden">
+              <!-- drawer -->
+              <div class="ml-auto w-64 bg-white rounded-l-md shadow-lg h-64 flex flex-col">
+                <div class="px-4 h-12 flex items-center justify-between border-b border-ink/10">
+                  <span class="font-display font-semibold text-[17px] text-ink">Filters</span>
+                  <!-- icon: Close --><svg class="size-5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 5.5 13 13m0-13-13 13"/></svg>
+                </div>
+                <div class="p-4 space-y-3">
+                  <span class="w-full h-10 px-3 rounded bg-white border border-ink/15 flex items-center justify-between gap-2 font-prose text-[13.5px] text-ink"><span><span class="text-mist">Status:</span> All</span><!-- icon: ChevronDown --><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+                  <span class="relative inline-block">
+                    <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-skydeep">What counts as "days held"? <!-- icon: Info --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8.5v.5"/></svg></span>
+                    <span class="absolute left-0 top-7 w-52 bg-ink text-white font-prose text-[12px] leading-[1.5] rounded px-2.5 py-1.5 shadow-lg">Days since the parcel entered Land Bank inventory.</span>
+                  </span>
+                </div>
+              </div>
+              <!-- delete modal -->
+              <div class="absolute left-6 bottom-6 w-64 bg-white rounded-md shadow-lg p-4">
+                <div class="flex items-start gap-3">
+                  <span class="size-9 shrink-0 rounded-full bg-rose/10 flex items-center justify-center text-rosedeep"><!-- icon: CircleAlert --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3.5v.5"/></svg></span>
+                  <div>
+                    <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Remove this listing?</div>
+                    <p class="font-prose text-[12px] leading-[1.5] text-slate mt-1">The record stays in the ledger; the listing comes off the for-sale page.</p>
+                  </div>
+                </div>
+                <div class="mt-3 flex justify-end gap-2">
+                  <span class="inline-flex items-center h-9 px-3 rounded-md bg-white border border-ink/15 text-ink font-prose text-[12px] font-semibold">Keep it</span>
+                  <span class="lb-press inline-flex items-center h-9 px-3 rounded-md bg-rose border-b-[3px] border-rosedeep text-white font-prose text-[12px] font-semibold">Remove</span>
+                </div>
+              </div>
+              <div class="h-24"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ § 04 · CONTAINERS & ATOMS ═══ -->
+  <div class="w-full lb-paper-tint border-y border-ink/5 py-12" data-dms-group="content_tint">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="containers-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">§ 04</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Containers &amp; atoms</h2>
+      </div>
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- dataCard variants -->
+        <div class="col-span-12 p-3" data-dms-section="datacard">
+          <div class="lb-card p-6">
+            <div class="flex items-baseline justify-between mb-4"><span class="font-display font-semibold text-[17px] leading-[1.3] text-ink">dataCard — the workhorse</span><span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">KPI tile · record card · record row</span></div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-5 grid grid-cols-12 gap-0">
+              <!-- KPI tile -->
+              <div class="col-span-12 sm:col-span-4 lg:col-span-3 p-3">
+                <div class="lb-card p-4 border-t-2 border-t-field">
+                  <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">For sale</div>
+                  <div class="font-display font-bold text-[38px] leading-[1.1] tracking-[-0.01em] text-forest tabular-nums mt-1">60</div>
+                  <div class="font-prose text-[12px] leading-[1.5] text-slate mt-0.5">open for applications</div>
+                </div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mt-2 text-center">stat tile · border-t accent</div>
+              </div>
+              <!-- record card -->
+              <div class="col-span-12 sm:col-span-8 lg:col-span-4 p-3">
+                <div class="lb-card overflow-hidden">
+                  <div class="lb-plate h-32 relative flex items-center justify-center">
+                    <div class="lb-lot" style="width:34%; height:52%"></div>
+                    <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="bottom:15%; left:50%; transform:translateX(-50%)">25′</span>
+                    <span class="absolute font-meta font-medium text-[9.5px] text-slate" style="left:69%; top:50%; transform:translateY(-50%)">50′</span>
+                    <span class="absolute top-2.5 left-2.5 inline-flex h-6 items-center px-2.5 rounded-full text-forest font-prose text-[12px] font-semibold bg-white/80 border border-field/20">For Sale</span>
+                  </div>
+                  <div class="p-4 border-t border-ink/10">
+                    <div class="flex items-start justify-between gap-3">
+                      <div>
+                        <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">110 Alexander Street</div>
+                        <div class="font-prose text-[12px] text-slate mt-0.5">South End · Albany 12202</div>
+                      </div>
+                      <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink tabular-nums shrink-0">$600</div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-ink/5 font-meta font-medium text-[11px] text-slate">SBL 76.64-2-6 · 0.03 ac</div>
+                  </div>
+                </div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mt-2 text-center">record card · parcel-plate image cell</div>
+              </div>
+              <!-- record row -->
+              <div class="col-span-12 lg:col-span-5 p-3">
+                <div class="lb-card p-3 flex items-center gap-4">
+                  <div class="lb-plate w-24 h-20 shrink-0 rounded relative flex items-center justify-center">
+                    <div class="lb-lot-sky" style="width:30%; height:60%"></div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink truncate">352 First Street</div>
+                    <div class="font-prose text-[12px] text-slate">West Hill · Albany 12206</div>
+                    <div class="font-meta font-medium text-[11px] text-slate mt-1">SBL 65.56-3-64 · $14,900</div>
+                  </div>
+                  <span class="inline-flex h-6 items-center px-2.5 rounded-full bg-sky/10 text-skydeep font-prose text-[12px] font-semibold shrink-0">ACLB Rehab</span>
+                </div>
+                <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mt-2 text-center">row mode · plate thumbnail left</div>
+              </div>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-4">The parcel plate is a theme-registered <span class="font-meta text-[11px]">columnType</span> fed by the recorded lot width × length — not a new section component. Hatch color follows the status system.</p>
+          </div>
+        </div>
+
+        <!-- Pills -->
+        <div class="col-span-12 lg:col-span-7 p-3" data-dms-section="pills">
+          <div class="lb-card p-6 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Pill — the status system, rendered</div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-5 flex flex-wrap items-center gap-2">
+              <span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest font-prose text-[12px] font-semibold">For Sale</span>
+              <span class="inline-flex h-6 items-center px-2.5 rounded-full bg-sky/10 text-skydeep font-prose text-[12px] font-semibold">ACLB Rehab</span>
+              <span class="inline-flex h-6 items-center px-2.5 rounded-full bg-amber/10 text-amberdeep font-prose text-[12px] font-semibold">Sale Pending</span>
+              <span class="inline-flex h-6 items-center px-2.5 rounded-full bg-violet/10 text-violetdeep font-prose text-[12px] font-semibold">Co-Development</span>
+              <span class="inline-flex h-6 items-center px-2.5 rounded-full bg-steel/10 text-slate font-prose text-[12px] font-semibold">In Process</span>
+              <span class="inline-flex h-6 items-center px-2.5 rounded-full bg-rose/10 text-rosedeep font-prose text-[12px] font-semibold">On Hold</span>
+              <span class="inline-flex h-6 items-center px-2.5 rounded-full bg-ink/5 text-slate font-prose text-[12px] font-semibold">Sold</span>
+              <span class="inline-flex h-6 items-center gap-1.5 px-2.5 rounded-full bg-white border border-ink/10 text-slate font-meta font-medium text-[10px] uppercase tracking-[0.12em]"><!-- icon: Tag --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8l10 10-8 8L3 11V3Z"/><circle cx="8" cy="8" r="1.5"/></svg>neutral tag</span>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-4">Tinted ground at /10, deep text pair, no border. The same seven colors drive map pins, donut slices, and bars — one meaning per color, everywhere.</p>
+          </div>
+        </div>
+
+        <!-- Pagination + Logo -->
+        <div class="col-span-12 lg:col-span-5 p-3" data-dms-section="pagination-logo">
+          <div class="lb-card p-6 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Pagination · Logo</div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-5 space-y-5">
+              <div class="flex items-center gap-1">
+                <span class="size-8 rounded border border-ink/15 flex items-center justify-center text-mist"><!-- icon: ChevronRight --><svg class="size-4 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+                <span class="size-8 rounded bg-skydeep text-white font-prose text-[12px] font-semibold flex items-center justify-center">1</span>
+                <span class="size-8 rounded border border-ink/15 text-slate font-prose text-[12px] font-semibold flex items-center justify-center">2</span>
+                <span class="size-8 rounded border border-ink/15 text-slate font-prose text-[12px] font-semibold flex items-center justify-center">3</span>
+                <span class="font-meta text-[11px] text-mist px-1">…</span>
+                <span class="size-8 rounded border border-ink/15 text-slate font-prose text-[12px] font-semibold flex items-center justify-center">132</span>
+                <span class="size-8 rounded border border-ink/15 flex items-center justify-center text-slate"><!-- icon: ChevronRight --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+              </div>
+              <div class="flex flex-wrap items-center gap-4">
+                <span class="bg-white border border-ink/10 rounded-md px-3 py-2"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-8 w-auto"/></span>
+                <span class="bg-ink rounded-md px-3 py-2 inline-flex"><span class="bg-white rounded px-2 py-1"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-6 w-auto"/></span></span>
+              </div>
+              <p class="font-prose text-[12px] text-slate">On dark grounds the logo always sits in a white chip — the mark is never recolored. Clearspace: half the badge height on all sides. Full icon registry lives on <a href="theme.html#icons" class="font-semibold text-skydeep">theme.html</a>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ § 05 · RICH CONTENT ═══ -->
+  <div class="w-full lb-paper py-12" data-dms-group="content">
+    <div class="mx-auto w-full max-w-[1240px] px-6">
+      <div class="p-3" data-dms-section="rich-header">
+        <div class="flex items-center gap-2.5 mb-2"><span class="size-2 bg-leaf"></span><span class="font-meta font-medium text-[11px] uppercase tracking-[0.16em] text-skydeep">§ 05</span></div>
+        <h2 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Rich content</h2>
+      </div>
+      <div class="grid grid-cols-12 gap-0">
+
+        <!-- Lexical -->
+        <div class="col-span-12 lg:col-span-6 p-3" data-dms-section="lexical">
+          <div class="lb-card p-6 h-full">
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Lexical (rich text)</div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-5 bg-white">
+              <h1 class="font-display font-semibold text-[27px] leading-[1.15] text-ink">Disposition policy</h1>
+              <h2 class="font-display font-semibold text-[21px] leading-[1.2] text-ink mt-4">How lots are priced</h2>
+              <p class="font-prose text-[15px] leading-[1.65] text-slate mt-2">Pricing follows the <strong class="text-ink">published disposition policy</strong>, not negotiation. Most vacant lots list at <em>a few hundred dollars</em>; see the <a href="properties.html" class="font-semibold text-skydeep underline decoration-sky/40 underline-offset-2">for-sale list</a> for current asking prices.</p>
+              <ul class="font-prose text-[15px] leading-[1.65] text-slate mt-3 space-y-1 list-disc pl-5">
+                <li>Side lots: priority to adjacent owner-occupants</li>
+                <li>Buildings: priced from condition and appraisal</li>
+              </ul>
+              <blockquote class="border-l-2 border-leaf pl-4 italic font-prose text-[15px] leading-[1.65] text-slate mt-4">"Properties go to buyers with a plan — that's the point of a land bank."</blockquote>
+              <h3 class="font-display font-semibold text-[17px] leading-[1.3] text-ink mt-4">Record identifiers</h3>
+              <p class="font-prose text-[15px] leading-[1.65] text-slate mt-2">Parcels are keyed by SBL, e.g. <code class="font-meta font-medium text-[12.5px] bg-papertint rounded px-1.5 py-0.5 text-ink">76.49-6-65</code>:</p>
+              <pre class="font-meta font-medium text-[12.5px] leading-[1.6] bg-papertint rounded-md p-4 mt-2 text-ink overflow-x-auto">SBL   = section.block-lot
+76.49 = tax map section
+6-65  = block 6 · lot 65</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table + graphs -->
+        <div class="col-span-12 lg:col-span-6 p-3" data-dms-section="table-graphs">
+          <div class="lb-card p-6 h-full flex flex-col gap-5">
+            <div>
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Table (Spreadsheet)</div>
+              <div class="rounded-md border border-ink/10 overflow-hidden">
+                <table class="w-full">
+                  <thead>
+                    <tr class="border-b border-ink/10 bg-papertint/60">
+                      <th class="text-left px-3 py-2 font-prose text-[12px] font-semibold text-slate"><span class="inline-flex items-center gap-1">Parcel <!-- icon: ChevronDown --><svg class="size-3 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></th>
+                      <th class="text-left px-3 py-2 font-prose text-[12px] font-semibold text-slate">Address</th>
+                      <th class="text-left px-3 py-2 font-prose text-[12px] font-semibold text-slate">Status</th>
+                      <th class="text-right px-3 py-2 font-prose text-[12px] font-semibold text-slate">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody class="font-prose text-[13px]">
+                    <tr class="border-b border-ink/5"><td class="px-3 py-2 font-meta font-medium text-[11px] text-skydeep">76.49-6-65</td><td class="px-3 py-2 font-semibold text-ink">49 Park Avenue</td><td class="px-3 py-2"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span></td><td class="px-3 py-2 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$5,000</td></tr>
+                    <tr class="border-b border-ink/5 bg-papertint/30"><td class="px-3 py-2 font-meta font-medium text-[11px] text-skydeep">65.66-1-36</td><td class="px-3 py-2 font-semibold text-ink">185 Colonie Street</td><td class="px-3 py-2"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-amber/10 text-amberdeep text-[12px] font-semibold">Sale Pending</span></td><td class="px-3 py-2 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$600</td></tr>
+                    <tr class="bg-sky/[0.04]"><td class="px-3 py-2 font-meta font-medium text-[11px] text-skydeep">65.74-3-13</td><td class="px-3 py-2 font-semibold text-ink">64 Third Street</td><td class="px-3 py-2"><span class="inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest text-[12px] font-semibold">For Sale</span></td><td class="px-3 py-2 text-right font-meta font-medium text-[12px] text-ink tabular-nums">$3,000</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mt-2">sortable header · alternating rows · hover row (last) · mono numerals</div>
+            </div>
+            <div>
+              <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink mb-4">Graph</div>
+              <div class="grid grid-cols-3 gap-3">
+                <div class="rounded-md border border-ink/10 p-3">
+                  <!-- decorative — mini bar chart -->
+                  <svg viewBox="0 0 120 80" class="w-full"><g fill="#0AA7E4"><rect x="6" y="46" width="16" height="26" rx="1"/><rect x="28" y="18" width="16" height="54" rx="1"/><rect x="50" y="30" width="16" height="42" rx="1"/><rect x="72" y="10" width="16" height="62" rx="1"/><rect x="94" y="38" width="16" height="34" rx="1"/></g><line x1="0" y1="72" x2="120" y2="72" stroke="rgba(22,35,44,0.2)"/></svg>
+                  <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mt-2 text-center">bars · sky</div>
+                </div>
+                <div class="rounded-md border border-ink/10 p-3">
+                  <!-- decorative — mini horizontal bars -->
+                  <svg viewBox="0 0 120 80" class="w-full"><g fill="#4C9129"><rect x="0" y="8" width="104" height="10" rx="1"/><rect x="0" y="26" width="66" height="10" rx="1"/><rect x="0" y="44" width="42" height="10" rx="1"/><rect x="0" y="62" width="20" height="10" rx="1"/></g></svg>
+                  <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mt-2 text-center">ranked bars · field</div>
+                </div>
+                <div class="rounded-md border border-ink/10 p-3 flex flex-col items-center">
+                  <!-- decorative — mini donut -->
+                  <svg viewBox="0 0 80 80" class="w-16"><g transform="rotate(-90 40 40)"><circle cx="40" cy="40" r="30" fill="none" stroke="#4C9129" stroke-width="12" stroke-dasharray="56.8 188.5"/><circle cx="40" cy="40" r="30" fill="none" stroke="#0AA7E4" stroke-width="12" stroke-dasharray="54 188.5" stroke-dashoffset="-56.8"/><circle cx="40" cy="40" r="30" fill="none" stroke="#E0940B" stroke-width="12" stroke-dasharray="35 188.5" stroke-dashoffset="-110.8"/><circle cx="40" cy="40" r="30" fill="none" stroke="#D5DEE2" stroke-width="12" stroke-dasharray="42.7 188.5" stroke-dashoffset="-145.8"/></g></svg>
+                  <div class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist mt-2 text-center">donut · status colors</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map -->
+        <div class="col-span-12 p-3" data-dms-section="map-primitive">
+          <div class="lb-card p-6">
+            <div class="flex items-baseline justify-between mb-4"><span class="font-display font-semibold text-[17px] leading-[1.3] text-ink">Map</span><span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">used on: properties dashboard</span></div>
+            <div class="rounded-md bg-papertint/60 border border-ink/5 p-5">
+              <div class="lb-card overflow-hidden max-w-2xl">
+                <div class="px-4 py-3 border-b border-ink/10 flex items-center justify-between">
+                  <span class="font-display font-semibold text-[17px] text-ink">Where the inventory is</span>
+                  <span class="font-meta font-medium text-[9.5px] uppercase tracking-[0.14em] text-mist">176 geocoded</span>
+                </div>
+                <div class="lb-plate relative h-44">
+                  <!-- decorative — map panel treatment -->
+                  <svg viewBox="0 0 600 176" class="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice">
+                    <path d="M 520 -4 C 512 50 500 90 470 176" fill="none" stroke="#0AA7E4" stroke-opacity="0.22" stroke-width="14" stroke-linecap="round"/>
+                    <g stroke="#FFFFFF" stroke-width="1.2"><circle cx="290" cy="80" r="4" fill="#55A430"/><circle cx="302" cy="92" r="4" fill="#55A430"/><circle cx="318" cy="74" r="4" fill="#0AA7E4"/><circle cx="330" cy="96" r="4" fill="#0AA7E4"/><circle cx="345" cy="84" r="4" fill="#E0940B"/><circle cx="270" cy="104" r="4" fill="#8B6FC7"/><circle cx="356" cy="108" r="4" fill="#8195A1"/></g>
+                    <text x="300" y="130" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="10" letter-spacing="0.1em" fill="#475A66" style="paint-order:stroke" stroke="#F0F4F2" stroke-width="3">SOUTH END</text>
+                  </svg>
+                  <!-- zoom controls -->
+                  <div class="absolute top-3 right-3 bg-white rounded-md border border-ink/10 shadow-sm overflow-hidden">
+                    <span class="size-8 flex items-center justify-center text-ink border-b border-ink/10"><!-- icon: Plus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+                    <span class="size-8 flex items-center justify-center text-ink"><!-- icon: Minus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg></span>
+                  </div>
+                  <!-- popup -->
+                  <div class="absolute left-6 top-4 w-48 bg-white rounded-md border border-ink/10 shadow-lg p-3">
+                    <div class="font-display font-semibold text-[17px] leading-[1.3] text-ink">110 Alexander St</div>
+                    <div class="font-meta font-medium text-[11px] text-slate mt-0.5">SBL 76.64-2-6 · $600</div>
+                    <span class="mt-1.5 inline-flex h-6 items-center px-2.5 rounded-full bg-field/10 text-forest font-prose text-[12px] font-semibold">For Sale</span>
+                  </div>
+                </div>
+                <div class="px-4 py-2.5 border-t border-ink/10 flex flex-wrap gap-x-4 gap-y-1">
+                  <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-slate"><span class="size-2.5 rounded-full bg-field"></span>For Sale</span>
+                  <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-slate"><span class="size-2.5 rounded-full bg-sky"></span>ACLB Rehab</span>
+                  <span class="inline-flex items-center gap-1.5 font-prose text-[12px] font-semibold text-slate"><span class="size-2.5 rounded-full bg-amber"></span>Sale Pending</span>
+                </div>
+              </div>
+            </div>
+            <p class="font-prose text-[12px] text-slate mt-4">Container, header, legend, zoom stack, and popover are themed; tiles come from the platform. Pin colors are the status system — never per-page palettes.</p>
+          </div>
+        </div>
+
+        <!-- closing note -->
+        <div class="col-span-12 p-3" data-dms-section="closing-note">
+          <div class="rounded-md border border-ink/10 bg-papertint/60 p-5 flex gap-3">
+            <!-- icon: Info --><svg class="size-5 shrink-0 text-skydeep mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8.5v.5"/></svg>
+            <p class="font-prose text-[13.5px] leading-[1.55] text-slate">Primitives this theme isn't designed <em>for</em> (audio/video players, calendars) still inherit the neutral recipes above — paper surfaces, ink/10 borders, Public Sans — so nothing renders as unstyled platform default. The parcel plate is the one custom column type this theme registers; it is not a new section component.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER · doc index ═══ -->
+  <footer class="w-full lb-plat-ink mt-auto" data-dms-group="footer">
+    <div class="mx-auto w-full max-w-[1240px] px-6 py-10">
+      <div class="flex flex-col md:flex-row md:items-center gap-6 justify-between">
+        <div class="flex items-center gap-4">
+          <div class="bg-white rounded-md px-3 py-2"><img src="../assets/aclb-logo.png" alt="Albany County Land Bank Corporation" class="h-8 w-auto"/></div>
+          <div>
+            <div class="font-display font-semibold text-[17px] leading-[1.3] text-white">Design System</div>
+            <div class="font-meta text-[9.5px] uppercase tracking-[0.14em] text-white/50">v0.1 · primitive catalogue · 2026</div>
+          </div>
+        </div>
+        <nav class="flex flex-wrap gap-x-6 gap-y-2 font-prose text-[12px] font-semibold text-white/70">
+          <a href="theme.html" class="hover:text-white">1 · Theme</a>
+          <a href="layouts.html" class="hover:text-white">2 · Layouts</a>
+          <a href="grid.html" class="hover:text-white">3 · Grid</a>
+          <a href="components.html" class="text-leaf">4 · Components</a>
+          <a href="patterns.html" class="hover:text-white">5 · Patterns</a>
+          <span class="text-white/30">·</span>
+          <a href="../pages/home.html" class="hover:text-white">Home</a>
+          <a href="../pages/about.html" class="hover:text-white">About</a>
+          <a href="../pages/properties.html" class="hover:text-white">Properties</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- floating design-system navigation widget (documentation scaffolding — never ships) -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Public Sans',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:8px;padding:12px 0;min-width:210px;box-shadow:0 4px 20px rgba(22,35,44,0.18);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:0 16px 8px;border-bottom:1px solid rgba(22,35,44,0.08);margin-bottom:4px;">ACLB Design System</div>
+    <a href="theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">1</span>Theme</a>
+    <a href="layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">2</span>Layouts</a>
+    <a href="grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">3</span>Grid</a>
+    <a href="components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#0A6E99;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">4</span>Components</a>
+    <a href="patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">5</span>Patterns</a>
+    <div style="height:1px;background:rgba(22,35,44,0.08);margin:6px 0;"></div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Home</a>
+    <a href="../pages/about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>About</a>
+    <a href="../pages/properties.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Properties</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:8px;background:#16232C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.25);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

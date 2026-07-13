@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tessera v6 · 1/5 · Theme — tokens</title>
+<!-- apply stored light/dark choice before first paint -->
+<script>(function(){try{var t=localStorage.getItem("t6-theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: {
+    paper:"var(--t-paper)", panel:"var(--t-panel)", well:"var(--t-well)",
+    ink:"var(--t-ink)", graphite:"var(--t-graphite)", pencil:"var(--t-pencil)",
+    rule:"var(--t-rule)", ruleStrong:"var(--t-rule-strong)",
+    cobalt:"var(--t-cobalt)", cobaltDeep:"var(--t-cobalt-deep)", cobaltSoft:"var(--t-cobalt-soft)", accentInk:"var(--t-accent-ink)",
+    marker:"var(--t-marker)", markerSoft:"var(--t-marker-soft)",
+    go:"var(--t-go)", goSoft:"var(--t-go-soft)", amber:"var(--t-amber)", amberSoft:"var(--t-amber-soft)",
+    brick:"var(--t-brick)", brickSoft:"var(--t-brick-soft)",
+    board:"var(--t-board)", board2:"var(--t-board-2)", chalk:"var(--t-chalk)", chalkDim:"var(--t-chalk-dim)",
+    scrim:"var(--t-scrim)",
+  },
+  fontFamily: {
+    display:['"IBM Plex Sans"',"system-ui","sans-serif"], sans:['"IBM Plex Sans"',"system-ui","sans-serif"],
+    mono:['"IBM Plex Mono"',"ui-monospace","monospace"], note:["Caveat",'"Segoe Print"',"cursive"],
+  },
+  boxShadow: { lift:"var(--t-shadow-lift)", drag:"var(--t-shadow-drag)" },
+  maxWidth: { content:"1200px", measure:"640px" },
+}}};
+</script>
+<link rel="stylesheet" href="../_shared.css"/>
+</head>
+
+<body class="dms-annotated text-ink font-sans">
+<!-- ═══ Layout: app — the product chrome (SideNav + slim TopNav) ═══ -->
+<div data-dms-layout="app" class="min-h-screen">
+  <div class="flex min-h-screen">
+
+    <!-- SideNav (Layout app) — doubles as design-system navigation -->
+    <aside class="hidden lg:flex w-60 flex-none flex-col border-r border-rule">
+      <div class="h-14 flex items-center gap-2.5 px-5 border-b border-rule">
+        <!-- icon: Tile -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-cobalt" aria-hidden="true"><path d="M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3" opacity="0.45"/><rect x="9.8" y="9.8" width="7.4" height="7.4" rx="1.5" transform="rotate(-6 13.5 13.5)"/><path d="M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2"/></svg>
+        <span class="t-displaySM">tessera</span>
+        <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">v6</span>
+      </div>
+      <nav class="flex-1 overflow-y-auto py-5 px-3">
+        <div class="t-metaXS text-pencil px-2 pb-2">design system</div>
+        <!-- active level-1 item -->
+        <a href="theme.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md bg-cobaltSoft text-cobalt t-proseSM font-medium">
+          <!-- icon: Sparkle -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 4l1.8 5.2L19 11l-5.2 1.8L12 18l-1.8-5.2L5 11l5.2-1.8L12 4Z"/><path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/></svg>
+          Theme — tokens</a>
+        <!-- level-2: on-page anchors of the active item -->
+        <div class="ml-4 border-l border-rule my-1">
+          <a href="#color" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Color</a>
+          <a href="#type" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Type</a>
+          <a href="#icons" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Icons</a>
+          <a href="#space" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Space &amp; shape</a>
+          <a href="#motion" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Motion</a>
+          <a href="#texture" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">The sheet</a>
+          <a href="#dark" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Dark mode</a>
+          <a href="#voice" class="block pl-4 py-1 t-proseSM text-graphite hover:text-ink">Voice</a>
+        </div>
+        <a href="layouts.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Layout -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9h17M9.5 9v11.5"/></svg>
+          Layouts</a>
+        <a href="grid.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Grid -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M3.5 9h17M3.5 15h17M9 3.5v17M15 3.5v17"/></svg>
+          Grid</a>
+        <a href="components.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Card -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M7 14.5h6"/></svg>
+          Components</a>
+        <a href="patterns.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Layers -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 3.5l8.5 4.5L12 12.5 3.5 8 12 3.5Z"/><path d="M3.5 12.5L12 17l8.5-4.5"/><path d="M3.5 17L12 21.5 20.5 17"/></svg>
+          Patterns</a>
+        <div class="t-metaXS text-pencil px-2 pt-5 pb-2">example pages</div>
+        <a href="../pages/beta-landing.html" class="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-graphite hover:text-ink hover:bg-well t-proseSM">
+          <!-- icon: Rocket -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 16.5c-1.5-.4-3-1.9-3.4-3.4C9.5 8 12.5 4.5 18 4c-.5 5.5-4 8.5-6 9.5v3Z"/><circle cx="14.5" cy="7.5" r="1.2"/><path d="M8.5 13.5c-1.8.3-3 2.7-3 5 2.3 0 4.7-1.2 5-3"/></svg>
+          Beta landing</a>
+      </nav>
+      <div class="px-5 py-4 border-t border-rule">
+        <p class="t-metaXS text-pencil">graph paper · light+dark</p>
+      </div>
+    </aside>
+
+    <!-- content column -->
+    <div class="flex-1 min-w-0 flex flex-col">
+      <!-- TopNav (Layout app): breadcrumb + counter + mode toggle -->
+      <header class="h-14 flex-none border-b border-rule flex items-center gap-3 px-5 lg:px-8">
+        <span class="t-metaMD text-graphite">design-system</span>
+        <span class="t-metaMD text-pencil">/</span>
+        <span class="t-metaMD text-cobalt">theme.html</span>
+        <span class="flex-1"></span>
+        <span class="t-metaSM text-pencil">1 / 5</span>
+        <button onclick="var r=document.documentElement;var d=r.getAttribute('data-theme')==='dark';if(d){r.removeAttribute('data-theme')}else{r.setAttribute('data-theme','dark')}try{localStorage.setItem('t6-theme',d?'light':'dark')}catch(e){}" aria-label="Toggle dark mode" class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite hover:text-ink hover:border-ruleStrong">
+          <span class="t6-when-light"><!-- icon: Moon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></span>
+          <span class="t6-when-dark"><!-- icon: Sun -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6L17 7M7 17l-1.4 1.4M18.4 18.4L17 17M7 7L5.6 5.6"/></svg></span>
+        </button>
+      </header>
+
+      <main class="flex-1">
+
+        <!-- ═══ LayoutGroup: header band ═══ -->
+        <div data-dms-group="header" class="w-full border-b border-rule relative">
+          <span class="t6-joint" style="left:-3.5px;bottom:-3.5px;"></span>
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="page-title" class="col-span-12 p-3">
+                <p class="t-metaSM text-cobalt">tessera design system · v6 · graph paper</p>
+                <h1 class="t-displayXL mt-3">Theme — tokens</h1>
+                <p class="t-proseLG text-graphite mt-4 max-w-measure">The brand's vocabulary before it composes into anything: thirteen
+                  named colors in two lamps (light and dark), fifteen type tokens in four voices, a drawn icon set, and the 24px sheet
+                  that appears where sections land. If a token is missing here, it's missing everywhere.</p>
+                <p class="t-noteLG text-graphite mt-4 -rotate-1 inline-block">every color is a CSS variable — flip the moon up top and watch nothing break ↗</p>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 01 · Color ═══ -->
+        <div id="color" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="color-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">01 · color</p>
+                <h2 class="t-displayLG mt-2">Two lamps, one drawer of names</h2>
+                <p class="t-prose text-graphite mt-3 max-w-measure">Desk-drawer names, never numbered steps. Each token is a custom
+                  property (<span class="t-metaMD">--t-paper</span>, <span class="t-metaMD">--t-cobalt</span>, …) with a light and a
+                  dark value; utility classes stay identical in both modes. <span class="font-medium text-ink">Cobalt is the only
+                  accent that speaks</span> — marker highlights, go/amber/brick are status, everything else is neutral.</p>
+              </section>
+
+              <!-- core palette swatches -->
+              <section data-dms-section="color-swatches" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <!-- one tile per token: swatch + name + both hexes + role -->
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-paper)"></div><p class="t-metaMD mt-2">paper</p><p class="t-metaXS text-pencil mt-0.5">#F6F5F0 · #131417</p><p class="t-proseXS text-graphite">page background</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-panel)"></div><p class="t-metaMD mt-2">panel</p><p class="t-metaXS text-pencil mt-0.5">#FFFFFF · #1B1D23</p><p class="t-proseXS text-graphite">cards, raised surfaces</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-well)"></div><p class="t-metaMD mt-2">well</p><p class="t-metaXS text-pencil mt-0.5">#EFEEE6 · #17181D</p><p class="t-proseXS text-graphite">recessed strips</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-ink)"></div><p class="t-metaMD mt-2">ink</p><p class="t-metaXS text-pencil mt-0.5">#181A1F · #EDEDE7</p><p class="t-proseXS text-graphite">primary text</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-graphite)"></div><p class="t-metaMD mt-2">graphite</p><p class="t-metaXS text-pencil mt-0.5">#50545C · #A8ABB4</p><p class="t-proseXS text-graphite">secondary text</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-pencil)"></div><p class="t-metaMD mt-2">pencil</p><p class="t-metaXS text-pencil mt-0.5">#8F929A · #6B6F78</p><p class="t-proseXS text-graphite">muted · meta only</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-rule)"></div><p class="t-metaMD mt-2">rule</p><p class="t-metaXS text-pencil mt-0.5">#E2E0D6 · #2A2D34</p><p class="t-proseXS text-graphite">hairlines, borders</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-cobalt)"></div><p class="t-metaMD mt-2">cobalt</p><p class="t-metaXS text-pencil mt-0.5">#0A46D8 · #7B9CFF</p><p class="t-proseXS text-graphite">THE accent</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-marker)"></div><p class="t-metaMD mt-2">marker</p><p class="t-metaXS text-pencil mt-0.5">#FFE84A · #F5D90A</p><p class="t-proseXS text-graphite">highlighter swipes</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-go)"></div><p class="t-metaMD mt-2">go</p><p class="t-metaXS text-pencil mt-0.5">#1F8A4C · #4CC38A</p><p class="t-proseXS text-graphite">success</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-amber)"></div><p class="t-metaMD mt-2">amber</p><p class="t-metaXS text-pencil mt-0.5">#B97516 · #F0B354</p><p class="t-proseXS text-graphite">warning</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-brick)"></div><p class="t-metaMD mt-2">brick</p><p class="t-metaXS text-pencil mt-0.5">#CA3214 · #F2665A</p><p class="t-proseXS text-graphite">danger</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-board)"></div><p class="t-metaMD mt-2">board</p><p class="t-metaXS text-pencil mt-0.5">#15171C · #0C0D10</p><p class="t-proseXS text-graphite">code panes, dark bands</p></div>
+                    <div><div class="h-16 rounded-md border border-rule" style="background:var(--t-chalk)"></div><p class="t-metaMD mt-2">chalk</p><p class="t-metaXS text-pencil mt-0.5">#E9EAEE · #E9EAEE</p><p class="t-proseXS text-graphite">text on board</p></div>
+                    <div><div class="h-16 rounded-md border border-rule t6-hatch" style="background-color:var(--t-paper)"></div><p class="t-metaMD mt-2">(hatch)</p><p class="t-metaXS text-pencil mt-0.5">rule @ 45°</p><p class="t-proseXS text-graphite">gutter texture, not a color</p></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- soft companions + status pills -->
+              <section data-dms-section="color-soft" class="col-span-12 lg:col-span-6 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <h3 class="t-displaySM">Soft companions</h3>
+                  <p class="t-proseSM text-graphite mt-1">var() colors can't take Tailwind slash-opacity — translucent fills are their own tokens.</p>
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="t-metaSM px-2.5 py-1 rounded-full bg-cobaltSoft text-cobalt">cobaltSoft</span>
+                    <span class="t-metaSM px-2.5 py-1 rounded-full bg-markerSoft text-ink">markerSoft</span>
+                    <span class="t-metaSM px-2.5 py-1 rounded-full bg-goSoft text-go">goSoft</span>
+                    <span class="t-metaSM px-2.5 py-1 rounded-full bg-amberSoft text-amber">amberSoft</span>
+                    <span class="t-metaSM px-2.5 py-1 rounded-full bg-brickSoft text-brick">brickSoft</span>
+                  </div>
+                  <h3 class="t-displaySM mt-6">Status mapping</h3>
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-goSoft text-go"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>published</span>
+                    <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-amberSoft text-amber"><span class="w-1.5 h-1.5 rounded-full bg-amber"></span>draft</span>
+                    <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-brickSoft text-brick"><span class="w-1.5 h-1.5 rounded-full bg-brick"></span>failed</span>
+                    <span class="inline-flex items-center gap-1.5 t-metaSM px-2.5 py-1 rounded-full bg-cobaltSoft text-cobalt"><span class="w-1.5 h-1.5 rounded-full bg-cobalt"></span>info / beta</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- chart series -->
+              <section data-dms-section="color-series" class="col-span-12 lg:col-span-6 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <h3 class="t-displaySM">Chart series</h3>
+                  <p class="t-proseSM text-graphite mt-1">Five series, in order. Series 1 is always cobalt; graphite is the comparison/context series.</p>
+                  <div class="mt-4 flex items-end gap-2 h-24">
+                    <div class="flex-1 rounded-t-sm bg-cobalt" style="height:88%"></div>
+                    <div class="flex-1 rounded-t-sm bg-go" style="height:64%"></div>
+                    <div class="flex-1 rounded-t-sm bg-amber" style="height:52%"></div>
+                    <div class="flex-1 rounded-t-sm bg-brick" style="height:38%"></div>
+                    <div class="flex-1 rounded-t-sm bg-graphite" style="height:26%"></div>
+                  </div>
+                  <div class="mt-2 grid grid-cols-5 t-metaXS text-pencil text-center">
+                    <span>1 cobalt</span><span>2 go</span><span>3 amber</span><span>4 brick</span><span>5 graphite</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- contrast table -->
+              <section data-dms-section="color-contrast" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 overflow-x-auto">
+                  <h3 class="t-displaySM">Measured contrast (WCAG)</h3>
+                  <table class="mt-4 w-full min-w-[560px] text-left">
+                    <thead>
+                      <tr class="border-b border-rule">
+                        <th class="t-metaSM text-pencil py-2 pr-4 font-medium">pair</th>
+                        <th class="t-metaSM text-pencil py-2 pr-4 font-medium">light</th>
+                        <th class="t-metaSM text-pencil py-2 pr-4 font-medium">dark</th>
+                        <th class="t-metaSM text-pencil py-2 font-medium">verdict</th>
+                      </tr>
+                    </thead>
+                    <tbody class="t-proseSM">
+                      <tr class="border-b border-rule"><td class="py-2 pr-4">ink / paper</td><td class="py-2 pr-4 tabular-nums">15.6 : 1</td><td class="py-2 pr-4 tabular-nums">15.0 : 1</td><td class="py-2 text-go">AAA — body text</td></tr>
+                      <tr class="border-b border-rule"><td class="py-2 pr-4">graphite / paper</td><td class="py-2 pr-4 tabular-nums">7.0 : 1</td><td class="py-2 pr-4 tabular-nums">7.1 : 1</td><td class="py-2 text-go">AAA — secondary text</td></tr>
+                      <tr class="border-b border-rule"><td class="py-2 pr-4">cobalt / paper</td><td class="py-2 pr-4 tabular-nums">7.4 : 1</td><td class="py-2 pr-4 tabular-nums">6.7 : 1</td><td class="py-2 text-go">AA+ — links carry text</td></tr>
+                      <tr class="border-b border-rule"><td class="py-2 pr-4">go / paper</td><td class="py-2 pr-4 tabular-nums">4.7 : 1</td><td class="py-2 pr-4 tabular-nums">7.6 : 1</td><td class="py-2 text-go">AA — status text ≥14px</td></tr>
+                      <tr class="border-b border-rule"><td class="py-2 pr-4">brick / paper</td><td class="py-2 pr-4 tabular-nums">5.0 : 1</td><td class="py-2 pr-4 tabular-nums">6.0 : 1</td><td class="py-2 text-go">AA — status text ≥14px</td></tr>
+                      <tr class="border-b border-rule"><td class="py-2 pr-4">amber / paper</td><td class="py-2 pr-4 tabular-nums">4.5 : 1</td><td class="py-2 pr-4 tabular-nums">8.6 : 1</td><td class="py-2 text-amber">AA at 4.5 exactly — pair with an icon</td></tr>
+                      <tr class="border-b border-rule"><td class="py-2 pr-4">chalk / board</td><td class="py-2 pr-4 tabular-nums">14.7 : 1</td><td class="py-2 pr-4 tabular-nums">16.5 : 1</td><td class="py-2 text-go">AAA — code panes</td></tr>
+                      <tr><td class="py-2 pr-4">pencil / paper</td><td class="py-2 pr-4 tabular-nums">3.1 : 1</td><td class="py-2 pr-4 tabular-nums">3.9 : 1</td><td class="py-2 text-brick">fails body — metaXS labels &amp; placeholders only</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 02 · Type ═══ -->
+        <div id="type" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="type-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">02 · type</p>
+                <h2 class="t-displayLG mt-2">Fifteen tokens, four voices</h2>
+                <p class="t-prose text-graphite mt-3 max-w-measure"><span class="font-medium text-ink">IBM Plex Sans</span> carries display and
+                  prose — Zed's own family (Zed Plex is customized IBM Plex); display is weight and tracking, not a second face.
+                  <span class="font-medium text-ink">IBM Plex Mono</span> is the chrome voice: eyebrows, badges, code, tables of fact.
+                  <span class="font-medium text-ink">Caveat</span> is the margin voice — handwritten notes from the builder, rationed,
+                  never UI. Modifier axes (color, italic, tabular-nums, uppercase) are applied at the call site and never mint tokens.</p>
+              </section>
+
+              <!-- display role -->
+              <section data-dms-section="type-display" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 space-y-6">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">display — IBM Plex Sans, 600, tight</h3>
+                    <span class="t-metaSM text-pencil">5 tokens</span>
+                  </div>
+                  <div><p class="t-metaSM text-cobalt">displayHero</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Sans 64 / 1.05 · 600 · −0.03em · (42 under 768px)</p><p class="t-displayHero mt-2">I'm building a website builder.</p></div>
+                  <div><p class="t-metaSM text-cobalt">displayXL</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Sans 44 / 1.08 · 600 · −0.025em</p><p class="t-displayXL mt-2">Sections snap to the sheet</p></div>
+                  <div><p class="t-metaSM text-cobalt">displayLG</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Sans 30 / 1.15 · 600 · −0.02em</p><p class="t-displayLG mt-2">Everything is a tile on graph paper</p></div>
+                  <div><p class="t-metaSM text-cobalt">displayMD</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Sans 22 / 1.25 · 600 · −0.015em</p><p class="t-displayMD mt-2">Bind a card to live data in two clicks</p></div>
+                  <div><p class="t-metaSM text-cobalt">displaySM</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Sans 17 / 1.35 · 600 · −0.01em</p><p class="t-displaySM mt-2">Card titles, panel headers, this line</p></div>
+                  <p class="t-proseSM text-graphite border-t border-rule pt-3">Folded, not minted: a 24px section header (use displayMD),
+                    a semibold stat number (displayLG + tabular-nums), white-on-board headings (display* + text-chalk).</p>
+                </div>
+              </section>
+
+              <!-- prose role -->
+              <section data-dms-section="type-prose" class="col-span-12 lg:col-span-6 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 space-y-5 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">prose — IBM Plex Sans 400</h3>
+                    <span class="t-metaSM text-pencil">4 tokens</span>
+                  </div>
+                  <div><p class="t-metaSM text-cobalt">proseLG</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Sans 18.5 / 1.6 · 400</p><p class="t-proseLG mt-2">Ledes and hero subcopy. You drag sections onto a grid, wire them to real data, and hit publish.</p></div>
+                  <div><p class="t-metaSM text-cobalt">prose</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Sans 16 / 1.65 · 400 · the body default</p><p class="t-prose mt-2">Body text. Every page is a stack of bands; every band is a grid of tiles; every tile is something an author configured, not something a developer coded.</p></div>
+                  <div><p class="t-metaSM text-cobalt">proseSM</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Sans 14 / 1.55 · 400</p><p class="t-proseSM mt-2">Card copy, nav items, table cells, captions under illustrations.</p></div>
+                  <div><p class="t-metaSM text-cobalt">proseXS</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Sans 12.5 / 1.5 · 400</p><p class="t-proseXS mt-2">Fine print, swatch roles, footnotes.</p></div>
+                  <p class="t-proseSM text-graphite border-t border-rule pt-3">Folded: secondary body is prose + text-graphite (not a token);
+                    quotes are prose + italic; table numerals are proseSM + tabular-nums.</p>
+                </div>
+              </section>
+
+              <!-- meta + note roles -->
+              <section data-dms-section="type-meta" class="col-span-12 lg:col-span-6 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 space-y-5 h-full">
+                  <div class="flex items-baseline justify-between border-b border-rule pb-2">
+                    <h3 class="t-displaySM">meta — IBM Plex Mono · note — Caveat</h3>
+                    <span class="t-metaSM text-pencil">4 + 2 tokens</span>
+                  </div>
+                  <div><p class="t-metaSM text-cobalt">metaLG</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Mono 14.5 / 1.7 · 400 · code blocks</p><div class="t6-board rounded-md p-3 mt-2"><p class="t-metaLG text-chalk">npx tessera new my-site</p></div></div>
+                  <div><p class="t-metaSM text-cobalt">metaMD</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Mono 13 / 1.5 · 500 · breadcrumbs, inline code</p><p class="t-metaMD mt-2">sections/graph · cols 4–9 · bound to traffic_counts</p></div>
+                  <div><p class="t-metaSM text-cobalt">metaSM</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Mono 11.5 / 1.4 · 500 · +0.06em · caps · eyebrows, badges</p><p class="t-metaSM mt-2 text-graphite">hey — you got the link</p></div>
+                  <div><p class="t-metaSM text-cobalt">metaXS</p><p class="t-metaXS text-pencil mt-0.5">IBM Plex Mono 10 / 1.3 · 500 · +0.08em · caps · icon names, rulers</p><p class="t-metaXS mt-2 text-pencil">col 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12</p></div>
+                  <div class="border-t border-rule pt-4">
+                    <div><p class="t-metaSM text-cobalt">noteLG</p><p class="t-metaXS text-pencil mt-0.5">Caveat 21 / 1.3 · 600 · margin annotations</p><p class="t-noteLG mt-2 -rotate-1">this table is live data — try sorting it</p></div>
+                    <div class="mt-3"><p class="t-metaSM text-cobalt">noteMD</p><p class="t-metaXS text-pencil mt-0.5">Caveat 17 / 1.3 · 600 · small callouts</p><p class="t-noteMD mt-1 rotate-1">free while it's a beta</p></div>
+                  </div>
+                  <p class="t-proseSM text-graphite border-t border-rule pt-3">Note rules: ≤ 3 notes per page, always graphite or cobalt,
+                    always slightly rotated (±1–2°), never for anything a user must read to operate the page.</p>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 03 · Icons ═══ -->
+        <div id="icons" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="icons-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">03 · icons</p>
+                <h2 class="t-displayLG mt-2">Drawn, round-capped, 1.5px</h2>
+                <p class="t-prose text-graphite mt-3 max-w-measure">~55 glyphs on a 24px grid, round caps and joins — friendlier than a
+                  drafting pen strictly allows, on purpose. The registry lives in <span class="t-metaMD">theme/icons.js</span>; these
+                  names are the API. An unregistered name renders nothing on a live site.</p>
+              </section>
+              <section data-dms-section="icons-catalog" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-8 gap-x-2 gap-y-5 text-center">
+                    <div><span class="inline-block text-ink"><!-- icon: Tile --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4 9.5h6M4 14.5h6M9.5 4v6M14.5 4v3" opacity="0.45"/><rect x="9.8" y="9.8" width="7.4" height="7.4" rx="1.5" transform="rotate(-6 13.5 13.5)"/><path d="M17.5 17.5l3 3M20.5 20.5l-1.2-.2M20.5 20.5l-.2-1.2"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Tile</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Grid --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M3.5 9h17M3.5 15h17M9 3.5v17M15 3.5v17"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Grid</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Layout --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9h17M9.5 9v11.5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Layout</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Layers --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M12 3.5l8.5 4.5L12 12.5 3.5 8 12 3.5Z"/><path d="M3.5 12.5L12 17l8.5-4.5"/><path d="M3.5 17L12 21.5 20.5 17"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Layers</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Columns --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="3.5" y="4.5" width="5" height="15" rx="1.5"/><rect x="10.5" y="4.5" width="5" height="15" rx="1.5"/><rect x="17.5" y="4.5" width="3" height="15" rx="1.5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Columns</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Card --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M7 14.5h6"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Card</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Table --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M12 4.5v15"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Table</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Graph --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M7.5 16v-4M12 16V8M16.5 16v-6.5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Graph</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Map --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M9 4.5L4 6.5v13l5-2 6 2 5-2v-13l-5 2-6-2Z"/><path d="M9 4.5v13M15 6.5v13"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Map</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Text --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M5 6.5V5h14v1.5M12 5v14M9.5 19h5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Text</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Image --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M6 19l5-5 3.5 3.5L17 15l3.5 3.5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Image</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Filter --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4 5.5h16L14 12.5v5.5l-4 2v-7.5L4 5.5Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Filter</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Database --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M5 6.5C5 4.8 8.1 3.5 12 3.5s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3Z"/><path d="M5 6.5v11c0 1.7 3.1 3 7 3s7-1.3 7-3v-11"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Database</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg></span><p class="t-metaXS text-pencil mt-1.5">GripVertical</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Cursor --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M5.5 4.5l6 15 2-6.5 6.5-2-14.5-6.5Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Cursor</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Plus --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Plus</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Minus --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M5 12h14"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Minus</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: X --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span><p class="t-metaXS text-pencil mt-1.5">X</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Check --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Check</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Pencil</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Trash --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4.5h5V6M6.5 6.5l.8 13h9.4l.8-13M10 10.5v5M14 10.5v5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Trash</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Copy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M5.5 15.5h-1a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Copy</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: LinkIcon --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3.1-3.1a4 4 0 0 0-5.6-5.6L11.5 7"/><path d="M14 10a4 4 0 0 0-5.7 0l-3.1 3.1a4 4 0 0 0 5.6 5.6l1.7-1.7"/></svg></span><p class="t-metaXS text-pencil mt-1.5">LinkIcon</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Search --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15.5 15.5L20 20"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Search</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Settings --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="12" cy="12" r="2.5"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4L6 18M18 18l-1.6-1.6M7.6 7.6L6 6"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Settings</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Publish --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 16V8M8.5 11.5L12 8l3.5 3.5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Publish</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Upload --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M12 15V4.5M8 8.5L12 4.5l4 4"/><path d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Upload</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Download --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M12 4.5V15M8 11.5l4 4 4-4"/><path d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Download</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Play --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M8 5.5v13l10-6.5-10-6.5Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Play</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Eye</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: EyeOff --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4 4l16 16"/><path d="M9.9 5.9A9.4 9.4 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.7 3.4M6.6 6.6A16.4 16.4 0 0 0 2.5 12S6 18.5 12 18.5a9 9 0 0 0 3.4-.7"/></svg></span><p class="t-metaXS text-pencil mt-1.5">EyeOff</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Menu --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Menu</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: ChevronDown --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></span><p class="t-metaXS text-pencil mt-1.5">ChevronDown</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: ChevronUp --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M6 14.5l6-6 6 6"/></svg></span><p class="t-metaXS text-pencil mt-1.5">ChevronUp</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></span><p class="t-metaXS text-pencil mt-1.5">ChevronRight</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: ChevronLeft --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M14.5 6l-6 6 6 6"/></svg></span><p class="t-metaXS text-pencil mt-1.5">ChevronLeft</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: ArrowRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4.5 12h15M13.5 6l6 6-6 6"/></svg></span><p class="t-metaXS text-pencil mt-1.5">ArrowRight</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: ArrowLeft --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M19.5 12h-15M10.5 6l-6 6 6 6"/></svg></span><p class="t-metaXS text-pencil mt-1.5">ArrowLeft</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: ArrowUpRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M6.5 17.5l11-11M8.5 6.5h9v9"/></svg></span><p class="t-metaXS text-pencil mt-1.5">ArrowUpRight</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Info --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.9" fill="currentColor" stroke="none"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Info</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Alert --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M12 4L2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.5"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Alert</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Bug --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="12" cy="13.5" r="5"/><path d="M9.5 9.5C9.5 8 10.5 6.5 12 6.5s2.5 1.5 2.5 3"/><path d="M7 13.5H3.5M20.5 13.5H17M8.2 10.2L5.5 7.5M15.8 10.2l2.7-2.7M8.2 16.8L5.5 19.5M15.8 16.8l2.7 2.7M12 8.5v10"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Bug</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Wrench --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 1 5-1.4l-3 3 .4 3 3 .4 3-3a4 4 0 0 1-5.6 5.1L9 21.9a2 2 0 0 1-2.8-2.8l8.3-7.6a4 4 0 0 1 0-5Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Wrench</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Sparkle --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M12 4l1.8 5.2L19 11l-5.2 1.8L12 18l-1.8-5.2L5 11l5.2-1.8L12 4Z"/><path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Sparkle</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Zap --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M13 3.5L5 13.5h6l-1 7 8-10h-6l1-7Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Zap</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Heart --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M12 19.5S4 14.5 4 9.5a4.2 4.2 0 0 1 8-1.8A4.2 4.2 0 0 1 20 9.5c0 5-8 10-8 10Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Heart</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Star --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M12 4.5l2.2 4.9 5.3.5-4 3.6 1.2 5.2L12 16l-4.7 2.7 1.2-5.2-4-3.6 5.3-.5L12 4.5Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Star</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Bell --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M6 16.5v-6a6 6 0 0 1 12 0v6l1.5 2h-15L6 16.5Z"/><path d="M10.5 20.5a1.6 1.6 0 0 0 3 0"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Bell</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Lock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Lock</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: User --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 19.5c1.2-3 3.8-4.5 7-4.5s5.8 1.5 7 4.5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">User</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Users --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="9.5" cy="9" r="3.2"/><path d="M3.5 19c1-2.7 3.2-4 6-4s5 1.3 6 4"/><path d="M15.5 6.2a3.2 3.2 0 0 1 0 5.6M17.5 15.3c1.6.6 2.6 1.8 3 3.7"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Users</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Mail --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 6.5l8 6.5 8-6.5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Mail</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Calendar --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3.5v4M16 3.5v4"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Calendar</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Clock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.5"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Clock</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Terminal --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M7 9l3 3-3 3M12.5 15.5H17"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Terminal</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Globe --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5S14.4 18.2 12 20.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Globe</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Sun --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6L17 7M7 17l-1.4 1.4M18.4 18.4L17 17M7 7L5.6 5.6"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Sun</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Moon --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Moon</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Rocket --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M12 16.5c-1.5-.4-3-1.9-3.4-3.4C9.5 8 12.5 4.5 18 4c-.5 5.5-4 8.5-6 9.5v3Z"/><circle cx="14.5" cy="7.5" r="1.2"/><path d="M8.5 13.5c-1.8.3-3 2.7-3 5 2.3 0 4.7-1.2 5-3"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Rocket</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Home --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M4.5 11L12 4.5 19.5 11"/><path d="M6.5 9.5v10h11v-10"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Home</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: File --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M6.5 3.5h7l4 4v13h-11v-17Z"/><path d="M13.5 3.5v4h4"/></svg></span><p class="t-metaXS text-pencil mt-1.5">File</p></div>
+                    <div><span class="inline-block text-ink"><!-- icon: Folder --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mx-auto" aria-hidden="true"><path d="M3.5 6.5a1 1 0 0 1 1-1h5l2 2.5h8a1 1 0 0 1 1 1v9.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-12Z"/></svg></span><p class="t-metaXS text-pencil mt-1.5">Folder</p></div>
+                  </div>
+                  <p class="t-proseSM text-graphite border-t border-rule mt-6 pt-4">Add an icon: register in <span class="t-metaMD">theme/icons.js</span>, add a tile here, tag every page use
+                    <span class="t-metaMD">&lt;!-- icon: Name --&gt;</span>, re-run <span class="t-metaMD">icons-audit.mjs --brand tessera-v6</span>. Inline art that isn't an icon is tagged <span class="t-metaMD">&lt;!-- decorative --&gt;</span>.</p>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 04 · Space & shape ═══ -->
+        <div id="space" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="space-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">04 · space &amp; shape</p>
+                <h2 class="t-displayLG mt-2">The 24px cell sets the rhythm</h2>
+              </section>
+              <section data-dms-section="space-scale" class="col-span-12 lg:col-span-7 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <h3 class="t-displaySM">Spacing steps</h3>
+                  <p class="t-proseSM text-graphite mt-1">Tailwind steps snapped to the sheet: gutters are p-3 (12px, half a cell); band padding is py-12 (two cells).</p>
+                  <div class="mt-5 space-y-2.5">
+                    <div class="flex items-center gap-3"><span class="t-metaSM text-pencil w-14">p-1</span><div class="h-4 bg-cobaltSoft border border-cobalt rounded-sm" style="width:4px"></div><span class="t-proseXS text-graphite">4px · icon gaps</span></div>
+                    <div class="flex items-center gap-3"><span class="t-metaSM text-pencil w-14">p-2</span><div class="h-4 bg-cobaltSoft border border-cobalt rounded-sm" style="width:8px"></div><span class="t-proseXS text-graphite">8px · chip padding</span></div>
+                    <div class="flex items-center gap-3"><span class="t-metaSM text-pencil w-14">p-3</span><div class="h-4 bg-cobaltSoft border border-cobalt rounded-sm" style="width:12px"></div><span class="t-proseXS text-graphite">12px · THE section gutter</span></div>
+                    <div class="flex items-center gap-3"><span class="t-metaSM text-pencil w-14">p-4</span><div class="h-4 bg-cobaltSoft border border-cobalt rounded-sm" style="width:16px"></div><span class="t-proseXS text-graphite">16px · compact card padding</span></div>
+                    <div class="flex items-center gap-3"><span class="t-metaSM text-pencil w-14">p-6</span><div class="h-4 bg-cobaltSoft border border-cobalt rounded-sm" style="width:24px"></div><span class="t-proseXS text-graphite">24px · one cell — default card padding</span></div>
+                    <div class="flex items-center gap-3"><span class="t-metaSM text-pencil w-14">p-8</span><div class="h-4 bg-cobaltSoft border border-cobalt rounded-sm" style="width:32px"></div><span class="t-proseXS text-graphite">32px · roomy card padding</span></div>
+                    <div class="flex items-center gap-3"><span class="t-metaSM text-pencil w-14">py-12</span><div class="h-4 bg-cobaltSoft border border-cobalt rounded-sm" style="width:48px"></div><span class="t-proseXS text-graphite">48px · band padding (two cells)</span></div>
+                    <div class="flex items-center gap-3"><span class="t-metaSM text-pencil w-14">py-20</span><div class="h-4 bg-cobaltSoft border border-cobalt rounded-sm" style="width:80px"></div><span class="t-proseXS text-graphite">80px · hero band padding</span></div>
+                  </div>
+                </div>
+              </section>
+              <section data-dms-section="space-radius" class="col-span-12 lg:col-span-5 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <h3 class="t-displaySM">Radius &amp; elevation</h3>
+                  <div class="mt-5 flex gap-4">
+                    <div class="text-center"><div class="w-16 h-16 border border-ruleStrong rounded-md bg-well mx-auto"></div><p class="t-metaXS text-pencil mt-2">md · 6px<br/>controls</p></div>
+                    <div class="text-center"><div class="w-16 h-16 border border-ruleStrong rounded-lg bg-well mx-auto"></div><p class="t-metaXS text-pencil mt-2">lg · 8px<br/>cards</p></div>
+                    <div class="text-center"><div class="w-16 h-16 border border-ruleStrong rounded-full bg-well mx-auto"></div><p class="t-metaXS text-pencil mt-2">pill<br/>badges</p></div>
+                  </div>
+                  <p class="t-proseSM text-graphite mt-5 border-t border-rule pt-4"><span class="font-medium text-ink">Borders over shadows.</span> Depth is a 1px rule; hover sharpens it to ruleStrong and lifts 1px with shadow-lift. The deep shadow-drag belongs to exactly one moment: a section being dragged.</p>
+                  <div class="mt-4 flex gap-4">
+                    <div class="flex-1 border border-rule rounded-lg p-3 t6-lift bg-panel"><p class="t-metaSM text-graphite">hover me</p><p class="t-proseXS text-pencil">t6-lift</p></div>
+                    <div class="flex-1 border border-rule rounded-lg p-3 t6-drag bg-panel"><p class="t-metaSM text-graphite">mid-drag</p><p class="t-proseXS text-pencil">t6-drag</p></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 05 · Motion ═══ -->
+        <div id="motion" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="motion-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">05 · motion</p>
+                <h2 class="t-displayLG mt-2">Fast, small, and one blink</h2>
+              </section>
+              <section data-dms-section="motion-spec" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 overflow-x-auto">
+                  <table class="w-full min-w-[560px] text-left">
+                    <thead><tr class="border-b border-rule">
+                      <th class="t-metaSM text-pencil py-2 pr-4 font-medium">token</th>
+                      <th class="t-metaSM text-pencil py-2 pr-4 font-medium">value</th>
+                      <th class="t-metaSM text-pencil py-2 font-medium">used for</th></tr></thead>
+                    <tbody class="t-proseSM">
+                      <tr class="border-b border-rule"><td class="py-2 pr-4 t-metaMD">standard</td><td class="py-2 pr-4 t-metaMD">150ms ease-out</td><td class="py-2">hovers, focus, panel open/close — everything</td></tr>
+                      <tr class="border-b border-rule"><td class="py-2 pr-4 t-metaMD">caret blink</td><td class="py-2 pr-4 t-metaMD">1.1s steps(1)</td><td class="py-2">the hero caret — the ONE permitted loop</td></tr>
+                      <tr class="border-b border-rule"><td class="py-2 pr-4 t-metaMD">lift</td><td class="py-2 pr-4 t-metaMD">translateY(-1px)</td><td class="py-2">card hover; never scale, never bounce</td></tr>
+                      <tr><td class="py-2 pr-4 t-metaMD">reduced motion</td><td class="py-2 pr-4 t-metaMD">all → 0.01ms</td><td class="py-2">caret parks solid; nothing else remains</td></tr>
+                    </tbody>
+                  </table>
+                  <p class="t-prose mt-4">Live demo of the caret: <span class="t-displayMD t6-caret">type here</span></p>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 06 · The sheet (texture & furniture) ═══ -->
+        <div id="texture" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="texture-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">06 · the sheet</p>
+                <h2 class="t-displayLG mt-2">Graph paper, grain, and drafting furniture</h2>
+                <p class="t-prose text-graphite mt-3 max-w-measure">The page is plain paper with a fine grain (feTurbulence, in
+                  <span class="t-metaMD">_shared.css</span>). The 24px graph grid is <span class="font-medium text-ink">rationed</span>:
+                  hero and CTA bands get the fading sheet, editor canvases and demo surfaces get the full sheet, everything else stays
+                  paper. Everywhere, the grid is wallpaper; where sections land, it's the drafting sheet.</p>
+              </section>
+              <section data-dms-section="texture-furniture" class="col-span-12 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="border border-rule rounded-lg overflow-hidden"><div class="h-24 relative bg-paper"><div class="t6-sheet-fade"></div></div><div class="p-3"><p class="t-metaSM">t6-sheet-fade</p><p class="t-proseXS text-graphite mt-1">hero/CTA overlay — the grid dissolves into paper</p></div></div>
+                    <div class="border border-rule rounded-lg overflow-hidden"><div class="h-24 t6-sheet"></div><div class="p-3"><p class="t-metaSM">t6-sheet</p><p class="t-proseXS text-graphite mt-1">the grid surface, embeddable in panels</p></div></div>
+                    <div class="border border-rule rounded-lg overflow-hidden"><div class="h-24 t6-hatch bg-paper"></div><div class="p-3"><p class="t-metaSM">t6-hatch</p><p class="t-proseXS text-graphite mt-1">45° hatching, the raw material of strips and dividers</p></div></div>
+                    <div class="border border-rule rounded-lg overflow-hidden"><div class="h-24 bg-paper flex items-stretch justify-center gap-3 py-2"><!-- decorative --><div class="w-4 t6-hatch border-x border-rule"></div><div class="w-4 t6-backhatch border-x border-rule"></div><div class="w-4 t6-dashes border-x border-rule"></div><div class="w-4 t6-ticks border-x border-rule"></div><div class="w-4 t6-rungs border-x border-rule"></div></div><div class="p-3"><p class="t-metaSM">edge patterns</p><p class="t-proseXS text-graphite mt-1">hatch · backhatch · dashes · ticks · rungs — one flavor per marketing band, 16px at the viewport edge</p></div></div>
+                    <div class="border border-rule rounded-lg overflow-hidden"><div class="h-24 bg-paper flex items-center px-4"><div class="t6-divider"></div></div><div class="p-3"><p class="t-metaSM">t6-divider</p><p class="t-proseXS text-graphite mt-1">hatched band separator, square joint tiles at its ends</p></div></div>
+                    <div class="border border-rule rounded-lg overflow-hidden"><div class="h-24 bg-paper relative"><!-- decorative --><div class="absolute inset-x-4 top-1/2 border-t border-rule"></div><span class="t6-joint" style="top:calc(50% - 3.5px);left:12px"></span><span class="t6-joint" style="top:calc(50% - 3.5px);right:12px"></span></div><div class="p-3"><p class="t-metaSM">t6-joint</p><p class="t-proseXS text-graphite mt-1">a 7px square tile pinned where rules meet — the joints of the sheet</p></div></div>
+                    <div class="border border-rule rounded-lg overflow-hidden"><div class="h-24 flex items-center justify-center bg-paper"><p class="t-displaySM">the <span class="t6-mark">important bit</span>, marked</p></div><div class="p-3"><p class="t-metaSM">t6-mark</p><p class="t-proseXS text-graphite mt-1">highlighter swipe — ≤ 2 per band</p></div></div>
+                  </div>
+                  <p class="t-proseSM text-graphite border-t border-rule mt-6 pt-4">Usage rules: the grid appears on at most two bands per page — heroes/CTAs via the fading sheet, plus any true canvas (editor, demo surfaces); never as a page-wide background. Hatched t6-dividers separate marketing bands (Layout default); product pages stay quiet. Every marketing band carries ONE edge pattern connecting its dividers — hero/CTA keep the hatch, content bands rotate backhatch/dashes/ticks/rungs, the board band uses chalk ticks. The sticky TopNav carries the hatch rails too — the header rides the rails as the page scrolls. Joint squares sit only where rules meet. Always 16px at the viewport edge, never wider, never inside cards. Marker never touches UI controls — it's annotation, not state.
+                    The handwritten note voice follows the same rule: margins, not chrome.</p>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 07 · Dark mode ═══ -->
+        <div id="dark" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="dark-lede" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">07 · dark mode</p>
+                <h2 class="t-displayLG mt-2">The desk lamp off</h2>
+              </section>
+              <section data-dms-section="dark-mech" class="col-span-12 lg:col-span-7 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <h3 class="t-displaySM">One markup, two lamps</h3>
+                  <p class="t-prose text-graphite mt-2">Every color utility resolves to a custom property, so dark mode is
+                    <span class="t-metaMD">data-theme="dark"</span> on <span class="t-metaMD">&lt;html&gt;</span> — no
+                    <span class="t-metaMD">dark:</span> variants, no second markup. The toggle stores the choice in
+                    <span class="t-metaMD">localStorage["t6-theme"]</span>; an early head script applies it before first paint;
+                    unset falls back to <span class="t-metaMD">prefers-color-scheme</span>.</p>
+                  <div class="t6-board rounded-md p-4 mt-4">
+                    <p class="t-metaLG text-chalk">&lt;html data-theme="dark"&gt;   <span class="text-chalkDim">// that's the whole API</span></p>
+                  </div>
+                </div>
+              </section>
+              <section data-dms-section="dark-rules" class="col-span-12 lg:col-span-5 p-3">
+                <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+                  <h3 class="t-displaySM">Rules that change in the dark</h3>
+                  <ul class="mt-3 space-y-2 t-proseSM text-graphite">
+                    <li class="flex gap-2"><span class="text-cobalt">·</span>cobalt lightens to #7B9CFF so links keep AA</li>
+                    <li class="flex gap-2"><span class="text-cobalt">·</span>marker drops to a 28% film — highlighter on black paper</li>
+                    <li class="flex gap-2"><span class="text-cobalt">·</span>grid lines flip to chalk at 4.5%; grain stays</li>
+                    <li class="flex gap-2"><span class="text-cobalt">·</span>board bands keep their own tokens — they don't invert</li>
+                    <li class="flex gap-2"><span class="text-cobalt">·</span>shadows deepen; borders still do the depth work</li>
+                  </ul>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ 08 · Voice ═══ -->
+        <div id="voice" data-dms-group="content" class="w-full border-b border-rule">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-12">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="voice" class="col-span-12 p-3">
+                <p class="t-metaSM text-pencil">08 · voice</p>
+                <h2 class="t-displayLG mt-2">A friend showing you a thing they made</h2>
+                <div class="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-0">
+                  <div class="bg-panel border border-rule rounded-lg lg:rounded-r-none p-6">
+                    <p class="t-metaSM text-go">say</p>
+                    <ul class="mt-3 space-y-2 t-prose">
+                      <li>"I'm building a website builder. Want to break it?"</li>
+                      <li>"Publish puts your draft live. That's it."</li>
+                      <li>"Maps are slow on big datasets right now — working on it."</li>
+                    </ul>
+                  </div>
+                  <div class="bg-panel border border-rule rounded-lg lg:rounded-l-none lg:border-l-0 p-6">
+                    <p class="t-metaSM text-brick">don't say</p>
+                    <ul class="mt-3 space-y-2 t-prose text-graphite">
+                      <li>"Unlock the power of composable content infrastructure."</li>
+                      <li>"Submit" (say what happens: "Save draft", "Publish")</li>
+                      <li>"Oops! Something went wrong 😅" (say what broke and what to do)</li>
+                    </ul>
+                  </div>
+                </div>
+                <p class="t-prose text-graphite mt-4 max-w-measure">Sentence case everywhere, including headlines. Plain verbs. Numbers
+                  are real numbers. Errors name the problem and the fix. The beta admits what's broken — the "known rough edges" band
+                  is a brand pattern, not an apology.</p>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- footer link block -->
+        <div data-dms-group="footer" class="w-full">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-8">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="footer-links" class="col-span-12 p-3">
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+                  <span class="t-metaSM text-pencil">tessera design system · v6</span>
+                  <a href="theme.html" class="t-metaSM text-cobalt">1 theme</a>
+                  <a href="layouts.html" class="t-metaSM text-graphite hover:text-ink">2 layouts</a>
+                  <a href="grid.html" class="t-metaSM text-graphite hover:text-ink">3 grid</a>
+                  <a href="components.html" class="t-metaSM text-graphite hover:text-ink">4 components</a>
+                  <a href="patterns.html" class="t-metaSM text-graphite hover:text-ink">5 patterns</a>
+                  <a href="../pages/beta-landing.html" class="t-metaSM text-graphite hover:text-ink">beta landing ↗</a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

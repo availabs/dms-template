@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Data-Driven Page Templates (v2 · faithful)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-800': '#243240', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B', 'mny-ora': '#EA8954',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <style>
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; background: #edf0f2; }
+
+    /* section type annotation */
+    .ds-label {
+      font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #6D96AE;
+      padding: 3px 8px; background: #E0EBF0; border-radius: 3px;
+      display: inline-block; margin-bottom: 10px;
+    }
+    .ds-label-inv {
+      font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #C5D7E0;
+      padding: 3px 8px; background: rgba(109,150,174,0.22); border-radius: 3px;
+      display: inline-block; margin-bottom: 10px;
+    }
+    /* page shell */
+    .page-mock {
+      background: #F3F8F9; border: 1px solid #C5D7E0;
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    /* status_badge column type  */
+    .badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+             padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+    .b-done   { background: rgba(84,185,155,0.14);   color: #2a8c6c; }
+    .b-prog   { background: rgba(58,121,191,0.13);   color: #2a5f99; }
+    .b-prop   { background: rgba(234,173,67,0.16);   color: #8a5e0a; }
+    .b-disc   { background: rgba(221,82,76,0.12);    color: #aa2e26; }
+    .b-na     { background: rgba(109,150,174,0.14);  color: #37576B; }
+  </style>
+</head>
+<body class="py-10 px-4 sm:px-8">
+
+<!-- ════ PAGE HEADER ════════════════════════════════════════════════════════ -->
+<div class="max-w-[900px] mx-auto mb-10">
+  <p class="font-display text-[11px] font-[500] text-mny-400 uppercase tracking-[0.16em] mb-1">
+    Page Template Layouts · Data-Driven · v2 faithful
+  </p>
+  <h1 class="font-display text-[30px] font-[600] text-mny-900 uppercase tracking-[-0.01em] mb-2">Templates 4 &amp; 5</h1>
+  <p class="font-proxima text-[13px] text-mny-400 max-w-[640px] leading-[1.6]">
+    Each section mock shows exactly what a DMS section type renders.
+    <strong class="text-mny-700">Richtext</strong> = Lexical editor output.
+    <strong class="text-mny-700">Graph</strong> = DMS Graph section (recharts BarGraph, colours from the default div7 palette).
+    <strong class="text-mny-700">Spreadsheet</strong> = DMS Spreadsheet section; status column uses the new
+    <code class="text-mny-700 font-[600]">status_badge</code> column type.
+  </p>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     TEMPLATE 4 — ACTIONS DASHBOARD
+     Groups:  header (darkSection band)  +  content
+     Sections:
+       [header] Rich Text (full)           — title + date authored by user
+       [content] Graph (full)              — BarGraph · implementation_status × count
+       [content] Spreadsheet (full)        — actions_revised · status_badge on status col
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="max-w-[900px] mx-auto mb-14">
+
+  <div class="flex items-baseline gap-3 mb-3">
+    <h2 class="font-display text-[22px] font-[500] text-mny-900 uppercase tracking-[0.02em]">4 — Actions Dashboard</h2>
+    <span class="font-proxima text-[12px] text-mny-400">darkSection header · Graph · Spreadsheet</span>
+  </div>
+  <p class="font-proxima text-[12px] text-mny-400 mb-4">
+    Source: <code class="font-[600] text-mny-700">actions_revised</code> (internal).
+    Graph section: X = <code>implementation_status</code>, Y = count (fn: count).
+    Spreadsheet: <code>control</code>, <code>action_name</code>, <code>county</code>,
+    <code>primary_hazard_type</code>, <code>implementation_status</code> (status_badge),
+    <code>cost_range</code>, <code>mitigation_action_readiness</code>.
+  </p>
+
+  <div class="page-mock">
+
+    <!-- ── [header group] darkSection band ─────────────────────────────────
+         layoutGroup style: "darkSection"
+         wrapper1: dark topo-gradient background
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div class="relative px-10 py-9"
+         style="background:linear-gradient(0deg,rgba(33,52,64,.96),rgba(55,87,107,.96)),url('https://mitigateny.org/themes/mny/topolines.png') center/500px;">
+      <span class="ds-label-inv">Rich Text · header group · darkSection band</span>
+      <div class="relative z-10">
+        <!-- This is Lexical output — the author types this content -->
+        <p class="font-display text-[11px] font-[500] text-mny-y700 uppercase tracking-[0.18em] mb-2">
+          Hazard Mitigation Actions · New York State
+        </p>
+        <!-- h1 from textSettings -->
+        <h1 class="font-display text-[42px] font-[600] text-white uppercase tracking-[-0.01em] leading-[1.05] mb-3">
+          Actions Dashboard
+        </h1>
+        <p style="color:#C5D7E0; font-size:14px; line-height:1.65; max-width:520px;">
+          Status breakdown across all submitted mitigation actions.
+          Filter by county, hazard type, or funding status to narrow the view.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── [content group] Graph — full width ───────────────────────────────
+         Section type: Graph
+         Config: graphType=BarGraph, orientation=vertical, groupMode=stacked
+                 X-axis: implementation_status
+                 Y-axis: 1 as count, fn=count
+         Colors: default div7 palette (first colour ≈ #6baed6)
+         This mock matches how the DMS Graph component renders.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div class="bg-white border-b border-mny-100 px-8 py-7">
+      <span class="ds-label">Graph section · full width · BarGraph · implementation_status × count</span>
+
+      <!-- Graph section shell: white bg, title, then the chart area -->
+      <div class="rounded-lg overflow-hidden" style="border:1px solid #E0EBF0;">
+        <div class="px-4 pt-4 pb-0">
+          <!-- Graph title (configured in Graph section display settings) -->
+          <p class="font-proxima text-[13px] font-[600] text-mny-900 mb-1">Actions by Implementation Status</p>
+        </div>
+
+        <!-- SVG bar chart — matches DMS recharts BarGraph visual output -->
+        <svg viewBox="0 0 820 240" class="w-full" style="height:240px;" xmlns="http://www.w3.org/2000/svg">
+          <!-- White background -->
+          <rect x="0" y="0" width="820" height="240" fill="white"/>
+
+          <!-- Y-axis grid lines (showGridLines:true on yAxis) -->
+          <line x1="80" y1="20"  x2="800" y2="20"  stroke="#E5E7EB" stroke-width="1"/>
+          <line x1="80" y1="60"  x2="800" y2="60"  stroke="#E5E7EB" stroke-width="1"/>
+          <line x1="80" y1="100" x2="800" y2="100" stroke="#E5E7EB" stroke-width="1"/>
+          <line x1="80" y1="140" x2="800" y2="140" stroke="#E5E7EB" stroke-width="1"/>
+          <line x1="80" y1="180" x2="800" y2="180" stroke="#E5E7EB" stroke-width="1"/>
+
+          <!-- Y-axis labels -->
+          <text x="72" y="24"  font-family="Source Sans 3,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="end">900</text>
+          <text x="72" y="64"  font-family="Source Sans 3,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="end">675</text>
+          <text x="72" y="104" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="end">450</text>
+          <text x="72" y="144" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="end">225</text>
+          <text x="72" y="184" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="end">0</text>
+
+          <!-- Y-axis baseline -->
+          <line x1="80" y1="180" x2="800" y2="180" stroke="#D1D5DB" stroke-width="1"/>
+
+          <!-- Bars — div7 palette first colour: #6baed6 -->
+          <!-- Completed: 743/900 × 160 = 132px tall -->
+          <rect x="120" y="48"  width="80" height="132" fill="#6baed6" rx="2"/>
+          <text x="160" y="198" font-family="Source Sans 3,sans-serif" font-size="10" fill="#6B7280" text-anchor="middle">Completed</text>
+
+          <!-- In-Progress: 891/900 × 160 = 158px -->
+          <rect x="260" y="22"  width="80" height="158" fill="#6baed6" rx="2"/>
+          <text x="300" y="198" font-family="Source Sans 3,sans-serif" font-size="10" fill="#6B7280" text-anchor="middle">In-Progress</text>
+
+          <!-- Proposed: 634/900 × 160 = 113px -->
+          <rect x="400" y="67"  width="80" height="113" fill="#6baed6" rx="2"/>
+          <text x="440" y="198" font-family="Source Sans 3,sans-serif" font-size="10" fill="#6B7280" text-anchor="middle">Proposed</text>
+
+          <!-- Disc./Paused: 189/900 × 160 = 34px -->
+          <rect x="540" y="146" width="80" height="34"  fill="#6baed6" rx="2"/>
+          <text x="580" y="198" font-family="Source Sans 3,sans-serif" font-size="10" fill="#6B7280" text-anchor="middle">Disc./Paused</text>
+
+          <!-- NA: 390/900 × 160 = 69px -->
+          <rect x="680" y="111" width="80" height="69"  fill="#6baed6" rx="2"/>
+          <text x="720" y="198" font-family="Source Sans 3,sans-serif" font-size="10" fill="#6B7280" text-anchor="middle">NA</text>
+
+          <!-- X-axis label below -->
+          <text x="440" y="222" font-family="Source Sans 3,sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle">implementation_status</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ── [content group] Spreadsheet — full width ──────────────────────────
+         Section type: Spreadsheet
+         Columns: control, action_name, county, primary_hazard_type,
+                  implementation_status [type: status_badge], cost_range,
+                  mitigation_action_readiness
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div class="px-8 py-7 bg-mny-50">
+      <span class="ds-label">Spreadsheet section · full width · status_badge column type on implementation_status</span>
+      <table class="w-full" style="border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #C5D7E0;">
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-3 whitespace-nowrap">#</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-3">Action Name</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-3 whitespace-nowrap">County</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-3 whitespace-nowrap">Primary Hazard</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-3 whitespace-nowrap">Status</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-right py-2 pr-3 whitespace-nowrap">Cost Range</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 whitespace-nowrap">Readiness</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="bg-white hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[11px] text-mny-400 py-2.5 pr-3">1041</td>
+            <td class="font-proxima text-[12px] font-[600] text-mny-900 py-2.5 pr-3">Flood Control Culvert Upgrade – Route 9</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Dutchess</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Flooding</td>
+            <td class="py-2.5 pr-3"><span class="badge b-prog">In-Progress</span></td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3 text-right">$500K–$1M</td>
+            <td class="font-proxima text-[11px] text-mny-700 py-2.5">HMP Review Ready</td>
+          </tr>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="bg-white hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[11px] text-mny-400 py-2.5 pr-3">1042</td>
+            <td class="font-proxima text-[12px] font-[600] text-mny-900 py-2.5 pr-3">Green Infrastructure Study – North Shore</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Nassau</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Coastal Hazards</td>
+            <td class="py-2.5 pr-3"><span class="badge b-done">Completed</span></td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3 text-right">$150K–$500K</td>
+            <td class="font-proxima text-[11px] text-mny-700 py-2.5">HMP Review Approved</td>
+          </tr>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="bg-white hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[11px] text-mny-400 py-2.5 pr-3">1043</td>
+            <td class="font-proxima text-[12px] font-[600] text-mny-900 py-2.5 pr-3">Emergency Generator Retrofit – Critical Care</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Erie</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Extreme Heat</td>
+            <td class="py-2.5 pr-3"><span class="badge b-prop">Proposed</span></td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3 text-right">$50K–$150K</td>
+            <td class="font-proxima text-[11px] text-mny-700 py-2.5">Solution Defined</td>
+          </tr>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="bg-white hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[11px] text-mny-400 py-2.5 pr-3">1044</td>
+            <td class="font-proxima text-[12px] font-[600] text-mny-900 py-2.5 pr-3">Shoreline Stabilization – Lake Ontario</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Monroe</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Flooding</td>
+            <td class="py-2.5 pr-3"><span class="badge b-prog">In-Progress</span></td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3 text-right">$1M–$2M</td>
+            <td class="font-proxima text-[11px] text-mny-700 py-2.5">Ready for BRIC</td>
+          </tr>
+          <tr class="bg-white hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[11px] text-mny-400 py-2.5 pr-3">1045</td>
+            <td class="font-proxima text-[12px] font-[600] text-mny-900 py-2.5 pr-3">Wildfire Ordinance Update – Southern Tier</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Broome</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Wildfire</td>
+            <td class="py-2.5 pr-3"><span class="badge b-disc">Discontinued/Paused</span></td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3 text-right">$10K–$50K</td>
+            <td class="font-proxima text-[11px] text-mny-700 py-2.5">Problem Identified</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /page-mock -->
+</div><!-- /template 4 -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     TEMPLATE 5 — HAZARD EVENT ANALYSIS
+     Groups:  content only
+     Sections:
+       [content] Rich Text (full)           — hazard title + intro
+       [content] Spreadsheet (½ left)       — fusion_events_v2 table
+       [content] Graph (½ right)            — BarGraph horizontal · action_category_json × count
+       [content] Spreadsheet (full)         — actions_revised filtered · status_badge
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="max-w-[900px] mx-auto mb-14">
+
+  <div class="flex items-baseline gap-3 mb-3">
+    <h2 class="font-display text-[22px] font-[500] text-mny-900 uppercase tracking-[0.02em]">5 — Hazard Event Analysis</h2>
+    <span class="font-proxima text-[12px] text-mny-400">Richtext · Spreadsheet (½) + Graph (½) · Spreadsheet (full)</span>
+  </div>
+  <p class="font-proxima text-[12px] text-mny-400 mb-4">
+    Sources: <code class="font-[600] text-mny-700">fusion_events_v2</code> (external · hazmit_dama pgenv) +
+    <code class="font-[600] text-mny-700">actions_revised</code> (internal).
+    Graph: horizontal BarGraph · X = <code>action_category_json</code>, Y = count.
+  </p>
+
+  <div class="page-mock">
+
+    <!-- ── [content] Rich Text — full width ─────────────────────────────────
+         Section type: Richtext (Lexical)
+         Band: lightCentered layoutGroup style (white card on light bg)
+         Author types the heading and intro text.
+         No custom graphic elements — only Lexical headings and paragraphs.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div class="px-10 py-8 border-b border-mny-100 bg-white">
+      <span class="ds-label">Rich Text · full width · Lexical editor output</span>
+      <!-- h2 rendered via textSettings.h2: "font-medium text-xl font-display" -->
+      <p class="font-display text-[11px] font-[500] text-mny-400 uppercase tracking-[0.18em] mb-2">Hazard Focus — Flooding</p>
+      <h1 class="font-display text-[36px] font-[600] text-mny-900 uppercase tracking-[-0.01em] leading-[1.1] mb-3">
+        Event Analysis: Flood Declarations
+      </h1>
+      <p class="font-proxima text-[14px] text-mny-700 leading-[1.75] max-w-[640px]">
+        Review of FEMA flood disaster declarations affecting New York State counties from 2015–2024,
+        cross-referenced with active mitigation actions in the state hazard mitigation action database.
+      </p>
+    </div>
+
+    <!-- ── Half-width row ────────────────────────────────────────────────── -->
+    <div class="flex border-b border-mny-100">
+
+      <!-- [content] Spreadsheet — ½ left ─────────────────────────────────
+           Section type: Spreadsheet · section span: ½
+           Source: fusion_events_v2 (external datasource, hazmit_dama pgenv)
+           Columns: declaration_number, designated_area, incident_begin_year, total_damage
+      ──────────────────────────────────────────────────────────────────── -->
+      <div class="flex-1 px-7 py-7 border-r border-mny-100 bg-white">
+        <span class="ds-label">Spreadsheet · ½ width · fusion_events_v2 (external)</span>
+        <table class="w-full" style="border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:2px solid #E0EBF0;">
+              <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-1.5 pr-2 whitespace-nowrap">Decl. #</th>
+              <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-1.5 pr-2">County</th>
+              <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-1.5 pr-2">Year</th>
+              <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-right py-1.5">Damage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #F3F8F9;">
+              <td class="font-proxima text-[11px] font-[600] text-mny-700 py-2 pr-2">DR-4754</td>
+              <td class="font-proxima text-[11px] text-mny-900 py-2 pr-2">Orange</td>
+              <td class="font-proxima text-[11px] text-mny-700 py-2 pr-2">2024</td>
+              <td class="font-proxima text-[11px] font-[600] text-mny-900 py-2 text-right">$18.3M</td>
+            </tr>
+            <tr style="border-bottom:1px solid #F3F8F9;">
+              <td class="font-proxima text-[11px] font-[600] text-mny-700 py-2 pr-2">DR-4754</td>
+              <td class="font-proxima text-[11px] text-mny-900 py-2 pr-2">Sullivan</td>
+              <td class="font-proxima text-[11px] text-mny-700 py-2 pr-2">2024</td>
+              <td class="font-proxima text-[11px] font-[600] text-mny-900 py-2 text-right">$7.1M</td>
+            </tr>
+            <tr style="border-bottom:1px solid #F3F8F9;">
+              <td class="font-proxima text-[11px] font-[600] text-mny-700 py-2 pr-2">DR-4690</td>
+              <td class="font-proxima text-[11px] text-mny-900 py-2 pr-2">Albany</td>
+              <td class="font-proxima text-[11px] text-mny-700 py-2 pr-2">2023</td>
+              <td class="font-proxima text-[11px] font-[600] text-mny-900 py-2 text-right">$41.2M</td>
+            </tr>
+            <tr style="border-bottom:1px solid #F3F8F9;">
+              <td class="font-proxima text-[11px] font-[600] text-mny-700 py-2 pr-2">DR-4690</td>
+              <td class="font-proxima text-[11px] text-mny-900 py-2 pr-2">Schenectady</td>
+              <td class="font-proxima text-[11px] text-mny-700 py-2 pr-2">2023</td>
+              <td class="font-proxima text-[11px] font-[600] text-mny-900 py-2 text-right">$12.8M</td>
+            </tr>
+            <tr style="border-bottom:1px solid #F3F8F9;">
+              <td class="font-proxima text-[11px] font-[600] text-mny-700 py-2 pr-2">DR-4615</td>
+              <td class="font-proxima text-[11px] text-mny-900 py-2 pr-2">Dutchess</td>
+              <td class="font-proxima text-[11px] text-mny-700 py-2 pr-2">2022</td>
+              <td class="font-proxima text-[11px] font-[600] text-mny-900 py-2 text-right">$29.4M</td>
+            </tr>
+            <tr>
+              <td class="font-proxima text-[11px] font-[600] text-mny-700 py-2 pr-2">DR-4615</td>
+              <td class="font-proxima text-[11px] text-mny-900 py-2 pr-2">Rockland</td>
+              <td class="font-proxima text-[11px] text-mny-700 py-2 pr-2">2022</td>
+              <td class="font-proxima text-[11px] font-[600] text-mny-900 py-2 text-right">$8.6M</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- [content] Graph — ½ right ───────────────────────────────────────
+           Section type: Graph · section span: ½
+           Config: graphType=BarGraph, orientation=horizontal
+                   X-axis: action_category_json (multiselect, each value disaggregated)
+                   Y-axis: 1 as count, fn=count
+           Colors: div7 palette
+           This mock shows what the DMS horizontal BarGraph produces.
+      ──────────────────────────────────────────────────────────────────── -->
+      <div class="flex-1 px-7 py-7 bg-mny-50">
+        <span class="ds-label">Graph section · ½ width · horizontal BarGraph · action_category_json × count</span>
+        <p class="font-proxima text-[12px] font-[600] text-mny-900 mb-3">Actions by Category</p>
+
+        <!-- SVG horizontal bar chart — matches DMS recharts horizontal BarGraph -->
+        <svg viewBox="0 0 380 210" class="w-full" style="height:210px;" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="380" height="210" fill="white"/>
+
+          <!-- X-axis grid lines -->
+          <line x1="148" y1="10"  x2="370" y2="10"  stroke="#E5E7EB" stroke-width="1"/>
+          <line x1="148" y1="10"  x2="148" y2="195" stroke="#D1D5DB" stroke-width="1"/>
+          <line x1="222" y1="10"  x2="222" y2="190" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="296" y1="10"  x2="296" y2="190" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="3,2"/>
+          <line x1="370" y1="10"  x2="370" y2="190" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="3,2"/>
+
+          <!-- X-axis labels -->
+          <text x="148" y="203" font-family="Source Sans 3,sans-serif" font-size="8" fill="#9CA3AF" text-anchor="middle">0</text>
+          <text x="222" y="203" font-family="Source Sans 3,sans-serif" font-size="8" fill="#9CA3AF" text-anchor="middle">100</text>
+          <text x="296" y="203" font-family="Source Sans 3,sans-serif" font-size="8" fill="#9CA3AF" text-anchor="middle">200</text>
+          <text x="370" y="203" font-family="Source Sans 3,sans-serif" font-size="8" fill="#9CA3AF" text-anchor="middle">300</text>
+
+          <!-- Bars and Y-axis labels — 6 categories -->
+          <!-- Prop. Protection: 312/320*222 = 216 -->
+          <text x="140" y="27"  font-family="Source Sans 3,sans-serif" font-size="8" fill="#6B7280" text-anchor="end">Prop. Protection</text>
+          <rect x="148" y="17"  width="216" height="16" fill="#6baed6" rx="2"/>
+
+          <!-- Planning: 287/320*222 = 199 -->
+          <text x="140" y="52"  font-family="Source Sans 3,sans-serif" font-size="8" fill="#6B7280" text-anchor="end">Planning &amp; Reg.</text>
+          <rect x="148" y="42"  width="199" height="16" fill="#6baed6" rx="2"/>
+
+          <!-- Nature-Based: 198/320*222 = 137 -->
+          <text x="140" y="77"  font-family="Source Sans 3,sans-serif" font-size="8" fill="#6B7280" text-anchor="end">Nature-Based</text>
+          <rect x="148" y="67"  width="137" height="16" fill="#6baed6" rx="2"/>
+
+          <!-- Education: 167/320*222 = 116 -->
+          <text x="140" y="102" font-family="Source Sans 3,sans-serif" font-size="8" fill="#6B7280" text-anchor="end">Educ. &amp; Awareness</text>
+          <rect x="148" y="92"  width="116" height="16" fill="#6baed6" rx="2"/>
+
+          <!-- Structural: 124/320*222 = 86 -->
+          <text x="140" y="127" font-family="Source Sans 3,sans-serif" font-size="8" fill="#6B7280" text-anchor="end">Structural</text>
+          <rect x="148" y="117" width="86"  height="16" fill="#6baed6" rx="2"/>
+
+          <!-- Preparedness: 98/320*222 = 68 -->
+          <text x="140" y="152" font-family="Source Sans 3,sans-serif" font-size="8" fill="#6B7280" text-anchor="end">Preparedness</text>
+          <rect x="148" y="142" width="68"  height="16" fill="#6baed6" rx="2"/>
+        </svg>
+      </div>
+
+    </div><!-- /half row -->
+
+    <!-- ── [content] Spreadsheet — full width ────────────────────────────────
+         Section type: Spreadsheet
+         Source: actions_revised, filtered by primary_hazard_type = Flooding
+         Columns: action_name, county, action_category_json,
+                  implementation_status [type: status_badge], cost_range,
+                  lead_agency_department
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div class="px-8 py-7 bg-mny-50">
+      <span class="ds-label">Spreadsheet · full width · actions_revised · status_badge on implementation_status</span>
+      <table class="w-full" style="border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #C5D7E0;">
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-3">Action Name</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-3 whitespace-nowrap">County</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-3 whitespace-nowrap">Category</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 pr-3 whitespace-nowrap">Status</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-right py-2 pr-3 whitespace-nowrap">Cost Range</th>
+            <th class="font-display font-[500] text-[9px] uppercase tracking-[0.1em] text-mny-400 text-left py-2 whitespace-nowrap">Lead Agency</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="bg-white hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[12px] font-[600] text-mny-900 py-2.5 pr-3">Flood Control Culvert Upgrade – Route 9</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Dutchess</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Property Protection</td>
+            <td class="py-2.5 pr-3"><span class="badge b-prog">In-Progress</span></td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3 text-right">$500K–$1M</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5">DPW</td>
+          </tr>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="bg-white hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[12px] font-[600] text-mny-900 py-2.5 pr-3">Wetlands Restoration – Wallkill River Buffer</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Orange</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Nature-Based Solutions</td>
+            <td class="py-2.5 pr-3"><span class="badge b-prop">Proposed</span></td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3 text-right">$150K–$500K</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5">DEC</td>
+          </tr>
+          <tr style="border-bottom:1px solid #E0EBF0;" class="bg-white hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[12px] font-[600] text-mny-900 py-2.5 pr-3">Floodplain Mapping Update – Mohawk Valley</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Schenectady</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Planning &amp; Regulatory</td>
+            <td class="py-2.5 pr-3"><span class="badge b-done">Completed</span></td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3 text-right">$10K–$50K</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5">DHSES</td>
+          </tr>
+          <tr class="bg-white hover:bg-mny-50 transition-colors">
+            <td class="font-proxima text-[12px] font-[600] text-mny-900 py-2.5 pr-3">Shoreline Stabilization – Lake Ontario</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Monroe</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3">Structural</td>
+            <td class="py-2.5 pr-3"><span class="badge b-prog">In-Progress</span></td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5 pr-3 text-right">$1M–$2M</td>
+            <td class="font-proxima text-[12px] text-mny-700 py-2.5">DOT</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /page-mock -->
+</div><!-- /template 5 -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     IMPLEMENTATION NOTES
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div class="max-w-[900px] mx-auto mb-16">
+  <div class="rounded-xl border border-mny-100 bg-white p-7">
+    <p class="font-display text-[13px] font-[500] text-mny-400 uppercase tracking-[0.1em] mb-4">Implementation Notes</p>
+    <div class="grid grid-cols-2 gap-8 text-[13px] font-proxima text-mny-700 leading-[1.65]">
+      <div>
+        <p class="font-[700] text-mny-900 mb-2">4 · Actions Dashboard</p>
+        <ul class="space-y-1.5 list-disc pl-4">
+          <li><strong>Header group</strong> · darkSection layoutGroup style · Lexical section</li>
+          <li><strong>Graph section</strong> · full width · <code class="text-mny-400">implementation_status</code> (X-axis),
+            <code class="text-mny-400">count</code> fn (Y-axis) · vertical BarGraph</li>
+          <li><strong>Spreadsheet section</strong> · full width · columns:
+            <code class="text-mny-400">control</code>, <code class="text-mny-400">action_name</code>,
+            <code class="text-mny-400">county</code>, <code class="text-mny-400">primary_hazard_type</code>,
+            <code class="text-mny-400">implementation_status</code> (type: status_badge),
+            <code class="text-mny-400">cost_range</code>, <code class="text-mny-400">mitigation_action_readiness</code></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-[700] text-mny-900 mb-2">5 · Hazard Event Analysis</p>
+        <ul class="space-y-1.5 list-disc pl-4">
+          <li><strong>Richtext section</strong> · full width · author writes heading + intro</li>
+          <li><strong>Spreadsheet section</strong> · ½ width · <code class="text-mny-400">fusion_events_v2</code> (external datasource):
+            <code class="text-mny-400">declaration_number</code>, <code class="text-mny-400">designated_area</code>,
+            <code class="text-mny-400">year</code>, <code class="text-mny-400">total_damage</code></li>
+          <li><strong>Graph section</strong> · ½ width · horizontal BarGraph ·
+            <code class="text-mny-400">action_category_json</code> (X-axis), count (Y-axis) ·
+            uses <code class="text-mny-400">fullDataLoad: true</code> on Graph section</li>
+          <li><strong>Spreadsheet section</strong> · full width · <code class="text-mny-400">actions_revised</code> filtered:
+            <code class="text-mny-400">action_name</code>, <code class="text-mny-400">county</code>,
+            <code class="text-mny-400">action_category_json</code>, <code class="text-mny-400">implementation_status</code> (status_badge),
+            <code class="text-mny-400">cost_range</code>, <code class="text-mny-400">lead_agency_department</code></li>
+        </ul>
+        <p class="mt-3 text-mny-400 text-[12px]"><strong class="text-mny-700">status_badge column type:</strong>
+          Set column type to <code class="text-mny-700 font-[600]">status_badge</code> in the Spreadsheet column settings.
+          Covers both <code>implementation_status</code> and <code>action_status</code> values.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

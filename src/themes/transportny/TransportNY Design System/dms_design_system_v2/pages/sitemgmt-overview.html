@@ -13,12 +13,9 @@
 </head>
 <body class="tny-pane font-proxima text-[#0F1722]">
 <!--
-  sitemgmt-overview.html · SITE MANAGEMENT 1 of 4 — the client control room.
-  RAG health hero → 5 KPIs → 4 per-surface rollups → top risks + recent activity →
-  the full REAL page inventory (32 pages across tsmo2 / freightatlas2 / npmrds-DMS /
-  npmrds-transportNY) grouped by surface, each row → sitemgmt-page.html.
-  Inventory is the live page list; QA/ticket/status values are placeholders.
-  Everything dynamic is rendered from window.SITEMGMT (sitemgmt-data.js).
+  sitemgmt-overview.html · SITE MANAGEMENT control room. One FULL-WIDTH card per pattern: a summary
+  banner (segmented stage bar + tickets bar) and the pattern's pages laid out in columns, each →
+  its page-QA detail. Below: a site activity timeline. Rendered from window.SITEMGMT.
 -->
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
@@ -48,78 +45,40 @@
       </aside>
 
       <div class="flex flex-1 items-start">
-        <div class="flex-1 min-w-0 flex flex-col">
-          <main class="mr-auto w-full max-w-[1560px] pl-12 pr-8 py-8">
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
 
-            <!-- header -->
-            <div class="flex items-end justify-between mb-5">
-              <div>
-                <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">// site management · QA &amp; delivery</div>
-                <h1 class="font-display text-[30px] leading-none font-medium text-[#0F1722]">Project control room</h1>
-              </div>
-              <div class="font-mono text-[11px] text-slate-500">as of <span id="asOf"></span></div>
+          <!-- ═════════ BREADCRUMB BAR ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <nav class="h-11 flex items-center font-mono text-[10.5px] uppercase tracking-[0.18em]" aria-label="Breadcrumb">
+                <a href="sitemgmt-overview.html" class="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#0f1722]"><svg class="size-4 text-[#37576B] relative -top-[1px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10"/></svg>Site Management</a>
+                <span class="text-slate-300 px-2">/</span>
+                <span class="text-[#0f1722]">Control Room</span>
+              </nav>
             </div>
+          </div>
 
-            <!-- RAG hero -->
-            <div id="ragHero" class="mb-6"></div>
-
-            <!-- KPI strip -->
-            <div id="kpis" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6"></div>
-
-            <!-- per-surface rollups -->
-            <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2">// 01 &nbsp; delivery surfaces</div>
-            <div id="rollups" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6"></div>
-
-            <!-- risks + activity -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-7">
-              <div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
-                  <span class="font-display text-[14px] font-medium text-slate-800">Top risks</span>
-                  <a href="sitemgmt-tickets.html" class="font-mono text-[10px] uppercase tracking-wider text-blue-500 hover:text-blue-700">all tickets →</a>
+          <!-- ═════════ HEADER BAND ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-5">
+              <div class="flex items-end justify-between gap-6">
+                <div class="min-w-0">
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-slate-400 mb-1.5">// site management · QA workflow</div>
+                  <h1 class="font-display font-semibold text-[28px] leading-none tracking-tight uppercase text-[#0F1722]">Control room<span class="text-[#CA8A04]">.</span></h1>
                 </div>
-                <div id="risks" class="divide-y divide-slate-50"></div>
+                <div class="font-mono text-[11px] text-slate-500 flex-shrink-0">as of <span id="asOf"></span></div>
               </div>
-              <div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
-                  <span class="font-display text-[14px] font-medium text-slate-800">Recent activity</span>
-                </div>
-                <div id="activity" class="divide-y divide-slate-50"></div>
-              </div>
+              <div id="summary" class="font-proxima text-[13px] text-slate-500 mt-2"></div>
             </div>
+          </div>
 
-            <!-- inventory -->
-            <div class="flex items-end justify-between mb-2">
-              <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">// 02 &nbsp; page inventory <span class="text-slate-400">— every page across the four surfaces</span></div>
-              <div id="legend" class="hidden md:flex items-center gap-3 font-mono text-[10px] text-slate-500"></div>
+          <!-- ═════════ CONTENT BAND ═════════ -->
+          <div class="w-full bg-[#ECEEF2] pt-6 pb-12">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <div id="root"></div>
             </div>
-            <div class="flex flex-wrap items-center gap-2 mb-3" id="filters"></div>
-            <div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 overflow-hidden">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="bg-slate-50 border-b border-slate-100 font-mono text-[10px] uppercase tracking-wider text-slate-500">
-                    <th class="py-2 pl-4 pr-2 font-medium">Page</th>
-                    <th class="py-2 px-2 font-medium">Build</th>
-                    <th class="py-2 px-2 font-medium">QA</th>
-                    <th class="py-2 px-2 font-medium">Data</th>
-                    <th class="py-2 px-2 font-medium">Open bugs</th>
-                    <th class="py-2 px-2 font-medium">Owner</th>
-                    <th class="py-2 px-2 pr-4 font-medium">Updated</th>
-                  </tr>
-                </thead>
-                <tbody id="invBody"></tbody>
-              </table>
-            </div>
+          </div>
 
-          </main>
-          <footer class="w-full bg-white border-t border-zinc-950/10 mt-6">
-            <div class="mr-auto w-full max-w-[1560px] pl-12 pr-8 py-4 flex items-center justify-between">
-              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
-                <a href="sitemgmt-overview.html" class="hover:text-slate-900">control room</a>
-                <a href="sitemgmt-tickets.html" class="hover:text-slate-900">tickets</a>
-              </div>
-              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS · QA v0.1 · mockup</span>
-            </div>
-          </footer>
         </div>
       </div>
     </div>
@@ -129,109 +88,115 @@
 <script src="sitemgmt-data.js"></script>
 <script>
 (function(){
-  var S = window.SITEMGMT, c = S.compute();
-  var $ = function(id){ return document.getElementById(id); };
-  var ragText = { green:'GREEN', amber:'AMBER', red:'RED' };
-  var ragBar  = { green:'bg-emerald-500', amber:'bg-amber-400', red:'bg-rose-500' };
-  var ragRing = { green:'ring-emerald-200', amber:'ring-amber-200', red:'ring-rose-200' };
-  function badge(text, cls){ return '<span class="inline-flex items-center rounded px-2 py-[3px] text-[11px] font-medium '+cls+'">'+text+'</span>'; }
-  function bar(pct, cls){ return '<div class="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full '+cls+'" style="width:'+pct+'%"></div></div>'; }
-  function dots(bugs){ var sev=['Blocker','Major','Minor','Polish']; var any=false;
-    var h = sev.map(function(s){ if(!bugs[s]) return ''; any=true;
-      return '<span class="inline-flex items-center gap-1"><span class="size-2 rounded-full '+S.sevDot[s]+'"></span><span class="font-mono text-[11px] tabular-nums text-slate-600">'+bugs[s]+'</span></span>'; }).join('<span class="text-slate-200">·</span>');
-    return any ? '<span class="inline-flex items-center gap-1.5">'+h+'</span>' : '<span class="font-mono text-[11px] text-slate-300">—</span>'; }
+  var S = window.SITEMGMT;
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function pct(n,d){ return d ? Math.round(100*n/d) : 0; }
+  var STAGE_BAR = { 'Proposed':'bg-zinc-400', 'Design':'bg-violet-500', 'Implemented':'bg-amber-400', 'QA':'bg-sky-400', 'Dev Acceptance':'bg-teal-500', 'Client Acceptance':'bg-emerald-500' };
 
-  $('asOf').textContent = S.asOf;
+  document.getElementById('asOf').textContent = S.asOf;
+  var P = S.pages.length;
+  var openT = S.tickets.filter(function(t){ return S.isOpen(t); }).length, closedT = S.tickets.length - openT;
+  var accepted = S.stageCounts()['Client Acceptance'];
+  document.getElementById('summary').innerHTML =
+    '<span class="font-semibold text-slate-700">'+S.surfaces.length+'</span> patterns · '
+    + '<span class="font-semibold text-slate-700">'+P+'</span> pages · '
+    + '<span class="font-semibold text-emerald-600">'+accepted+'</span> accepted · '
+    + '<span class="font-semibold text-amber-600">'+openT+'</span> open / <span class="font-semibold text-emerald-600">'+closedT+'</span> done tickets';
 
-  // RAG hero
-  $('ragHero').innerHTML =
-    '<div class="rounded-lg bg-white shadow-sm border border-zinc-950/5 ring-1 '+ragRing[c.overallRag]+' p-5 flex items-center gap-5">'
-    + '<div class="flex items-center gap-3"><span class="size-4 rounded-full '+ragBar[c.overallRag]+' shadow"></span>'
-    + '<div><div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">project health</div>'
-    + '<div class="font-display text-[26px] leading-none font-semibold text-[#0F1722]">'+ragText[c.overallRag]+'</div></div></div>'
-    + '<div class="h-10 w-px bg-slate-100"></div>'
-    + '<p class="font-proxima text-[14px] text-slate-600 leading-snug max-w-3xl">'
-    + '<span class="font-semibold text-slate-800">'+c.published+' of '+c.total+'</span> pages published · '
-    + '<span class="font-semibold text-slate-800">'+c.approved+'</span> QA-approved · '
-    + '<span class="font-semibold text-rose-600">'+c.bugs.Blocker+' blocker'+(c.bugs.Blocker===1?'':'s')+'</span> and '
-    + '<span class="font-semibold text-orange-600">'+c.bugs.Major+' major</span> bug'+(c.bugs.Major===1?'':'s')+' open across '+c.openTickets+' tickets. '
-    + 'NPMRDS surfaces are in production; TSMO &amp; Freight Atlas are mid-build — QA sign-off and the open blockers are the path to green.</p>'
-    + '</div>';
+  var html = '';
 
-  // KPI tiles
-  function kpi(label, big, sub){ return '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
-    + '<div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-1">'+label+'</div>'+big+(sub||'')+'</div>'; }
-  $('kpis').innerHTML =
-      kpi('% complete', '<div class="font-display text-[26px] font-semibold leading-none mb-2">'+c.pctComplete+'%</div>'+bar(c.pctComplete,'bg-[#1F3F8F]'))
-    + kpi('Published', '<div class="font-display text-[26px] font-semibold leading-none">'+c.published+'<span class="text-slate-300 text-[18px]"> / '+c.total+'</span></div><div class="font-mono text-[10px] text-slate-400 mt-1">build = published</div>')
-    + kpi('QA approved', '<div class="font-display text-[26px] font-semibold leading-none">'+c.approved+'<span class="text-slate-300 text-[18px]"> / '+c.total+'</span></div><div class="font-mono text-[10px] text-slate-400 mt-1">signed off by QA</div>')
-    + kpi('Open bugs', '<div class="font-display text-[26px] font-semibold leading-none mb-1.5">'+c.openTickets+'</div>'+dots(c.bugs))
-    + kpi('Data: real', '<div class="font-display text-[26px] font-semibold leading-none">'+c.dataReal+'<span class="text-slate-300 text-[18px]"> / '+c.total+'</span></div><div class="font-mono text-[10px] text-slate-400 mt-1">vs partial / mock</div>');
+  // ── process banner: how delivery works ──
+  var sc = S.stageCounts();
+  var stageWho = { 'Proposed':'product', 'Design':'design', 'Implemented':'our team', 'QA':'our team', 'Dev Acceptance':'our team', 'Client Acceptance':'you' };
+  var stageDesc = { 'Proposed':'scope the user stories', 'Design':'design the page', 'Implemented':'build the page', 'QA':'test & fix', 'Dev Acceptance':'internal sign-off', 'Client Acceptance':'review & approve' };
+  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4 mb-4">'
+    + '<div class="flex items-center justify-between mb-3"><span class="font-display text-[14px] font-medium text-slate-800">How delivery works</span>'
+    + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">AI flags issues · we fix &amp; sign off · you approve</span></div>'
+    + '<div class="flex items-stretch gap-1">'
+    + S.STAGES.map(function(st,i){
+        var mine = st==='Client Acceptance';
+        var blk = '<div class="flex-1 rounded-md border '+(mine?'border-[#1F3F8F]/40 bg-[#1F3F8F]/[0.04]':'border-slate-200 bg-slate-50/60')+' p-3">'
+          + '<div class="flex items-center gap-2"><span class="size-2.5 rounded-full '+STAGE_BAR[st]+'"></span>'
+          + '<span class="font-display text-[13px] font-medium '+(mine?'text-[#1F3F8F]':'text-slate-700')+'">'+esc(st)+'</span>'
+          + '<span class="ml-auto font-display text-[18px] font-semibold text-[#0F1722]">'+sc[st]+'</span></div>'
+          + '<div class="font-mono text-[9px] uppercase tracking-wider '+(mine?'text-[#1F3F8F] font-semibold':'text-slate-400')+' mt-1">'+esc(stageWho[st])+'</div>'
+          + '<div class="font-proxima text-[11px] text-slate-500 leading-snug">'+stageDesc[st]+'</div></div>';
+        return blk + (i<S.STAGES.length-1 ? '<div class="flex items-center text-slate-300 text-[16px] px-0.5">›</div>' : '');
+      }).join('')
+    + '</div></div>';
 
-  // per-surface rollups
-  $('rollups').innerHTML = S.surfaces.map(function(s){ var v=c.perSurface[s.key];
-    return '<a href="#surface-'+s.key+'" class="block bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4 hover:shadow-md transition-shadow">'
-      + '<div class="flex items-start justify-between mb-2"><div><div class="font-display text-[15px] font-medium text-slate-800 leading-tight">'+s.label+'</div>'
-      + '<div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">'+s.sub+'</div></div>'
-      + '<span class="size-3 rounded-full '+ragBar[v.rag]+' mt-1"></span></div>'
-      + '<div class="flex items-center justify-between font-mono text-[11px] text-slate-500 mb-1"><span>'+v.pages+' pages</span><span class="tabular-nums">'+v.pct+'%</span></div>'
-      + bar(v.pct, ragBar[v.rag])
-      + '<div class="flex items-center justify-between mt-3"><span class="font-mono text-[11px] text-slate-500">'+v.published+' pub · '+v.approved+' QA</span>'+dots(v.bugs)+'</div>'
-      + '</a>'; }).join('');
+  // ── full-width per-pattern cards ──
+  html += '<div class="space-y-4 mb-6">';
+  S.surfaces.forEach(function(s){
+    var r = S.surfaceRollup(s.key);
+    var tixDone = pct(r.closed, r.open + r.closed);
+    var sp = S.pages.filter(function(p){ return p.surface===s.key; })
+      .sort(function(a,b){ return S.STAGES.indexOf(S.stageOf(a))-S.STAGES.indexOf(S.stageOf(b)) || a.name.localeCompare(b.name); });
 
-  // top risks — open blocker/major, severity then priority
-  var prioRank={Now:0,Next:1,Later:2}, sevRank={Blocker:0,Major:1,Minor:2,Polish:3};
-  var risks = S.tickets.filter(function(t){ return S.isOpen(t) && (t.severity==='Blocker'||t.severity==='Major'); })
-    .sort(function(a,b){ return (sevRank[a.severity]-sevRank[b.severity]) || (prioRank[a.priority]-prioRank[b.priority]); });
-  $('risks').innerHTML = risks.map(function(t){ var p=S.page(t.page);
-    return '<a href="sitemgmt-ticket.html?id='+t.id+'" class="flex items-center gap-3 py-2 hover:bg-slate-50/70 -mx-1 px-1 rounded">'
-      + badge(t.severity, S.sevColor[t.severity])
-      + '<span class="flex-1 min-w-0 truncate font-proxima text-[13px] text-slate-700">'+t.title+'</span>'
-      + '<span class="font-mono text-[10px] text-slate-400 truncate max-w-[42%]">'+S.surface(p.surface).label+' / '+p.name+'</span>'
-      + '<span class="font-mono text-[11px] text-slate-300">#'+t.id+'</span></a>'; }).join('');
-
-  // recent activity — latest ticket updates
-  var act = S.tickets.slice().sort(function(a,b){ return a.updated<b.updated?1:-1; }).slice(0,6);
-  $('activity').innerHTML = act.map(function(t){ var p=S.page(t.page); var done=!S.isOpen(t);
-    return '<div class="flex items-center gap-3 py-2">'
-      + '<span class="size-2 rounded-full '+(done?'bg-emerald-500':S.sevDot[t.severity])+'"></span>'
-      + '<span class="flex-1 min-w-0 truncate font-proxima text-[13px] text-slate-700">'+(done?'Resolved: ':'')+t.title+'</span>'
-      + '<span class="font-mono text-[10px] text-slate-400">'+p.name+'</span>'
-      + '<span class="font-mono text-[10px] text-slate-400 tabular-nums">'+t.updated.slice(5)+'</span></div>'; }).join('');
-
-  // legend
-  $('legend').innerHTML = ['Blocker','Major','Minor','Polish'].map(function(s){
-    return '<span class="inline-flex items-center gap-1"><span class="size-2 rounded-full '+S.sevDot[s]+'"></span>'+s+'</span>'; }).join('');
-
-  // filter bar (visual)
-  var fchips = ['All surfaces','Published','Needs QA','Has blocker/major','Mock data'];
-  $('filters').innerHTML = '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mr-1">filter</span>'
-    + fchips.map(function(f,i){ return '<button class="font-proxima text-[12px] px-2.5 py-1 rounded-full border '+(i===0?'bg-[#1F3F8F] text-white border-[#1F3F8F]':'bg-white text-slate-600 border-slate-200 hover:border-slate-300')+'">'+f+'</button>'; }).join('')
-    + '<div class="ml-auto"><input placeholder="search pages…" class="font-proxima text-[12px] px-3 py-1.5 rounded-md border border-slate-200 w-48 focus:outline-none focus:border-[#1F3F8F]"/></div>';
-
-  // inventory table, grouped by surface
-  var rows = '';
-  S.surfaces.forEach(function(s){ var v=c.perSurface[s.key];
-    rows += '<tr id="surface-'+s.key+'" class="bg-slate-50/60 border-y border-slate-100">'
-      + '<td colspan="7" class="py-2 pl-4 pr-2"><div class="flex items-center gap-2">'
-      + '<span class="size-2.5 rounded-full '+ragBar[v.rag]+'"></span>'
-      + '<span class="font-display text-[13px] font-semibold uppercase tracking-wide text-slate-700">'+s.label+'</span>'
-      + '<span class="font-mono text-[10px] text-slate-400">'+s.sub+'</span>'
-      + '<span class="ml-auto font-mono text-[11px] text-slate-500 tabular-nums">'+v.pages+' pages · '+v.published+' published · '+v.approved+' QA-approved · '+v.pct+'% built</span>'
-      + '</div></td></tr>';
-    S.pages.filter(function(p){ return p.surface===s.key; }).forEach(function(p){
-      rows += '<tr data-page="'+p.id+'" onclick="location.href=\'sitemgmt-page.html?id='+encodeURIComponent(p.id)+'\'" class="border-b border-slate-50 hover:bg-blue-50/40 cursor-pointer">'
-        + '<td class="py-2.5 pl-4 pr-2"><div class="font-proxima text-[13.5px] font-medium text-slate-800">'+p.name+'</div><div class="font-mono text-[10px] text-slate-400">'+p.route+'</div></td>'
-        + '<td class="py-2.5 px-2">'+badge(p.build, S.buildColor[p.build])+'</td>'
-        + '<td class="py-2.5 px-2">'+badge(p.qa, S.qaColor[p.qa])+'</td>'
-        + '<td class="py-2.5 px-2">'+badge(p.data, S.dataColor[p.data])+'</td>'
-        + '<td class="py-2.5 px-2">'+dots(S.bugsFor(p.id))+'</td>'
-        + '<td class="py-2.5 px-2"><span class="font-mono text-[11px] text-slate-500">'+p.owner+'</span></td>'
-        + '<td class="py-2.5 px-2 pr-4"><span class="font-mono text-[11px] text-slate-400 tabular-nums">'+p.updated+'</span></td>'
-        + '</tr>';
-    });
+    html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-5">'
+      // ── summary banner ──
+      + '<div class="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-8">'
+        // identity
+        + '<div class="lg:w-48 flex-shrink-0 flex items-baseline justify-between lg:block">'
+        + '<div><div class="font-display text-[17px] font-medium text-[#0F1722] leading-tight">'+esc(s.label)+'</div>'
+        + '<div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">'+esc(s.sub||s.key)+'</div></div>'
+        + '<div class="font-mono text-[11px] text-slate-500 lg:mt-2"><span class="font-display text-[18px] font-semibold text-[#0F1722]">'+r.pages+'</span> pages</div></div>'
+        // two data bars STACKED on their own lines (stages, then tickets)
+        + '<div class="flex-1 min-w-0 space-y-3">'
+          // stage bar + legend
+          + '<div>'
+          + '<div class="flex h-4 rounded-full overflow-hidden bg-slate-100 mb-2">'
+          + S.STAGES.map(function(st){ var n=r.stages[st], w=pct(n,r.pages); return n>0 ? '<div class="'+STAGE_BAR[st]+'" style="width:'+w+'%" title="'+esc(st)+': '+n+'"></div>' : ''; }).join('')
+          + '</div>'
+          + '<div class="flex flex-wrap gap-x-4 gap-y-1">'
+          + S.STAGES.map(function(st){ var n=r.stages[st]; return '<span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] '+(n?'text-slate-600':'text-slate-300')+'"><span class="size-2 rounded-full '+STAGE_BAR[st]+'"></span>'+esc(st)+' <span class="font-mono tabular-nums '+(n?'text-slate-800 font-semibold':'')+'">'+n+'</span></span>'; }).join('')
+          + '</div></div>'
+          // tickets bar + caption (its own line)
+          + '<div>'
+          + '<div class="h-4 rounded-full bg-amber-100 overflow-hidden mb-2"><div class="h-full bg-emerald-500" style="width:'+tixDone+'%"></div></div>'
+          + '<div class="flex items-center justify-between"><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">tickets</span>'
+          + '<span class="font-mono text-[11.5px] tabular-nums"><span class="text-amber-600 font-semibold">'+r.open+'</span> open · <span class="text-emerald-600 font-semibold">'+r.closed+'</span> done</span></div></div>'
+        + '</div>'
+      + '</div>'
+      // ── pages as a table (mirrors the live DMS Spreadsheet) ──
+      + '<div class="mt-4 border-t border-slate-100 pt-3 overflow-x-auto">'
+      + '<table class="w-full text-left border-collapse">'
+      + '<thead><tr class="font-mono text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-100">'
+      + '<th class="py-1.5 pr-3 font-medium">Page</th><th class="py-1.5 pr-3 font-medium">Stage</th>'
+      + '<th class="py-1.5 pr-3 font-medium">Next step</th><th class="py-1.5 pr-3 font-medium text-right">Open</th><th class="py-1.5 text-right font-medium">Links</th>'
+      + '</tr></thead><tbody>'
+      + sp.map(function(p){ var st=S.stageOf(p), open=S.openTicketsFor(p.id).length;
+          return '<tr class="border-b border-slate-50 hover:bg-slate-50/70">'
+            + '<td class="py-1.5 pr-3"><a href="sitemgmt-page.html?id='+encodeURIComponent(p.id)+'" class="font-proxima text-[12.5px] text-slate-800 hover:text-[#1F3F8F]">'+esc(p.name)+'</a></td>'
+            + '<td class="py-1.5 pr-3"><span class="inline-flex items-center rounded px-1.5 py-[2px] text-[10px] font-medium '+S.stageColor[st]+'">'+esc(st)+'</span></td>'
+            + '<td class="py-1.5 pr-3 font-proxima text-[12px] text-slate-500">'+esc(S.nextStepOf(p))+'</td>'
+            + '<td class="py-1.5 pr-3 text-right font-mono text-[11px] '+(open?'text-amber-600 font-semibold':'text-slate-300')+'">'+open+'</td>'
+            + '<td class="py-1.5 text-right whitespace-nowrap font-mono text-[10px] text-slate-400">'
+              + (S.fileFor(p.id) ? '<a href="'+S.fileFor(p.id)+'" target="_blank" class="hover:text-[#1F3F8F]">view</a> <span class="text-slate-300">·</span> ' : '')
+              + '<a href="sitemgmt-design.html?id='+encodeURIComponent(p.id)+'" class="hover:text-[#1F3F8F]">design &rarr;</a></td>'
+            + '</tr>';
+        }).join('')
+      + '</tbody></table></div></div>';
   });
-  $('invBody').innerHTML = rows;
+  html += '</div>';
+
+  // ── site activity timeline (full width) ──
+  var allEv = [];
+  S.pages.forEach(function(p){ S.timelineFor(p.id).forEach(function(e){ e.page = p.name; allEv.push(e); }); });
+  allEv.sort(function(a,b){ return a.when<b.when?1:(a.when>b.when?-1:0); });
+  var dotKind = { opened:'bg-amber-400', resolved:'bg-emerald-500', comment:'bg-slate-300' };
+  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
+    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2"><span class="font-display text-[14px] font-medium text-slate-800">Recent activity</span>'
+    + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">work timeline</span></div>'
+    + '<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">'
+    + allEv.slice(0,10).map(function(e){
+        return '<div class="flex items-center gap-3 py-1.5"><span class="size-2 rounded-full '+(dotKind[e.kind]||'bg-slate-300')+' flex-shrink-0"></span>'
+          + '<span class="flex-1 min-w-0 truncate font-proxima text-[12.5px] text-slate-700">'+esc(e.text)+'</span>'
+          + '<span class="font-mono text-[10px] text-slate-400 truncate max-w-[24%]">'+esc(e.page)+'</span>'
+          + '<span class="font-mono text-[10px] text-slate-400 tabular-nums">'+esc(e.when.slice(5))+'</span></div>';
+      }).join('') + '</div></div>';
+
+  document.getElementById('root').innerHTML = html;
 })();
 </script>
 <script src="../ds-nav.js"></script>
