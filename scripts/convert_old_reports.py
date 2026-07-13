@@ -106,6 +106,18 @@ GRAPH_TEMPLATE_MAP = {
     # already-proven measure (TRAVEL_TIME_EXPR), same GridGraph shape as the
     # CO2 grid templates below.
     ("TMC Grid Graph", "travelTime", "5-minutes", "travel_time_all"): "tmc_travel_time_grid_graph",
+    # Round 32 (2026-07-10): avgHoursOfDelay — see AVG_DELAY_EXPR/TEMPLATE_SPECS
+    # comments for the formula and shape. Covers every buildable
+    # (Route Line/Bar Graph, TMC Grid Graph) bucket from the round-27 census;
+    # `resolution: None` (~9 instances) stays gap-logged, same
+    # mixed-resolution-ambiguity treatment as everywhere else.
+    ("Route Line Graph", "avgHoursOfDelay", "5-minutes", "travel_time_all"): "tmc_avg_delay_line_graph",
+    ("Route Bar Graph", "avgHoursOfDelay", "day", "travel_time_all"): "tmc_avg_delay_bar_graph_day",
+    ("Route Bar Graph", "avgHoursOfDelay", "weekday", "travel_time_all"): "tmc_avg_delay_bar_graph_weekday",
+    ("Route Bar Graph", "avgHoursOfDelay", "5-minutes", "travel_time_all"): "tmc_avg_delay_bar_graph_5min",
+    ("Route Bar Graph", "avgHoursOfDelay", "hour", "travel_time_all"): "tmc_avg_delay_bar_graph_hour",
+    ("Route Bar Graph", "avgHoursOfDelay", "month", "travel_time_all"): "tmc_avg_delay_bar_graph_month",
+    ("TMC Grid Graph", "avgHoursOfDelay", "5-minutes", "travel_time_all"): "tmc_avg_delay_grid_graph",
     # Route Info Box / TMC Info Box deliberately have NO entries here — see
     # INFO_BOX_GRAIN below, they can't use one static template name.
 }
@@ -299,6 +311,27 @@ DELAY_EXPR = ("(greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.mi
               "* (table1.aadt / (if(table1.faciltype > 1, 2, 1))) "
               "* arrayElement(table2.distributions, ds.epoch + 1) "
               "as hours_of_delay")
+# avgHoursOfDelay (round 32, 2026-07-10): old dataTypes.js's `avgHoursOfDelay`
+# is NOT a different per-epoch value — traced to avail-falcor's own
+# getHoursOfDelay.js (routeDataRetrievers/getHoursOfDelay.js:70-103): both
+# measures start from the exact same per-(tmc,resolution-bucket) SUM of the
+# per-epoch weighted delay (the identical DELAY_EXPR computation); `avgHoursOfDelay`
+# then divides that sum by `getAvgHoursOfDelay(sum, numEpochs, epochsInTimeRange,
+# resolution)` — a resolution-specific normalization
+# (numEpochs/numEpochs, numEpochs/12, numEpochs/3, numEpochs/epochsInTimeRange,
+# or a day-resolution no-op) that in every case reduces to "the count of
+# DISTINCT CALENDAR DATES that contributed rows to this bucket" (verified by
+# hand for all 5 resolution branches — day trivially divides by 1 since a
+# day-bucket already IS one date, matching the old code's own `case "day":
+# return sum` special case for free). So the whole thing collapses to one
+# formula that needs no per-resolution branching in SQL:
+#   avg_hours_of_delay = sum(<same per-row delay expr as DELAY_EXPR>) / count(DISTINCT ds.date)
+# `fn: "exempt"` (round 25's Route Compare delta column already established
+# this as the real, author-facing "already aggregated server-side" option) —
+# the expression is self-aggregating (contains its own sum()/count()), so no
+# extra wrapping fn is needed or correct.
+AVG_DELAY_EXPR = (f"(sum({DELAY_EXPR.rsplit(' as ', 1)[0]}) "
+                  "/ count(DISTINCT ds.date)) as avg_hours_of_delay")
 META_1946_JOIN = {
     "source": 1946, "view": 3298,
     "sourceInfo": {
@@ -674,6 +707,70 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
                   "target": "color", "fn": "avg"},
     },
+    # Round 32 (2026-07-10): avgHoursOfDelay — see AVG_DELAY_EXPR's own comment
+    # for the formula derivation. `fn: "exempt"` throughout since the
+    # expression already contains its own sum()/count(DISTINCT). Same
+    # route-wide (no `categorize`, defaults to `__series`) shape as every
+    # other Route Bar/Line/TMC Grid Graph template above — "TMC Grid Graph"'s
+    # per-TMC rows come from each assigned route-comp being its own
+    # comparison-series arm (the report's own route-comps are already
+    # per-TMC), same mechanism as tmc_travel_time_grid_graph, not a literal
+    # `tmc` categorize column (that's only "Hours of Delay Graph"'s own
+    # distinct shape, a different old component). Route Line Graph is
+    # single-measure regardless of graph type (analyze_graph always reduces
+    # displayData to measures[0], gap-logging the rest as
+    # extra_measures_dropped) — no dual-axis capability needed for this
+    # bucket, despite Route Line Graph elsewhere being flagged (round 29) as
+    # needing a dual-axis read first for its day-resolution hoursOfDelay
+    # bucket, a separate, still-open question about a different resolution.
+    "tmc_avg_delay_line_graph": {
+        "graphType": "LineGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "yAxis", "fn": "exempt"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_avg_delay_bar_graph_day": {
+        "graphType": "BarGraph", "xAxis": "date",
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "yAxis", "fn": "exempt"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_avg_delay_bar_graph_weekday": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": WEEKDAY_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "yAxis", "fn": "exempt"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_avg_delay_bar_graph_5min": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "yAxis", "fn": "exempt"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_avg_delay_bar_graph_hour": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": HOUR_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "yAxis", "fn": "exempt"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_avg_delay_bar_graph_month": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": MONTH_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "yAxis", "fn": "exempt"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_avg_delay_grid_graph": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "color", "fn": "exempt"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
 }
 TEMPLATE_BASE_NAME = "tmc_travel_time_line_graph"
 # Route Compare Component's per-measure raw expression (see ROUTE_COMPARE_BUCKET
@@ -840,11 +937,28 @@ def build_route_entry(rc, old_route, graph_tracking_ids, old_report_id, gaps,
     route_settings_gaps(settings, rc.get("name"), gaps)
     start = to_datetime_str(settings.get("startDate"), settings.get("startTime"))
     end = to_datetime_str(settings.get("endDate"), settings.get("endTime"))
+    resolved_tmc_array = tmc_override or (old_route or {}).get("tmc_array") or []
+    # A route with no resolvable TMC identity (route_missing_everywhere) can
+    # never contribute real data — every measure in this whole pipeline is
+    # TMC-scoped. Worse than just useless: buildUdaConfig.js's filter-cleaning
+    # WIDENS an empty-valued filter leaf to "no constraint" rather than
+    # compiling it to `col IN ()` (a deliberate choice for a different,
+    # legitimate case — an unset page-filter control). Wiring a tmc-less route
+    # into a graph's comparisonSeries lets that arm run with NO tmc
+    # restriction at all — on a `categorize:"tmc"` template (real `tmc` in
+    # groupBy, not just `__series`) that's a genuine unfiltered-nationwide-TMC
+    # scan, not just wasted work. Confirmed live 2026-07-10: report 1032's
+    # Hours of Delay Graph arm for a missing route requested a 4.4M-row
+    # dataByIndex range (every TMC in the table × 288 epochs), tripping
+    # falcor-router's MAX_PATHS=9000 cap; the identical combination was
+    # already live and unnoticed on report_392 since round 12. So: never
+    # assign graphIds to a route with no real TMC array, regardless of what
+    # the caller computed.
+    graph_ids = list(graph_tracking_ids) if resolved_tmc_array else []
     entry = {
         "name": rc.get("name") or (old_route or {}).get("name") or "",
         "route_id": str(rc.get("routeId")),
-        "tmc_array": js(tmc_override
-                        or (old_route or {}).get("tmc_array") or []),
+        "tmc_array": js(resolved_tmc_array),
         "description": (old_route or {}).get("description") or "",
         "points": js((old_route or {}).get("points")),
         "metadata": js((old_route or {}).get("metadata")),
@@ -856,13 +970,21 @@ def build_route_entry(rc, old_route, graph_tracking_ids, old_report_id, gaps,
         "isValid": True,
         "route_comp_id": rc.get("compId") or "",
         # Which graphs this comp feeds — inverted from each old graph's
-        # state.activeRouteComponents (absent → the graph showed every comp)
-        "graphIds": list(graph_tracking_ids),
+        # state.activeRouteComponents (absent → the graph showed every comp);
+        # forced to [] above when there's no real TMC to scope a query with.
+        "graphIds": graph_ids,
         # Preserve the old comp verbatim — schema-free row, nothing is lost
         "_old_settings": settings,
         "_old_color": rc.get("color"),
         "_old_report_id": old_report_id,
     }
+    if not resolved_tmc_array and graph_tracking_ids:
+        gaps.append({"kind": "route_excluded_from_graphs_no_tmc",
+                     "route": rc.get("name"),
+                     "detail": f"route_id {rc.get('routeId')} has no resolvable "
+                               "tmc_array; excluded from "
+                               f"{len(graph_tracking_ids)} assigned graph(s) "
+                               "to avoid an unfiltered scan"})
     if start:
         entry["startDate"] = start
     if end:
@@ -878,7 +1000,15 @@ def build_route_entry(rc, old_route, graph_tracking_ids, old_report_id, gaps,
 # ── New-side building blocks ─────────────────────────────────────────────────
 
 def load_graph_templates():
-    rows = dms(["raw", "list", f"npmrdsv5+{GRAPH_TEMPLATE_TYPE}"])
+    # `dms raw list` defaults to --limit 20; this type has grown past that
+    # (37 as of round 32) so the default page silently drops whichever
+    # templates sort outside it — confirmed live 2026-07-10: the two oldest
+    # base templates (tmc_speed_line_graph/tmc_travel_time_line_graph, the
+    # originals every other template is minted from) fell off the page,
+    # making every report using them spuriously gap-log as "template ... not
+    # found in DB". A generous fixed limit is simpler than round-tripping for
+    # the real total first.
+    rows = dms(["raw", "list", f"npmrdsv5+{GRAPH_TEMPLATE_TYPE}", "--limit", "1000"])
     items = rows if isinstance(rows, list) else rows.get("items", [])
     by_name = {}
     for r in items:
@@ -1772,6 +1902,24 @@ def convert_report(old_id, dry_run=False, replace=False):
             seen_rids.add(rid)
             ensure_route_in_catalog(rid, old_routes.get(str(rid)), dry_run, gaps,
                                     tmc_override=resolved_tmcs.get(rc.get("compId")))
+
+    # A report where EVERY route_comp has no resolvable TMC array has nothing
+    # to convert at all — every measure in this whole pipeline is TMC-scoped,
+    # and build_route_entry above already excludes each of these routes from
+    # every graph's graphIds (see the unfiltered-scan fix). Creating the page
+    # anyway would produce a permanently-empty shell (real sections, zero
+    # data, forever) — confirmed live on report_1032/report_392, both 100%
+    # route_missing_everywhere. Skip page creation entirely and gap-log at
+    # the report level instead.
+    if route_entries and not any(e["tmc_array"] for e in route_entries):
+        gaps.append({"kind": "no_valid_routes",
+                     "detail": "every route_comp in this report has no "
+                               "resolvable tmc_array (route_missing_everywhere) "
+                               "— nothing to convert, page not created"})
+        verb = "would skip" if dry_run else "skipped"
+        print(f"[{verb}] creating page '{slug}' ('{old['name']}') — no route "
+              f"in this report has real TMC data")
+        return finish(old_id, old, None, gaps, dry_run)
 
     if dry_run:
         print(f"[dry-run] would create page '{slug}' ('{old['name']}') with "
