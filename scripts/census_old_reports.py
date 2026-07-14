@@ -12,15 +12,19 @@ Answers, corpus-wide:
   - How many reports would convert fully / partially / not-at-all today?
   - Every unmapped (graph type x measure x resolution x dataColumn) key,
     ranked by graph-instance and report count, split into:
-      buildable      - Route Line/Bar Graph + TMC Grid Graph (types that
-                       already have an AVL Graph equivalent) missing only a
+      buildable      - types with a PROVEN AVL Graph shape (line/bar/grid +
+                       Bar Graph Summary + Route Compare) missing only a
                        measure/resolution/dataColumn combination
-      no_equivalent  - stat panels/maps/diff-compare shapes ruled
-                       gap-log-only by user decisions (2026-07-08)
+      no_equivalent  - no built new-side shape yet (Route Map, diff shapes,
+                       info boxes outside the reliability bucket) — round 24
+                       reopened these as in-scope targets
       tail           - graph types never yet examined
   - Gap-kind counts (relative_date, overrides, mixed resolution, ...).
   - Route-level work: catalog upserts needed, point-drawn routes needing
     falcor resolution, routes missing everywhere.
+  - Round-33 report-level mirror: `no_valid_routes` shells (reports the
+    converter would refuse to page at all), cross-referenced against
+    already-converted `report_<id>` pages in the new DB (task item (e)).
 
 Usage:
   python3 scripts/census_old_reports.py
@@ -39,23 +43,31 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from convert_old_reports import (  # noqa: E402
     REPO, GRAPH_TEMPLATE_MAP, TEMPLATE_SPECS, COLOR_RANGE_GRAPH_TYPES,
     ROUTES_CATALOG_TABLE, INFO_BOX_GRAIN, INFO_BOX_BUCKET, PM3_VIEW_BY_YEAR,
-    ROUTE_COMPARE_BUCKET, MEASURE_EXPR,
+    ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE,
     analyze_graph, flatten_route_comps, route_settings_gaps,
     aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
 )
 
 OUT_DIR = os.path.join(REPO, "scratchpad/npmrds-sub/old-reports/census")
 
-# Old graph types that already have a working AVL Graph equivalent — an
-# unmapped key on one of these is a buildable capability (new calculated
-# column / template), not a new component.
-BUILDABLE_TYPES = {"Route Line Graph", "Route Bar Graph", "TMC Grid Graph"}
-# Ruled gap-log-only (user decisions 2026-07-08): diff/compare are a
-# different graph SHAPE; the rest are stat-panel/map component types with no
-# AVL Graph equivalent ("same treatment as Route Map", task item 4).
+# Old graph types with a PROVEN new-side AVL Graph shape — an unmapped key
+# on one of these is a buildable capability (new calculated column /
+# template spec / MEASURE_EXPR entry), not a new component. Bar Graph
+# Summary's one-bar-per-arm shape proved in rounds 34-36; Route Compare's
+# base+delta shape in round 25.
+BUILDABLE_TYPES = {"Route Line Graph", "Route Bar Graph", "TMC Grid Graph",
+                   "Bar Graph Summary", "Route Compare Component"}
+# No built new-side shape yet. Round 24 REOPENED Route Map / Route
+# Difference / TMC Difference Grid as in-scope targets (the 2026-07-08
+# gap-log-only ruling was reversed), so this bucket now means "needs shape
+# work before spec work", not "ruled out". Route/TMC Info Box have a shape
+# ONLY for the reliability bucket (speed x travel_time_all, resolved
+# dynamically); their unmapped keys are either pm3 data gaps (speed
+# measure: year/bin/coverage) or unproven other-measure info boxes, so
+# they stay here rather than in buildable.
 NO_EQUIVALENT_TYPES = {
-    "Route Difference Graph", "Route Compare Component", "TMC Difference Grid",
-    "Route Map", "Route Info Box", "TMC Info Box", "Bar Graph Summary",
+    "Route Difference Graph", "TMC Difference Grid",
+    "Route Map", "Route Info Box", "TMC Info Box",
 }
 # Templates whose calculated column consumes table1.aadt (delay/CO2) — the
 # only place overrides.aadt matters (mirrors convert_report's `consuming`).
@@ -108,6 +120,22 @@ def fetch_old_route_facts(route_ids, batch=2000):
 def fetch_catalog_route_ids():
     out = psql_new(f"SELECT data->>'route_id' FROM {ROUTES_CATALOG_TABLE}")
     return {line.strip() for line in out.split("\n") if line.strip()}
+
+
+def fetch_converted_pages():
+    """{old_report_id(int): page_id} for already-converted `report_<id>`
+    pages live in the new DB (convert_report's slug scheme)."""
+    out = psql_new(
+        "SELECT json_agg(row_to_json(t)) FROM (SELECT id, "
+        "data->>'url_slug' AS slug FROM dms_npmrdsv5.data_items "
+        f"WHERE type = '{PAGE_TYPE}' "
+        "AND data->>'url_slug' LIKE 'report\\_%') t")
+    pages = {}
+    for row in (json.loads(out) if out else None) or []:
+        suffix = (row["slug"] or "")[len("report_"):]
+        if suffix.isdigit():
+            pages[int(suffix)] = row["id"]
+    return pages
 
 
 def analyze_report(old):
@@ -223,6 +251,33 @@ def main():
             if old_route_facts.get(rid, {}).get("point_drawn")),
     }
 
+    # ── round-33 report-level mirror: no_valid_routes shells ────────────
+    # convert_report skips page creation when a report HAS route comps and
+    # none of them resolves a real tmc_array (build_route_entry: the tmc
+    # comes from admin2.routes' tmc_array or convert-time falcor resolution
+    # of point-drawn routes — the new catalog is never consulted for tmc
+    # data). Statically: a comp definitely resolves iff its route is in
+    # admin2.routes with a real tmc_array; a point-drawn route MIGHT
+    # resolve via the old prod API at convert time (unknowable here).
+    converted_pages = fetch_converted_pages()
+    for r in records:
+        valid = [rid for rid in r["route_ids"]
+                 if rid in old_route_facts
+                 and not old_route_facts[rid]["point_drawn"]]
+        unknown = [rid for rid in r["route_ids"]
+                   if old_route_facts.get(rid, {}).get("point_drawn")]
+        if r["n_route_comps"] == 0:
+            r["route_validity"] = "no_route_comps"
+        elif valid:
+            r["route_validity"] = "ok"
+        elif unknown:
+            r["route_validity"] = "hinges_on_point_resolution"
+        else:
+            r["route_validity"] = "no_valid_routes"
+        r["converted_page_id"] = converted_pages.get(r["id"])
+    validity_counts = Counter(r["route_validity"] for r in records)
+    shells = [r for r in records if r["route_validity"] == "no_valid_routes"]
+
     # ── aggregates ──────────────────────────────────────────────────────
     class_counts = Counter(r["class"] for r in records)
     total_graphs = sum(r["n_graphs"] for r in records)
@@ -257,17 +312,25 @@ def main():
             gap_kind_instances[g["kind"]] += 1
             gap_kind_reports[g["kind"]].add(r["id"])
 
-    # single-blocker flips: reports whose ENTIRE unmapped set is one key
+    # single-blocker flips: reports whose ENTIRE unmapped set is one key.
+    # no_valid_routes shells are excluded from flip/greedy metrics — they
+    # can never produce a page, so "flipping to full" is vacuous for them
+    # (round-36 finding: shell report 678 falsely inflated round 34's
+    # flip count).
     single_blocker_flips = Counter()
     for r in records:
         distinct = set(r["unmapped_keys"])
-        if r["class"] in ("partial", "none") and len(distinct) == 1:
+        if (r["class"] in ("partial", "none") and len(distinct) == 1
+                and r["route_validity"] != "no_valid_routes"):
             single_blocker_flips[next(iter(distinct))] += 1
 
     # greedy cumulative: adding keys most-instances-first, how many reports
-    # reach fully-convertible
+    # reach fully-convertible (page-producing reports only)
+    full_producible = sum(1 for r in records if r["class"] == "full"
+                          and r["route_validity"] != "no_valid_routes")
     remaining = {r["id"]: set(r["unmapped_keys"]) for r in records
-                 if r["class"] in ("partial", "none")}
+                 if r["class"] in ("partial", "none")
+                 and r["route_validity"] != "no_valid_routes"}
     greedy = []
     covered = set()
     for key, _ in key_instances.most_common():
@@ -275,7 +338,7 @@ def main():
         flipped = sum(1 for s in remaining.values() if s <= covered)
         greedy.append({"key": list(map(str, key)),
                        "cumulative_full_reports":
-                           flipped + class_counts["full"]})
+                           flipped + full_producible})
         if len(greedy) >= 30:
             break
 
@@ -288,6 +351,17 @@ def main():
         "bucket_instances": dict(bucket_instances),
         "bucket_reports": {b: len(s) for b, s in bucket_report_sets.items()},
         "route_stats": route_stats,
+        "route_validity_counts": dict(validity_counts),
+        "full_producible": full_producible,
+        "no_valid_routes_shells": [
+            {"id": r["id"], "name": r["name"], "class": r["class"],
+             "n_graphs": r["n_graphs"],
+             "converted_page_id": r["converted_page_id"]}
+            for r in shells],
+        "converted_pages_total": len(converted_pages),
+        "converted_shell_pages": [
+            {"report_id": r["id"], "page_id": r["converted_page_id"]}
+            for r in shells if r["converted_page_id"]],
         "gap_kinds": {k: {"instances": gap_kind_instances[k],
                           "reports": len(gap_kind_reports[k])}
                       for k in gap_kind_instances},
@@ -311,7 +385,8 @@ def main():
     print(f"\nwrote {OUT_DIR}/census.json and census_summary.md")
     print(json.dumps({k: summary[k] for k in
                       ("class_counts", "graph_instances", "bucket_instances",
-                       "route_stats")}, indent=2))
+                       "route_stats", "route_validity_counts",
+                       "converted_pages_total")}, indent=2))
 
 
 def write_summary_md(s):
@@ -331,6 +406,38 @@ def write_summary_md(s):
     L.append(f"| no_graphs | {cc.get('no_graphs', 0)} | route-list-only report |")
     L.append(f"\nGraph instances: **{gi['mapped']} / {gi['total']}** mapped "
              f"({gi['unmapped']} unmapped).\n")
+    L.append("## Report-level route validity (round-33 `no_valid_routes` "
+             "mirror)\n")
+    L.append("Graph-mapping class above is orthogonal to whether the "
+             "converter would produce a page at all: a report whose every "
+             "route comp lacks a resolvable `tmc_array` is skipped "
+             "entirely (permanently-empty shell otherwise).\n")
+    rv = s["route_validity_counts"]
+    L.append("| validity | reports | meaning |")
+    L.append("|---|---|---|")
+    L.append(f"| ok | {rv.get('ok', 0)} | ≥1 route with a real tmc_array — "
+             "page producible |")
+    L.append(f"| hinges_on_point_resolution | "
+             f"{rv.get('hinges_on_point_resolution', 0)} | only point-drawn "
+             "routes; page depends on convert-time falcor TMC resolution |")
+    L.append(f"| no_valid_routes | {rv.get('no_valid_routes', 0)} | shell — "
+             "converter skips page creation |")
+    L.append(f"| no_route_comps | {rv.get('no_route_comps', 0)} | no routes "
+             "at all (page created, nothing to feed graphs) |")
+    shells = s["no_valid_routes_shells"]
+    if shells:
+        L.append("\nShell reports (never producible): "
+                 + ", ".join(f"{r['id']} ({r['class']})" for r in shells)
+                 + ".")
+    csp = s["converted_shell_pages"]
+    L.append(f"\nConverted pages live in the new DB: "
+             f"**{s['converted_pages_total']}**."
+             + (" **Shells with a live converted page (should be deleted, "
+                "task item (e)): "
+                + ", ".join(f"report {p['report_id']} → page {p['page_id']}"
+                            for p in csp) + ".**" if csp
+                else " No shell has a live converted page."))
+    L.append("")
     bi = s["bucket_instances"]
     br = s["bucket_reports"]
     L.append("Unmapped instances by bucket: "
@@ -376,6 +483,8 @@ def write_summary_md(s):
              + ("..." if len(rs["missing_everywhere"]) > 20 else ""))
     L.append("\n## Greedy coverage (cumulative fully-convertible reports as "
              "keys are added, most-instances-first)\n")
+    L.append(f"Baseline = {s['full_producible']} page-producing full reports "
+             "(`no_valid_routes` shells excluded from baseline and flips).\n")
     L.append("| +key | cumulative full reports |")
     L.append("|---|---|")
     for row in s["greedy_key_coverage"]:
