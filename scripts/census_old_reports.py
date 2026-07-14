@@ -45,6 +45,7 @@ from convert_old_reports import (  # noqa: E402
     ROUTES_CATALOG_TABLE, INFO_BOX_GRAIN, INFO_BOX_BUCKET,
     INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR,
     INFO_BOX_LENGTH_BUCKET, INFO_BOX_AADT_BUCKET, INFO_BOX_DELAY_BUCKET,
+    GEOMETRY_TILE_VIEWS,
     ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE,
     analyze_graph, flatten_route_comps, route_settings_gaps,
     aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
@@ -204,6 +205,17 @@ def analyze_report(old):
             if (info["measure"] in MEASURE_EXPR and key[1:] == ROUTE_COMPARE_BUCKET
                     and len(info["assigned"]) >= 2):
                 mapped.append((g, info, f"route_compare_{info['measure']}"))
+                continue
+        elif info["type"] == "Route Map" and info["measure"] == "none":
+            # Round 47 (Route Map M0b): geometry-only overview maps convert via
+            # the per-year Map-section template (mirrors convert_report's
+            # route_map_tmpl_name pre-pass; year clamped into the provisioned
+            # geometry-view range there, so any parseable year maps).
+            year = graph_max_year(info, comps_by_id)
+            if year is not None:
+                year = min(max(year, min(GEOMETRY_TILE_VIEWS)),
+                           max(GEOMETRY_TILE_VIEWS))
+                mapped.append((g, info, f"route_map_none_{year}"))
                 continue
         elif GRAPH_TEMPLATE_MAP.get(key):
             mapped.append((g, info, GRAPH_TEMPLATE_MAP[key]))

@@ -2146,6 +2146,130 @@ def ensure_route_compare_template(measure, templates, dry_run):
     return templates
 
 
+# Per-year TMC geometry tile views (source 582, npmrds2 pgEnv; confirmed live
+# 2026-07-14 — see src/dms/documentation/npmrds-data-sources.md "Per-year TMC
+# geometry tile views"). The year filter is baked into each view's tile URL;
+# the converter picks the report-year view so old-network TMCs render on the
+# network they belonged to (round-44 overlap spot-check: 95.6-100%).
+GEOMETRY_TILE_VIEWS = {2017: 985, 2018: 1015, 2019: 1027, 2020: 1033,
+                       2021: 1035, 2022: 1041, 2023: 1052, 2024: 1232,
+                       2025: 1312, 2026: 3058}
+# dms-server tile host (implements the symbology join= param; the
+# graph.availabs.org avail-falcor tile route does NOT — see
+# src/dms/planning/research/references/map-joins.md).
+TILE_HOST = "https://dmsserver.availabs.org"
+
+
+def ensure_route_map_none_template(year, templates, dry_run):
+    """Mint (or reuse) `route_map_none_{year}` — a MAP-section template (the
+    first non-AVL-Graph template in the registry: elementType "Map") for the
+    old "Route Map" graph with measure "none" (geometry-only route overview,
+    97 corpus instances). The state is a Map-section element-data payload:
+
+    - ONE symbology with ONE hidden layer flagged `series-template` over the
+      year-matched TMC geometry tile view (GEOMETRY_TILE_VIEWS). Sub-layers
+      follow the canonical [<lid>_case, <lid>] shape with main paint at [1].
+    - display._functions carries the SAME comparison_series subscriber the
+      graph templates use ($self + labelKey/valueKey) — ReportRouteList
+      discovers the map exactly like a graph (findSelfBoundGraphs is
+      element-type-agnostic) and publishes its assigned comps; the Map's
+      useComparisonSeriesLayers runtime (library task
+      map-comparison-series-layers.md) materializes one line layer per comp,
+      filtered to that comp's TMCs, colored by the series palette (per user
+      2026-07-14: palette by index, no color plumbing).
+
+    Nothing report-specific is baked in (dates/TMCs arrive via the publish),
+    so one template per YEAR covers every report on that network year —
+    same shared-template philosophy as ensure_route_compare_template."""
+    view_id = GEOMETRY_TILE_VIEWS.get(year)
+    if view_id is None:
+        raise RuntimeError(f"no geometry tile view for year {year}")
+    name = f"route_map_none_{year}"
+    lid = f"rm_none_{year}"
+    src_id = f"npmrds2_s582_v{view_id}_{lid}"
+    tiles_url = (f"{TILE_HOST}/dama-admin/npmrds2/tiles/{view_id}"
+                 f"/{{z}}/{{x}}/{{y}}/t.pbf?cols=tmc&filter=year={year}")
+    zoom_width = lambda base: ["interpolate", ["linear"], ["zoom"],
+                               5, base, 10, base * 2, 14, base * 4]
+    template_layer = {
+        "id": lid, "name": f"Routes ({year} network)", "type": "line",
+        "order": 1, "isVisible": True,
+        "series-template": True,
+        "series-feature-column": "tmc",
+        # the template renders nothing itself (hidden) — keep it out of the
+        # legend; materialized layers clear this key (useComparisonSeriesLayers)
+        "legend-orientation": "none",
+        "view_id": view_id, "source_id": 582,
+        "sources": [{"id": src_id, "source": {
+            "type": "vector", "tiles": [tiles_url], "format": "pbf"}}],
+        "layers": [
+            {"id": f"{lid}_case", "type": "line", "source": src_id,
+             "source-layer": f"view_{view_id}",
+             "paint": {"line-color": "#1e293b", "line-width": zoom_width(1.8)},
+             "layout": {"visibility": "none",
+                        "line-cap": "round", "line-join": "round"}},
+            {"id": lid, "type": "line", "source": src_id,
+             "source-layer": f"view_{view_id}",
+             "paint": {"line-color": "#6D96AE", "line-width": zoom_width(1.2)},
+             "layout": {"visibility": "none",
+                        "line-cap": "round", "line-join": "round"}},
+        ],
+        "filter": {},
+    }
+    sym_id = f"route_map_none_{year}"
+    state = {
+        "symbologies": {sym_id: {
+            "id": sym_id, "name": "Routes", "isVisible": True,
+            "symbology": {"activeLayer": lid, "layers": {lid: template_layer}},
+        }},
+        "display": {"_functions": {"providers": [], "subscribers": [
+            {"functionId": "comparison_series", "enabled": True,
+             "paramKey": "$self",
+             "args": {"labelKey": "label", "valueKey": "filters"}}]}},
+        "height": "2/3",
+        "zoomPan": True,
+        "blankBaseMap": False,
+        "basemapStyle": "Default",
+        "hideControls": True,
+    }
+    existing = templates.get(name)
+    if existing is not None:
+        # Same drift idiom as every other minter: the template's whole state
+        # derives from this function's constants, so any mismatch means the
+        # code moved on — update in place, never mint a parallel name.
+        ex_state = json.loads(existing["data"]["stateJson"])
+        if ex_state == state:
+            return templates
+        new_data = {**existing["data"], "stateJson": json.dumps(state),
+                    "updatedAt": now_iso()}
+        if dry_run:
+            print(f"[dry-run] would update drifted template '{name}' "
+                  f"id={existing['id']}")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} (drift fix)")
+        templates[name] = {"id": existing["id"], "data": new_data}
+        return templates
+    if dry_run:
+        print(f"[dry-run] would create template '{name}'")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "Map",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "elementType": "Map", "componentType": "Map",
+        "includesLayout": False, "includesSource": True,
+        "createdAt": now_iso(), "updatedAt": now_iso(),
+    }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']}")
+    return templates
+
+
 _TMC_RESOLVE_CACHE = {}
 
 
@@ -2237,7 +2361,15 @@ def analyze_graph(g, comps_by_id, gaps):
     else:
         dd = state.get("displayData")
         measures = [m for m in dd if m != "none"] if isinstance(dd, list) else []
-        measure = measures[0] if measures else DEFAULT_DISPLAY_DATA.get(gtype, "speed")
+        # Route Map distinguishes an EXPLICIT displayData ["none"] (geometry-
+        # only overview map, 97 corpus instances) from an absent displayData
+        # (default: speed). The generic filter above erases that distinction —
+        # restore it here so none-maps hit route_map_none_{year} instead of
+        # silently converting as speed.
+        if gtype == "Route Map" and isinstance(dd, list) and dd and not measures:
+            measure = "none"
+        else:
+            measure = measures[0] if measures else DEFAULT_DISPLAY_DATA.get(gtype, "speed")
         if len(measures) > 1:
             gaps.append({"kind": "extra_measures_dropped", "graph": g.get("id"),
                          "detail": measures[1:]})
@@ -2644,21 +2776,51 @@ def convert_report(old_id, dry_run=False, replace=False):
             info["measure"], graph_templates, dry_run)
         route_compare_tmpl_name[gid] = f"route_compare_{info['measure']}"
 
+    # Route Map (measure "none" only for now — the geometry-only overview
+    # map; measure-bearing maps are the M2 phase of the Route Map work plan,
+    # scratchpad route_map_scope.md). One shared template per network YEAR
+    # (graph_max_year, same period-matching idiom as the pm3 join above).
+    route_map_tmpl_name = {}
+    route_map_gap_logged = set()
+    for g, info in analyzed:
+        if info["type"] != "Route Map" or info["measure"] != "none":
+            continue
+        gid = g.get("id")
+        year = graph_max_year(info, comps_by_id)
+        if year is not None:
+            # Clamp into the provisioned geometry-view range: pre-2017 dates
+            # only reach here on mixed reports (pre-2017-ONLY reports are
+            # skipped upstream), and the oldest network is the best stand-in.
+            year = min(max(year, min(GEOMETRY_TILE_VIEWS)),
+                       max(GEOMETRY_TILE_VIEWS))
+        if year is None:
+            gaps.append({"kind": "route_map_no_year", "graph": gid,
+                         "detail": "no parseable comp dates to pick a "
+                                   "geometry network year"})
+            route_map_gap_logged.add(gid)
+            continue
+        graph_templates = ensure_route_map_none_template(
+            year, graph_templates, dry_run)
+        route_map_tmpl_name[gid] = f"route_map_none_{year}"
+
     convertible, skipped = [], []
     for g, info in analyzed:
         gid = g.get("id")
         is_info_box = info["type"] in INFO_BOX_GRAIN
         is_route_compare = info["type"] == "Route Compare Component"
+        is_route_map = info["type"] == "Route Map"
         key = (info["type"], info["measure"], info["resolution"],
                info["data_column"])
         tmpl_name = (info_box_tmpl_name.get(gid) if is_info_box
                     else route_compare_tmpl_name.get(gid) if is_route_compare
+                    else route_map_tmpl_name.get(gid) if is_route_map
                     else GRAPH_TEMPLATE_MAP.get(key))
         if tmpl_name and tmpl_name in graph_templates:
             convertible.append((g, info, graph_templates[tmpl_name]))
             continue
         skipped.append(g)
-        if gid in info_box_gap_logged or gid in route_compare_gap_logged:
+        if (gid in info_box_gap_logged or gid in route_compare_gap_logged
+                or gid in route_map_gap_logged):
             continue  # specific reason already gap-logged above
         gaps.append({"kind": "unmapped_graph", "detail": {
             "graph": gid, "graph_type": info["type"],
