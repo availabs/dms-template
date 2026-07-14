@@ -74,12 +74,12 @@ GAPS_DIR = os.path.join(REPO, "scratchpad/npmrds-sub/old-reports/gaps")
 GRAPH_TEMPLATE_MAP = {
     ("Route Line Graph", "speed", "5-minutes", "travel_time_all"): "tmc_speed_line_graph",
     ("Route Line Graph", "travelTime", "5-minutes", "travel_time_all"): "tmc_travel_time_line_graph",
-    ("TMC Grid Graph", "speed", "5-minutes", "travel_time_all"): "tmc_speed_grid_graph",
+    ("TMC Grid Graph", "speed", "5-minutes", "travel_time_all"): "tmc_speed_grid_graph_tmc",
     ("Route Bar Graph", "speed", "day", "travel_time_all"): "tmc_speed_bar_graph_day",
     ("Route Bar Graph", "travelTime", "day", "travel_time_all"): "tmc_travel_time_bar_graph_day",
     ("Route Bar Graph", "hoursOfDelay", "day", "travel_time_all"): "tmc_delay_bar_graph_day",
-    ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_passenger"): "tmc_co2_grid_graph_passenger",
-    ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_truck"): "tmc_co2_grid_graph_truck",
+    ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_passenger"): "tmc_co2_grid_graph_passenger_tmc",
+    ("TMC Grid Graph", "avgCo2Emissions", "5-minutes", "travel_time_truck"): "tmc_co2_grid_graph_truck_tmc",
     ("Route Bar Graph", "hoursOfDelay", "weekday", "travel_time_all"): "tmc_delay_bar_graph_weekday",
     ("Hours of Delay Graph", "hoursOfDelay", "5-minutes", "travel_time_all"): "tmc_delay_bar_graph_5min",
     ("Hours of Delay Graph", "hoursOfDelay", "day", "travel_time_all"): "tmc_delay_bar_graph_day_tmc",
@@ -105,7 +105,7 @@ GRAPH_TEMPLATE_MAP = {
     # the 3 hand-built originals) — this is the same resolution, the other
     # already-proven measure (TRAVEL_TIME_EXPR), same GridGraph shape as the
     # CO2 grid templates below.
-    ("TMC Grid Graph", "travelTime", "5-minutes", "travel_time_all"): "tmc_travel_time_grid_graph",
+    ("TMC Grid Graph", "travelTime", "5-minutes", "travel_time_all"): "tmc_travel_time_grid_graph_tmc",
     # Round 32 (2026-07-10): avgHoursOfDelay — see AVG_DELAY_EXPR/TEMPLATE_SPECS
     # comments for the formula and shape. Covers every buildable
     # (Route Line/Bar Graph, TMC Grid Graph) bucket from the round-27 census;
@@ -117,7 +117,7 @@ GRAPH_TEMPLATE_MAP = {
     ("Route Bar Graph", "avgHoursOfDelay", "5-minutes", "travel_time_all"): "tmc_avg_delay_bar_graph_5min",
     ("Route Bar Graph", "avgHoursOfDelay", "hour", "travel_time_all"): "tmc_avg_delay_bar_graph_hour",
     ("Route Bar Graph", "avgHoursOfDelay", "month", "travel_time_all"): "tmc_avg_delay_bar_graph_month",
-    ("TMC Grid Graph", "avgHoursOfDelay", "5-minutes", "travel_time_all"): "tmc_avg_delay_grid_graph",
+    ("TMC Grid Graph", "avgHoursOfDelay", "5-minutes", "travel_time_all"): "tmc_avg_delay_grid_graph_tmc",
     # Round 34 (2026-07-13): Bar Graph Summary — one bar per route comp, each
     # bar ONE whole-date-range aggregate (old allReducer semantics; see
     # SPEED_SUMMARY_EXPR). Resolution never affects a whole-range aggregate
@@ -751,6 +751,81 @@ TEMPLATE_SPECS = {
     },
     "tmc_co2_grid_graph_truck": {
         "graphType": "GridGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
+                  "target": "color", "fn": "avg"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    # Round 42 (2026-07-14, user-caught on report 914's "Winter Average Day"):
+    # TMC Grid Graph's per-TMC breakdown is NOT a comparison-series artifact.
+    # The round-32 comment on tmc_avg_delay_line_graph assumed a report's
+    # multiple assigned route comps were what produced grid rows ("TMC Grid
+    # Graph's per-TMC rows come from each assigned route-comp being its own
+    # comparison-series arm") — report 914 disproved that: ONE assigned comp
+    # (a genuinely multi-TMC route) rendered as a single aggregate color strip
+    # in the new tool, where the old tool broke it into ~10 TMC rows × time-
+    # of-day columns (live old-UI screenshot). The 5 templates above
+    # (tmc_speed_grid_graph/tmc_travel_time_grid_graph/tmc_avg_delay_grid_graph/
+    # tmc_co2_grid_graph_passenger/tmc_co2_grid_graph_truck) never had a
+    # `categorize` at all, so a single-comp graph (the common case) always
+    # collapsed every TMC in the route into one value. Real semantic: same as
+    # TMC Info Box (INFO_BOX_GRAIN's "tmc" grain) and Hours of Delay Graph's
+    # tmc_delay_bar_graph_* templates — comparisonSeries arms stay isolated
+    # per-route queries (round 25), `categorize: "tmc"` groups WITHIN each
+    # arm's own query. SPEED_EXPR/TRAVEL_TIME_EXPR (fn:"exempt", self-
+    # aggregating map combinators) algebraically degrade to the correct
+    # per-TMC value once grouped by (epoch, tmc) — round 35's own comment
+    # already proved this ("a single-TMC group degrades to miles*3600/avg(tt)
+    # = the old speedTmcReducer"); the CO2/avgHoursOfDelay expressions are
+    # already plain per-row/per-tmc formulas (no combinator), so `categorize`
+    # is a pure additive change for them. GRAPH_TEMPLATE_MAP above repointed
+    # to these; the 5 route-aggregate originals are kept (nothing else
+    # references them, no proactive cleanup — [[feedback_dont_over_engineer_against_orphaning]]).
+    # GridGraph's own component (GridGraphWrapper) reads its per-row dimension
+    # from a column targeted "yAxis" (paired with xAxis=columns, color=value),
+    # never "categorize" — that's BarGraph's convention (Hours of Delay
+    # Graph's tmc_delay_bar_graph_* above), and it's silently ignored here.
+    # First cut of this fix used categorize:"tmc" (built correctly server-side
+    # per ensure_graph_templates' generic mechanism) and still rendered a
+    # single aggregate strip on report 914 — caught live via Playwright/visual
+    # diff, not assumed. The `categorize` spec key accepts a raw column dict
+    # (ensure_graph_templates: `isinstance(cat_spec, dict)` bypasses its
+    # default target:"categorize" construction), so the tmc column is
+    # supplied pre-targeted at "yAxis" instead of the bare string "tmc".
+    "tmc_speed_grid_graph_tmc": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "color", "fn": "exempt", "customName": "Speed (mph)"},
+    },
+    "tmc_travel_time_grid_graph_tmc": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "color", "fn": "exempt",
+                  "customName": "Travel Time (min)"},
+    },
+    "tmc_avg_delay_grid_graph_tmc": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "color", "fn": "exempt"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_co2_grid_graph_passenger_tmc": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
+                  "target": "color", "fn": "avg"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    "tmc_co2_grid_graph_truck_tmc": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
                   "target": "color", "fn": "avg"},
         "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
