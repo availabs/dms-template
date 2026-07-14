@@ -28,6 +28,11 @@
 //   --section <text>  additionally screenshot the section whose heading contains <text>
 //   --eval <file>     after settle, run `export default async (page) => any` from <file>;
 //                     result is printed and included in the JSON dump
+//   --auth [file]     load as an authenticated user by injecting the minted DMS token
+//                     into localStorage.userToken (default token file:
+//                     scratchpad/npmrds-sub/.dms-auth-token — refresh it by having
+//                     Ryan run scratchpad/npmrds-sub/mint_token.sh). Needed for
+//                     edit-mode probes; a stale token silently degrades to anon.
 //   --host <origin>   page origin (default http://npmrds.localhost:5173 — subdomain matters,
 //                     bare localhost routes to the wrong pattern)
 //   --api <origin>    dms-server origin to capture (default http://localhost:3001)
@@ -65,6 +70,7 @@ const opts = {
   out: path.join(repoRoot, 'scratchpad/npmrds-sub/tmp'),
   shot: true,
   json: true,
+  auth: null,
 };
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
@@ -82,6 +88,11 @@ for (let i = 1; i < argv.length; i++) {
   } else if (a === '--out') opts.out = path.resolve(next());
   else if (a === '--no-shot') opts.shot = false;
   else if (a === '--no-json') opts.json = false;
+  else if (a === '--auth') {
+    opts.auth = (argv[i + 1] && !argv[i + 1].startsWith('--'))
+      ? path.resolve(next())
+      : path.join(repoRoot, 'scratchpad/npmrds-sub/.dms-auth-token');
+  }
   else { console.error(`unknown option: ${a}`); process.exit(2); }
 }
 const url = target.startsWith('http') ? target : `${opts.host}/${target}`;
@@ -91,6 +102,12 @@ mkdirSync(opts.out, { recursive: true });
 // ---- collect -------------------------------------------------------------
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: opts.viewport });
+if (opts.auth) {
+  const { readFileSync } = await import('fs');
+  const token = readFileSync(opts.auth, 'utf8').trim();
+  await page.addInitScript(t => localStorage.setItem('userToken', t), token);
+  console.log(`auth: injecting userToken from ${opts.auth}`);
+}
 
 const consoleErrors = [];
 const pageErrors = [];
