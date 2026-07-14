@@ -42,7 +42,9 @@ from collections import Counter, defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from convert_old_reports import (  # noqa: E402
     REPO, GRAPH_TEMPLATE_MAP, TEMPLATE_SPECS, COLOR_RANGE_GRAPH_TYPES,
-    ROUTES_CATALOG_TABLE, INFO_BOX_GRAIN, INFO_BOX_BUCKET, PM3_VIEW_BY_YEAR,
+    ROUTES_CATALOG_TABLE, INFO_BOX_GRAIN, INFO_BOX_BUCKET,
+    INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR,
+    INFO_BOX_LENGTH_BUCKET, INFO_BOX_AADT_BUCKET, INFO_BOX_DELAY_BUCKET,
     ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE,
     analyze_graph, flatten_route_comps, route_settings_gaps,
     aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
@@ -151,6 +153,15 @@ def analyze_report(old):
     for rc in route_comps:
         route_settings_gaps(rc.get("settings") or {}, rc.get("name"), gaps)
 
+    # Round 40: mirrors convert_report's synthetic-id fallback (see there for
+    # the full story) — this script's own classification loop doesn't use a
+    # gid-keyed dict so it was never mis-classifying, but gap-log entries
+    # attributing a graph by `g.get("id")` were reporting `None` for 96% of
+    # the corpus. Purely a diagnostic-clarity fix here, not a correctness one.
+    for i, g in enumerate(old.get("graph_comps") or []):
+        if g.get("id") is None:
+            g["id"] = f"graph-idx-{i}"
+
     analyzed = [(g, analyze_graph(g, comps_by_id, gaps))
                 for g in old.get("graph_comps") or []]
     mapped, unmapped_keys, skipped_graphs = [], [], []
@@ -164,7 +175,24 @@ def analyze_report(old):
         # the census doesn't mis-count them.
         grain = INFO_BOX_GRAIN.get(info["type"])
         is_route_compare = info["type"] == "Route Compare Component"
-        if grain:
+        is_bar_summary_pm3 = (info["type"] == "Bar Graph Summary"
+                              and (info["measure"], info["data_column"])
+                              == BAR_SUMMARY_PM3_BUCKET)
+        if grain and (info["measure"], info["data_column"]) in INFO_BOX_TRAVELTIME_BUCKETS:
+            # Round 38 (avgTT-byDateRange) + round 40 (plain travelTime alias):
+            # static CH template, no year/bin gate at all.
+            mapped.append((g, info, f"{grain}_info_box_traveltime"))
+            continue
+        elif grain and (info["measure"], info["data_column"]) == INFO_BOX_LENGTH_BUCKET:
+            mapped.append((g, info, f"{grain}_info_box_length"))
+            continue
+        elif grain and (info["measure"], info["data_column"]) == INFO_BOX_AADT_BUCKET:
+            mapped.append((g, info, f"{grain}_info_box_aadt"))
+            continue
+        elif grain and (info["measure"], info["data_column"]) == INFO_BOX_DELAY_BUCKET:
+            mapped.append((g, info, f"{grain}_info_box_delay"))
+            continue
+        elif grain:
             in_bucket = (info["measure"], info["data_column"]) == INFO_BOX_BUCKET
             year = graph_max_year(info, comps_by_id) if in_bucket else None
             bin_ = graph_reliability_bin(info, comps_by_id) if in_bucket else None

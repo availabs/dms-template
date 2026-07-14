@@ -192,6 +192,69 @@ INFO_BOX_BUCKET = ("speed", "travel_time_all")
 PM3_VIEW_BY_YEAR = {2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425}
 INFO_BOX_TITLES = {"route": "Route Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})",
                     "tmc": "TMC Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})"}
+# Round 38 (Phase B, item (c)): Info Box `avgTT-byDateRange` — checked 1410's
+# live schema (`s1410_v3425_pm_3`, 121 columns) directly: NO avg-travel-time
+# column exists there at all (only speed percentiles, LOTTR/TTTR ratios,
+# PHED/TED) — this measure has nothing to do with the pm3 join. It's the same
+# flat TRAVEL_TIME_EXPR already live-verified for Bar Graph Summary/Route Bar
+# Graph. Deliberately a SEPARATE bucket/template from INFO_BOX_BUCKET's
+# reliability one, with NO year or bin dependency — old RouteInfoBox.jsx never
+# gated travel time on a time-of-day bin either, so requiring one here would
+# needlessly forfeit flips (see ensure_info_box_traveltime_template).
+INFO_BOX_TRAVELTIME_BUCKET = ("avgTT-byDateRange", "travel_time_all")
+# Round 40: old dataTypes.js's plain `travelTime` key (BASE_DATA_TYPES, no
+# `group`) falls into RouteInfoBox.jsx's `default` switch case, which calls
+# `allReducer` — the exact same two-level per-tmc-mean-then-sum-across-tmcs
+# semantics as `avgTT-byDateRange`'s aliased-to `allReducer` above (round 38
+# already established that alias per the "current/correct, not old-math
+# replica" precedent). Genuinely the same computation under a different old
+# key name — no new template needed, just another bucket key pointing at the
+# same `{grain}_info_box_traveltime` template.
+INFO_BOX_TRAVELTIME_BUCKETS = {INFO_BOX_TRAVELTIME_BUCKET, ("travelTime", "travel_time_all")}
+INFO_BOX_TRAVELTIME_TITLES = {"route": "Route Travel Time", "tmc": "TMC Travel Time"}
+# Round 40: TMC_ATTRIBUTES' `length` key (group 'tmcAttribute', reducer
+# sumReducer) — the route's total length in miles, summed once per DISTINCT
+# assigned TMC (not per fetched row/epoch — the underlying CH rows are still
+# per-(tmc,epoch), so summing table1.miles directly would multiply-count each
+# TMC by however many epochs it has). Same arraySum/maxMap distinct-tmc
+# combinator already proven in SPEED_EXPR's numerator. No year/bin/override
+# dependency — a TMC's `miles` is a static join column, not a per-epoch fact.
+INFO_BOX_LENGTH_BUCKET = ("length", "travel_time_all")
+LENGTH_EXPR = "arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) as length"
+# TMC grain groups by a real `tmc` column (round-33/round-38 categorize
+# convention), so each CH group is already scoped to one TMC — the
+# distinct-tmc map combinator above would be a redundant (and, live-verified
+# 2026-07-14, illegal — ClickHouse rejects an aggregate function nested
+# inside the outer `fn: "avg"` wrapper) no-op. Read the join column directly.
+LENGTH_TMC_EXPR = "table1.miles as length"
+# Round 40: TMC_ATTRIBUTES' `aadt` key (group 'tmcAttribute', reducer
+# meanReducer) — unweighted mean AADT across the route's DISTINCT assigned
+# TMCs (old meanReducer over a route's already-one-row-per-tmc `data.aadt`
+# array). Same distinct-tmc dedup as LENGTH_EXPR (arrayAvg instead of
+# arraySum) so epoch-count differences across TMCs can't skew the average.
+# overrides.aadt: old TMC_ATTRIBUTES.aadt has its own override mechanism
+# (aadtDataOverride/aadtValueOverride), separate from the
+# delay/CO₂-consuming AADT_OVERRIDE_SUBS fragments — not wired here (no real
+# corpus report combines overrides.aadt with an Info Box aadt graph); the
+# existing generic "table1.aadt in stateJson" detection will still fire and
+# correctly gap-log `aadt_override_not_applied` in that case rather than
+# silently drop the override, same as any other unmatched fragment.
+INFO_BOX_AADT_BUCKET = ("aadt", "travel_time_all")
+AADT_EXPR = "arrayAvg(mapValues(maxMap(map(ds.tmc, table1.aadt)))) as aadt"
+# See LENGTH_TMC_EXPR above — same reasoning, same live-verified fix.
+AADT_TMC_EXPR = "table1.aadt as aadt"
+# Round 40: BASE_DATA_TYPES' `hoursOfDelay` key (reducer/tmcReducer both
+# sumReducer) — plain SUM of the same per-epoch weighted DELAY_EXPR every
+# other Hours-of-Delay template already uses, across the whole route/date
+# range (old JS ignores `year` for this measure — sumReducer takes no such
+# param). Needs the same META_1946_JOIN + AADT_DIST_JOIN pair as those
+# templates (DELAY_EXPR reads `table1.avg_speedlimit`/`faciltype`, which the
+# base template's own default join, TMC Identification 455/3464, doesn't
+# carry — confirmed directly against its column list).
+INFO_BOX_DELAY_BUCKET = ("hoursOfDelay", "travel_time_all")
+INFO_BOX_LENGTH_TITLES = {"route": "Route Length", "tmc": "TMC Length"}
+INFO_BOX_AADT_TITLES = {"route": "Route AADT", "tmc": "TMC AADT"}
+INFO_BOX_DELAY_TITLES = {"route": "Route Hours of Delay", "tmc": "TMC Hours of Delay"}
 
 # ── Round 21: per-report/per-comp reliability BIN selection ─────────────────
 # Every Info Box template hardcoded the pm3 join's reliability bin to 'amp'
@@ -1559,6 +1622,313 @@ def ensure_pm3_join_template(grain, year, bin_, templates, dry_run):
     return templates
 
 
+def ensure_info_box_traveltime_template(grain, templates, dry_run):
+    """Mint (or reuse) `{grain}_info_box_traveltime` — a Spreadsheet template
+    for Route/TMC Info Box's `avgTT-byDateRange` measure (round 38, Phase B
+    item (c)). Unlike ensure_pm3_join_template, this is STATIC: no pm3 join,
+    no per-report year/bin resolution — see INFO_BOX_TRAVELTIME_BUCKET above
+    for why (no 1410 column backs it, and old RouteInfoBox.jsx never gated
+    travel time on a bin either). Same TRAVEL_TIME_EXPR already live-verified
+    for Bar Graph Summary/Route Bar Graph, `fn: "exempt"` (self-aggregating).
+    Same grain split as ensure_pm3_join_template: "route" groups by the
+    comparisonSeries `__series` discriminator (one row per route), "tmc" by a
+    plain `tmc` column — only "route" has real corpus instances this round,
+    but the split costs nothing extra since the structure already carries it."""
+    name = f"{grain}_info_box_traveltime"
+    if templates.get(name) is not None:
+        return templates  # static — nothing to drift-check independently of
+                           # TRAVEL_TIME_EXPR's own shared drift detection
+    base = templates.get(TEMPLATE_BASE_NAME)
+    if not base:
+        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+    base_state = json.loads(base["data"]["stateJson"])
+
+    avgtt_col = {"type": "calculated", "show": True,
+                 "name": TRAVEL_TIME_EXPR, "fn": "exempt",
+                 "customName": "Travel Time (min)"}
+    if grain == "route":
+        series_col = next(c for c in base_state["columns"]
+                          if c.get("name") == "__series")
+        columns = [series_col, avgtt_col]
+    else:  # "tmc"
+        tmc_src = next(c for c in base_state["externalSource"]["columns"]
+                       if c.get("name") == "tmc" and c.get("source_id") == 583)
+        tmc_col = {**tmc_src, "show": True, "target": "categorize", "group": True}
+        columns = [avgtt_col, tmc_col]
+
+    state = {
+        "externalSource": base_state["externalSource"],
+        "columns": columns,
+        "filters": base_state.get("filters") or {"op": "AND", "groups": []},
+        "display": {
+            "usePagination": True, "pageSize": 50, "hideExternalToggle": True,
+            "title": {"title": INFO_BOX_TRAVELTIME_TITLES[grain]},
+            "showAttribution": True, "fetchMode": "force",
+            "_functions": base_state["display"]["_functions"],
+        },
+        # Carry the base's own default join (TMC Identification, 455/3464)
+        # forward even though TRAVEL_TIME_EXPR never references table1 — a
+        # joinless query never aliases the base table as `ds` at all
+        # (dms-server clickhouse.js's `hasJoin ? ' as ds ' : ''`), so without
+        # this every `ds.`-qualified expression 500s with "Unknown expression
+        # identifier 'ds.tmc'" (caught live on report 58's first attempt).
+        # Every other template gets this for free via a full deep-copy of
+        # base_state; this function builds state from scratch, so it must be
+        # carried over explicitly.
+        "join": base_state.get("join"),
+        "customBuckets": base_state.get("customBuckets"),
+        "comparisonSeries": base_state.get("comparisonSeries"),
+    }
+
+    if dry_run:
+        print(f"[dry-run] would create template '{name}'")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "Spreadsheet",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "layoutJson": base["data"].get("layoutJson"),
+        "elementType": "Spreadsheet", "componentType": "Spreadsheet",
+        "includesLayout": base["data"].get("includesLayout", False),
+        "includesSource": base["data"].get("includesSource", True),
+        "createdAt": now_iso(), "createdBy": base["data"].get("createdBy"),
+        "updatedAt": now_iso(), "updatedBy": base["data"].get("updatedBy"),
+    }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']}")
+    return templates
+
+
+def _ensure_static_info_box_template(name, grain, route_expr, tmc_expr, titles,
+                                      templates, dry_run):
+    """Shared shape for the round-40 static (no year/bin/pm3 dependency)
+    Info Box templates — `length`/`aadt`, both single-column TMC-attribute
+    reads off the base template's own default join (TMC Identification,
+    455/3464), which already carries `miles`/`aadt`. Route grain groups by
+    the comparisonSeries `__series` discriminator with a self-aggregating
+    (`fn: "exempt"`) distinct-tmc combinator expression (`route_expr`); TMC
+    grain groups by a real `tmc` categorize column with a plain per-tmc
+    `fn: "avg"` read of the raw join column (`tmc_expr`) — NOT the route
+    expression's combinator: each TMC-grain CH group is already scoped to
+    one TMC, so wrapping the (already self-aggregating) combinator in an
+    outer `fn: "avg"` is a redundant aggregate nested inside another one,
+    which ClickHouse rejects outright (`ILLEGAL_AGGREGATION`, live-verified
+    2026-07-14 on the `aadt` measure — caught via a real "Error fetching
+    data" console error + confirming the exact ClickHouseError in
+    dms-server.log, not assumed). `length`/`aadt` are genuinely identical in
+    shape (single join-column read, no override/bin/year wrinkle) so this
+    one shared builder covers both — unlike ensure_info_box_delay_template
+    (different join entirely) or ensure_info_box_traveltime_template
+    (pre-dates this helper, has its own join-carryover bug-fix history worth
+    keeping self-contained)."""
+    if templates.get(name) is not None:
+        return templates
+    base = templates.get(TEMPLATE_BASE_NAME)
+    if not base:
+        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+    base_state = json.loads(base["data"]["stateJson"])
+
+    if grain == "route":
+        value_col = {"type": "calculated", "show": True, "name": route_expr, "fn": "exempt"}
+        series_col = next(c for c in base_state["columns"]
+                          if c.get("name") == "__series")
+        columns = [series_col, value_col]
+    else:  # "tmc"
+        value_col = {"type": "calculated", "show": True, "name": tmc_expr, "fn": "avg"}
+        tmc_src = next(c for c in base_state["externalSource"]["columns"]
+                       if c.get("name") == "tmc" and c.get("source_id") == 583)
+        tmc_col = {**tmc_src, "show": True, "target": "categorize", "group": True}
+        columns = [value_col, tmc_col]
+
+    state = {
+        "externalSource": base_state["externalSource"],
+        "columns": columns,
+        "filters": base_state.get("filters") or {"op": "AND", "groups": []},
+        "display": {
+            "usePagination": True, "pageSize": 50, "hideExternalToggle": True,
+            "title": {"title": titles[grain]},
+            "showAttribution": True, "fetchMode": "force",
+            "_functions": base_state["display"]["_functions"],
+        },
+        "join": base_state.get("join"),
+        "customBuckets": base_state.get("customBuckets"),
+        "comparisonSeries": base_state.get("comparisonSeries"),
+    }
+
+    if dry_run:
+        print(f"[dry-run] would create template '{name}'")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "Spreadsheet",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "layoutJson": base["data"].get("layoutJson"),
+        "elementType": "Spreadsheet", "componentType": "Spreadsheet",
+        "includesLayout": base["data"].get("includesLayout", False),
+        "includesSource": base["data"].get("includesSource", True),
+        "createdAt": now_iso(), "createdBy": base["data"].get("createdBy"),
+        "updatedAt": now_iso(), "updatedBy": base["data"].get("updatedBy"),
+    }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']}")
+    return templates
+
+
+def ensure_info_box_length_template(grain, templates, dry_run):
+    """Mint (or reuse) `{grain}_info_box_length` — round 40, see
+    INFO_BOX_LENGTH_BUCKET/LENGTH_EXPR above."""
+    return _ensure_static_info_box_template(
+        f"{grain}_info_box_length", grain, LENGTH_EXPR, LENGTH_TMC_EXPR,
+        INFO_BOX_LENGTH_TITLES, templates, dry_run)
+
+
+def ensure_info_box_aadt_template(grain, templates, dry_run):
+    """Mint (or reuse) `{grain}_info_box_aadt` — round 40, see
+    INFO_BOX_AADT_BUCKET/AADT_EXPR above."""
+    return _ensure_static_info_box_template(
+        f"{grain}_info_box_aadt", grain, AADT_EXPR, AADT_TMC_EXPR,
+        INFO_BOX_AADT_TITLES, templates, dry_run)
+
+
+def ensure_info_box_delay_template(grain, templates, dry_run):
+    """Mint (or reuse) `{grain}_info_box_delay` — round 40, see
+    INFO_BOX_DELAY_BUCKET above. Unlike length/aadt, needs the full
+    META_1946_JOIN + AADT_DIST_JOIN pair (DELAY_EXPR reads
+    `table1.avg_speedlimit`/`faciltype`, absent from the base template's own
+    default join) and `fn: "sum"` (DELAY_EXPR is a per-epoch raw quantity,
+    not self-aggregating like TRAVEL_TIME_EXPR/SPEED_EXPR)."""
+    name = f"{grain}_info_box_delay"
+    if templates.get(name) is not None:
+        return templates
+    base = templates.get(TEMPLATE_BASE_NAME)
+    if not base:
+        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+    base_state = json.loads(base["data"]["stateJson"])
+
+    delay_col = {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                 "fn": "sum", "customName": "Hours of Delay"}
+    if grain == "route":
+        series_col = next(c for c in base_state["columns"]
+                          if c.get("name") == "__series")
+        columns = [series_col, delay_col]
+    else:  # "tmc"
+        tmc_src = next(c for c in base_state["externalSource"]["columns"]
+                       if c.get("name") == "tmc" and c.get("source_id") == 583)
+        tmc_col = {**tmc_src, "show": True, "target": "categorize", "group": True}
+        columns = [delay_col, tmc_col]
+
+    state = {
+        "externalSource": base_state["externalSource"],
+        "columns": columns,
+        "filters": base_state.get("filters") or {"op": "AND", "groups": []},
+        "display": {
+            "usePagination": True, "pageSize": 50, "hideExternalToggle": True,
+            "title": {"title": INFO_BOX_DELAY_TITLES[grain]},
+            "showAttribution": True, "fetchMode": "force",
+            "_functions": base_state["display"]["_functions"],
+        },
+        "join": {"sources": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN}},
+        "customBuckets": base_state.get("customBuckets"),
+        "comparisonSeries": base_state.get("comparisonSeries"),
+    }
+
+    if dry_run:
+        print(f"[dry-run] would create template '{name}'")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "Spreadsheet",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "layoutJson": base["data"].get("layoutJson"),
+        "elementType": "Spreadsheet", "componentType": "Spreadsheet",
+        "includesLayout": base["data"].get("includesLayout", False),
+        "includesSource": base["data"].get("includesSource", True),
+        "createdAt": now_iso(), "createdBy": base["data"].get("createdBy"),
+        "updatedAt": now_iso(), "updatedBy": base["data"].get("updatedBy"),
+    }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']}")
+    return templates
+
+
+def ensure_bar_graph_summary_pm3_template(year, templates, dry_run):
+    """Mint (or reuse) `tmc_freeflow_summary_bar_graph_{year}` — Bar Graph
+    Summary's `freeflow-byDateRange` measure (round 38, Phase B item (c)),
+    one bar per route/comp via pm3's `speed_pctl_85` (same column Info Box's
+    freeflow already uses, round 22's "current/correct pm3 value, not
+    old-math replica" precedent — round 17 — extended here even though the
+    old tool's own BarGraphSummary.jsx used a plain per-TMC speed mean for
+    this key, not a percentile). Bin-independent (1410's speed percentiles
+    have no time-of-day dimension) so only `year` needs resolving, same
+    idiom as ensure_pm3_join_template but Bar-Graph-shaped (`xAxis:
+    "__series"`, one calculated yAxis column) instead of a Spreadsheet."""
+    name = f"tmc_freeflow_summary_bar_graph_{year}"
+    if templates.get(name) is not None:
+        return templates  # static per year — nothing further to drift-check
+    base = templates.get(TEMPLATE_BASE_NAME)
+    if not base:
+        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+    base_state = json.loads(base["data"]["stateJson"])
+    view_id = PM3_VIEW_BY_YEAR[year]
+
+    series_col = next(c for c in base_state["columns"]
+                      if c.get("name") == "__series")
+    x_col = {**series_col, "target": "xAxis"}
+    freeflow_col = {"type": "calculated", "show": True,
+                    "name": "pm3.speed_pctl_85 as freeflow", "target": "yAxis",
+                    "fn": "avg", "customName": "Freeflow (mph)"}
+
+    state = {
+        "externalSource": base_state["externalSource"],
+        "columns": [freeflow_col, x_col],
+        "filters": base_state.get("filters") or {"op": "AND", "groups": []},
+        "display": {**base_state.get("display", {}), "graphType": "BarGraph",
+                    "legend": {"show": False}},
+        "join": {"sources": {"pm3": {
+            "pgFederated": {"pgEnv": "npmrds2", "table": f"s1410_v{view_id}_pm_3",
+                            "schema": "gis_datasets"},
+            "joinColumns": [{"dsColumn": "tmc", "joinSourceColumn": "tmc"}],
+            "mergeStrategy": "join", "type": "left",
+        }}},
+        "customBuckets": base_state.get("customBuckets"),
+        "comparisonSeries": base_state.get("comparisonSeries"),
+    }
+
+    if dry_run:
+        print(f"[dry-run] would create template '{name}'")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "AVL Graph",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "layoutJson": base["data"].get("layoutJson"),
+        "elementType": "AVL Graph", "componentType": "AVL Graph",
+        "includesLayout": base["data"].get("includesLayout", False),
+        "includesSource": base["data"].get("includesSource", True),
+        "createdAt": now_iso(), "createdBy": base["data"].get("createdBy"),
+        "updatedAt": now_iso(), "updatedBy": base["data"].get("updatedBy"),
+    }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']}")
+    return templates
+
+
 def ensure_route_compare_template(measure, templates, dry_run):
     """Mint (or reuse) a SHARED, generic Route Compare Component Spreadsheet
     template for `measure` — one row per assigned comp via the same __series
@@ -2079,6 +2449,25 @@ def convert_report(old_id, dry_run=False, replace=False):
         else:
             seen_names[name] = rc.get("compId")
         rc["name"] = name
+    # Round 40 bug fix: 817/854 corpus reports (96%) have at least one
+    # graph_comp with no `id` field at all (the documented old shape,
+    # `id: 'graph-comp-N'`, simply isn't there for most of the corpus —
+    # confirmed directly, not just the handful of "ancient version 2"
+    # reports the id-less case was previously assumed to be limited to).
+    # Every dynamic per-graph decision below (Info Box template choice,
+    # Route Compare, Bar Graph Summary pm3 year) is keyed by `g.get("id")`
+    # in an in-memory dict — when multiple graphs in the same report share
+    # `id: None`, they collide on that key and whichever is processed LAST
+    # silently overwrites every earlier graph's template assignment, even
+    # though the eventual new-side section/trackingId is unique and
+    # unaffected. Live-caught 2026-07-14 on report 33: a `speed` reliability
+    # graph and an `avgTT-byDateRange` graph were both silently overwritten
+    # with the report's (unrelated) `aadt` graph's template. Fix: assign a
+    # stable, unique-within-this-report synthetic id (array position) to
+    # any graph_comp missing one, before any gid-keyed dict is built.
+    for i, g in enumerate(old.get("graph_comps") or []):
+        if g.get("id") is None:
+            g["id"] = f"graph-idx-{i}"
     # -- per-graph analysis + template mapping
     comps_by_id = {rc.get("compId"): rc for rc in route_comps if rc.get("compId")}
     graph_templates = load_graph_templates()
@@ -2101,7 +2490,31 @@ def convert_report(old_id, dry_run=False, replace=False):
         if not grain:
             continue
         gid = g.get("id")
-        if (info["measure"], info["data_column"]) != INFO_BOX_BUCKET:
+        measure_col = (info["measure"], info["data_column"])
+        if measure_col in INFO_BOX_TRAVELTIME_BUCKETS:
+            # Round 38 (Phase B) + round 40 (plain `travelTime` alias): plain
+            # CH travel time, no pm3/year/bin dependency — see
+            # ensure_info_box_traveltime_template.
+            graph_templates = ensure_info_box_traveltime_template(
+                grain, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_traveltime"
+            continue
+        if measure_col == INFO_BOX_LENGTH_BUCKET:
+            graph_templates = ensure_info_box_length_template(
+                grain, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_length"
+            continue
+        if measure_col == INFO_BOX_AADT_BUCKET:
+            graph_templates = ensure_info_box_aadt_template(
+                grain, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_aadt"
+            continue
+        if measure_col == INFO_BOX_DELAY_BUCKET:
+            graph_templates = ensure_info_box_delay_template(
+                grain, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_delay"
+            continue
+        if measure_col != INFO_BOX_BUCKET:
             continue  # outside the join's bucket — falls through to the
                       # generic "no template mapping" gap below, same as any
                       # other uncovered GRAPH_TEMPLATE_MAP combination
