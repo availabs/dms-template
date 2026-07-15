@@ -32,6 +32,7 @@ Usage:
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import uuid
@@ -438,6 +439,17 @@ DELAY_EXPR = ("(greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.mi
               "* (table1.aadt / (if(table1.faciltype > 1, 2, 1))) "
               "* arrayElement(table2.distributions, ds.epoch + 1) "
               "as hours_of_delay")
+# Route Map hoursOfDelay (M3): unlike avgHoursOfDelay, this measure's old
+# tmcReducer is a plain SUM across per-bucket values (dataTypes.js:
+# `tmcReducer: sumReducer`), and each bucket's own "hoursOfDelay" value is
+# ALREADY that bucket's raw, unmodified delay total (getHoursOfDelay.js's
+# `hoursOfDelay: sum` field, no per-resolution normalization at all -- only
+# avgHoursOfDelay applies getAvgHoursOfDelay()). Sum-of-bucket-sums over any
+# partition of the same date range telescopes to the SAME grand total
+# regardless of bucket size, so this measure is genuinely resolution-
+# INVARIANT for the Map -- one template per YEAR, no resolution keying
+# needed (unlike avgHoursOfDelay).
+HOURS_OF_DELAY_VALUE_EXPR = f"(sum({DELAY_EXPR.rsplit(' as ', 1)[0]})) as value"
 # avgHoursOfDelay (round 32, 2026-07-10): old dataTypes.js's `avgHoursOfDelay`
 # is NOT a different per-epoch value — traced to avail-falcor's own
 # getHoursOfDelay.js (routeDataRetrievers/getHoursOfDelay.js:70-103): both
@@ -459,6 +471,36 @@ DELAY_EXPR = ("(greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.mi
 # extra wrapping fn is needed or correct.
 AVG_DELAY_EXPR = (f"(sum({DELAY_EXPR.rsplit(' as ', 1)[0]}) "
                   "/ count(DISTINCT ds.date)) as avg_hours_of_delay")
+
+# Route Map avgHoursOfDelay (M3, 2026-07-15): unlike speed/travelTime/
+# hoursOfDelay, this measure is GENUINELY resolution-dependent for the Map,
+# not just cosmetically -- old dataTypes.js gives avgHoursOfDelay
+# `tmcReducer: meanReducer` (the Map takes the MEAN of per-bucket
+# avgHoursOfDelay values, one bucket per whatever resolution the report
+# used), and mean-of-bucket-averages is NOT scale-invariant across bucket
+# sizes the way sum-of-sums is. Traced against the old
+# avail-falcor getHoursOfDelay.js: for "day" resolution each bucket already
+# IS one calendar day (getAvgHoursOfDelay's "day" case returns the bucket's
+# own sum unchanged), so the mean-across-days telescopes to exactly
+# AVG_DELAY_EXPR above (sum(delay)/count(DISTINCT date), the SAME
+# resolution-invariant whole-range formula every other consumer of
+# AVG_DELAY_EXPR already uses). For "5-minutes" resolution each bucket is a
+# single raw epoch (getAvgHoursOfDelay's own default numEpochs=1 case, since
+# the bucket key IS the epoch), so the mean-across-epochs is a PER-EPOCH
+# rate: sum(delay)/count(*) -- a different, much smaller-scale quantity than
+# the per-day rate (not just a relabeling). Only "day" and "5-minutes" occur
+# in the real corpus for Route Map avgHoursOfDelay (round-49/50 census: 12
+# and 9 instances respectively, 0 single-blocker flips either way -- pure
+# vocabulary-breadth, user-endorsed to scope to just these two); the other
+# JS branches (15-minutes/hour/month-or-larger) need a genuinely harder
+# nested bucket-then-mean-of-buckets subquery and have ZERO corpus
+# instances, so they stay unbuilt/gap-logged rather than built speculatively.
+AVG_DELAY_VALUE_EXPR_DAY = AVG_DELAY_EXPR.rsplit(" as ", 1)[0] + " as value"
+AVG_DELAY_VALUE_EXPR_5MIN = (f"(sum({DELAY_EXPR.rsplit(' as ', 1)[0]}) "
+                             "/ count(*)) as value")
+ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION = {
+    "day": AVG_DELAY_VALUE_EXPR_DAY, "5-minutes": AVG_DELAY_VALUE_EXPR_5MIN}
+ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG = {"day": "day", "5-minutes": "5min"}
 
 
 # Bar Graph Summary avgHoursOfDelay (round 36): the summary bar is the old
@@ -820,6 +862,16 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
                   "target": "color", "fn": "exempt",
                   "customName": "Travel Time (min)"},
+        # Round 51 (user-reported): sub-70-second travel times rendered as
+        # unreadable minute decimals (e.g. "0.045"). minutesAutoSeconds tells
+        # GridGraph's legend to auto-switch the whole scale to seconds when
+        # its own domain max is under ~70sec (formatMinutesAuto) — the
+        # underlying TRAVEL_TIME_EXPR value stays in minutes, display-only.
+        # Existing tooltip keys preserved verbatim (see round 35's original
+        # UI-authored shape) — this dict REPLACES display.tooltip wholesale
+        # in ensure_graph_templates, it doesn't deep-merge.
+        "display": {"tooltip": {"show": True, "fontSize": 12, "yFormat": "float1",
+                                 "showTotal": False, "minutesAutoSeconds": True}},
     },
     "tmc_avg_delay_grid_graph_tmc": {
         "graphType": "GridGraph", "xAxis": "epoch",
@@ -975,6 +1027,11 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
                   "target": "color", "fn": "exempt",
                   "customName": "Travel Time (min)"},
+        # Round 51: see tmc_travel_time_grid_graph_tmc's comment — same fix,
+        # same preserved tooltip shape (confirmed identical live, both
+        # descend from the same round-35 UI-authored base).
+        "display": {"tooltip": {"show": True, "fontSize": 12, "yFormat": "float1",
+                                 "showTotal": False, "minutesAutoSeconds": True}},
     },
     # Round 32 (2026-07-10): avgHoursOfDelay — see AVG_DELAY_EXPR's own comment
     # for the formula derivation. `fn: "exempt"` throughout since the
@@ -2181,6 +2238,15 @@ TILE_HOST = os.environ.get("DMS_TILE_HOST", "https://dmsserver.availabs.org")
 CH_FACT_TABLE = "npmrds.s583_v982_NPMRDS_V6"
 CH_TMC_IDENT_TABLE = ("npmrds_raw_tmc_identification."
                       "s455_v3464_NPMRDS_TMC_Identification_V5_V6")
+# Physical CH table names for META_1946_JOIN/AADT_DIST_JOIN (see
+# documentation/npmrds-data-sources.md's join-source table) -- needed for the
+# Map's own raw ground-truth SQL (bake_route_map_delay_paint), same role
+# CH_FACT_TABLE/CH_TMC_IDENT_TABLE play for the single-join speed/travelTime
+# bake. aadt_distributions' table name is the literal "aadt_distributions",
+# NOT the synthetic s{source}_v{view}_{name} pattern the other two use (see
+# the doc's "Registering aadt_distributions" note).
+CH_META_1946_TABLE = "npmrds_meta.s1946_v3298_ny_2025_tmc_meta"
+CH_AADT_DIST_TABLE = "avail.aadt_distributions"
 
 
 def ensure_route_map_none_template(year, templates, dry_run):
@@ -2359,6 +2425,26 @@ def quantile_breaks(values, num_bins=5):
     return breaks
 
 
+_CH_JOIN_AS_SPLIT_RE = re.compile(r"\s+as\s+", re.IGNORECASE)
+
+
+def _ch_join_accessor(alias, col):
+    """Mirrors buildUdaConfig.js's accessor()/isCalculatedCol() inside
+    buildJoinOnClause: a dsColumn/joinSourceColumn containing ' as '
+    (case-insensitive) is a CALCULATED expression that already references
+    other joined aliases directly in its own body (e.g. DIST_KEY_EXPR's
+    `if(table1.f_system < 3, ...) as dist_key`) — use it AS-IS with the
+    alias STRIPPED and NO `${alias}.` prefix (prefixing would corrupt the
+    expression, e.g. turning `if(...)` into the invalid `ds.if(...)`, real
+    bug live-caught 2026-07-15 building avgHoursOfDelay: report 1056/1033's
+    Map choropleth silently rendered zero TMCs because this exact corruption
+    made the AADT_DIST_JOIN's ON clause syntactically broken). A plain
+    column name gets the ordinary `${alias}.${col}` prefix, unchanged."""
+    if _CH_JOIN_AS_SPLIT_RE.search(col):
+        return _CH_JOIN_AS_SPLIT_RE.split(col)[0].strip()
+    return f"{alias}.{col}"
+
+
 def build_ch_join_wire(sources):
     """Python port of buildUdaConfig.js's `buildJoin({join})` — the client-
     side transform every ordinary AVL-Graph query goes through before a join
@@ -2372,15 +2458,17 @@ def build_ch_join_wire(sources):
     converting report 1071, crashed nodemon). `sources` is {alias: <the same
     descriptor shape AVL-Graph TEMPLATE_SPECS' "join" already uses, e.g.
     META_1946_JOIN or the base template's own join.sources.table1>}. Handles
-    only the plain-column, non-DMS, non-pgFederated case M2 needs — see the
-    real buildJoinSources/buildJoinOnClause (buildUdaConfig.js:862-940) for
-    the fuller original (calculated join keys, DMS jsonb columns, pgFederated
-    passthrough)."""
+    the plain-column AND calculated-dsColumn cases (via `_ch_join_accessor`,
+    needed for AADT_DIST_JOIN's computed `dist_key`), non-DMS, non-pgFederated
+    — see the real buildJoinSources/buildJoinOnClause (buildUdaConfig.js:
+    862-940) for the fuller original (DMS jsonb columns, pgFederated
+    passthrough, neither needed by any Map-layer join built so far)."""
     wire_sources, on = {}, []
     for alias, src in sources.items():
         wire_sources[alias] = {"view_id": src.get("view", src.get("view_id")),
                                "env": src.get("env") or (src.get("sourceInfo") or {}).get("env")}
-        conditions = [f"ds.{c['dsColumn']} = {alias}.{c['joinSourceColumn']}"
+        conditions = [f"{_ch_join_accessor('ds', c['dsColumn'])} = "
+                     f"{_ch_join_accessor(alias, c['joinSourceColumn'])}"
                      for c in src.get("joinColumns", [])]
         on.append({"type": src.get("type", "left"),
                   "mergeStrategy": src.get("mergeStrategy", "join"),
@@ -2453,7 +2541,11 @@ def ensure_route_map_speed_template(year, templates, dry_run):
         "num-bins": 5, "bin-method": "quantile",
         "color-range": DEFAULT_SPEED_COLOR_RANGE,
         "legend-data": placeholder["legend"],
-        "legend-orientation": "vertical",
+        # The runtime materializes one visible clone per comparison_series
+        # variant (see useComparisonSeriesLayers.js); the template layer
+        # itself must stay suppressed or it renders an extra, un-labeled
+        # duplicate of the same legend (round 51, user-reported).
+        "legend-orientation": "none",
         "view_id": view_id, "source_id": 582,
         "join": {
             "enabled": True, "featureKeyColumn": "tmc", "joinColumn": "tmc",
@@ -2528,6 +2620,10 @@ def ensure_route_map_speed_template(year, templates, dry_run):
         "includesLayout": False, "includesSource": True,
         "createdAt": now_iso(), "updatedAt": now_iso(),
     }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']}")
+    return templates
 
 
 def ensure_route_map_traveltime_template(year, templates, dry_run):
@@ -2564,8 +2660,12 @@ def ensure_route_map_traveltime_template(year, templates, dry_run):
                                  5, base_w, 10, base_w * 2, 14, base_w * 4]
     # Placeholder breaks in MINUTES (route-traversal travel time), unlike
     # speed's mph breaks — real per-report breaks (bake_route_map_choropleth_
-    # paint) overwrite these immediately on any real conversion.
-    placeholder = choropleth_paint("value", DEFAULT_SPEED_COLOR_RANGE,
+    # paint) overwrite these immediately on any real conversion. travelTime is
+    # a reverseColors:true measure (see REVERSE_COLORS_MEASURES) --
+    # low/good values should render at the GREEN end, so the placeholder ramp
+    # itself is reversed relative to speed's (unreversed) default.
+    traveltime_default_colors = list(reversed(DEFAULT_SPEED_COLOR_RANGE))
+    placeholder = choropleth_paint("value", traveltime_default_colors,
                                    [3, 7, 15, 30], max_value=45)
     template_layer = {
         "id": lid, "name": f"Travel Time ({year} network)", "type": "line",
@@ -2575,9 +2675,13 @@ def ensure_route_map_traveltime_template(year, templates, dry_run):
         "layer-type": "choropleth",
         "data-column": "value",
         "num-bins": 5, "bin-method": "quantile",
-        "color-range": DEFAULT_SPEED_COLOR_RANGE,
+        "color-range": traveltime_default_colors,
         "legend-data": placeholder["legend"],
-        "legend-orientation": "vertical",
+        # The runtime materializes one visible clone per comparison_series
+        # variant (see useComparisonSeriesLayers.js); the template layer
+        # itself must stay suppressed or it renders an extra, un-labeled
+        # duplicate of the same legend (round 51, user-reported).
+        "legend-orientation": "none",
         "view_id": view_id, "source_id": 582,
         "join": {
             "enabled": True, "featureKeyColumn": "tmc", "joinColumn": "tmc",
@@ -2666,6 +2770,34 @@ def ensure_route_map_traveltime_template(year, templates, dry_run):
 # route_map_scope.md ("the FROM/JOIN clause itself differs, not just the
 # SELECTed expression").
 ROUTE_MAP_VALUE_EXPR = {"speed": SPEED_VALUE_EXPR, "travelTime": TRAVEL_TIME_VALUE_EXPR}
+# Old dataTypes.js's per-measure `reverseColors` flag, GENERALIZED (round 51 —
+# user-reported "many color scales are backwards ... other components [besides
+# Map] have this issue still", confirmed live on report 1069's TMC Grid Graph:
+# its color_range array was wired verbatim with no reversal, so short/good
+# travel times rendered red and long/bad ones rendered green). Originally
+# scoped Map-only as ROUTE_MAP_REVERSE_COLORS_MEASURES (speed: false,
+# travelTime/hoursOfDelay/avgHoursOfDelay: true) after the M3 round found
+# GeneralGraphComp.getColorRange() reverses the report's raw color_range array
+# BEFORE it ever reaches ANY old graph component's own renderGraph() -- not
+# just RouteMap.jsx, every old graph type (RouteBarGraph/TmcGridGraph/
+# RouteDifferenceGraph/TmcDifferenceGrid) inherits the same reversal from the
+# same shared base class. So the fix belongs at the generic
+# COLOR_RANGE_GRAPH_TYPES wiring level (build_graph_section_data), not just
+# Map's bake functions. Full set below is read directly off old dataTypes.js's
+# BASE_DATA_TYPES/INDICES/INDICES_BY_DATE_RANGE reverseColors flags (speed/
+# freeflow/dataQuality: false -- the only false-flagged measures -- everything
+# else defaults true); the indices/byDateRange entries aren't reachable by any
+# template built yet (M4 territory) but are included so this stays correct
+# once they are.
+REVERSE_COLORS_MEASURES = {
+    "travelTime", "hoursOfDelay", "avgHoursOfDelay",
+    "co2Emissions", "avgCo2Emissions",
+    "avgTT", "percentile95", "percentile97",
+    "bufferTime", "planningTime", "miseryIndex", "travelTimeIndex",
+    "avgTT-byDateRange", "percentile95-byDateRange", "percentile97-byDateRange",
+    "bufferTime-byDateRange", "planningTime-byDateRange",
+    "miseryIndex-byDateRange", "travelTimeIndex-byDateRange",
+}
 
 
 def bake_route_map_choropleth_paint(state, info, route_map_value_ctx, color_range,
@@ -2736,9 +2868,360 @@ def bake_route_map_choropleth_paint(state, info, route_map_value_ctx, color_rang
 
     colors = (color_range if color_range and len(color_range) >= 2
              else DEFAULT_SPEED_COLOR_RANGE)
+    # Match GeneralGraphComp.getColorRange()'s reverseColors flip (see
+    # REVERSE_COLORS_MEASURES above) -- old reports' color_range is
+    # authored assuming the DISPLAYED measure controls direction, and the old
+    # tool reverses it upstream for "high is bad" measures before RouteMap.jsx
+    # ever sees it.
+    if measure in REVERSE_COLORS_MEASURES:
+        colors = list(reversed(colors))
     breaks = quantile_breaks(values, num_bins=len(colors))
     paint_result = choropleth_paint("value", colors, breaks,
                                     max_value=round(max(values), 1))
+
+    sym_id = next(iter(state["symbologies"]))
+    sym = state["symbologies"][sym_id]["symbology"]
+    lid = sym["activeLayer"]
+    layer = sym["layers"][lid]
+    layer["color-range"] = colors
+    layer["num-bins"] = len(colors)
+    layer["legend-data"] = paint_result["legend"]
+    for l in layer["layers"]:
+        if l["id"] == lid:
+            l["paint"]["line-color"] = paint_result["paint"]
+
+
+def ensure_route_map_avghoursofdelay_template(year, resolution, templates, dry_run):
+    """Mint (or reuse) `route_map_avgHoursOfDelay_{day|5min}_{year}` — M3's
+    resolution-keyed sub-measure (see the comment above
+    ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION for why this one, alone among
+    Route Map measures, needs (year, resolution) rather than just year).
+    Structurally a copy-adapt of ensure_route_map_speed_template EXCEPT the
+    join: this needs the SAME two-source META_1946_JOIN + AADT_DIST_JOIN
+    pair the AVL-Graph delay/CO2 templates use (DELAY_EXPR reads
+    table1.avg_speedlimit/faciltype -- not on the base 455/3464 join -- and
+    table2.distributions), not the base template's own single 455/3464
+    join. Paint/legend/color-range are PLACEHOLDERS overwritten per-report
+    by bake_route_map_delay_paint, same pattern as every other Route Map
+    measure."""
+    if resolution not in ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION:
+        raise ValueError(f"unsupported avgHoursOfDelay resolution: {resolution!r}")
+    view_id = GEOMETRY_TILE_VIEWS.get(year)
+    if view_id is None:
+        raise RuntimeError(f"no geometry tile view for year {year}")
+    slug = ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG[resolution]
+    value_expr = ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION[resolution]
+
+    name = f"route_map_avgHoursOfDelay_{slug}_{year}"
+    lid = f"rm_avgdelay_{slug}_{year}"
+    src_id = f"npmrds2_s582_v{view_id}_{lid}"
+    tiles_url = (f"{TILE_HOST}/dama-admin/npmrds2/tiles/{view_id}"
+                 f"/{{z}}/{{x}}/{{y}}/t.pbf?cols=tmc&filter=year={year}")
+    zoom_width = lambda base_w: ["interpolate", ["linear"], ["zoom"],
+                                 5, base_w, 10, base_w * 2, 14, base_w * 4]
+    # Placeholder breaks in HOURS -- day resolution is a per-day rate (small
+    # multi-hour range plausible), 5-minutes is a per-EPOCH rate (much
+    # smaller scale, same measure/units, different granularity — see the
+    # comment above ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION). Both
+    # reversed (reverseColors:true, see REVERSE_COLORS_MEASURES) —
+    # real per-report breaks (bake_route_map_delay_paint) overwrite these
+    # immediately on any real conversion.
+    default_colors = list(reversed(DEFAULT_SPEED_COLOR_RANGE))
+    placeholder_breaks = [0.1, 0.5, 1, 3] if resolution == "day" else [0.001, 0.003, 0.01, 0.03]
+    placeholder = choropleth_paint("value", default_colors, placeholder_breaks,
+                                   max_value=(5 if resolution == "day" else 0.05))
+    template_layer = {
+        "id": lid, "name": f"Avg. Hours of Delay ({resolution}, {year} network)",
+        "type": "line",
+        "order": 1, "isVisible": True,
+        "series-template": True,
+        "series-feature-column": "tmc",
+        "layer-type": "choropleth",
+        "data-column": "value",
+        "num-bins": 5, "bin-method": "quantile",
+        "color-range": default_colors,
+        "legend-data": placeholder["legend"],
+        # The runtime materializes one visible clone per comparison_series
+        # variant (see useComparisonSeriesLayers.js); the template layer
+        # itself must stay suppressed or it renders an extra, un-labeled
+        # duplicate of the same legend (round 51, user-reported).
+        "legend-orientation": "none",
+        "view_id": view_id, "source_id": 582,
+        "join": {
+            "enabled": True, "featureKeyColumn": "tmc", "joinColumn": "tmc",
+            "source": {"sourceId": 583, "viewId": 982, "env": "npmrds2"},
+            "query": {
+                "columns": [value_expr, "ds.tmc as tmc"],
+                "groupBy": ["ds.tmc"],
+                "join": build_ch_join_wire(
+                    {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN}),
+                "filters": {}, "filterRows": [], "filterMode": "all",
+            },
+            "tileColumns": ["value"],
+        },
+        "sources": [{"id": src_id, "source": {
+            "type": "vector", "tiles": [tiles_url], "format": "pbf"}}],
+        "layers": [
+            {"id": f"{lid}_case", "type": "line", "source": src_id,
+             "source-layer": f"view_{view_id}",
+             "paint": {"line-color": "#1e293b", "line-width": zoom_width(1.8)},
+             "layout": {"visibility": "none",
+                        "line-cap": "round", "line-join": "round"}},
+            {"id": lid, "type": "line", "source": src_id,
+             "source-layer": f"view_{view_id}",
+             "paint": {"line-color": placeholder["paint"],
+                       "line-width": zoom_width(1.2)},
+             "layout": {"visibility": "none",
+                        "line-cap": "round", "line-join": "round"}},
+        ],
+        "filter": {},
+    }
+    sym_id = name
+    state = {
+        "symbologies": {sym_id: {
+            "id": sym_id, "name": "Avg. Hours of Delay", "isVisible": True,
+            "symbology": {"activeLayer": lid, "layers": {lid: template_layer}},
+        }},
+        "display": {"_functions": {"providers": [], "subscribers": [
+            {"functionId": "comparison_series", "enabled": True,
+             "paramKey": "$self",
+             "args": {"labelKey": "label", "valueKey": "filters"}}]}},
+        "height": "2/3",
+        "zoomPan": True,
+        "blankBaseMap": False,
+        "basemapStyle": "Default",
+        "hideControls": True,
+    }
+    existing = templates.get(name)
+    if existing is not None:
+        ex_state = json.loads(existing["data"]["stateJson"])
+        if ex_state == state:
+            return templates
+        new_data = {**existing["data"], "stateJson": json.dumps(state),
+                    "updatedAt": now_iso()}
+        if dry_run:
+            print(f"[dry-run] would update drifted template '{name}' "
+                  f"id={existing['id']}")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} (drift fix)")
+        templates[name] = {"id": existing["id"], "data": new_data}
+        return templates
+    if dry_run:
+        print(f"[dry-run] would create template '{name}'")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "Map",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "elementType": "Map", "componentType": "Map",
+        "includesLayout": False, "includesSource": True,
+        "createdAt": now_iso(), "updatedAt": now_iso(),
+    }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']}")
+    return templates
+
+
+def ensure_route_map_hoursofdelay_template(year, templates, dry_run):
+    """Mint (or reuse) `route_map_hoursOfDelay_{year}` — M3's last sub-measure.
+    Unlike avgHoursOfDelay, this one is resolution-INVARIANT (see the comment
+    above HOURS_OF_DELAY_VALUE_EXPR), so it's year-only keyed like speed/
+    travelTime, just with the two-source META_1946_JOIN + AADT_DIST_JOIN pair
+    ensure_route_map_avghoursofdelay_template already established (DELAY_EXPR
+    needs table1.avg_speedlimit/faciltype + table2.distributions, not the
+    base 455/3464 join). Paint/legend/color-range are PLACEHOLDERS
+    overwritten per-report by bake_route_map_delay_paint, same as every
+    other Route Map measure."""
+    view_id = GEOMETRY_TILE_VIEWS.get(year)
+    if view_id is None:
+        raise RuntimeError(f"no geometry tile view for year {year}")
+
+    name = f"route_map_hoursOfDelay_{year}"
+    lid = f"rm_hoursofdelay_{year}"
+    src_id = f"npmrds2_s582_v{view_id}_{lid}"
+    tiles_url = (f"{TILE_HOST}/dama-admin/npmrds2/tiles/{view_id}"
+                 f"/{{z}}/{{x}}/{{y}}/t.pbf?cols=tmc&filter=year={year}")
+    zoom_width = lambda base_w: ["interpolate", ["linear"], ["zoom"],
+                                 5, base_w, 10, base_w * 2, 14, base_w * 4]
+    # Placeholder breaks in HOURS (whole-range total delay, reverseColors:true
+    # like every other delay-based measure) — real per-report breaks
+    # (bake_route_map_delay_paint) overwrite these on any real conversion.
+    default_colors = list(reversed(DEFAULT_SPEED_COLOR_RANGE))
+    placeholder = choropleth_paint("value", default_colors,
+                                   [5, 20, 50, 100], max_value=200)
+    template_layer = {
+        "id": lid, "name": f"Hours of Delay ({year} network)", "type": "line",
+        "order": 1, "isVisible": True,
+        "series-template": True,
+        "series-feature-column": "tmc",
+        "layer-type": "choropleth",
+        "data-column": "value",
+        "num-bins": 5, "bin-method": "quantile",
+        "color-range": default_colors,
+        "legend-data": placeholder["legend"],
+        # The runtime materializes one visible clone per comparison_series
+        # variant (see useComparisonSeriesLayers.js); the template layer
+        # itself must stay suppressed or it renders an extra, un-labeled
+        # duplicate of the same legend (round 51, user-reported).
+        "legend-orientation": "none",
+        "view_id": view_id, "source_id": 582,
+        "join": {
+            "enabled": True, "featureKeyColumn": "tmc", "joinColumn": "tmc",
+            "source": {"sourceId": 583, "viewId": 982, "env": "npmrds2"},
+            "query": {
+                "columns": [HOURS_OF_DELAY_VALUE_EXPR, "ds.tmc as tmc"],
+                "groupBy": ["ds.tmc"],
+                "join": build_ch_join_wire(
+                    {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN}),
+                "filters": {}, "filterRows": [], "filterMode": "all",
+            },
+            "tileColumns": ["value"],
+        },
+        "sources": [{"id": src_id, "source": {
+            "type": "vector", "tiles": [tiles_url], "format": "pbf"}}],
+        "layers": [
+            {"id": f"{lid}_case", "type": "line", "source": src_id,
+             "source-layer": f"view_{view_id}",
+             "paint": {"line-color": "#1e293b", "line-width": zoom_width(1.8)},
+             "layout": {"visibility": "none",
+                        "line-cap": "round", "line-join": "round"}},
+            {"id": lid, "type": "line", "source": src_id,
+             "source-layer": f"view_{view_id}",
+             "paint": {"line-color": placeholder["paint"],
+                       "line-width": zoom_width(1.2)},
+             "layout": {"visibility": "none",
+                        "line-cap": "round", "line-join": "round"}},
+        ],
+        "filter": {},
+    }
+    sym_id = name
+    state = {
+        "symbologies": {sym_id: {
+            "id": sym_id, "name": "Hours of Delay", "isVisible": True,
+            "symbology": {"activeLayer": lid, "layers": {lid: template_layer}},
+        }},
+        "display": {"_functions": {"providers": [], "subscribers": [
+            {"functionId": "comparison_series", "enabled": True,
+             "paramKey": "$self",
+             "args": {"labelKey": "label", "valueKey": "filters"}}]}},
+        "height": "2/3",
+        "zoomPan": True,
+        "blankBaseMap": False,
+        "basemapStyle": "Default",
+        "hideControls": True,
+    }
+    existing = templates.get(name)
+    if existing is not None:
+        ex_state = json.loads(existing["data"]["stateJson"])
+        if ex_state == state:
+            return templates
+        new_data = {**existing["data"], "stateJson": json.dumps(state),
+                    "updatedAt": now_iso()}
+        if dry_run:
+            print(f"[dry-run] would update drifted template '{name}' "
+                  f"id={existing['id']}")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} (drift fix)")
+        templates[name] = {"id": existing["id"], "data": new_data}
+        return templates
+    if dry_run:
+        print(f"[dry-run] would create template '{name}'")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "Map",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "elementType": "Map", "componentType": "Map",
+        "includesLayout": False, "includesSource": True,
+        "createdAt": now_iso(), "updatedAt": now_iso(),
+    }
+    r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
+    templates[name] = {"id": r["id"], "data": data}
+    print(f"created template '{name}' id={r['id']}")
+    return templates
+
+
+def bake_route_map_delay_paint(state, info, route_map_value_ctx, color_range,
+                               gaps, old_graph, measure, resolution=None):
+    """Per-report choropleth bake for a Route-Map Map-section clone whose
+    series-template layer carries the two-source META_1946_JOIN +
+    AADT_DIST_JOIN CH join (hoursOfDelay and avgHoursOfDelay, M3) — separate
+    from bake_route_map_choropleth_paint because the FROM/JOIN clause itself
+    differs (two joins, not one), not just the SELECTed expression, per the
+    M3+ handoff notes in route_map_scope.md. `resolution` is only meaningful
+    for avgHoursOfDelay (hoursOfDelay is resolution-invariant, see
+    HOURS_OF_DELAY_VALUE_EXPR). Pools per-TMC values across every comp
+    assigned to THIS graph, same infra/semantics as every other Route Map
+    bake function."""
+    comps_by_id = route_map_value_ctx["comps_by_id"]
+    old_routes = route_map_value_ctx["old_routes"]
+    resolved_tmcs = route_map_value_ctx["resolved_tmcs"]
+
+    tmcs = set()
+    starts, ends = [], []
+    for cid in info["assigned"]:
+        rc = comps_by_id.get(cid)
+        if not rc:
+            continue
+        rid = str(rc.get("routeId"))
+        old_route = old_routes.get(rid)
+        comp_tmcs = resolved_tmcs.get(cid) or (old_route or {}).get("tmc_array") or []
+        tmcs.update(comp_tmcs)
+        s = rc.get("settings") or {}
+        if s.get("startDate"):
+            starts.append(str(s["startDate"])[:8])
+        if s.get("endDate"):
+            ends.append(str(s["endDate"])[:8])
+
+    if not tmcs or not starts or not ends:
+        gaps.append({"kind": f"route_map_{measure}_no_values", "graph": old_graph.get("id"),
+                     "detail": "no resolvable TMCs/date range across this graph's "
+                               "assigned comps — choropleth left unbaked "
+                               "(template placeholder default renders)"})
+        return
+
+    start_fmt = "-".join([min(starts)[:4], min(starts)[4:6], min(starts)[6:8]])
+    end_fmt = "-".join([max(ends)[:4], max(ends)[4:6], max(ends)[6:8]])
+    tmc_list = ",".join(f"'{t}'" for t in sorted(tmcs))
+    # hoursOfDelay is resolution-invariant (one expression, no resolution
+    # dispatch needed); avgHoursOfDelay genuinely varies by resolution.
+    value_expr = (HOURS_OF_DELAY_VALUE_EXPR if measure == "hoursOfDelay"
+                 else ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION[resolution])
+    dist_key_body = DIST_KEY_EXPR.rsplit(" as ", 1)[0]
+    sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
+           f"FROM {CH_FACT_TABLE} AS ds "
+           f"JOIN {CH_META_1946_TABLE} AS table1 ON ds.tmc = table1.tmc "
+           f"JOIN {CH_AADT_DIST_TABLE} AS table2 ON {dist_key_body} = table2.key "
+           f"WHERE ds.tmc IN ({tmc_list}) "
+           f"AND ds.date >= '{start_fmt}' AND ds.date <= '{end_fmt}' "
+           f"GROUP BY ds.tmc")
+    result = dbq.ch(sql)
+    rows = result.get("data") or []
+    values = [r[1] for r in rows if r[1] is not None]
+    if not values:
+        gaps.append({"kind": f"route_map_{measure}_no_values", "graph": old_graph.get("id"),
+                     "detail": f"pooled CH query over {len(tmcs)} tmc(s), "
+                               f"{start_fmt}..{end_fmt} returned no values — "
+                               f"choropleth left unbaked (template placeholder "
+                               f"default renders)"})
+        return
+
+    colors = (color_range if color_range and len(color_range) >= 2
+             else DEFAULT_SPEED_COLOR_RANGE)
+    if measure in REVERSE_COLORS_MEASURES:
+        colors = list(reversed(colors))
+    breaks = quantile_breaks(values, num_bins=len(colors))
+    paint_result = choropleth_paint("value", colors, breaks,
+                                    max_value=round(max(values), 3))
 
     sym_id = next(iter(state["symbologies"]))
     sym = state["symbologies"][sym_id]["symbology"]
@@ -2958,7 +3441,17 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
     # generic AVL-Graph color_range wiring is not just inert but the wrong
     # target entirely; skip it here rather than write a dead key.
     if color_range and old_graph.get("type") in COLOR_RANGE_GRAPH_TYPES and not is_map:
-        colors_cfg = {"type": "palette", "value": color_range}
+        # Round 51 fix: old GeneralGraphComp.getColorRange() reverses
+        # report.color_range for reverseColors:true measures (see
+        # REVERSE_COLORS_MEASURES) BEFORE any old graph component ever
+        # renders it — this generic wiring skipped that step entirely,
+        # so e.g. every converted TMC Grid Graph/travelTime page rendered
+        # short/good travel times red and long/bad ones green (backwards).
+        # Only the Map path (bake_route_map_choropleth_paint/
+        # bake_route_map_delay_paint) had this applied, since round 50.
+        colors = (list(reversed(color_range))
+                  if info["measure"] in REVERSE_COLORS_MEASURES else color_range)
+        colors_cfg = {"type": "palette", "value": colors}
         # BarGraph colors by series by default (one color per route) — these
         # converted reports are single-series magnitude charts (the old
         # client colored each bar by its own value: "more delay = darker"),
@@ -2968,7 +3461,8 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         state.setdefault("display", {})["colors"] = colors_cfg
     # Route-Map choropleth bake (M2 speed / M3 travelTime): only the templates
     # whose series-template layer actually carries a `join` (single-source
-    # CH_TMC_IDENT_TABLE joins, per ROUTE_MAP_VALUE_EXPR) need this — the
+    # CH_TMC_IDENT_TABLE joins per ROUTE_MAP_VALUE_EXPR, or the two-source
+    # META_1946_JOIN+AADT_DIST_JOIN pair for avgHoursOfDelay) need this — the
     # geometry-only "none" template has no `join` key at all, so this is a
     # no-op for it without needing a separate measure check here.
     if is_map and route_map_value_ctx is not None:
@@ -2976,10 +3470,15 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         layer = (state["symbologies"][sym_id]["symbology"]["layers"]
                  [state["symbologies"][sym_id]["symbology"]["activeLayer"]]
                 ) if sym_id else None
-        if layer and layer.get("join") and info["measure"] in ROUTE_MAP_VALUE_EXPR:
-            bake_route_map_choropleth_paint(state, info, route_map_value_ctx,
-                                            color_range, gaps, old_graph,
-                                            info["measure"])
+        if layer and layer.get("join"):
+            if info["measure"] in ROUTE_MAP_VALUE_EXPR:
+                bake_route_map_choropleth_paint(state, info, route_map_value_ctx,
+                                                color_range, gaps, old_graph,
+                                                info["measure"])
+            elif info["measure"] in ("hoursOfDelay", "avgHoursOfDelay"):
+                bake_route_map_delay_paint(state, info, route_map_value_ctx,
+                                           color_range, gaps, old_graph,
+                                           info["measure"], info["resolution"])
     # overrides.aadt → substitute the AADT term(s) inside the cloned calculated
     # column expression(s) (see AADT_OVERRIDE_SUBS above for the old-tool
     # semantics each replacement reproduces). Zero matches on a template that
@@ -3281,16 +3780,32 @@ def convert_report(old_id, dry_run=False, replace=False):
     # Route Map: "none" (geometry-only overview map, M0b), "speed" (CH-joined
     # choropleth, M2 — 256 corpus instances / 214 reports / 45 single-blocker
     # flips, the single biggest lever in the corpus), "travelTime" (M3 —
-    # same shape as speed, see ensure_route_map_traveltime_template). One
-    # shared template per network YEAR for each (graph_max_year, same
+    # same shape as speed, see ensure_route_map_traveltime_template),
+    # "hoursOfDelay" (M3 — two-source join, resolution-invariant, see
+    # HOURS_OF_DELAY_VALUE_EXPR), "avgHoursOfDelay" (M3 — the one Route Map
+    # measure that IS resolution-dependent, see
+    # ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION; scoped to day/5-minutes
+    # only, the only resolutions the real corpus uses). One shared template
+    # per network YEAR for each of the others (graph_max_year, same
     # period-matching idiom as the pm3 join above); resolution is irrelevant
-    # to any of them (round-41 scope note: whole-range per-TMC aggregate).
+    # to none/speed/travelTime/hoursOfDelay (round-41 scope note: whole-range
+    # per-TMC aggregate).
     route_map_tmpl_name = {}
     route_map_gap_logged = set()
     for g, info in analyzed:
-        if info["type"] != "Route Map" or info["measure"] not in ("none", "speed", "travelTime"):
+        if info["type"] != "Route Map" or info["measure"] not in (
+                "none", "speed", "travelTime", "hoursOfDelay", "avgHoursOfDelay"):
             continue
         gid = g.get("id")
+        if (info["measure"] == "avgHoursOfDelay"
+                and info["resolution"] not in ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION):
+            gaps.append({"kind": "route_map_avghoursofdelay_unsupported_resolution",
+                         "graph": gid,
+                         "detail": f"resolution {info['resolution']!r} not built "
+                                   f"(only day/5-minutes are — 0 corpus instances "
+                                   f"at any other resolution as of round 50)"})
+            route_map_gap_logged.add(gid)
+            continue
         year = graph_max_year(info, comps_by_id)
         if year is not None:
             # Clamp into the provisioned geometry-view range: pre-2017 dates
@@ -3312,10 +3827,29 @@ def convert_report(old_id, dry_run=False, replace=False):
             graph_templates = ensure_route_map_speed_template(
                 year, graph_templates, dry_run)
             route_map_tmpl_name[gid] = f"route_map_speed_{year}"
-        else:
+        elif info["measure"] == "travelTime":
             graph_templates = ensure_route_map_traveltime_template(
                 year, graph_templates, dry_run)
             route_map_tmpl_name[gid] = f"route_map_travelTime_{year}"
+        elif info["measure"] == "hoursOfDelay":
+            graph_templates = ensure_route_map_hoursofdelay_template(
+                year, graph_templates, dry_run)
+            route_map_tmpl_name[gid] = f"route_map_hoursOfDelay_{year}"
+        else:
+            # NOTE: deliberately-scoped local names (avgdelay_resolution/
+            # avgdelay_slug), not `resolution`/`slug` -- this loop runs
+            # inside convert_report(), which has its OWN function-level
+            # `slug = f"report_{old_id}"` (the actual page slug) set earlier;
+            # Python has no per-block scoping, so reusing either name here
+            # would silently clobber that variable for the rest of the
+            # function. Caught live: report 1056/1033 both got created with
+            # slug "day"/"5min" instead of "report_1056"/"report_1033"
+            # before this rename.
+            avgdelay_resolution = info["resolution"]
+            graph_templates = ensure_route_map_avghoursofdelay_template(
+                year, avgdelay_resolution, graph_templates, dry_run)
+            avgdelay_slug = ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG[avgdelay_resolution]
+            route_map_tmpl_name[gid] = f"route_map_avgHoursOfDelay_{avgdelay_slug}_{year}"
 
     convertible, skipped = [], []
     for g, info in analyzed:

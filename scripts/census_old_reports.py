@@ -46,6 +46,7 @@ from convert_old_reports import (  # noqa: E402
     INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR,
     INFO_BOX_LENGTH_BUCKET, INFO_BOX_AADT_BUCKET, INFO_BOX_DELAY_BUCKET,
     GEOMETRY_TILE_VIEWS,
+    ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG,
     ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE,
     analyze_graph, flatten_route_comps, route_settings_gaps,
     aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
@@ -203,14 +204,16 @@ def analyze_report(old):
                     and len(info["assigned"]) >= 2):
                 mapped.append((g, info, f"route_compare_{info['measure']}"))
                 continue
-        elif info["type"] == "Route Map" and info["measure"] in ("none", "speed", "travelTime"):
+        elif info["type"] == "Route Map" and info["measure"] in ("none", "speed", "travelTime", "hoursOfDelay"):
             # Round 47 (M0b, measure "none"): geometry-only overview maps.
             # M2 (measure "speed"): CH-joined choropleth — the single biggest
-            # lever in the corpus. M3 (measure "travelTime", this round):
-            # same shape as speed. All mirror convert_report's
-            # route_map_tmpl_name pre-pass — one shared template per network
-            # YEAR, resolution-irrelevant (round-41 scope note), year clamped
-            # into the provisioned geometry-view range so any parseable year
+            # lever in the corpus. M3 (measures "travelTime"/"hoursOfDelay"):
+            # same year-only-keyed shape as speed (hoursOfDelay is
+            # resolution-invariant, unlike its avgHoursOfDelay sibling
+            # below). All mirror convert_report's route_map_tmpl_name
+            # pre-pass — one shared template per network YEAR,
+            # resolution-irrelevant (round-41 scope note), year clamped into
+            # the provisioned geometry-view range so any parseable year
             # maps. Template name embeds the measure string VERBATIM
             # (f"route_map_{measure}_{year}") — matches convert_old_reports.py's
             # "travelTime" (not "traveltime") casing.
@@ -219,6 +222,21 @@ def analyze_report(old):
                 year = min(max(year, min(GEOMETRY_TILE_VIEWS)),
                            max(GEOMETRY_TILE_VIEWS))
                 mapped.append((g, info, f"route_map_{info['measure']}_{year}"))
+                continue
+        elif (info["type"] == "Route Map" and info["measure"] == "avgHoursOfDelay"
+                and info["resolution"] in ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION):
+            # M3 (round 50): the one Route Map measure that's genuinely
+            # resolution-dependent — template name needs the resolution
+            # slug too, not just f"route_map_{measure}_{year}". Scoped to
+            # day/5-minutes, the only resolutions the real corpus uses (see
+            # the comment above ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION
+            # in convert_old_reports.py).
+            year = graph_max_year(info, comps_by_id)
+            if year is not None:
+                year = min(max(year, min(GEOMETRY_TILE_VIEWS)),
+                           max(GEOMETRY_TILE_VIEWS))
+                slug = ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG[info["resolution"]]
+                mapped.append((g, info, f"route_map_avgHoursOfDelay_{slug}_{year}"))
                 continue
         elif GRAPH_TEMPLATE_MAP.get(key):
             mapped.append((g, info, GRAPH_TEMPLATE_MAP[key]))
