@@ -203,14 +203,17 @@ def analyze_report(old):
                     and len(info["assigned"]) >= 2):
                 mapped.append((g, info, f"route_compare_{info['measure']}"))
                 continue
-        elif info["type"] == "Route Map" and info["measure"] in ("none", "speed"):
+        elif info["type"] == "Route Map" and info["measure"] in ("none", "speed", "travelTime"):
             # Round 47 (M0b, measure "none"): geometry-only overview maps.
-            # M2 (measure "speed", this round): CH-joined choropleth — the
-            # single biggest lever in the corpus. Both mirror convert_report's
+            # M2 (measure "speed"): CH-joined choropleth — the single biggest
+            # lever in the corpus. M3 (measure "travelTime", this round):
+            # same shape as speed. All mirror convert_report's
             # route_map_tmpl_name pre-pass — one shared template per network
             # YEAR, resolution-irrelevant (round-41 scope note), year clamped
             # into the provisioned geometry-view range so any parseable year
-            # maps.
+            # maps. Template name embeds the measure string VERBATIM
+            # (f"route_map_{measure}_{year}") — matches convert_old_reports.py's
+            # "travelTime" (not "traveltime") casing.
             year = graph_max_year(info, comps_by_id)
             if year is not None:
                 year = min(max(year, min(GEOMETRY_TILE_VIEWS)),

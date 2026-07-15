@@ -407,6 +407,11 @@ TRAVEL_TIME_EXPR = (
     "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
     "ds.travel_time_all_vehicles != 0))) / 60 "
     "as travel_time_all_vehicles")
+# Route Map travelTime choropleth (M3): same "value" realiasing SPEED_VALUE_EXPR
+# already uses for its own Map-layer tile-property column — TRAVEL_TIME_EXPR is
+# already self-aggregating/per-TMC under a bare GROUP BY tmc (same round-35 proof
+# as SPEED_EXPR), so this is otherwise the SAME "easy" shape as speed.
+TRAVEL_TIME_VALUE_EXPR = TRAVEL_TIME_EXPR.rsplit(" as ", 1)[0] + " as value"
 # Old hoursOfDelay (avail-falcor getHoursOfDelay.js's calcDelay/getAADT): per
 # epoch, raw_delay = max(0, tt - miles/max(20, 0.6*speedlimit)*3600)/3600,
 # weighted by AADT/facil * the epoch's AADT-distribution share, summed. The
@@ -2408,7 +2413,7 @@ def ensure_route_map_speed_template(year, templates, dry_run):
     Paint/legend/color-range here are PLACEHOLDERS (a neutral default ramp
     over generic speed thresholds) — every real conversion overwrites them
     with real per-report quantile breaks over the report's actual
-    color_range (see bake_route_map_speed_paint), because those are
+    color_range (see bake_route_map_choropleth_paint), because those are
     per-report data the shared per-year template can't carry — same pattern
     build_graph_section_data already uses to customize color_range/aadt into
     every OTHER cloned template's copy, just Map-shaped instead of
@@ -2436,6 +2441,14 @@ def ensure_route_map_speed_template(year, templates, dry_run):
         "order": 1, "isVisible": True,
         "series-template": True,
         "series-feature-column": "tmc",
+        # LegendPanel/LegendRow branches on 'layer-type' (not the maplibre
+        # 'type' above) to pick StepLegend vs a bare title row — omitting it
+        # silently degrades every choropleth Map's "legend" to a layer-name
+        # list with no color scale at all (user-reported 2026-07-15; found by
+        # tracing LegendRow's type===undefined fallthrough, never live-caught
+        # in round 49 because that round's verification checked tile/paint
+        # traffic, not the legend panel itself).
+        "layer-type": "choropleth",
         "data-column": "value",
         "num-bins": 5, "bin-method": "quantile",
         "color-range": DEFAULT_SPEED_COLOR_RANGE,
@@ -2515,22 +2528,159 @@ def ensure_route_map_speed_template(year, templates, dry_run):
         "includesLayout": False, "includesSource": True,
         "createdAt": now_iso(), "updatedAt": now_iso(),
     }
+
+
+def ensure_route_map_traveltime_template(year, templates, dry_run):
+    """Mint (or reuse) `route_map_traveltime_{year}` — M3's "easy" measure
+    (per the round-49 M3+ handoff: TRAVEL_TIME_EXPR is the same
+    self-aggregating two-level shape as SPEED_EXPR, degrades correctly under
+    a bare `GROUP BY ds.tmc`, and needs only the SAME single 455/3464
+    TMC-identification join `ensure_route_map_speed_template` already
+    carries forward from the base template — so this is a literal
+    copy-adapt of that function: swap the value expression, name, and ids,
+    nothing else differs structurally). Paint/legend/color-range are
+    PLACEHOLDERS overwritten per-report by bake_route_map_choropleth_paint,
+    same as speed."""
+    view_id = GEOMETRY_TILE_VIEWS.get(year)
+    if view_id is None:
+        raise RuntimeError(f"no geometry tile view for year {year}")
+    base = templates.get(TEMPLATE_BASE_NAME)
+    if not base:
+        raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
+    base_state = json.loads(base["data"]["stateJson"])
+    table1_join = base_state["join"]["sources"]["table1"]
+
+    # Template/layer ids embed the measure string VERBATIM ("travelTime", not
+    # "traveltime") to match census_old_reports.py's generic
+    # f"route_map_{info['measure']}_{year}" mirror formula -- "speed"/"none"
+    # happen to be all-lowercase already so this case-matching requirement
+    # was invisible until a camelCase measure (this one) came along.
+    name = f"route_map_travelTime_{year}"
+    lid = f"rm_travelTime_{year}"
+    src_id = f"npmrds2_s582_v{view_id}_{lid}"
+    tiles_url = (f"{TILE_HOST}/dama-admin/npmrds2/tiles/{view_id}"
+                 f"/{{z}}/{{x}}/{{y}}/t.pbf?cols=tmc&filter=year={year}")
+    zoom_width = lambda base_w: ["interpolate", ["linear"], ["zoom"],
+                                 5, base_w, 10, base_w * 2, 14, base_w * 4]
+    # Placeholder breaks in MINUTES (route-traversal travel time), unlike
+    # speed's mph breaks — real per-report breaks (bake_route_map_choropleth_
+    # paint) overwrite these immediately on any real conversion.
+    placeholder = choropleth_paint("value", DEFAULT_SPEED_COLOR_RANGE,
+                                   [3, 7, 15, 30], max_value=45)
+    template_layer = {
+        "id": lid, "name": f"Travel Time ({year} network)", "type": "line",
+        "order": 1, "isVisible": True,
+        "series-template": True,
+        "series-feature-column": "tmc",
+        "layer-type": "choropleth",
+        "data-column": "value",
+        "num-bins": 5, "bin-method": "quantile",
+        "color-range": DEFAULT_SPEED_COLOR_RANGE,
+        "legend-data": placeholder["legend"],
+        "legend-orientation": "vertical",
+        "view_id": view_id, "source_id": 582,
+        "join": {
+            "enabled": True, "featureKeyColumn": "tmc", "joinColumn": "tmc",
+            "source": {"sourceId": 583, "viewId": 982, "env": "npmrds2"},
+            "query": {
+                "columns": [TRAVEL_TIME_VALUE_EXPR, "ds.tmc as tmc"],
+                "groupBy": ["ds.tmc"],
+                "join": build_ch_join_wire({"table1": table1_join}),
+                "filters": {}, "filterRows": [], "filterMode": "all",
+            },
+            "tileColumns": ["value"],
+        },
+        "sources": [{"id": src_id, "source": {
+            "type": "vector", "tiles": [tiles_url], "format": "pbf"}}],
+        "layers": [
+            {"id": f"{lid}_case", "type": "line", "source": src_id,
+             "source-layer": f"view_{view_id}",
+             "paint": {"line-color": "#1e293b", "line-width": zoom_width(1.8)},
+             "layout": {"visibility": "none",
+                        "line-cap": "round", "line-join": "round"}},
+            {"id": lid, "type": "line", "source": src_id,
+             "source-layer": f"view_{view_id}",
+             "paint": {"line-color": placeholder["paint"],
+                       "line-width": zoom_width(1.2)},
+             "layout": {"visibility": "none",
+                        "line-cap": "round", "line-join": "round"}},
+        ],
+        "filter": {},
+    }
+    sym_id = name
+    state = {
+        "symbologies": {sym_id: {
+            "id": sym_id, "name": "Travel Time", "isVisible": True,
+            "symbology": {"activeLayer": lid, "layers": {lid: template_layer}},
+        }},
+        "display": {"_functions": {"providers": [], "subscribers": [
+            {"functionId": "comparison_series", "enabled": True,
+             "paramKey": "$self",
+             "args": {"labelKey": "label", "valueKey": "filters"}}]}},
+        "height": "2/3",
+        "zoomPan": True,
+        "blankBaseMap": False,
+        "basemapStyle": "Default",
+        "hideControls": True,
+    }
+    existing = templates.get(name)
+    if existing is not None:
+        ex_state = json.loads(existing["data"]["stateJson"])
+        if ex_state == state:
+            return templates
+        new_data = {**existing["data"], "stateJson": json.dumps(state),
+                    "updatedAt": now_iso()}
+        if dry_run:
+            print(f"[dry-run] would update drifted template '{name}' "
+                  f"id={existing['id']}")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} (drift fix)")
+        templates[name] = {"id": existing["id"], "data": new_data}
+        return templates
+    if dry_run:
+        print(f"[dry-run] would create template '{name}'")
+        templates[name] = {"id": None, "data": {"name": name,
+                           "stateJson": json.dumps(state),
+                           "elementType": "Map",
+                           "updatedAt": now_iso()}}
+        return templates
+    data = {
+        "name": name, "slug": name,
+        "stateJson": json.dumps(state),
+        "elementType": "Map", "componentType": "Map",
+        "includesLayout": False, "includesSource": True,
+        "createdAt": now_iso(), "updatedAt": now_iso(),
+    }
     r = dms(["raw", "create", "npmrdsv5", GRAPH_TEMPLATE_TYPE], data=data)
     templates[name] = {"id": r["id"], "data": data}
     print(f"created template '{name}' id={r['id']}")
     return templates
 
 
-def bake_route_map_speed_paint(state, info, route_map_value_ctx, color_range,
-                               gaps, old_graph):
+# Route Map choropleth measures whose CH query is a SINGLE join against
+# CH_TMC_IDENT_TABLE (speed, travelTime — both self-aggregating, both
+# degrade correctly under a bare GROUP BY ds.tmc). hoursOfDelay needs a
+# different two-source join (META_1946_JOIN + AADT_DIST_JOIN) and its own
+# bake function — not folded in here, see the M3+ handoff notes in
+# route_map_scope.md ("the FROM/JOIN clause itself differs, not just the
+# SELECTed expression").
+ROUTE_MAP_VALUE_EXPR = {"speed": SPEED_VALUE_EXPR, "travelTime": TRAVEL_TIME_VALUE_EXPR}
+
+
+def bake_route_map_choropleth_paint(state, info, route_map_value_ctx, color_range,
+                                    gaps, old_graph, measure):
     """Per-report choropleth bake for a Route-Map Map-section clone whose
-    series-template layer carries a CH `join` (currently only the speed
-    measure, M2) — breaks/colors are per-report data (this report's actual
-    routes' value distribution, this report's own color_range) the shared
-    per-year template can't carry, so they're baked into THIS clone the same
-    way build_graph_section_data already customizes color_range/aadt into
-    every other cloned template's copy — Map-shaped instead of AVL-Graph-
-    shaped (Map has no `display.colors`; the paint itself IS the color).
+    series-template layer carries a single-source CH `join` against
+    CH_TMC_IDENT_TABLE (speed M2, travelTime M3 -- `measure` picks the SELECT
+    expression via ROUTE_MAP_VALUE_EXPR, everything else about the query
+    shape is identical between them). Breaks/colors are per-report data
+    (this report's actual routes' value distribution, this report's own
+    color_range) the shared per-year template can't carry, so they're baked
+    into THIS clone the same way build_graph_section_data already customizes
+    color_range/aadt into every other cloned template's copy -- Map-shaped
+    instead of AVL-Graph-shaped (Map has no `display.colors`; the paint
+    itself IS the color).
 
     Pools per-TMC values across every comp assigned to THIS graph (one CH
     query, same infra as every other ground-truthing query in this script) —
@@ -2557,7 +2707,7 @@ def bake_route_map_speed_paint(state, info, route_map_value_ctx, color_range,
             ends.append(str(s["endDate"])[:8])
 
     if not tmcs or not starts or not ends:
-        gaps.append({"kind": "route_map_speed_no_values", "graph": old_graph.get("id"),
+        gaps.append({"kind": f"route_map_{measure}_no_values", "graph": old_graph.get("id"),
                      "detail": "no resolvable TMCs/date range across this graph's "
                                "assigned comps — choropleth left unbaked "
                                "(template placeholder default renders)"})
@@ -2566,7 +2716,8 @@ def bake_route_map_speed_paint(state, info, route_map_value_ctx, color_range,
     start_fmt = "-".join([min(starts)[:4], min(starts)[4:6], min(starts)[6:8]])
     end_fmt = "-".join([max(ends)[:4], max(ends)[4:6], max(ends)[6:8]])
     tmc_list = ",".join(f"'{t}'" for t in sorted(tmcs))
-    sql = (f"SELECT ds.tmc AS tmc, {SPEED_EXPR} "
+    value_expr = ROUTE_MAP_VALUE_EXPR[measure]
+    sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
            f"FROM {CH_FACT_TABLE} AS ds "
            f"JOIN {CH_TMC_IDENT_TABLE} AS table1 ON ds.tmc = table1.tmc "
            f"WHERE ds.tmc IN ({tmc_list}) "
@@ -2576,7 +2727,7 @@ def bake_route_map_speed_paint(state, info, route_map_value_ctx, color_range,
     rows = result.get("data") or []
     values = [r[1] for r in rows if r[1] is not None]
     if not values:
-        gaps.append({"kind": "route_map_speed_no_values", "graph": old_graph.get("id"),
+        gaps.append({"kind": f"route_map_{measure}_no_values", "graph": old_graph.get("id"),
                      "detail": f"pooled CH query over {len(tmcs)} tmc(s), "
                                f"{start_fmt}..{end_fmt} returned no values — "
                                f"choropleth left unbaked (template placeholder "
@@ -2803,7 +2954,7 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
     # already-wired primitive, not new capability.
     is_map = tmpl["data"].get("elementType") == "Map"
     # Map sections have no `display.colors` concept at all — the choropleth
-    # paint itself IS the color (see bake_route_map_speed_paint below), so the
+    # paint itself IS the color (see bake_route_map_choropleth_paint below), so the
     # generic AVL-Graph color_range wiring is not just inert but the wrong
     # target entirely; skip it here rather than write a dead key.
     if color_range and old_graph.get("type") in COLOR_RANGE_GRAPH_TYPES and not is_map:
@@ -2815,8 +2966,9 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         if state.get("display", {}).get("graphType") == "BarGraph":
             colors_cfg["byValue"] = True
         state.setdefault("display", {})["colors"] = colors_cfg
-    # Route-Map choropleth bake (M2): only the templates whose series-template
-    # layer actually carries a `join` (currently just speed) need this — the
+    # Route-Map choropleth bake (M2 speed / M3 travelTime): only the templates
+    # whose series-template layer actually carries a `join` (single-source
+    # CH_TMC_IDENT_TABLE joins, per ROUTE_MAP_VALUE_EXPR) need this — the
     # geometry-only "none" template has no `join` key at all, so this is a
     # no-op for it without needing a separate measure check here.
     if is_map and route_map_value_ctx is not None:
@@ -2824,9 +2976,10 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         layer = (state["symbologies"][sym_id]["symbology"]["layers"]
                  [state["symbologies"][sym_id]["symbology"]["activeLayer"]]
                 ) if sym_id else None
-        if layer and layer.get("join"):
-            bake_route_map_speed_paint(state, info, route_map_value_ctx,
-                                       color_range, gaps, old_graph)
+        if layer and layer.get("join") and info["measure"] in ROUTE_MAP_VALUE_EXPR:
+            bake_route_map_choropleth_paint(state, info, route_map_value_ctx,
+                                            color_range, gaps, old_graph,
+                                            info["measure"])
     # overrides.aadt → substitute the AADT term(s) inside the cloned calculated
     # column expression(s) (see AADT_OVERRIDE_SUBS above for the old-tool
     # semantics each replacement reproduces). Zero matches on a template that
@@ -3125,16 +3278,17 @@ def convert_report(old_id, dry_run=False, replace=False):
             info["measure"], graph_templates, dry_run)
         route_compare_tmpl_name[gid] = f"route_compare_{info['measure']}"
 
-    # Route Map: "none" (geometry-only overview map, M0b) and "speed" (CH-
-    # joined choropleth, M2 — 256 corpus instances / 214 reports / 45
-    # single-blocker flips, the single biggest lever in the corpus). One
+    # Route Map: "none" (geometry-only overview map, M0b), "speed" (CH-joined
+    # choropleth, M2 — 256 corpus instances / 214 reports / 45 single-blocker
+    # flips, the single biggest lever in the corpus), "travelTime" (M3 —
+    # same shape as speed, see ensure_route_map_traveltime_template). One
     # shared template per network YEAR for each (graph_max_year, same
     # period-matching idiom as the pm3 join above); resolution is irrelevant
-    # to either (round-41 scope note: whole-range per-TMC aggregate).
+    # to any of them (round-41 scope note: whole-range per-TMC aggregate).
     route_map_tmpl_name = {}
     route_map_gap_logged = set()
     for g, info in analyzed:
-        if info["type"] != "Route Map" or info["measure"] not in ("none", "speed"):
+        if info["type"] != "Route Map" or info["measure"] not in ("none", "speed", "travelTime"):
             continue
         gid = g.get("id")
         year = graph_max_year(info, comps_by_id)
@@ -3154,10 +3308,14 @@ def convert_report(old_id, dry_run=False, replace=False):
             graph_templates = ensure_route_map_none_template(
                 year, graph_templates, dry_run)
             route_map_tmpl_name[gid] = f"route_map_none_{year}"
-        else:
+        elif info["measure"] == "speed":
             graph_templates = ensure_route_map_speed_template(
                 year, graph_templates, dry_run)
             route_map_tmpl_name[gid] = f"route_map_speed_{year}"
+        else:
+            graph_templates = ensure_route_map_traveltime_template(
+                year, graph_templates, dry_run)
+            route_map_tmpl_name[gid] = f"route_map_travelTime_{year}"
 
     convertible, skipped = [], []
     for g, info in analyzed:
