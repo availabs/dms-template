@@ -176,9 +176,6 @@ def analyze_report(old):
         # the census doesn't mis-count them.
         grain = INFO_BOX_GRAIN.get(info["type"])
         is_route_compare = info["type"] == "Route Compare Component"
-        is_bar_summary_pm3 = (info["type"] == "Bar Graph Summary"
-                              and (info["measure"], info["data_column"])
-                              == BAR_SUMMARY_PM3_BUCKET)
         if grain and (info["measure"], info["data_column"]) in INFO_BOX_TRAVELTIME_BUCKETS:
             # Round 38 (avgTT-byDateRange) + round 40 (plain travelTime alias):
             # static CH template, no year/bin gate at all.
@@ -206,16 +203,19 @@ def analyze_report(old):
                     and len(info["assigned"]) >= 2):
                 mapped.append((g, info, f"route_compare_{info['measure']}"))
                 continue
-        elif info["type"] == "Route Map" and info["measure"] == "none":
-            # Round 47 (Route Map M0b): geometry-only overview maps convert via
-            # the per-year Map-section template (mirrors convert_report's
-            # route_map_tmpl_name pre-pass; year clamped into the provisioned
-            # geometry-view range there, so any parseable year maps).
+        elif info["type"] == "Route Map" and info["measure"] in ("none", "speed"):
+            # Round 47 (M0b, measure "none"): geometry-only overview maps.
+            # M2 (measure "speed", this round): CH-joined choropleth — the
+            # single biggest lever in the corpus. Both mirror convert_report's
+            # route_map_tmpl_name pre-pass — one shared template per network
+            # YEAR, resolution-irrelevant (round-41 scope note), year clamped
+            # into the provisioned geometry-view range so any parseable year
+            # maps.
             year = graph_max_year(info, comps_by_id)
             if year is not None:
                 year = min(max(year, min(GEOMETRY_TILE_VIEWS)),
                            max(GEOMETRY_TILE_VIEWS))
-                mapped.append((g, info, f"route_map_none_{year}"))
+                mapped.append((g, info, f"route_map_{info['measure']}_{year}"))
                 continue
         elif GRAPH_TEMPLATE_MAP.get(key):
             mapped.append((g, info, GRAPH_TEMPLATE_MAP[key]))
