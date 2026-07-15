@@ -2229,7 +2229,32 @@ GEOMETRY_TILE_VIEWS = {2017: 985, 2018: 1015, 2019: 1027, 2020: 1033,
 # dms-server tile host (implements the symbology join= param; the
 # graph.availabs.org avail-falcor tile route does NOT — see
 # src/dms/planning/research/references/map-joins.md).
-TILE_HOST = os.environ.get("DMS_TILE_HOST", "https://dmsserver.availabs.org")
+#
+# Round 51: this got baked to the wrong host (silently — 204s, no error) THREE
+# times in one session because DMS_TILE_HOST has to be remembered on every
+# single conversion command, not just the probe command. Auto-detect instead:
+# if a local dev dms-server is actually listening, use it (that's where any
+# server-side Map-join code under active local development actually lives,
+# e.g. the M3 two-source join); otherwise fall back to production. DMS_TILE_HOST
+# still wins if set explicitly (CI, or deliberately testing against prod).
+# Once the local Map-join work is fully deployed to production, the
+# auto-detected local host stops mattering and this can go back to being a
+# bare hardcoded default -- not a rush to remove now.
+def _resolve_tile_host():
+    override = os.environ.get("DMS_TILE_HOST")
+    if override:
+        return override
+    import socket
+    try:
+        with socket.create_connection(("localhost", 3001), timeout=0.3):
+            return "http://localhost:3001"
+    except OSError:
+        return "https://dmsserver.availabs.org"
+
+
+TILE_HOST = _resolve_tile_host()
+print(f"[convert_old_reports] TILE_HOST resolved to {TILE_HOST}"
+      f"{' (auto-detected local dev server)' if TILE_HOST.startswith('http://localhost') and not os.environ.get('DMS_TILE_HOST') else ''}")
 # Raw ClickHouse schema.table names for M2's own pooled per-TMC bake query
 # (executed directly via dbq.ch, bypassing the DMS query builder entirely —
 # NOT the `clickhouse.`-prefixed data_manager.views.table_schema form; that
