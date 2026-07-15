@@ -34,8 +34,9 @@ function build(PAGE, SLUG, groups, sections) {
   fs.writeFileSync(gf, JSON.stringify({ draft_section_groups: groups }));
   cli("raw", "update", PAGE, "--data", gf);
   for (const s of sections) {
+    const et = s.et || "lexical";
     const payload = { size: s.size, group: s.group, title: "",
-      element: { "element-data": s.data, "element-type": "lexical" }, "element-type": "lexical" };
+      element: { "element-data": s.data, "element-type": et }, "element-type": et };
     if (s.border) payload.border = s.border;
     // Multi-card rows → equal height (bordered, narrower than full-width). Default stays auto.
     if (s.border === "full" && s.size !== "12") payload.height = "fill";
@@ -45,40 +46,93 @@ function build(PAGE, SLUG, groups, sections) {
   console.log(`${SLUG}: wiped ${existing.length}, built ${sections.length}; now`, jget(PAGE).data.draft_sections.length);
 }
 
-// ════════ MAPS GALLERY (2174664) ════════
+// ════════ MAPS GALLERY (2174664) — data-driven per freight-atlas-gallery.html (2026-07-13) ════════
+// One tile per LIVE map figure (status available/partial) of the 2024 State Freight Plan,
+// grouped into the plan's 8 categories, from the `freightatlas_maps` dataset (2189815/v2189816).
+// Tiles deep-link the map engine — name displays, href = "/freight_atlas?layers=" + the row's
+// layers_on (searchParamsCol; map_dama reads it in view — see core task
+// map-dama-shareable-layers-read.md). Header chips are LIVE aggregate counts; per-category
+// "N maps" counts are baked at BUILD time from the dataset (refresh on rebuild). Blocked
+// figures (pending/external) stay in the dataset as the work queue.
 {
+  const FAMAPS_SRC = { isDms: true, app: "npmrdsv5", type: "freightatlas_maps", name: "Freight Atlas — Gallery Maps",
+    source_id: 2189815, view_id: 2189816, env: "npmrdsv5+freightatlas_maps", srcEnv: "npmrdsv5+freightatlas_maps", baseUrl: "/forms",
+    columns: ["figure", "page", "fig_label", "name", "description", "category", "status", "symbology_ids", "layers_on", "layers_label", "url", "badge"].map(n => ({ name: n, display_name: n, type: "text" })) };
+  const dwG = ({ columns, filters = [], display = {} }) => JSON.stringify({
+    externalSource: FAMAPS_SRC, columns, filters: { op: "AND", groups: filters },
+    // pageSize is REQUIRED even with usePagination:false — without it the fetch range never
+    // resolves and the section silently renders nothing (no request, no error)
+    display: { usePagination: false, pageSize: 33, readyToLoad: true, fetchMode: "smart", showAttribution: false, striped: false, ...display },
+    data: [], join: { sources: {} } });
+  // design order (freight-atlas-gallery.html §01–§08)
+  const CATEGORIES = ["Freight Economy & Equity", "The Multimodal System", "Trade & Commodity Flows", "Rail",
+    "Maritime, Air & Pipelines", "Performance & Investment", "Safety & Truck Parking", "2050 Outlook"];
+  // baked per-category totals for the header count chips (from the dataset at build time — the
+  // tiles themselves are live Cards; re-run this build after adding figures to refresh counts)
+  const CAT_COUNTS = { "Freight Economy & Equity": 3, "The Multimodal System": 5, "Trade & Commodity Flows": 6,
+    "Rail": 4, "Maritime, Air & Pipelines": 3, "Performance & Investment": 3, "Safety & Truck Parking": 5, "2050 Outlook": 4 };
+
   const G = { header: randomUUID(), content: randomUUID() };
   const groups = [
     { name: G.header,  index: 0, theme: "header",  position: "content", displayName: "Header" },
     { name: G.content, index: 1, theme: "content", position: "content", displayName: "Gallery" },
   ];
-  const tile = (name, desc, layers) => lexical(
-    styled("cardTitle", text(name)),
-    styled("proseSM", text(desc)),
-    styled("metaSM", text(layers)),
-    para(button("open in atlas →", "/freight_atlas", "plain")),
-  );
-  const tiles = [
-    ["Freight Network", "FCHN · PHFS · CUFC/CRFC · key corridors", "8 layers"],
-    ["Intermodal & Facilities", "78 rail-served facilities · ports · airports", "6 layers"],
-    ["Commodity Flows", "TRANSEARCH OD · 2021 + 2050 · by mode", "4 layers"],
-    ["Truck Parking", "216+47 sites · hourly use · ATRI clusters", "3 layers · new"],
-    ["Bottlenecks & Reliability", "37 bottlenecks · TTTR · excessive delay", "5 layers"],
-    ["Safety", "Truck crashes · rail crossings · blocked-crossing hotspots", "4 layers"],
-    ["Investment", "NHFP $304M · PFRAP $111.1M · by PIN/region", "2 layers"],
-    ["Climate & Equity", "ETC equity index · CLCPA · border-buffer", "3 layers"],
-  ];
+  // aggregate chip cell (fn:"exempt" — the one-row aggregate Card idiom)
+  const chip = (sql, alias) => ({ name: sql, type: "calculated", normalName: alias, display_name: "",
+    show: true, fn: "exempt", formatFn: " ", hideHeader: true, valueFontStyle: "chip" });
   const sections = [
     { group: G.header, size: "12", data: lexical(
       styled("metaSM", text("Freight Atlas  /  Maps Gallery")),
-      styled("kicker", text("// curated front door · 8 presets · one map engine")),
+      styled("kicker", text("// the 2024 freight plan's maps · 33 figures · one map engine")),
       styled("displayLG", text("Maps Gallery"), text(".", 0, GOLD)),
-      styled("prose", text("Eight ways into the freight system. Each tile opens the single Freight Atlas map preloaded with a theme's layers and symbology — pick a starting point instead of building a view from scratch.")),
+      styled("prose", text("Every map from the 2024 State Freight Plan that is live in the Freight Atlas today — 22 of the plan's 33 map figures, each tile opening the single map engine preloaded with that figure's layers. The rest arrive as their data lands.")),
     )},
-    ...tiles.map(([n, d, l]) => ({ group: G.content, size: "3", border: "full", data: tile(n, d, l) })),
+    // live status chips (aggregate over the whole dataset)
+    { group: G.header, size: "12", et: "Card", data: dwG({
+      columns: [
+        chip(`((count(*) filter (where (data->>'status') in ('available','partial')))::text || ' live in the atlas') as chip_live`, "chip_live"),
+        // NB: the copy "more as their data lands" contains " as " — the column-name parser
+        // splits on the FIRST ' as ' (splitColNameOnAS), so the literal is assembled via
+        // chr(32) to keep 'as' un-spaced in the raw SQL string
+        chip(`((count(*) filter (where (data->>'status') in ('pending','external')))::text || ' more' || chr(32) || 'as their data lands') as chip_next`, "chip_next"),
+      ],
+      display: { usePagination: false, pageSize: 1, fetchMode: "smart", cardBorder: false,
+        cellsTracksTemplate: "max-content max-content", cellsGridGap: 8, cellsPadding: 0, cardsPadding: 0 },
+    }) },
+    ...CATEGORIES.flatMap((cat, i) => [
+      // category header — numbered kicker + h2 ("N maps" baked; the mockup's hairline+count line)
+      { group: G.content, size: "12", data: lexical(
+        styled("kicker", text(`// 0${i + 1} · ${CAT_COUNTS[cat] || 0} maps`)),
+        head("h2", cat),
+      )},
+      // live tiles: one Card record per LIVE figure, 3-across, numeric figure order
+      { group: G.content, size: "12", et: "Card", data: dwG({
+        columns: [
+          // numeric order helper (row-level calc, NO fn — mixed-fn trap) — no cell
+          { name: `((data->>'figure'))::int as fig_order`, type: "calculated", normalName: "fig_order",
+            display_name: "", show: true, selectOnly: true, formatFn: " ", sort: "asc" },
+          { name: "fig_label", show: true, hideHeader: true, valueFontStyle: "metaXS", cellVAlign: "center" },
+          // partial badge — amber pill only when status='partial' (NULL otherwise)
+          { name: `(nullif(case when (data->>'status') = 'partial' then 'partial' else '' end, '')) as part_badge`,
+            type: "status_pill", pillColors: { "partial": "amber" }, normalName: "part_badge", display_name: "",
+            show: true, formatFn: " ", hideHeader: true, justify: "right", cellVAlign: "center" },
+          { name: "name", show: true, hideHeader: true, valueFontStyle: "cardTitleSM", cellSpan: 2,
+            isLink: true, location: "/freight_atlas?layers=", searchParamsCol: "layers_on" },
+          { name: "description", show: true, hideHeader: true, valueFontStyle: "proseSM", cellSpan: 2 },
+          // fetched for the link param only
+          { name: "layers_on", show: true, selectOnly: true },
+        ],
+        filters: [
+          { col: "category", op: "filter", value: [cat] },
+          { col: "status", op: "filter", value: ["available", "partial"] },
+        ],
+        display: { usePagination: false, fetchMode: "smart", cardBorder: true, cardsGridSize: 3, cardsGridGap: 20,
+          cardsPadding: 14, cellsGridSize: 2, cellsGridGap: 6, cellsRowGap: 4, cellsPadding: 0 },
+      }) },
+    ]),
     { group: G.content, size: "12", border: "full", data: lexical(
       styled("displaySM", text("Don't see your view? Build it.")),
-      styled("proseSM", text("Open the full Atlas, toggle any of the 56 layers across all five modes, set your symbology and vintage, then copy the share link to save your own preset.")),
+      styled("proseSM", text("Open the full Atlas, toggle any of the 39 layers across all five modes, set your filters, then copy the share link to save your own preset.")),
       para(button("Open full Atlas →", "/freight_atlas", "default")),
     )},
   ];

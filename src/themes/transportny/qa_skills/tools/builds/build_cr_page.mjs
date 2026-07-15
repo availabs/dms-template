@@ -42,6 +42,11 @@ const SOURCE_PILL = { "ai": "blue", "dev": "slate", "client": "ink", "qa": "zinc
 const STORY_PILL = { "proposed": "amber", "accepted": "blue", "verified": "green" };
 const W = "(case (data->>'severity') when 'Blocker' then 5 when 'Major' then 3 when 'Minor' then 2 else 1 end)";
 const OPEN = "('Triage','In progress','In review')", CLOSED = "('Resolved','Closed')";
+// Ticket display number: the friendly ticket_id when present, else the DMS row id. Links and
+// filters key on the ROW ID (searchParams:"id" / col:"id") — it exists the instant the row does,
+// so a modal-created ticket is openable before any numbering runs. Comma-free CASE only (the UDA
+// SELECT list is comma-split). 2026-07-15, Alex: "use its dms id value".
+const TNUM = `('#' || (case when (data->>'ticket_id') is null or (data->>'ticket_id') = '' then (id)::text else (data->>'ticket_id') end))`;
 
 const keyLeaf = (col) => ({ col, op: "filter", value: [], usePageFilters: true, searchParamKey: "key", requireResolved: true });
 const dw = (src, { columns, filters = [], display = {} }) => JSON.stringify({
@@ -64,7 +69,7 @@ const groups = [
   { name: B.hdr,   index: 1, theme: "header",     position: "content", displayName: "Header" },
   { name: B.cols,  index: 2, theme: "content",    position: "content", displayName: "Content", railHost: true },
   { name: B.side,  index: 3, theme: "content",    position: "sidebar", displayName: "Page status" },
-  { name: B.modal, index: 4, theme: "content",    position: "content", displayName: "Add-ticket modal", isModal: true, modalParamKey: "addticket" },
+  { name: B.modal, index: 4, theme: "content",    position: "content", displayName: "Add-ticket modal", isModal: true, modalParamKey: "addticket", modalSize: "xl" },
 ];
 const S = [];
 const sec = (g, size, et, data, extra = {}) => S.push({ group: g, size, et, data, ...extra });
@@ -72,31 +77,34 @@ const sec = (g, size, et, data, extra = {}) => S.push({ group: g, size, et, data
 // ── breadcrumb ──
 sec(B.crumb, "12", "lexical", lexical(styled("metaXS", text("Site Management     /     Page QA"))));
 
-// ── header — editorial block sitting flat on the white "header" band (no inner card chrome):
-//    eyebrow → big UPPERCASE title (displayLG) + stage pill → description → compact meta (no labels).
+// ── header — identity only (2026-07-15 redesign, sitemgmt-page.html): eyebrow → big UPPERCASE
+//    title (displayLG) + right cluster [QA ⇄ Design toggle chips · View live page ↗] → description.
+//    The old facts strip (surface/route/build/data/owner/updated) and the stage pill are GONE —
+//    every one of those already lives in the sidebar Page-status card, and a stage of "QA" under
+//    the QA toggle chip read as a confusing double.
 sec(B.hdr, "12", "Card", dw(PAGES_SRC, {
   columns: [
     // eyebrow as a STATIC column (origin:'static' + staticValue) so it shares the card's tight cell
     // spacing instead of a separate lexical section sitting in the band's gap-4.
-    { name: "eyebrow", origin: "static", staticValue: "// page QA", valueFontStyle: "kicker", show: true, hideHeader: true, cellSpan: 6 },
-    // title row: name (cols 1-5) + stage right (col 6, the 1fr track)
-    col("name", "Page", { valueFontStyle: "displayLG", hideHeader: true, cellSpan: 5 }),
-    pcol("stage", "Stage", STAGE_PILL, { hideHeader: true, cellSpan: 1, justify: "right" }),
+    { name: "eyebrow", origin: "static", staticValue: "// page QA", valueFontStyle: "kicker", show: true, hideHeader: true, cellSpan: 4 },
+    // title row: name (col 1, the 1fr track) + the action cluster packed right on max-content tracks
+    col("name", "Page", { valueFontStyle: "displayLG", hideHeader: true }),
+    // QA ⇄ Design toggle — a direction-free chip pair (toggleOn = this page, toggleOff = the link);
+    // the Design chip links by this page's key so the toggle round-trips (?key= on both pages).
+    { name: "t_qa", origin: "static", staticValue: "QA", valueFontStyle: "toggleOn", show: true, hideHeader: true, justify: "right", cellVAlign: "center" },
+    { name: "page_key", customName: "", show: true, hideHeader: true, valueFontStyle: "toggleOff", isLink: true,
+      location: "/sitemgmt/design?key=", searchParams: "value", linkText: "Design", justify: "right", cellVAlign: "center" },
+    // "View live page" — the row's url column IS the href (no `location`), new tab via isLinkExternal
+    { name: "url", customName: "", show: true, hideHeader: true, valueFontStyle: "btnOutline", isLink: true,
+      isLinkExternal: true, linkText: "View live page ↗", justify: "right", cellVAlign: "center" },
     // description (full width)
-    col("description", "", { valueFontStyle: "prose", hideHeader: true, cellSpan: 6 }),
-    // meta — all six on ONE line; max-content tracks make each cell content-width so they pack tight-left
-    pcol("surface_label", "Surface", SURFACE_PILL, { hideHeader: true }),
-    col("route", "Route", { valueFontStyle: "metaMD", hideHeader: true }),
-    pcol("build", "Build", BUILD_PILL, { hideHeader: true }),
-    pcol("data", "Data", DATA_PILL, { hideHeader: true }),
-    col("owner", "Owner", { valueFontStyle: "metaMD", hideHeader: true }),
-    col("updated", "Updated", { valueFontStyle: "metaMD", hideHeader: true }),
+    col("description", "", { valueFontStyle: "prose", hideHeader: true, cellSpan: 4 }),
   ],
   filters: [keyLeaf("page_key")],
-  // content-width tracks (5 × max-content + a trailing 1fr) → cells size to content and pack left
-  // instead of distributing across equal fractions; cellsPadding 0 + small gap removes the airy spacing.
-  display: { usePagination: false, pageSize: 1, cellsGridSize: 6, cellsGridGap: 10, cellsRowGap: 3, cellsPadding: 0,
-    cellsTracksTemplate: "max-content max-content max-content max-content max-content minmax(0,1fr)", cardBorder: false },
+  // 1fr title track + three max-content action tracks → the cluster packs tight-right;
+  // cellsPadding 0 + small gap removes the airy spacing.
+  display: { usePagination: false, pageSize: 1, cellsGridSize: 4, cellsGridGap: 8, cellsRowGap: 3, cellsPadding: 0,
+    cellsTracksTemplate: "minmax(0,1fr) max-content max-content max-content", cardBorder: false },
 }), {});
 
 // MAIN content band (B.cols): Tickets · Stories · Timeline, full width. SIDEBAR rail (B.side,
@@ -143,28 +151,25 @@ sec(B.cols, "12", "Card", dw(TICKETS_SRC, {
 }), cardHeadr);
 sec(B.cols, "12", "Spreadsheet", dw(TICKETS_SRC, {
   columns: [
-    { name: "ticket_id", customName: "#", show: true, justify: "left", isLink: true, location: "/sitemgmt/ticket?id=", searchParams: "value", linkText: "", size: 52 },
+    // '#N' display (ticket_id, falling back to the row id) — the LINK always carries the row id.
+    // size fits the 7-digit row-id fallback ('#2191487'); at 56px it clipped to a misleading '#21914'.
+    { name: `${TNUM} as num`, type: "calculated", normalName: "num", customName: "#", show: true, justify: "left",
+      isLink: true, location: "/sitemgmt/ticket?id=", searchParams: "id", size: 80 },
     col("title", "Ticket", { size: 300, wrapText: true, stretch: true }),           // text — left, fills width
     pcol("severity", "Sev", SEV_PILL, { size: 92, justify: "right" }),             // pills — right
     pcol("source", "Source", SOURCE_PILL, { size: 92, justify: "right" }),
     pcol("status", "Status", STATUS_PILL, { size: 130, justify: "right", allowEditInView: true }), // editable pill
   ],
   filters: [keyLeaf("page_key")],
-  display: { usePagination: true, pageSize: 25, fetchMode: "smart", autoResize: false, tableStyle: "flush" },
+  // data_refresh: refetch when the modal's add_publish bumps 'tickets_v' (new ticket → row
+  // appears without a reload)
+  display: { usePagination: true, pageSize: 25, fetchMode: "smart", autoResize: false, tableStyle: "flush",
+    _functions: { subscribers: [{ functionId: "data_refresh", enabled: true, paramKey: "tickets_v" }] } },
 }), cardBody);
 
-// ── MAIN — Timeline (composed card: header fused with Card, most-recent first) ──
-sec(B.cols, "12", "lexical", hdr("Timeline", "work history"), cardHeadr);
-sec(B.cols, "12", "Card", dw(TICKETS_SRC, {
-  columns: [
-    col("updated", "", { hideHeader: true, valueFontStyle: "metaXS", cellSpan: 1 }),
-    { name: "ticket_id", customName: "#", show: true, justify: "left", hideHeader: true, isLink: true, location: "/sitemgmt/ticket?id=", searchParams: "value", linkText: "#" },
-    col("title", "", { hideHeader: true, cellSpan: 4 }),
-    pcol("status", "", STATUS_PILL, { hideHeader: true }),
-  ],
-  filters: [keyLeaf("page_key"), { col: "updated", op: "filter", value: [], sort: "desc" }],
-  display: { usePagination: true, pageSize: 25, fetchMode: "smart", cardsGridSize: 1, cardsGridGap: 6, cellsGridSize: 7, cellsGridGap: 10, cardBorder: false, cardsPadding: 6 },
-}), cardBody);
+// (Timeline section removed 2026-07-15 per Alex — it was non-functional: tickets have no event
+// stream, so it just re-listed the tickets table sorted by `updated`. Bring it back only when a
+// real work-history source exists.)
 
 // ════════════ SIDEBAR — Page-status card (mockup: eyebrow → stage → progress → facts → work) ════════
 // One flat card (NO outer border). Sections carry NO section-level vertical padding (`padding
@@ -226,41 +231,56 @@ sec(B.side, "12", "Card", dw(TICKETS_SRC, {
     calc(`(count(*) filter (where data->>'status' in ${OPEN}))::text as open_n`, "Open", { valueFontStyle: "statMD", headerFontStyle: "metaXS" }),
   ],
   filters: [keyLeaf("page_key")],
-  display: { usePagination: false, pageSize: 1, cellsGridSize: 2, cellsGridGap: 10, cellsRowGap: 7, cardsPadding: 14, headerValueLayout: "col", cardBorder: false },
+  // data_refresh: closed/open counts + % update the moment the modal creates a ticket
+  display: { usePagination: false, pageSize: 1, cellsGridSize: 2, cellsGridGap: 10, cellsRowGap: 7, cardsPadding: 14, headerValueLayout: "col", cardBorder: false,
+    _functions: { subscribers: [{ functionId: "data_refresh", enabled: true, paramKey: "tickets_v" }] } },
 }), sWork);
 
-// ── ADD-TICKET MODAL (B.modal, isModal group) — an allowAdddNew Card = the create form. The
-// never-match filter keeps existing tickets out of the modal (only the new-item form renders).
-// page_key pre-fills from the page's `key` filter (usePageParams); read-only in the form
-// (editable:false → renders view). ticket_id is assigned AT CREATE by the core `autoNumber`
-// column attr (max+1 across the whole source, floor 101 — same rule as cr_sync healing) and
-// status defaults to Triage via `defaultValue` — both selectOnly, so no form field renders.
-// opened/updated still backfill on the next cr_sync (dates are dynamic).
-const selCol = (name, label, opts, over = {}) => ({ name, customName: label, show: true, hideHeader: false,
-  headerFontStyle: "metaXS", type: "select", options: opts.map(o => (typeof o === "string" ? { label: o, value: o } : o)), ...over });
+// ── ADD-TICKET MODAL (B.modal, isModal group + modalSize "xl") — an allowAdddNew Card = the
+// create form. 2026-07-15 redesign (sitemgmt-page.html): THREE fields — title · severity ·
+// description — priority/source/assignee/steps/expected/actual are triage's job, not the
+// reporter's. Labels use labelSM (bigger + darker than the old mono micro-caps); title and
+// description carry per-column `placeholder`s (Card's attribute spread wins over its hardcoded
+// default). The never-match filter keeps existing tickets out of the modal (only the new-item
+// form renders). page_key pre-fills from the page's `key` filter (usePageParams); read-only
+// (editable:false → renders view).
+// Create-time defaults (selectOnly — no form field renders): status → Triage, source → client
+// (dev/agent tickets come in via CLI), ticket_id → autoNumber max+1 floor 101, the FRIENDLY
+// display number. Viewability does NOT depend on it: ticket links/filters key on the DMS row
+// id (searchParams:"id" / col:"id"), which exists at create no matter what, and displays fall
+// back to the row id when ticket_id is missing. opened/updated/reporter are stamped AT CREATE
+// via defaultFn (today/user); cr_sync healing remains the backstop for CLI-created rows.
+const mCol = (name, label, over = {}) => ({ name, customName: label, show: true, hideHeader: false,
+  headerFontStyle: "labelSM", justify: "left", ...over });
 sec(B.modal, "12", "Card", dw(TICKETS_SRC, {
   columns: [
-    // header row: title + caption right, closed with a hairline divider (cellBorderBottom)
-    { name: "m_hdr", origin: "static", staticValue: "New ticket", valueFontStyle: "cardTitleSM", show: true, hideHeader: true, cellSpan: 2, cellBorderBottom: true },
-    { name: "m_cap", origin: "static", staticValue: "status starts at triage · id assigned on create", valueFontStyle: "metaXS", show: true, hideHeader: true, justify: "right", cellSpan: 2, cellBorderBottom: true, cellVAlign: "center" },
-    // create-time defaults — no rendered cells (selectOnly), consumed by dataWrapper addItem
+    // header: title, then a friendly caption closed with a hairline divider (the core modal ✕
+    // floats top-right and is the cancel — no in-card buttons besides Add)
+    { name: "m_hdr", origin: "static", staticValue: "New ticket", valueFontStyle: "cardTitleSM", show: true, hideHeader: true, cellSpan: 2 },
+    { name: "m_cap", origin: "static", staticValue: "Tell us what you saw on this page — triage takes it from there.", valueFontStyle: "proseSM", show: true, hideHeader: true, cellSpan: 2, cellBorderBottom: true },
+    // create-time defaults — no rendered cells (selectOnly), consumed by dataWrapper addItem.
+    // defaultFn (2026-07-15): opened/updated stamped at create (was a cr_sync backfill),
+    // reporter = the logged-in user's email (skipped if anonymous → sync heal still applies).
     { name: "ticket_id", show: true, selectOnly: true, autoNumber: true, autoNumberStart: 101 },
     { name: "status", show: true, selectOnly: true, defaultValue: "Triage" },
-    { name: "page_key", customName: "target page · pre-filled from this page", show: true, hideHeader: false,
-      headerFontStyle: "metaXS", valueFontStyle: "chip", usePageParams: true, pageParamKey: "key", editable: false, cellSpan: 4 },
-    col("title", "title", { headerFontStyle: "metaXS", type: "text", cellSpan: 4 }),
-    selCol("severity", "severity", ["Blocker", "Major", "Minor", "Polish"]),
-    selCol("priority", "priority", ["Now", "Next", "Later"]),
-    selCol("source", "source", [{ label: "Client", value: "client" }, { label: "Dev", value: "dev" }, { label: "AI", value: "ai" }]),
-    col("assignee", "assignee", { headerFontStyle: "metaXS", type: "text" }),
-    col("description", "description", { headerFontStyle: "metaXS", type: "textarea", cellSpan: 4 }),
-    col("steps", "steps to reproduce", { headerFontStyle: "metaXS", type: "textarea", cellSpan: 2 }),
-    col("expected", "expected", { headerFontStyle: "metaXS", type: "textarea", cellSpan: 1 }),
-    col("actual", "actual", { headerFontStyle: "metaXS", type: "textarea", cellSpan: 1 }),
+    { name: "source", show: true, selectOnly: true, defaultValue: "client" },
+    { name: "reporter", show: true, selectOnly: true, defaultFn: "user" },
+    { name: "opened", show: true, selectOnly: true, defaultFn: "today" },
+    { name: "updated", show: true, selectOnly: true, defaultFn: "today" },
+    mCol("page_key", "Filing against", { valueFontStyle: "chip", usePageParams: true, pageParamKey: "key", editable: false, cellSpan: 2 }),
+    mCol("title", "Title", { type: "text", placeholder: "Short, specific summary…", cellSpan: 2 }),
+    mCol("severity", "Severity", { type: "select", options: ["Blocker", "Major", "Minor", "Polish"].map(v => ({ label: v, value: v })), cellSpan: 1 }),
+    mCol("description", "Description", { type: "textarea", rows: 4, placeholder: "What happened? What did you expect?", cellSpan: 2 }),
+    { name: "m_note", origin: "static", staticValue: "numbered automatically · starts in triage", valueFontStyle: "metaXS", show: true, hideHeader: true, cellSpan: 2 },
   ],
   filters: [{ col: "ticket_id", op: "filter", value: ["__none__"] }],
-  display: { usePagination: false, pageSize: 1, fetchMode: "smart", allowAdddNew: true, cardBorder: false,
-    cellsGridSize: 4, cellsGridGap: 14, cellsRowGap: 8, cardsPadding: 20, headerValueLayout: "col" },
+  // closeModalOnAdd = the group's modalParamKey: a successful create clears the action param,
+  // closing the modal. add_publish publishes the created ROW ID to 'tickets_v'; the tickets
+  // table + work-completed card subscribe (data_refresh) so the new ticket appears instantly —
+  // no reload (core enrichments 2026-07-15).
+  display: { usePagination: false, pageSize: 1, fetchMode: "smart", allowAdddNew: true, addItemLabel: "Add ticket", closeModalOnAdd: "addticket", cardBorder: false,
+    cellsGridSize: 2, cellsGridGap: 14, cellsRowGap: 12, cardsPadding: 24, headerValueLayout: "col",
+    _functions: { providers: [{ functionId: "add_publish", enabled: true, paramKey: "tickets_v" }] } },
 }));
 
 // find or create the page

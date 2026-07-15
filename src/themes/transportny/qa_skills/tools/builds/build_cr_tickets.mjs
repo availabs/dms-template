@@ -40,6 +40,10 @@ const calc = (sql, label, over = {}) => ({ name: sql, type: "calculated", displa
 const linkNode = (t, url) => ({ type: "link", version: 1, direction: "ltr", format: "", indent: 0, rel: null, target: null, title: null, url, children: [text(t)] });
 const W = "(case (data->>'severity') when 'Blocker' then 5 when 'Major' then 3 when 'Minor' then 2 else 1 end)";
 const OPEN = "('Triage','In progress','In review')", CLOSED = "('Resolved','Closed')";
+// Ticket display number: friendly ticket_id when present, else the DMS row id. Links/filters
+// key on the ROW ID (searchParams:"id" / col:"id") so tickets are openable un-numbered.
+// Comma-free CASE only (the UDA SELECT list is comma-split). 2026-07-15, Alex.
+const TNUM = `('#' || (case when (data->>'ticket_id') is null or (data->>'ticket_id') = '' then (id)::text else (data->>'ticket_id') end))`;
 const st = (s) => `(data->>'status')`; // shorthand
 // composed-card section styles for a fused stack on the gap-0 band. RULE: zero EVERY interior edge —
 // the section's default `defaultPaddingStep` gutter sits OUTSIDE the border, so any non-zero interior
@@ -171,13 +175,15 @@ function applyPage(pageId, groups, S, filters = []) {
       { name: `(case when (data->>'status') in ${OPEN} then 0 else 1 end) as openrank`,
         type: "calculated", normalName: "openrank", display_name: "", customName: "", show: true,
         formatFn: " ", hideHeader: true, size: 0, sort: "asc" },
-      // '#' — displays '#<id>', links by the ticket_id column's value (searchParamsCol, BC)
-      { name: "('#' || (data->>'ticket_id')) as num", type: "calculated", normalName: "num",
+      // '#' — displays the friendly ticket_id (falls back to the row id for un-numbered
+      // tickets); the LINK carries the DMS ROW ID (searchParams:"id" — rows on non-grouped
+      // isDms sections always fetch it), so every ticket is openable the instant it exists.
+      // 2026-07-15 (Alex): ticket identity = row id; ticket_id is display-only.
+      // size fits the 7-digit row-id fallback ('#2191487'); at 56px it clipped to '#21914'
+      { name: `${TNUM} as num`, type: "calculated", normalName: "num",
         display_name: "#", customName: "#", show: true, formatFn: " ",
-        justify: "right", size: 56, valueFontStyle: "metaXS",
-        isLink: true, location: "/sitemgmt/ticket?id=", searchParamsCol: "ticket_id" },
-      // ticket_id must stay fetched for searchParamsCol to read it — 0px helper
-      { name: "ticket_id", customName: "", show: true, hideHeader: true, size: 0 },
+        justify: "right", size: 80, valueFontStyle: "metaXS",
+        isLink: true, location: "/sitemgmt/ticket?id=", searchParams: "id" },
       pcol("severity", "Severity", SEV_PILL, { size: 100 }),
       { name: "(case data->>'source' when 'ai' then 'AI' when 'dev' then 'Dev' when 'client' then 'Client' else (data->>'source') end) as src",
         type: "status_pill", normalName: "src", display_name: "Source", customName: "Source", show: true,
@@ -216,8 +222,10 @@ function applyPage(pageId, groups, S, filters = []) {
     { name: B.com,   index: 3, theme: "content",    position: "content", displayName: "Comments" },
   ];
   const STAGE_PILL = { "Proposed": "zinc", "Design": "slate", "Implemented": "amber", "QA": "blue", "Dev Acceptance": "ink", "Client Acceptance": "green" };
-  // ?id → ticket_id filter leaf (requireResolved so it waits for the param)
-  const idLeaf = () => ({ col: "ticket_id", op: "filter", value: [], usePageFilters: true, searchParamKey: "id", requireResolved: true });
+  // ?id → DMS ROW ID filter leaf (requireResolved so it waits for the param). col:"id" isn't a
+  // dataset column, so the filter compiler passes it through verbatim → WHERE id = ANY(...) on
+  // the split table's real PK. Every ticket resolves — numbered or not (2026-07-15, was ticket_id).
+  const idLeaf = () => ({ col: "id", op: "filter", value: [], usePageFilters: true, searchParamKey: "id", requireResolved: true });
   const detail = (columns, display = {}) => dw({ columns, filters: [idLeaf()],
     display: { usePagination: false, pageSize: 1, fetchMode: "smart", ...display } });
   // row-level calc (NO fn — see the tickets-table gotcha)
@@ -228,14 +236,14 @@ function applyPage(pageId, groups, S, filters = []) {
 
   // breadcrumb — key-filtered so the crumb carries the real #id
   S.push({ group: B.crumb, size: "12", et: "Card", data: detail([
-    rcalc(`('Site Management     /     Tickets     /     #' || (data->>'ticket_id')) as crumb`, "", { valueFontStyle: "metaXS" }),
+    rcalc(`('Site Management     /     Tickets     /     ' || ${TNUM}) as crumb`, "", { valueFontStyle: "metaXS" }),
   ], { cardBorder: false, cardsPadding: 0 }) });
 
   // header — one Card: kicker → badge row (+ All tickets right) → title → target line.
   // 6 max-content tracks + a stretch tail; full-row cells span 6.
   S.push({ group: B.hdr, size: "12", et: "Card", data: detail([
     stat("kick", "// ticket", { valueFontStyle: "kicker", cellSpan: 6 }),
-    rcalc(`('#' || (data->>'ticket_id')) as num`, "", { valueFontStyle: "metaXS" }),
+    rcalc(`${TNUM} as num`, "", { valueFontStyle: "metaXS" }),
     pcol("severity", "", SEV_PILL, { hideHeader: true }),
     pcol("priority", "", PRIO_PILL, { hideHeader: true }),
     pcol("status", "", STATUS_PILL, { hideHeader: true }),

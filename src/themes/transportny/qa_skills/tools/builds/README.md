@@ -24,14 +24,14 @@ Two lineages (task `planning/transportny/tasks/current/qa-build-scripts-migratio
 | build_tsmo_reliability.mjs | tsmo2/reliability_v2 2180946 | migrated | same caveat |
 | build_tsmo_incident_search.mjs | tsmo2/incident_search 2183804 | migrated | same caveat |
 | build_fa_home.mjs | freightatlas2/home 2174663 | migrated | same caveat |
-| build_fa_gallery_about.mjs | freightatlas2/maps_gallery 2174664 + **about 2174665** (slug-swapped from about_the_plan per #107; legacy stub → about_deprecated 1479129, awaits deletion) | migrated | rebuilt + gated 2026-07-07 ✓ (restored a drifted what-changed table, 15→16 sections) |
+| build_fa_gallery_about.mjs | freightatlas2/maps_gallery 2174664 + **about 2174665** (slug-swap per #107 done; about_deprecated DELETED 2026-07-13) | migrated | gallery rebuilt DATA-DRIVEN 2026-07-13 per the new design: tiles = live figures from `freightatlas_maps` (2189815/v2189816), 8 category groups, live status chips, `?layers=` deep-links. Gotchas encoded in comments: pageSize REQUIRED with usePagination:false; no literal ' as ' in calc string literals (chr(32) dodge). |
 | build_tsmo2_about.mjs | tsmo2/about 2184040 | generated | gated ✓ |
 | build_tsmo2_methodology.mjs | tsmo2/methodology 2184101 | generated | gated ✓ |
 | build_tsmo2_incidents_v2.mjs | tsmo2/incidents_v2 2181461 | generated (captures the #101 view-link fix) | gated ✓ |
 | build_tsmo2_workzones_v2.mjs | tsmo2/workzones_v2 2182386 | generated | gated ✓ |
 | build_tsmo2_incident_view.mjs | tsmo2/incident_view 2182470 | generated | gated ✓ |
 | build_tsmo2_corridor_view.mjs | tsmo2/corridor_view 2182912 | generated | gated ✓ |
-| build_freightatlas2_freight_atlas.mjs | freightatlas2/freight_atlas 1411761 | generated (460KB map symbology — payloads via temp files) | gated ✓ |
+| build_freightatlas2_freight_atlas.mjs | freightatlas2/freight_atlas 1411761 | generated (460KB map symbology — payloads via temp files) | gated ✓; `shareableState:true` added 2026-07-13 (map_dama ?layers= read — core task map-dama-shareable-layers-read.md) |
 | build_npmrds2_map_21.mjs | npmrds2/map_21 1473731 | generated | gated ✓ |
 
 **Fidelity gate** (mandatory before a script's FIRST fix-loop rebuild if flagged above): baseline

@@ -208,6 +208,45 @@
                 </div>
               </div>
 
+              <!-- LogoNav product switcher (open) -->
+              <div class="col-span-12 md:col-span-6" data-dms-section="logonav">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-6 pt-5 pb-3 border-b border-zinc-950/05">
+                    <div class="font-display font-medium text-[16px] text-[#0F1722]">LogoNav · product switcher (open)</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">themev2.logoNav.sites · LogoNav.jsx (theme widget)</div>
+                    <p class="font-proxima text-[12.5px] text-slate-600 mt-2">Sits at the head of every SideNav. The dropdown lists the platform's products with their landing-page icon shields; the current product gets the gold rail + dot. "Platform home" returns to the www landing.</p>
+                  </div>
+                  <div class="bg-slate-50/40 p-6 flex justify-center">
+                    <div class="w-[248px]">
+                      <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center gap-2 px-3">
+                        <!-- decorative: NYS logo mark (theme.logo img asset, not a registry icon) --><svg class="h-9 w-auto text-white" viewBox="0 0 40 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M2 10l8-3 6 2 7-6 8 1 7 3-3 6-9 4-7 6-5-4-8-2z"/></svg>
+                        <span class="font-display font-semibold uppercase text-white text-[15px] tracking-wide flex-1">Freight Atlas</span>
+                        <!-- icon: CaretDown --><svg class="size-4 text-slate-400 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                      </div>
+                      <div class="bg-[#0F1722] border border-white/10 border-t-0 shadow-2xl rounded-b-lg overflow-hidden">
+                        <div class="px-4 pt-3 pb-2 font-mono text-[9.5px] uppercase tracking-[0.2em] text-slate-500 border-b border-white/[0.08]">// switch product</div>
+                        <a class="flex items-center gap-3 px-4 py-2.5 border-l-2 border-transparent hover:bg-white/[0.06] cursor-pointer">
+                          <span class="inline-flex size-8 rounded-[6px] items-center justify-center text-white shrink-0" style="background:#0F2D4D"><!-- icon: ProductNpmrds --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.5h3.5l2-5.5 3 8.5 2.5-6 1.5 3H21"/></svg></span>
+                          <span class="min-w-0 flex-1"><span class="block font-display text-[13.5px] tracking-wide uppercase text-slate-200 truncate">NPMRDS</span><span class="block font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">travel time</span></span>
+                        </a>
+                        <a class="flex items-center gap-3 px-4 py-2.5 border-l-2 border-transparent hover:bg-white/[0.06] cursor-pointer">
+                          <span class="inline-flex size-8 rounded-[6px] items-center justify-center text-white shrink-0" style="background:#37576B"><!-- icon: ProductTsmo --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="1.8"/><path d="M6 11.5A6.5 6.5 0 0 1 12.5 18"/><path d="M6 6A12 12 0 0 1 18 18"/><circle cx="17" cy="7" r="2"/></svg></span>
+                          <span class="min-w-0 flex-1"><span class="block font-display text-[13.5px] tracking-wide uppercase text-slate-200 truncate">TSMO</span><span class="block font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">operations</span></span>
+                        </a>
+                        <a class="flex items-center gap-3 px-4 py-2.5 border-l-2 border-[#FACC15] bg-white/[0.04] cursor-pointer">
+                          <span class="inline-flex size-8 rounded-[6px] items-center justify-center text-white shrink-0" style="background:#1F3F8F"><!-- icon: ProductFreightAtlas --><svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13l-6 2.5-6-2.5-6 2.5z"/><path d="M6.5 13.5c3-3.5 7.5-.5 10.5-4.5"/><circle cx="17.5" cy="8.5" r="1.6"/></svg></span>
+                          <span class="min-w-0 flex-1"><span class="block font-display text-[13.5px] tracking-wide uppercase text-[#FACC15] truncate">Freight Atlas</span><span class="block font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500">freight</span></span>
+                          <span class="size-1.5 rounded-full bg-[#FACC15] shrink-0"></span>
+                        </a>
+                        <a class="flex items-center justify-between gap-3 px-4 py-2.5 mt-1 border-t border-white/[0.08] font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 hover:text-white hover:bg-white/[0.06] cursor-pointer">
+                          <span>Platform home</span><span class="text-[#FACC15]">&rarr;</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- NavigableMenu (default, dark, dock) -->
               <div class="col-span-12 md:col-span-6" data-dms-section="navigablemenu">
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full">

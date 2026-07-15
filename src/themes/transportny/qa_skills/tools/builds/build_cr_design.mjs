@@ -48,24 +48,25 @@ const sec = (g, size, et, data, extra = {}) => S.push({ group: g, size, et, data
 // ── breadcrumb ── (mirrors the Page QA header exactly, with Design wording)
 sec(B.crumb, "12", "lexical", lexical(styled("metaXS", text("Site Management     /     Design"))));
 
-// ── header — identical structure to the Page QA header: flat on the white "header" band,
-//    eyebrow → big UPPERCASE title (displayLG) + stage pill → description → compact meta row.
+// ── header — identical structure to the Page QA header (2026-07-15 redesign): eyebrow → big
+//    UPPERCASE title + right cluster [QA ⇄ Design toggle · View live page ↗] → description.
+//    Facts strip + stage pill removed (they live on the QA page's sidebar status card).
 sec(B.hdr, "12", "Card", dw(PAGES_SRC, {
   columns: [
-    { name: "eyebrow", origin: "static", staticValue: "// page design", valueFontStyle: "kicker", show: true, hideHeader: true, cellSpan: 6 },
-    col("name", "Page", { valueFontStyle: "displayLG", hideHeader: true, cellSpan: 5 }),
-    pcol("stage", "Stage", STAGE_PILL, { hideHeader: true, cellSpan: 1, justify: "right" }),
-    col("description", "", { valueFontStyle: "prose", hideHeader: true, cellSpan: 6 }),
-    pcol("surface_label", "Surface", SURFACE_PILL, { hideHeader: true }),
-    col("route", "Route", { valueFontStyle: "metaMD", hideHeader: true }),
-    pcol("build", "Build", BUILD_PILL, { hideHeader: true }),
-    pcol("data", "Data", DATA_PILL, { hideHeader: true }),
-    col("owner", "Owner", { valueFontStyle: "metaMD", hideHeader: true }),
-    col("updated", "Updated", { valueFontStyle: "metaMD", hideHeader: true }),
+    { name: "eyebrow", origin: "static", staticValue: "// page design", valueFontStyle: "kicker", show: true, hideHeader: true, cellSpan: 4 },
+    col("name", "Page", { valueFontStyle: "displayLG", hideHeader: true }),
+    // toggle pair, Design side active here — QA links back by this page's key (round-trip)
+    { name: "page_key", customName: "", show: true, hideHeader: true, valueFontStyle: "toggleOff", isLink: true,
+      location: "/sitemgmt/page?key=", searchParams: "value", linkText: "QA", justify: "right", cellVAlign: "center" },
+    { name: "t_design", origin: "static", staticValue: "Design", valueFontStyle: "toggleOn", show: true, hideHeader: true, justify: "right", cellVAlign: "center" },
+    // the row's url column IS the href (no `location`); new tab via isLinkExternal
+    { name: "url", customName: "", show: true, hideHeader: true, valueFontStyle: "btnOutline", isLink: true,
+      isLinkExternal: true, linkText: "View live page ↗", justify: "right", cellVAlign: "center" },
+    col("description", "", { valueFontStyle: "prose", hideHeader: true, cellSpan: 4 }),
   ],
   filters: [keyLeaf("page_key")],
-  display: { usePagination: false, pageSize: 1, cellsGridSize: 6, cellsGridGap: 10, cellsRowGap: 3, cellsPadding: 0,
-    cellsTracksTemplate: "max-content max-content max-content max-content max-content minmax(0,1fr)", cardBorder: false },
+  display: { usePagination: false, pageSize: 1, cellsGridSize: 4, cellsGridGap: 8, cellsRowGap: 3, cellsPadding: 0,
+    cellsTracksTemplate: "minmax(0,1fr) max-content max-content max-content", cardBorder: false },
 }), {});
 
 // ── the mockup, full-width, rendered in a sandboxed iframe via the design_frame columnType ──
