@@ -145,13 +145,37 @@ ensureTicketsSchema();
 
 // 0b) resolve the tracked patterns — from the sitemgmt_patterns config dataset by default, or
 // from --patterns when given. Each entry carries its own surface + label (single source of truth).
+//
+// subdomain/base_url are READ FROM THE PATTERN ROWS themselves (per Alex 2026-07-14: "they
+// really should read from the pattern themselves") — the DMS pattern row's data.subdomain/
+// data.base_url are what actually route the site, so links composed from them can't drift.
+// A NON-EMPTY subdomain/base_url on the sitemgmt_patterns config row acts as an EXPLICIT
+// OVERRIDE (logged loudly). A pattern subdomain of "*" (wildcard) yields path-only links.
+const patternRowFields = (() => {
+  const list = JSON.parse(clean(cli("pattern", "list")));
+  const items = list.items || list || [];
+  return (name) => {
+    const row = items.find((p) => (p.data?.name || p.name) === name);
+    const dd = row?.data || row || {};
+    const sd = dd.subdomain && dd.subdomain !== "*" ? dd.subdomain : "";
+    return { subdomain: sd, base_url: dd.base_url || "/" };
+  };
+})();
+const withPatternFields = (entry, cfgSubdomain = "", cfgBase = "") => {
+  const fromPattern = patternRowFields(entry.pattern);
+  const subdomain = cfgSubdomain || fromPattern.subdomain;
+  const base_url = cfgBase || fromPattern.base_url;
+  if (cfgSubdomain && cfgSubdomain !== fromPattern.subdomain)
+    console.log(`  OVERRIDE ${entry.pattern}: config subdomain '${cfgSubdomain}' (pattern row says '${fromPattern.subdomain || "*"}') — blank the config column to follow the pattern`);
+  return { ...entry, subdomain, base_url };
+};
 let surfaces;
 if (PATTERNS_FLAG.length) {
-  surfaces = PATTERNS_FLAG.map((p) => ({ pattern: p, surface: p, surface_label: labelOf(p), subdomain: "", base_url: "/" }));
+  surfaces = PATTERNS_FLAG.map((p) => withPatternFields({ pattern: p, surface: p, surface_label: labelOf(p) }));
 } else {
   const cfg = await readRows(PATTERNS_CFG.env, PATTERNS_CFG.view_id, ["pattern", "surface", "surface_label", "subdomain", "base_url", "sort_order", "enabled"]);
   surfaces = cfg.filter((r) => r.enabled === "yes").sort((a, b) => (+a.sort_order || 0) - (+b.sort_order || 0))
-    .map((r) => ({ pattern: r.pattern, surface: r.surface || r.pattern, surface_label: r.surface_label || labelOf(r.pattern), subdomain: r.subdomain || "", base_url: r.base_url || "/" }));
+    .map((r) => withPatternFields({ pattern: r.pattern, surface: r.surface || r.pattern, surface_label: r.surface_label || labelOf(r.pattern) }, r.subdomain || "", r.base_url === "/" ? "" : (r.base_url || "")));
 }
 // compose the live-page URL: //<subdomain>.<host-suffix><base_url><slug>, protocol-relative.
 // The patterns are multi-tenant — subdomain is a host label (tsmo2, freightatlas, npmrds2), so it
@@ -273,9 +297,12 @@ if (CLEAR_STORIES) {
 }
 
 // 4) ticket hygiene + target-page denormalize. (a) HEAL form-created tickets (the Page-QA
-// add-ticket modal writes only the authored fields): assign the next free ticket_id, default
-// status to Triage, stamp opened/updated with ASOF. (b) denormalize page_key → name/route/stage
-// (name+route fresh from the live pages; stage from sitemgmt_pages process state). Idempotent.
+// add-ticket modal writes only the authored fields): default status to Triage, stamp
+// opened/updated with ASOF. NO ticket_id healing (removed 2026-07-15): ticket identity is the
+// DMS ROW ID — links/filters key on it and displays fall back to it — and re-numbering a ticket
+// after someone has referenced its displayed # would silently rename it. (b) denormalize
+// page_key → name/route/stage (name+route fresh from the live pages; stage from sitemgmt_pages
+// process state). Idempotent.
 if (!CLEAR_TICKETS) {
   const infoOf = new Map(existing.map((r) => [r.page_key, { name: r.name, route: r.route, stage: r.stage }]));
   for (const d of desired) {
@@ -284,11 +311,9 @@ if (!CLEAR_TICKETS) {
   }
   const trows = await readRows(TICKETS.env, TICKETS.view_id,
     ["id", "ticket_id", "status", "severity", "opened", "updated", "page_key", "page_name", "page_route", "page_stage", "surface"]);
-  let nextId = Math.max(100, ...trows.map((t) => +t.ticket_id || 0)) + 1;
   const patches = [];
   for (const t of trows) {
     const patch = {};
-    if (!t.ticket_id) patch.ticket_id = String(nextId++);
     if (!t.status) { patch.status = "Triage"; t.status = "Triage"; } // heal in-memory too — counters below use it
     if (!t.opened) patch.opened = ASOF;
     if (!t.updated) patch.updated = ASOF;
@@ -301,7 +326,7 @@ if (!CLEAR_TICKETS) {
     if (Object.keys(patch).length) patches.push({ id: t.id, page_key: t.page_key, patch });
   }
   console.log(`\nTICKET hygiene+denormalize: ${trows.length} ticket(s), ${patches.length} to patch` +
-    (patches.length ? ` (${patches.map((p) => `#${p.id}${p.patch.ticket_id ? `→tid ${p.patch.ticket_id}` : ""}`).join(", ")})` : ""));
+    (patches.length ? ` (${patches.map((p) => `#${p.id}`).join(", ")})` : ""));
   if (APPLY) for (const p of patches) await fc.call(["dms", "data", "edit"], [APP, +p.id, p.patch, TICKETS.dataType]);
 
   // 5) recompute per-page ticket COUNTERS onto sitemgmt_pages (open_bugs / blockers / majors +

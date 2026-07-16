@@ -491,6 +491,26 @@
                     <span class="font-proxima text-[13px] text-[#C5D7E0]">Disabled</span>
                   </div>
                 </div>
+
+                <!-- Toggle chip — a Switch that lives inside a filter bar.
+                     Used for one-click "show only the rows that still need
+                     work" filters (e.g. Needs priority). Amber when engaged,
+                     because it is a call to action, not a neutral facet. -->
+                <div class="component-group-title mt-6">Toggle chip (filter-bar switch)</div>
+                <div class="flex flex-wrap items-center gap-3">
+                  <button class="flex items-center gap-2 bg-white rounded-full pl-2.5 pr-3 py-1.5 border border-[#C5D7E0] hover:border-[#6D96AE]" aria-pressed="false">
+                    <span class="w-8 h-[18px] rounded-full bg-[#C5D7E0] flex items-center px-[2px]">
+                      <span class="w-3.5 h-3.5 rounded-full bg-white"></span>
+                    </span>
+                    <span class="font-proxima text-[13px] font-[600] text-[#37576B]">Needs priority</span>
+                  </button>
+                  <button class="flex items-center gap-2 bg-[#FCF6EC] rounded-full pl-2.5 pr-3 py-1.5 border border-[#EAAD43]" aria-pressed="true">
+                    <span class="w-8 h-[18px] rounded-full bg-[#EAAD43] flex items-center px-[2px] justify-end">
+                      <span class="w-3.5 h-3.5 rounded-full bg-white"></span>
+                    </span>
+                    <span class="font-proxima text-[13px] font-[600] text-[#2D3E4C]">Needs priority</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -542,6 +562,78 @@
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- ------------------------------------------------------
+                 COLUMN-TYPE PILLS — rendered by the `status_pill` column
+                 type (ui/columnTypes/statusPill.jsx). The value picks the
+                 variant via the column's `pillColors` map; adding
+                 `allowEditInView` turns the cell into a pill-in-view /
+                 single-select-dropdown-on-edit control.
+                 ------------------------------------------------------ -->
+            <div data-dms="section" data-name="column-type-pills" class="mt-8 pt-6 border-t border-[#E0EBF0] grid grid-cols-1 md:grid-cols-2 gap-8">
+
+              <div>
+                <div class="component-group-title">Status pill — implementation status</div>
+                <div class="flex flex-wrap gap-x-5 gap-y-2 mb-2">
+                  <span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#37576B]"><span class="w-2 h-2 rounded-full bg-[#6D96AE]"></span>Proposed</span>
+                  <span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#37576B]"><span class="w-2 h-2 rounded-full bg-[#54B99B]"></span>In-Progress</span>
+                  <span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#37576B]"><span class="w-2 h-2 rounded-full bg-[#2D3E4C]"></span>Completed</span>
+                  <span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#37576B]"><span class="w-2 h-2 rounded-full bg-[#DD524C]"></span>Discontinued</span>
+                  <span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#6D96AE]"><span class="w-2 h-2 rounded-full bg-[#C5D7E0]"></span>Not reported</span>
+                </div>
+                <p class="font-proxima text-[12px] text-[#6D96AE]">One dot + label per value. Theme keys: <code>pill.styles[status_good|status_warn|status_bad|status_na]</code>.</p>
+              </div>
+
+              <div>
+                <div class="component-group-title">County-priority tier pill — set, unset, editing</div>
+                <div class="flex flex-col gap-2 max-w-[300px]">
+                  <!-- Tier 1 -->
+                  <button class="w-full flex items-center justify-between gap-2 pl-1.5 pr-2 py-1.5 rounded-full border border-[#EAAD43] bg-[#FCF6EC]">
+                    <span class="flex items-center gap-2 min-w-0">
+                      <span class="size-6 shrink-0 rounded-full bg-[#EAAD43] text-[#2D3E4C] font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">1</span>
+                      <span class="font-proxima text-[13px] font-[600] text-[#2D3E4C] truncate">Top Implementation Priority</span>
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#37576B] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <!-- Tier 2 -->
+                  <button class="w-full flex items-center justify-between gap-2 pl-1.5 pr-2 py-1.5 rounded-full border border-[#C5D7E0] bg-[#F3F8F9]">
+                    <span class="flex items-center gap-2 min-w-0">
+                      <span class="size-6 shrink-0 rounded-full bg-[#37576B] text-white font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">2</span>
+                      <span class="font-proxima text-[13px] font-[600] text-[#2D3E4C] truncate">Significant Priority</span>
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#6D96AE] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <!-- Tier 3 -->
+                  <button class="w-full flex items-center justify-between gap-2 pl-1.5 pr-2 py-1.5 rounded-full border border-[#C5D7E0] bg-[#F3F8F9]">
+                    <span class="flex items-center gap-2 min-w-0">
+                      <span class="size-6 shrink-0 rounded-full bg-[#6D96AE] text-white font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">3</span>
+                      <span class="font-proxima text-[13px] font-[600] text-[#37576B] truncate">Important but Secondary</span>
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#6D96AE] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <!-- Tier 4 -->
+                  <button class="w-full flex items-center justify-between gap-2 pl-1.5 pr-2 py-1.5 rounded-full border border-[#E0EBF0] bg-white">
+                    <span class="flex items-center gap-2 min-w-0">
+                      <span class="size-6 shrink-0 rounded-full bg-[#C5D7E0] text-[#37576B] font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">4</span>
+                      <span class="font-proxima text-[13px] font-[600] text-[#6D96AE] truncate">Long-Term / Opportunistic</span>
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#6D96AE] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <!-- Unset — the affordance that asks for the work -->
+                  <button class="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-full border border-dashed border-[#EAAD43] bg-white">
+                    <span class="font-proxima text-[13px] font-[600] text-[#2D3E4C]">Set priority</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#37576B]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <!-- Open (editing) -->
+                  <button class="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-full border-2 border-[#EAAD43] bg-white ring-2 ring-[#EAAD43]/20">
+                    <span class="font-proxima text-[13px] font-[600] text-[#2D3E4C]">Set priority</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#37576B]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.78 11.78a.75.75 0 0 1-1.06 0L10 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                </div>
+                <p class="font-proxima text-[12px] text-[#6D96AE] mt-3">Rank reads from the numeral, weight from the fill: amber = act now, fading steel = later. Unset is the only dashed control on the page, so unfinished work is findable by shape alone.</p>
+              </div>
+
             </div>
           </div>
         </div>
@@ -610,6 +702,56 @@
                   <button class="mt-3 w-full flex justify-center bg-[#C5D7E0] rounded-full px-4 py-2 font-proxima font-[700] text-[12px] text-[#37576B] uppercase tracking-wider">Explore Full Profile</button>
                 </div>
               </div>
+            </div>
+
+            <!-- ------------------------------------------------------
+                 LINKED STAT CHIP — a Card cell that is also a filter.
+                 The cell is `isLink` with a `location` of "?<key>=<value>";
+                 clicking it writes that search param and the data sections
+                 on the page react. The chip must therefore have a real
+                 ACTIVE state — the one shown when the page's current search
+                 params already match the cell's own location.
+                 ------------------------------------------------------ -->
+            <div data-dms="section" data-name="linked-stat-chip" class="mt-8 pt-6 border-t border-[#E0EBF0]">
+              <div class="component-group-title">Linked stat chip — default · hover · active</div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <a href="#" class="bg-white rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-[#6D96AE]">
+                  <p class="font-proxima text-[11px] text-[#37576B] font-[600] uppercase leading-[140%] tracking-wide">Proposed</p>
+                  <p class="font-display text-[30px] text-[#2D3E4C] font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">391</p>
+                  <p class="font-proxima text-[11px] text-[#6D96AE] mt-1">default</p>
+                </a>
+                <a href="#" class="bg-white rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-[#54B99B] ring-1 ring-[#C5D7E0]">
+                  <p class="font-proxima text-[11px] text-[#37576B] font-[600] uppercase leading-[140%] tracking-wide">In-Progress</p>
+                  <p class="font-display text-[30px] text-[#2D3E4C] font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">21</p>
+                  <p class="font-proxima text-[11px] text-[#37576B] mt-1">hover</p>
+                </a>
+                <a href="#" class="bg-[#F3F8F9] rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-[#2D3E4C] ring-1 ring-[#2D3E4C]/20">
+                  <p class="font-proxima text-[11px] text-[#2D3E4C] font-[700] uppercase leading-[140%] tracking-wide">All actions</p>
+                  <p class="font-display text-[30px] text-[#2D3E4C] font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">473</p>
+                  <p class="font-proxima text-[11px] text-[#37576B] font-[600] mt-1 flex items-center gap-1">
+                    <!-- icon: CheckmarkFilled -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
+                    active — Showing
+                  </p>
+                </a>
+                <div class="bg-[#FCF6EC] rounded-[12px] border-l-4 border-[#EAAD43] border-y border-r border-[#F1CA87]/40 p-3.5">
+                  <p class="font-proxima text-[11px] text-[#37576B] font-[600] uppercase leading-[140%] tracking-wide">Progress lede</p>
+                  <p class="mt-1 flex items-baseline gap-1.5">
+                    <span class="font-display text-[30px] text-[#2D3E4C] font-[500] leading-[1] tracking-[-0.03em] tabular-nums">259</span>
+                    <span class="font-display text-[16px] text-[#6D96AE] font-[500] leading-[1] tabular-nums">/ 473</span>
+                  </p>
+                  <div class="flex h-[8px] rounded-full overflow-hidden bg-white border border-[#F1CA87]/40 mt-2">
+                    <div class="bg-[#EAAD43]" style="width:8%"></div>
+                    <div class="bg-[#37576B]" style="width:15.6%"></div>
+                    <div class="bg-[#6D96AE]" style="width:20.3%"></div>
+                    <div class="bg-[#C5D7E0]" style="width:10.8%"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="font-proxima text-[12px] text-[#6D96AE] mt-3">
+                A stat chip carries the count, a colored left rule for the value it filters to, and a one-line caption.
+                The progress lede is the same chip in amber: it is the only stat on a work page that states how much of the job is left.
+              </p>
             </div>
           </div>
         </div>
@@ -804,7 +946,11 @@
     <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
     <a href="../pages/section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
   
-    <a href="../pages/actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize Actions</a>
+    <a href="../pages/actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List)</a>
+    <a href="../pages/actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (Cards)</a>
+    <a href="../pages/actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="../pages/actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+
   </div>
   <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
           style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"

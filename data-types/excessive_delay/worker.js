@@ -141,6 +141,20 @@ function makeWorker(depOverrides = {}) {
         if (!rows[0]) throw new Error(`excessive_delay view ${view_id} not found`);
         dataTable = rows[0].data_table || qualifyTable(db, rows[0].table_schema, rows[0].table_name);
       }
+
+      // Insert only columns the target table actually has — add-mode may land
+      // in a table created before a schema addition (the v2 series table
+      // predates vot_eff/cost, deliberately left un-ALTERed until the
+      // series-wide monetization backfill).
+      const { rows: colRows } = await db.query(sqlb.tableColumnsSQL({ table: dataTable, dialect }));
+      const tableColumns = new Set(colRows.map((r) => r.name));
+      const insertColumns = sqlb.INSERT_COLUMNS.filter((c) => tableColumns.has(c));
+      const skippedColumns = sqlb.INSERT_COLUMNS.filter((c) => !tableColumns.has(c));
+      if (skippedColumns.length) {
+        await dispatchEvent('excessive_delay:COLUMNS_SKIPPED',
+          `target table lacks ${skippedColumns.join(', ')} — inserting without them`,
+          { source_id, view_id, skipped: skippedColumns });
+      }
       await updateProgress(0.05);
 
       // ── Phase 2: per-month compute → insert → region names → attribution ─
@@ -183,6 +197,7 @@ function makeWorker(depOverrides = {}) {
         for (let j = 0; j < records.length; j += INSERT_BATCH) {
           await db.query(sqlb.insertRowsSQL({
             table: dataTable, rows: records.slice(j, j + INSERT_BATCH), dialect, upsert: true,
+            columns: insertColumns,
           }));
         }
 
@@ -241,7 +256,7 @@ function makeWorker(depOverrides = {}) {
         baseline_statistic: baselineStatistic,
         attribution_capped: methodology === 'v2',
         units: 'vehicle_hours',
-        monetization: {
+        monetization: tableColumns.has('vot_eff') && tableColumns.has('cost') ? {
           // Class-weighted value of time (adopted 2026-06-19, rates confirmed
           // 2026-06-22). cost = total delay (veh-hrs) × vot_eff; bucket-level
           // dollars derive as bucket × vot_eff. Per-vehicle rates with
@@ -253,6 +268,11 @@ function makeWorker(depOverrides = {}) {
             + 'Where the split is NULL/0, vot_eff falls back to the network-blended rate. '
             + 'Caveat: NY single-unit (FHWA 4–7) is bus-heavy — revisit a transit person-VOT for bus-dominated urban TMCs.',
           // Legacy flat rate, retained so pre-2026-06 dashboards stay reproducible.
+          legacy_usd_per_vehicle_hour: 20,
+        } : {
+          method: 'downstream',
+          note: 'vot_eff/cost columns are not present on this table (pre-monetization schema); '
+            + 'dollars are computed at read time by the dashboards.',
           legacy_usd_per_vehicle_hour: 20,
         },
         start_date: first ? bounds(first).startDate : null,
@@ -269,9 +289,10 @@ function makeWorker(depOverrides = {}) {
       });
 
       // metadata.columns on the source — drives the Table page (the
-      // most-forgotten step per data-types/CLAUDE.md).
+      // most-forgotten step per data-types/CLAUDE.md). Advertise only columns
+      // the table really has, or UDA queries against the source error out.
       await mergeJsonColumn(db, sourcesTable, 'source_id', source_id, 'metadata', {
-        columns: EXCESSIVE_DELAY_COLUMNS,
+        columns: EXCESSIVE_DELAY_COLUMNS.filter((c) => tableColumns.has(c.name)),
         schema: 'excessive_delay_v1',
       });
 

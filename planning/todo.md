@@ -2,6 +2,9 @@
 
 ## themes
 
+- [ ] [MNY — Action Prioritize (list view) redesign in the design system](./tasks/current/mny-actions-prioritize-list-design.md) — new `pages/actions-prioritize.html` + DS additions (tier pills, linked stat strip, filter bar). Flags two platform gaps needed for a later live build: an active-when-search-param-matches cell hint, and an is-empty filter leaf.
+- [ ] [MNY — build "Prioritize Actions (List)" live in the county-template pattern](./tasks/current/mny-action-prioritize-v2-live-build.md) — 3-phase: (1) working interactive page next to `action_prioritize` from existing primitives, (2) style via mny theme `activeStyle`s, (3) new platform features (active stat cell, empty-filter op, tier-pill column type, progress metric — escalated to `src/dms/planning/`).
+
 ## data-types
 
 ## deployment

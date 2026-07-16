@@ -536,8 +536,19 @@ const theme = {
             "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
         openOutTitle:
             "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]",
+        // inline openOut (display.openOutMode:'inline') — expanded detail panel below the row
+        // (Description of the Problem/Solution + field chips), matching the mockup's inline expand.
+        openOutInlineRow: "w-full px-3 pb-4 bg-[#FCF6EC]/40",
+        openOutInlinePanel: "bg-white rounded-[10px] border border-[#E0EBF0] p-4 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3",
+        openOutInlineField: "min-w-0",
+        openOutInlineLabel: "font-[Oswald] text-[10px] font-[500] uppercase tracking-wider text-[#6D96AE] mb-1",
+        openOutInlineValue: "font-['Proxima_Nova'] text-[13px] text-[#37576B] leading-[1.5]",
         totalRow: 'bg-gray-100 sticky bottom-0 z-[3]',
         stripedRow: 'even:bg-gray-50',
+        // conditional_row_style accent (Phase 3 #5): amber left-edge + faint tint on rows
+        // still needing work (county_priority empty). border-l-4 is the reliable cue (a bg
+        // tint is largely occluded by opaque cells). Referenced via provider styleKey.
+        rowAccentAmber: 'border-l-4 border-[#EAAD43] bg-[#FCF6EC]/60',
         gutterCellWrapper: `flex text-xs items-center justify-center cursor-pointer sticky left-0 z-[1]`,
         gutterCellWrapperNotSelected: 'bg-gray-50 text-gray-500',
         gutterCellWrapperSelected: 'bg-blue-100 text-gray-900',
@@ -615,6 +626,42 @@ const theme = {
     label: "text-[12px] text-[#37576B] font-bold leading-[14.62px]",
     labelDisabled: "text-[12px] text-[#C5D7E0] font-bold leading-[14.62px]",
   },
+  // Pill styles — selected by name via `activeStyle` (or the `status_pill` column
+  // type's pillColors map). styles[0..9] REPRODUCE the DMS default (Pill.theme.js)
+  // verbatim so any existing mny pill renders exactly as before (backward-compatible);
+  // the mny-branded `status_*` and `tier_*` variants are appended for the Action
+  // Prioritize worklist (implementation status + county priority). See task
+  // planning/tasks/current/mny-action-prioritize-v2-live-build.md (Phase 2).
+  pill: {
+    options: { activeStyle: 0 },
+    styles: [
+      // --- DMS defaults, reproduced verbatim (do not restyle — BC for other pages) ---
+      { name: 'default', wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline text-gray-400' },
+      { name: 'gray',    wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline text-gray-400' },
+      { name: 'orange',  wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline bg-orange-500/15 text-orange-700 hover:bg-orange-500/25' },
+      { name: 'blue',    wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline bg-blue-500/15 text-blue-700 hover:bg-blue-500/25' },
+      { name: 'green',   wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline bg-green-500/15 text-green-700 hover:bg-green-500/25' },
+      { name: 'red',     wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline bg-red-500/15 text-red-700 hover:bg-red-500/25' },
+      { name: 'status_good', wrapper: "inline-flex items-center gap-1.5 text-sm text-emerald-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:mr-0.5 [&::before]:bg-emerald-500" },
+      { name: 'status_warn', wrapper: "inline-flex items-center gap-1.5 text-sm text-amber-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:mr-0.5 [&::before]:bg-amber-400" },
+      { name: 'status_bad',  wrapper: "inline-flex items-center gap-1.5 text-sm text-rose-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:mr-0.5 [&::before]:bg-rose-500" },
+      { name: 'status_na',   wrapper: "inline-flex items-center gap-1.5 text-sm text-slate-500 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:mr-0.5 [&::before]:bg-slate-400" },
+
+      // --- mny implementation-status dots (dotted, brand palette) ---
+      { name: 'status_proposed',     wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#37576B] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#6D96AE]" },
+      { name: 'status_inprogress',   wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#37576B] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#54B99B]" },
+      { name: 'status_completed',    wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#37576B] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#2D3E4C]" },
+      { name: 'status_discontinued', wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#37576B] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#DD524C]" },
+      { name: 'status_none',         wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#6D96AE] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#C5D7E0]" },
+
+      // --- mny county-priority tiers (bordered fill; rank reads from fill weight) ---
+      { name: 'tier_1',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#EAAD43] bg-[#FCF6EC] font-['Proxima_Nova'] font-[600] text-[12px] text-[#2D3E4C]" },
+      { name: 'tier_2',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#C5D7E0] bg-[#F3F8F9] font-['Proxima_Nova'] font-[600] text-[12px] text-[#2D3E4C]" },
+      { name: 'tier_3',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#C5D7E0] bg-[#F3F8F9] font-['Proxima_Nova'] font-[600] text-[12px] text-[#37576B]" },
+      { name: 'tier_4',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#E0EBF0] bg-white font-['Proxima_Nova'] font-[600] text-[12px] text-[#6D96AE]" },
+      { name: 'tier_unset', wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-dashed border-[#EAAD43] bg-white font-['Proxima_Nova'] font-[600] text-[12px] text-[#2D3E4C]" },
+    ],
+  },
   dataCard: {
     styles: [
       {
@@ -634,6 +681,10 @@ const theme = {
         headerValueWrapperBorderBelow: "border-b border-[#C0D8E1] rounded-none", // custom added border
         headerValueWrapperSimpleView: "",
         itemBorder: 'border shadow',
+        // active state for an `activeOnSearchParam` link cell (stat strip): the cell
+        // whose link params match the live page filters gets a tint + ring. Replaces
+        // the old hardcoded cellBgColor fake-active. (Phase 3 #2)
+        cellActive: 'bg-[#F3F8F9] ring-2 ring-[#2D3E4C]/30',
         itemFlexCol: 'flex-col',
         itemFlexRow: 'flex-row',
         itemFlexColReverse: 'flex-col flex-col-reverse',
@@ -751,6 +802,16 @@ const theme = {
   },
   filters: {
     filtersWrapper: "w-full flex flex-col rounded-md",
+    // --- interactive chrome (Phase 3 follow-up): Needs-priority toggle + active tokens + clear-all.
+    // New keys, unused by existing filter sections → BC. The toggle button is a `group` with data-on. ---
+    toggleChip: "group inline-flex items-center cursor-pointer h-[38px]",
+    toggleChipOn: "",
+    toggleTrack: "w-9 h-5 rounded-full bg-[#C5D7E0] group-data-[on]:bg-[#EAAD43] flex items-center px-0.5 transition-colors",
+    toggleKnob: "w-4 h-4 rounded-full bg-white shadow-sm transition-transform group-data-[on]:translate-x-4",
+    activeTokensWrapper: "flex flex-wrap items-center gap-2 mt-3",
+    activeToken: "inline-flex items-center gap-1 bg-[#C5D7E0] rounded-full pl-2.5 pr-1.5 py-1 font-['Proxima_Nova'] text-[12px] text-[#37576B]",
+    activeTokenRemove: "text-[#6D96AE] hover:text-[#2D3E4C] cursor-pointer",
+    clearAll: "font-['Proxima_Nova'] text-[12px] font-[600] text-[#6D96AE] hover:text-[#2D3E4C] underline underline-offset-2 cursor-pointer",
     filterLabel:
       "py-0.5 font-[Proxima Nova] font-regular text-[14px] text-[#2D3E4C] leading-[140%] tracking-[0px] capitalize text-balance",
     loadingText: "pl-0.5 font-thin text-[#2D3E4C]",

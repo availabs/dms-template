@@ -29,9 +29,26 @@ mny/design/
 │   ├── grid.html                       sectionArray column grid
 │   ├── components.html                 every UI primitive skinned in the mny brand
 │   └── patterns.html                   composed multi-primitive patterns
+├── pages/                            ← example product surfaces in the mny brand
+│   ├── home.html · home-v2.html        public landing
+│   ├── section-landing.html            a topic landing page
+│   ├── actions-dashboard.html          action tracking for one county
+│   ├── actions-prioritize.html         prioritize actions — list/worklist view (stat strip + filter bar + editable table)
+│   ├── actions-prioritization.html     prioritize actions — card view (tiers across counties)
+│   ├── actions-qa.html                 actions data-quality / location-precision audit
+│   ├── actions-location-overview.html  MapLibre map (donut clusters by status) + statewide exec summary
+│   ├── datasets-files.html             the datasets pattern
+│   └── site-management*.html           admin surfaces
+├── assets/mny/                       ← logo, topolines, hazard glyphs, county art
 └── references/                       ← original Figma handoff exports (read-only)
     └── MitigateNY UX_UI [...]/*.jpg
 ```
+
+> `pages/actions-qa.html` and `pages/actions-location-overview.html` are backed by real data —
+> every number and the map's 17,769 points come from `references/actions/` (see
+> `report/actions-data-quality.md`), not from placeholder copy. The overview page loads MapLibre GL
+> + the generated `assets/mny/data/actions_locations.geojson`, so it must be viewed over a local
+> server (`python3 -m http.server` in `pages/`), not opened as a `file://`.
 
 ---
 
