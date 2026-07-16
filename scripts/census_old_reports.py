@@ -45,10 +45,11 @@ from convert_old_reports import (  # noqa: E402
     ROUTES_CATALOG_TABLE, INFO_BOX_GRAIN, INFO_BOX_BUCKET,
     INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR,
     INFO_BOX_LENGTH_BUCKET, INFO_BOX_AADT_BUCKET, INFO_BOX_DELAY_BUCKET,
-    GEOMETRY_TILE_VIEWS,
+    GEOMETRY_TILE_VIEWS, DIFFERENCE_GRAPH_TYPES,
     ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG,
     ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE,
     analyze_graph, flatten_route_comps, route_settings_gaps,
+    resolve_difference_pair,
     aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
 )
 
@@ -60,17 +61,22 @@ OUT_DIR = os.path.join(REPO, "scratchpad/npmrds-sub/old-reports/census")
 # Summary's one-bar-per-arm shape proved in rounds 34-36; Route Compare's
 # base+delta shape in round 25.
 BUILDABLE_TYPES = {"Route Line Graph", "Route Bar Graph", "TMC Grid Graph",
-                   "Bar Graph Summary", "Route Compare Component"}
+                   "Bar Graph Summary", "Route Compare Component",
+                   # Round 52: the difference-pair shape (comparisonSeries
+                   # combine mode + diverging bars) proved live on the
+                   # speed×5-min buckets — remaining unmapped diff buckets
+                   # are spec work on a proven shape.
+                   "Route Difference Graph", "TMC Difference Grid"}
 # No built new-side shape yet. Round 24 REOPENED Route Map / Route
 # Difference / TMC Difference Grid as in-scope targets (the 2026-07-08
 # gap-log-only ruling was reversed), so this bucket now means "needs shape
-# work before spec work", not "ruled out". Route/TMC Info Box have a shape
+# work before spec work", not "ruled out". [Round 52: both difference types
+# moved to BUILDABLE_TYPES above.] Route/TMC Info Box have a shape
 # ONLY for the reliability bucket (speed x travel_time_all, resolved
 # dynamically); their unmapped keys are either pm3 data gaps (speed
 # measure: year/bin/coverage) or unproven other-measure info boxes, so
 # they stay here rather than in buildable.
 NO_EQUIVALENT_TYPES = {
-    "Route Difference Graph", "TMC Difference Grid",
     "Route Map", "Route Info Box", "TMC Info Box",
 }
 # Templates whose calculated column consumes table1.aadt (delay/CO2) — the
@@ -104,9 +110,13 @@ def fetch_all_reports(batch=100):
 
 
 def fetch_old_route_facts(route_ids, batch=2000):
-    """{route_id(str): {"point_drawn": bool}} for ids that exist in
-    admin2.routes. tmc_array falsy (SQL NULL / json null / []) means the
-    route is point-drawn and needs falcor resolution at convert time."""
+    """{route_id(str): {"point_drawn": bool, "tmc_key": str|None}} for ids
+    that exist in admin2.routes. tmc_array falsy (SQL NULL / json null / [])
+    means the route is point-drawn and needs falcor resolution at convert
+    time. tmc_key (round 52) is a null-safe md5 of the raw tmc_array text —
+    equality of keys ≡ equality of arrays, which is all
+    resolve_difference_pair's same-physical-route check needs (the census
+    never ships whole arrays around)."""
     facts = {}
     ids = sorted(route_ids)
     for i in range(0, len(ids), batch):
@@ -114,10 +124,14 @@ def fetch_old_route_facts(route_ids, batch=2000):
         out = psql_old(
             "SELECT json_agg(row_to_json(t)) FROM (SELECT id, "
             "(tmc_array IS NULL OR tmc_array = 'null'::jsonb "
-            "OR tmc_array = '[]'::jsonb) AS point_drawn "
+            "OR tmc_array = '[]'::jsonb) AS point_drawn, "
+            "CASE WHEN (tmc_array IS NULL OR tmc_array = 'null'::jsonb "
+            "OR tmc_array = '[]'::jsonb) THEN NULL "
+            "ELSE md5(tmc_array::text) END AS tmc_key "
             f"FROM admin2.routes WHERE id IN ({chunk})) t")
         for r in json.loads(out) or []:
-            facts[str(r["id"])] = {"point_drawn": r["point_drawn"]}
+            facts[str(r["id"])] = {"point_drawn": r["point_drawn"],
+                                   "tmc_key": r.get("tmc_key")}
     return facts
 
 
@@ -142,9 +156,11 @@ def fetch_converted_pages():
     return pages
 
 
-def analyze_report(old):
+def analyze_report(old, old_route_facts=None):
     """Mirror convert_report's analysis phase (convert_old_reports.py) with
-    zero side effects. Returns the per-report census record."""
+    zero side effects. Returns the per-report census record.
+    old_route_facts (round 52): fetch_old_route_facts output — needed by the
+    difference-pair mirror's same-physical-route check."""
     gaps = []
     route_comps = flatten_route_comps(old.get("route_comps"), gaps)
     if old.get("station_comps"):
@@ -166,10 +182,49 @@ def analyze_report(old):
 
     analyzed = [(g, analyze_graph(g, comps_by_id, gaps))
                 for g in old.get("graph_comps") or []]
+
+    # Round 52: Route Difference Graph / TMC Difference Grid — mirror
+    # convert_report's pair-first pre-pass EXACTLY (same shared
+    # resolve_difference_pair implementation; old_routes-shaped dict is
+    # synthesized from the route facts' tmc_key hashes, whose equality ≡
+    # raw-array equality). The pair rewrites assigned/resolution/dataColumn
+    # before any template-key lookup, exactly like convert_report.
+    route_diff_no_pair = set()
+    old_routes_like = {rid: {"tmc_array": f.get("tmc_key")}
+                       for rid, f in (old_route_facts or {}).items()}
+    for g, info in analyzed:
+        if info["type"] not in DIFFERENCE_GRAPH_TYPES:
+            continue
+        pair, why = resolve_difference_pair(g.get("state") or {}, route_comps,
+                                            old_routes_like)
+        if not pair:
+            gaps.append({"kind": "route_difference_no_pair",
+                         "graph": g.get("id"), "detail": why})
+            route_diff_no_pair.add(g.get("id"))
+            continue
+        main_rc, compare_rc = pair
+        info["assigned"] = [main_rc["compId"], compare_rc["compId"]]
+        state_res = (g.get("state") or {}).get("resolution")
+        info["resolution"] = (state_res
+                              if isinstance(state_res, str) and state_res
+                              else (main_rc.get("settings") or {})
+                              .get("resolution") or "5-minutes")
+        pair_cols = {(rc.get("settings") or {}).get("dataColumn")
+                     for rc in (main_rc, compare_rc)}
+        info["data_column"] = (next(iter(pair_cols)) if len(pair_cols) == 1
+                               else None)
+
     mapped, unmapped_keys, skipped_graphs = [], [], []
     for g, info in analyzed:
         key = (info["type"], info["measure"], info["resolution"],
                info["data_column"])
+        # A pairless difference graph is skipped no matter what its bucket
+        # maps to (mirrors convert_report) — and stays OUT of the
+        # unmapped-keys matrix, since its bucket may be fully covered; the
+        # route_difference_no_pair gap above is its record.
+        if g.get("id") in route_diff_no_pair:
+            skipped_graphs.append(g)
+            continue
         # Route/TMC Info Box and Route Compare Component aren't in
         # GRAPH_TEMPLATE_MAP (they're resolved dynamically per report/graph —
         # see convert_old_reports.py's INFO_BOX_GRAIN / ROUTE_COMPARE_BUCKET
@@ -285,20 +340,29 @@ def main():
     reports = fetch_all_reports()
     print(f"fetched {len(reports)} reports from admin2.reports")
 
+    # ── route-level facts (bulk, once — BEFORE analysis since round 52:
+    # the difference-pair mirror needs each route's tmc_key) ─────────────
+    def report_route_ids(old):
+        scratch = []
+        return {str(rc.get("routeId"))
+                for rc in flatten_route_comps(old.get("route_comps"), scratch)
+                if rc.get("routeId")}
+    all_route_ids = sorted({rid for old in reports
+                            for rid in report_route_ids(old)})
+    old_route_facts = fetch_old_route_facts(all_route_ids)
+
     records, errors = [], []
     for old in reports:
         try:
-            records.append(analyze_report(old))
+            records.append(analyze_report(old, old_route_facts))
         except Exception as e:  # real-world jsonb — survive bad rows
             errors.append({"id": old.get("id"), "error": repr(e)})
     print(f"analyzed {len(records)} reports ({len(errors)} errors)")
 
-    # ── route-level facts (bulk, once) ──────────────────────────────────
-    all_route_ids = sorted({rid for r in records for rid in r["route_ids"]})
-    old_route_facts = fetch_old_route_facts(all_route_ids)
     catalog_ids = fetch_catalog_route_ids()
     print(f"route ids referenced: {len(all_route_ids)}; in old admin2.routes: "
           f"{len(old_route_facts)}; new catalog rows: {len(catalog_ids)}")
+
     route_stats = {
         "referenced": len(all_route_ids),
         "missing_everywhere": sorted(

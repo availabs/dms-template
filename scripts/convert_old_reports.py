@@ -75,6 +75,62 @@ GAPS_DIR = os.path.join(REPO, "scratchpad/npmrds-sub/old-reports/gaps")
 # tmc_graphs/utils/dataTypes.js registry. Grows as templates are added; every
 # unmapped combination lands in the gap report.
 GRAPH_TEMPLATE_MAP = {
+    # Round 52: Route Difference Graph / TMC Difference Grid — the last two
+    # major unbuilt old graph types (old tool: exactly 2 comps, Main +
+    # Compare — same physical route, same resolution — inner-joined per
+    # x-bucket (and per TMC for the grid), rendering Main − Compare). The
+    # heavy lifting is the platform's comparisonSeries "difference" combine
+    # mode (library task comparison-series-difference-mode.md); these specs
+    # are their plain bar/grid siblings plus the combine key + diverging
+    # colors. Increment A = the two headline speed×5-min×all buckets
+    # (106+94 corpus instances); remaining measures/resolutions/dataColumns
+    # follow once this shape is live-proven (same phasing as Route Map M2→M3).
+    ("Route Difference Graph", "speed", "5-minutes", "travel_time_all"):
+        "route_diff_speed_5min",
+    ("TMC Difference Grid", "speed", "5-minutes", "travel_time_all"):
+        "tmc_diff_grid_speed_5min",
+    # Round 52 increment B: every remaining diff bucket whose measure
+    # expression ALREADY exists and is proven (travelTime/hoursOfDelay/
+    # avgHoursOfDelay/CO₂ passenger+truck/speed at 15-min+day), plus the
+    # truck-SPEED column swap (same canonical formula on
+    # travel_time_freight_trucks — the old server computed speed from the
+    # comp's own dataColumn column directly). Deliberately NOT built (real
+    # formula questions, gap-log stays): hoursOfDelay×truck (the volume term
+    # — total AADT distribution vs truck-share — needs the old server's delay
+    # route read before minting) and avgCo2Emissions×travel_time_all (a
+    # combined-fleet CO₂ expression exists for no graph type yet).
+    ("Route Difference Graph", "travelTime", "5-minutes", "travel_time_all"):
+        "route_diff_travel_time_5min",
+    ("Route Difference Graph", "hoursOfDelay", "5-minutes", "travel_time_all"):
+        "route_diff_delay_5min",
+    ("Route Difference Graph", "avgHoursOfDelay", "5-minutes", "travel_time_all"):
+        "route_diff_avg_delay_5min",
+    ("Route Difference Graph", "speed", "15-minutes", "travel_time_all"):
+        "route_diff_speed_15min",
+    ("Route Difference Graph", "speed", "day", "travel_time_all"):
+        "route_diff_speed_day",
+    ("Route Difference Graph", "speed", "5-minutes", "travel_time_truck"):
+        "route_diff_speed_5min_truck",
+    ("Route Difference Graph", "avgCo2Emissions", "5-minutes", "travel_time_passenger"):
+        "route_diff_avg_co2_5min_passenger",
+    ("Route Difference Graph", "avgCo2Emissions", "5-minutes", "travel_time_truck"):
+        "route_diff_avg_co2_5min_truck",
+    ("Route Difference Graph", "co2Emissions", "5-minutes", "travel_time_passenger"):
+        "route_diff_co2_5min_passenger",
+    ("TMC Difference Grid", "travelTime", "5-minutes", "travel_time_all"):
+        "tmc_diff_grid_travel_time_5min",
+    ("TMC Difference Grid", "hoursOfDelay", "5-minutes", "travel_time_all"):
+        "tmc_diff_grid_delay_5min",
+    ("TMC Difference Grid", "avgHoursOfDelay", "5-minutes", "travel_time_all"):
+        "tmc_diff_grid_avg_delay_5min",
+    ("TMC Difference Grid", "avgCo2Emissions", "5-minutes", "travel_time_passenger"):
+        "tmc_diff_grid_avg_co2_5min_passenger",
+    ("TMC Difference Grid", "avgCo2Emissions", "5-minutes", "travel_time_truck"):
+        "tmc_diff_grid_avg_co2_5min_truck",
+    ("TMC Difference Grid", "speed", "5-minutes", "travel_time_truck"):
+        "tmc_diff_grid_speed_5min_truck",
+    ("TMC Difference Grid", "speed", "15-minutes", "travel_time_all"):
+        "tmc_diff_grid_speed_15min",
     ("Route Line Graph", "speed", "5-minutes", "travel_time_all"): "tmc_speed_line_graph",
     ("Route Line Graph", "travelTime", "5-minutes", "travel_time_all"): "tmc_travel_time_line_graph",
     ("TMC Grid Graph", "speed", "5-minutes", "travel_time_all"): "tmc_speed_grid_graph_tmc",
@@ -355,6 +411,35 @@ MEASURE_NAMES = {
 COLOR_RANGE_GRAPH_TYPES = {"Route Bar Graph", "Route Map", "TMC Grid Graph",
                            "Route Difference Graph", "TMC Difference Grid"}
 
+# The two difference graph types (round 52). Old components
+# (RouteDifferenceGraph.jsx / TmcDifferenceGrid.jsx) share their 2-comp
+# selection logic verbatim — see resolve_difference_pair.
+DIFFERENCE_GRAPH_TYPES = {"Route Difference Graph", "TMC Difference Grid"}
+
+# Old RouteDifferenceGraph.jsx's default ramp when a report carries no
+# color_range of its own: getColorRange(5, "RdYlGn") (colorbrewer RdYlGn-5,
+# red at the negative end, green positive — speed is reverseColors:false).
+# Reports with a real color_range get it wired by the generic
+# COLOR_RANGE_GRAPH_TYPES branch in build_graph_section_data instead.
+DEFAULT_DIFF_COLOR_RANGE = ["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"]
+
+
+def _diff_colors(bar, reverse):
+    """Display patch for a difference template's default diverging colors:
+    zero-centered (byValueSymmetric, the R52 platform toggle — old
+    d3.scaleQuantize([-max, +max]) parity); bars also need byValue (grids
+    always color by value). reverse=True mirrors old getColorRange()'s
+    reverseColors handling for the REVERSE_COLORS_MEASURES set — applied to
+    the template's own DEFAULT ramp here; reports carrying a real color_range
+    get the same reversal from the generic wiring in
+    build_graph_section_data."""
+    value = (list(reversed(DEFAULT_DIFF_COLOR_RANGE)) if reverse
+             else list(DEFAULT_DIFF_COLOR_RANGE))
+    cfg = {"type": "palette", "value": value, "byValueSymmetric": True}
+    if bar:
+        cfg["byValue"] = True
+    return {"colors": cfg}
+
 ALL_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday",
                 "saturday", "sunday"}
 
@@ -398,6 +483,15 @@ SPEED_SUMMARY_EXPR = SPEED_EXPR
 # realiased "value" (the tile-property name a Map choropleth column is
 # conventionally called) instead of "speed".
 SPEED_VALUE_EXPR = SPEED_EXPR.rsplit(" as ", 1)[0] + " as value"
+# Round 52 (difference graphs, truck dataColumn): the same canonical
+# two-level speed formula on travel_time_freight_trucks — the old server
+# computed speed directly from the comp's own dataColumn column, so the
+# column swap IS the old semantics, not an approximation. (Truck
+# hoursOfDelay is NOT built the same way: its volume term — total AADT
+# distribution vs the truck share — needs the old server's delay route read
+# first; see the round-52 GRAPH_TEMPLATE_MAP comment.)
+SPEED_EXPR_TRUCK = SPEED_EXPR.replace("travel_time_all_vehicles",
+                                      "travel_time_freight_trucks")
 # Old-faithful route travel time (round 35): same two-level shape — the old
 # travelTime measure is the ROUTE TRAVERSAL time in MINUTES (sum over TMCs of
 # each TMC's mean tt, / 60), not the mean single-segment time in seconds that
@@ -811,6 +905,204 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
                   "target": "color", "fn": "avg"},
         "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+    },
+    # Round 52: the difference pair — see the GRAPH_TEMPLATE_MAP comment.
+    # Byte-identical to their plain bar/grid siblings except: (a)
+    # comparisonSeriesCombine asks the server to inner-join each non-anchor
+    # comparison-series arm to the anchor arm on the group-by columns and
+    # return anchor − variant ("Main minus Compare") under the same alias —
+    # per-epoch for the bar, per (tmc, epoch) for the grid, no
+    # graph-type-specific code; (b) diverging default colors via
+    # _diff_colors(), zero-centered (byValueSymmetric — the R52 platform
+    # toggle) so "no change" sits on the neutral middle color, mirroring old
+    # d3.scaleQuantize([-max, +max]); reverse=True for the
+    # REVERSE_COLORS_MEASURES set (travelTime/delay/CO₂ — old
+    # getColorRange() reversed those ramps before any graph saw them).
+    # Every measure expression is reused verbatim (self-aggregating forms
+    # degrade correctly at both grains — round 35/42's own proofs); the
+    # subtraction happens AFTER each arm computes its ordinary value, so no
+    # new measure math exists in any of these.
+    "route_diff_speed_5min": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Speed Difference (mph)"},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=False),
+    },
+    "route_diff_speed_15min": {
+        "graphType": "BarGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": QUARTER_HOUR_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Speed Difference (mph)"},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=False),
+    },
+    "route_diff_speed_day": {
+        "graphType": "BarGraph", "xAxis": "date",
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Speed Difference (mph)"},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=False),
+    },
+    "route_diff_speed_5min_truck": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR_TRUCK,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Truck Speed Difference (mph)"},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=False),
+    },
+    "route_diff_travel_time_5min": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Travel Time Difference (min)"},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=True),
+    },
+    # Route-level hoursOfDelay: old reducer = sumReducer (dataTypes.js) —
+    # per-bucket route total, the tmc_delay_bar_graph_day family's shape
+    # minus the per-TMC categorize.
+    "route_diff_delay_5min": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                  "target": "yAxis", "fn": "sum",
+                  "customName": "Hours of Delay Difference"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=True),
+    },
+    # Route-level avgHoursOfDelay: old reducer is ALSO sumReducer at route
+    # level (meanReducer is only its tmcReducer/Map grain) — AVG_DELAY_EXPR
+    # grouped by epoch = sum over TMCs of per-TMC per-epoch avg, exactly
+    # tmc_avg_delay_bar_graph_5min's proven shape.
+    "route_diff_avg_delay_5min": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay Difference"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=True),
+    },
+    # Route-level CO₂: avgCo2Emissions reducer = meanReducer → fn "avg";
+    # co2Emissions = sumReducer → fn "sum" (dataTypes.js).
+    "route_diff_avg_co2_5min_passenger": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
+                  "target": "yAxis", "fn": "avg",
+                  "customName": "Avg. CO2 Difference (tonnes)"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=True),
+    },
+    "route_diff_avg_co2_5min_truck": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
+                  "target": "yAxis", "fn": "avg",
+                  "customName": "Avg. CO2 Difference (tonnes)"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=True),
+    },
+    "route_diff_co2_5min_passenger": {
+        "graphType": "BarGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
+                  "target": "yAxis", "fn": "sum",
+                  "customName": "CO2 Difference (tonnes)"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=True, reverse=True),
+    },
+    "tmc_diff_grid_speed_5min": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "color", "fn": "exempt",
+                  "customName": "Speed Difference (mph)"},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=False, reverse=False),
+    },
+    "tmc_diff_grid_speed_15min": {
+        "graphType": "GridGraph",
+        "xAxis": {"type": "calculated", "show": True, "name": QUARTER_HOUR_EXPR,
+                  "target": "xAxis", "group": True, "sort": "asc"},
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR,
+                  "target": "color", "fn": "exempt",
+                  "customName": "Speed Difference (mph)"},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=False, reverse=False),
+    },
+    "tmc_diff_grid_speed_5min_truck": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR_TRUCK,
+                  "target": "color", "fn": "exempt",
+                  "customName": "Truck Speed Difference (mph)"},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=False, reverse=False),
+    },
+    "tmc_diff_grid_travel_time_5min": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
+                  "target": "color", "fn": "exempt",
+                  "customName": "Travel Time Difference (min)"},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=False, reverse=True),
+    },
+    "tmc_diff_grid_delay_5min": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                  "target": "color", "fn": "sum",
+                  "customName": "Hours of Delay Difference"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=False, reverse=True),
+    },
+    "tmc_diff_grid_avg_delay_5min": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
+                  "target": "color", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay Difference"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=False, reverse=True),
+    },
+    "tmc_diff_grid_avg_co2_5min_passenger": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
+                  "target": "color", "fn": "avg",
+                  "customName": "Avg. CO2 Difference (tonnes)"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=False, reverse=True),
+    },
+    "tmc_diff_grid_avg_co2_5min_truck": {
+        "graphType": "GridGraph", "xAxis": "epoch",
+        "categorize": {"desc": None, "name": "tmc", "type": "string", "source_id": 583,
+                  "show": True, "target": "yAxis", "group": True, "sort": "asc"},
+        "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
+                  "target": "color", "fn": "avg",
+                  "customName": "Avg. CO2 Difference (tonnes)"},
+        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "comparisonSeriesCombine": {"mode": "difference"},
+        "display": _diff_colors(bar=False, reverse=True),
     },
     # Round 42 (2026-07-14, user-caught on report 914's "Winter Average Day"):
     # TMC Grid Graph's per-TMC breakdown is NOT a comparison-series artifact.
@@ -1511,17 +1803,25 @@ def ensure_graph_templates(needed_names, templates, dry_run):
                       if c.get("target") == y_target), None)
         # Drift = the whole yAxis column dict (not just the expression name —
         # fn/customName changes matter too, e.g. round 34's summary legend
-        # fix) or any spec display patch key the live row doesn't match.
+        # fix) or any spec display patch key the live row doesn't match, or
+        # (round 52) a comparisonSeries.combine the live row doesn't carry.
         display_patch = spec.get("display") or {}
         existing_display = existing_state.get("display") or {}
         display_drift = any(existing_display.get(k) != v
                             for k, v in display_patch.items())
+        combine_spec = spec.get("comparisonSeriesCombine")
+        combine_drift = (combine_spec is not None and
+                         (existing_state.get("comparisonSeries") or {})
+                         .get("combine") != combine_spec)
         if y_idx is None or (cols[y_idx] == dict(spec["yAxis"])
-                             and not display_drift):
+                             and not display_drift and not combine_drift):
             continue  # no drift
         cols[y_idx] = dict(spec["yAxis"])
         for k, v in display_patch.items():
             existing_state.setdefault("display", {})[k] = v
+        if combine_spec is not None:
+            existing_state.setdefault("comparisonSeries", {})["combine"] = \
+                dict(combine_spec)
         new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
                     "updatedAt": now_iso()}
         if dry_run:
@@ -1593,6 +1893,14 @@ def ensure_graph_templates(needed_names, templates, dry_run):
             state["display"][k] = v
         if spec.get("join"):
             state["join"] = {"sources": spec["join"]}
+        # Round 52: difference combine mode — the base template's own
+        # comparisonSeries block (subscriber config etc.) is already in the
+        # deep-copied state; this only adds the combine key the server's
+        # difference branch reads (buildUdaConfig forwards it verbatim as
+        # options.seriesCombine).
+        if spec.get("comparisonSeriesCombine"):
+            state.setdefault("comparisonSeries", {})["combine"] = \
+                dict(spec["comparisonSeriesCombine"])
         if dry_run:
             print(f"[dry-run] would create template '{name}'")
             templates[name] = {"id": None, "data": {"name": name,
@@ -3316,6 +3624,73 @@ def applied_template_stamp(tmpl):
     return {"fields": {f: dict(ref) for f in stamp_fields}}
 
 
+def resolve_difference_pair(state, route_comps, old_routes):
+    """Port of the old tool's 2-comp selection for Route Difference Graph /
+    TMC Difference Grid (getActiveRouteComponents, IDENTICAL in both
+    components): exactly one Main + one Compare. Explicit
+    state.activeRouteComponents = [mainCompId, compareCompId] is honored
+    per-slot (74% of corpus instances carry it); any unresolved slot is
+    filled with the first OTHER comp whose settings.resolution is equal
+    (RAW equality, no 5-minutes default — old: `r.settings.resolution ===
+    comp1.settings.resolution`) AND whose route is the same physical route;
+    default Main = the report's first comp. Fewer than 2 comps, or no
+    partner found → (None, reason) and the graph renders nothing, exactly
+    like the old tool.
+
+    Same-physical-route test: the old runtime deep-compared RESOLVED
+    tmcArrays. At this point in the pipeline (pre point-resolution — which
+    runs later in convert_report and not at all in the census) only the raw
+    admin2.routes arrays exist, so: same routeId always matches (identical
+    row); different routeIds match iff both raw tmc_arrays are non-empty and
+    equal (duplicated routes are common in this corpus); two point-drawn
+    routes (empty raw arrays) under different routeIds can't be safely
+    matched here and fall to no_pair — a documented, deliberately-tiny
+    deviation, chosen so the census (which never resolves points) predicts
+    the converter exactly.
+
+    Returns ((main_rc, compare_rc), None) or (None, reason)."""
+    comps = [rc for rc in route_comps if rc.get("compId")]
+    if len(comps) < 2:
+        return None, f"fewer_than_2_comps ({len(comps)})"
+    by_id = {rc["compId"]: rc for rc in comps}
+    arc = state.get("activeRouteComponents") or []
+    c1 = by_id.get(arc[0]) if len(arc) > 0 else None
+    c2 = by_id.get(arc[1]) if len(arc) > 1 else None
+
+    def res_of(rc):
+        return (rc.get("settings") or {}).get("resolution")
+
+    def raw_tmcs(rc):
+        r = old_routes.get(str(rc.get("routeId"))) or {}
+        return r.get("tmc_array") or None
+
+    def is_partner(base, cand):
+        if cand["compId"] == base["compId"]:
+            return False
+        if res_of(cand) != res_of(base):
+            return False
+        if str(cand.get("routeId")) == str(base.get("routeId")):
+            return True
+        ta, tb = raw_tmcs(base), raw_tmcs(cand)
+        return bool(ta) and ta == tb
+
+    def find_partner(base):
+        return next((c for c in comps if is_partner(base, c)), None)
+
+    if not c1 and not c2:
+        c1 = comps[0]
+        c2 = find_partner(c1)
+    elif c1 and not c2:
+        c2 = find_partner(c1)
+    elif c2 and not c1:
+        c1 = find_partner(c2)
+    if c1 and c2:
+        return (c1, c2), None
+    anchor = c1 or c2 or comps[0]
+    return None, (f"no partner comp for {anchor.get('compId')} (need same "
+                  f"resolution {res_of(anchor)!r} + same physical route)")
+
+
 def analyze_graph(g, comps_by_id, gaps):
     """Extract the conversion-relevant facts from an old graph_comp:
     measure (displayData), resolution, dataColumn, assigned comps, title,
@@ -3403,7 +3778,10 @@ def analyze_graph(g, comps_by_id, gaps):
         # Route/TMC Info Box never read `resolution` (see INFO_BOX_BUCKET's
         # comment) — a real ambiguity for a chart with one shared x-axis, but
         # not a real gap for these two, so don't clutter the report with it.
-        if gtype not in INFO_BOX_GRAIN:
+        # Difference graphs (round 52) re-derive resolution/dataColumn from
+        # their resolved Main/Compare PAIR in convert_report's pre-pass — a
+        # mixed full-comp set is expected there, not a gap.
+        if gtype not in INFO_BOX_GRAIN and gtype not in DIFFERENCE_GRAPH_TYPES:
             gaps.append({"kind": "mixed_resolutions_on_graph", "graph": g.get("id"),
                          "detail": sorted(map(str, resolutions))})
     data_columns = {(comps_by_id[c].get("settings") or {}).get("dataColumn")
@@ -3412,8 +3790,9 @@ def analyze_graph(g, comps_by_id, gaps):
         data_column = next(iter(data_columns))
     else:
         data_column = None
-        gaps.append({"kind": "mixed_data_columns_on_graph", "graph": g.get("id"),
-                     "detail": sorted(map(str, data_columns))})
+        if gtype not in DIFFERENCE_GRAPH_TYPES:
+            gaps.append({"kind": "mixed_data_columns_on_graph", "graph": g.get("id"),
+                         "detail": sorted(map(str, data_columns))})
     # "{data} AM Peak" / "{type}, {data}" / "{data} {name}" title templates →
     # literal text ({name} = the assigned route comp's display name)
     title = (state.get("title") or "")
@@ -3430,7 +3809,7 @@ def analyze_graph(g, comps_by_id, gaps):
 
 def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
                              color_range=None, aadt_override=None,
-                             route_map_value_ctx=None):
+                             route_map_value_ctx=None, diff_invert=False):
     # Old `layout.w` (react-grid-layout, 12-col) maps directly onto the
     # section's own `size` field (colspan) — confirmed the npmrds_sub pattern
     # (row 2100394) has `theme.selectedTheme: "transportnyv2"`, whose
@@ -3483,6 +3862,14 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         # so opt into BarGraph's byValue coloring mode to match.
         if state.get("display", {}).get("graphType") == "BarGraph":
             colors_cfg["byValue"] = True
+        # Round 52: this wholesale replace was silently dropping any color
+        # FLAGS the template itself carries — the difference templates set
+        # byValueSymmetric (zero-centered scale, old d3.scaleQuantize
+        # ([-max, +max]) parity) on their default colors; carry it onto the
+        # report's own palette too.
+        tmpl_colors = (state.get("display") or {}).get("colors") or {}
+        if tmpl_colors.get("byValueSymmetric"):
+            colors_cfg["byValueSymmetric"] = True
         state.setdefault("display", {})["colors"] = colors_cfg
     # Route-Map choropleth bake (M2 speed / M3 travelTime): only the templates
     # whose series-template layer actually carries a `join` (single-source
@@ -3527,6 +3914,16 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
                          "detail": f"override {aadt_override}: no known AADT "
                                    f"fragment in template "
                                    f"'{tmpl['data'].get('name')}'"})
+    # Round 52 (difference graphs): when the pair's Main sits after its
+    # Compare in the page's shared route-list order, flip the server-side
+    # subtraction so the rendered value stays Main − Compare (see the
+    # route-diff pre-pass in convert_report). Per-SECTION patch on the cloned
+    # state — the template row itself stays invert-free.
+    if diff_invert:
+        combine = dict((state.get("comparisonSeries") or {})
+                       .get("combine") or {"mode": "difference"})
+        combine["invert"] = True
+        state.setdefault("comparisonSeries", {})["combine"] = combine
     state_json = json.dumps(state)
     return {
         "type": COMPONENT_TYPE,
@@ -3707,6 +4104,54 @@ def convert_report(old_id, dry_run=False, replace=False):
     page_template = load_page_template()
     analyzed = [(g, analyze_graph(g, comps_by_id, gaps))
                 for g in old.get("graph_comps") or []]
+
+    # Route Difference Graph / TMC Difference Grid (round 52): resolve the old
+    # tool's Main/Compare pair FIRST — before template selection — because the
+    # graph renders at the PAIR's settings, not across every assigned comp
+    # (analyze_graph's generic branch derives resolution/dataColumn from the
+    # full assigned set, which on a multi-comp report can be "mixed" even
+    # though the pair itself agrees). Runs before `needed` below so the
+    # re-derived resolution participates in template minting.
+    route_diff_invert = {}
+    route_diff_gap_logged = set()
+    comp_order = [rc.get("compId") for rc in route_comps]
+    for g, info in analyzed:
+        if info["type"] not in DIFFERENCE_GRAPH_TYPES:
+            continue
+        gid = g.get("id")
+        pair, why = resolve_difference_pair(g.get("state") or {}, route_comps,
+                                            old_routes)
+        if not pair:
+            gaps.append({"kind": "route_difference_no_pair", "graph": gid,
+                         "detail": why})
+            route_diff_gap_logged.add(gid)
+            continue
+        main_rc, compare_rc = pair
+        info["assigned"] = [main_rc["compId"], compare_rc["compId"]]
+        # Pair partners always share settings.resolution (matcher
+        # requirement); a string state.resolution still overrides, exactly
+        # as in analyze_graph (non-string malformations were already
+        # gap-logged there).
+        state_res = (g.get("state") or {}).get("resolution")
+        info["resolution"] = (state_res if isinstance(state_res, str) and state_res
+                              else (main_rc.get("settings") or {}).get("resolution")
+                              or "5-minutes")
+        pair_cols = {(rc.get("settings") or {}).get("dataColumn")
+                     for rc in (main_rc, compare_rc)}
+        if len(pair_cols) == 1:
+            info["data_column"] = next(iter(pair_cols))
+        else:
+            info["data_column"] = None
+            gaps.append({"kind": "route_difference_mixed_data_columns",
+                         "graph": gid, "detail": sorted(map(str, pair_cols))})
+        # Published variant order follows the page's shared route list (RRL
+        # publishes routes filtered per graph, in list order) — when Main sits
+        # AFTER Compare there (reversed explicit pairs are real, e.g. old
+        # report 12's ['comp-1','comp-0']), the section's combine config gets
+        # invert=true so the rendered subtraction stays Main − Compare.
+        route_diff_invert[gid] = (comp_order.index(main_rc["compId"])
+                                  > comp_order.index(compare_rc["compId"]))
+
     needed = {GRAPH_TEMPLATE_MAP.get((i["type"], i["measure"], i["resolution"],
                                       i["data_column"]))
               for _, i in analyzed if i["type"] not in INFO_BOX_GRAIN} - {None}
@@ -3884,6 +4329,13 @@ def convert_report(old_id, dry_run=False, replace=False):
         is_route_map = info["type"] == "Route Map"
         key = (info["type"], info["measure"], info["resolution"],
                info["data_column"])
+        # A pairless difference graph must skip even though its bucket has a
+        # template — the old tool renders nothing below 2 matched comps, and
+        # a converted section with <2 assigned comps would just be an empty
+        # placeholder wired to a real template.
+        if gid in route_diff_gap_logged:
+            skipped.append(g)
+            continue  # specific reason already gap-logged in the pre-pass
         tmpl_name = (info_box_tmpl_name.get(gid) if is_info_box
                     else route_compare_tmpl_name.get(gid) if is_route_compare
                     else route_map_tmpl_name.get(gid) if is_route_map
@@ -4035,7 +4487,9 @@ def convert_report(old_id, dry_run=False, replace=False):
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
                                      aadt_override=aadt_ov,
-                                     route_map_value_ctx=route_map_value_ctx))
+                                     route_map_value_ctx=route_map_value_ctx,
+                                     diff_invert=route_diff_invert.get(
+                                         g.get("id"), False)))
     section_datas.append(build_cloned_section_data(page_id, sheet_tmpl, str(uuid.uuid4())))
 
     draft_ids = []
