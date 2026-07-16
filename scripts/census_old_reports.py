@@ -49,7 +49,7 @@ from convert_old_reports import (  # noqa: E402
     ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG,
     ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE,
     analyze_graph, flatten_route_comps, route_settings_gaps,
-    resolve_difference_pair,
+    resolve_difference_pair, report_is_pre_2017_only,
     aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
 )
 
@@ -93,6 +93,17 @@ def bucket_of(graph_type):
     if graph_type in NO_EQUIVALENT_TYPES:
         return "no_equivalent"
     return "tail"
+
+
+def page_producible(r):
+    """Round 39: a report can only ever produce a real page when it clears
+    BOTH report-level skips convert_report enforces — a resolvable route
+    (not `no_valid_routes`) and not `pre_2017_only` (every route_comp
+    predates npmrds.s583_v982_NPMRDS_V6's 2017 start, permanently
+    unrecoverable). Gates full_producible/single_blocker_flips/greedy below
+    so a permanently-blank report never inflates an achievable-target
+    metric (round-36 shell-678 lesson applies identically to pre-2017)."""
+    return r["route_validity"] != "no_valid_routes" and not r["pre_2017_only"]
 
 
 def fetch_all_reports(batch=100):
@@ -163,6 +174,7 @@ def analyze_report(old, old_route_facts=None):
     difference-pair mirror's same-physical-route check."""
     gaps = []
     route_comps = flatten_route_comps(old.get("route_comps"), gaps)
+    pre_2017_only = report_is_pre_2017_only(route_comps)
     if old.get("station_comps"):
         gaps.append({"kind": "station_comps",
                      "detail": f"{len(old['station_comps'])} station comps"})
@@ -326,6 +338,7 @@ def analyze_report(old, old_route_facts=None):
     return {
         "id": old["id"], "name": old.get("name"),
         "n_graphs": n, "n_mapped": m, "class": klass,
+        "pre_2017_only": pre_2017_only,
         "unmapped_keys": unmapped_keys,
         "route_ids": sorted({str(rc.get("routeId")) for rc in route_comps
                              if rc.get("routeId")}),
@@ -408,6 +421,30 @@ def main():
     total_graphs = sum(r["n_graphs"] for r in records)
     total_mapped = sum(r["n_mapped"] for r in records)
 
+    # Round 39 parallel headline: the raw class/instance counts above
+    # include reports that will NEVER render real data (every route_comp
+    # predates 2017) — a "full" pre-2017-only report was always going to be
+    # a permanently-blank page, inflating the raw "full" count. This is the
+    # achievable-target cut, same idea as the no_valid_routes route-validity
+    # split above but keyed on pre_2017_only instead.
+    pre_2017_reports = [r for r in records if r["pre_2017_only"]]
+    records_excl_pre_2017 = [r for r in records if not r["pre_2017_only"]]
+    class_counts_excl_pre_2017 = Counter(r["class"] for r in records_excl_pre_2017)
+    graph_instances_excl_pre_2017 = {
+        "total": sum(r["n_graphs"] for r in records_excl_pre_2017),
+        "mapped": sum(r["n_mapped"] for r in records_excl_pre_2017)}
+    graph_instances_excl_pre_2017["unmapped"] = (
+        graph_instances_excl_pre_2017["total"]
+        - graph_instances_excl_pre_2017["mapped"])
+    # Already-converted pages that turn out to be pre-2017-only (converted
+    # before this rule existed, or a regression-era conversion) — surfaced
+    # for a cleanup decision, not auto-deleted, per the no-proactive-sweeps
+    # policy (round 39 precedent: 4 such pages were found and later deleted
+    # on explicit user instruction, not automatically).
+    pre_2017_converted_pages = [
+        {"id": r["id"], "name": r["name"], "converted_page_id": r["converted_page_id"]}
+        for r in pre_2017_reports if r["converted_page_id"]]
+
     key_instances = Counter()
     key_reports = defaultdict(set)
     for r in records:
@@ -438,24 +475,24 @@ def main():
             gap_kind_reports[g["kind"]].add(r["id"])
 
     # single-blocker flips: reports whose ENTIRE unmapped set is one key.
-    # no_valid_routes shells are excluded from flip/greedy metrics — they
-    # can never produce a page, so "flipping to full" is vacuous for them
-    # (round-36 finding: shell report 678 falsely inflated round 34's
-    # flip count).
+    # no_valid_routes shells AND pre_2017_only reports are excluded from
+    # flip/greedy metrics — neither can ever produce a page, so "flipping
+    # to full" is vacuous for them (round-36 finding: shell report 678
+    # falsely inflated round 34's flip count; round 39 extended the same
+    # exclusion to pre-2017-only reports via page_producible).
     single_blocker_flips = Counter()
     for r in records:
         distinct = set(r["unmapped_keys"])
         if (r["class"] in ("partial", "none") and len(distinct) == 1
-                and r["route_validity"] != "no_valid_routes"):
+                and page_producible(r)):
             single_blocker_flips[next(iter(distinct))] += 1
 
     # greedy cumulative: adding keys most-instances-first, how many reports
     # reach fully-convertible (page-producing reports only)
     full_producible = sum(1 for r in records if r["class"] == "full"
-                          and r["route_validity"] != "no_valid_routes")
+                          and page_producible(r))
     remaining = {r["id"]: set(r["unmapped_keys"]) for r in records
-                 if r["class"] in ("partial", "none")
-                 and r["route_validity"] != "no_valid_routes"}
+                 if r["class"] in ("partial", "none") and page_producible(r)}
     greedy = []
     covered = set()
     for key, _ in key_instances.most_common():
@@ -477,6 +514,10 @@ def main():
         "bucket_reports": {b: len(s) for b, s in bucket_report_sets.items()},
         "route_stats": route_stats,
         "route_validity_counts": dict(validity_counts),
+        "pre_2017_only_count": len(pre_2017_reports),
+        "class_counts_excl_pre_2017": dict(class_counts_excl_pre_2017),
+        "graph_instances_excl_pre_2017": graph_instances_excl_pre_2017,
+        "pre_2017_converted_pages": pre_2017_converted_pages,
         "full_producible": full_producible,
         "no_valid_routes_shells": [
             {"id": r["id"], "name": r["name"], "class": r["class"],
@@ -511,7 +552,9 @@ def main():
     print(json.dumps({k: summary[k] for k in
                       ("class_counts", "graph_instances", "bucket_instances",
                        "route_stats", "route_validity_counts",
-                       "converted_pages_total")}, indent=2))
+                       "converted_pages_total", "pre_2017_only_count",
+                       "class_counts_excl_pre_2017",
+                       "graph_instances_excl_pre_2017")}, indent=2))
 
 
 def write_summary_md(s):
@@ -563,6 +606,41 @@ def write_summary_md(s):
                             for p in csp) + ".**" if csp
                 else " No shell has a live converted page."))
     L.append("")
+    L.append("## Pre-2017-only reports (round-39 permanent exclusion)\n")
+    L.append("`npmrds.s583_v982_NPMRDS_V6` starts in 2017 — that data is "
+             "never coming back. A report where EVERY route_comp is "
+             "pre-2017-only is refused a page outright by the converter "
+             "(gap kind `pre_2017_only`, mirrors `no_valid_routes` above); "
+             "the raw class/instance counts up top still count these "
+             "reports (some as 'full'), which overstates what's actually "
+             "achievable since they were always going to render "
+             "permanently blank.\n")
+    L.append(f"**{s['pre_2017_only_count']}/{s['total_reports']} reports "
+             f"({s['pre_2017_only_count'] / s['total_reports'] * 100:.1f}%) "
+             "are pre-2017-only.**\n")
+    cce = s["class_counts_excl_pre_2017"]
+    gie = s["graph_instances_excl_pre_2017"]
+    L.append("| class | raw (all reports) | excl. pre-2017-only |")
+    L.append("|---|---|---|")
+    for k, label in (("full", "full"), ("partial", "partial"),
+                     ("none", "none"), ("no_graphs", "no_graphs")):
+        L.append(f"| {label} | {cc.get(k, 0)} | {cce.get(k, 0)} |")
+    L.append(f"\nGraph instances excl. pre-2017-only: "
+             f"**{gie['mapped']} / {gie['total']}** mapped "
+             f"({gie['unmapped']} unmapped) — raw was "
+             f"**{gi['mapped']} / {gi['total']}**.\n")
+    L.append(f"`full_producible` ({s['full_producible']}) already excludes "
+             "both `no_valid_routes` shells AND pre-2017-only reports — see "
+             "the greedy-coverage baseline below.\n")
+    p17 = s["pre_2017_converted_pages"]
+    if p17:
+        L.append("**Already-converted pages that turn out to be "
+                 "pre-2017-only (surfaced for a cleanup decision, not "
+                 "auto-deleted):** "
+                 + ", ".join(f"report {r['id']} → page {r['converted_page_id']}"
+                             for r in p17) + ".\n")
+    else:
+        L.append("No currently-live converted page is pre-2017-only.\n")
     bi = s["bucket_instances"]
     br = s["bucket_reports"]
     L.append("Unmapped instances by bucket: "
@@ -609,7 +687,8 @@ def write_summary_md(s):
     L.append("\n## Greedy coverage (cumulative fully-convertible reports as "
              "keys are added, most-instances-first)\n")
     L.append(f"Baseline = {s['full_producible']} page-producing full reports "
-             "(`no_valid_routes` shells excluded from baseline and flips).\n")
+             "(`no_valid_routes` shells and pre-2017-only reports excluded "
+             "from baseline and flips).\n")
     L.append("| +key | cumulative full reports |")
     L.append("|---|---|")
     for row in s["greedy_key_coverage"]:

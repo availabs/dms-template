@@ -1566,6 +1566,33 @@ def flatten_route_comps(route_comps, gaps):
     return flat
 
 
+PRE_2017_CUTOFF = 20170101
+
+
+def route_comp_is_pre_2017(settings):
+    """True only when both startDate/endDate are present and the whole
+    range falls before 2017-01-01 (npmrds.s583_v982_NPMRDS_V6 starts 2017,
+    round 13) — comps missing either date are left as 'unknown, not
+    pre-2017' rather than assumed broken (14/5154 corpus route_comps)."""
+    start, end = settings.get("startDate"), settings.get("endDate")
+    if not start or not end:
+        return False
+    try:
+        return int(str(start)) < PRE_2017_CUTOFF and int(str(end)) < PRE_2017_CUTOFF
+    except ValueError:
+        return False
+
+
+def report_is_pre_2017_only(route_comps):
+    """True iff EVERY route_comp in the report is pre-2017-only (round 39) —
+    mirrors the report-level no_valid_routes skip below: this data predates
+    npmrds.s583_v982_NPMRDS_V6's 2017 start and is never coming back, so a
+    report entirely inside that range would only ever produce a
+    permanently-blank page regardless of template completeness."""
+    return bool(route_comps) and all(
+        route_comp_is_pre_2017(rc.get("settings") or {}) for rc in route_comps)
+
+
 # ── Old → new transforms ─────────────────────────────────────────────────────
 
 def to_datetime_str(yyyymmdd, hhmm):
@@ -4054,6 +4081,25 @@ def convert_report(old_id, dry_run=False, replace=False):
 
     # -- old-side pieces
     route_comps = flatten_route_comps(old.get("route_comps"), gaps)
+
+    # A report where EVERY route_comp is pre-2017-only has nothing
+    # recoverable to convert — npmrds.s583_v982_NPMRDS_V6 (the fact table
+    # backing every measure in this pipeline) starts in 2017, so no amount
+    # of template work will ever make it render real data. Checked before
+    # any old-route fetch or graph analysis since it needs nothing else;
+    # mirrors the no_valid_routes report-level skip below (round 39,
+    # restored round 53 after rounds 41-52's rewrites silently dropped it).
+    if report_is_pre_2017_only(route_comps):
+        gaps.append({"kind": "pre_2017_only",
+                     "detail": "every route_comp in this report predates "
+                               "2017-01-01 (npmrds.s583_v982_NPMRDS_V6 starts "
+                               "2017) — permanently unrecoverable, page not "
+                               "created"})
+        verb = "would skip" if dry_run else "skipped"
+        print(f"[{verb}] creating page '{slug}' ('{old['name']}') — every "
+              f"route_comp in this report predates 2017")
+        return finish(old_id, old, None, gaps, dry_run)
+
     old_routes = fetch_old_routes([rc["routeId"] for rc in route_comps
                                    if rc.get("routeId")])
     if old.get("station_comps"):
