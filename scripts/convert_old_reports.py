@@ -3821,8 +3821,11 @@ def analyze_graph(g, comps_by_id, gaps):
             gaps.append({"kind": "mixed_data_columns_on_graph", "graph": g.get("id"),
                          "detail": sorted(map(str, data_columns))})
     # "{data} AM Peak" / "{type}, {data}" / "{data} {name}" title templates →
-    # literal text ({name} = the assigned route comp's display name)
-    title = (state.get("title") or "")
+    # literal text ({name} = the assigned route comp's display name).
+    # Old client default (never customized in the common case, confirmed on
+    # reports 520/179's raw graph_comps): an empty/missing state.title falls
+    # back to "{type}, {data}", not a blank section title.
+    title = state.get("title") or "{type}, {data}"
     title = title.replace("{data}", MEASURE_NAMES.get(measure, measure))
     title = title.replace("{type}", gtype or "")
     comp_names = ", ".join((comps_by_id[c].get("name") or "").strip()
