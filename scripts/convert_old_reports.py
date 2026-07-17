@@ -1919,10 +1919,19 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         expected_join = {"sources": join_spec} if join_spec else None
         join_drift = (expected_join is not None and
                      existing_state.get("join") != expected_join)
+        # Round 61: any "xAxis": "epoch" spec's x column is the raw 5-min-of-
+        # day index (ds.epoch) -- ticks render as "80" instead of "6:40"
+        # without a named formatFn. Derived off the spec's own xAxis shorthand
+        # rather than hand-added to all ~40 TEMPLATE_SPECS entries, so it
+        # covers every current and future one uniformly.
+        existing_xaxis_format = (existing_display.get("xAxis") or {}).get("format")
+        epoch_format_drift = (spec["xAxis"] == "epoch" and
+                              existing_xaxis_format != "epoch_time")
         if y_idx is None:
             continue  # no yAxis-target column to compare against at all
         yaxis_drift = cols[y_idx] != dict(spec["yAxis"])
-        if not (yaxis_drift or display_drift or combine_drift or join_drift):
+        if not (yaxis_drift or display_drift or combine_drift or join_drift
+                or epoch_format_drift):
             continue  # no drift
         cols[y_idx] = dict(spec["yAxis"])
         for k, v in display_patch.items():
@@ -1932,11 +1941,15 @@ def ensure_graph_templates(needed_names, templates, dry_run):
                 dict(combine_spec)
         if join_drift:
             existing_state["join"] = json.loads(json.dumps(expected_join))
+        if epoch_format_drift:
+            existing_state.setdefault("display", {}) \
+                .setdefault("xAxis", {})["format"] = "epoch_time"
         new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
                     "updatedAt": now_iso()}
         note = ", ".join(k for k, fired in (
             ("yAxis expr", yaxis_drift), ("display", display_drift),
             ("comparisonSeries.combine", combine_drift), ("join", join_drift),
+            ("xAxis format", epoch_format_drift),
         ) if fired)
         if dry_run:
             print(f"[dry-run] would update drifted template '{name}' "
@@ -2005,6 +2018,8 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         state["display"]["graphType"] = spec["graphType"]
         for k, v in (spec.get("display") or {}).items():
             state["display"][k] = v
+        if spec["xAxis"] == "epoch":
+            state["display"].setdefault("xAxis", {})["format"] = "epoch_time"
         if spec.get("join"):
             state["join"] = {"sources": spec["join"]}
         # Round 52: difference combine mode — the base template's own
