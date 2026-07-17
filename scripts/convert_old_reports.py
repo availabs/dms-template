@@ -416,6 +416,22 @@ COLOR_RANGE_GRAPH_TYPES = {"Route Bar Graph", "Route Map", "TMC Grid Graph",
 # selection logic verbatim — see resolve_difference_pair.
 DIFFERENCE_GRAPH_TYPES = {"Route Difference Graph", "TMC Difference Grid"}
 
+# Old GeneralGraphComp.getActiveRouteComponents()'s default (no explicit
+# state.activeRouteComponents) is `[routes[0].compId]` — ONE comp, the first
+# in the report's own route_comps order — never "every comp". Hours of Delay
+# Graph / TMC Info Box were already known to behave this way. Route Bar Graph
+# (RouteBarGraph.jsx: generateGraphData([route], ...), generateHeaderData()
+# -> single-select-route) and TMC Grid Graph (TmcGridGraph.comp.jsx's `Graph
+# extends GeneralGraphComp` with NO getActiveRouteComponents/getResolution
+# override at all) are the exact same case — confirmed 2026-07-17 by reading
+# each component directly. Treating their absent-activeRouteComponents
+# default as "every comp" (the generic branch in analyze_graph) was the
+# actual root cause of the report-1061/graph-comp-60 non-determinism bug
+# (see the BUG FIX comment below): only ONE comp is ever really rendered, so
+# there's no real ambiguity to arbitrarily resolve.
+SINGLE_ACTIVE_COMP_TYPES = {"Hours of Delay Graph", "TMC Info Box",
+                            "Route Bar Graph", "TMC Grid Graph"}
+
 # Old RouteDifferenceGraph.jsx's default ramp when a report carries no
 # color_range of its own: getColorRange(5, "RdYlGn") (colorbrewer RdYlGn-5,
 # red at the negative end, green positive — speed is reverseColors:false).
@@ -3939,18 +3955,17 @@ def analyze_graph(g, comps_by_id, gaps):
     measure (displayData), resolution, dataColumn, assigned comps, title,
     description. Old semantics: a graph shows state.activeRouteComponents
     (default: every comp); state.resolution overrides the comps' own.
-    "Hours of Delay Graph" and "TMC Info Box" are documented exceptions
-    (HoursOfDelayGraph.jsx/TmcInfoBox.jsx, confirmed against
-    GeneralGraphComp.jsx): generateGraphData([route], ...) destructures only
-    the FIRST matching active comp — getActiveRouteComponents() defaults to
-    [routes[0].compId], never "every comp" like the general case below. Only
-    "Hours of Delay Graph" also hardcodes its measure ('hoursOfDelay',
-    ignoring state.displayData) — TMC Info Box keeps the normal
-    displayData[0] measure resolution, it's single-route-only, not
-    single-measure-only."""
+    SINGLE_ACTIVE_COMP_TYPES are documented exceptions (confirmed against
+    each component's own source, not just GeneralGraphComp's base):
+    generateGraphData([route], ...) destructures only the FIRST matching
+    active comp — getActiveRouteComponents() defaults to [routes[0].compId],
+    never "every comp" like the general case below. Only "Hours of Delay
+    Graph" also hardcodes its measure ('hoursOfDelay', ignoring
+    state.displayData) — the other three keep the normal displayData[0]
+    measure, they're single-route-only, not single-measure-only."""
     state = g.get("state") or {}
     gtype = g.get("type")
-    if gtype in ("Hours of Delay Graph", "TMC Info Box"):
+    if gtype in SINGLE_ACTIVE_COMP_TYPES:
         order = list(comps_by_id)  # insertion order == old route_comps order
         active = state.get("activeRouteComponents") or []
         chosen = next((c for c in order if c in active), None) or (
@@ -4016,6 +4031,25 @@ def analyze_graph(g, comps_by_id, gaps):
         resolution = state_resolution
     elif len(resolutions) == 1:
         resolution = next(iter(resolutions))
+    elif gtype == "Bar Graph Summary":
+        # BarGraphSummary.jsx's own generateGraphData/renderGraph never
+        # reference the `resolution` param at all (each bar is one comp's
+        # whole-date-range allReducer aggregate, independent of any shared
+        # axis — confirmed 2026-07-17) — but avgHoursOfDelay's per-resolution
+        # calculated column still keys off info["resolution"] downstream
+        # (round 32/36), so a concrete value is needed, not a gap. Resolve it
+        # exactly the way the real (unmodified) GeneralGraphComp.getResolution()
+        # would: the first assigned comp's own resolution, in the report's
+        # original comp order (same rule as SINGLE_ACTIVE_COMP_TYPES above,
+        # just without shrinking `assigned` itself — BarGraphSummary's own
+        # getActiveRouteComponents() override genuinely renders every comp as
+        # its own bar). For speed/travelTime/hoursOfDelay every real
+        # resolution maps to the same template anyway (see GRAPH_TEMPLATE_MAP),
+        # so which comp "wins" doesn't change the outcome there.
+        order = list(comps_by_id)
+        first = next((c for c in order if c in assigned), None)
+        resolution = ((comps_by_id[first].get("settings") or {}).get("resolution")
+                      or "5-minutes") if first else None
     else:
         resolution = None
         # Route/TMC Info Box never read `resolution` (see INFO_BOX_BUCKET's
@@ -4023,8 +4057,18 @@ def analyze_graph(g, comps_by_id, gaps):
         # not a real gap for these two, so don't clutter the report with it.
         # Difference graphs (round 52) re-derive resolution/dataColumn from
         # their resolved Main/Compare PAIR in convert_report's pre-pass — a
-        # mixed full-comp set is expected there, not a gap.
-        if gtype not in INFO_BOX_GRAIN and gtype not in DIFFERENCE_GRAPH_TYPES:
+        # mixed full-comp set is expected there, not a gap. Route Map: only
+        # its avgHoursOfDelay measure's calculated column is actually
+        # resolution-dependent (round 32/41's ROUTE_MAP_AVGDELAY_VALUE_EXPR_
+        # BY_RESOLUTION) — none/speed/travelTime/hoursOfDelay's
+        # route_map_tmpl_name branch never reads info["resolution"] at all,
+        # so a mixed set there is analyzer noise, not a real gap (confirmed
+        # 2026-07-17: 145 of the corpus's 146 Route-Map mixed-resolution
+        # instances are non-avgHoursOfDelay).
+        route_map_resolution_irrelevant = (
+            gtype == "Route Map" and measure != "avgHoursOfDelay")
+        if (gtype not in INFO_BOX_GRAIN and gtype not in DIFFERENCE_GRAPH_TYPES
+                and not route_map_resolution_irrelevant):
             gaps.append({"kind": "mixed_resolutions_on_graph", "graph": g.get("id"),
                          "detail": sorted(map(str, resolutions))})
     data_columns = {(comps_by_id[c].get("settings") or {}).get("dataColumn")
