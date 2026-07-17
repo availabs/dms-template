@@ -2107,27 +2107,54 @@ def ensure_pm3_join_template(grain, year, bin_, templates, dry_run):
 def ensure_info_box_traveltime_template(grain, templates, dry_run):
     """Mint (or reuse) `{grain}_info_box_traveltime` — a Spreadsheet template
     for Route/TMC Info Box's `avgTT-byDateRange` measure (round 38, Phase B
-    item (c)). Unlike ensure_pm3_join_template, this is STATIC: no pm3 join,
-    no per-report year/bin resolution — see INFO_BOX_TRAVELTIME_BUCKET above
-    for why (no 1410 column backs it, and old RouteInfoBox.jsx never gated
-    travel time on a bin either). Same TRAVEL_TIME_EXPR already live-verified
-    for Bar Graph Summary/Route Bar Graph, `fn: "exempt"` (self-aggregating).
-    Same grain split as ensure_pm3_join_template: "route" groups by the
-    comparisonSeries `__series` discriminator (one row per route), "tmc" by a
-    plain `tmc` column — only "route" has real corpus instances this round,
-    but the split costs nothing extra since the structure already carries it."""
+    item (c)). No pm3 join, no per-report year/bin resolution — see
+    INFO_BOX_TRAVELTIME_BUCKET above for why (no 1410 column backs it, and
+    old RouteInfoBox.jsx never gated travel time on a bin either). Same
+    TRAVEL_TIME_EXPR already live-verified for Bar Graph Summary/Route Bar
+    Graph, `fn: "exempt"` (self-aggregating). Same grain split as
+    ensure_pm3_join_template: "route" groups by the comparisonSeries
+    `__series` discriminator (one row per route), "tmc" by a plain `tmc`
+    column — only "route" has real corpus instances this round, but the
+    split costs nothing extra since the structure already carries it.
+
+    `avgtt_col`'s `formatFn`/`customName` DO drift-check (round 58) — the
+    expression itself doesn't (that's TRAVEL_TIME_EXPR's own shared drift
+    detection), but this column's display treatment can still change
+    independently, as it did round 58 (raw decimal minutes -> `minutes_clock`,
+    the same M:SS format the old tool's `toMinutesWithSeconds` applies to
+    every "Minutes"-labeled measure, not just this one)."""
     name = f"{grain}_info_box_traveltime"
-    if templates.get(name) is not None:
-        return templates  # static — nothing to drift-check independently of
-                           # TRAVEL_TIME_EXPR's own shared drift detection
+    avgtt_col = {"type": "calculated", "show": True,
+                 "name": TRAVEL_TIME_EXPR, "fn": "exempt",
+                 "formatFn": "minutes_clock", "customName": "Travel Time"}
+    avgtt_idx = 1 if grain == "route" else 0
+
+    existing = templates.get(name)
+    if existing is not None:
+        existing_state = json.loads(existing["data"]["stateJson"])
+        existing_cols = existing_state.get("columns") or []
+        if len(existing_cols) == 2 and existing_cols[avgtt_idx] == avgtt_col:
+            return templates  # no drift
+        new_cols = list(existing_cols)
+        new_cols[avgtt_idx] = avgtt_col
+        existing_state["columns"] = new_cols
+        new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
+                    "updatedAt": now_iso()}
+        if dry_run:
+            print(f"[dry-run] would update drifted template '{name}' "
+                  f"id={existing['id']} (formatFn/customName drift)")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} "
+                  f"(formatFn/customName drift fix)")
+        templates[name] = {"id": existing["id"], "data": new_data}
+        return templates
+
     base = templates.get(TEMPLATE_BASE_NAME)
     if not base:
         raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
     base_state = json.loads(base["data"]["stateJson"])
 
-    avgtt_col = {"type": "calculated", "show": True,
-                 "name": TRAVEL_TIME_EXPR, "fn": "exempt",
-                 "customName": "Travel Time (min)"}
     if grain == "route":
         series_col = next(c for c in base_state["columns"]
                           if c.get("name") == "__series")
