@@ -306,7 +306,7 @@ AADT_TMC_EXPR = "table1.aadt as aadt"
 # sumReducer) — plain SUM of the same per-epoch weighted DELAY_EXPR every
 # other Hours-of-Delay template already uses, across the whole route/date
 # range (old JS ignores `year` for this measure — sumReducer takes no such
-# param). Needs the same META_1946_JOIN + AADT_DIST_JOIN pair as those
+# param). Needs the same META_JOIN + AADT_DIST_JOIN pair as those
 # templates (DELAY_EXPR reads `table1.avg_speedlimit`/`faciltype`, which the
 # base template's own default join, TMC Identification 455/3464, doesn't
 # carry — confirmed directly against its column list).
@@ -510,9 +510,10 @@ TRAVEL_TIME_VALUE_EXPR = TRAVEL_TIME_EXPR.rsplit(" as ", 1)[0] + " as value"
 # Old hoursOfDelay (avail-falcor getHoursOfDelay.js's calcDelay/getAADT): per
 # epoch, raw_delay = max(0, tt - miles/max(20, 0.6*speedlimit)*3600)/3600,
 # weighted by AADT/facil * the epoch's AADT-distribution share, summed. The
-# threshold part joins the ny_2025_tmc_meta ClickHouse view (source 1946/view
-# 3298 — miles, avg_speedlimit, aadt, faciltype, congestion_level,
-# directionality, f_system); the weighting joins aadt_distributions (source
+# threshold part joins the year-matched NPMRDS_V6_tmc_meta ClickHouse view
+# (source 582/view 983, see the META_JOIN comment below — miles,
+# avg_speedlimit, aadt, faciltype, congestion_level, directionality,
+# f_system); the weighting joins aadt_distributions (source
 # 2056/view 3524 — see calculated-join-key notes in
 # planning/tasks/current/old-reports-conversion.md) via a computed dist_key.
 # This is the "travel_time_all" dataColumn variant (AADT = table1.aadt
@@ -528,9 +529,20 @@ TRAVEL_TIME_VALUE_EXPR = TRAVEL_TIME_EXPR.rsplit(" as ", 1)[0] + " as value"
 # becomes NULL (greatest()/arithmetic all propagate NULL in ClickHouse), which
 # the downstream sum() aggregate correctly skips — same NULL-skipping
 # semantic as the old Postgres-backed tool, restored.
+# nullIf(table1.aadt, 0) (round 59): guards the NEW year-matched META_JOIN's
+# own join-miss case (2017, the one year 582/983 doesn't carry -- see the
+# comment above META_JOIN) the same way the line above guards the fact
+# table's 0-as-missing sentinel. A ClickHouse LEFT JOIN with no matching
+# table1 row fills every table1.* column with its type default (0/''), not
+# NULL -- table1.aadt is never legitimately 0 for a real TMC (same "0 =
+# missing" convention this AADT column already carries elsewhere, e.g.
+# AADT_EXPR), so it's the single reliable "did the meta join actually match"
+# signal to gate on here. Every other table1.* reference in this expression
+# (miles, avg_speedlimit, faciltype) comes from the SAME row, so a join miss
+# zeroes them all together -- gating on aadt alone is sufficient.
 DELAY_EXPR = ("(greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.miles / "
               "greatest(20, table1.avg_speedlimit * 0.6)) * 3600)) / 3600) "
-              "* (table1.aadt / (if(table1.faciltype > 1, 2, 1))) "
+              "* (nullIf(table1.aadt, 0) / (if(table1.faciltype > 1, 2, 1))) "
               "* arrayElement(table2.distributions, ds.epoch + 1) "
               "as hours_of_delay")
 # Route Map hoursOfDelay (M3): unlike avgHoursOfDelay, this measure's old
@@ -630,24 +642,67 @@ def _avg_delay_summary_expr(bucket_expr):
 AVG_DELAY_SUMMARY_5MIN_EXPR = _avg_delay_summary_expr("ds.epoch")
 AVG_DELAY_SUMMARY_DAY_EXPR = _avg_delay_summary_expr("ds.date")
 AVG_DELAY_SUMMARY_WEEKDAY_EXPR = _avg_delay_summary_expr("toDayOfWeek(ds.date)")
-META_1946_JOIN = {
-    "source": 1946, "view": 3298,
+# Round 59 (2026-07-17): swapped off source 1946/view 3298 ("ny_2025_tmc_meta")
+# onto source 582/view 983 ("NPMRDS_V6_tmc_meta") -- 1946/3298 is a FROZEN
+# 2025-only snapshot, joined identically for every report regardless of the
+# report's own year (no year-matching existed at all). Confirmed live
+# (2026-07-17): 582/983 is byte-identical in schema (same 58 columns) but
+# carries one row per (tmc, year) for 2016/2018-2026 -- checked against 1946's
+# frozen 2025 values on a real report year (2019): 46.5% of TMCs have a
+# different aadt, 31% a different congestion_level (which itself feeds
+# DIST_KEY_EXPR below -- a wrong congestion_level can pick the wrong AADT
+# distribution profile too), and 146 TMCs present in 2019 are entirely absent
+# from the 2025 snapshot. Every report using hoursOfDelay/avgHoursOfDelay/
+# co2Emissions/avgCo2Emissions (all built rounds 5-36) has been running its
+# delay/CO2 math against wrong-year TMC attributes whenever that report's
+# dates aren't 2025.
+#
+# The join key is now COMPOUND: tmc=tmc AND a calculated dsColumn matching
+# ds.date's own year against table1.year -- same calculated-dsColumn
+# mechanism DIST_KEY_EXPR below already uses (confirmed live:
+# buildJoinOnClause's accessor()/isCalculatedCol() and this file's own
+# _ch_join_accessor already detect ANY joinColumns entry containing ' as ' and
+# use it as a raw expression with no alias prefix, and both client and
+# build_ch_join_wire already AND-join multiple joinColumns entries per
+# source -- no platform change needed). This resolves each fact-table ROW
+# against ITS OWN date's year, not a single per-report "max year" pick like
+# the pm3/1410 reliability join uses -- correctly handling a report whose date
+# range spans a year boundary, and needing no per-year template proliferation
+# at all (unlike ensure_pm3_join_template).
+#
+# Known gap (not fixed): 582/983 has no 2017 row (2016, then 2018-2026) --
+# confirmed live. A ClickHouse LEFT JOIN fills a non-matching row's columns
+# with type defaults (0/''), not NULL, so an unguarded 2017 date would
+# silently produce hours_of_delay/avg_co2_emissions = 0 (indistinguishable
+# from a genuinely congestion-free/emission-free reading) -- the exact same
+# class of bug round 9 found and fixed for the fact table's own 0-as-missing
+# sentinel. Guarded below via nullIf() on the one column each formula
+# multiplies by last (table1.aadt for delay, table1.miles for CO2) so a
+# missing-year join miss nulls the whole expression instead (verified live,
+# greatest()/division/subtraction on a ClickHouse Nullable all propagate NULL
+# as expected). 2017-dated hoursOfDelay/CO2 reports are gap-logged, not
+# unblocked -- out of scope per the standing "data issues, not code" ruling.
+META_JOIN = {
+    "source": 582, "view": 983,
     "sourceInfo": {
-        "name": "ny_2025_tmc_meta",
+        "name": "NPMRDS_V6_tmc_meta",
         "columns": [{"name": n, "type": "string"} for n in
                     ["tmc", "miles", "avg_speedlimit", "aadt", "aadt_singl",
                      "aadt_combi", "congestion_level", "directionality",
-                     "f_system", "faciltype"]],
-        "source_id": 1946, "env": "npmrds2", "srcEnv": "npmrds2",
-        "isDms": False, "baseUrl": "", "type": "ny_2025_tmc_meta",
-        "view_id": 3298,
+                     "f_system", "faciltype", "year"]],
+        "source_id": 582, "env": "npmrds2", "srcEnv": "npmrds2",
+        "isDms": False, "baseUrl": "", "type": "NPMRDS_V6_tmc_meta",
+        "view_id": 983,
     },
-    "joinColumns": [{"dsColumn": "tmc", "joinSourceColumn": "tmc"}],
+    "joinColumns": [
+        {"dsColumn": "tmc", "joinSourceColumn": "tmc"},
+        {"dsColumn": "toYear(ds.date) as meta_year", "joinSourceColumn": "year"},
+    ],
     "mergeStrategy": "join", "type": "left",
 }
 # dist_key mirrors old getDist(): WEEKEND collapses to [weekdayType, roadType],
 # WEEKDAY needs congestion_level + directionality + roadType — all only
-# available on table1 (ny_2025_tmc_meta), joined as a calculated dsColumn
+# available on table1 (NPMRDS_V6_tmc_meta, META_JOIN above), joined as a calculated dsColumn
 # expression (the platform fix verified in the round-3 notes) rather than a
 # plain column so it can reference an already-joined alias.
 DIST_KEY_EXPR = (
@@ -736,12 +791,19 @@ _AADT_CAR_EXPR = ("((table1.aadt - (table1.aadt_singl + table1.aadt_combi)) "
 _AADT_TRUCK_EXPR = ("((table1.aadt_singl + table1.aadt_combi) "
                      "/ if(table1.faciltype > 1, 2, 1) "
                      "* arrayElement(table2.distributions, ds.epoch + 1))")
+# nullIf(table1.miles, 0) (round 59): same META_JOIN join-miss guard as
+# DELAY_EXPR's nullIf(table1.aadt, 0) above, gating on the LAST table1.miles
+# reference (the one multiplying the whole per-epoch result) so a 2017
+# join-miss nulls the whole expression rather than silently zeroing it — the
+# earlier table1.miles inside _SPEED_CAR_EXPR/_SPEED_TRUCK_EXPR needs no
+# guard of its own since this outer one already nulls the final product
+# regardless of what that inner (possibly wrong-on-a-miss) speed computed.
 CO2_EXPR_PASSENGER = (
     f"(({_CO2_CAR_FACTOR.format(s=_SPEED_CAR_EXPR)}) "
-    f"* ({_AADT_CAR_EXPR} * table1.miles) / 1000000) as avg_co2_emissions")
+    f"* ({_AADT_CAR_EXPR} * nullIf(table1.miles, 0)) / 1000000) as avg_co2_emissions")
 CO2_EXPR_TRUCK = (
     f"(({_CO2_TRUCK_FACTOR.format(s=_SPEED_TRUCK_EXPR)}) "
-    f"* ({_AADT_TRUCK_EXPR} * table1.miles) / 1000000) as avg_co2_emissions")
+    f"* ({_AADT_TRUCK_EXPR} * nullIf(table1.miles, 0)) / 1000000) as avg_co2_emissions")
 
 # ── overrides.aadt (old getHoursOfDelay.js getAADT / getCo2Emissions.js
 # calcEmissions) ─────────────────────────────────────────────────────────────
@@ -764,7 +826,13 @@ CO2_EXPR_TRUCK = (
 # Substitution happens on the section's CLONED template stateJson (the same
 # place color_range is wired), so the template rows themselves stay
 # override-free.
-_AADT_DELAY_FRAGMENT = "(table1.aadt / (if(table1.faciltype > 1, 2, 1)))"
+# Round 59: fragment updated to match DELAY_EXPR's new nullIf(table1.aadt, 0)
+# guard (see the META_JOIN comment) -- the override, once present, is always
+# a validated positive value (aadt_override_of below), never the 0 that
+# guard exists to catch, so substituting it straight in for the whole
+# nullIf(...) subexpression is exactly as safe as substituting for the bare
+# column was before.
+_AADT_DELAY_FRAGMENT = "(nullIf(table1.aadt, 0) / (if(table1.faciltype > 1, 2, 1)))"
 _AADT_DELAY_OVERRIDE = "({ov} / (if(table1.faciltype > 1, 2, 1)))"
 _AADT_CAR_OVERRIDE = (
     "(if(table1.aadt > 0, "
@@ -889,7 +957,7 @@ TEMPLATE_SPECS = {
         "graphType": "BarGraph", "xAxis": "date",
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     # GridGraph shape (xAxis=epoch, target=color) mirroring the existing
     # tmc_speed_grid_graph — "avg" fn averages each epoch's value across the
@@ -898,13 +966,13 @@ TEMPLATE_SPECS = {
         "graphType": "GridGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
                   "target": "color", "fn": "avg"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_co2_grid_graph_truck": {
         "graphType": "GridGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
                   "target": "color", "fn": "avg"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     # Round 52: the difference pair — see the GRAPH_TEMPLATE_MAP comment.
     # Byte-identical to their plain bar/grid siblings except: (a)
@@ -972,7 +1040,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum",
                   "customName": "Hours of Delay Difference"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "comparisonSeriesCombine": {"mode": "difference"},
         "display": _diff_colors(bar=True, reverse=True),
     },
@@ -985,7 +1053,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "yAxis", "fn": "exempt",
                   "customName": "Avg. Hours of Delay Difference"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "comparisonSeriesCombine": {"mode": "difference"},
         "display": _diff_colors(bar=True, reverse=True),
     },
@@ -996,7 +1064,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
                   "target": "yAxis", "fn": "avg",
                   "customName": "Avg. CO2 Difference (tonnes)"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "comparisonSeriesCombine": {"mode": "difference"},
         "display": _diff_colors(bar=True, reverse=True),
     },
@@ -1005,7 +1073,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
                   "target": "yAxis", "fn": "avg",
                   "customName": "Avg. CO2 Difference (tonnes)"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "comparisonSeriesCombine": {"mode": "difference"},
         "display": _diff_colors(bar=True, reverse=True),
     },
@@ -1014,7 +1082,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
                   "target": "yAxis", "fn": "sum",
                   "customName": "CO2 Difference (tonnes)"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "comparisonSeriesCombine": {"mode": "difference"},
         "display": _diff_colors(bar=True, reverse=True),
     },
@@ -1067,7 +1135,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "color", "fn": "sum",
                   "customName": "Hours of Delay Difference"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "comparisonSeriesCombine": {"mode": "difference"},
         "display": _diff_colors(bar=False, reverse=True),
     },
@@ -1078,7 +1146,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "color", "fn": "exempt",
                   "customName": "Avg. Hours of Delay Difference"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "comparisonSeriesCombine": {"mode": "difference"},
         "display": _diff_colors(bar=False, reverse=True),
     },
@@ -1089,7 +1157,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
                   "target": "color", "fn": "avg",
                   "customName": "Avg. CO2 Difference (tonnes)"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "comparisonSeriesCombine": {"mode": "difference"},
         "display": _diff_colors(bar=False, reverse=True),
     },
@@ -1100,7 +1168,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
                   "target": "color", "fn": "avg",
                   "customName": "Avg. CO2 Difference (tonnes)"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "comparisonSeriesCombine": {"mode": "difference"},
         "display": _diff_colors(bar=False, reverse=True),
     },
@@ -1171,7 +1239,7 @@ TEMPLATE_SPECS = {
                   "show": True, "target": "yAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "color", "fn": "exempt"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_co2_grid_graph_passenger_tmc": {
         "graphType": "GridGraph", "xAxis": "epoch",
@@ -1179,7 +1247,7 @@ TEMPLATE_SPECS = {
                   "show": True, "target": "yAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_PASSENGER,
                   "target": "color", "fn": "avg"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_co2_grid_graph_truck_tmc": {
         "graphType": "GridGraph", "xAxis": "epoch",
@@ -1187,7 +1255,7 @@ TEMPLATE_SPECS = {
                   "show": True, "target": "yAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": CO2_EXPR_TRUCK,
                   "target": "color", "fn": "avg"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_delay_bar_graph_weekday": {
         "graphType": "BarGraph",
@@ -1195,13 +1263,13 @@ TEMPLATE_SPECS = {
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_delay_bar_graph_5min": {
         "graphType": "BarGraph", "xAxis": "epoch", "categorize": "tmc",
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     # Same per-TMC shape as tmc_delay_bar_graph_5min above, at day resolution.
     # Named distinctly from tmc_delay_bar_graph_day (Route Bar Graph's
@@ -1210,7 +1278,7 @@ TEMPLATE_SPECS = {
         "graphType": "BarGraph", "xAxis": "date", "categorize": "tmc",
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_delay_bar_graph_hour_tmc": {
         "graphType": "BarGraph",
@@ -1219,7 +1287,7 @@ TEMPLATE_SPECS = {
         "categorize": "tmc",
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_delay_bar_graph_15min_tmc": {
         "graphType": "BarGraph",
@@ -1228,7 +1296,7 @@ TEMPLATE_SPECS = {
         "categorize": "tmc",
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_delay_bar_graph_month_tmc": {
         "graphType": "BarGraph",
@@ -1237,7 +1305,7 @@ TEMPLATE_SPECS = {
         "categorize": "tmc",
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     # Round 29 (2026-07-10): Route Bar Graph speed/travelTime at every
     # resolution beyond `day` — round 27 census's #1 buildable lever. Same
@@ -1345,13 +1413,13 @@ TEMPLATE_SPECS = {
         "graphType": "LineGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "yAxis", "fn": "exempt"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "yAxis", "fn": "exempt"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_weekday": {
         "graphType": "BarGraph",
@@ -1359,13 +1427,13 @@ TEMPLATE_SPECS = {
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "yAxis", "fn": "exempt"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_5min": {
         "graphType": "BarGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "yAxis", "fn": "exempt"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_hour": {
         "graphType": "BarGraph",
@@ -1373,7 +1441,7 @@ TEMPLATE_SPECS = {
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "yAxis", "fn": "exempt"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_month": {
         "graphType": "BarGraph",
@@ -1381,13 +1449,13 @@ TEMPLATE_SPECS = {
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "yAxis", "fn": "exempt"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_grid_graph": {
         "graphType": "GridGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
                   "target": "color", "fn": "exempt"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     # Round 34 (2026-07-13): Bar Graph Summary — the comparison-series
     # discriminator itself is the x axis (one bar per arm, one whole-range
@@ -1412,7 +1480,7 @@ TEMPLATE_SPECS = {
         "graphType": "BarGraph", "xAxis": "__series", "categorize": False,
         "yAxis": {"type": "calculated", "show": True, "name": SPEED_SUMMARY_EXPR,
                   "target": "yAxis", "fn": "exempt", "customName": "Speed (mph)"},
-        "join": {"table1": META_1946_JOIN},
+        "join": {"table1": META_JOIN},
         "display": {"legend": {"show": False}},
     },
     # Round 36: the remaining Phase A summary measures — same round-34 summary
@@ -1435,7 +1503,7 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": DELAY_EXPR,
                   "target": "yAxis", "fn": "sum",
                   "customName": "Hours of Delay"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "display": {"legend": {"show": False}},
     },
     # avgHoursOfDelay is the one summary measure where resolution changes the
@@ -1448,7 +1516,7 @@ TEMPLATE_SPECS = {
                   "name": AVG_DELAY_SUMMARY_5MIN_EXPR,
                   "target": "yAxis", "fn": "exempt",
                   "customName": "Avg. Hours of Delay"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "display": {"legend": {"show": False}},
     },
     "tmc_avg_delay_summary_bar_graph_day": {
@@ -1457,7 +1525,7 @@ TEMPLATE_SPECS = {
                   "name": AVG_DELAY_SUMMARY_DAY_EXPR,
                   "target": "yAxis", "fn": "exempt",
                   "customName": "Avg. Hours of Delay"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "display": {"legend": {"show": False}},
     },
     "tmc_avg_delay_summary_bar_graph_weekday": {
@@ -1466,7 +1534,7 @@ TEMPLATE_SPECS = {
                   "name": AVG_DELAY_SUMMARY_WEEKDAY_EXPR,
                   "target": "yAxis", "fn": "exempt",
                   "customName": "Avg. Hours of Delay"},
-        "join": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN},
+        "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
         "display": {"legend": {"show": False}},
     },
 }
@@ -1840,8 +1908,21 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         combine_drift = (combine_spec is not None and
                          (existing_state.get("comparisonSeries") or {})
                          .get("combine") != combine_spec)
-        if y_idx is None or (cols[y_idx] == dict(spec["yAxis"])
-                             and not display_drift and not combine_drift):
+        # Round 59: join drift -- the mint branch below (spec.get("join"))
+        # was never mirrored here, so a spec whose JOIN changed (not just its
+        # expression text, e.g. this round's META_JOIN source swap) silently
+        # never propagated to an already-existing row -- the yAxis-expr
+        # check above caught the expression text change but left the row's
+        # stored join pointed at the old source forever. Same live-caught
+        # bug class this whole drift-detection idiom exists to prevent.
+        join_spec = spec.get("join")
+        expected_join = {"sources": join_spec} if join_spec else None
+        join_drift = (expected_join is not None and
+                     existing_state.get("join") != expected_join)
+        if y_idx is None:
+            continue  # no yAxis-target column to compare against at all
+        yaxis_drift = cols[y_idx] != dict(spec["yAxis"])
+        if not (yaxis_drift or display_drift or combine_drift or join_drift):
             continue  # no drift
         cols[y_idx] = dict(spec["yAxis"])
         for k, v in display_patch.items():
@@ -1849,15 +1930,21 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         if combine_spec is not None:
             existing_state.setdefault("comparisonSeries", {})["combine"] = \
                 dict(combine_spec)
+        if join_drift:
+            existing_state["join"] = json.loads(json.dumps(expected_join))
         new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
                     "updatedAt": now_iso()}
+        note = ", ".join(k for k, fired in (
+            ("yAxis expr", yaxis_drift), ("display", display_drift),
+            ("comparisonSeries.combine", combine_drift), ("join", join_drift),
+        ) if fired)
         if dry_run:
             print(f"[dry-run] would update drifted template '{name}' "
-                  f"id={existing['id']} (yAxis expr changed)")
+                  f"id={existing['id']} ({note} changed)")
         else:
             dms(["raw", "update", str(existing["id"])], data=new_data)
             print(f"updated template '{name}' id={existing['id']} "
-                  f"(yAxis expr drift fix)")
+                  f"({note} drift fix)")
         templates[name] = {"id": existing["id"], "data": new_data}
 
     missing = [n for n in needed_names if n not in templates and n in TEMPLATE_SPECS]
@@ -2310,20 +2397,56 @@ def ensure_info_box_aadt_template(grain, templates, dry_run):
 def ensure_info_box_delay_template(grain, templates, dry_run):
     """Mint (or reuse) `{grain}_info_box_delay` — round 40, see
     INFO_BOX_DELAY_BUCKET above. Unlike length/aadt, needs the full
-    META_1946_JOIN + AADT_DIST_JOIN pair (DELAY_EXPR reads
+    META_JOIN + AADT_DIST_JOIN pair (DELAY_EXPR reads
     `table1.avg_speedlimit`/`faciltype`, absent from the base template's own
     default join) and `fn: "sum"` (DELAY_EXPR is a per-epoch raw quantity,
     not self-aggregating like TRAVEL_TIME_EXPR/SPEED_EXPR)."""
     name = f"{grain}_info_box_delay"
-    if templates.get(name) is not None:
+    delay_col = {"type": "calculated", "show": True, "name": DELAY_EXPR,
+                 "fn": "sum", "customName": "Hours of Delay"}
+    delay_idx = 1 if grain == "route" else 0
+    expected_join = {"sources": {"table1": META_JOIN, "table2": AADT_DIST_JOIN}}
+
+    existing = templates.get(name)
+    if existing is not None:
+        # Round 59: this function used to short-circuit unconditionally on
+        # any existing row (same latent gap round 38 found and fixed for
+        # ensure_info_box_traveltime_template) — since DELAY_EXPR's own
+        # expression text AND its META_JOIN can each drift independently of
+        # each other, both need checking, or a join-source swap like this
+        # round's silently never reaches an already-built delay Info Box.
+        existing_state = json.loads(existing["data"]["stateJson"])
+        existing_cols = existing_state.get("columns") or []
+        col_drift = not (len(existing_cols) == 2
+                         and existing_cols[delay_idx] == delay_col)
+        join_drift = existing_state.get("join") != expected_join
+        if not (col_drift or join_drift):
+            return templates  # no drift
+        new_cols = list(existing_cols)
+        if col_drift:
+            new_cols[delay_idx] = delay_col
+            existing_state["columns"] = new_cols
+        if join_drift:
+            existing_state["join"] = json.loads(json.dumps(expected_join))
+        new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
+                    "updatedAt": now_iso()}
+        note = ", ".join(k for k, fired in
+                        (("column", col_drift), ("join", join_drift)) if fired)
+        if dry_run:
+            print(f"[dry-run] would update drifted template '{name}' "
+                  f"id={existing['id']} ({note} changed)")
+        else:
+            dms(["raw", "update", str(existing["id"])], data=new_data)
+            print(f"updated template '{name}' id={existing['id']} "
+                  f"({note} drift fix)")
+        templates[name] = {"id": existing["id"], "data": new_data}
         return templates
+
     base = templates.get(TEMPLATE_BASE_NAME)
     if not base:
         raise RuntimeError(f"base template '{TEMPLATE_BASE_NAME}' not found")
     base_state = json.loads(base["data"]["stateJson"])
 
-    delay_col = {"type": "calculated", "show": True, "name": DELAY_EXPR,
-                 "fn": "sum", "customName": "Hours of Delay"}
     if grain == "route":
         series_col = next(c for c in base_state["columns"]
                           if c.get("name") == "__series")
@@ -2344,7 +2467,7 @@ def ensure_info_box_delay_template(grain, templates, dry_run):
             "showAttribution": True, "fetchMode": "force",
             "_functions": base_state["display"]["_functions"],
         },
-        "join": {"sources": {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN}},
+        "join": expected_join,
         "customBuckets": base_state.get("customBuckets"),
         "comparisonSeries": base_state.get("comparisonSeries"),
     }
@@ -2625,14 +2748,18 @@ print(f"[convert_old_reports] TILE_HOST resolved to {TILE_HOST}"
 CH_FACT_TABLE = "npmrds.s583_v982_NPMRDS_V6"
 CH_TMC_IDENT_TABLE = ("npmrds_raw_tmc_identification."
                       "s455_v3464_NPMRDS_TMC_Identification_V5_V6")
-# Physical CH table names for META_1946_JOIN/AADT_DIST_JOIN (see
+# Physical CH table names for META_JOIN/AADT_DIST_JOIN (see
 # documentation/npmrds-data-sources.md's join-source table) -- needed for the
 # Map's own raw ground-truth SQL (bake_route_map_delay_paint), same role
 # CH_FACT_TABLE/CH_TMC_IDENT_TABLE play for the single-join speed/travelTime
 # bake. aadt_distributions' table name is the literal "aadt_distributions",
 # NOT the synthetic s{source}_v{view}_{name} pattern the other two use (see
 # the doc's "Registering aadt_distributions" note).
-CH_META_1946_TABLE = "npmrds_meta.s1946_v3298_ny_2025_tmc_meta"
+# Round 59: swapped from the frozen s1946_v3298_ny_2025_tmc_meta onto the
+# year-spanning s582_v983_NPMRDS_V6_tmc_meta (see the META_JOIN comment
+# above) -- bake_route_map_delay_paint's own raw SQL join gets the matching
+# "AND toYear(ds.date) = table1.year" added at its call site below.
+CH_META_TABLE = "npmrds_meta.s582_v983_NPMRDS_V6_tmc_meta"
 CH_AADT_DIST_TABLE = "avail.aadt_distributions"
 
 
@@ -2844,7 +2971,7 @@ def build_ch_join_wire(sources):
     uncaught TypeError, not a caught error response (live-caught 2026-07-15
     converting report 1071, crashed nodemon). `sources` is {alias: <the same
     descriptor shape AVL-Graph TEMPLATE_SPECS' "join" already uses, e.g.
-    META_1946_JOIN or the base template's own join.sources.table1>}. Handles
+    META_JOIN or the base template's own join.sources.table1>}. Handles
     the plain-column AND calculated-dsColumn cases (via `_ch_join_accessor`,
     needed for AADT_DIST_JOIN's computed `dist_key`), non-DMS, non-pgFederated
     — see the real buildJoinSources/buildJoinOnClause (buildUdaConfig.js:
@@ -3152,7 +3279,7 @@ def ensure_route_map_traveltime_template(year, templates, dry_run):
 # Route Map choropleth measures whose CH query is a SINGLE join against
 # CH_TMC_IDENT_TABLE (speed, travelTime — both self-aggregating, both
 # degrade correctly under a bare GROUP BY ds.tmc). hoursOfDelay needs a
-# different two-source join (META_1946_JOIN + AADT_DIST_JOIN) and its own
+# different two-source join (META_JOIN + AADT_DIST_JOIN) and its own
 # bake function — not folded in here, see the M3+ handoff notes in
 # route_map_scope.md ("the FROM/JOIN clause itself differs, not just the
 # SELECTed expression").
@@ -3284,7 +3411,7 @@ def ensure_route_map_avghoursofdelay_template(year, resolution, templates, dry_r
     ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION for why this one, alone among
     Route Map measures, needs (year, resolution) rather than just year).
     Structurally a copy-adapt of ensure_route_map_speed_template EXCEPT the
-    join: this needs the SAME two-source META_1946_JOIN + AADT_DIST_JOIN
+    join: this needs the SAME two-source META_JOIN + AADT_DIST_JOIN
     pair the AVL-Graph delay/CO2 templates use (DELAY_EXPR reads
     table1.avg_speedlimit/faciltype -- not on the base 455/3464 join -- and
     table2.distributions), not the base template's own single 455/3464
@@ -3341,7 +3468,7 @@ def ensure_route_map_avghoursofdelay_template(year, resolution, templates, dry_r
                 "columns": [value_expr, "ds.tmc as tmc"],
                 "groupBy": ["ds.tmc"],
                 "join": build_ch_join_wire(
-                    {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN}),
+                    {"table1": META_JOIN, "table2": AADT_DIST_JOIN}),
                 "filters": {}, "filterRows": [], "filterMode": "all",
             },
             "tileColumns": ["value"],
@@ -3418,7 +3545,7 @@ def ensure_route_map_hoursofdelay_template(year, templates, dry_run):
     """Mint (or reuse) `route_map_hoursOfDelay_{year}` — M3's last sub-measure.
     Unlike avgHoursOfDelay, this one is resolution-INVARIANT (see the comment
     above HOURS_OF_DELAY_VALUE_EXPR), so it's year-only keyed like speed/
-    travelTime, just with the two-source META_1946_JOIN + AADT_DIST_JOIN pair
+    travelTime, just with the two-source META_JOIN + AADT_DIST_JOIN pair
     ensure_route_map_avghoursofdelay_template already established (DELAY_EXPR
     needs table1.avg_speedlimit/faciltype + table2.distributions, not the
     base 455/3464 join). Paint/legend/color-range are PLACEHOLDERS
@@ -3464,7 +3591,7 @@ def ensure_route_map_hoursofdelay_template(year, templates, dry_run):
                 "columns": [HOURS_OF_DELAY_VALUE_EXPR, "ds.tmc as tmc"],
                 "groupBy": ["ds.tmc"],
                 "join": build_ch_join_wire(
-                    {"table1": META_1946_JOIN, "table2": AADT_DIST_JOIN}),
+                    {"table1": META_JOIN, "table2": AADT_DIST_JOIN}),
                 "filters": {}, "filterRows": [], "filterMode": "all",
             },
             "tileColumns": ["value"],
@@ -3540,7 +3667,7 @@ def ensure_route_map_hoursofdelay_template(year, templates, dry_run):
 def bake_route_map_delay_paint(state, info, route_map_value_ctx, color_range,
                                gaps, old_graph, measure, resolution=None):
     """Per-report choropleth bake for a Route-Map Map-section clone whose
-    series-template layer carries the two-source META_1946_JOIN +
+    series-template layer carries the two-source META_JOIN +
     AADT_DIST_JOIN CH join (hoursOfDelay and avgHoursOfDelay, M3) — separate
     from bake_route_map_choropleth_paint because the FROM/JOIN clause itself
     differs (two joins, not one), not just the SELECTed expression, per the
@@ -3584,9 +3711,17 @@ def bake_route_map_delay_paint(state, info, route_map_value_ctx, color_range,
     value_expr = (HOURS_OF_DELAY_VALUE_EXPR if measure == "hoursOfDelay"
                  else ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION[resolution])
     dist_key_body = DIST_KEY_EXPR.rsplit(" as ", 1)[0]
+    # Round 59: CH_META_TABLE now spans multiple years (one row per (tmc,
+    # year), see the META_JOIN comment above) -- without the toYear(ds.date)
+    # match this INNER JOIN would fan out every fact row across every year
+    # table1 carries for that tmc, silently multiplying the pooled value.
+    # (An INNER join -- unlike the templated LEFT join -- just drops any
+    # dates outside table1's year coverage, e.g. 2017, rather than zeroing
+    # them, so no nullIf guard is needed here.)
     sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
            f"FROM {CH_FACT_TABLE} AS ds "
-           f"JOIN {CH_META_1946_TABLE} AS table1 ON ds.tmc = table1.tmc "
+           f"JOIN {CH_META_TABLE} AS table1 "
+           f"ON ds.tmc = table1.tmc AND toYear(ds.date) = table1.year "
            f"JOIN {CH_AADT_DIST_TABLE} AS table2 ON {dist_key_body} = table2.key "
            f"WHERE ds.tmc IN ({tmc_list}) "
            f"AND ds.date >= '{start_fmt}' AND ds.date <= '{end_fmt}' "
@@ -3931,7 +4066,7 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
     # Route-Map choropleth bake (M2 speed / M3 travelTime): only the templates
     # whose series-template layer actually carries a `join` (single-source
     # CH_TMC_IDENT_TABLE joins per ROUTE_MAP_VALUE_EXPR, or the two-source
-    # META_1946_JOIN+AADT_DIST_JOIN pair for avgHoursOfDelay) need this — the
+    # META_JOIN+AADT_DIST_JOIN pair for avgHoursOfDelay) need this — the
     # geometry-only "none" template has no `join` key at all, so this is a
     # no-op for it without needing a separate measure check here.
     if is_map and route_map_value_ctx is not None:
