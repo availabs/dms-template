@@ -47,7 +47,7 @@ from convert_old_reports import (  # noqa: E402
     INFO_BOX_LENGTH_BUCKET, INFO_BOX_AADT_BUCKET, INFO_BOX_DELAY_BUCKET,
     GEOMETRY_TILE_VIEWS, DIFFERENCE_GRAPH_TYPES,
     ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG,
-    ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE,
+    ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE, REPORTS_SNAP_TABLE,
     analyze_graph, flatten_route_comps, route_settings_gaps,
     resolve_difference_pair, report_is_pre_2017_only,
     aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
@@ -152,18 +152,26 @@ def fetch_catalog_route_ids():
 
 
 def fetch_converted_pages():
-    """{old_report_id(int): page_id} for already-converted `report_<id>`
-    pages live in the new DB (convert_report's slug scheme)."""
+    """{old_report_id(int): page_id} for already-converted pages live in the
+    new DB. Keyed off the reports_snap_2 row's own `_converted_from_old_
+    report_id` marker (set at creation, convert_report's `snap` dict) rather
+    than the page's url_slug: url_slug is title-derived and the DMS page
+    editor recomputes it on every title save (by design — URLs are meant to
+    track the title), so it silently drifts away from whatever slug scheme
+    the converter used at creation. Matching on a fixed slug pattern here
+    previously undercounted converted pages to near-zero once the live
+    corpus's slugs had drifted (and let convert_report's own `--replace`
+    leave stale duplicate pages behind for the same reason — see
+    find_page_by_old_report_id)."""
     out = psql_new(
-        "SELECT json_agg(row_to_json(t)) FROM (SELECT id, "
-        "data->>'url_slug' AS slug FROM dms_npmrdsv5.data_items "
-        f"WHERE type = '{PAGE_TYPE}' "
-        "AND data->>'url_slug' LIKE 'report\\_%') t")
+        f"SELECT json_agg(row_to_json(t)) FROM (SELECT "
+        "data->>'_converted_from_old_report_id' AS old_id, "
+        f"data->>'report_id' AS page_id FROM {REPORTS_SNAP_TABLE} "
+        "WHERE data ? '_converted_from_old_report_id') t")
     pages = {}
     for row in (json.loads(out) if out else None) or []:
-        suffix = (row["slug"] or "")[len("report_"):]
-        if suffix.isdigit():
-            pages[int(suffix)] = row["id"]
+        if row["old_id"] and row["old_id"].isdigit():
+            pages[int(row["old_id"])] = int(row["page_id"])
     return pages
 
 

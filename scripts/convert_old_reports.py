@@ -4256,6 +4256,24 @@ def find_page_by_slug(slug):
     return int(out) if out else None
 
 
+def find_page_by_old_report_id(old_id):
+    """Reliable "has old report <old_id> already been converted" check.
+    NOT slug-based on purpose: url_slug is title-derived and the DMS page
+    editor recomputes it (getUrlSlug in patterns/page/pages/_utils/index.js)
+    on every title save, by design (URLs are meant to track the title) —
+    so a converted page's slug can drift away from whatever `report_<old_id>`
+    the converter set at creation with zero warning. Matching on that stale
+    slug pattern left `--replace` unable to find (and thus delete) the old
+    page before creating a new one — confirmed live: old reports 1033/1056
+    each ended up with 2 duplicate pages before this fix. `_converted_from_
+    old_report_id` (set on the reports_snap_2 row at creation, see `snap`
+    below) never changes, so it's the durable link back to the old id."""
+    out = psql_new(
+        f"SELECT data->>'report_id' FROM {REPORTS_SNAP_TABLE} "
+        f"WHERE data->>'_converted_from_old_report_id' = '{old_id}' LIMIT 1")
+    return int(out) if out else None
+
+
 def delete_converted_page(page_id):
     """Delete a previously converted page + its section rows + its snap rows.
     All deletes go through the CLI (requires the auth token)."""
@@ -4332,7 +4350,7 @@ def convert_report(old_id, dry_run=False, replace=False):
     print(f"\n=== old report {old_id}: '{old['name']}' ===")
 
     slug = f"report_{old_id}"
-    existing = find_page_by_slug(slug)
+    existing = find_page_by_old_report_id(old_id)
     if existing:
         if not replace:
             raise RuntimeError(
