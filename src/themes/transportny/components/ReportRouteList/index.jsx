@@ -12,6 +12,11 @@ export default {
   useGetDataOnPageChange: true,
   useInfiniteScroll: true,
   showPagination: true,
+  controls: {
+    more: [
+      { type: "toggle", label: "Attribution", key: "showAttribution" },
+    ],
+  },
   defaultState: {
     filters: { op: "AND", groups: [] },
     display: { usePagination: true, pageSize: 5, hideExternalToggle: true },
