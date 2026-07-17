@@ -37,11 +37,11 @@ const BUILD_PILL = { "Not started": "slate", "In progress": "amber", "Built (dra
 const DATA_PILL = { "Real": "green", "Partial": "amber", "Mock": "slate" };
 const SURFACE_PILL = { "TSMO": "blue", "Freight Atlas": "blue", "NPMRDS": "blue", "NPMRDS (DMS)": "blue", "NPMRDS (transportNY)": "blue" };
 const SEV_PILL = { "Blocker": "red", "Major": "amber", "Minor": "slate", "Polish": "zinc" };
-const STATUS_PILL = { "Triage": "slate", "In progress": "blue", "In review": "amber", "Resolved": "green", "Closed": "green" };
+const STATUS_PILL = { "Triage": "slate", "In progress": "blue", "In review": "amber", "Needs decision": "ink", "Needs data": "zinc", "Resolved": "green", "Closed": "green" };
 const SOURCE_PILL = { "ai": "blue", "dev": "slate", "client": "ink", "qa": "zinc" };
 const STORY_PILL = { "proposed": "amber", "accepted": "blue", "verified": "green" };
 const W = "(case (data->>'severity') when 'Blocker' then 5 when 'Major' then 3 when 'Minor' then 2 else 1 end)";
-const OPEN = "('Triage','In progress','In review')", CLOSED = "('Resolved','Closed')";
+const OPEN = "('Triage','In progress','In review','Needs decision','Needs data')", CLOSED = "('Resolved','Closed')";
 // Ticket display number: the friendly ticket_id when present, else the DMS row id. Links and
 // filters key on the ROW ID (searchParams:"id" / col:"id") — it exists the instant the row does,
 // so a modal-created ticket is openable before any numbering runs. Comma-free CASE only (the UDA
@@ -261,12 +261,14 @@ sec(B.modal, "12", "Card", dw(TICKETS_SRC, {
     // create-time defaults — no rendered cells (selectOnly), consumed by dataWrapper addItem.
     // defaultFn (2026-07-15): opened/updated stamped at create (was a cr_sync backfill),
     // reporter = the logged-in user's email (skipped if anonymous → sync heal still applies).
+    // opened/updated use "now" ("YYYY-MM-DD HH:MM:SS" UTC) to match the sidenav
+    // ReportIssueModal's rows — mixed date/datetime formats break same-day sort order.
     { name: "ticket_id", show: true, selectOnly: true, autoNumber: true, autoNumberStart: 101 },
     { name: "status", show: true, selectOnly: true, defaultValue: "Triage" },
     { name: "source", show: true, selectOnly: true, defaultValue: "client" },
     { name: "reporter", show: true, selectOnly: true, defaultFn: "user" },
-    { name: "opened", show: true, selectOnly: true, defaultFn: "today" },
-    { name: "updated", show: true, selectOnly: true, defaultFn: "today" },
+    { name: "opened", show: true, selectOnly: true, defaultFn: "now" },
+    { name: "updated", show: true, selectOnly: true, defaultFn: "now" },
     mCol("page_key", "Filing against", { valueFontStyle: "chip", usePageParams: true, pageParamKey: "key", editable: false, cellSpan: 2 }),
     mCol("title", "Title", { type: "text", placeholder: "Short, specific summary…", cellSpan: 2 }),
     mCol("severity", "Severity", { type: "select", options: ["Blocker", "Major", "Minor", "Polish"].map(v => ({ label: v, value: v })), cellSpan: 1 }),

@@ -8,7 +8,7 @@
 // What's preserved from the original theme.js (NOT taken from v2):
 //   • Widget imports (LogoNav, QuickLinks) and the `widgets` registry
 //   • pageComponents (AddPageButton, Header) — used as page-section types
-//   • navOptions.authMenu (Datasets · Site Status)
+//   • navOptions.authMenu (Datasets · Site Manager · Admin — last two group-gated)
 //   • The full `sidenav` block — both `transportny-dark` (active) and
 //     `compact` styles, verbatim. The user prefers where these are.
 //   • layout.options.sideNav.bottomMenu — keeps QuickLinks alongside
@@ -35,7 +35,6 @@ import LogoNav from "./LogoNav";
 import QuickLinks from "./QuickLinks";
 import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
-import HeroAtlas from "./HeroAtlas";
 import ReportRouteList from "./components/ReportRouteList"
 
 import icons from "./icons";
@@ -374,14 +373,14 @@ const layoutGroup = {
       wrapper3: "",
     },
     {
-      // hero_atlas — the landing hero: light survey-sheet field with a live
-      // three.js backdrop (HeroAtlas) drawing NY's OSM road network + traffic
-      // pulses behind the hero copy and product panels. Gold edge stays.
+      // hero_atlas — the landing hero: light survey-sheet field behind the hero
+      // copy and product panels. Gold edge stays. (The animated three.js road
+      // backdrop was removed 2026-07-15 — the dependency wasn't worth the small
+      // design win; the static gradient carries the style.)
       name: "hero_atlas",
       wrapper1: "w-full relative overflow-hidden border-b-4 border-[#FACC15] bg-[linear-gradient(180deg,#FCFDFE_0%,#EDF1F6_100%)]",
       wrapper2: "relative mr-auto w-full max-w-[1480px] pl-12 pr-8 pt-6 pb-8 flex flex-col gap-5",
       wrapper3: "",
-      Background: HeroAtlas,
     },
     {
       name: "tone_bar",
@@ -728,15 +727,24 @@ const multiselect = {
       name: "default",
       view:           "font-proxima",
       mainWrapper:    "relative",
-      inputWrapper:   "flex w-full items-center gap-1.5 min-h-11 px-3 rounded-[6px] border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus-within:border-[#1F3F8F] focus-within:ring-2 focus-within:ring-[#1F3F8F]/15 cursor-pointer",
+      // flex-wrap: selected-value chips wrap to new lines inside the control
+      // instead of extending past its right edge over the neighboring control.
+      inputWrapper:   "flex flex-wrap w-full items-center gap-1.5 min-h-11 px-3 rounded-[6px] border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus-within:border-[#1F3F8F] focus-within:ring-2 focus-within:ring-[#1F3F8F]/15 cursor-pointer",
       caretWrapper:   "ml-auto pl-1 text-slate-500",
       caretIcon:      "CaretDown",
       input:          "flex-1 bg-transparent text-[14px] text-[#0F1722] placeholder:text-slate-400 focus:outline-none",
       statusWrapper:  "text-[12px] text-slate-500",
       singleValue:        "text-[14px] text-[#0F1722]",
       singlePlaceholder:  "text-[14px] text-slate-400",
-      tokenWrapper:   "inline-flex items-center gap-1 h-7 pl-2 pr-1 rounded-[4px] bg-[#37576B]/10 text-[#0F2D4D] text-[12.5px] font-medium",
-      removeIcon:     "XMark",
+      // Single-select clear × — STATIC flex item between the value and the caret
+      // (reserved space). Without this key the library default leaks in
+      // (`absolute inset-y-0 right-6`), which paints the × ON TOP of the value
+      // text because these triggers use a static caret and reserve no right
+      // padding. Named styles inherit this from styles[0]. Glyph color/size
+      // come from removeIconClass.
+      singleClearWrapper: "flex items-center shrink-0 cursor-pointer",
+      removeIcon:     "inline-flex items-center self-center shrink-0 cursor-pointer",
+      removeIconName: "XMark",
       removeIconClass:"size-3.5 text-slate-500 hover:text-[#EF4444] cursor-pointer",
       menuWrapper:    "absolute z-40 mt-1 w-full rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden",
       optionsWrapper: "max-h-72 overflow-y-auto py-1",
@@ -782,13 +790,19 @@ const multiselect = {
     {
       name: "tone_bar",
       // min-w so an EMPTY control still has a clickable box (was collapsing to nothing); min-h
-      // keeps it vertically aligned with the label.
-      inputWrapper: "flex items-center gap-1.5 min-w-[72px] min-h-7 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
+      // keeps it vertically aligned with the label. flex-wrap + max-w-full + min-w-0: with many
+      // selected chips the row WRAPS inside the control's own bounds (the band is min-h so it
+      // grows) instead of running horizontally over the next filter section — which both garbled
+      // the neighbor's label and put its DOM on top of these chips' × hit targets.
+      inputWrapper: "flex flex-wrap max-w-full items-center gap-1.5 min-w-[72px] min-h-7 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
       singleValue:  "font-semibold text-[13px] text-white",
       singlePlaceholder: "text-[13px] text-white/80 italic",
       // multi chips render as plain white values (not gray tokens) to match the
       // dashboard mockup "Region: Statewide ▾"; the × keeps them clearable.
-      tokenWrapper: "inline-flex items-center gap-1 font-semibold text-[13px] text-white",
+      // whitespace-nowrap: a token is an atomic value — it must never wrap INTERNALLY
+      // ("Region 11 - New York / City" mid-label breaks); with the wrapper's flex-wrap,
+      // multiple tokens wrap as whole units instead.
+      tokenWrapper: "inline-flex items-center gap-1 font-semibold text-[13px] text-white whitespace-nowrap",
       removeIconClass: "size-3 text-white/60 hover:text-white cursor-pointer",
       caretWrapper: "ml-1 text-white/70",
       // the open-out: a WHITE menu (the bar is blue) with a real min-width so it isn't a sliver.
@@ -801,7 +815,8 @@ const multiselect = {
     },
     {
       name: "multiselect_with_search",
-      inputWrapper:     "flex w-full items-center gap-1.5 min-h-11 px-3 rounded-[6px] border border-zinc-950/15 hover:border-zinc-950/30 bg-white cursor-pointer",
+      // flex-wrap: chips wrap inside the control (same overflow fix as `default`).
+      inputWrapper:     "flex flex-wrap w-full items-center gap-1.5 min-h-11 px-3 rounded-[6px] border border-zinc-950/15 hover:border-zinc-950/30 bg-white cursor-pointer",
       menuWrapper:      "absolute z-40 mt-1 w-full rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden",
       smartMenuWrapper: "px-2 py-2 border-b border-zinc-950/10 bg-slate-50/60",
       smartMenuItem:    "w-full h-8 px-2 rounded border border-zinc-950/10 bg-white text-[13px] focus:outline-none focus:border-[#1F3F8F]",
@@ -1718,7 +1733,7 @@ const filters = {
       filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
       filterSettingsWrapperInline: "min-w-0",
       labelWrapperInline:          "shrink-0 inline-flex items-center gap-1",
-      conditionRowInline:          "inline-flex items-center gap-1.5 h-8 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white w-fit transition-colors",
+      conditionRowInline:          "inline-flex items-center gap-1.5 min-h-8 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white w-fit max-w-full transition-colors",
       filtersWrapper:              "w-full flex flex-wrap items-start gap-2",
     },
     { // 2 · labeled — stacked label above a compact control, no panel box
@@ -1737,8 +1752,13 @@ const filters = {
       controlStyle: "tone_bar",
       filterLabel:                 "text-[12px] text-white/70 whitespace-nowrap",
       labelWrapperInline:          "shrink-0 inline-flex items-center",
-      filterSettingsWrapperInline: "min-w-0",
-      conditionRowInline:          "inline-flex items-center gap-2 w-fit",
+      // flex-1 min-w-0: the value area takes ALL remaining width in the section cell.
+      // The old `w-fit` sized the row from fit-content — but on a flex-WRAP control,
+      // max-content is only the largest single child (the longest token), so the row
+      // always came up short and the caret/× wrapped onto a second line even when the
+      // cell had plenty of room ("the filter doesn't take up the room it's given").
+      filterSettingsWrapperInline: "flex-1 min-w-0",
+      conditionRowInline:          "flex items-center gap-2 w-full",
       // h-full + items-center → fill the (stretched) section cell and vertically center the control,
       // so the chips sit on the band's mid-line regardless of the tallest cell (e.g. a 2-line note).
       filtersWrapper:              "h-full w-full flex flex-wrap items-center gap-x-8 gap-y-2",
@@ -2388,7 +2408,16 @@ const navOptions = {
   authMenu: {
     navItems: [
       { name: "Datasets",    icon: "Database", path: "/datasources", type: "link" },
-      { name: "Site Status", icon: "Settings", path: "/status",      type: "link" },
+      // Control room (npmrds subdomain). `groups` = core userMenu per-item gating (2026-07-17):
+      // an item renders only when `user.groups` intersects its `groups`. Items without the key
+      // render as before. Old bundled cores ignore the key (item shows ungated) until the dms
+      // git sync lands.
+      { name: "Site Manager", icon: "Settings", path: "/sitemgmt", type: "link",
+        groups: ["AVAIL", "NYSDOT Admin"] },
+      // DMS admin dashboard (manage patterns/pages/sources/themes) at the app's adminPath /
+      // BASE_URL (default "/list"). AVAIL-only (2026-07-17, Alex).
+      { name: "Admin", icon: "Lock", path: "/list", type: "link",
+        groups: ["AVAIL"] },
     ],
   },
 };

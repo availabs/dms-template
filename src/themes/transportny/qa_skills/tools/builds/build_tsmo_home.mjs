@@ -15,6 +15,13 @@
 // §03 freshness (content) · footer.
 // Doorway cards are 4 fused sections per column (head lexical / stat Card /
 // spark AVL Graph / prose lexical) — grid rows keep columns aligned.
+// ⚠⚠ STALE — DO NOT RUN (2026-07-16). The published home (page 1431215) carries authored
+// refinements (graph colors/backgrounds/padding/labels, card backgrounds) that were NEVER
+// backported here. Running this script wipes the good drafts and regresses the page (it did,
+// 2026-07-15 — restored from published via scratchpad/npmrdsv5-dev2/restore_home_draft.mjs).
+// Backport the published configs into this script before it is ever run again.
+throw new Error("build_tsmo_home.mjs is STALE vs the authored/published page — see header comment");
+
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";

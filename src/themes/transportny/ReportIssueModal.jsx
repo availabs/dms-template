@@ -49,7 +49,10 @@ export default function ReportIssueModal({ open, setOpen }) {
       const asOf = new Date().toISOString().slice(0, 19).replace("T", " ");
       const pageName = pageItem.title || (typeof document !== "undefined" ? document.title : "");
       const host = typeof window !== "undefined" ? window.location.host : "";
-      const row = buildTicketRow({ title, severity, description, asOf, pathname, pageName, host, reporterEmail: user.email });
+      const envString = typeof window !== "undefined"
+        ? `${window.innerWidth}×${window.innerHeight} · ${navigator.userAgent}`
+        : "";
+      const row = buildTicketRow({ title, severity, description, asOf, pathname, pageName, host, reporterEmail: user.email, envString });
       const res = await apiUpdate({ data: row, config: { format: { ...TICKETS_SOURCE } } });
       if (res && res.error) throw new Error(res.error);
       setDone(true);
