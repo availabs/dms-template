@@ -1412,13 +1412,15 @@ TEMPLATE_SPECS = {
     "tmc_avg_delay_line_graph": {
         "graphType": "LineGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
-                  "target": "yAxis", "fn": "exempt"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_day": {
         "graphType": "BarGraph", "xAxis": "date",
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
-                  "target": "yAxis", "fn": "exempt"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_weekday": {
@@ -1426,13 +1428,15 @@ TEMPLATE_SPECS = {
         "xAxis": {"type": "calculated", "show": True, "name": WEEKDAY_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
-                  "target": "yAxis", "fn": "exempt"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_5min": {
         "graphType": "BarGraph", "xAxis": "epoch",
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
-                  "target": "yAxis", "fn": "exempt"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_hour": {
@@ -1440,7 +1444,8 @@ TEMPLATE_SPECS = {
         "xAxis": {"type": "calculated", "show": True, "name": HOUR_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
-                  "target": "yAxis", "fn": "exempt"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_bar_graph_month": {
@@ -1448,7 +1453,8 @@ TEMPLATE_SPECS = {
         "xAxis": {"type": "calculated", "show": True, "name": MONTH_EXPR,
                   "target": "xAxis", "group": True, "sort": "asc"},
         "yAxis": {"type": "calculated", "show": True, "name": AVG_DELAY_EXPR,
-                  "target": "yAxis", "fn": "exempt"},
+                  "target": "yAxis", "fn": "exempt",
+                  "customName": "Avg. Hours of Delay"},
         "join": {"table1": META_JOIN, "table2": AADT_DIST_JOIN},
     },
     "tmc_avg_delay_grid_graph": {
@@ -1927,11 +1933,22 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         existing_xaxis_format = (existing_display.get("xAxis") or {}).get("format")
         epoch_format_drift = (spec["xAxis"] == "epoch" and
                               existing_xaxis_format != "epoch_time")
+        # Round 62: same lazy-drift idiom as epoch_format_drift, for the two
+        # axis-caption fields (see the mint-branch comment above for the
+        # root cause / rationale — the render path already works, these
+        # fields were just never populated).
+        existing_xaxis_label = (existing_display.get("xAxis") or {}).get("label")
+        epoch_label_drift = (spec["xAxis"] == "epoch" and
+                             existing_xaxis_label != "Time of Day")
+        expected_yaxis_label = (spec["yAxis"].get("customName")
+                                if spec["yAxis"].get("target", "yAxis") == "yAxis" else None)
+        existing_yaxis_label = (existing_display.get("yAxis") or {}).get("label")
+        yaxis_label_drift = bool(expected_yaxis_label) and existing_yaxis_label != expected_yaxis_label
         if y_idx is None:
             continue  # no yAxis-target column to compare against at all
         yaxis_drift = cols[y_idx] != dict(spec["yAxis"])
         if not (yaxis_drift or display_drift or combine_drift or join_drift
-                or epoch_format_drift):
+                or epoch_format_drift or epoch_label_drift or yaxis_label_drift):
             continue  # no drift
         cols[y_idx] = dict(spec["yAxis"])
         for k, v in display_patch.items():
@@ -1944,12 +1961,19 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         if epoch_format_drift:
             existing_state.setdefault("display", {}) \
                 .setdefault("xAxis", {})["format"] = "epoch_time"
+        if epoch_label_drift:
+            existing_state.setdefault("display", {}) \
+                .setdefault("xAxis", {})["label"] = "Time of Day"
+        if yaxis_label_drift:
+            existing_state.setdefault("display", {}) \
+                .setdefault("yAxis", {})["label"] = expected_yaxis_label
         new_data = {**existing["data"], "stateJson": json.dumps(existing_state),
                     "updatedAt": now_iso()}
         note = ", ".join(k for k, fired in (
             ("yAxis expr", yaxis_drift), ("display", display_drift),
             ("comparisonSeries.combine", combine_drift), ("join", join_drift),
-            ("xAxis format", epoch_format_drift),
+            ("xAxis format", epoch_format_drift), ("xAxis label", epoch_label_drift),
+            ("yAxis label", yaxis_label_drift),
         ) if fired)
         if dry_run:
             print(f"[dry-run] would update drifted template '{name}' "
@@ -2020,6 +2044,21 @@ def ensure_graph_templates(needed_names, templates, dry_run):
             state["display"][k] = v
         if spec["xAxis"] == "epoch":
             state["display"].setdefault("xAxis", {})["format"] = "epoch_time"
+            state["display"]["xAxis"]["label"] = "Time of Day"
+        # Round 62: y-axis caption (user-reported 2026-07-13, "no axis label on
+        # any report" — distinct from tick labels, which already render fine;
+        # this is the axis TITLE describing what's plotted, e.g. "Hours of
+        # Delay"). GraphComponent.jsx/AxisLeft.jsx already read+render
+        # display.yAxis.label when set — the rendering path was never broken,
+        # display.yAxis.label was simply never populated by this converter.
+        # Reuses the yAxis column's own customName (already a human-readable
+        # measure description on ~40 TEMPLATE_SPECS entries, e.g. "Speed
+        # (mph)") rather than a second, parallel measure-name table that could
+        # drift from it. Only for actual y-axis-plotted measures (target
+        # "yAxis", BarGraph/LineGraph/Bar Graph Summary shapes) — GridGraph's
+        # value column targets "color", not a literal y-axis, so it's excluded.
+        if spec["yAxis"].get("target", "yAxis") == "yAxis" and spec["yAxis"].get("customName"):
+            state["display"].setdefault("yAxis", {})["label"] = spec["yAxis"]["customName"]
         if spec.get("join"):
             state["join"] = {"sources": spec["join"]}
         # Round 52: difference combine mode — the base template's own

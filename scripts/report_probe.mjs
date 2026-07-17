@@ -71,12 +71,14 @@ const opts = {
   shot: true,
   json: true,
   auth: null,
+  block: [], // substrings of request URLs to abort — for isolating connection-pool/waterfall effects
 };
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
   const next = () => argv[++i];
   if (a === '--wait') opts.wait = Number(next());
   else if (a === '--grep') opts.greps.push(next());
+  else if (a === '--block') opts.block.push(next());
   else if (a === '--bodies') opts.bodies = true;
   else if (a === '--section') opts.section = next();
   else if (a === '--eval') opts.eval = next();
@@ -116,9 +118,17 @@ const graphCaptures = [];
 const pending = new Map(); // api-origin requests with no response yet
 let apiResponses = 0;
 let graphTotal = 0;
+const navStart = Date.now(); // ms reference for graphCaptures[].tMs — diagnoses render-vs-fetch timing gaps
 
 page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 400)); });
 page.on('pageerror', e => pageErrors.push(String(e.message).slice(0, 400)));
+if (opts.block.length) {
+  await page.route('**/*', route => {
+    const u = route.request().url();
+    if (opts.block.some(b => u.includes(b))) return route.abort();
+    return route.continue();
+  });
+}
 page.on('request', req => {
   if (req.url().startsWith(opts.api)) pending.set(req, decodeURIComponent(req.url()).slice(0, 300));
 });
@@ -137,7 +147,7 @@ page.on('response', async resp => {
   if (!matched) return;
   let body = null;
   if (opts.bodies || matched) { try { body = await resp.json(); } catch {} }
-  graphCaptures.push({ method: req.method(), status: resp.status(), decoded, body });
+  graphCaptures.push({ method: req.method(), status: resp.status(), decoded, body, tMs: Date.now() - navStart });
 });
 
 console.log(`probing ${url} (wait ${opts.wait}ms after networkidle)`);
@@ -250,7 +260,7 @@ for (const c of graphCaptures) {
       if (typeof v === 'number') nums.push([k, v]); else walk(v);
     }
   })(c.body);
-  console.log(`  [graph ${c.method} ${c.status}] ${c.decoded.slice(0, 160)}`);
+  console.log(`  [graph ${c.method} ${c.status} t=${c.tMs}ms] ${c.decoded.slice(0, 160)}`);
   if (nums.length) console.log(`      leafNumbers=${nums.length} sample: ` +
     nums.slice(0, 6).map(([k, v]) => `${k}=${v}`).join(' '));
 }
