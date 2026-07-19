@@ -36,6 +36,7 @@ import QuickLinks from "./QuickLinks";
 import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
+import RouteComparison from "./components/RouteComparison"
 
 import icons from "./icons";
 
@@ -1395,6 +1396,10 @@ const table = {
       cellEditableTextBox:            "absolute border focus:outline-none min-w-[180px] min-h-[50px] z-[10] whitespace-pre-wrap",
       cellFrozenCol:                  "",
 
+      // Active master-detail row (row_highlight 'accent' style): brand-blue tint + left edge.
+      // The matched row's cells go transparent so this shows through (see TableCell/TableRow).
+      rowHighlightAccent:             "bg-[#1F3F8F]/[0.06] shadow-[inset_3px_0_0_#1F3F8F]",
+
       // Total / striped / gutter.
       totalRow:                       "bg-slate-50 sticky bottom-0 z-[3] border-t border-zinc-950/10",
       totalCell:                      "hover:bg-slate-100 font-medium",
@@ -2429,6 +2434,7 @@ const pageComponents = {
   AddPageButton,
   Header,
   ReportRouteList,
+  RouteComparison,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
