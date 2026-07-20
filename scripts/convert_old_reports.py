@@ -42,6 +42,17 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dbq  # noqa: E402 — sibling scripts/ module, read-only CH/PG query runner
 
+# Shared vocabulary artifact (report-graph-vocabulary-picker.md, Workstream 1):
+# the generative core of TEMPLATE_SPECS below (measure expressions, join defs,
+# resolution/axis expressions, comparison-mode color rule) lives in this JSON
+# so this script and the planned NPMRDS "Measure" picker (src/themes/
+# transportny/) consume the exact same formulas instead of two hand-synced
+# copies. See data-types/npmrds_graph_vocabulary/README.md for the full field
+# reference and the regeneration/verification procedure.
+VOCAB_PATH = os.path.join(REPO, "data-types/npmrds_graph_vocabulary/vocabulary.json")
+with open(VOCAB_PATH) as _f:
+    GRAPH_VOCAB = json.load(_f)
+
 # ── New-system constants (npmrdsv5/dev2 dev site) ──────────────────────────
 DMS_ENV = {
     "DMS_HOST": os.environ.get("DMS_HOST", "http://localhost:3001"),
@@ -456,7 +467,7 @@ SINGLE_ACTIVE_COMP_TYPES = {"Hours of Delay Graph", "TMC Info Box",
 # red at the negative end, green positive — speed is reverseColors:false).
 # Reports with a real color_range get it wired by the generic
 # COLOR_RANGE_GRAPH_TYPES branch in build_graph_section_data instead.
-DEFAULT_DIFF_COLOR_RANGE = ["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"]
+DEFAULT_DIFF_COLOR_RANGE = GRAPH_VOCAB["comparisonModes"]["difference"]["defaultColorRange"]
 
 
 def _diff_colors(bar, reverse):
@@ -500,10 +511,7 @@ ALL_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday",
 # per-row approximation avg(miles*3600/nullIf(tt,0)) used in rounds 1-34,
 # which round 34 measured at +13% off the old UI's displayed value
 # (26.02 vs 23.03 on report 520 comp-1, "WB Arterial Weave 2018").
-SPEED_EXPR = (
-    "(arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) * 3600) / "
-    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
-    "ds.travel_time_all_vehicles != 0))) as speed")
+SPEED_EXPR = GRAPH_VOCAB["measures"]["speed"]["expr"]
 # Bar Graph Summary (round 34) proved this expression live first (one
 # whole-range value per arm, old allReducer semantics); round 35 unified the
 # constants — keeping the summary's own name so its TEMPLATE_SPECS entry
@@ -525,18 +533,14 @@ SPEED_VALUE_EXPR = SPEED_EXPR.rsplit(" as ", 1)[0] + " as value"
 # hoursOfDelay is NOT built the same way: its volume term — total AADT
 # distribution vs the truck share — needs the old server's delay route read
 # first; see the round-52 GRAPH_TEMPLATE_MAP comment.)
-SPEED_EXPR_TRUCK = SPEED_EXPR.replace("travel_time_all_vehicles",
-                                      "travel_time_freight_trucks")
+SPEED_EXPR_TRUCK = GRAPH_VOCAB["measures"]["speedTruck"]["expr"]
 # Old-faithful route travel time (round 35): same two-level shape — the old
 # travelTime measure is the ROUTE TRAVERSAL time in MINUTES (sum over TMCs of
 # each TMC's mean tt, / 60), not the mean single-segment time in seconds that
 # rounds 1-34 rendered (avg(tt) — wrong quantity AND scale; round 34 measured
 # 103.5s vs the old tool's 4.58min on the report-520 fixture). Same avgMapIf
 # 0-as-missing skip as SPEED_EXPR (subsumes round 23's nullIf fix).
-TRAVEL_TIME_EXPR = (
-    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
-    "ds.travel_time_all_vehicles != 0))) / 60 "
-    "as travel_time_all_vehicles")
+TRAVEL_TIME_EXPR = GRAPH_VOCAB["measures"]["travelTime"]["expr"]
 # Route Map travelTime choropleth (M3): same "value" realiasing SPEED_VALUE_EXPR
 # already uses for its own Map-layer tile-property column — TRAVEL_TIME_EXPR is
 # already self-aggregating/per-TMC under a bare GROUP BY tmc (same round-35 proof
@@ -575,11 +579,7 @@ TRAVEL_TIME_VALUE_EXPR = TRAVEL_TIME_EXPR.rsplit(" as ", 1)[0] + " as value"
 # signal to gate on here. Every other table1.* reference in this expression
 # (miles, avg_speedlimit, faciltype) comes from the SAME row, so a join miss
 # zeroes them all together -- gating on aadt alone is sufficient.
-DELAY_EXPR = ("(greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.miles / "
-              "greatest(20, table1.avg_speedlimit * 0.6)) * 3600)) / 3600) "
-              "* (nullIf(table1.aadt, 0) / (if(table1.faciltype > 1, 2, 1))) "
-              "* arrayElement(table2.distributions, ds.epoch + 1) "
-              "as hours_of_delay")
+DELAY_EXPR = GRAPH_VOCAB["measures"]["hoursOfDelay"]["expr"]
 # Route Map hoursOfDelay (M3): unlike avgHoursOfDelay, this measure's old
 # tmcReducer is a plain SUM across per-bucket values (dataTypes.js:
 # `tmcReducer: sumReducer`), and each bucket's own "hoursOfDelay" value is
@@ -610,8 +610,7 @@ HOURS_OF_DELAY_VALUE_EXPR = f"(sum({DELAY_EXPR.rsplit(' as ', 1)[0]})) as value"
 # this as the real, author-facing "already aggregated server-side" option) —
 # the expression is self-aggregating (contains its own sum()/count()), so no
 # extra wrapping fn is needed or correct.
-AVG_DELAY_EXPR = (f"(sum({DELAY_EXPR.rsplit(' as ', 1)[0]}) "
-                  "/ count(DISTINCT ds.date)) as avg_hours_of_delay")
+AVG_DELAY_EXPR = GRAPH_VOCAB["measures"]["avgHoursOfDelay"]["expr"]
 
 # Route Map avgHoursOfDelay (M3, 2026-07-15): unlike speed/travelTime/
 # hoursOfDelay, this measure is GENUINELY resolution-dependent for the Map,
@@ -717,48 +716,16 @@ AVG_DELAY_SUMMARY_WEEKDAY_EXPR = _avg_delay_summary_expr("toDayOfWeek(ds.date)")
 # greatest()/division/subtraction on a ClickHouse Nullable all propagate NULL
 # as expected). 2017-dated hoursOfDelay/CO2 reports are gap-logged, not
 # unblocked -- out of scope per the standing "data issues, not code" ruling.
-META_JOIN = {
-    "source": 582, "view": 983,
-    "sourceInfo": {
-        "name": "NPMRDS_V6_tmc_meta",
-        "columns": [{"name": n, "type": "string"} for n in
-                    ["tmc", "miles", "avg_speedlimit", "aadt", "aadt_singl",
-                     "aadt_combi", "congestion_level", "directionality",
-                     "f_system", "faciltype", "year"]],
-        "source_id": 582, "env": "npmrds2", "srcEnv": "npmrds2",
-        "isDms": False, "baseUrl": "", "type": "NPMRDS_V6_tmc_meta",
-        "view_id": 983,
-    },
-    "joinColumns": [
-        {"dsColumn": "tmc", "joinSourceColumn": "tmc"},
-        {"dsColumn": "toYear(ds.date) as meta_year", "joinSourceColumn": "year"},
-    ],
-    "mergeStrategy": "join", "type": "left",
-}
+META_JOIN = GRAPH_VOCAB["joins"]["META_JOIN"]
+AADT_DIST_JOIN = GRAPH_VOCAB["joins"]["AADT_DIST_JOIN"]
 # dist_key mirrors old getDist(): WEEKEND collapses to [weekdayType, roadType],
 # WEEKDAY needs congestion_level + directionality + roadType — all only
 # available on table1 (NPMRDS_V6_tmc_meta, META_JOIN above), joined as a calculated dsColumn
 # expression (the platform fix verified in the round-3 notes) rather than a
-# plain column so it can reference an already-joined alias.
-DIST_KEY_EXPR = (
-    "if(toDayOfWeek(ds.date, 2) IN (6,7), "
-    "concat('WEEKEND_', if(table1.f_system < 3, 'FREEWAY', 'NONFREEWAY')), "
-    "concat('WEEKDAY_', table1.congestion_level, '_', table1.directionality, '_', "
-    "if(table1.f_system < 3, 'FREEWAY', 'NONFREEWAY'))) as dist_key"
-)
-AADT_DIST_JOIN = {
-    "source": 2056, "view": 3524,
-    "sourceInfo": {
-        "name": "aadt_distributions",
-        "columns": [{"name": "key", "type": "string"},
-                    {"name": "distributions", "type": "array"}],
-        "source_id": 2056, "env": "npmrds2", "srcEnv": "npmrds2",
-        "isDms": False, "baseUrl": "", "type": "aadt_distributions",
-        "view_id": 3524,
-    },
-    "joinColumns": [{"dsColumn": DIST_KEY_EXPR, "joinSourceColumn": "key"}],
-    "mergeStrategy": "join", "type": "left",
-}
+# plain column so it can reference an already-joined alias. Read off
+# AADT_DIST_JOIN's own joinColumns rather than duplicated separately, so it
+# can never drift from the join that actually uses it.
+DIST_KEY_EXPR = AADT_DIST_JOIN["joinColumns"][0]["dsColumn"]
 # CO2 emissions (avail-falcor getCo2Emissions.js's calcEmissions/getCo2/
 # forCars/forTrucks): per epoch, split AADT into car
 # (table1.aadt - (aadt_singl + aadt_combi)) vs truck (aadt_singl + aadt_combi),
@@ -833,12 +800,16 @@ _AADT_TRUCK_EXPR = ("((table1.aadt_singl + table1.aadt_combi) "
 # earlier table1.miles inside _SPEED_CAR_EXPR/_SPEED_TRUCK_EXPR needs no
 # guard of its own since this outer one already nulls the final product
 # regardless of what that inner (possibly wrong-on-a-miss) speed computed.
-CO2_EXPR_PASSENGER = (
-    f"(({_CO2_CAR_FACTOR.format(s=_SPEED_CAR_EXPR)}) "
-    f"* ({_AADT_CAR_EXPR} * nullIf(table1.miles, 0)) / 1000000) as avg_co2_emissions")
-CO2_EXPR_TRUCK = (
-    f"(({_CO2_TRUCK_FACTOR.format(s=_SPEED_TRUCK_EXPR)}) "
-    f"* ({_AADT_TRUCK_EXPR} * nullIf(table1.miles, 0)) / 1000000) as avg_co2_emissions")
+# CO2_EXPR_PASSENGER/CO2_EXPR_TRUCK are read from the shared vocabulary (both
+# co2Emissions_passenger/truck and avgCo2Emissions_passenger/truck share the
+# exact same "expr" — only the aggregation "fn" differs, which TEMPLATE_SPECS
+# entries below set independently). The _CO2_*_FACTOR/_SPEED_*_EXPR/
+# _AADT_*_EXPR fragments above stay Python-only: they're never composed into
+# these two constants anymore, but AADT_OVERRIDE_SUBS below still needs
+# _AADT_CAR_EXPR/_AADT_TRUCK_EXPR's exact substrings to find and replace
+# inside whichever of these two expressions a report actually uses.
+CO2_EXPR_PASSENGER = GRAPH_VOCAB["measures"]["co2Emissions_passenger"]["expr"]
+CO2_EXPR_TRUCK = GRAPH_VOCAB["measures"]["co2Emissions_truck"]["expr"]
 
 # ── overrides.aadt (old getHoursOfDelay.js getAADT / getCo2Emissions.js
 # calcEmissions) ─────────────────────────────────────────────────────────────
@@ -889,7 +860,13 @@ AADT_OVERRIDE_SUBS = [
 # Guard against the fragments drifting out of sync with the expressions they
 # must match inside live template rows (which were written from these same
 # constants) — a silent mismatch would convert the graph WITHOUT the override.
+# DELAY_EXPR/CO2_EXPR_PASSENGER/CO2_EXPR_TRUCK now come from the shared
+# vocabulary JSON (not composed from these same fragments in this file
+# anymore), so these three assertions are the only thing still tying the
+# fragments to the vocabulary's expression strings.
 assert _AADT_DELAY_FRAGMENT in DELAY_EXPR
+assert _AADT_CAR_EXPR in CO2_EXPR_PASSENGER
+assert _AADT_TRUCK_EXPR in CO2_EXPR_TRUCK
 
 
 def aadt_override_of(rc):
@@ -914,7 +891,7 @@ def aadt_override_of(rc):
 # rather than a name string, so "sort": "asc" orders Monday->Sunday correctly
 # (a future author-facing label lookup for 1-7 -> day name is a display
 # refinement, not attempted here — conversion correctness over pixel parity).
-WEEKDAY_EXPR = "toDayOfWeek(ds.date, 1) as weekday"
+WEEKDAY_EXPR = GRAPH_VOCAB["resolutions"]["weekday"]["xAxis"]["expr"]
 
 # "Hours of Delay Graph" per-resolution xAxis buckets beyond 5-minutes/day
 # (round 12, 2026-07-09) — same queryHelpers.js getResolution() switch as
@@ -925,9 +902,9 @@ WEEKDAY_EXPR = "toDayOfWeek(ds.date, 1) as weekday"
 # bucket (e.g. hour bucket 7 sums every 7:00-7:55 epoch on every date in
 # range) — same "bounded, not per-timestamp" shape as the 5-minutes/epoch
 # template, just a coarser bucket.
-HOUR_EXPR = "intDiv(ds.epoch, 12) as hour"
-QUARTER_HOUR_EXPR = "intDiv(ds.epoch, 3) as quarter_hour"
-MONTH_EXPR = "toStartOfMonth(ds.date) as month"
+HOUR_EXPR = GRAPH_VOCAB["resolutions"]["hour"]["xAxis"]["expr"]
+QUARTER_HOUR_EXPR = GRAPH_VOCAB["resolutions"]["15-minutes"]["xAxis"]["expr"]
+MONTH_EXPR = GRAPH_VOCAB["resolutions"]["month"]["xAxis"]["expr"]
 
 # "Hours of Delay Graph" (old HoursOfDelayGraph.jsx) is NOT the same shape as
 # the Route-Bar-Graph delay templates above: generateGraphData([route], ...)
