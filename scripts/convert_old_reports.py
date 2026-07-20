@@ -260,6 +260,16 @@ PM3_VIEW_BY_YEAR = {2018: 3563, 2019: 3559, 2020: 3555,
                     2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425}
 INFO_BOX_TITLES = {"route": "Route Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})",
                     "tmc": "TMC Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})"}
+# Bar Graph Summary's `freeflow-byDateRange` measure — same pm3-keyed join as
+# INFO_BOX_BUCKET above (source 1410's speed_pctl_85), bin-independent (a Bar
+# Graph Summary bar is a whole-date-range aggregate, and 1410's speed
+# percentiles have no time-of-day dimension anyway), so only `year` needs
+# resolving. Built round 38 (ensure_bar_graph_summary_pm3_template) but left
+# UNWIRED — the real corpus's 62 instances were all pre-2019-dated, outside
+# 1410's then-current 2021-2025 coverage, so wiring it in would have produced
+# 0 real flips. The round-66 2018-2020 backfill made that reasoning stale (22
+# instances newly feasible at 2018, +1 at 2019); wired in round 68 (2026-07-20).
+BAR_SUMMARY_PM3_BUCKET = ("freeflow-byDateRange", "travel_time_all")
 # Round 38 (Phase B, item (c)): Info Box `avgTT-byDateRange` — checked 1410's
 # live schema (`s1410_v3425_pm_3`, 121 columns) directly: NO avg-travel-time
 # column exists there at all (only speed percentiles, LOTTR/TTTR ratios,
@@ -4627,6 +4637,31 @@ def convert_report(old_id, dry_run=False, replace=False):
             info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}_{bin_}"
             info_box_bin_year[gid] = (year, bin_)
 
+    # Bar Graph Summary freeflow-byDateRange: same per-report/year pm3 join as
+    # the Info Box reliability bucket above, but bin-independent — see
+    # BAR_SUMMARY_PM3_BUCKET/ensure_bar_graph_summary_pm3_template.
+    bar_summary_pm3_tmpl_name = {}
+    bar_summary_pm3_gap_logged = set()
+    for g, info in analyzed:
+        if (info["type"] != "Bar Graph Summary"
+                or (info["measure"], info["data_column"]) != BAR_SUMMARY_PM3_BUCKET):
+            continue
+        gid = g.get("id")
+        year = graph_max_year(info, comps_by_id)
+        if year is None:
+            gaps.append({"kind": "bar_summary_freeflow_year_undetermined", "graph": gid,
+                         "detail": "no assigned comp has a startDate/endDate "
+                                   "to period-match the pm3 join"})
+            bar_summary_pm3_gap_logged.add(gid)
+        elif year not in PM3_VIEW_BY_YEAR:
+            gaps.append({"kind": "bar_summary_freeflow_outside_pm3_coverage", "graph": gid,
+                         "detail": f"max year {year} outside 1410's "
+                                   f"{min(PM3_VIEW_BY_YEAR)}-{max(PM3_VIEW_BY_YEAR)} coverage"})
+            bar_summary_pm3_gap_logged.add(gid)
+        else:
+            graph_templates = ensure_bar_graph_summary_pm3_template(year, graph_templates, dry_run)
+            bar_summary_pm3_tmpl_name[gid] = f"tmc_freeflow_summary_bar_graph_{year}"
+
     # Route Compare Component: base (first assigned comp) + N compare rows,
     # %-diff-from-base via a delta column (round 24) — see
     # ensure_route_compare_template above. Only ROUTE_COMPARE_BUCKET is
@@ -4738,6 +4773,8 @@ def convert_report(old_id, dry_run=False, replace=False):
         is_info_box = info["type"] in INFO_BOX_GRAIN
         is_route_compare = info["type"] == "Route Compare Component"
         is_route_map = info["type"] == "Route Map"
+        is_bar_summary_pm3 = (info["type"] == "Bar Graph Summary"
+                             and (info["measure"], info["data_column"]) == BAR_SUMMARY_PM3_BUCKET)
         key = (info["type"], info["measure"], info["resolution"],
                info["data_column"])
         # A pairless difference graph must skip even though its bucket has a
@@ -4750,13 +4787,14 @@ def convert_report(old_id, dry_run=False, replace=False):
         tmpl_name = (info_box_tmpl_name.get(gid) if is_info_box
                     else route_compare_tmpl_name.get(gid) if is_route_compare
                     else route_map_tmpl_name.get(gid) if is_route_map
+                    else bar_summary_pm3_tmpl_name.get(gid) if is_bar_summary_pm3
                     else GRAPH_TEMPLATE_MAP.get(key))
         if tmpl_name and tmpl_name in graph_templates:
             convertible.append((g, info, graph_templates[tmpl_name]))
             continue
         skipped.append(g)
         if (gid in info_box_gap_logged or gid in route_compare_gap_logged
-                or gid in route_map_gap_logged):
+                or gid in route_map_gap_logged or gid in bar_summary_pm3_gap_logged):
             continue  # specific reason already gap-logged above
         gaps.append({"kind": "unmapped_graph", "detail": {
             "graph": gid, "graph_type": info["type"],

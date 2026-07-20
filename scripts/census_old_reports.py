@@ -43,7 +43,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from convert_old_reports import (  # noqa: E402
     REPO, GRAPH_TEMPLATE_MAP, TEMPLATE_SPECS, COLOR_RANGE_GRAPH_TYPES,
     ROUTES_CATALOG_TABLE, INFO_BOX_GRAIN, INFO_BOX_BUCKET,
-    INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR,
+    INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR, BAR_SUMMARY_PM3_BUCKET,
     INFO_BOX_LENGTH_BUCKET, INFO_BOX_AADT_BUCKET, INFO_BOX_DELAY_BUCKET,
     GEOMETRY_TILE_VIEWS, DIFFERENCE_GRAPH_TYPES,
     ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG,
@@ -312,6 +312,15 @@ def analyze_report(old, old_route_facts=None):
                            max(GEOMETRY_TILE_VIEWS))
                 slug = ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG[info["resolution"]]
                 mapped.append((g, info, f"route_map_avgHoursOfDelay_{slug}_{year}"))
+                continue
+        elif (info["type"] == "Bar Graph Summary"
+                and (info["measure"], info["data_column"]) == BAR_SUMMARY_PM3_BUCKET):
+            # Same pm3-keyed, bin-independent join as the Info Box reliability
+            # bucket above — mirrors convert_report's bar_summary_pm3_tmpl_name
+            # pre-pass (wired round 68, see BAR_SUMMARY_PM3_BUCKET).
+            year = graph_max_year(info, comps_by_id)
+            if year in PM3_VIEW_BY_YEAR:
+                mapped.append((g, info, f"tmc_freeflow_summary_bar_graph_{year}"))
                 continue
         elif GRAPH_TEMPLATE_MAP.get(key):
             mapped.append((g, info, GRAPH_TEMPLATE_MAP[key]))
