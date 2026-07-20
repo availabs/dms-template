@@ -1827,7 +1827,11 @@ const pages = {
   sectionGroup: {
     // content ↔ rail row (inside the band's max-w-[1480px] content container).
     // items-stretch keeps the rail column full-height so its inner sticky pins.
-    contentRow: "flex flex-row gap-10 items-stretch",
+    // min-h-screen: the band fills at least the viewport so a short results column
+    // doesn't leave the sidebar rail floating in a short area; the rail's own
+    // overflow-y-auto (sideNavContainer2) still scrolls only when its content
+    // genuinely exceeds the viewport. min-height is BC-safe — tall bands are unaffected.
+    contentRow: "flex flex-row gap-10 items-stretch min-h-screen",
     contentCol: "flex-1 min-w-0",
     sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
     sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",

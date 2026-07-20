@@ -217,7 +217,8 @@ const SECTIONS = [
    "bottom": "0"
   },
   "trackingId": "a3619a69-4ae1-4908-b1a4-c66321c3f927",
-  "element-type": "lexical"
+  "element-type": "lexical",
+  "height": "fill"
  },
  {
   "bg": "white",
@@ -237,7 +238,8 @@ const SECTIONS = [
    "bottom": "0"
   },
   "trackingId": "b91cce42-5437-42a5-8347-ea29a14a7de5",
-  "element-type": "AVL Graph"
+  "element-type": "AVL Graph",
+  "height": "fill"
  },
  {
   "bg": "white",
@@ -261,7 +263,8 @@ const SECTIONS = [
    "top": "0"
   },
   "trackingId": "a4472b27-a6d7-49f4-94b2-529c516c6472",
-  "element-type": "lexical"
+  "element-type": "lexical",
+  "height": "fill"
  },
  {
   "bg": "tint",
