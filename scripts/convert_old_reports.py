@@ -3983,6 +3983,27 @@ def analyze_graph(g, comps_by_id, gaps):
     else:
         assigned = [c for c in (state.get("activeRouteComponents") or [])
                     if c in comps_by_id] or list(comps_by_id)
+        if gtype == "Route Line Graph" and not (state.get("activeRouteComponents") or []):
+            # RouteLineGraph.jsx (transportNY) overrides GeneralGraphComp's
+            # getResolution()/getActiveRouteComponents(): with no explicit
+            # comp selection it does NOT show every comp regardless of
+            # resolution (unlike the generic `or list(comps_by_id)` fallback
+            # above) — it shows only the comps matching ONE resolution group:
+            # state.resolution if some comp actually has it, else routes[0]'s
+            # (original report order) resolution. Comps in other resolution
+            # groups are silently excluded from the graph by default (real
+            # old-tool behavior, not a data loss bug) until an author flips
+            # the "Resolution" selector it shows whenever >1 group exists —
+            # not replicated here, so conversion always lands on the default
+            # group, same as an unopened old report would render.
+            order = list(comps_by_id)
+            res_of = lambda c: (comps_by_id[c].get("settings") or {}).get("resolution") or "5-minutes"
+            default_res = res_of(order[0]) if order else "5-minutes"
+            state_res = state.get("resolution")
+            state_res = state_res if isinstance(state_res, str) else None
+            winning_res = state_res if state_res and any(
+                res_of(c) == state_res for c in order) else default_res
+            assigned = [c for c in order if res_of(c) == winning_res]
 
     if gtype == "Hours of Delay Graph":
         measure = "hoursOfDelay"
@@ -4073,11 +4094,22 @@ def analyze_graph(g, comps_by_id, gaps):
         # route_map_tmpl_name branch never reads info["resolution"] at all,
         # so a mixed set there is analyzer noise, not a real gap (confirmed
         # 2026-07-17: 145 of the corpus's 146 Route-Map mixed-resolution
-        # instances are non-avgHoursOfDelay).
+        # instances are non-avgHoursOfDelay). Route Compare Component
+        # (2026-07-20): RouteCompareComponent.jsx reduces each assigned comp
+        # to ONE whole-date-range scalar independently (allReducer/reducer),
+        # exactly like ensure_route_compare_template's self-aggregating
+        # MEASURE_EXPR — the `resolution` parameter threaded through
+        # generateGraphData/generateTableData/renderGraph is never actually
+        # referenced in that component's body, confirmed by reading it
+        # directly. A mixed resolution set across its base+compare rows is
+        # analyzer noise, not a real gap (breakdown: 21 of the corpus's 159
+        # mixed_resolutions_on_graph instances were this type).
         route_map_resolution_irrelevant = (
             gtype == "Route Map" and measure != "avgHoursOfDelay")
+        resolution_irrelevant = (route_map_resolution_irrelevant
+                                  or gtype == "Route Compare Component")
         if (gtype not in INFO_BOX_GRAIN and gtype not in DIFFERENCE_GRAPH_TYPES
-                and not route_map_resolution_irrelevant):
+                and not resolution_irrelevant):
             gaps.append({"kind": "mixed_resolutions_on_graph", "graph": g.get("id"),
                          "detail": sorted(map(str, resolutions))})
     data_columns = {(comps_by_id[c].get("settings") or {}).get("dataColumn")
@@ -4608,7 +4640,13 @@ def convert_report(old_id, dry_run=False, replace=False):
         gid = g.get("id")
         if info["measure"] not in MEASURE_EXPR:
             continue  # outside this round's supported measure — generic gap below
-        if (info["measure"], info["resolution"], info["data_column"]) != ROUTE_COMPARE_BUCKET:
+        # Resolution is deliberately NOT part of this match (2026-07-20):
+        # ensure_route_compare_template's MEASURE_EXPR is a whole-date-range
+        # self-aggregating expression with no resolution dimension at all,
+        # matching RouteCompareComponent.jsx's own real behavior (see the
+        # resolution_irrelevant note in analyze_graph above) — info["resolution"]
+        # is frequently None here (mixed across comps) and that's fine.
+        if (info["measure"], info["data_column"]) != (ROUTE_COMPARE_BUCKET[0], ROUTE_COMPARE_BUCKET[2]):
             continue
         if len(info["assigned"]) < 2:
             gaps.append({"kind": "route_compare_insufficient_comps", "graph": gid,
