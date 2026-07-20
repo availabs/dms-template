@@ -4249,11 +4249,42 @@ def build_cloned_section_data(page_id, tmpl_section, tracking_id):
 
 # ── New-side operations (all writes via CLI) ────────────────────────────────
 
-def find_page_by_slug(slug):
+def find_page_by_slug(slug, exclude_id=None):
+    cond = f"AND id != {int(exclude_id)}" if exclude_id else ""
     out = psql_new(
         "SELECT id FROM dms_npmrdsv5.data_items "
-        f"WHERE type = '{PAGE_TYPE}' AND data->>'url_slug' = '{slug}' LIMIT 1")
+        f"WHERE type = '{PAGE_TYPE}' AND data->>'url_slug' = '{slug}' {cond} LIMIT 1")
     return int(out) if out else None
+
+
+def to_snake_case(s):
+    """Port of the DMS page editor's own toSnakeCase()
+    (patterns/page/pages/_utils/index.js) -- same regex, same behavior."""
+    if not s:
+        return s
+    parts = re.findall(
+        r'[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+', s)
+    return "_".join(p.lower() for p in parts)
+
+
+def compute_report_slug(title, index="0", exclude_id=None):
+    """Mirrors the page editor's getUrlSlug() (same file) so a converted
+    page's slug is born equal to what the admin UI would independently
+    compute from parent+title -- the scheme 34/37 already-converted pages
+    live on today, not the report_<old_id> scheme this function used to
+    return. That scheme was never stable: the editor's updateTitle()
+    recomputes url_slug from the title on every save (intentional platform
+    behavior, see find_page_by_old_report_id's docstring), so a page minted
+    as report_<old_id> silently flipped to converted_reports/<title> the
+    first time anyone opened/saved it -- and flipped BACK to report_<old_id>
+    on every --replace reconversion, breaking whatever URL was live in the
+    meantime. Minting the same slug the UI converges to means reconversion
+    no longer changes the URL at all. exclude_id lets a --replace call skip
+    the page about to be deleted so it never collides with itself."""
+    base = f"{CONVERTED_PARENT_SLUG}/{to_snake_case(title)}"
+    if find_page_by_slug(base, exclude_id=exclude_id) is None:
+        return base
+    return f"{base}_{index}"
 
 
 def find_page_by_old_report_id(old_id):
@@ -4279,6 +4310,9 @@ def delete_converted_page(page_id):
     All deletes go through the CLI (requires the auth token)."""
     page = dms(["raw", "get", str(page_id)])
     d = page["data"]
+    if d is None:
+        print(f"page {page_id} not found (already deleted?) — skipping")
+        return
     section_ids = {s["id"] for s in (d.get("draft_sections") or [])}
     section_ids |= {s["id"] for s in (d.get("sections") or [])}
     for sid in sorted(section_ids, key=int):
@@ -4349,16 +4383,19 @@ def convert_report(old_id, dry_run=False, replace=False):
     old = fetch_old_report(old_id)
     print(f"\n=== old report {old_id}: '{old['name']}' ===")
 
-    slug = f"report_{old_id}"
     existing = find_page_by_old_report_id(old_id)
     if existing:
         if not replace:
             raise RuntimeError(
-                f"page '{slug}' already exists (id {existing}) — pass --replace")
+                f"page for old report {old_id} already exists (id {existing}) "
+                f"— pass --replace")
         if dry_run:
             print(f"[dry-run] would delete existing page {existing} first")
         else:
             delete_converted_page(existing)
+
+    title = old["name"] or f"Report {old_id}"
+    slug = compute_report_slug(title, exclude_id=existing)
 
     # -- old-side pieces
     route_comps = flatten_route_comps(old.get("route_comps"), gaps)
@@ -4779,7 +4816,7 @@ def convert_report(old_id, dry_run=False, replace=False):
     # -- page
     parent_id = ensure_parent_page(dry_run)
     res = dms(["page", "create", "--pattern", PATTERN,
-               "--title", old["name"] or slug, "--slug", slug],
+               "--title", title, "--slug", slug],
               data={"index": "0", "parent": str(parent_id),
                     "sidebar": page_template.get("sidebar", "left"),
                     "published": "draft"})
@@ -4855,10 +4892,10 @@ def convert_report(old_id, dry_run=False, replace=False):
     print(f"created reports_snap_2 row id={r['id']} (report_id={page_id}, "
           f"{len(route_entries)} routes)")
 
-    return finish(old_id, old, page_id, gaps, dry_run)
+    return finish(old_id, old, page_id, gaps, dry_run, slug=slug)
 
 
-def finish(old_id, old, page_id, gaps, dry_run):
+def finish(old_id, old, page_id, gaps, dry_run, slug=None):
     os.makedirs(GAPS_DIR, exist_ok=True)
     report = {"old_report_id": old_id, "old_name": old.get("name"),
               "new_page_id": page_id, "dry_run": dry_run,
@@ -4871,7 +4908,7 @@ def finish(old_id, old, page_id, gaps, dry_run):
         print(f"  [{g['kind']}] " + json.dumps(
             {k: v for k, v in g.items() if k != 'kind'})[:200])
     if page_id and not dry_run:
-        print(f"\nview it: http://npmrds.localhost:5173/report_{old_id} "
+        print(f"\nview it: http://npmrds.localhost:5173/{slug or f'report_{old_id}'} "
               f"(page id {page_id})")
     return report
 
