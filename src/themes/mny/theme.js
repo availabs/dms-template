@@ -438,7 +438,7 @@ const theme = {
     styles: [
       {
         name: 'default Buttons',
-        button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[14px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-5 py-2.5`,
+        button: `cursor-pointer inline-flex items-center gap-2 bg-white hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-3 py-[6px] ring ring-[#E0EBF0]`,
       },
       {
         name: 'plain',
@@ -484,47 +484,159 @@ const theme = {
   },
 
   table: {
-    tableContainer:
-      "relative flex flex-col w-full h-full overflow-x-auto scrollbar-sm border rounded-t-[12px]",
-    tableContainerNoPagination: "rounded-b-[12px]",
-    tableContainer1:
-      "flex flex-col no-wrap min-h-[200px] max-h-[calc(78vh_-_10px)] overflow-y-auto scrollbar-sm",
-    headerContainer: "sticky top-0 grid ",
-    thead: "flex justify-between",
-    theadfrozen: "",
-    thContainer:
-      "w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c] border-x",
-    thContainerBg: "bg-[#F3F8F9] text-gray-900",
-    thContainerBgSelected: "bg-gray-50 text-gray-900",
-    cell: "relative flex items-center min-h-[36px]  border border-slate-50",
-    cellInner: `
+    options: { activeStyle: 0 },
+    styles: [
+      {
+        name: "mny",
+        tableContainer:
+            "relative flex flex-col w-full h-full min-h-[200px] max-h-[calc(100vh_-_90px)] overflow-y-auto overflow-x-auto scrollbar-sm border rounded-t-[12px]",
+        tableContainerNoPagination: "rounded-b-[12px]",
+        headerContainer: "sticky top-0 grid ",
+        headerLeftGutter: 'flex justify-between sticky left-0 z-[1]',
+        headerWrapper: "flex justify-between",
+        colResizer: "z-5 -ml-2 w-[1px] hover:w-[2px] bg-gray-200 hover:bg-gray-400",
+        headerWrapperFrozen: "",
+        headerCellContainer:
+            "w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c]",
+        headerCellContainerBg: "bg-[#F3F8F9] text-gray-900",
+        headerCellContainerBgSelected: "bg-gray-50 text-gray-900",
+        pivotGroupHeader: "bg-[#F3F8F9] text-[#37576B] text-center border-b border-r border-[#E0EBF0]",
+        cell: "relative flex items-center min-h-[36px]  border border-slate-50",
+        cellInner: `
           w-full min-h-full flex flex-wrap items-center truncate py-1 px-2
           font-['Proxima_Nova'] font-[400] text-[14px] text-[#37576B] leading-[20px]
       `,
-    cellBg: "bg-white",
-    cellBgSelected: "bg-blue-50",
-    cellFrozenCol: "",
-    paginationContainer:
-      "w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between",
-    paginationInfoContainer: "",
-    paginationPagesInfo:
-      "font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
-    paginationRowsInfo: "text-xs font-[Proxima Nova] leading-[14px]",
-    paginationControlsContainer:
-      "flex flex-row items-center border rounded-[8px] overflow-hidden",
-    pageRangeItem:
-      "cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]",
-    pageRangeItemInactive: "bg-white text-[#2D3E4C]",
-    pageRangeItemActive: "bg-[#2D3E4C] text-white",
-    openOutContainer:
-      "w-[420px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
-    openOutContainerWrapper: "absolute inset-0 right-0 h-full w-full z-[100]",
-    openOutHeader:
-      "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
-    openOutValue:
-      "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
-    openOutTitle:
-      "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]",
+        cellBgOdd: 'bg-gray-50 hover:bg-gray-100',
+        cellBgEven: 'bg-white hover:bg-gray-100',
+        cellBg: 'bg-white hover:bg-gray-100',
+        totalCell: 'hover:bg-gray-150',
+        wrapText: 'whitespace-pre-wrap',
+        cellEditableTextBox: 'absolute border focus:outline-none min-w-[180px] min-h-[50px] z-[10] whitespace-pre-wrap',
+        cellBgSelected: "bg-blue-50 hover:bg-blue-100",
+        cellFrozenCol: "",
+        cellInvalid: 'bg-red-50 hover:bg-red-100',
+        paginationContainer:
+            "w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between",
+        paginationInfoContainer: "",
+        paginationPagesInfo:
+            "font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
+        paginationRowsInfo: "text-xs font-[Proxima Nova] leading-[14px]",
+        paginationControlsContainer:
+            "flex flex-row items-center border rounded-[8px] overflow-hidden",
+        pageRangeItem:
+            "cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]",
+        pageRangeItemInactive: "bg-white text-[#2D3E4C]",
+        pageRangeItemActive: "bg-[#2D3E4C] text-white",
+        openOutContainer:
+            "w-[420px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
+        openOutContainerWrapper: "absolute inset-0 right-0 h-full w-full z-[100]",
+        openOutHeader:
+            "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
+        openOutValue:
+            "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
+        openOutTitle:
+            "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]",
+        // inline openOut (display.openOutMode:'inline') — expanded detail panel below the row
+        // (Description of the Problem/Solution + field chips), matching the mockup's inline expand.
+        openOutInlineRow: "w-full px-3 pb-4 bg-[#FCF6EC]/40",
+        openOutInlinePanel: "bg-white rounded-[10px] border border-[#E0EBF0] p-4 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3",
+        openOutInlineField: "min-w-0",
+        openOutInlineLabel: "font-[Oswald] text-[10px] font-[500] uppercase tracking-wider text-[#6D96AE] mb-1",
+        openOutInlineValue: "font-['Proxima_Nova'] text-[13px] text-[#37576B] leading-[1.5]",
+        totalRow: 'bg-gray-100 sticky bottom-0 z-[3]',
+        stripedRow: 'even:bg-gray-50',
+        // conditional_row_style accent (Phase 3 #5): amber left-edge + faint tint on rows
+        // still needing work (county_priority empty). border-l-4 is the reliable cue (a bg
+        // tint is largely occluded by opaque cells). Referenced via provider styleKey.
+        rowAccentAmber: 'border-l-4 border-[#EAAD43] bg-[#FCF6EC]/60',
+        gutterCellWrapper: `flex text-xs items-center justify-center cursor-pointer sticky left-0 z-[1]`,
+        gutterCellWrapperNotSelected: 'bg-gray-50 text-gray-500',
+        gutterCellWrapperSelected: 'bg-blue-100 text-gray-900',
+        openOutCloseIconContainer: 'w-full flex justify-end',
+        openOutCloseIconWrapper: 'w-fit h-fit p-[8px] text-[#37576B] border border-[#E0EBF0] rounded-full cursor-pointer',
+        openOutCloseIcon: 'XMark',
+        openOutContainerWrapperBgColor: '#00000066',
+        openOutIconWrapper: 'px-2 cursor-pointer bg-transparent text-gray-500 hover:text-gray-600',
+        headerCellWrapper: 'relative w-full',
+        headerCellBtn: 'group inline-flex items-center w-full justify-between gap-x-1.5 rounded-md cursor-pointer',
+        headerCellLabel: 'truncate select-none',
+        headerCellBtnActive: 'bg-gray-300',
+        headerCellFnIconClass: 'text-gray-400',
+        headerCellCountIcon: 'TallyMark',
+        headerCellListIcon: 'LeftToRightListBullet',
+        headerCellSumIcon: 'Sum',
+        headerCellAvgIcon: 'Avg',
+        headerCellGroupIcon: 'Group',
+        headerCellSortAscIcon: 'SortAsc',
+        headerCellSortDescIcon: 'SortDesc',
+        headerCellMenuIcon: 'ArrowDown',
+        headerCellMenuIconClass: 'text-gray-400 group-hover:text-gray-600 transition ease-in-out duration-200 print:hidden',
+        headerCellIconWrapper: 'flex items-center',
+        headerCellMenu: 'py-0.5 flex flex-col gap-0.5 items-center px-1 text-xs text-gray-600 font-regular max-h-[500px] min-w-[180px] ' +
+            'z-[10] overflow-auto scrollbar-sm bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5',
+        headerCellControlWrapper: 'w-full group px-2 py-1 flex justify-between items-center rounded-md hover:bg-gray-100',
+        headerCellControlLabel: 'w-fit font-regular text-gray-500 cursor-default',
+        headerCellControl: 'p-0.5 w-full rounded-md bg-white group-hover:bg-gray-100 cursor-pointer'
+      },
+      {
+        name: "basic",
+        tableContainer: "relative flex flex-col w-full h-full overflow-x-auto scrollbar-sm border rounded-t-[12px]",
+        tableContainerNoPagination: "rounded-b-[12px]",
+        tableContainer1: "flex flex-col no-wrap min-h-[200px] max-h-[calc(78vh_-_10px)] overflow-y-auto scrollbar-sm",
+        headerContainer: "sticky top-0 grid ",
+        thead: "flex justify-between",
+        theadfrozen: "",
+        thContainer: "w-full font-[500] py-4 pl-4 pr-0 font-[Oswald] text-[12px] uppercase text-[#2d3e4c] border-x",
+        thContainerBgSelected: "bg-gray-50 text-gray-900",
+        thContainerBg: "bg-[#F3F8F9] text-gray-900",
+        cell: "relative flex items-center min-h-[36px]  border border-slate-50",
+        cellInner: `
+          w-full min-h-full flex flex-wrap items-center truncate py-1 px-2
+          font-['Proxima_Nova'] font-[400] text-[14px] text-[#37576B] leading-[20px]
+      `,
+        cellBg: "bg-white",
+        cellBgSelected: "bg-blue-50",
+        cellFrozenCol: "",
+        paginationInfoContainer: "",
+        paginationPagesInfo: "font-[500] font-[Oswald] text-[12px] uppercase text-[#2d3e4c] leading-[18px]",
+        paginationRowsInfo: "text-xs font-[Proxima Nova] leading-[14px]",
+        paginationContainer: "w-full p-2 rounded-b-[12px] bg-[#F3F8F9] flex items-center justify-between",
+        paginationControlsContainer: "flex flex-row items-center border rounded-[8px] overflow-hidden",
+        pageRangeItem: "cursor-pointer px-[12px]  py-[7px] font-[Oswald] font-[500] text-[12px] border-r last:border-none uppercase leading-[18px]",
+        pageRangeItemInactive: "bg-white text-[#2D3E4C]",
+        pageRangeItemActive: "bg-[#2D3E4C] text-white",
+        openOutContainer: "w-[420px] overflow-auto scrollbar-sm flex flex-col gap-[12px] p-[16px] bg-white h-full float-right",
+        openOutContainerWrapper: "absolute inset-0 right-0 h-full w-full z-[100]",
+        openOutHeader: "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
+        openOutValue: "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
+        openOutTitle: "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]"
+      },
+      {
+        // "mny-clean" (styles[2]) — design-aligned worklist table: horizontal row rules
+        // only, NO vertical cell dividers (the Action Prioritize mockup has no gridlines).
+        // Inherits every other key from styles[0] ("mny") via getComponentTheme; selected
+        // per-section with display.tableStyle:2, so other mny tables are untouched (BC).
+        // Registered in design-system/components.html.
+        name: "mny-clean",
+        cell: "relative flex items-center min-h-[36px] border-b border-[#E0EBF0]",
+      }
+    ]
+  },
+  // stacked_bar columnType palette — the Action Prioritize progress lede's tier
+  // distribution (T1 amber → T4 pale + not-set). Registered in components.html.
+  stackedBar: {
+    wrapper: "w-full",
+    track: "w-full flex h-[8px] rounded-full overflow-hidden bg-white border border-[#F1CA87]/50",
+    segment: "h-full shrink-0",
+    legend: "pt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-['Proxima_Nova'] font-[500] text-[#37576B] normal-case tracking-normal",
+    empty: "pt-2 text-[11px] font-['Proxima_Nova'] text-[#6D96AE]",
+    fills: {
+      tier1: "bg-[#EAAD43]",
+      tier2: "bg-[#37576B]",
+      tier3: "bg-[#6D96AE]",
+      tier4: "bg-[#C5D7E0]",
+      tierNone: "bg-white border border-[#C5D7E0]",
+    },
   },
   attribution: {
     wrapper: "w-full flex flex-col gap-[4px] text-[#2D3E4C] text-xs",
@@ -538,6 +650,42 @@ const theme = {
       "px-[12px] pt-[9px] pb-[7px] bg-[#F3F8F9] group rounded-[1000px]",
     label: "text-[12px] text-[#37576B] font-bold leading-[14.62px]",
     labelDisabled: "text-[12px] text-[#C5D7E0] font-bold leading-[14.62px]",
+  },
+  // Pill styles — selected by name via `activeStyle` (or the `status_pill` column
+  // type's pillColors map). styles[0..9] REPRODUCE the DMS default (Pill.theme.js)
+  // verbatim so any existing mny pill renders exactly as before (backward-compatible);
+  // the mny-branded `status_*` and `tier_*` variants are appended for the Action
+  // Prioritize worklist (implementation status + county priority). See task
+  // planning/tasks/current/mny-action-prioritize-v2-live-build.md (Phase 2).
+  pill: {
+    options: { activeStyle: 0 },
+    styles: [
+      // --- DMS defaults, reproduced verbatim (do not restyle — BC for other pages) ---
+      { name: 'default', wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline text-gray-400' },
+      { name: 'gray',    wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline text-gray-400' },
+      { name: 'orange',  wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline bg-orange-500/15 text-orange-700 hover:bg-orange-500/25' },
+      { name: 'blue',    wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline bg-blue-500/15 text-blue-700 hover:bg-blue-500/25' },
+      { name: 'green',   wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline bg-green-500/15 text-green-700 hover:bg-green-500/25' },
+      { name: 'red',     wrapper: 'inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-regular sm:text-xs/5 forced-colors:outline bg-red-500/15 text-red-700 hover:bg-red-500/25' },
+      { name: 'status_good', wrapper: "inline-flex items-center gap-1.5 text-sm text-emerald-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:mr-0.5 [&::before]:bg-emerald-500" },
+      { name: 'status_warn', wrapper: "inline-flex items-center gap-1.5 text-sm text-amber-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:mr-0.5 [&::before]:bg-amber-400" },
+      { name: 'status_bad',  wrapper: "inline-flex items-center gap-1.5 text-sm text-rose-700 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:mr-0.5 [&::before]:bg-rose-500" },
+      { name: 'status_na',   wrapper: "inline-flex items-center gap-1.5 text-sm text-slate-500 [&::before]:content-[''] [&::before]:size-1.5 [&::before]:rounded-full [&::before]:mr-0.5 [&::before]:bg-slate-400" },
+
+      // --- mny implementation-status dots (dotted, brand palette) ---
+      { name: 'status_proposed',     wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#37576B] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#6D96AE]" },
+      { name: 'status_inprogress',   wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#37576B] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#54B99B]" },
+      { name: 'status_completed',    wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#37576B] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#2D3E4C]" },
+      { name: 'status_discontinued', wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#37576B] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#DD524C]" },
+      { name: 'status_none',         wrapper: "inline-flex items-center gap-1.5 font-['Proxima_Nova'] text-[13px] text-[#6D96AE] [&::before]:content-[''] [&::before]:size-2 [&::before]:rounded-full [&::before]:bg-[#C5D7E0]" },
+
+      // --- mny county-priority tiers (bordered fill; rank reads from fill weight) ---
+      { name: 'tier_1',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#EAAD43] bg-[#FCF6EC] font-['Proxima_Nova'] font-[600] text-[12px] text-[#2D3E4C]" },
+      { name: 'tier_2',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#C5D7E0] bg-[#F3F8F9] font-['Proxima_Nova'] font-[600] text-[12px] text-[#2D3E4C]" },
+      { name: 'tier_3',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#C5D7E0] bg-[#F3F8F9] font-['Proxima_Nova'] font-[600] text-[12px] text-[#37576B]" },
+      { name: 'tier_4',     wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-[#E0EBF0] bg-white font-['Proxima_Nova'] font-[600] text-[12px] text-[#6D96AE]" },
+      { name: 'tier_unset', wrapper: "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-dashed border-[#EAAD43] bg-white font-['Proxima_Nova'] font-[600] text-[12px] text-[#2D3E4C]" },
+    ],
   },
   dataCard: {
     styles: [
@@ -558,6 +706,10 @@ const theme = {
         headerValueWrapperBorderBelow: "border-b border-[#C0D8E1] rounded-none", // custom added border
         headerValueWrapperSimpleView: "",
         itemBorder: 'border shadow',
+        // active state for an `activeOnSearchParam` link cell (stat strip): the cell
+        // whose link params match the live page filters gets a tint + ring. Replaces
+        // the old hardcoded cellBgColor fake-active. (Phase 3 #2)
+        cellActive: 'bg-[#F3F8F9] ring-2 ring-[#2D3E4C]/30',
         itemFlexCol: 'flex-col',
         itemFlexRow: 'flex-row',
         itemFlexColReverse: 'flex-col flex-col-reverse',
@@ -675,6 +827,16 @@ const theme = {
   },
   filters: {
     filtersWrapper: "w-full flex flex-col rounded-md",
+    // --- interactive chrome (Phase 3 follow-up): Needs-priority toggle + active tokens + clear-all.
+    // New keys, unused by existing filter sections → BC. The toggle button is a `group` with data-on. ---
+    toggleChip: "group inline-flex items-center cursor-pointer h-[38px]",
+    toggleChipOn: "",
+    toggleTrack: "w-9 h-5 rounded-full bg-[#C5D7E0] group-data-[on]:bg-[#EAAD43] flex items-center px-0.5 transition-colors",
+    toggleKnob: "w-4 h-4 rounded-full bg-white shadow-sm transition-transform group-data-[on]:translate-x-4",
+    activeTokensWrapper: "flex flex-wrap items-center gap-2 mt-3",
+    activeToken: "inline-flex items-center gap-1 bg-[#C5D7E0] rounded-full pl-2.5 pr-1.5 py-1 font-['Proxima_Nova'] text-[12px] text-[#37576B]",
+    activeTokenRemove: "text-[#6D96AE] hover:text-[#2D3E4C] cursor-pointer",
+    clearAll: "font-['Proxima_Nova'] text-[12px] font-[600] text-[#6D96AE] hover:text-[#2D3E4C] underline underline-offset-2 cursor-pointer",
     filterLabel:
       "py-0.5 font-[Proxima Nova] font-regular text-[14px] text-[#2D3E4C] leading-[140%] tracking-[0px] capitalize text-balance",
     loadingText: "pl-0.5 font-thin text-[#2D3E4C]",

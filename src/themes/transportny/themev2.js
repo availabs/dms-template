@@ -8,7 +8,7 @@
 // What's preserved from the original theme.js (NOT taken from v2):
 //   • Widget imports (LogoNav, QuickLinks) and the `widgets` registry
 //   • pageComponents (AddPageButton, Header) — used as page-section types
-//   • navOptions.authMenu (Datasets · Site Status)
+//   • navOptions.authMenu (Datasets · Site Manager · Admin — last two group-gated)
 //   • The full `sidenav` block — both `transportny-dark` (active) and
 //     `compact` styles, verbatim. The user prefers where these are.
 //   • layout.options.sideNav.bottomMenu — keeps QuickLinks alongside
@@ -35,6 +35,8 @@ import LogoNav from "./LogoNav";
 import QuickLinks from "./QuickLinks";
 import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
+import ReportRouteList from "./components/ReportRouteList"
+import RouteComparison from "./components/RouteComparison"
 
 import icons from "./icons";
 
@@ -60,9 +62,9 @@ const textSettings = {
     slashKeys: [
       "displayMax", "displayHero", "displayXL", "displayLG", "displayMD", "displaySM", "displayXS",
       "displayItalicLG", "displayItalicMD",
-      "proseLG", "prose", "proseSM", "proseXS",
+      "proseLG", "prose", "proseSM", "proseXS", "prosePre",
       "metaMD", "metaSM", "metaXS", "metaAccent", "chip",
-      "kicker", "cardTitle", "cardTitleSM",
+      "kicker", "cardTitle", "cardTitleSM", "labelSM", "btnPrimary", "btnOutline", "toggleOn", "toggleOff",
       "statNum", "statXL", "statLG", "statMD",
     ],
   },
@@ -99,6 +101,8 @@ const textSettings = {
     prose:   `${F_SANS} text-[14.5px] leading-[1.65] text-slate-700`,
     proseSM: `${F_SANS} text-[12.5px] leading-[1.55] text-slate-600`,
     proseXS: `${F_SANS} text-[11.5px] leading-[1.5] text-slate-500`,
+    // prose that preserves authored line breaks (ticket steps-to-reproduce, multi-line notes)
+    prosePre: `${F_SANS} text-[14px] leading-[1.65] text-slate-700 whitespace-pre-line`,
 
     // ── Meta ladder (mono) — kickers, metadata, codes ──
     // The `!` (important) suffix on font/size/color overrides the
@@ -127,6 +131,23 @@ const textSettings = {
     cardTitle: `${F_DISP} font-medium text-[18px] leading-[1.15] tracking-tight uppercase ${INK}`,
     // Compact card title — Oswald uppercase 15px (mode / metric cards; cardTitle is 18px)
     cardTitleSM: `${F_DISP} font-medium text-[15px] leading-[1.15] tracking-tight uppercase ${INK}`,
+    // Proper-case display label — small stat-box / lifecycle-step labels ("In progress",
+    // "Resolved / closed") where the meta ladder's uppercase would shout. Oswald 12.5px medium.
+    labelSM: `${F_DISP} font-medium text-[12.5px] leading-[1.3] text-slate-700`,
+    // Segmented-view toggle chips — a direction-free pair (filled current view + ghost link)
+    // that reads as a QA ⇄ Design toggle on the control-room detail pages. Two cells with a
+    // small grid gap, NOT a contained segmented control (a shared p-0.5 container isn't
+    // Card-expressible — the cells grid has one uniform gap).
+    toggleOn:  `font-mono! text-[10.5px]! uppercase tracking-wide inline-flex items-center w-fit h-7 px-3! py-0! rounded-md bg-[#1F3F8F] text-white! no-underline!`,
+    toggleOff: `font-mono! text-[10.5px]! uppercase tracking-wide inline-flex items-center w-fit h-7 px-3! py-0! rounded-md border border-zinc-950/10 bg-slate-50 text-slate-500! hover:text-slate-800 no-underline! cursor-pointer`,
+    // Primary action link-as-button — the brand press-button (blue face, darker bottom edge,
+    // Oswald caps). For links that should read as buttons (header-band actions like "Add ticket").
+    // `!` beats link/paragraph defaults (text color, underline) AND the dataCard value-cell
+    // paddings (px-3 pb-3) that leak in when the token styles a Card value wrapper — without
+    // py-0! the injected pb pushed the label off vertical center inside the fixed h-9.
+    btnPrimary: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
+    // Secondary/outline action link-as-button — quiet neighbor to btnPrimary ("All tickets").
+    btnOutline: `inline-flex items-center w-fit h-9 px-3.5! py-0! bg-white hover:bg-slate-50 border border-slate-200 text-slate-600! no-underline! ${F_DISP} font-medium uppercase text-[12px]! tracking-wide rounded-[6px] cursor-pointer`,
     // Stat giant — mono tabular figure (KPI / coverage numbers). Vertical margin
     // gives the big number breathing room from the label above + sublabel below
     // (statNum is used only on stat cards, so this margin is effectively per-instance).
@@ -275,6 +296,17 @@ const layoutGroup = {
       wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 flex flex-col gap-6",
       wrapper3: "",
     },
+    // workbench — full-screen tool surface (Freight Atlas map v2): NO max-width,
+    // NO gutters, NO band padding. The single section (padding "p-0") fills
+    // everything beside the sidenav; height comes from the section's element
+    // (the Map component's `screen` = 100vh option). overflow-hidden so the map
+    // owns the viewport with no page scroll.
+    {
+      name: "workbench",
+      wrapper1: "w-full h-screen overflow-hidden bg-[#ECEEF2]",
+      wrapper2: "w-full h-full",
+      wrapper3: "h-full",
+    },
     // card — ONE white card floating on the grey pane, holding a run of sections as a
     // single composed unit (no inter-section grey gutters). The white surface + border
     // + rounding live on wrapper3 (the innermost band layer that directly wraps the
@@ -302,6 +334,16 @@ const layoutGroup = {
       wrapper3: "",
     },
     {
+      // breadcrumb — slim white bar (h-11) for a breadcrumb row, matching the datasets
+      // pages shell: full-width white band + hairline bottom border, content boxed to the
+      // same max-w-[1480px]/pl-12 as the content bands so the crumb left-aligns with them.
+      // Additive: only pages that opt a group into theme:"breadcrumb" use it.
+      name: "breadcrumb",
+      wrapper1: "w-full bg-white border-b border-zinc-950/10",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 h-11 flex items-center",
+      wrapper3: "",
+    },
+    {
       // Tight top-of-page nav bar — fixed height, no vertical padding (unlike
       // `header`, which is py-10 for page-title blocks). For a topnav band that
       // holds one full-width section (brand + links + actions row). wrapper2
@@ -319,6 +361,26 @@ const layoutGroup = {
       name: "hero",
       wrapper1: "w-full tny-hero-topo border-b border-zinc-950/10",
       wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2 flex flex-col gap-5",
+      wrapper3: "",
+    },
+    {
+      // hero_dark — "the gantry": a dusk guide-sign band (landing page hero).
+      // Dark navy field with faint lane lines + a blue glow, gold retroreflective
+      // bottom edge; sections inside carry inverse (white) type via inline lexical
+      // styles. Additive: only groups that opt into theme:"hero_dark" use it.
+      name: "hero_dark",
+      wrapper1: "w-full border-b-4 border-[#FACC15] bg-[#0F1722] bg-[radial-gradient(circle_at_80%_-20%,rgba(31,63,143,0.35),transparent_55%),repeating-linear-gradient(90deg,transparent_0_118px,rgba(255,255,255,0.035)_118px_120px)]",
+      wrapper2: "mr-auto w-full max-w-[1480px] pl-12 pr-8 pt-6 pb-8 flex flex-col gap-5",
+      wrapper3: "",
+    },
+    {
+      // hero_atlas — the landing hero: light survey-sheet field behind the hero
+      // copy and product panels. Gold edge stays. (The animated three.js road
+      // backdrop was removed 2026-07-15 — the dependency wasn't worth the small
+      // design win; the static gradient carries the style.)
+      name: "hero_atlas",
+      wrapper1: "w-full relative overflow-hidden border-b-4 border-[#FACC15] bg-[linear-gradient(180deg,#FCFDFE_0%,#EDF1F6_100%)]",
+      wrapper2: "relative mr-auto w-full max-w-[1480px] pl-12 pr-8 pt-6 pb-8 flex flex-col gap-5",
       wrapper3: "",
     },
     {
@@ -428,6 +490,9 @@ const sidenav = {
     {
       name: "compact",
       subMenuActivate: "onHover",
+      // type:"label" nav rows (e.g. the secondary nav's "Atlas" section
+      // header): tiny centered mono caption — no icon, no fake nav chrome.
+      navLabel: "w-full pt-3 pb-1 text-center font-mono text-[9px] font-semibold text-slate-500 uppercase tracking-[0.18em] select-none",
       layoutContainer1: "lg:ml-16",
       layoutContainer2: "fixed inset-y-0 left-0 w-16 max-lg:hidden z-20",
       logoWrapper: "w-16 bg-[#12181F]",
@@ -550,12 +615,36 @@ const logo = {
   linkPath:     "/",
 };
 
+// logoNav — the product-switcher dropdown at the top of the sidenav (LogoNav.jsx).
+// `sites` is the product registry the dropdown lists: icon/chip reuse the landing
+// page's product identity (solid shield + white product icon), `tag` is the mono
+// one-word descriptor. Subdomains match the live pattern mounts.
+const logoNav = {
+  sites: [
+    { name: "NPMRDS",        subdomain: "npmrds",        icon: "ProductNpmrds",       chip: "bg-[#0F2D4D]", tag: "travel time" },
+    { name: "TSMO",          subdomain: "tsmo2",         icon: "ProductTsmo",         chip: "bg-[#37576B]", tag: "operations" },
+    { name: "Freight Atlas", subdomain: "freightatlas2", icon: "ProductFreightAtlas", chip: "bg-[#1F3F8F]", tag: "freight" },
+  ],
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // button — v2 brand vocabulary
 // ─────────────────────────────────────────────────────────────────────────────
 const button = {
   options: { activeStyle: 0 },
   styles: [
+    {
+      // linkMono — quiet mono deep-link (landing panel inner links): uppercase
+      // 11px mono, slate, blue on hover. Text carries its own trailing arrow.
+      name: "linkMono",
+      button: "inline-flex items-center font-mono text-[11px] uppercase tracking-[0.14em] text-[#475569] hover:text-[#1F3F8F] cursor-pointer",
+    },
+    {
+      // rail — full-width product-panel CTA (landing "exit panels"): navy bar,
+      // white sign type left, gold arrow right; brightens on hover.
+      name: "rail",
+      button: "w-full h-11 px-5 -mx-1 flex items-center justify-between rounded-[6px] bg-[#0F2D4D] hover:bg-[#1F3F8F] transition-colors text-white font-display uppercase text-[13px] tracking-wide cursor-pointer after:content-['→'] after:text-[#FACC15] after:text-[16px]",
+    },
     {
       name: "default",
       button: "tny-press cursor-pointer inline-flex items-center gap-2 px-4 h-10 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F3F8F]/40 disabled:opacity-50",
@@ -639,15 +728,24 @@ const multiselect = {
       name: "default",
       view:           "font-proxima",
       mainWrapper:    "relative",
-      inputWrapper:   "flex w-full items-center gap-1.5 min-h-11 px-3 rounded-[6px] border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus-within:border-[#1F3F8F] focus-within:ring-2 focus-within:ring-[#1F3F8F]/15 cursor-pointer",
+      // flex-wrap: selected-value chips wrap to new lines inside the control
+      // instead of extending past its right edge over the neighboring control.
+      inputWrapper:   "flex flex-wrap w-full items-center gap-1.5 min-h-11 px-3 rounded-[6px] border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus-within:border-[#1F3F8F] focus-within:ring-2 focus-within:ring-[#1F3F8F]/15 cursor-pointer",
       caretWrapper:   "ml-auto pl-1 text-slate-500",
       caretIcon:      "CaretDown",
       input:          "flex-1 bg-transparent text-[14px] text-[#0F1722] placeholder:text-slate-400 focus:outline-none",
       statusWrapper:  "text-[12px] text-slate-500",
       singleValue:        "text-[14px] text-[#0F1722]",
       singlePlaceholder:  "text-[14px] text-slate-400",
-      tokenWrapper:   "inline-flex items-center gap-1 h-7 pl-2 pr-1 rounded-[4px] bg-[#37576B]/10 text-[#0F2D4D] text-[12.5px] font-medium",
-      removeIcon:     "XMark",
+      // Single-select clear × — STATIC flex item between the value and the caret
+      // (reserved space). Without this key the library default leaks in
+      // (`absolute inset-y-0 right-6`), which paints the × ON TOP of the value
+      // text because these triggers use a static caret and reserve no right
+      // padding. Named styles inherit this from styles[0]. Glyph color/size
+      // come from removeIconClass.
+      singleClearWrapper: "flex items-center shrink-0 cursor-pointer",
+      removeIcon:     "inline-flex items-center self-center shrink-0 cursor-pointer",
+      removeIconName: "XMark",
       removeIconClass:"size-3.5 text-slate-500 hover:text-[#EF4444] cursor-pointer",
       menuWrapper:    "absolute z-40 mt-1 w-full rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden",
       optionsWrapper: "max-h-72 overflow-y-auto py-1",
@@ -656,6 +754,18 @@ const multiselect = {
       smartMenuWrapper: "px-3 py-2 border-b border-zinc-950/5 bg-slate-50/60",
       smartMenuItem:    "text-[12px] text-slate-500",
       error:            "mt-1 text-[12px] text-[#EF4444]",
+    },
+    {
+      // Prominent "primary control" — a featured single-select like the page-status
+      // pipeline-stage selector (mockup: bordered button + ring, display-16px value).
+      // Pick it per column with `activeStyle: "field"` on the column config. Inherits the
+      // menu / caret / token keys from `default` (styles[0]); only the trigger differs.
+      name: "field",
+      inputWrapper:      "flex w-full items-center gap-2 h-11 px-3 rounded-[6px] border border-[#37576B] ring-2 ring-[#37576B]/15 bg-white hover:bg-slate-50 cursor-pointer",
+      caretWrapper:      "ml-auto pl-1 text-slate-500",
+      input:             "flex-1 bg-transparent font-display text-[16px] font-medium text-[#0F1722] placeholder:text-slate-400 focus:outline-none",
+      singleValue:       "font-display text-[16px] font-medium text-[#0F1722]",
+      singlePlaceholder: "font-display text-[16px] text-slate-400",
     },
     {
       name: "compact",
@@ -681,13 +791,19 @@ const multiselect = {
     {
       name: "tone_bar",
       // min-w so an EMPTY control still has a clickable box (was collapsing to nothing); min-h
-      // keeps it vertically aligned with the label.
-      inputWrapper: "flex items-center gap-1.5 min-w-[72px] min-h-7 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
+      // keeps it vertically aligned with the label. flex-wrap + max-w-full + min-w-0: with many
+      // selected chips the row WRAPS inside the control's own bounds (the band is min-h so it
+      // grows) instead of running horizontally over the next filter section — which both garbled
+      // the neighbor's label and put its DOM on top of these chips' × hit targets.
+      inputWrapper: "flex flex-wrap max-w-full items-center gap-1.5 min-w-[72px] min-h-7 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
       singleValue:  "font-semibold text-[13px] text-white",
       singlePlaceholder: "text-[13px] text-white/80 italic",
       // multi chips render as plain white values (not gray tokens) to match the
       // dashboard mockup "Region: Statewide ▾"; the × keeps them clearable.
-      tokenWrapper: "inline-flex items-center gap-1 font-semibold text-[13px] text-white",
+      // whitespace-nowrap: a token is an atomic value — it must never wrap INTERNALLY
+      // ("Region 11 - New York / City" mid-label breaks); with the wrapper's flex-wrap,
+      // multiple tokens wrap as whole units instead.
+      tokenWrapper: "inline-flex items-center gap-1 font-semibold text-[13px] text-white whitespace-nowrap",
       removeIconClass: "size-3 text-white/60 hover:text-white cursor-pointer",
       caretWrapper: "ml-1 text-white/70",
       // the open-out: a WHITE menu (the bar is blue) with a real min-width so it isn't a sliver.
@@ -700,7 +816,8 @@ const multiselect = {
     },
     {
       name: "multiselect_with_search",
-      inputWrapper:     "flex w-full items-center gap-1.5 min-h-11 px-3 rounded-[6px] border border-zinc-950/15 hover:border-zinc-950/30 bg-white cursor-pointer",
+      // flex-wrap: chips wrap inside the control (same overflow fix as `default`).
+      inputWrapper:     "flex flex-wrap w-full items-center gap-1.5 min-h-11 px-3 rounded-[6px] border border-zinc-950/15 hover:border-zinc-950/30 bg-white cursor-pointer",
       menuWrapper:      "absolute z-40 mt-1 w-full rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden",
       smartMenuWrapper: "px-2 py-2 border-b border-zinc-950/10 bg-slate-50/60",
       smartMenuItem:    "w-full h-8 px-2 rounded border border-zinc-950/10 bg-white text-[13px] focus:outline-none focus:border-[#1F3F8F]",
@@ -927,10 +1044,23 @@ const dataCard = {
       headerValueWrapperBorderBelow: "border-b border-zinc-950/5 rounded-none",
       value:                         "px-3 pb-3 text-[14px] text-[#0F1722]",
       valueWrapper:                  "min-h-[20px]",
+      // header↔value layout (Card `headerValueLayout`): col = stacked (the default,
+      // matching headerValueWrapper's `flex flex-col`), row = label-left / value-right.
+      // The row variants use `flex-row!` so they override headerValueWrapper's baked-in
+      // `flex-col`; without these keys `row` silently produced no direction (mis-stacked).
+      itemFlexCol:                   "flex-col",
+      itemFlexRow:                   "flex-row! items-center justify-between gap-3",
+      itemFlexColReverse:            "flex-col-reverse",
+      itemFlexRowReverse:            "flex-row-reverse! items-center justify-between gap-3",
       description:                   "font-proxima text-[12px] font-light text-slate-500 px-3 pb-2",
       itemBorder:                    "border border-zinc-950/5",
       cardBorder:                    "border border-zinc-950/10",
       cellBorderBelow:               "border-b border-zinc-950/5",
+      // form-mode action rows (allowAdddNew "add" / allowEditInView save+cancel) — bottom-right,
+      // like the mockups' modal/form footers. The wrapper is a cell in the card's cells GRID, so
+      // it must span the full row (col-span-full) before justify-self-end can right-align it.
+      formAddNewItemWrapper:         "col-span-full w-fit justify-self-end self-end pt-2",
+      formEditButtonsWrapper:        "col-span-full w-fit justify-self-end self-end flex gap-1 pt-2",
       imgXS:      "max-w-16 max-h-16",
       imgSM:      "max-w-24 max-h-24",
       imgMD:      "max-w-32 max-h-32",
@@ -965,6 +1095,13 @@ const dataCard = {
       statMD: `${F_DISP} font-semibold text-[22px]! leading-[1.15] tabular-nums ${INK} pb-0!`,
       cardTitle: `${F_DISP} font-medium text-[18px]! leading-[1.15] tracking-tight uppercase ${INK}`,
       cardTitleSM: `${F_DISP} font-medium text-[15px]! leading-[1.15] tracking-tight uppercase ${INK}`,
+      // Proper-case field label (modal/create-form headerFontStyle). Parity with textSettings —
+      // was missing here, so headerFontStyle:"labelSM" silently fell back to textXS in Cards.
+      labelSM: `${F_DISP} font-medium text-[12.5px]! leading-[1.3] text-slate-700!`,
+      // Segmented-view toggle chips (QA ⇄ Design) — see textSettings. px/py `!` beat the
+      // injected value-cell paddings, same trick as btnPrimary/btnOutline.
+      toggleOn:  `${F_MONO} text-[10.5px]! uppercase tracking-wide inline-flex items-center w-fit h-7 px-3! py-0! rounded-md bg-[#1F3F8F] text-white! no-underline!`,
+      toggleOff: `${F_MONO} text-[10.5px]! uppercase tracking-wide inline-flex items-center w-fit h-7 px-3! py-0! rounded-md border border-zinc-950/10 bg-slate-50 text-slate-500! hover:text-slate-800 no-underline! cursor-pointer`,
       metaAccent: `${F_MONO} text-[12px]! leading-[1.45] tabular-nums font-medium text-[#B45309]!`,
       // As-of / methodology badge. Full-width (fills its cell so stacked chips'
       // borders align) with symmetric vertical padding. The inner value wrapper
@@ -1083,6 +1220,32 @@ const dataCard = {
       metaSM:  `${F_MONO} text-[11px]! uppercase tracking-wider text-white/60!`,
       metaXS:  `${F_MONO} text-[9.5px]! uppercase tracking-[0.18em] text-white/50!`,
       proseSM: `${F_SANS} text-[13px]! leading-[1.6] text-white/80!`,
+    },
+    {
+      // "tile" — gallery preset tile (freight-atlas-gallery.html §gallery grid): each card
+      // is a white shell with hover accent border and p-4 body; typography comes from the
+      // column tokens (cardTitleSM / proseSM / metaXS). `linkMeta` is the tile's footer-link
+      // token ("open in atlas →", brand blue) — columns opt in via valueFontStyle:'linkMeta'.
+      // Pick via the section "Card style" control (display.cardStyle:'tile').
+      name: "tile",
+      subWrapperCompactView: "rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden hover:border-[#37576B] transition-colors p-4 h-full",
+      cardBorder: "",
+      header: "",
+      value:  "",
+      linkMeta: `${F_MONO} text-[10px]! uppercase tracking-[0.18em] text-[#1F3F8F]!`,
+      cardTitleSM: `${F_DISP} font-medium text-[16px]! leading-[1.2] tracking-tight uppercase text-[#0f1722]! pb-1`,
+      proseSM: `${F_SANS} text-[12.5px]! leading-snug text-slate-600! pb-3`,
+      metaXS: `${F_MONO} text-[10px]! uppercase tracking-[0.18em] text-slate-400!`,
+    },
+    {
+      // "rowaligned" — for label-left / value-right fact rows (`headerValueLayout:'row'`). The default
+      // header/value carry asymmetric vertical padding (header pt-3 pb-1, value pb-3) tuned for STACKED
+      // cells; in a row that padding offsets the label vs the value text. Here both get horizontal-only
+      // padding so, with the row's `items-center`, the label and value baselines align. Fonts come from
+      // the column's headerFontStyle/valueFontStyle. Pick via the section "Card style" (display.cardStyle).
+      name: "rowaligned",
+      header: "px-3",
+      value:  "px-3",
     },
   ],
 };
@@ -1233,6 +1396,10 @@ const table = {
       cellEditableTextBox:            "absolute border focus:outline-none min-w-[180px] min-h-[50px] z-[10] whitespace-pre-wrap",
       cellFrozenCol:                  "",
 
+      // Active master-detail row (row_highlight 'accent' style): brand-blue tint + left edge.
+      // The matched row's cells go transparent so this shows through (see TableCell/TableRow).
+      rowHighlightAccent:             "bg-[#1F3F8F]/[0.06] shadow-[inset_3px_0_0_#1F3F8F]",
+
       // Total / striped / gutter.
       totalRow:                       "bg-slate-50 sticky bottom-0 z-[3] border-t border-zinc-950/10",
       totalCell:                      "hover:bg-slate-100 font-medium",
@@ -1276,6 +1443,19 @@ const table = {
       // style: tighter labels, more breathing room in the body, denser
       // information than the dashboard default.
       name: "report",
+      headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
+      headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
+      cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
+      cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2.5 px-4 font-[400] text-[13px] leading-[18px] text-slate-700",
+    },
+    {
+      // Flush table for COMPOSED CARDS — the section's compound card (border + radius)
+      // frames the table, so the table drops its own container border / rounding / shadow
+      // (keeps bg + scroll). Cells/header inherit the `report` treatment. Set per-section
+      // via `display.tableStyle: "flush"`, pairing a padding-0 body section under a header
+      // section so a lexical/Card title + the table read as one card (mockup panel look).
+      name: "flush",
+      tableContainer:                 "flex flex-col bg-white overflow-x-auto overflow-y-auto max-h-[calc(78vh_-_10px)]",
       headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
       headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
       cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
@@ -1326,6 +1506,16 @@ const lexical = {
     text_italic:  "italic",
     text_underline: "underline underline-offset-2",
     text_code:    `${F_MONO} text-[0.92em] px-1.5 py-0.5 rounded bg-zinc-950/5 border border-zinc-950/6 text-[#37576B]`,
+
+    // Tables (lexical TableNode) — the DS comparison-table treatment
+    // (freight-atlas-about.html §what-changed): white card shell on the
+    // scroll wrapper, hairline row dividers, slate header band. Cell
+    // typography comes from the DS ladder; authors can still override
+    // per-text-node with inline styles.
+    tableScrollableWrapper: "overflow-x-auto max-w-full my-2 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm",
+    table: "border-collapse border-spacing-0 w-full",
+    tableCell: `border-0 border-b border-zinc-950/5 align-top text-left px-4 py-2 relative outline-none min-w-[75px] ${F_SANS} text-[12.5px] text-slate-700`,
+    tableCellHeader: "bg-slate-50 text-left border-b border-zinc-950/10",
     text_strikethrough: "line-through",
 
     list_ol:                 "list-decimal pl-6 space-y-1 text-[14.5px] text-slate-700",
@@ -1420,15 +1610,77 @@ const avlGraph = graph;
 // ─────────────────────────────────────────────────────────────────────────────
 // map
 // ─────────────────────────────────────────────────────────────────────────────
+// Shape follows ui/components/map/map.theme.js (legend / popup / hover objects
+// consumed via useMapTheme + useMapLegendTheme by the Map section, mapeditor,
+// and hover comps). Design source: freight-atlas-map.html legend card.
 const map = {
   options: { activeStyle: 0 },
   styles: [{
-    name: "default",
-    container:   "relative rounded-[8px] border border-zinc-950/10 overflow-hidden bg-[#E8E4D2] tny-map",
-    controls:    "absolute top-2 right-2 flex flex-col gap-1 rounded-[6px] bg-white shadow-md p-1",
-    legend:      "absolute bottom-2 left-2 rounded-[6px] bg-white shadow-md p-3 border border-zinc-950/10",
-    legendTitle: "font-display uppercase text-[11px] tracking-wide text-slate-600 mb-1.5",
-    popover:     "rounded-[6px] bg-white shadow-lg border border-zinc-950/10 p-3 text-[12.5px]",
+    name: "transportny",
+    zoomInIcon: "Plus",
+    zoomOutIcon: "Minus",
+    compassIcon: "NavigationArrow",
+    mapStyleIcon: "MapLayers",
+    homeIcon: "Home",
+    loadingIcon: "Spinner",
+    settingsIcon: "Settings",
+    closeIcon: "XMark",
+    legend: {
+      panel: "p-4",
+      panelInner: "relative w-72 min-h-10 max-h-[calc(100vh_-_111px)] overflow-auto rounded-[8px] border border-zinc-950/10 bg-white shadow-lg pointer-events-auto scrollbar-sm",
+      header: "h-9 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/80 sticky top-0 z-10",
+      headerTitle: `${F_DISP} font-medium text-[13px] text-[#2D3E4C] flex-1`,
+      headerMeta: `${F_MONO} text-[9.5px] uppercase tracking-wider text-slate-500`,
+      section: "",
+      row: "px-3 pt-2.5 pb-2 border-b border-zinc-950/5 last:border-0",
+      rowHover: "",
+      rowActive: "bg-blue-500/5",
+      titleRow: "group/title flex w-full items-center gap-2 mb-1.5",
+      title: `flex-1 ${F_SANS} text-[12px] font-semibold text-[#0f1722] truncate`,
+      columnTag: `${F_MONO} text-[9px] uppercase tracking-wider text-slate-400 shrink-0`,
+      listRow: "flex w-full items-center",
+      label: `flex h-5 flex-1 items-center truncate px-2 ${F_SANS} text-[11px] text-slate-600`,
+      secondaryLabel: `${F_MONO} text-[9px] text-slate-500`,
+      groupLabel: "truncate flex-1 font-medium text-slate-700",
+      groupMetaLabel: "text-xs text-slate-500",
+      symbolWrapper: "flex h-5 w-6 items-center",
+      symbolFill: "h-2.5 w-3.5 rounded-sm",
+      symbolCircle: "h-3 w-3 rounded-full border border-white shadow-sm",
+      symbolLine: "h-1 w-4 rounded",
+      rampTrack: "flex h-2 rounded overflow-hidden mb-1",
+      rampTicks: `flex justify-between ${F_MONO} text-[9px] text-slate-500 tabular-nums`,
+      horizontalPanel: "w-full max-h-[350px] overflow-x-auto scrollbar-sm",
+      horizontalTrack: "flex w-full flex-1 p-2",
+      loading: "flex w-full justify-center overflow-hidden pb-2",
+      empty: "text-sm text-slate-500",
+      infoIcon: "text-slate-400 group-hover/icon:text-[#1F3F8F]",
+      infoButton: "size-5 shrink-0 inline-flex items-center justify-center rounded text-[#1F3F8F] hover:text-[#16307A] hover:bg-[#1F3F8F]/10 cursor-pointer",
+      infoButtonFill: "fill-[#1F3F8F]",
+      controlButton: "cursor-pointer transition-colors group-hover:fill-slate-500 group-hover:hover:fill-[#1F3F8F]",
+      controlButtonActive: "fill-[#1F3F8F]",
+      controlButtonInactive: "fill-slate-300",
+      controlButtonReveal: "collapse group-hover:visible",
+      selectorBox: "rounded-[6px] h-[36px] pl-0 flex w-full w-[216px] items-center border border-zinc-950/10 bg-white cursor-pointer hover:border-[#37576B]",
+    },
+    popup: {
+      panel: "rounded-[8px] border border-zinc-950/10 bg-white shadow-lg",
+      infoPanel: "flex w-64 flex-col gap-2 rounded-[8px] border border-zinc-950/10 bg-white px-3 py-3 shadow-lg",
+      menuPanel: "divide-y divide-zinc-950/5 rounded-[8px] border border-zinc-950/10 bg-white shadow-lg",
+      listPanel: "w-48 max-h-[250px] overflow-auto rounded-[8px] border border-zinc-950/10 bg-white p-2 shadow-lg",
+      listItem: `group flex w-full items-center rounded-[4px] px-1 py-1 ${F_SANS} text-[13px] text-slate-700 hover:bg-[#1F3F8F]/10 hover:text-[#16307A]`,
+      listItemText: "truncate flex items-center px-4 py-1 text-[13px]",
+    },
+    hover: {
+      // DS treatment (patterns: .tny-card + .tny-active-bar): tint→white gradient
+      // wash, amber active-rail on the left, Oswald-caps title like card headers.
+      panel: "w-[300px] min-w-[300px] max-w-[300px] max-h-64 overflow-y-auto rounded-[8px] border border-zinc-950/10 border-l-[3px] border-l-[#FACC15] bg-[linear-gradient(180deg,#F7F8FA,#ffffff)] p-3 shadow-lg scrollbar-xs",
+      title: `w-full border-b border-zinc-950/10 pb-1.5 mb-1 ${F_DISP} font-medium text-[13px] uppercase tracking-wide text-[#0f1722] truncate`,
+      row: "flex border-b border-zinc-950/5 py-1 last:border-0",
+      label: `flex-1 pl-1 ${F_MONO} text-[10px] uppercase tracking-wide text-slate-500 self-center`,
+      value: `flex-1 pl-4 pr-1 text-right ${F_SANS} text-[12px] font-medium text-slate-800 tabular-nums`,
+      removeButton: "rounded absolute inline-block top-0 bg-white text-slate-500 border border-zinc-950/10 shadow-sm cursor-pointer hover:text-[#1F3F8F]",
+      pointer: "absolute w-6 h-6 rounded-bl rounded-tr bg-[#F7F8FA] border-r border-b border-zinc-950/10 top-0 left-0 z-10",
+    },
   }],
 };
 
@@ -1486,7 +1738,7 @@ const filters = {
       filterLabel:                 "font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
       filterSettingsWrapperInline: "min-w-0",
       labelWrapperInline:          "shrink-0 inline-flex items-center gap-1",
-      conditionRowInline:          "inline-flex items-center gap-1.5 h-8 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white w-fit transition-colors",
+      conditionRowInline:          "inline-flex items-center gap-1.5 min-h-8 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 hover:border-[#37576B] bg-white w-fit max-w-full transition-colors",
       filtersWrapper:              "w-full flex flex-wrap items-start gap-2",
     },
     { // 2 · labeled — stacked label above a compact control, no panel box
@@ -1505,8 +1757,13 @@ const filters = {
       controlStyle: "tone_bar",
       filterLabel:                 "text-[12px] text-white/70 whitespace-nowrap",
       labelWrapperInline:          "shrink-0 inline-flex items-center",
-      filterSettingsWrapperInline: "min-w-0",
-      conditionRowInline:          "inline-flex items-center gap-2 w-fit",
+      // flex-1 min-w-0: the value area takes ALL remaining width in the section cell.
+      // The old `w-fit` sized the row from fit-content — but on a flex-WRAP control,
+      // max-content is only the largest single child (the longest token), so the row
+      // always came up short and the caret/× wrapped onto a second line even when the
+      // cell had plenty of room ("the filter doesn't take up the room it's given").
+      filterSettingsWrapperInline: "flex-1 min-w-0",
+      conditionRowInline:          "flex items-center gap-2 w-full",
       // h-full + items-center → fill the (stretched) section cell and vertically center the control,
       // so the chips sit on the band's mid-line regardless of the tallest cell (e.g. a 2-line note).
       filtersWrapper:              "h-full w-full flex flex-wrap items-center gap-x-8 gap-y-2",
@@ -1520,6 +1777,21 @@ const filters = {
       placement: "stacked",
       controlStyle: "multiselect_with_search",
       filterLabel:                  "font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 mb-1.5",
+      labelWrapperStacked:          "w-full",
+      conditionRowStacked:          "w-full flex flex-col gap-1",
+      filterSettingsWrapperStacked: "w-full",
+      filtersWrapper:               "w-full",
+      input:                        "w-full h-10 px-3 flex items-center text-[13px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/10 rounded-[6px] bg-white focus:outline-none focus:border-[#1F3F8F]",
+    },
+    { // 5 · filter_panel_light — filter_panel for LIGHT content bands (control-room
+      // tickets): same stacked white-box controls, slate label instead of white
+      // (filter_panel's white/60 label was tuned for the dark `filter_bar` band and
+      // disappears on the gray content band). Keys restated — named styles inherit
+      // from styles[0], not from filter_panel.
+      name: "filter_panel_light",
+      placement: "stacked",
+      controlStyle: "multiselect_with_search",
+      filterLabel:                  "font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 mb-1.5",
       labelWrapperStacked:          "w-full",
       conditionRowStacked:          "w-full flex flex-col gap-1",
       filterSettingsWrapperStacked: "w-full",
@@ -1555,7 +1827,11 @@ const pages = {
   sectionGroup: {
     // content ↔ rail row (inside the band's max-w-[1480px] content container).
     // items-stretch keeps the rail column full-height so its inner sticky pins.
-    contentRow: "flex flex-row gap-10 items-stretch",
+    // min-h-screen: the band fills at least the viewport so a short results column
+    // doesn't leave the sidebar rail floating in a short area; the rail's own
+    // overflow-y-auto (sideNavContainer2) still scrolls only when its content
+    // genuinely exceeds the viewport. min-height is BC-safe — tall bands are unaffected.
+    contentRow: "flex flex-row gap-10 items-stretch min-h-screen",
     contentCol: "flex-1 min-w-0",
     sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
     sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",
@@ -2141,7 +2417,16 @@ const navOptions = {
   authMenu: {
     navItems: [
       { name: "Datasets",    icon: "Database", path: "/datasources", type: "link" },
-      { name: "Site Status", icon: "Settings", path: "/status",      type: "link" },
+      // Control room (npmrds subdomain). `groups` = core userMenu per-item gating (2026-07-17):
+      // an item renders only when `user.groups` intersects its `groups`. Items without the key
+      // render as before. Old bundled cores ignore the key (item shows ungated) until the dms
+      // git sync lands.
+      { name: "Site Manager", icon: "Settings", path: "/sitemgmt", type: "link",
+        groups: ["AVAIL", "NYSDOT Admin"] },
+      // DMS admin dashboard (manage patterns/pages/sources/themes) at the app's adminPath /
+      // BASE_URL (default "/list"). AVAIL-only (2026-07-17, Alex).
+      { name: "Admin", icon: "Lock", path: "/list", type: "link",
+        groups: ["AVAIL"] },
     ],
   },
 };
@@ -2152,6 +2437,8 @@ const navOptions = {
 const pageComponents = {
   AddPageButton,
   Header,
+  ReportRouteList,
+  RouteComparison,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2175,7 +2462,33 @@ const iconStyles = {
     box:  "inline-flex size-12 rounded bg-[#1F3F8F]/10 items-center justify-center text-[#1F3F8F] mb-1",
     icon: "w-6 h-6",
   },
+  // per-product tints for the landing product cards
+  productChipNavy: {
+    box:  "inline-flex size-12 rounded bg-[#0F2D4D]/10 items-center justify-center text-[#0F2D4D] mb-1",
+    icon: "w-6 h-6",
+  },
+  productChipSlate: {
+    box:  "inline-flex size-12 rounded bg-[#37576B]/12 items-center justify-center text-[#37576B] mb-1",
+    icon: "w-6 h-6",
+  },
+  // solid "shield" variants — white icon on the product's field (landing panels)
+  productShieldNavy: {
+    box:  "inline-flex size-14 rounded-[10px] bg-[#0F2D4D] items-center justify-center text-white align-middle mr-3",
+    icon: "w-8 h-8",
+  },
+  productShieldSlate: {
+    box:  "inline-flex size-14 rounded-[10px] bg-[#37576B] items-center justify-center text-white align-middle mr-3",
+    icon: "w-8 h-8",
+  },
+  productShieldBlue: {
+    box:  "inline-flex size-14 rounded-[10px] bg-[#1F3F8F] items-center justify-center text-white align-middle mr-3",
+    icon: "w-8 h-8",
+  },
 };
+
+// The lexical IconNode resolves chip boxes from the LEXICAL editor theme
+// (config.theme.iconStyles) — attach the map to the lexical style too.
+lexical.styles[0].iconStyles = iconStyles;
 
 // data_bar column type — brand-coloured horizontal bars. `fills` maps the
 // data-driven colour key (a sibling column value) to a brand fill; the bar scale
@@ -2191,6 +2504,40 @@ const dataBar = {
     muted:   "bg-[#37576B]",   // region-rank: rest
     warn:    "bg-[#E8843F]",   // corridor WZ share < 50%
     alert:   "bg-[#D6453B]",   // corridor WZ share ≥ 50%
+    success: "bg-[#10B981]",   // resolution / completion progress (control-room tickets)
+  },
+};
+
+// flow_step column type — lifecycle flow-strip boxes (control-room tickets summary).
+// Brand pass over the columnType's neutral defaults: Oswald labels/counts, ink figures.
+// Read via getComponentTheme(theme, 'flowStep').
+const flowStep = {
+  wrapper: "w-full h-full flex items-center",
+  box: "flex-1 min-w-0 h-full rounded-md border border-slate-200 bg-slate-50/60 p-3 flex items-center gap-2",
+  boxTint: "flex-1 min-w-0 h-full rounded-md border border-emerald-200 bg-emerald-50/50 p-3 flex items-center gap-2",
+  dot: "size-2.5 rounded-full shrink-0",
+  dots: { neutral: "bg-slate-300", info: "bg-sky-400", warn: "bg-amber-400", done: "bg-emerald-500" },
+  label: `${F_DISP} font-medium text-[12.5px] text-slate-700 truncate`,
+  count: `ml-auto pl-2 ${F_DISP} font-semibold text-[18px] tabular-nums text-[#0F1722]`,
+  connector: "shrink-0 text-slate-300 text-[16px] pl-1 -mr-1 select-none",
+};
+
+// stacked_bar column type — segmented distribution bars (control-room overview: stage
+// distribution + tickets open/done per pattern). Track/legend get the brand voice (mockup's
+// 8px #e2e8f0 track + metaXS legend); segment colours come from each column's `segments`
+// config (inline hex — the control-room stage palette), with `fills` as the themed keys.
+// Read via getComponentTheme(theme, 'stackedBar').
+const stackedBar = {
+  wrapper: "w-full",
+  track: "w-full flex h-2 rounded-[4px] bg-[#e2e8f0] overflow-hidden",
+  segment: "h-full shrink-0",
+  legend: `pt-1.5 ${F_MONO} text-[10px] uppercase tracking-[0.18em] text-slate-400 tabular-nums`,
+  empty: `pt-1.5 ${F_MONO} text-[10px] uppercase tracking-[0.18em] text-slate-400`,
+  fills: {
+    primary: "bg-[#1F3F8F]",
+    muted:   "bg-[#37576B]",
+    success: "bg-[#10B981]",
+    alert:   "bg-[#FCA5A5]",   // open tickets (mockup's soft red)
   },
 };
 
@@ -2221,6 +2568,7 @@ const transportnyTheme = {
   nestable,
   nestableInHouse,
   logo,
+  logoNav,
 
   // Interaction
   button,
@@ -2244,6 +2592,8 @@ const transportnyTheme = {
   pill,
   dataBar,
   dataColorCell,
+  flowStep,
+  stackedBar,
   pagination,
   icon: iconTheme,
 

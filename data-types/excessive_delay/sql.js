@@ -297,23 +297,36 @@ function pgGeometryLiteral(value) {
   return 'NULL';
 }
 
-function insertRowsSQL({ table, rows, dialect, upsert = false }) {
+// columns: the insert list must match the table the rows land in, not the
+// current DDL — add-mode may target a table created before a schema addition
+// (the v2 series table predates vot_eff/cost).
+function insertRowsSQL({ table, rows, dialect, upsert = false, columns = INSERT_COLUMNS }) {
   if (!Array.isArray(rows) || rows.length === 0) throw new Error('rows must be a non-empty array');
   const pg = dialect === 'postgres';
   const tuples = rows.map((r) => {
     const geom = pg ? pgGeometryLiteral(r.wkb_geometry) : escapeLiteral(
       r.wkb_geometry && typeof r.wkb_geometry === 'object' ? JSON.stringify(r.wkb_geometry) : r.wkb_geometry
     );
-    const vals = INSERT_COLUMNS.map((c) => (c === 'wkb_geometry' ? geom : escapeLiteral(r[c])));
+    const vals = columns.map((c) => (c === 'wkb_geometry' ? geom : escapeLiteral(r[c])));
     return `(${vals.join(', ')})`;
   });
   const conflict = upsert
-    ? `\nON CONFLICT (tmc, year, month) DO UPDATE SET\n${INSERT_COLUMNS
+    ? `\nON CONFLICT (tmc, year, month) DO UPDATE SET\n${columns
       .filter((c) => !['tmc', 'year', 'month'].includes(c))
       .map((c) => `  ${c} = EXCLUDED.${c}`)
       .join(',\n')}`
     : '';
-  return `INSERT INTO ${table}\n  (${INSERT_COLUMNS.join(', ')})\nVALUES\n${tuples.join(',\n')}${conflict}`;
+  return `INSERT INTO ${table}\n  (${columns.join(', ')})\nVALUES\n${tuples.join(',\n')}${conflict}`;
+}
+
+// Columns physically present on the target table (rows expose a `name` field).
+function tableColumnsSQL({ table, dialect }) {
+  if (dialect === 'postgres') {
+    const [schema, name] = table.includes('.') ? table.split('.') : ['public', table];
+    return `SELECT column_name AS name FROM information_schema.columns
+  WHERE table_schema = ${escapeLiteral(schema)} AND table_name = ${escapeLiteral(name)}`;
+  }
+  return `SELECT name FROM pragma_table_info(${escapeLiteral(table)})`;
 }
 
 // ── transcom attribution update (pg + sqlite portable UPDATE ... FROM) ───────
@@ -380,6 +393,7 @@ module.exports = {
   transcomDelayQuery,
   INSERT_COLUMNS,
   insertRowsSQL,
+  tableColumnsSQL,
   pgGeometryLiteral,
   attributionUpdateSQL,
   regionNameUpdateSQL,

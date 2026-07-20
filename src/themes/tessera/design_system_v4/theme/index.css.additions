@@ -1,0 +1,8 @@
+/* Pointer shim — the canonical brand CSS lives in ../_shared.css
+   (browsers MIME-block stylesheets without a .css extension under
+   `python -m http.server`, so the mockups must link a real .css
+   file; one canonical source, per designing-a-dms-design-system.md
+   §8.0.5). At theme-translation time, INLINE the full content of
+   ../_shared.css into the production index.css.additions — the
+   relative @import below only resolves in the mockup folder. */
+@import "../_shared.css";

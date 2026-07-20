@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>tessera · a website builder (beta)</title>
+<!-- apply stored light/dark choice before first paint -->
+<script>(function(){try{var t=localStorage.getItem("t6-theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: {
+    paper:"var(--t-paper)", panel:"var(--t-panel)", well:"var(--t-well)",
+    ink:"var(--t-ink)", graphite:"var(--t-graphite)", pencil:"var(--t-pencil)",
+    rule:"var(--t-rule)", ruleStrong:"var(--t-rule-strong)",
+    cobalt:"var(--t-cobalt)", cobaltDeep:"var(--t-cobalt-deep)", cobaltSoft:"var(--t-cobalt-soft)", accentInk:"var(--t-accent-ink)",
+    marker:"var(--t-marker)", markerSoft:"var(--t-marker-soft)",
+    go:"var(--t-go)", goSoft:"var(--t-go-soft)", amber:"var(--t-amber)", amberSoft:"var(--t-amber-soft)",
+    brick:"var(--t-brick)", brickSoft:"var(--t-brick-soft)",
+    board:"var(--t-board)", board2:"var(--t-board-2)", chalk:"var(--t-chalk)", chalkDim:"var(--t-chalk-dim)",
+    scrim:"var(--t-scrim)",
+  },
+  fontFamily: {
+    display:['"IBM Plex Sans"',"system-ui","sans-serif"], sans:['"IBM Plex Sans"',"system-ui","sans-serif"],
+    mono:['"IBM Plex Mono"',"ui-monospace","monospace"], note:["Caveat",'"Segoe Print"',"cursive"],
+  },
+  boxShadow: { lift:"var(--t-shadow-lift)", drag:"var(--t-shadow-drag)" },
+  maxWidth: { content:"1200px", measure:"640px" },
+}}};
+</script>
+<link rel="stylesheet" href="../_shared.css"/>
+</head>
+
+<!-- Layout: default — marketing chrome. TopNav only, bands centre with
+     mx-auto (the documented exception: no SideNav to hug). Annotation off:
+     this page looks like the product, not the documentation. -->
+<body class="text-ink font-sans">
+<div data-dms-layout="default" class="min-h-screen flex flex-col">
+
+  <!-- ═══ TopNav (Layout default · product navigation) ═══ -->
+  <header class="w-full border-b border-rule sticky top-0 z-50 bg-paper">
+    <div class="absolute inset-y-0 left-0 w-4 t6-hatch border-r border-rule hidden xl:block"></div>
+    <div class="absolute inset-y-0 right-0 w-4 t6-hatch border-l border-rule hidden xl:block"></div>
+    <span class="t6-joint hidden xl:block" style="bottom:-3.5px;left:12.5px;"></span>
+    <span class="t6-joint hidden xl:block" style="bottom:-3.5px;right:12.5px;"></span>
+    <div class="mx-auto w-full max-w-content px-6 lg:px-8 h-16 flex items-center gap-3">
+      <a href="#" class="flex items-center gap-2.5">
+        <!-- icon: Tile -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 text-cobalt" aria-hidden="true"><path d="M8 2.5v19M16 2.5v19M2.5 8h19M2.5 16h19" opacity="0.45"/><rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.1" fill="currentColor" stroke="none" transform="rotate(-8 12 12)"/></svg>
+        <span class="t-displaySM">Tessera</span>
+      </a>
+      <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 mt-0.5">beta 0.6.0</span>
+      <nav class="hidden md:flex items-center gap-6 ml-8">
+        <a href="features.html" class="t-metaMD text-graphite hover:text-ink">features</a>
+        <a href="docs.html" class="t-metaMD text-graphite hover:text-ink">docs</a>
+      </nav>
+      <span class="flex-1"></span>
+      <button onclick="var r=document.documentElement;var d=r.getAttribute('data-theme')==='dark';if(d){r.removeAttribute('data-theme')}else{r.setAttribute('data-theme','dark')}try{localStorage.setItem('t6-theme',d?'light':'dark')}catch(e){}" aria-label="Toggle dark mode" class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite hover:text-ink hover:border-ruleStrong">
+        <span class="t6-when-light"><!-- icon: Moon -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></span>
+        <span class="t6-when-dark"><!-- icon: Sun -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6L17 7M7 17l-1.4 1.4M18.4 18.4L17 17M7 7L5.6 5.6"/></svg></span>
+      </button>
+      <a href="#invite" class="hidden sm:inline-flex items-center gap-1.5 t-proseSM font-medium text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-md px-3.5 py-2">request an invite</a>
+      <button class="md:hidden w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite" aria-label="Menu">
+        <!-- icon: Menu -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1">
+
+    <!-- ═══ LayoutGroup: hero (feature band — hatched edges) ═══ -->
+    <div data-dms-group="hero" class="w-full relative">
+      <div class="t6-sheet-fade"></div>
+      <canvas id="t6-hero-sketch" class="t6-hero-sketch" aria-hidden="true"><!-- decorative --></canvas>
+      <div class="absolute inset-y-0 left-0 w-4 t6-hatch border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-hatch border-l border-rule hidden xl:block"></div>
+
+      <div class="relative mx-auto w-full max-w-content px-6 lg:px-8 pt-16 lg:pt-20 pb-12">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- hero copy -->
+          <section data-dms-section="hero-copy" class="col-span-12 lg:col-span-9 p-3">
+            <p class="t-metaSM text-cobalt">private beta · invite only</p>
+            <h1 class="mt-4">
+              <span class="t-displayHero block">Tessera</span>
+              <span class="t-displayXL block mt-1 max-w-[16ch] t6-caret">a data-driven website builder.</span>
+            </h1>
+            <p class="t-proseLG text-graphite mt-5 max-w-measure">Drag sections onto a grid, wire them to
+              <span class="t6-mark">real data</span>, and hit publish. No code, no deploys, no developer needed to change a
+              headline. It's in beta — the <a href="#edges" class="underline hover:text-ink">known issues</a> are listed on this page.</p>
+            <div class="mt-7 flex flex-wrap items-center gap-3">
+              <a href="#invite" class="inline-flex items-center gap-2 t-prose font-medium text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-md px-5 py-2.5">
+                request an invite
+                <!-- icon: ArrowRight -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 12h15M13.5 6l6 6-6 6"/></svg>
+              </a>
+              <a href="#" class="inline-flex items-center gap-2 t-prose font-medium text-ink border border-ruleStrong bg-panel hover:border-ink rounded-md px-5 py-2.5">
+                explore the demo site
+                <!-- icon: ArrowUpRight -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M6.5 17.5l11-11M8.5 6.5h9v9"/></svg>
+              </a>
+            </div>
+            <p class="t-metaSM text-pencil mt-5">free during the beta · bug reports welcome</p>
+          </section>
+
+          <!-- hero side stats -->
+          <section data-dms-section="hero-stats" class="col-span-12 lg:col-span-3 p-3">
+            <div class="h-full flex lg:flex-col gap-0 lg:justify-end">
+              <div class="flex-1 lg:flex-none border-l-2 border-cobalt pl-4 py-1 mb-0 lg:mb-5">
+                <p class="t-displayLG tabular-nums">14</p>
+                <p class="t-metaSM text-pencil mt-1">testers on the beta</p>
+              </div>
+              <div class="flex-1 lg:flex-none border-l-2 border-rule pl-4 py-1 mb-0 lg:mb-5">
+                <p class="t-displayLG tabular-nums">61</p>
+                <p class="t-metaSM text-pencil mt-1">pages published</p>
+              </div>
+              <div class="flex-1 lg:flex-none border-l-2 border-rule pl-4 py-1">
+                <p class="t-displayLG tabular-nums">37</p>
+                <p class="t-metaSM text-pencil mt-1">bug reports filed</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- the editor, mid-drag — the signature illustration -->
+          <section data-dms-section="hero-editor" class="col-span-12 p-3 mt-4">
+            <div class="relative">
+              <div class="bg-panel border border-rule rounded-lg shadow-lift overflow-hidden">
+                <!-- window chrome -->
+                <div class="h-11 border-b border-rule flex items-center gap-2 px-4">
+                  <span class="flex gap-1.5"><!-- decorative -->
+                    <span class="w-2.5 h-2.5 rounded-full border border-ruleStrong"></span>
+                    <span class="w-2.5 h-2.5 rounded-full border border-ruleStrong"></span>
+                    <span class="w-2.5 h-2.5 rounded-full border border-ruleStrong"></span>
+                  </span>
+                  <span class="t-metaMD text-graphite ml-3 truncate">tessera.build/edit/bird-log</span>
+                  <span class="flex-1"></span>
+                  <span class="hidden sm:inline-flex items-center gap-1.5 t-metaXS text-amber bg-amberSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-amber"></span>draft</span>
+                  <span class="hidden sm:inline-flex items-center gap-1.5 t-metaSM text-accentInk bg-cobalt rounded-md px-2.5 py-1">
+                    <!-- icon: Publish -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 16V8M8.5 11.5L12 8l3.5 3.5"/></svg>
+                    publish</span>
+                </div>
+                <div class="flex">
+                  <!-- page tree -->
+                  <div class="hidden md:block w-48 flex-none border-r border-rule py-3 px-2.5">
+                    <p class="t-metaXS text-pencil px-2 pb-2">pages</p>
+                    <div class="flex items-center gap-2 px-2 py-1.5 rounded-md t-proseSM text-graphite">
+                      <!-- icon: Home -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4.5 11L12 4.5 19.5 11"/><path d="M6.5 9.5v10h11v-10"/></svg>
+                      home</div>
+                    <div class="flex items-center gap-2 px-2 py-1.5 rounded-md bg-cobaltSoft text-cobalt t-proseSM font-medium">
+                      <!-- icon: File -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6.5 3.5h7l4 4v13h-11v-17Z"/><path d="M13.5 3.5v4h4"/></svg>
+                      bird-log</div>
+                    <div class="flex items-center gap-2 px-2 py-1.5 rounded-md t-proseSM text-graphite">
+                      <!-- icon: File -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6.5 3.5h7l4 4v13h-11v-17Z"/><path d="M13.5 3.5v4h4"/></svg>
+                      field notes</div>
+                    <div class="flex items-center gap-2 px-2 py-1.5 rounded-md t-proseSM text-pencil">
+                      <!-- icon: Plus -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                      new page</div>
+                    <p class="t-metaXS text-pencil px-2 pt-4 pb-2">data</p>
+                    <div class="flex items-center gap-2 px-2 py-1.5 t-proseSM text-graphite">
+                      <!-- icon: Database -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M5 6.5C5 4.8 8.1 3.5 12 3.5s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3Z"/><path d="M5 6.5v11c0 1.7 3.1 3 7 3s7-1.3 7-3v-11"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>
+                      sightings <span class="t-metaXS text-pencil">1,204</span></div>
+                  </div>
+                  <!-- canvas: the sheet with grid overlay + sections -->
+                  <div class="flex-1 min-w-0 t6-sheet relative p-4 sm:p-6">
+                    <!-- 12-col grid overlay (authors' "show grid" view) -->
+                    <div class="absolute inset-4 sm:inset-6 grid grid-cols-12 gap-0 pointer-events-none"><!-- decorative -->
+                      <div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed" style="border-color:var(--t-cobalt-line);opacity:.28"></div><div class="border-l border-dashed border-r" style="border-color:var(--t-cobalt-line);opacity:.28"></div>
+                    </div>
+                    <div class="relative grid grid-cols-12 gap-0">
+                      <!-- placed: page header section -->
+                      <div class="col-span-12 p-1.5">
+                        <div class="bg-panel border border-rule rounded-md px-4 py-3">
+                          <p class="t-displayMD">Bird log — summer 2026</p>
+                          <p class="t-proseSM text-graphite mt-0.5">every bird the backyard camera caught, straight from the sightings table</p>
+                        </div>
+                      </div>
+                      <!-- placed: three stat cards -->
+                      <div class="col-span-4 p-1.5">
+                        <div class="bg-panel border border-rule rounded-md px-3 py-2.5">
+                          <p class="t-metaXS text-pencil">species</p>
+                          <p class="t-displayLG tabular-nums">43</p>
+                        </div>
+                      </div>
+                      <div class="col-span-4 p-1.5">
+                        <div class="bg-panel border border-rule rounded-md px-3 py-2.5">
+                          <p class="t-metaXS text-pencil">sightings</p>
+                          <p class="t-displayLG tabular-nums">1,204</p>
+                        </div>
+                      </div>
+                      <div class="col-span-4 p-1.5">
+                        <div class="bg-panel border border-rule rounded-md px-3 py-2.5">
+                          <p class="t-metaXS text-pencil">rarest</p>
+                          <p class="t-displaySM mt-1.5">indigo bunting</p>
+                        </div>
+                      </div>
+                      <!-- placed: mini table -->
+                      <div class="col-span-12 sm:col-span-7 p-1.5">
+                        <div class="bg-panel border border-rule rounded-md overflow-hidden">
+                          <div class="px-3 py-2 border-b border-rule flex items-center justify-between">
+                            <span class="t-metaSM text-graphite">latest sightings</span>
+                            <!-- icon: Filter -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil" aria-hidden="true"><path d="M4 5.5h16L14 12.5v5.5l-4 2v-7.5L4 5.5Z"/></svg>
+                          </div>
+                          <div class="px-3 py-1.5 flex justify-between t-proseXS"><span>black-capped chickadee</span><span class="text-pencil tabular-nums">6:42a</span></div>
+                          <div class="px-3 py-1.5 flex justify-between t-proseXS bg-well"><span>blue jay</span><span class="text-pencil tabular-nums">7:15a</span></div>
+                          <div class="px-3 py-1.5 flex justify-between t-proseXS"><span>downy woodpecker</span><span class="text-pencil tabular-nums">7:58a</span></div>
+                        </div>
+                      </div>
+                      <!-- drop target -->
+                      <div class="col-span-12 sm:col-span-5 p-1.5">
+                        <div class="h-full min-h-[104px] border-2 border-dashed rounded-md flex items-center justify-center" style="border-color:var(--t-cobalt-line);background:var(--t-cobalt-soft)">
+                          <p class="t-metaSM text-cobalt">drop section · cols 8–12</p>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- the section being dragged (signature moment) -->
+                    <div class="absolute bottom-6 right-4 sm:right-10 w-48 sm:w-56 t6-drag bg-panel border border-cobalt rounded-lg p-3 z-10">
+                      <div class="flex items-center gap-1.5 pb-2">
+                        <!-- icon: GripVertical -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-3.5 h-3.5 text-pencil" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                        <span class="t-metaXS text-graphite">graph · sightings by week</span>
+                      </div>
+                      <div class="flex items-end gap-1 h-14"><!-- decorative -->
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:35%"></div>
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:55%"></div>
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:42%"></div>
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:78%"></div>
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:64%"></div>
+                        <div class="flex-1 rounded-t-sm bg-cobalt" style="height:92%"></div>
+                      </div>
+                      <span class="absolute -bottom-3 -right-3 text-ink"><!-- icon: Cursor -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M5.5 4.5l6 15 2-6.5 6.5-2-14.5-6.5Z" fill="var(--t-paper)"/></svg>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- handwritten callouts (lg+) -->
+              <p class="t-noteLG text-cobalt hidden lg:block absolute -top-4 right-10 rotate-2">this is the actual editor, not an illustration</p>
+              <p class="t-noteMD text-graphite hidden lg:block absolute -bottom-7 left-10 -rotate-2">the sheet is a real 12-col grid — sections snap to it →</p>
+            </div>
+            <p class="t-proseXS text-pencil mt-4 text-center lg:text-right lg:pr-2">the editor, mid-drag. everything on the canvas is a section an author placed — nothing is hardcoded.</p>
+          </section>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: what's inside ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div id="inside" data-dms-group="content" class="w-full relative">
+      <div class="absolute inset-y-0 left-0 w-4 t6-ticks border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-ticks border-l border-rule hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="inside-lede" class="col-span-12 p-3">
+            <p class="t-metaSM text-pencil">features</p>
+            <h2 class="t-displayXL mt-3">What tessera does today</h2>
+            <p class="t-prose text-graphite mt-4 max-w-measure">It's not a prototype — three production sites already run on it.
+              Here's the tour.</p>
+          </section>
+
+          <section data-dms-section="cap-edit" class="col-span-12 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 t6-lift md:flex md:items-start md:gap-5">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center flex-none">
+                <!-- icon: Pencil -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg>
+              </span>
+              <div class="mt-4 md:mt-0">
+                <h3 class="t-displaySM">edit in place</h3>
+                <p class="t-proseSM text-graphite mt-2 max-w-measure">The page is the editor. Click a section and type — layout, theme,
+                  and live data update as you work, so the page you're editing is exactly the page visitors will see.</p>
+              </div>
+            </div>
+          </section>
+
+          <section data-dms-section="cap-grid" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Grid -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M3.5 9h17M3.5 15h17M9 3.5v17M15 3.5v17"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">a grid you can feel</h3>
+              <p class="t-proseSM text-graphite mt-2">Every page is sections on a 12-column sheet. Drag them, span them, stack them.
+                Toggle the grid overlay to see exactly where everything sits.</p>
+            </div>
+          </section>
+          <section data-dms-section="cap-data" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Database -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M5 6.5C5 4.8 8.1 3.5 12 3.5s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3Z"/><path d="M5 6.5v11c0 1.7 3.1 3 7 3s7-1.3 7-3v-11"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">your data, live</h3>
+              <p class="t-proseSM text-graphite mt-2">Upload a CSV or a shapefile and it becomes a real dataset with versions. Cards,
+                tables, and charts bind to it — update the data, every page updates.</p>
+            </div>
+          </section>
+          <section data-dms-section="cap-tables" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Table -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M12 4.5v15"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">tables built for real data</h3>
+              <p class="t-proseSM text-graphite mt-2">Sort, filter, paginate, search across sixteen columns at once. A keyword
+                search over 17k rows is a config option, not custom work.</p>
+            </div>
+          </section>
+          <section data-dms-section="cap-graphs" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Graph -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M7.5 16v-4M12 16V8M16.5 16v-6.5"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">charts without custom code</h3>
+              <p class="t-proseSM text-graphite mt-2">Pick a dataset, pick an x and a y, get a chart in the site's palette. Target
+                lines are just a second series — no bespoke code required.</p>
+            </div>
+          </section>
+          <section data-dms-section="cap-maps" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Map -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M9 4.5L4 6.5v13l5-2 6 2 5-2v-13l-5 2-6-2Z"/><path d="M9 4.5v13M15 6.5v13"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">maps from real GIS data</h3>
+              <p class="t-proseSM text-graphite mt-2">GIS data renders as real vector maps — parcels, corridors, county lines.
+                A land bank runs its whole property viewer on this.</p>
+            </div>
+          </section>
+          <section data-dms-section="cap-themes" class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full t6-lift">
+              <span class="inline-flex w-9 h-9 rounded-md bg-cobaltSoft text-cobalt items-center justify-center">
+                <!-- icon: Layers -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><path d="M12 3.5l8.5 4.5L12 12.5 3.5 8 12 3.5Z"/><path d="M3.5 12.5L12 17l8.5-4.5"/><path d="M3.5 17L12 21.5 20.5 17"/></svg>
+              </span>
+              <h3 class="t-displaySM mt-4">themes all the way down</h3>
+              <p class="t-proseSM text-graphite mt-2">Every button, nav, and card reads from a theme. Swap it and the same
+                content becomes a different site. This page is a theme. So is the dark mode you can toggle up top.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: how a page happens ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div data-dms-group="content" class="w-full relative">
+      <div class="absolute inset-y-0 left-0 w-4 t6-dashes border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-dashes border-l border-rule hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="how-lede" class="col-span-12 p-3">
+            <p class="t-metaSM text-pencil">how it works</p>
+            <h2 class="t-displayXL mt-3">Place, bind, publish</h2>
+          </section>
+          <section data-dms-section="how-place" class="col-span-12 md:col-span-4 p-3">
+            <div class="border-t-2 border-cobalt pt-4 pr-4 h-full">
+              <p class="t-metaSM text-cobalt">01 · place</p>
+              <h3 class="t-displaySM mt-2">Drag a section onto the sheet</h3>
+              <p class="t-proseSM text-graphite mt-2">Text, card, table, graph, map — pick one, drop it, give it columns. The grid
+                does the layout math so you don't.</p>
+            </div>
+          </section>
+          <section data-dms-section="how-bind" class="col-span-12 md:col-span-4 p-3">
+            <div class="border-t-2 border-rule pt-4 pr-4 h-full">
+              <p class="t-metaSM text-cobalt">02 · bind</p>
+              <h3 class="t-displaySM mt-2">Point it at a dataset</h3>
+              <p class="t-proseSM text-graphite mt-2">Choose the source, choose the columns, choose how each one renders — image,
+                link, formatted number. The section fills itself.</p>
+            </div>
+          </section>
+          <section data-dms-section="how-publish" class="col-span-12 md:col-span-4 p-3">
+            <div class="border-t-2 border-rule pt-4 pr-4 h-full">
+              <p class="t-metaSM text-cobalt">03 · publish</p>
+              <h3 class="t-displaySM mt-2">Publish when you're ready</h3>
+              <p class="t-proseSM text-graphite mt-2">Drafts stay drafts until you publish. Publishing puts the page live; visitors
+                never see work in progress. <span class="t6-mark">Undo exists.</span></p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: stuff already running on it ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div data-dms-group="content" class="w-full relative">
+      <div class="absolute inset-y-0 left-0 w-4 t6-backhatch border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-backhatch border-l border-rule hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="proof-lede" class="col-span-12 p-3">
+            <p class="t-metaSM text-pencil">in production</p>
+            <h2 class="t-displayXL mt-3">Already running in production</h2>
+            <p class="t-prose text-graphite mt-4 max-w-measure">Not screenshots of a demo workspace — sites with real users and real
+              data, built and maintained with the same editor you'd get.</p>
+          </section>
+
+          <section data-dms-section="proof-radio" class="col-span-12 md:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg overflow-hidden h-full t6-lift">
+              <div class="t6-sheet border-b border-rule p-4"><!-- decorative — schedule thumbnail -->
+                <div class="bg-panel border border-rule rounded-md p-2.5">
+                  <div class="flex items-center justify-between"><span class="t-metaXS text-pencil">now airing</span><span class="w-1.5 h-1.5 rounded-full bg-brick"></span></div>
+                  <p class="t-displaySM mt-1">the graveyard shift</p>
+                  <div class="mt-2 space-y-1">
+                    <div class="h-1.5 rounded-full bg-cobalt" style="width:72%"></div>
+                    <div class="h-1.5 rounded-full bg-well" style="width:100%"></div>
+                    <div class="h-1.5 rounded-full bg-well" style="width:88%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="p-5">
+                <h3 class="t-displaySM">a college radio station</h3>
+                <p class="t-proseSM text-graphite mt-1.5">Schedule, shows, and a "now airing" card that reads the clock. DJs edit
+                  their own show pages.</p>
+              </div>
+            </div>
+          </section>
+          <section data-dms-section="proof-mitigation" class="col-span-12 md:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg overflow-hidden h-full t6-lift">
+              <div class="t6-sheet border-b border-rule p-4"><!-- decorative — dashboard thumbnail -->
+                <div class="bg-panel border border-rule rounded-md p-2.5">
+                  <p class="t-metaXS text-pencil">flood claims by county</p>
+                  <div class="mt-2 flex items-end gap-1 h-12">
+                    <div class="flex-1 rounded-t-sm bg-cobalt" style="height:90%"></div>
+                    <div class="flex-1 rounded-t-sm bg-cobalt" style="height:55%"></div>
+                    <div class="flex-1 rounded-t-sm bg-cobalt" style="height:70%"></div>
+                    <div class="flex-1 rounded-t-sm bg-go" style="height:38%"></div>
+                    <div class="flex-1 rounded-t-sm bg-cobalt" style="height:25%"></div>
+                    <div class="flex-1 rounded-t-sm bg-cobalt" style="height:48%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="p-5">
+                <h3 class="t-displaySM">state hazard dashboards</h3>
+                <p class="t-proseSM text-graphite mt-1.5">Tens of thousands of rows of claims and projects, filtered and charted by
+                  planners who never touch code.</p>
+              </div>
+            </div>
+          </section>
+          <section data-dms-section="proof-landbank" class="col-span-12 md:col-span-4 p-3">
+            <div class="bg-panel border border-rule rounded-lg overflow-hidden h-full t6-lift">
+              <div class="t6-sheet border-b border-rule p-4"><!-- decorative — parcel-map thumbnail -->
+                <div class="bg-panel border border-rule rounded-md p-2.5">
+                  <p class="t-metaXS text-pencil">parcels · 4 available</p>
+                  <!-- decorative -->
+                  <svg viewBox="0 0 160 52" class="mt-2 w-full" aria-hidden="true">
+                    <path d="M4 8 L52 4 L58 24 L10 30 Z" fill="var(--t-cobalt-soft)" stroke="var(--t-cobalt)" stroke-width="1"/>
+                    <path d="M56 4 L104 8 L98 26 L60 24 Z" fill="none" stroke="var(--t-rule-strong)" stroke-width="1"/>
+                    <path d="M10 32 L56 26 L64 48 L18 50 Z" fill="none" stroke="var(--t-rule-strong)" stroke-width="1"/>
+                    <path d="M108 10 L152 16 L144 44 L100 28 Z" fill="var(--t-go-soft)" stroke="var(--t-go)" stroke-width="1"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="p-5">
+                <h3 class="t-displaySM">a county land bank</h3>
+                <p class="t-proseSM text-graphite mt-1.5">Every property on a map with photos, status, and an application form.
+                  Staff update listings themselves.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: known rough edges (board band) ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div id="edges" data-dms-group="board" class="w-full t6-board relative">
+      <div class="absolute inset-y-0 left-0 w-4 t6-ticks-chalk border-r border-board2 hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-ticks-chalk border-l border-board2 hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="edges-lede" class="col-span-12 lg:col-span-5 p-3">
+            <p class="t-metaSM text-chalkDim">known issues</p>
+            <h2 class="t-displayXL mt-3 text-chalk">It's a beta. Here's what's still being fixed.</h2>
+            <p class="t-prose mt-4 max-w-measure text-chalkDim">An honest list beats a polished pitch. These are the
+              current known issues, updated with every release.</p>
+            <a href="#" class="inline-flex items-center gap-2 t-metaSM text-chalk border border-board2 rounded-md px-3.5 py-2 mt-5 hover:border-chalkDim">
+              report an issue
+              <!-- icon: ArrowUpRight -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6.5 17.5l11-11M8.5 6.5h9v9"/></svg>
+            </a>
+          </section>
+          <section data-dms-section="edges-list" class="col-span-12 lg:col-span-7 p-3">
+            <div class="rounded-lg border border-board2 bg-board2 p-6">
+              <div class="flex items-center justify-between border-b border-rule pb-3">
+                <span class="t-metaSM text-chalk">known-issues.txt</span>
+                <span class="t-metaXS text-chalkDim">updated jul 03</span>
+              </div>
+              <div class="mt-4 space-y-2.5 t-metaMD">
+                <p class="text-chalk">[ ] maps get slow past ~50k features — tiling fix in progress</p>
+                <p class="text-chalk">[ ] undo history resets when you switch pages</p>
+                <p class="text-chalk">[ ] dark-mode preview flickers in the theme editor</p>
+                <p class="text-chalk">[ ] csv upload chokes on 100mb+ files (use the cli for now)</p>
+                <p class="text-chalkDim"><span class="text-go">[x]</span> <s>safari drops the drag ghost mid-drag</s> — fixed in 0.6.0</p>
+                <p class="text-chalkDim"><span class="text-go">[x]</span> <s>publish button published twice if you double-clicked</s> — 0.5.2</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: questions ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div id="faq" data-dms-group="content" class="w-full relative">
+      <div class="absolute inset-y-0 left-0 w-4 t6-rungs border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-rungs border-l border-rule hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="faq-lede" class="col-span-12 p-3">
+            <p class="t-metaSM text-pencil">faq</p>
+            <h2 class="t-displayXL mt-3">Frequently asked questions</h2>
+          </section>
+          <section data-dms-section="faq-cost" class="col-span-12 md:col-span-6 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+              <h3 class="t-displaySM">what does the beta cost?</h3>
+              <p class="t-proseSM text-graphite mt-2">Nothing — the beta is free. If paid plans ever arrive, everyone from the beta
+                keeps a free plan.</p>
+            </div>
+          </section>
+          <section data-dms-section="faq-export" class="col-span-12 md:col-span-6 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+              <h3 class="t-displaySM">what if the project ends?</h3>
+              <p class="t-proseSM text-graphite mt-2">Your content is yours — pages and datasets export as JSON and CSV whenever you
+                want.</p>
+            </div>
+          </section>
+          <section data-dms-section="faq-stack" class="col-span-12 md:col-span-6 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+              <h3 class="t-displaySM">what's it built on?</h3>
+              <p class="t-proseSM text-graphite mt-2">React and Postgres, with a data layer built for maps and charts. There's a
+                CLI too — <span class="t-metaMD">tessera page create</span> — if you prefer the terminal.</p>
+            </div>
+          </section>
+          <section data-dms-section="faq-break" class="col-span-12 md:col-span-6 p-3">
+            <div class="bg-panel border border-rule rounded-lg p-6 h-full">
+              <h3 class="t-displaySM">can an update break my live site?</h3>
+              <p class="t-proseSM text-graphite mt-2">Published pages are immutable snapshots — an update can break the editor
+                (see known issues), but never a live page.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LayoutGroup: invite CTA (feature band) ═══ -->
+    <div class="t6-divider" aria-hidden="true"></div>
+
+    <div id="invite" data-dms-group="feature" class="w-full relative">
+      <div class="t6-sheet-fade"></div>
+      <div class="absolute inset-y-0 left-0 w-4 t6-hatch border-r border-rule hidden xl:block"></div>
+      <div class="absolute inset-y-0 right-0 w-4 t6-hatch border-l border-rule hidden xl:block"></div>
+      <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-20">
+        <div class="grid grid-cols-12 gap-0">
+          <section data-dms-section="invite" class="col-span-12 lg:col-span-8 lg:col-start-3 p-3 text-center">
+            <h2 class="t-displayXL">Bring a project.</h2>
+            <p class="t-prose text-graphite mt-4 max-w-measure mx-auto">A field log, an archive, a dashboard over a live dataset —
+              the beta works best with a real use in mind. Request an invite and build it on real data.</p>
+            <form class="mt-7 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="return false">
+              <label class="sr-only" for="invite-email">email</label>
+              <input id="invite-email" type="email" placeholder="you@example.com"
+                class="flex-1 t-prose bg-panel border border-ruleStrong rounded-md px-4 py-2.5 placeholder:text-pencil"/>
+              <button class="t-prose font-medium text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-md px-5 py-2.5">request an invite</button>
+            </form>
+            <p class="t-metaSM text-pencil mt-5">invites go out in small weekly batches</p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══ LayoutGroup: footer ═══ -->
+  <div class="t6-divider" aria-hidden="true"></div>
+  <footer data-dms-group="footer" class="w-full">
+    <div class="mx-auto w-full max-w-content px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-12 gap-0">
+        <section data-dms-section="footer" class="col-span-12 p-3">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <span class="flex items-center gap-2">
+              <!-- icon: Tile -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-cobalt" aria-hidden="true"><path d="M8 2.5v19M16 2.5v19M2.5 8h19M2.5 16h19" opacity="0.45"/><rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.1" fill="currentColor" stroke="none" transform="rotate(-8 12 12)"/></svg>
+              <span class="t-metaSM text-graphite">tessera · beta 0.6.0</span>
+            </span>
+            <span class="t-metaSM text-pencil">made in albany, ny</span>
+            <span class="t-metaSM text-pencil">this page is a tessera page</span>
+            <span class="flex-1"></span>
+            <a href="#" class="t-metaSM text-graphite hover:text-ink">changelog</a>
+            <a href="#" class="t-metaSM text-graphite hover:text-ink">roadmap</a>
+            <a href="login.html" class="t-metaSM text-graphite hover:text-ink">sign in</a>
+          </div>
+          <div class="border-t border-rule mt-6 pt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <span class="t-metaXS text-pencil">design system</span>
+            <a href="../design-system/theme.html" class="t-metaXS text-pencil hover:text-graphite">1 theme</a>
+            <a href="../design-system/layouts.html" class="t-metaXS text-pencil hover:text-graphite">2 layouts</a>
+            <a href="../design-system/grid.html" class="t-metaXS text-pencil hover:text-graphite">3 grid</a>
+            <a href="../design-system/components.html" class="t-metaXS text-pencil hover:text-graphite">4 components</a>
+            <a href="../design-system/patterns.html" class="t-metaXS text-pencil hover:text-graphite">5 patterns</a>
+            <span class="t-metaXS text-cobalt">beta landing (this page)</span>
+            <a href="features.html" class="t-metaXS text-pencil hover:text-graphite">features</a>
+            <a href="docs.html" class="t-metaXS text-pencil hover:text-graphite">docs</a>
+            <a href="login.html" class="t-metaXS text-pencil hover:text-graphite">sign in</a>
+            <a href="admin-site.html" class="t-metaXS text-pencil hover:text-graphite">admin</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../ds-nav.js"></script>
+
+<!-- hero sketch layer: wireframe sections trace themselves onto the sheet,
+     assemble page layouts (dashboard / article / map), and get rearranged
+     like sections in the editor — t6-joint squares pin each corner.
+     Decorative — wrapped so a CDN failure can never break the page.
+     Reduced motion: layouts render fully drawn, static, no loop. -->
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script type="module">
+try {
+  const THREE = await import('three');
+  const canvas = document.getElementById('t6-hero-sketch');
+  const band = canvas.parentElement;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(0, 1, 0, -1, -10, 10);
+
+  const GRID = 24;                 // matches the t6 sheet
+  const T = 2;                     // stroke thickness (px)
+  const OUT_A = 0.4, IN_A = 0.22;  // outline / inner-detail opacity
+  const JOINT_A = 0.55;            // corner joint square opacity
+  const JOINT = 7, PLUG = 5;       // t6-joint: 7px square, panel-filled
+  let W = 0, H = 0;
+  function resize() {
+    W = band.clientWidth; H = band.clientHeight;
+    renderer.setSize(W, H, false);
+    camera.right = W; camera.bottom = -H;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+
+  const cssColor = (name) =>
+    new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue(name).trim());
+  const cobalt = () => cssColor('--t-cobalt');
+  const paper = () => cssColor('--t-paper');
+  const ease = (t) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const unit = new THREE.PlaneGeometry(1, 1);
+
+  // page layouts the sections assemble, in sheet cells (1 cell = 24px).
+  // x/y is the built arrangement; ax/ay is where each section moves when
+  // the layout is rearranged (same block, new slot — a section reorder).
+  const BLUEPRINTS = [
+    { w: 14, h: 10, blocks: [                                  // dashboard
+      { x: 0, y: 0, w: 14, h: 2, ax: 0, ay: 0, kind: 'title' },
+      { x: 0, y: 3, w: 4, h: 2, ax: 10, ay: 3, kind: 'plain' },
+      { x: 5, y: 3, w: 4, h: 2, ax: 0, ay: 3, kind: 'plain' },
+      { x: 10, y: 3, w: 4, h: 2, ax: 5, ay: 3, kind: 'plain' },
+      { x: 0, y: 6, w: 8, h: 4, ax: 6, ay: 6, kind: 'table' },  // table ↔ chart
+      { x: 9, y: 6, w: 5, h: 4, ax: 0, ay: 6, kind: 'chart' },
+    ] },
+    { w: 11, h: 10, blocks: [                                  // article: sidebar
+      { x: 0, y: 0, w: 8, h: 2, ax: 3, ay: 0, kind: 'title' }, //   crosses over
+      { x: 0, y: 3, w: 7, h: 7, ax: 4, ay: 3, kind: 'text' },
+      { x: 8, y: 3, w: 3, h: 3, ax: 0, ay: 3, kind: 'plain' },
+      { x: 8, y: 7, w: 3, h: 3, ax: 0, ay: 7, kind: 'chart' },
+    ] },
+    { w: 13, h: 9, blocks: [                                   // map page: map
+      { x: 0, y: 0, w: 8, h: 9, ax: 5, ay: 0, kind: 'plain' }, //   flips sides
+      { x: 9, y: 0, w: 4, h: 2, ax: 0, ay: 0, kind: 'title' },
+      { x: 9, y: 3, w: 4, h: 2, ax: 0, ay: 3, kind: 'plain' },
+      { x: 9, y: 6, w: 4, h: 3, ax: 0, ay: 6, kind: 'chart' },
+    ] },
+    { w: 9, h: 10, blocks: [                                   // gallery: cards
+      { x: 0, y: 0, w: 9, h: 2, ax: 0, ay: 0, kind: 'title' }, //   cycle slots
+      { x: 0, y: 3, w: 4, h: 3, ax: 5, ay: 3, kind: 'plain' },
+      { x: 5, y: 3, w: 4, h: 3, ax: 5, ay: 7, kind: 'chart' },
+      { x: 5, y: 7, w: 4, h: 3, ax: 0, ay: 7, kind: 'plain' },
+      { x: 0, y: 7, w: 4, h: 3, ax: 0, ay: 3, kind: 'text' },
+    ] },
+    { w: 8, h: 11, blocks: [                                   // profile column
+      { x: 0, y: 0, w: 8, h: 2, ax: 0, ay: 0, kind: 'title' },
+      { x: 0, y: 3, w: 8, h: 4, ax: 0, ay: 3, kind: 'text' },
+      { x: 0, y: 8, w: 4, h: 3, ax: 4, ay: 8, kind: 'chart' },
+      { x: 5, y: 8, w: 3, h: 3, ax: 0, ay: 8, kind: 'plain' },
+    ] },
+  ];
+
+  function place(m, cx, cy, sx, sy) {
+    m.position.set(cx, -cy, 0);
+    m.scale.set(Math.max(sx, 0.001), Math.max(sy, 0.001), 1);
+  }
+
+  // trace the outline: a pen running the perimeter, corners overlapping
+  // into little T×T joints (the tesserae)
+  function layoutOutline(b, p) {
+    const w = b.pw, h = b.ph, per = 2 * (w + h);
+    const lens = [w, h, w, h];
+    const starts = [[0, 0], [w, 0], [w, h], [0, h]];
+    const dirs = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+    let acc = 0;
+    for (let i = 0; i < 4; i++) {
+      const vis = Math.max(0, Math.min(lens[i], p * per - acc));
+      acc += lens[i];
+      const m = b.edges[i];
+      if (vis <= 0) { m.visible = false; continue; }
+      m.visible = true;
+      const L = vis + (vis >= lens[i] ? T : 0);
+      const cx = starts[i][0] + dirs[i][0] * (vis / 2);
+      const cy = starts[i][1] + dirs[i][1] * (vis / 2);
+      if (dirs[i][1] === 0) place(m, cx, cy, L, T);
+      else place(m, cx, cy, T, L);
+    }
+    // t6-joint squares pop in as the pen passes each corner
+    const cornerD = [0, w, w + h, 2 * w + h];
+    const corners = [[0, 0], [w, 0], [w, h], [0, h]];
+    for (let i = 0; i < 4; i++) {
+      const on = p > 0 && p * per >= cornerD[i];
+      const [outer, plug] = b.joints[i];
+      outer.visible = plug.visible = on;
+      if (on) {
+        place(outer, corners[i][0], corners[i][1], JOINT, JOINT);
+        place(plug, corners[i][0], corners[i][1], PLUG, PLUG);
+      }
+    }
+  }
+
+  // inner details per kind — randomized per block instance at spawn
+  function layoutInner(b, p) {
+    const w = b.pw, h = b.ph, g = ease(p), r = b.rand;
+    if (b.kind === 'title') {
+      const len = Math.max(0, Math.min(w * r.titleFr, w - 20)) * g;
+      place(b.inner[0], 12 + len / 2, h / 2, len, 3);
+    } else if (b.kind === 'text') {
+      b.inner.forEach((m, i) => {
+        const len = Math.max(0, w - 24) * r.textFr[i] * g;
+        place(m, 12 + len / 2, h * (0.26 + i * 0.22), len, 2);
+      });
+    } else if (b.kind === 'table') {
+      b.inner.forEach((m, i) => {
+        const y = GRID * (i + 1);
+        if (y >= h - 6) { m.visible = false; return; }
+        m.visible = true;
+        place(m, (w * g) / 2, y, w * g, 1.5);
+      });
+    } else if (b.kind === 'chart') {
+      const n = r.bars.length;
+      const inw = w - 20, bw = Math.min(10, inw / (n * 1.8));
+      b.inner.forEach((m, i) => {
+        const bh = (h - 18) * r.bars[i] * g;
+        const x = 10 + (inw / n) * (i + 0.5);
+        place(m, x, h - 8 - bh / 2, bw, bh);
+      });
+    }
+  }
+
+  const comps = [];
+  let inkMats = [], plugMats = [];
+
+  // areas the sketches must not cover: the hero copy and the (opaque)
+  // editor illustration — measured live so it tracks the real layout
+  function keepOuts() {
+    const br = band.getBoundingClientRect();
+    const PAD = 20;
+    return ['hero-copy', 'hero-editor'].map((name) => {
+      const el = band.querySelector('[data-dms-section="' + name + '"]');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: r.left - br.left - PAD, y: r.top - br.top - PAD,
+               w: r.width + 2 * PAD, h: r.height + 2 * PAD };
+    }).filter(Boolean);
+  }
+  const hits = (px, py, pw, ph, r) =>
+    px < r.x + r.w && r.x < px + pw && py < r.y + r.h && r.y < py + ph;
+
+  function spawnComp(startAt) {
+    const cols = Math.floor(W / GRID), rows = Math.floor(H / GRID);
+    const fits = BLUEPRINTS.filter((bp) => bp.w <= cols - 2 && bp.h <= rows - 2);
+    if (!fits.length) return false;
+    const bp = fits[Math.floor(Math.random() * fits.length)];
+    const mirror = Math.random() < 0.5;                // flip layouts L↔R
+    const avoid = keepOuts();
+
+    let col = 0, row = 0, found = false;
+    for (let tries = 0; tries < 60 && !found; tries++) {
+      col = 1 + Math.floor(Math.random() * Math.max(1, cols - bp.w - 1));
+      row = 1 + Math.floor(Math.random() * Math.max(1, rows - bp.h - 1));
+      const px = col * GRID, py = row * GRID, pw = bp.w * GRID, ph = bp.h * GRID;
+      if (avoid.some((r) => hits(px, py, pw, ph, r))) continue;
+      // never stack layouts: ≥1 clear cell between live compositions, no
+      // exceptions — the top-up spawner retries when there's no room
+      const clear = comps.every((c) =>
+        col + bp.w < c.col || c.col + c.bp.w < col || row + bp.h < c.row || c.row + c.bp.h < row);
+      if (clear) found = true;
+    }
+    if (!found) return false;                          // top-up will retry
+
+    const matOut = new THREE.MeshBasicMaterial({ color: cobalt(), transparent: true, opacity: OUT_A });
+    const matIn = new THREE.MeshBasicMaterial({ color: cobalt(), transparent: true, opacity: IN_A });
+    const matJoint = new THREE.MeshBasicMaterial({ color: cobalt(), transparent: true, opacity: JOINT_A });
+    const matPlug = new THREE.MeshBasicMaterial({ color: paper(), transparent: true, opacity: 1 });
+    inkMats.push(matOut, matIn, matJoint);
+    plugMats.push(matPlug);
+    const root = new THREE.Group();
+    root.position.set(col * GRID, -row * GRID, 0);
+    scene.add(root);
+
+    const arr = Math.random() < 0.5 ? 0 : 1;           // random starting arrangement
+    const speed = rnd(1250, 1850);                     // per-layout pen speed
+    const stagger = rnd(0.55, 0.8);
+    let cursor = startAt + rnd(0, 500);
+    const blocks = bp.blocks.map((raw) => {
+      const def = mirror
+        ? { ...raw, x: bp.w - raw.x - raw.w, ax: bp.w - raw.ax - raw.w }
+        : raw;
+      const sx = arr === 0 ? def.x : def.ax, sy = arr === 0 ? def.y : def.ay;
+      const g = new THREE.Group();
+      g.position.set(sx * GRID, -sy * GRID, 0);
+      root.add(g);
+      const nBars = 3 + Math.floor(Math.random() * 3);
+      const b = {
+        g, kind: def.kind, def,
+        pw: def.w * GRID, ph: def.h * GRID,
+        edges: [], inner: [], joints: [], start: cursor, drawMs: 0,
+        rand: {
+          titleFr: rnd(0.32, 0.55),
+          textFr: [rnd(0.85, 1), rnd(0.85, 1), rnd(0.35, 0.7)],
+          bars: Array.from({ length: nBars }, () => rnd(0.25, 0.85)),
+        },
+      };
+      for (let i = 0; i < 4; i++) {
+        const m = new THREE.Mesh(unit, matOut); m.visible = false; g.add(m); b.edges.push(m);
+      }
+      for (let i = 0; i < 4; i++) {
+        const outer = new THREE.Mesh(unit, matJoint); outer.renderOrder = 1;
+        const plug = new THREE.Mesh(unit, matPlug); plug.renderOrder = 2;
+        outer.visible = plug.visible = false;
+        g.add(outer); g.add(plug); b.joints.push([outer, plug]);
+      }
+      const nIn = { title: 1, text: 3, table: 3, chart: nBars, plain: 0 }[def.kind];
+      for (let i = 0; i < nIn; i++) {
+        const m = new THREE.Mesh(unit, matIn); g.add(m); b.inner.push(m);
+      }
+      layoutInner(b, 0);
+      b.drawMs = (2 * (b.pw + b.ph) / speed) * 1000;
+      cursor += b.drawMs * stagger;                    // next section overlaps
+      return b;
+    });
+
+    comps.push({
+      bp, col, row, root, matOut, matIn, matJoint, matPlug, blocks,
+      state: 'build', until: 0, arr,
+      movesLeft: 1 + Math.floor(Math.random() * 3),    // rearrange 1–3 times
+      moveStart: 0, movers: [],
+      buildDone: cursor + blocks[blocks.length - 1].drawMs,
+    });
+    return true;
+  }
+
+  function disposeComp(c) {
+    scene.remove(c.root);
+    const mats = [c.matOut, c.matIn, c.matJoint, c.matPlug];
+    mats.forEach((m) => m.dispose());
+    inkMats = inkMats.filter((m) => !mats.includes(m));
+    plugMats = plugMats.filter((m) => !mats.includes(m));
+    comps.splice(comps.indexOf(c), 1);
+  }
+
+  function drawComp(c, t) {
+    for (const b of c.blocks) {
+      const p = (t - b.start) / b.drawMs;
+      layoutOutline(b, ease(p));
+      layoutInner(b, (p - 1) / 0.5);                   // details after the outline
+    }
+  }
+
+  const MOVE_MS = 560;
+
+  function startMove(c, t) {
+    const to = c.arr === 0 ? ['ax', 'ay'] : ['x', 'y'];
+    const from = c.arr === 0 ? ['x', 'y'] : ['ax', 'ay'];
+    const moving = c.blocks.filter((b) => b.def.ax !== b.def.x || b.def.ay !== b.def.y);
+    // shuffled order: a different section leads each rearrange
+    const order = moving.map((_, i) => i).sort(() => Math.random() - 0.5);
+    c.movers = moving.map((b, i) => ({
+      b, delay: order[i] * rnd(120, 220),
+      fx: b.def[from[0]] * GRID, fy: b.def[from[1]] * GRID,
+      tx: b.def[to[0]] * GRID, ty: b.def[to[1]] * GRID,
+    }));
+    c.moveStart = t;
+    c.state = 'move';
+  }
+
+  function step(c, t) {
+    if (c.state === 'build') {
+      drawComp(c, t);
+      if (t >= c.buildDone + 500) { c.state = 'dwell'; c.until = t + rnd(1400, 3800); }
+    } else if (c.state === 'dwell') {
+      if (t < c.until) return;
+      if (c.movesLeft > 0) { c.movesLeft--; startMove(c, t); }
+      else { c.state = 'fade'; c.until = t; }
+    } else if (c.state === 'move') {
+      let done = true;
+      for (const m of c.movers) {
+        const raw = (t - c.moveStart - m.delay) / MOVE_MS;
+        if (raw < 1) done = false;
+        const p = ease(raw);
+        m.b.g.position.x = m.fx + (m.tx - m.fx) * p;
+        m.b.g.position.y = -(m.fy + (m.ty - m.fy) * p);
+        // the mid-drag tilt from the hero illustration, in miniature
+        m.b.g.rotation.z = (raw > 0 && raw < 1) ? Math.sin(p * Math.PI) * 0.02 : 0;
+      }
+      if (done) {
+        c.arr = 1 - c.arr;
+        c.state = 'dwell'; c.until = t + rnd(1600, 4200);
+      }
+    } else if (c.state === 'fade') {
+      const p = Math.min(1, (t - c.until) / 600);
+      c.matOut.opacity = OUT_A * (1 - p);
+      c.matIn.opacity = IN_A * (1 - p);
+      c.matJoint.opacity = JOINT_A * (1 - p);
+      c.matPlug.opacity = 1 - p;
+      if (p >= 1) disposeComp(c);
+    }
+  }
+
+  const targetN = () => (W > 1400 ? 2 : 1);
+  let nextTopUp = 0;
+  function topUp(t) {
+    if (t < nextTopUp) return;
+    nextTopUp = t + 2500;
+    if (comps.length < targetN()) spawnComp(t + rnd(200, 900));
+  }
+  spawnComp(performance.now() + 400);
+
+  new MutationObserver(() => {
+    const ink = cobalt(), pap = paper();
+    inkMats.forEach((m) => m.color.copy(ink));
+    plugMats.forEach((m) => m.color.copy(pap));
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  if (reduced) {
+    const t = performance.now() + 1e7;                 // far future: fully drawn
+    comps.forEach((c) => drawComp(c, t));
+    renderer.render(scene, camera);
+  } else {
+    let raf = 0, visible = true;
+    const loop = (t) => {
+      comps.slice().forEach((c) => step(c, t));
+      topUp(t);
+      renderer.render(scene, camera);
+      if (visible) raf = requestAnimationFrame(loop);
+    };
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible) { cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }
+    }).observe(band);
+    raf = requestAnimationFrame(loop);
+    let rto;
+    addEventListener('resize', () => {
+      clearTimeout(rto);
+      rto = setTimeout(() => {
+        comps.slice().forEach(disposeComp);
+        resize(); nextTopUp = 0;
+      }, 180);
+    });
+  }
+} catch (e) { /* decorative layer only */ }
+</script>
+</body>
+</html>

@@ -19,14 +19,19 @@
       { f: 'grid.html', t: 'grid' }, { f: 'components.html', t: 'components' },
       { f: 'patterns.html', t: 'patterns' },
     ]},
-    { key: 'pages', label: 'Pages', landing: 'landing.html', dir: 'pages', pages: [
+    { key: 'platform', label: 'Platform', landing: 'landing.html', dir: 'pages', pages: [
       { f: 'landing.html', t: 'landing' }, { f: 'login.html', t: 'login' },
       { f: 'getting-started.html', t: 'getting-started' }, { f: 'docs-overview.html', t: 'docs-overview' },
-      { f: 'map-21.html', t: 'map-21' }, { f: 'map-21-system-performance.html', t: 'map-21-system-performance' },
-      { f: 'map-21-trend.html', t: 'map-21-trend' }, { f: 'employment-estimates.html', t: 'employment-estimates' },
-      { f: 'employment-estimates-mpo.html', t: 'employment-estimates-mpo' }, { f: 'floating-car.html', t: 'floating-car' },
+    ]},
+    { key: 'map21', label: 'MAP-21', landing: 'map-21.html', dir: 'pages', pages: [
+      { f: 'map-21.html', t: 'overview' }, { f: 'map-21-system-performance.html', t: 'system performance' },
+      { f: 'map-21-trend.html', t: 'trend' },
+    ]},
+    { key: 'explorers', label: 'Explorers', landing: 'congestion.html', dir: 'pages', pages: [
       { f: 'congestion.html', t: 'congestion' }, { f: 'work-zones.html', t: 'work-zones' },
-      { f: 'lehd-od.html', t: 'lehd-od' },
+      { f: 'floating-car.html', t: 'floating-car' }, { f: 'employment-estimates.html', t: 'employment-estimates' },
+      { f: 'employment-estimates-mpo.html', t: 'employment · mpo' }, { f: 'lehd-od.html', t: 'lehd-od' },
+      { f: 'route-comparison.html', t: 'route comparison' },
     ]},
     { key: 'fa', label: 'Freight Atlas', landing: 'freight-atlas-home.html', dir: 'pages', pages: [
       { f: 'freight-atlas-home.html', t: 'home' }, { f: 'freight-atlas-map.html', t: 'map' },
@@ -44,6 +49,7 @@
     { key: 'sm', label: 'Site Management', landing: 'sitemgmt-overview.html', dir: 'pages', pages: [
       { f: 'sitemgmt-overview.html', t: 'control room' }, { f: 'sitemgmt-tickets.html', t: 'tickets' },
       { f: 'sitemgmt-ticket.html', t: 'ticket detail' }, { f: 'sitemgmt-page.html', t: 'page QA detail' },
+      { f: 'sitemgmt-design.html', t: 'design review' },
     ]},
     { key: 'ds2', label: 'Datasets', landing: 'datasets-catalog.html', dir: 'pages', pages: [
       { f: 'datasets-catalog.html', t: 'data catalog' }, { f: 'datasets-source.html', t: 'source · overview' },

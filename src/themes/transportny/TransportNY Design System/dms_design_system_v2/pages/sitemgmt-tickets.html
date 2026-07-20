@@ -45,37 +45,49 @@
       </aside>
 
       <div class="flex flex-1 items-start">
-        <div class="flex-1 min-w-0 flex flex-col">
-          <main class="mr-auto w-full max-w-[1560px] pl-12 pr-8 py-8">
-            <div class="flex items-end justify-between mb-4">
-              <div>
-                <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">// site management</div>
-                <h1 class="font-display text-[30px] leading-none font-medium text-[#0F1722]">Tickets</h1>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMB BAR ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <nav class="h-11 flex items-center font-mono text-[10.5px] uppercase tracking-[0.18em]" aria-label="Breadcrumb">
+                <a href="sitemgmt-overview.html" class="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#0f1722]"><svg class="size-4 text-[#37576B] relative -top-[1px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10"/></svg>Site Management</a>
+                <span class="text-slate-300 px-2">/</span>
+                <span class="text-[#0f1722]">Tickets</span>
+              </nav>
+            </div>
+          </div>
+
+          <!-- ═════════ HEADER BAND ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-5 flex items-end justify-between gap-6">
+              <div class="min-w-0">
+                <div class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-slate-400 mb-1.5">// site management</div>
+                <h1 class="font-display font-semibold text-[28px] leading-none tracking-tight uppercase text-[#0F1722]">Tickets<span class="text-[#CA8A04]">.</span></h1>
               </div>
-              <button class="font-proxima text-[12.5px] px-3 py-1.5 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">+ Add ticket</button>
+              <button class="tny-press inline-flex items-center gap-1.5 h-9 px-3.5 flex-shrink-0 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[12px] tracking-wide rounded-[6px]"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>Add ticket</button>
             </div>
-            <div id="summary"></div>
-            <div id="filters" class="flex flex-wrap items-center gap-2 mb-3"></div>
-            <div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 overflow-hidden">
-              <table class="w-full text-left border-collapse">
-                <thead><tr class="bg-slate-50 border-b border-slate-100 font-mono text-[10px] uppercase tracking-wider text-slate-500">
-                  <th class="py-2 pl-4 pr-2 font-medium">#</th><th class="py-2 px-2 font-medium">Severity</th><th class="py-2 px-2 font-medium">Source</th>
-                  <th class="py-2 px-2 font-medium">Status</th><th class="py-2 px-2 font-medium">Ticket</th><th class="py-2 px-2 font-medium">Page</th>
-                  <th class="py-2 px-2 font-medium">Owner</th><th class="py-2 px-2 pr-4 font-medium">Updated</th></tr></thead>
-                <tbody id="rows"></tbody>
-              </table>
-            </div>
-            <div id="empty" class="hidden py-8 text-center font-proxima text-[13px] text-slate-400">No tickets match this filter.</div>
-          </main>
-          <footer class="w-full bg-white border-t border-zinc-950/10 mt-6">
-            <div class="mr-auto w-full max-w-[1560px] pl-12 pr-8 py-4 flex items-center justify-between">
-              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
-                <a href="sitemgmt-overview.html" class="hover:text-slate-900">control room</a>
-                <a href="sitemgmt-tickets.html" class="hover:text-slate-900">tickets</a>
+          </div>
+
+          <!-- ═════════ CONTENT BAND ═════════ -->
+          <div class="w-full bg-[#ECEEF2] pt-6 pb-12">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <div id="summary"></div>
+              <div id="flowcharts" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"></div>
+              <div id="filters" class="flex flex-wrap items-center gap-2 mb-3"></div>
+              <div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                  <thead><tr class="bg-slate-50 border-b border-slate-100 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+                    <th class="py-2 pl-4 pr-2 font-medium">#</th><th class="py-2 px-2 font-medium">Severity</th><th class="py-2 px-2 font-medium">Source</th>
+                    <th class="py-2 px-2 font-medium">Status</th><th class="py-2 px-2 font-medium">Ticket</th><th class="py-2 px-2 font-medium">Page</th>
+                    <th class="py-2 px-2 font-medium">Owner</th><th class="py-2 px-2 pr-4 font-medium">Updated</th></tr></thead>
+                  <tbody id="rows"></tbody>
+                </table>
               </div>
-              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS · QA v0.1 · mockup</span>
+              <div id="empty" class="hidden py-8 text-center font-proxima text-[13px] text-slate-400">No tickets match this filter.</div>
             </div>
-          </footer>
+          </div>
+
         </div>
       </div>
     </div>
@@ -90,7 +102,12 @@
   function badge(text, cls){ return '<span class="inline-flex items-center rounded px-2 py-[3px] text-[11px] font-medium '+cls+'">'+esc(text)+'</span>'; }
   var statusColor = { 'Triage':'bg-slate-100 text-slate-500', 'In progress':'bg-sky-100 text-sky-700', 'In review':'bg-amber-100 text-amber-700', 'Resolved':'bg-emerald-100 text-emerald-700', 'Closed':'bg-emerald-100 text-emerald-700' };
 
-  var filter = { kind: 'all', sev: null, src: null };
+  var filter = { kind: 'all', sev: null, src: null, site: null };
+  // site (surface) — tickets carry it via their page's surface (live: the `surface` field,
+  // denormalized from page_key). Label + presence come from the shared surfaces list.
+  var SITELABEL = {}; (S.surfaces||[]).forEach(function(s){ SITELABEL[s.key]=s.label; });
+  function siteOf(t){ return (S.page(t.page)||{}).surface || null; }
+  var sites = (S.surfaces||[]).filter(function(s){ return S.tickets.some(function(t){ return siteOf(t)===s.key; }); }).map(function(s){ return [s.key, s.label]; });
   var openN = S.tickets.filter(function(t){ return S.isOpen(t); }).length;
   var chips = [
     { id:'all',    label:'All ('+S.tickets.length+')' },
@@ -107,11 +124,16 @@
     h += sevs.map(function(s){ var on=filter.sev===s; return '<button data-sev="'+s+'" class="chip font-proxima text-[12px] px-2.5 py-1 rounded-full border '+(on?'bg-slate-800 text-white border-slate-800':'bg-white text-slate-600 border-slate-200 hover:border-slate-300')+'">'+s+'</button>'; }).join('');
     h += '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mx-1 ml-3">source</span>';
     h += srcs.map(function(s){ var on=filter.src===s[0]; return '<button data-src="'+s[0]+'" class="chip font-proxima text-[12px] px-2.5 py-1 rounded-full border '+(on?'bg-sky-600 text-white border-sky-600':'bg-white text-slate-600 border-slate-200 hover:border-slate-300')+'">'+s[1]+'</button>'; }).join('');
+    if(sites.length){
+      h += '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mx-1 ml-3">site</span>';
+      h += sites.map(function(s){ var on=filter.site===s[0]; return '<button data-site="'+s[0]+'" class="chip font-proxima text-[12px] px-2.5 py-1 rounded-full border '+(on?'bg-[#37576B] text-white border-[#37576B]':'bg-white text-slate-600 border-slate-200 hover:border-slate-300')+'">'+esc(s[1])+'</button>'; }).join('');
+    }
     document.getElementById('filters').innerHTML = h;
     document.querySelectorAll('.chip').forEach(function(b){ b.onclick = function(){
       if(b.dataset.k) filter.kind = b.dataset.k;
       if(b.dataset.sev) filter.sev = (filter.sev===b.dataset.sev?null:b.dataset.sev);
       if(b.dataset.src) filter.src = (filter.src===b.dataset.src?null:b.dataset.src);
+      if(b.dataset.site) filter.site = (filter.site===b.dataset.site?null:b.dataset.site);
       renderFilters(); renderRows();
     };});
   }
@@ -122,6 +144,7 @@
         if(filter.kind==='closed' && S.isOpen(t)) return false;
         if(filter.sev && t.severity!==filter.sev) return false;
         if(filter.src && S.sourceOf(t)!==filter.src) return false;
+        if(filter.site && siteOf(t)!==filter.site) return false;
         return true;
       });
     document.getElementById('empty').classList.toggle('hidden', rows.length>0);
@@ -133,7 +156,10 @@
         + '<td class="py-2 px-2">'+badge(S.sourceLabel[src], S.sourceColor[src])+'</td>'
         + '<td class="py-2 px-2">'+badge(t.status, statusColor[t.status]||'bg-slate-100 text-slate-500')+'</td>'
         + '<td class="py-2 px-2 font-proxima text-[13px] '+(open?'text-slate-800':'text-slate-400 line-through')+'">'+esc(t.title)+'</td>'
-        + '<td class="py-2 px-2 font-proxima text-[12px] text-slate-500">'+esc(pg.name)+'</td>'
+        + '<td class="py-2 px-2"><div class="flex items-center gap-2">'
+        +   (pg.surface ? '<span class="inline-flex items-center rounded border border-slate-200 bg-slate-50 px-1.5 py-[1px] font-mono text-[9.5px] uppercase tracking-wide text-slate-500 whitespace-nowrap">'+esc(SITELABEL[pg.surface]||pg.surface)+'</span>' : '')
+        +   '<span class="font-proxima text-[12px] text-slate-500 truncate">'+esc(pg.name)+'</span>'
+        + '</div></td>'
         + '<td class="py-2 px-2 font-mono text-[11px] text-slate-500">'+esc(t.assignee)+'</td>'
         + '<td class="py-2 px-2 pr-4 font-mono text-[11px] text-slate-400 tabular-nums">'+esc(t.updated)+'</td></tr>';
     }).join('');
@@ -175,7 +201,46 @@
       + '</div></div>';
     document.getElementById('summary').innerHTML = h;
   }
-  renderSummary(); renderFilters(); renderRows();
+  // ── per-day flow charts (Opened / Resolved) — small multiples, shared y-max ──
+  // added = tickets by `opened`; resolved = closed tickets by `updated` (the resolve date,
+  // matching timelineFor). Single series each → title names it, no legend; per-bar hover tooltip.
+  function parseDate(s){ var p=String(s).split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+  function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function dayRange(start, end){ var out=[], d=parseDate(start), e=parseDate(end); while(d<=e){ out.push(ymd(d)); d.setDate(d.getDate()+1); } return out; }
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function fmtDate(s){ var p=String(s).split('-'); return MON[+p[1]-1]+' '+(+p[2]); }
+  function chartCard(title, total, series, max, barBg, accentText){
+    var bars = series.map(function(p){
+      var pct = Math.round(p.n/max*100);
+      return '<div class="group relative flex-1 min-w-0 flex items-end h-full">'
+        + (p.n>0 ? '<div class="w-full rounded-t-[2px] '+barBg+'" style="height:'+pct+'%"></div>' : '')
+        + '<div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap z-10 rounded bg-[#0F1722] text-white font-mono text-[10px] px-1.5 py-1">'+fmtDate(p.date)+' · <span class="font-semibold">'+p.n+'</span></div>'
+        + '</div>';
+    }).join('');
+    return '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
+      + '<div class="flex items-baseline justify-between mb-2"><span class="font-display text-[13px] font-medium text-slate-700">'+title+'</span>'
+      + '<span class="font-display text-[18px] font-semibold '+accentText+' tabular-nums">'+total+'</span></div>'
+      + '<div class="relative pt-4">'
+      +   '<div class="absolute top-0 right-0 font-mono text-[9px] text-slate-300">max '+max+'</div>'
+      +   '<div class="flex items-end gap-[2px] h-[80px] border-b border-slate-200">'+bars+'</div>'
+      +   '<div class="flex items-center justify-between mt-1 font-mono text-[9px] text-slate-400"><span>'+fmtDate(series[0].date)+'</span><span>'+fmtDate(series[series.length-1].date)+'</span></div>'
+      + '</div></div>';
+  }
+  function renderFlowCharts(){
+    var added={}, closed={};
+    S.tickets.forEach(function(t){ added[t.opened]=(added[t.opened]||0)+1; if(!S.isOpen(t)) closed[t.updated]=(closed[t.updated]||0)+1; });
+    var keys = Object.keys(added).concat(Object.keys(closed)).sort();
+    var days = dayRange(keys[0], S.asOf);
+    var addedSeries  = days.map(function(d){ return { date:d, n: added[d]||0 }; });
+    var closedSeries = days.map(function(d){ return { date:d, n: closed[d]||0 }; });
+    var max = Math.max(1, Math.max.apply(null, addedSeries.concat(closedSeries).map(function(x){ return x.n; })));
+    var totalAdded = S.tickets.length;
+    var totalClosed = S.tickets.filter(function(t){ return !S.isOpen(t); }).length;
+    document.getElementById('flowcharts').innerHTML =
+        chartCard('Tickets opened / day',   totalAdded,  addedSeries,  max, 'bg-[#1F3F8F]', 'text-[#1F3F8F]')
+      + chartCard('Tickets resolved / day', totalClosed, closedSeries, max, 'bg-emerald-500', 'text-emerald-600');
+  }
+  renderSummary(); renderFlowCharts(); renderFilters(); renderRows();
 })();
 </script>
 <script src="../ds-nav.js"></script>

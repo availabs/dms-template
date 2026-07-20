@@ -16,7 +16,7 @@
   sitemgmt-page.html · per-PAGE QA WORKFLOW. AI review is a TRIGGER that adds tickets; the pipeline
   is In Development → Dev Review → Client Review → Approved. Shows: what the page does, the stage +
   next step, work completed (open vs closed), the dev/client gates, features/user stories, the page's
-  tickets, and a timeline of the work. Reads ?id=<pageId>. Rendered from window.SITEMGMT.
+  and tickets. Reads ?id=<pageId>. Rendered from window.SITEMGMT.
 -->
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
@@ -46,20 +46,31 @@
       </aside>
 
       <div class="flex flex-1 items-start">
-        <div class="flex-1 min-w-0 flex flex-col">
-          <main class="mr-auto w-full max-w-[1280px] pl-12 pr-8 py-8">
-            <a href="sitemgmt-overview.html" class="font-mono text-[11px] text-slate-500 hover:text-slate-800">← control room</a>
-            <div id="pageqa" class="mt-3"></div>
-          </main>
-          <footer class="w-full bg-white border-t border-zinc-950/10 mt-6">
-            <div class="mr-auto w-full max-w-[1280px] pl-12 pr-8 py-4 flex items-center justify-between">
-              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
-                <a href="sitemgmt-overview.html" class="hover:text-slate-900">control room</a>
-                <a href="sitemgmt-tickets.html" class="hover:text-slate-900">tickets</a>
-              </div>
-              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS · QA v0.1 · mockup</span>
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMB BAR ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <nav class="h-11 flex items-center font-mono text-[10.5px] uppercase tracking-[0.18em]" aria-label="Breadcrumb">
+                <a href="sitemgmt-overview.html" class="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#0f1722]"><svg class="size-4 text-[#37576B] relative -top-[1px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10"/></svg>Site Management</a>
+                <span class="text-slate-300 px-2">/</span>
+                <a href="sitemgmt-overview.html" class="text-slate-500 hover:text-[#0f1722]">Page QA</a>
+                <span class="text-slate-300 px-2">/</span>
+                <span id="crumb" class="text-[#0f1722]"></span>
+              </nav>
             </div>
-          </footer>
+          </div>
+
+          <!-- ═════════ HEADER BAND (filled by JS) ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-5"><div id="hdr"></div></div>
+          </div>
+
+          <!-- ═════════ CONTENT BAND (filled by JS) ═════════ -->
+          <div class="w-full bg-[#ECEEF2] pt-6 pb-12">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8"><div id="pageqa"></div></div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -73,7 +84,7 @@
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function badge(text, cls){ return '<span class="inline-flex items-center rounded px-2 py-[3px] text-[11px] font-medium '+cls+'">'+esc(text)+'</span>'; }
 
-  var id = new URLSearchParams(location.search).get('id') || 'fa2:maps_gallery';
+  var id = new URLSearchParams(location.search).get('id') || 'tsmo2:home';
   var p = S.page(id); if (!p) { id = S.pages[0].id; p = S.page(id); }
   var surf = S.surface(p.surface) || { label: p.surface, sub: '' };
 
@@ -83,7 +94,17 @@
   var aiCount = allT.filter(function(t){ return S.sourceOf(t)==='ai'; }).length;
   var effort = S.effortFor(p.id);
   var stages = S.STAGES, cur = stages.indexOf(stage);
-  var actor = { 'In Development':'dev', 'Dev Review':'dev', 'Client Review':'client', 'Approved':'—' };
+  var actor = { 'Proposed':'product', 'Design':'design', 'Implemented':'dev', 'QA':'qa', 'Dev Acceptance':'dev', 'Client Acceptance':'client' };
+  // stage gates — ONE per pipeline stage, aligned 1:1 with `stages`. The current stage's gate is the
+  // action that advances the page to the next stage (so the gates line up with the stepper above).
+  var GATES = [
+    { label: 'Accept user stories', who: 'product accepts the scope',      verb: 'Accept stories' },
+    { label: 'Approve design',      who: 'design signs off on the mockup', verb: 'Approve design' },
+    { label: 'Build complete',      who: 'dev finishes building the page', verb: 'Mark built' },
+    { label: 'Pass QA',             who: 'QA clears the findings',         verb: 'Pass QA' },
+    { label: 'Dev sign-off',        who: 'dev sends it to the client',     verb: 'Sign off' },
+    { label: 'Client approval',     who: 'client approves the page',       verb: 'Approve page' },
+  ];
 
   function node(label, i){
     var done = i < cur, isCur = i === cur;
@@ -126,120 +147,158 @@
       + '<span class="font-proxima text-[12.5px] text-slate-700 text-right">'+val+'</span></div>';
   }
   function bar(pct, cls){ return '<div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full '+(cls||'bg-emerald-500')+'" style="width:'+pct+'%"></div></div>'; }
-  var dotKind = { opened:'bg-amber-400', resolved:'bg-emerald-500', comment:'bg-slate-300' };
-  function tlRow(e, last){
-    return '<div class="relative pl-6 '+(last?'':'pb-4')+'">'
-      + (last?'':'<div class="absolute left-[5px] top-3 bottom-0 w-px bg-slate-200"></div>')
-      + '<span class="absolute left-0 top-1.5 size-2.5 rounded-full '+(dotKind[e.kind]||'bg-slate-300')+' ring-2 ring-white"></span>'
-      + '<div class="flex items-baseline justify-between gap-2"><span class="font-proxima text-[12.5px] text-slate-700">'+esc(e.text)+'</span>'
-      + '<span class="font-mono text-[10px] text-slate-400 tabular-nums flex-shrink-0">'+esc(e.when)+'</span></div></div>';
-  }
+  // (timeline card removed 2026-07-15 — non-functional: no event stream behind it)
 
-  var html = '';
-
-  // ── header card (name + stage + WHAT THE PAGE DOES) ──
-  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-5 mb-5">'
-    + '<div class="flex items-start justify-between gap-4">'
-    + '<div class="min-w-0"><h1 class="font-display text-[26px] font-medium leading-tight text-[#0F1722]">'+esc(p.name)+'</h1>'
-    + '<div class="font-mono text-[11px] text-slate-500 mt-0.5">'+esc(surf.label)+' · '+esc(p.route)+'</div></div>'
-    + '<span class="inline-flex items-center rounded-md px-3 h-7 text-[12px] font-medium '+S.stageColor[stage]+'">'+esc(stage)+'</span></div>'
-    + '<p class="font-proxima text-[14px] text-slate-600 leading-snug mt-3 max-w-3xl">'+esc(S.descFor(id))+'</p>'
-    + '<div class="flex flex-wrap items-center gap-2 mt-4">'
-    + badge(p.build, S.buildColor[p.build]) + badge(p.data, S.dataColor[p.data])
-    + '<span class="font-mono text-[11px] text-slate-400 ml-1">owner '+esc(p.owner)+'</span>'
-    + '<span class="font-mono text-[11px] text-slate-400">updated '+esc(p.updated)+'</span></div></div>';
-
-  // ── stage action banner — carries the workflow framing onto the page (who owns it, what's the action) ──
-  var BANNER = {
-    'In Development': { cls:'border-amber-300 bg-amber-50', tcls:'text-amber-800', title:'In development', desc:'Our team is building this page and resolving the open tickets below.', actions:'' },
-    'Dev Review':     { cls:'border-sky-300 bg-sky-50', tcls:'text-sky-800', title:'Ready for dev sign-off', desc:'All tickets resolved — awaiting our internal QA sign-off before it goes to you.', actions:'<button class="font-proxima text-[13px] px-4 py-1.5 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">Mark ready for client</button>' },
-    'Client Review':  { cls:'border-[#1F3F8F]/40 bg-[#1F3F8F]/[0.05]', tcls:'text-[#1F3F8F]', title:'Ready for your review', desc:'Our team has signed off on this page. Review it, then approve or request changes.', actions:'<button class="font-proxima text-[13px] px-4 py-1.5 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">Approve page</button><button class="font-proxima text-[13px] px-4 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-white">Request changes</button>' },
-    'Approved':       { cls:'border-emerald-300 bg-emerald-50', tcls:'text-emerald-700', title:'Approved', desc:'This page is approved and ready to publish. It reopens for review if new features are added.', actions:'' },
-  };
-  var bn = BANNER[stage] || BANNER['In Development'];
-  html += '<div class="rounded-lg border-2 '+bn.cls+' p-4 mb-5 flex flex-col sm:flex-row sm:items-center gap-3">'
-    + '<div class="flex-1"><div class="font-display text-[15px] font-medium '+bn.tcls+'">'+bn.title+'</div>'
-    + '<div class="font-proxima text-[13px] text-slate-600">'+bn.desc+'</div></div>'
-    + (bn.actions ? '<div class="flex gap-2 flex-shrink-0">'+bn.actions+'</div>' : '')
+  // ── breadcrumb crumb + full-width header band (identity · stage) ──
+  document.getElementById('crumb').textContent = p.name;
+  // Header: identity only (name · description). The surface/route/build/data/owner/updated
+  // facts all live in the sidebar Page-status card — repeating them here was noise (removed
+  // 2026-07-15). Right rail: QA⇄Design toggle (direction-free chip pair — Card-expressible,
+  // unlike a contained segmented control) · stage pill · "View live page" (new tab, btnOutline).
+  document.getElementById('hdr').innerHTML =
+    '<div class="flex items-start justify-between gap-6">'
+    + '<div class="min-w-0">'
+      + '<div class="font-mono text-[10.5px] uppercase tracking-[0.22em] text-slate-400 mb-1.5">// page QA</div>'
+      + '<h1 class="font-display font-semibold text-[28px] leading-none tracking-tight uppercase text-[#0F1722]">'+esc(p.name)+'<span class="text-[#CA8A04]">.</span></h1>'
+      + '<p class="font-proxima text-[13.5px] text-slate-600 leading-snug mt-2 max-w-3xl">'+esc(S.descFor(id))+'</p>'
+    + '</div>'
+    + '<div class="flex flex-col items-end gap-2 flex-shrink-0">'
+      + '<div class="flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-wide">'
+        + '<span class="inline-flex items-center h-7 px-3 rounded-md bg-[#1F3F8F] text-white">QA</span>'
+        + '<a href="sitemgmt-design.html?id='+encodeURIComponent(id)+'" class="inline-flex items-center h-7 px-3 rounded-md border border-zinc-950/10 bg-slate-50 text-slate-500 hover:text-slate-800">Design</a>'
+      + '</div>'
+      // no stage pill here — stage is the sidebar Page-status card's headline, and a stage of
+      // "QA" stacked under the QA toggle chip read as a confusing double
+      + '<a href="//'+esc(p.surface)+'.devtny.org'+esc(p.route)+'" target="_blank" rel="noopener noreferrer" class="inline-flex items-center h-9 px-3.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-display font-medium uppercase text-[12px] tracking-wide rounded-[6px]">View live page ↗</a>'
+    + '</div>'
     + '</div>';
 
-  // ── pipeline + next step (full width) ──
-  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-5 mb-5">'
-    + '<div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-4">// QA pipeline</div>'
-    + '<div class="flex items-start mb-1">'+stages.map(node).join('')+'</div>'
-    + '<div class="mt-5 flex items-center gap-3 rounded-md bg-[#1F3F8F]/[0.06] border border-[#1F3F8F]/15 px-4 py-3">'
-    + '<span class="font-mono text-[10px] uppercase tracking-wider text-[#1F3F8F]">next step</span>'
-    + '<span class="font-proxima text-[14px] font-medium text-[#0F1722]">'+esc(next)+'</span>'
-    + (stage==='In Development' && openCount>0 ? '<a href="sitemgmt-tickets.html" class="ml-auto font-proxima text-[12px] px-3 py-1 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">View tickets</a>' : '')
-    + '</div></div>';
+  var html = '';
+  var STAGE_HEX = { 'Proposed':'#a1a1aa', 'Design':'#8b5cf6', 'Implemented':'#f59e0b', 'QA':'#38bdf8', 'Dev Acceptance':'#14b8a6', 'Client Acceptance':'#10b981' };
+  var storyStatusCls = { proposed:'border-amber-200 bg-amber-50 text-amber-700', accepted:'border-sky-200 bg-sky-50 text-sky-700', verified:'border-emerald-200 bg-emerald-50 text-emerald-700' };
+  var storyDot = { proposed:'bg-amber-400', accepted:'bg-sky-500', verified:'bg-emerald-500' };
+  var caret = '<svg class="size-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>';
 
-  // ── two-column grid ──
+  // ── two-column grid: MAIN (tickets · stories) + sidebar (one page-status card) ──
   html += '<div class="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5"><div class="space-y-5">';
-
-  // gates
-  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
-    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-1">'
-    + '<span class="font-display text-[14px] font-medium text-slate-800">Gates</span>'
-    + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">advance the page</span></div>'
-    + '<div class="flex items-center gap-3 py-2.5 border-b border-slate-50">'
-    + '<span class="size-6 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3Z"/></svg></span>'
-    + '<div class="flex-1 min-w-0"><div class="font-proxima text-[13.5px] text-slate-700">AI review <span class="font-mono text-[10px] text-slate-400">· trigger</span></div>'
-    + '<div class="font-mono text-[10px] uppercase tracking-wider text-slate-400">added '+aiCount+' ticket'+(aiCount===1?'':'s')+'</div></div>'
-    + '<button class="font-proxima text-[12px] px-3 py-1 rounded-md border border-slate-200 text-slate-600 hover:border-slate-300">Re-run AI review</button></div>'
-    + gateRow('Dev sign-off', 'dev marks ready for client', gates.dev_ready, stage==='Dev Review')
-    + gateRow('Client approval', 'client approves the page', gates.client_approved, stage==='Client Review') + '</div>';
 
   // tickets
   html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
     + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">'
     + '<span class="font-display text-[14px] font-medium text-slate-800">Tickets</span>'
     + '<div class="flex items-center gap-2"><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">'+openCount+' open · '+closedCount+' closed</span>'
-    + '<button class="font-proxima text-[11.5px] px-2.5 py-1 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">+ Add ticket</button></div></div>'
-    + '<div class="divide-y divide-slate-50">'
+    + '<button id="btnAddTicket" class="font-proxima text-[11.5px] px-2.5 py-1 rounded-md bg-[#1F3F8F] text-white hover:bg-[#18316f]">+ Add ticket</button></div></div>'
+    + '<div id="tixlist" class="divide-y divide-slate-50">'
     + (allT.length ? allT.map(ticketRow).join('') : '<div class="py-3 font-proxima text-[13px] text-slate-400">No tickets for this page.</div>') + '</div></div>';
 
-  // timeline
-  var tl = S.timelineFor(p.id);
-  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
-    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">'
-    + '<span class="font-display text-[14px] font-medium text-slate-800">Timeline</span>'
-    + '<span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">work history</span></div>'
-    + (tl.length ? tl.map(function(e,i){ return tlRow(e, i===tl.length-1); }).join('') : '<div class="py-2 font-proxima text-[13px] text-slate-400">No activity yet.</div>')
-    + '</div>';
-
-  html += '</div>'; // end left
-
-  // ── right column ──
-  html += '<div class="space-y-5">';
-
-  // work completed (open vs closed + effort)
-  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
-    + '<div class="flex items-center justify-between mb-2"><span class="font-display text-[14px] font-medium text-slate-800">Work completed</span>'
-    + '<span class="font-display text-[22px] font-semibold tabular-nums text-[#0F1722]">'+effort.pct+'%</span></div>'
-    + bar(effort.pct, 'bg-[#1F3F8F]')
-    + '<div class="flex items-center justify-between mt-3 font-mono text-[11px] text-slate-500">'
-    + '<span><span class="text-emerald-600 font-semibold">'+closedCount+'</span> closed · <span class="text-amber-600 font-semibold">'+openCount+'</span> open</span>'
-    + '<span class="text-slate-400">'+effort.done+' / '+effort.total+' effort pts</span></div></div>';
-
-  // features & user stories
+  // features & user stories (moved to the MAIN column; each carries an editable status, like the live page)
   var stories = S.storiesFor(id);
   html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
-    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">'
+    + '<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-1">'
     + '<span class="font-display text-[14px] font-medium text-slate-800">Features &amp; user stories</span>'
     + '<button class="font-proxima text-[11.5px] px-2.5 py-1 rounded-md border border-slate-200 text-slate-600 hover:border-slate-300">+ Add story</button></div>'
-    + '<ul class="space-y-2">'
-    + stories.map(function(s){ return '<li class="flex items-start gap-2"><svg class="size-[15px] mt-[2px] flex-shrink-0 '+(stage==='Approved'?'text-emerald-500':'text-slate-300')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"'+(stage==='Approved'?' fill="currentColor" stroke="none"':'')+'/>'+(stage==='Approved'?'<path d="M7 12l3.5 3.5L17 8.5" stroke="white"/>':'')+'</svg><span class="font-proxima text-[13px] text-slate-700 leading-snug">'+esc(s)+'</span></li>'; }).join('')
-    + '</ul></div>';
+    + '<div class="divide-y divide-slate-50">'
+    + stories.map(function(s,i){
+        var ss = i===0 ? 'verified' : (i===stories.length-1 ? 'proposed' : 'accepted');
+        return '<div class="flex items-center gap-3 py-2.5">'
+          + '<span class="flex-1 min-w-0 font-proxima text-[13.5px] text-slate-700 leading-snug">'+esc(s)+'</span>'
+          + '<button class="flex-shrink-0 inline-flex items-center gap-1.5 rounded-md border px-2.5 h-7 font-mono text-[10.5px] uppercase tracking-wide '+storyStatusCls[ss]+'"><span class="size-2 rounded-full '+storyDot[ss]+'"></span>'+ss+caret+'</button>'
+        + '</div>';
+      }).join('')
+    + '</div></div>';
 
-  // details
-  html += '<div class="bg-white rounded-lg shadow-sm border border-zinc-950/5 p-4">'
-    + '<div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-2">// details</div>'
-    + fact('Surface', esc(surf.label)) + fact('Route', '<span class="font-mono text-[11px]">'+esc(p.route)+'</span>')
-    + fact('Owner', esc(p.owner)) + fact('Build', badge(p.build, S.buildColor[p.build]))
-    + fact('Data', badge(p.data, S.dataColor[p.data])) + fact('Updated', '<span class="font-mono text-[11px]">'+esc(p.updated)+'</span>') + '</div>';
+  // (timeline card removed 2026-07-15 — non-functional: no event stream behind it)
 
+  html += '</div>'; // end main
+
+  // ── sidebar: ONE emphasized Page status card — set the stage (single dropdown) + details + work ──
+  html += '<div class="space-y-5">';
+  html += '<div class="bg-white rounded-lg shadow-md border border-zinc-950/10 overflow-hidden lg:sticky lg:top-6">'
+    + '<div class="h-1.5" style="background:'+(STAGE_HEX[stage]||'#a1a1aa')+'"></div>'
+    + '<div class="p-4 border-b border-slate-100">'
+      + '<div class="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-3">// page status</div>'
+      + '<div class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mb-1">Pipeline stage</div>'
+      + '<button class="w-full h-11 inline-flex items-center justify-between gap-2 rounded-md border border-[#37576B] ring-2 ring-[#37576B]/15 bg-white px-3 hover:bg-slate-50">'
+        + '<span class="inline-flex items-center gap-2.5"><span class="size-3 rounded-full" style="background:'+(STAGE_HEX[stage]||'#a1a1aa')+'"></span>'
+        + '<span class="font-display text-[16px] font-medium text-[#0F1722]">'+esc(stage)+'</span></span>'+caret+'</button>'
+      + '<div class="mt-3 flex items-center">'
+        + stages.map(function(st,i){
+            var dn = i<cur, isc = i===cur;
+            var node = dn
+              ? '<span class="size-5 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0" title="'+esc(st)+'"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M5 12l4.5 4.5L19 7"/></svg></span>'
+              : isc
+                ? '<span class="size-5 rounded-full text-white flex items-center justify-center text-[9px] font-semibold flex-shrink-0 ring-4 ring-black/[0.06]" style="background:'+(STAGE_HEX[stage]||'#1F3F8F')+'" title="'+esc(st)+'">'+(i+1)+'</span>'
+                : '<span class="size-5 rounded-full bg-white border border-slate-300 text-slate-400 flex items-center justify-center text-[9px] font-semibold flex-shrink-0" title="'+esc(st)+'">'+(i+1)+'</span>';
+            return node + (i<stages.length-1 ? '<span class="flex-1 h-0.5 '+(i<cur?'bg-emerald-400':'bg-slate-200')+'"></span>' : '');
+          }).join('')
+      + '</div>'
+      + '<div class="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400">step '+(cur+1)+' of '+stages.length+'</div>'
+      + '<div class="mt-2 flex items-start gap-2 font-proxima text-[12.5px] text-slate-600"><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400 mt-[3px] flex-shrink-0">next</span><span>'+esc(next)+'</span></div>'
+    + '</div>'
+    + '<div class="p-4 border-b border-slate-100">'
+      + fact('Surface', esc(surf.label)) + fact('Route', '<span class="font-mono text-[11px]">'+esc(p.route)+'</span>')
+      + fact('Owner', esc(p.owner)) + fact('Build', badge(p.build, S.buildColor[p.build]))
+      + fact('Data', badge(p.data, S.dataColor[p.data])) + fact('Updated', '<span class="font-mono text-[11px]">'+esc(p.updated)+'</span>')
+    + '</div>'
+    + '<div class="p-4">'
+      + '<div class="flex items-center justify-between mb-2"><span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">Work completed</span><span class="font-display text-[18px] font-semibold tabular-nums text-[#0F1722]">'+effort.pct+'%</span></div>'
+      + bar(effort.pct, 'bg-[#1F3F8F]')
+      + '<div class="flex items-center justify-between mt-2 font-mono text-[11px] text-slate-500"><span><span class="text-emerald-600 font-semibold">'+closedCount+'</span> closed · <span class="text-amber-600 font-semibold">'+openCount+'</span> open</span><span class="text-slate-400">'+effort.done+'/'+effort.total+' pts</span></div>'
+    + '</div>'
+  + '</div>';
   html += '</div></div>';
   document.getElementById('pageqa').innerHTML = html;
+
+  // ── Add-ticket MODAL — mock of the DMS modal section-group flow: the header button
+  // (click_publish provider) opens an isModal group holding an allowAdddNew Card whose
+  // target-page field is PRE-FILLED from the page's ?key= filter (usePageParams). ──
+  // 2026-07-15 redesign: THREE fields (title · severity · description) — priority/source/
+  // assignee/steps/expected/actual are triage's job, not the reporter's. Labels are labelSM
+  // (Oswald 12.5px medium slate-700 — bigger + darker than the old mono micro-caps). Narrow
+  // card (max-w-xl), single-column stack, one primary button (the core modal ✕/overlay is the
+  // cancel). Every style here maps 1:1 to a Card primitive: labels = headerFontStyle labelSM,
+  // placeholders = per-column `placeholder`, button = the core add button (Button "active").
+  var sevOpts = ['Blocker','Major','Minor','Polish'];
+  function opt(list){ return list.map(function(o){ var v=Array.isArray(o)?o[0]:o, l=Array.isArray(o)?o[1]:o; return '<option value="'+v+'">'+l+'</option>'; }).join(''); }
+  function mLbl(t){ return '<div class="font-display text-[12.5px] font-medium leading-[1.3] text-slate-700 mb-1.5">'+t+'</div>'; }
+  var inputCls = 'w-full rounded-md border border-slate-200 bg-white px-3 py-2 font-proxima text-[13.5px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#1F3F8F]';
+  var modal = document.createElement('div');
+  modal.id = 'addTicketModal';
+  modal.className = 'hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50';
+  modal.innerHTML = '<div class="relative bg-white rounded-lg shadow-xl w-full max-w-xl mx-4 max-h-[90vh] overflow-y-auto">'
+    + '<div class="p-6">'
+    + '<div class="flex items-start justify-between border-b border-slate-100 pb-3 mb-4">'
+    +   '<div><div class="font-display text-[15px] font-medium text-slate-800 uppercase tracking-tight">New ticket</div>'
+    +   '<div class="font-proxima text-[12.5px] text-slate-500 mt-0.5">Tell us what you saw on this page — triage takes it from there.</div></div>'
+    +   '<button id="mClose" class="text-slate-400 hover:text-slate-700 text-xl leading-none">✕</button></div>'
+    + '<div class="mb-4">'+mLbl('Filing against')
+    +   '<span class="inline-flex items-center rounded-md bg-slate-50 border border-slate-100 px-3 py-1.5 font-mono text-[11px] text-slate-600">'+esc(id)+'</span></div>'
+    + '<div class="mb-4">'+mLbl('Title')+'<input id="mTitle" class="'+inputCls+'" placeholder="Short, specific summary…"/></div>'
+    + '<div class="mb-4 w-1/2 pr-2">'+mLbl('Severity')+'<select id="mSev" class="'+inputCls+'">'+opt(sevOpts)+'</select></div>'
+    + '<div class="mb-5">'+mLbl('Description')+'<textarea id="mDesc" rows="4" class="'+inputCls+' resize-none" placeholder="What happened? What did you expect?"></textarea></div>'
+    + '<div class="flex items-center justify-between gap-3">'
+    +   '<span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">numbered automatically · starts in triage</span>'
+    +   '<button id="mAdd" class="tny-press cursor-pointer inline-flex items-center px-4 h-10 bg-[#16307A] border-b-4 border-[#0A1C4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]">Add ticket</button></div>'
+    + '</div>';
+  document.body.appendChild(modal);
+  function mShow(){ modal.classList.remove('hidden'); }
+  function mHide(){ modal.classList.add('hidden'); }
+  document.getElementById('btnAddTicket').onclick = mShow;
+  document.getElementById('mClose').onclick = mHide;
+  modal.addEventListener('click', function(e){ if(e.target === modal) mHide(); });
+  document.getElementById('mAdd').onclick = function(){
+    var title = document.getElementById('mTitle').value || 'Untitled ticket';
+    var sev = document.getElementById('mSev').value;
+    var row = document.createElement('div');
+    row.innerHTML = '<div class="flex items-center gap-3 py-2 -mx-1 px-1 rounded bg-amber-50/60">'
+      + '<span class="font-mono text-[11px] text-slate-400">#new</span>'
+      + '<span class="inline-flex items-center rounded px-2 py-[3px] text-[11px] font-medium '+(S.sevColor[sev]||'bg-slate-100 text-slate-600')+'">'+esc(sev)+'</span>'
+      + '<span class="flex-1 font-proxima text-[13px] text-slate-800">'+esc(title)+'</span>'
+      + '<span class="font-mono text-[10px] uppercase text-slate-400">Triage</span></div>';
+    var list = document.getElementById('tixlist');
+    list.insertBefore(row.firstChild, list.firstChild);
+    mHide();
+  };
 })();
 </script>
 <script src="../ds-nav.js"></script>

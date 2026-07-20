@@ -816,6 +816,186 @@
     </div>
 
     <!-- =========================================================
+         PATTERN 11 — PROGRESS LEDE + LINKED STAT STRIP
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 11 — Progress Lede + Linked Stat Strip</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          The header of a <strong>work page</strong> — a page whose job is to get a field filled in, not to be read.
+          The amber lede states how much of the job is left and links straight to the rows that still need it; the stat chips
+          beside it are the page's filters, each one an <code>isLink</code> Card cell writing a search param. Exactly one chip is
+          ever active: the one whose <code>location</code> matches the page's current search params.
+        </p>
+
+        <div class="grid grid-cols-12 gap-3">
+          <!-- Progress lede -->
+          <div class="col-span-12 lg:col-span-5">
+            <div class="h-full bg-[#FCF6EC] rounded-[12px] border-l-4 border-[#EAAD43] border-y border-r border-[#F1CA87]/40 p-4 flex flex-col justify-between">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="font-proxima text-[12px] text-[#37576B] font-[600] uppercase leading-[140%] tracking-wide">County priority assigned</p>
+                  <p class="mt-1 flex items-baseline gap-1.5">
+                    <span class="font-display text-[36px] text-[#2D3E4C] font-[500] leading-[1] tracking-[-0.03em] tabular-nums">259</span>
+                    <span class="font-display text-[18px] text-[#6D96AE] font-[500] leading-[1] tabular-nums">/ 473</span>
+                    <span class="font-proxima text-[13px] text-[#37576B] pl-1">55% complete</span>
+                  </p>
+                </div>
+                <a href="#" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[#EAAD43] rounded-full font-proxima text-[12px] font-[700] text-[#2D3E4C] uppercase tracking-wide">
+                  214 to go
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                </a>
+              </div>
+              <div class="mt-3">
+                <div class="flex h-[8px] rounded-full overflow-hidden bg-white border border-[#F1CA87]/40">
+                  <div class="bg-[#EAAD43]" style="width:8.0%"></div>
+                  <div class="bg-[#37576B]" style="width:15.6%"></div>
+                  <div class="bg-[#6D96AE]" style="width:20.3%"></div>
+                  <div class="bg-[#C5D7E0]" style="width:10.8%"></div>
+                </div>
+                <div class="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                  <span class="flex items-center gap-1.5 font-proxima text-[11px] text-[#37576B] font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-[#EAAD43]"></span>T1 · 38</span>
+                  <span class="flex items-center gap-1.5 font-proxima text-[11px] text-[#37576B] font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-[#37576B]"></span>T2 · 74</span>
+                  <span class="flex items-center gap-1.5 font-proxima text-[11px] text-[#37576B] font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-[#6D96AE]"></span>T3 · 96</span>
+                  <span class="flex items-center gap-1.5 font-proxima text-[11px] text-[#37576B] font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-[#C5D7E0]"></span>T4 · 51</span>
+                  <span class="flex items-center gap-1.5 font-proxima text-[11px] text-[#6D96AE] font-[500]"><span class="w-2.5 h-2.5 rounded-sm border border-[#C5D7E0] bg-white"></span>Not set · 214</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linked stat chips -->
+          <div class="col-span-12 lg:col-span-7">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 h-full">
+              <a href="#" class="bg-[#F3F8F9] rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-[#2D3E4C] ring-1 ring-[#2D3E4C]/20 flex flex-col justify-between">
+                <p class="font-proxima text-[11px] text-[#2D3E4C] font-[700] uppercase leading-[140%] tracking-wide">All actions</p>
+                <p class="font-display text-[30px] text-[#2D3E4C] font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">473</p>
+                <p class="font-proxima text-[11px] text-[#37576B] font-[600] mt-1">Showing</p>
+              </a>
+              <a href="#" class="bg-white rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-[#6D96AE] flex flex-col justify-between">
+                <p class="font-proxima text-[11px] text-[#37576B] font-[600] uppercase leading-[140%] tracking-wide">Proposed</p>
+                <p class="font-display text-[30px] text-[#2D3E4C] font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">391</p>
+                <p class="font-proxima text-[11px] text-[#6D96AE] mt-1">83% of actions</p>
+              </a>
+              <a href="#" class="bg-white rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-[#54B99B] flex flex-col justify-between">
+                <p class="font-proxima text-[11px] text-[#37576B] font-[600] uppercase leading-[140%] tracking-wide">In-Progress</p>
+                <p class="font-display text-[30px] text-[#2D3E4C] font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">21</p>
+                <p class="font-proxima text-[11px] text-[#6D96AE] mt-1">4% of actions</p>
+              </a>
+              <a href="#" class="bg-white rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-[#DD524C] flex flex-col justify-between">
+                <p class="font-proxima text-[11px] text-[#37576B] font-[600] uppercase leading-[140%] tracking-wide">Discontinued</p>
+                <p class="font-display text-[30px] text-[#2D3E4C] font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">4</p>
+                <p class="font-proxima text-[11px] text-[#6D96AE] mt-1">1% of actions</p>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>DMS composition:</strong> one <code>Card</code> section, <code>col-span-12</code>, with calculated cells
+          (<code>fn: 'sum'</code> over <code>CASE WHEN … THEN 1 ELSE 0 END</code>) and <code>isLink</code> +
+          <code>location: "?implementation_status=…"</code> per cell.
+          <strong>Platform gap:</strong> a linked cell cannot yet style itself as active — today's page fakes it with a fixed
+          <code>cellBgColor</code>. The active state above needs an <code>activeOnSearchParam</code> flag that applies a named
+          style when the cell's <code>location</code> matches the live <code>PageContext</code> filters.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PATTERN 12 — ASSIGN-A-VALUE WORKLIST ROW
+         ========================================================= -->
+    <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
+      <div class="bg-white rounded-[12px] p-6 mb-6" style="box-shadow: 0px 0px 6px rgba(0,0,0,.02), 0px 2px 4px rgba(0,0,0,.08)">
+        <div class="pattern-label">Pattern 12 — Assign-a-Value Worklist Row</div>
+        <p class="font-proxima text-[13px] text-[#37576B] mb-6">
+          A table whose purpose is to <strong>get one field filled in</strong> on every row. The row carries just enough context to
+          decide (who owns it, what state it is in, what it is), and the editable field sits in a fixed right-hand column so the
+          eye runs down a single column of controls. Rows still missing the value carry an amber edge and tint — so the work left
+          to do is visible while scrolling, without filtering for it.
+        </p>
+
+        <div class="rounded-[12px] border border-[#E0EBF0] overflow-hidden">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-[#F3F8F9]">
+                <th class="w-[36px] border-b border-[#E0EBF0]"></th>
+                <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0] w-[180px]">Jurisdiction</th>
+                <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0] w-[130px]">Status</th>
+                <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0]">Action Name</th>
+                <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-[#37576B] tracking-wider border-b border-[#E0EBF0] w-[260px]">County Priority</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- assigned -->
+              <tr class="border-b border-[#F3F8F9]">
+                <td class="pl-3 border-l-2 border-transparent">
+                  <span class="size-6 rounded-md flex items-center justify-center text-[#6D96AE]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                  </span>
+                </td>
+                <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-[#2D3E4C]">Bloomingburg (Village)</td>
+                <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#37576B]"><span class="w-2 h-2 rounded-full bg-[#6D96AE]"></span>Proposed</span></td>
+                <td class="px-3 py-3 font-proxima text-[14px] text-[#2D3E4C]">Increase Capacity To Manage Snow On Pedestrian Walkways</td>
+                <td class="px-3 py-2.5">
+                  <button class="w-full flex items-center justify-between gap-2 pl-1.5 pr-2 py-1.5 rounded-full border border-[#EAAD43] bg-[#FCF6EC]">
+                    <span class="flex items-center gap-2 min-w-0">
+                      <span class="size-6 shrink-0 rounded-full bg-[#EAAD43] text-[#2D3E4C] font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">1</span>
+                      <span class="font-proxima text-[13px] font-[600] text-[#2D3E4C] truncate">Top Implementation Priority</span>
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#37576B] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <!-- unassigned — the state the page exists to eliminate -->
+              <tr class="border-b border-[#F3F8F9] bg-[#FCF6EC]/40">
+                <td class="pl-3 border-l-2 border-[#F1CA87]">
+                  <span class="size-6 rounded-md flex items-center justify-center text-[#6D96AE]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                  </span>
+                </td>
+                <td class="px-3 py-3 font-proxima text-[14px] font-[600] text-[#2D3E4C]">Bloomingburg (Village)</td>
+                <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-[#37576B]"><span class="w-2 h-2 rounded-full bg-[#6D96AE]"></span>Proposed</span></td>
+                <td class="px-3 py-3 font-proxima text-[14px] text-[#2D3E4C]">Bloomingburg - Vegetation Maintenance/Trimming Plan</td>
+                <td class="px-3 py-2.5">
+                  <button class="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-full border border-dashed border-[#EAAD43] bg-white">
+                    <span class="font-proxima text-[13px] font-[600] text-[#2D3E4C]">Set priority</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-[#37576B]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <!-- expanded: the openOut columns -->
+              <tr class="bg-[#FCF6EC]/40">
+                <td class="border-l-2 border-[#F1CA87]"></td>
+                <td colspan="4" class="px-3 pb-4">
+                  <div class="bg-white rounded-[10px] border border-[#E0EBF0] p-4">
+                    <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-[#6D96AE] mb-1">Description of the Problem</p>
+                    <p class="font-proxima text-[13px] text-[#37576B] leading-[1.5] mb-3">Dead and loose limbs come down in severe winds, blocking roads and taking power lines with them.</p>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F3F8F9] border border-[#E0EBF0] font-proxima text-[12px] text-[#37576B]">Not Reported</span>
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F3F8F9] border border-[#E0EBF0] font-proxima text-[12px] text-[#37576B]">Less than 2 years</span>
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F3F8F9] border border-[#E0EBF0] font-proxima text-[12px] text-[#37576B]">Wind</span>
+                      <a href="#" class="ml-auto font-proxima text-[12px] font-[700] uppercase tracking-wider text-[#37576B]">View / edit action</a>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 callout">
+          <p><strong>DMS composition:</strong> one <code>Spreadsheet</code> section, <code>col-span-12</code>, with
+          <code>allowEditInView</code> + <code>liveEdit</code>. The editable cell is the <code>status_pill</code> column type
+          (<code>ui/columnTypes/statusPill.jsx</code>): pill in view, single-select dropdown on edit, variants from the column's
+          <code>pillColors</code> map. Detail fields are ordinary <code>openOut</code> columns.
+          <strong>Platform gap:</strong> the “needs a value” filter (<code>county_priority IS NULL OR = ''</code>) has no filter
+          op today — <code>filter</code> / <code>like</code> / <code>exclude</code> cannot express it.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
          PATTERN REFERENCE TABLE
          ========================================================= -->
     <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] py-2 mr-auto w-full">
@@ -902,6 +1082,20 @@
               <td><code>darkSection</code></td>
               <td>sectionArray 4-col nav grid + full-row copyright bar</td>
             </tr>
+            <tr>
+              <td class="text-[#6D96AE]">11</td>
+              <td><strong>Progress Lede + Linked Stat Strip</strong></td>
+              <td><code>default</code></td>
+              <td><code>content</code></td>
+              <td>Card with calculated <code>isLink</code> cells (<code>location: "?key=value"</code>) + amber progress lede</td>
+            </tr>
+            <tr>
+              <td class="text-[#6D96AE]">12</td>
+              <td><strong>Assign-a-Value Worklist Row</strong></td>
+              <td><code>default</code></td>
+              <td><code>content</code></td>
+              <td>Spreadsheet, <code>allowEditInView</code> + <code>liveEdit</code>, <code>status_pill</code> editable cell</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -923,7 +1117,14 @@
     <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
     <a href="../pages/section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
   
-    <a href="../pages/actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize Actions</a>
+    <a href="../pages/actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List)</a>
+    <a href="../pages/actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (Cards)</a>
+    <a href="../reports/actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="../reports/duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="../reports/boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="../reports/location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+    <a href="../pages/actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+
   </div>
   <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
           style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"

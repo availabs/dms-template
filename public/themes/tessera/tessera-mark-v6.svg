@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0A46D8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- the v6 mark: graph paper with one cell claimed, a filled tessera set at
+       minus 8deg. Source of truth: design_system_v6/theme/icons.js `Tile`.
+       Cobalt baked in for favicon use; the Logo widget re-colors it via a CSS
+       mask over the theme's cobalt variable. -->
+  <path d="M8 2.5v19M16 2.5v19M2.5 8h19M2.5 16h19" opacity="0.45"/>
+  <rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.1" fill="#0A46D8" stroke="none" transform="rotate(-8 12 12)"/>
+</svg>

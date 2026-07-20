@@ -29,9 +29,36 @@ mny/design/
 │   ├── grid.html                       sectionArray column grid
 │   ├── components.html                 every UI primitive skinned in the mny brand
 │   └── patterns.html                   composed multi-primitive patterns
+├── pages/                            ← example product surfaces in the mny brand
+│   ├── home.html · home-v2.html        public landing
+│   ├── section-landing.html            a topic landing page
+│   ├── actions-dashboard.html          action tracking for one county
+│   ├── actions-prioritize.html         prioritize actions — list/worklist view (stat strip + filter bar + editable table)
+│   ├── actions-prioritization.html     prioritize actions — card view (tiers across counties)
+│   ├── actions-location-overview.html  MapLibre map (donut clusters by status) + statewide exec summary
+│   ├── datasets-files.html             the datasets pattern
+│   └── site-management*.html           admin surfaces
+├── reports/                          ← data-analysis reports (NOT for DMS migration)
+│   ├── actions-qa.html                 actions data-quality / location-precision audit
+│   ├── duplicate-actions.html          same-place redundant rows — cause + safe-to-delete case
+│   ├── boilerplate-actions.html        cross-jurisdiction template reuse — where + how to shape it
+│   └── location-from-text.html         recovering site coords from action text (mining the descriptions)
+├── assets/mny/                       ← logo, topolines, hazard glyphs, county art
 └── references/                       ← original Figma handoff exports (read-only)
     └── MitigateNY UX_UI [...]/*.jpg
 ```
+
+> **`reports/` vs `pages/`.** `pages/` holds product-surface mockups meant to be built as real DMS
+> pages. `reports/` holds standalone **analysis outputs** — HTML that renders a data finding for a
+> human, never intended to migrate to DMS. They still wear the mny brand (same tokens, hero, nav
+> widget) so a finding reads like part of the product.
+>
+> The three `reports/*.html` are backed by **real data** — every number comes from
+> `references/actions/` (analysis scripts in `references/actions/scripts/`, findings in
+> `references/actions/report/actions-data-quality.md`), not from placeholder copy.
+> `pages/actions-location-overview.html` loads MapLibre GL + the generated
+> `assets/mny/data/actions_locations.geojson`, so it (and the reports, for their relative asset
+> links) must be viewed over a local server (`python3 -m http.server` in `design/`), not `file://`.
 
 ---
 

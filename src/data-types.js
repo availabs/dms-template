@@ -6,10 +6,12 @@ import transcom from '../data-types/transcom/pages/index.jsx';
 import excessiveDelay from '../data-types/excessive_delay/pages/index.jsx';
 import pm3 from '../data-types/pm3/pages/index.jsx';
 import nowPlaying from '../data-types/now_playing/pages/index.jsx';
+import actions_location from "../data-types/mny/actions_location/pages/index.js"
 
 const dataTypesByApp = {
   'mitigat-ny-prod' : {
     fima_nfip_claims_v2_enhanced: enhanceNfipClaimsV2,
+    actions_location
   },
   'npmrdsv5': {
     map21,

@@ -306,6 +306,40 @@ async function runTests() {
     assert(m2.monetization.legacy_usd_per_vehicle_hour === 20, 'legacy flat rate retained for reproducibility');
   });
 
+  await test('add mode into a pre-vot_eff/cost table inserts without those columns (no ALTER needed)', async () => {
+    // The live v2 series table predates the monetization columns and is
+    // deliberately left un-ALTERed until the series-wide backfill.
+    const legacySrc = await metadata.createDamaSource({ name: `ed_legacy_${stamp}`, type: 'excessive_delay', user_id: 1 }, DAMA_TEST_DB);
+    const pub = await worker(makeCtx({
+      ...baseDescriptor, source_id: legacySrc.source_id, name: `ed_legacy_${stamp}`,
+      years: [2019], months: [1],
+    }));
+    const { rows: [v] } = await db.query(`SELECT data_table FROM views WHERE view_id = $1`, [pub.view_id]);
+    const legacyTable = v.data_table;
+    await db.query(`ALTER TABLE ${legacyTable} DROP COLUMN vot_eff`);
+    await db.query(`ALTER TABLE ${legacyTable} DROP COLUMN cost`);
+
+    events.length = 0;
+    const add = await worker(makeCtx({
+      ...baseDescriptor, source_id: legacySrc.source_id, mode: 'add', view_id: pub.view_id,
+      years: [2019], months: [2],
+    }));
+    assert(add.view_id === pub.view_id, 'add reuses the existing view');
+    const { rows } = await db.query(`SELECT COUNT(*) AS n FROM ${legacyTable} WHERE month = 2`);
+    assert(Number(rows[0].n) === 3, `month 2 inserted despite missing columns (got ${rows[0].n})`);
+    assert(events.some((e) => e.type === 'excessive_delay:COLUMNS_SKIPPED'
+      && /vot_eff, cost/.test(e.message)), 'emits COLUMNS_SKIPPED naming the missing columns');
+
+    // Metadata must describe the table as it is: no stored-cost claim, no
+    // advertised columns that would make UDA queries error.
+    const { rows: [vm] } = await db.query(`SELECT metadata FROM views WHERE view_id = $1`, [pub.view_id]);
+    assert(parseMeta(vm.metadata).monetization.method === 'downstream', 'monetization gated to downstream');
+    const { rows: [sm] } = await db.query(`SELECT metadata FROM sources WHERE source_id = $1`, [legacySrc.source_id]);
+    const colNames = parseMeta(sm.metadata).columns.map((c) => c.name);
+    assert(!colNames.includes('vot_eff') && !colNames.includes('cost'), 'source columns omit missing columns');
+    assert(colNames.includes('total') && colNames.includes('region_name'), 'other columns still advertised');
+  });
+
   await test('methodology v1 (default) is unchanged: AVG baseline, uncapped, no v2 keys', async () => {
     const { rows: [vm] } = await db.query(`SELECT metadata FROM views WHERE view_id = $1`, [result.view_id]);
     const m1 = parseMeta(vm.metadata);

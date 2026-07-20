@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>tessera · admin — pattern pages</title>
+<!-- apply stored light/dark choice before first paint -->
+<script>(function(){try{var t=localStorage.getItem("t6-theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: {
+    paper:"var(--t-paper)", panel:"var(--t-panel)", well:"var(--t-well)",
+    ink:"var(--t-ink)", graphite:"var(--t-graphite)", pencil:"var(--t-pencil)",
+    rule:"var(--t-rule)", ruleStrong:"var(--t-rule-strong)",
+    cobalt:"var(--t-cobalt)", cobaltDeep:"var(--t-cobalt-deep)", cobaltSoft:"var(--t-cobalt-soft)", accentInk:"var(--t-accent-ink)",
+    marker:"var(--t-marker)", markerSoft:"var(--t-marker-soft)",
+    go:"var(--t-go)", goSoft:"var(--t-go-soft)", amber:"var(--t-amber)", amberSoft:"var(--t-amber-soft)",
+    brick:"var(--t-brick)", brickSoft:"var(--t-brick-soft)",
+    board:"var(--t-board)", board2:"var(--t-board-2)", chalk:"var(--t-chalk)", chalkDim:"var(--t-chalk-dim)",
+    scrim:"var(--t-scrim)",
+  },
+  fontFamily: {
+    display:['"IBM Plex Sans"',"system-ui","sans-serif"], sans:['"IBM Plex Sans"',"system-ui","sans-serif"],
+    mono:['"IBM Plex Mono"',"ui-monospace","monospace"], note:["Caveat",'"Segoe Print"',"cursive"],
+  },
+  boxShadow: { lift:"var(--t-shadow-lift)", drag:"var(--t-shadow-drag)" },
+  maxWidth: { content:"1200px", measure:"640px" },
+}}};
+</script>
+<link rel="stylesheet" href="../_shared.css"/>
+</head>
+
+<!-- Layout: app — ADMIN control-room chrome. The open pattern gets its own
+     sidenav group (the consolidated five tabs); there is NO separate tab
+     strip — the sidenav IS the tab nav. Real data: mitigat-ny-prod pattern
+     985070 (MitigateNY_2025), including its real rough states: dmsEnvId
+     unset, html_title unset, no section attributes. -->
+<body class="text-ink font-sans">
+<div data-dms-layout="app" class="min-h-screen">
+  <div class="flex min-h-screen">
+
+    <!-- SideNav (Layout app · control room) -->
+    <aside class="hidden lg:flex w-56 flex-none flex-col border-r border-rule">
+      <div class="h-14 flex items-center gap-2.5 px-4 border-b border-rule">
+        <a href="beta-landing.html" class="flex items-center gap-2.5">
+          <!-- icon: Tile -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-cobalt" aria-hidden="true"><path d="M8 2.5v19M16 2.5v19M2.5 8h19M2.5 16h19" opacity="0.45"/><rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.1" fill="currentColor" stroke="none" transform="rotate(-8 12 12)"/></svg>
+          <span class="t-displaySM">Tessera</span>
+        </a>
+        <span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5">admin</span>
+      </div>
+      <nav class="flex-1 overflow-y-auto py-4 px-2">
+        <div class="t-metaXS text-pencil px-3 pb-1.5">site</div>
+        <a href="admin-site.html" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Home -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4.5 11L12 4.5 19.5 11"/><path d="M6.5 9.5v10h11v-10"/></svg>
+          overview</a>
+        <a href="#" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Layers -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 3.5l8.5 4.5L12 12.5 3.5 8 12 3.5Z"/><path d="M3.5 12.5L12 17l8.5-4.5"/><path d="M3.5 17L12 21.5 20.5 17"/></svg>
+          themes</a>
+        <a href="#" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Users -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="9.5" cy="9" r="3.2"/><path d="M3.5 19c1-2.7 3.2-4 6-4s5 1.3 6 4"/><path d="M15.5 6.2a3.2 3.2 0 0 1 0 5.6M17.5 15.3c1.6.6 2.6 1.8 3 3.7"/></svg>
+          people</a>
+        <a href="#" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Globe -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5S14.4 18.2 12 20.5c-2.4-2.3-3.6-5.1-3.6-8.5S9.6 5.8 12 3.5Z"/></svg>
+          tenants</a>
+
+        <div class="t-metaXS text-pencil px-3 pt-5 pb-1.5 truncate">pattern · mitigateny_2025</div>
+        <a href="admin-pattern-overview.html" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Info -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.9" fill="currentColor" stroke="none"/></svg>
+          overview</a>
+        <a href="admin-pattern-pages.html" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-cobalt bg-cobaltSoft text-cobalt t-metaMD">
+          <!-- icon: Layout -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9h17M9.5 9v11.5"/></svg>
+          pages <span class="t-metaXS text-pencil ml-auto">164</span></a>
+        <a href="admin-pattern-access.html" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Lock -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg>
+          access</a>
+        <a href="admin-pattern-data.html" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Database -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M5 6.5C5 4.8 8.1 3.5 12 3.5s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3Z"/><path d="M5 6.5v11c0 1.7 3.1 3 7 3s7-1.3 7-3v-11"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>
+          data</a>
+        <a href="admin-pattern-activity.html" class="flex items-center gap-2.5 pl-3 pr-2 py-1.5 border-l-2 border-transparent text-graphite hover:text-ink hover:border-ruleStrong t-metaMD">
+          <!-- icon: Clock -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2.5"/></svg>
+          activity</a>
+      </nav>
+      <div class="border-t border-rule px-4 py-3">
+        <p class="t-metaXS text-pencil">mitigat-ny-prod · prod</p>
+        <div class="flex items-center gap-2 mt-2">
+          <span class="w-6 h-6 rounded-md bg-cobalt text-accentInk flex items-center justify-center t-metaXS">a</span>
+          <span class="t-metaSM text-graphite truncate">admin@availabs.org</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- content column -->
+    <div class="flex-1 min-w-0 flex flex-col">
+      <!-- TopNav (Layout app): breadcrumb + view pattern + mode toggle -->
+      <header class="h-14 flex-none border-b border-rule flex items-center gap-3 px-5 lg:px-8 min-w-0">
+        <a href="admin-site.html" class="t-metaMD text-graphite hover:text-ink">admin</a>
+        <span class="t-metaMD text-pencil">/</span>
+        <span class="t-metaMD text-graphite truncate">MitigateNY_2025</span>
+        <span class="t-metaMD text-pencil">/</span>
+        <span class="t-metaMD text-cobalt">pages</span>
+        <span class="flex-1"></span>
+        <a href="#" class="hidden sm:inline-flex items-center gap-1.5 t-metaSM text-graphite border border-rule rounded-md px-3 py-1.5 hover:text-ink hover:border-ruleStrong">
+          view pattern
+          <!-- icon: ArrowUpRight -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M6.5 17.5l11-11M8.5 6.5h9v9"/></svg>
+        </a>
+        <button onclick="var r=document.documentElement;var d=r.getAttribute('data-theme')==='dark';if(d){r.removeAttribute('data-theme')}else{r.setAttribute('data-theme','dark')}try{localStorage.setItem('t6-theme',d?'light':'dark')}catch(e){}" aria-label="Toggle dark mode" class="w-8 h-8 rounded-md border border-rule flex items-center justify-center text-graphite hover:text-ink hover:border-ruleStrong flex-none">
+          <span class="t6-when-light"><!-- icon: Moon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></span>
+          <span class="t6-when-dark"><!-- icon: Sun -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6L17 7M7 17l-1.4 1.4M18.4 18.4L17 17M7 7L5.6 5.6"/></svg></span>
+        </button>
+      </header>
+
+      <main class="flex-1">
+
+        <!-- ═══ LayoutGroup: header strip (compact) ═══ -->
+        <div data-dms-group="header" class="w-full border-b border-rule relative">
+          <span class="t6-joint" style="left:-3.5px;bottom:-3.5px;"></span>
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-3">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="pages-header" class="col-span-12 p-2">
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2.5">
+                      <h1 class="t-displayMD truncate">Pages</h1>
+                      <span class="t-metaXS text-pencil">MitigateNY_2025</span>
+                    </div>
+                    <p class="t-metaSM text-pencil mt-1">164 pages · nav order · the tree is the source of truth</p>
+                  </div>
+                  <span class="flex-1"></span>
+                  <div class="flex items-stretch divide-x divide-rule border border-rule rounded-lg bg-panel overflow-hidden">
+                    <div class="px-4 py-2"><p class="text-xl font-semibold tracking-[-0.015em] tabular-nums leading-none">164</p><p class="t-metaXS text-pencil mt-1">pages</p></div>
+                    <div class="px-4 py-2"><p class="text-xl font-semibold tracking-[-0.015em] tabular-nums leading-none">164</p><p class="t-metaXS text-pencil mt-1">published</p></div>
+                    <div class="px-4 py-2 hidden sm:block"><p class="text-xl font-semibold tracking-[-0.015em] tabular-nums leading-none">4</p><p class="t-metaXS text-pencil mt-1">levels deep</p></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ LayoutGroup: page tree + sections rail ═══ -->
+        <div data-dms-group="content" class="w-full">
+          <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-3">
+            <div class="grid grid-cols-12 gap-0">
+              <section data-dms-section="pages-toolbar" class="col-span-12 p-2">
+                <div class="flex items-center gap-3">
+                  <label class="flex flex-1 items-center gap-2.5 border border-ruleStrong rounded-md px-3.5 h-10 bg-panel text-graphite focus-within:border-cobalt">
+                    <!-- icon: Search --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 flex-none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15.5 15.5L20 20"/></svg>
+                    <input class="flex-1 min-w-0 bg-transparent t-proseSM placeholder:text-pencil outline-none" placeholder="filter 164 pages by title or slug"/>
+                    <span class="t-metaXS text-pencil border border-rule rounded px-1.5 hidden md:block">/</span>
+                  </label>
+                  <button class="inline-flex items-center gap-2 t-proseSM font-medium text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-md px-4 h-10 flex-none">
+                    <!-- icon: Plus --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    add page
+                  </button>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 mt-2.5">
+                  <span class="t-metaSM text-pencil">pages · 164</span>
+                  <button class="inline-flex items-center gap-1 t-metaXS text-graphite border border-rule rounded-md px-2 py-1 hover:border-ruleStrong">
+                    sort: nav order
+                    <!-- icon: ChevronDown --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+                  </button>
+                  <button class="inline-flex items-center gap-1 t-metaXS text-graphite border border-rule rounded-md px-2 py-1 hover:border-ruleStrong">
+                    type: any
+                    <!-- icon: ChevronDown --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+                  </button>
+                  <button class="inline-flex items-center gap-1 t-metaXS text-graphite border border-rule rounded-md px-2 py-1 hover:border-ruleStrong">
+                    source: any
+                    <!-- icon: ChevronDown --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+                  </button>
+                  <span class="hidden lg:flex items-center gap-1.5">
+                    <button class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">all 164</button>
+                    <button class="t-metaXS text-amber bg-amberSoft rounded-full px-2 py-0.5">to publish 2</button>
+                    <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">stale drafts 2</button>
+                    <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">empty 3</button>
+                    <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">orphans 1</button>
+                    <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">off nav 1</button>
+                    <button class="t-metaXS text-amber bg-amberSoft rounded-full px-2 py-0.5">no access 1</button>
+                    <button class="t-metaXS text-pencil border border-rule rounded-full px-2 py-0.5" title="no duplicate slugs">dupe slugs 0</button>
+                  </span>
+                </div>
+              </section>
+
+              <section data-dms-section="pages-tree" class="col-span-12 p-2">
+                <div class="bg-panel border border-rule rounded-lg overflow-hidden">
+                  <div class="overflow-x-auto">
+                    <table class="w-full border-collapse text-sm">
+                      <thead class="border-b border-ruleStrong">
+                        <tr>
+                          <th class="text-left t-metaXS text-pencil px-3 py-2.5 font-medium">page</th>
+                          <th class="text-left t-metaXS text-pencil px-3 py-2.5 font-medium">state</th>
+                          <th class="text-center t-metaXS text-pencil px-3 py-2.5 font-medium hidden md:table-cell">sections</th>
+                          <th class="text-left t-metaXS text-pencil px-3 py-2.5 font-medium hidden lg:table-cell">published</th>
+                          <th class="text-center t-metaXS text-pencil px-3 py-2.5 font-medium hidden sm:table-cell">in nav</th>
+                          <th class="px-3 py-2.5"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:8px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <span class="w-3.5 flex-none"></span><!-- decorative -->
+                              <span class="t-proseSM text-graphite">(untitled)</span>
+                              
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-pencil"><!-- icon: Lock --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5v-3a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg> no access</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-pencil">—</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaXS text-pencil">—</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="t-metaXS text-pencil">—</span></td>
+                          <td class="px-3 py-1.5 w-36"><span class="t-metaXS text-pencil">—</span></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:8px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <span class="w-3.5 flex-none"></span><!-- decorative -->
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Home</a>
+                              
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/home</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">9</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">dec 18</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:8px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <span class="w-3.5 flex-none"></span><!-- decorative -->
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">County Risk Profiles</a>
+                              
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/county_risk_profiles</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">16</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">jan 22</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:8px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Know the Environment</a>
+                              <span class="t-metaXS text-pencil flex-none">3</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/know_the_environment</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">10</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 24</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:8px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronDown --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-graphite flex-none" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Assess Risk</a>
+                              <span class="t-metaXS text-pencil flex-none">3</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/assess_risk</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">8</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 28</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:30px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronDown --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-graphite flex-none" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Natural Hazards</a>
+                              <span class="t-metaXS text-pencil flex-none">16</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/natural_hazards</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">10</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">mar 12</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Avalanche</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/avalanche</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">19</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">feb 03</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Coastal Hazards</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/coastal_hazards</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">12</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 28</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Drought</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/drought</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">10</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">mar 12</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Earthquake</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/earthquake</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">7</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">dec 18</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Extreme Cold</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/extreme_cold</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">23</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 28</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Extreme Heat</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/extreme_heat</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">24</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 24</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule bg-cobaltSoft group">
+                          <td class="px-2 py-1.5 border-l-2 border-cobalt">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Flooding</a>
+                              <span class="t-metaXS text-pencil flex-none">4</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/flooding</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">40</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">feb 03</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule">
+                          <td colspan="6" class="p-0">
+                            <div style="margin-left:74px" class="my-2 mr-3 border border-rule border-l-2 border-l-cobalt rounded-lg bg-panel overflow-hidden">
+                              <div class="px-3 py-2 border-b border-rule flex flex-wrap items-center gap-2.5 bg-well">
+                                <span class="t-metaSM text-graphite">sections · 40</span>
+                                <span class="flex items-center gap-1.5">
+                                  <button class="t-metaXS text-cobalt bg-cobaltSoft rounded-full px-2 py-0.5">all 40</button>
+                                  <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">outline</button>
+                                  <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">draft</button>
+                                  <button class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 hover:border-ruleStrong">published</button>
+                                </span>
+                                <span class="flex-1"></span>
+                                <a href="#" class="t-metaXS text-cobalt inline-flex items-center gap-1">open in editor <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></a>
+                              </div>
+                              <div class="px-3 py-1.5 border-b border-rule last:border-0 flex items-center gap-3 hover:bg-well">
+                                <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                                <span class="t-metaXS text-graphite border border-rule rounded px-1.5 py-0.5 flex-none w-16 text-center">lexical</span>
+                                <span class="t-proseSM truncate">Hazard overview</span>
+                                <span class="t-metaXS text-pencil flex-none hidden md:inline">default</span>
+                                <span class="flex-1"></span>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a>
+                              </div>
+                              <div class="px-3 py-1.5 border-b border-rule last:border-0 flex items-center gap-3 hover:bg-well">
+                                <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                                <span class="t-metaXS text-graphite border border-rule rounded px-1.5 py-0.5 flex-none w-16 text-center">Header</span>
+                                <span class="t-proseSM truncate">Flooding</span>
+                                <span class="t-metaXS text-pencil flex-none hidden md:inline">header</span>
+                                <span class="flex-1"></span>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a>
+                              </div>
+                              <div class="px-3 py-1.5 border-b border-rule last:border-0 flex items-center gap-3 hover:bg-well">
+                                <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                                <span class="t-metaXS text-graphite border border-rule rounded px-1.5 py-0.5 flex-none w-16 text-center">Card</span>
+                                <span class="t-proseSM truncate">Key stats — events · claims · paid</span>
+                                <span class="t-metaXS text-pencil flex-none hidden md:inline">default</span>
+                                <span class="flex-1"></span>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a>
+                              </div>
+                              <div class="px-3 py-1.5 border-b border-rule last:border-0 flex items-center gap-3 hover:bg-well">
+                                <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                                <span class="t-metaXS text-graphite border border-rule rounded px-1.5 py-0.5 flex-none w-16 text-center">Graph</span>
+                                <span class="t-proseSM truncate">NFIP claims by year</span>
+                                <span class="t-metaXS text-pencil flex-none hidden md:inline">default</span>
+                                <span class="flex-1"></span>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a>
+                              </div>
+                              <div class="px-3 py-1.5 border-b border-rule last:border-0 flex items-center gap-3 hover:bg-well">
+                                <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                                <span class="t-metaXS text-graphite border border-rule rounded px-1.5 py-0.5 flex-none w-16 text-center">Card</span>
+                                <span class="t-proseSM truncate">Presidential disaster declarations</span>
+                                <span class="t-metaXS text-pencil flex-none hidden md:inline">default</span>
+                                <span class="flex-1"></span>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a>
+                              </div>
+                              <div class="px-3 py-1.5 border-b border-rule last:border-0 flex items-center gap-3 hover:bg-well">
+                                <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                                <span class="t-metaXS text-graphite border border-rule rounded px-1.5 py-0.5 flex-none w-16 text-center">Map</span>
+                                <span class="t-proseSM truncate">Flood zones — statewide</span>
+                                <span class="t-metaXS text-pencil flex-none hidden md:inline">default</span>
+                                <span class="flex-1"></span>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a>
+                              </div>
+                              <div class="px-3 py-1.5 border-b border-rule last:border-0 flex items-center gap-3 hover:bg-well">
+                                <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                                <span class="t-metaXS text-graphite border border-rule rounded px-1.5 py-0.5 flex-none w-16 text-center">Graph</span>
+                                <span class="t-proseSM truncate">Damages by county</span>
+                                <span class="t-metaXS text-pencil flex-none hidden md:inline">default</span>
+                                <span class="flex-1"></span>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a>
+                              </div>
+                              <div class="px-3 py-1.5 border-b border-rule last:border-0 flex items-center gap-3 hover:bg-well">
+                                <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                                <span class="t-metaXS text-graphite border border-rule rounded px-1.5 py-0.5 flex-none w-16 text-center">lexical</span>
+                                <span class="t-proseSM truncate">What the state is doing</span>
+                                <span class="t-metaXS text-pencil flex-none hidden md:inline">default</span>
+                                <span class="flex-1"></span>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a>
+                                <a href="#" class="text-pencil hover:text-ink flex-none"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a>
+                              </div>
+                              <div class="px-3 py-1.5 bg-well flex items-center">
+                                <span class="t-metaXS text-pencil">+ 32 more</span>
+                                <span class="flex-1"></span>
+                                <span class="t-metaXS text-pencil">drag to reorder within a group</span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Hail</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/hail</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">24</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">jan 22</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Hurricane</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/hurricane</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-amber bg-amberSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-amber"></span>draft · edited may 2</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">9</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 24</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><button class="t-metaXS text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-full px-2 py-0.5 flex-none">publish</button><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Ice Storm</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/ice_storm</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">11</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">feb 03</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Landslide</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/landslide</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">13</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">jan 22</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Lightning</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/lightning</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">15</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 24</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Snowstorm</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/snowstorm</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">17</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">feb 03</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Tornado</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/tornado</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">5</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">jan 22</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Wildfire</a>
+                              <span class="t-metaXS text-pencil flex-none">3</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/wildfire</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-amber bg-amberSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-amber"></span>draft · edited may 6</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">14</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 24</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><button class="t-metaXS text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-full px-2 py-0.5 flex-none">publish</button><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:52px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Wind</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/wind</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">30</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 24</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:30px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Climate Change</a>
+                              <span class="t-metaXS text-pencil flex-none">2</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/climate_change</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">20</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">jan 22</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:30px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Presidentially Declared Disasters</a>
+                              <span class="t-metaXS text-pencil flex-none">8</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/presidentially_declared_disasters</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">20</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">mar 12</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:8px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <span class="w-3.5 flex-none"></span><!-- decorative -->
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">PDF Cover</a>
+                              
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/pdf_cover</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">18</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 28</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-well border border-ruleStrong rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 left-0.5 w-3 h-3 bg-panel border border-rule rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:8px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Plan to Act</a>
+                              <span class="t-metaXS text-pencil flex-none">4</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/plan_to_act</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">10</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">dec 18</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:8px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil flex-none" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">Explore Progress</a>
+                              <span class="t-metaXS text-pencil flex-none">3</span>
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/explore_progress</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">21</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">apr 28</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                        <tr class="border-b border-rule hover:bg-well transition-colors duration-150 group">
+                          <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 min-w-0" style="padding-left:8px">
+                              <!-- icon: GripVertical --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-pencil opacity-0 group-hover:opacity-100 flex-none cursor-grab" aria-hidden="true"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+                              <span class="w-3.5 flex-none"></span><!-- decorative -->
+                              <a href="#" class="t-proseSM font-medium hover:text-cobalt truncate">County Profile</a>
+                              
+                              <span class="t-metaXS text-pencil truncate hidden xl:inline">/county_profile</span>
+                            </div>
+                          </td>
+                          <td class="px-3 py-1.5"><span class="inline-flex items-center gap-1.5 t-metaXS text-go bg-goSoft rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-go"></span>live</span></td>
+                          <td class="px-3 py-1.5 hidden md:table-cell text-center"><span class="t-metaXS text-graphite border border-rule rounded-full px-2 py-0.5 tabular-nums">23</span></td>
+                          <td class="px-3 py-1.5 hidden lg:table-cell"><span class="t-metaSM text-pencil">dec 18</span></td>
+                          <td class="px-3 py-1.5 hidden sm:table-cell text-center"><span class="relative w-7 h-4 bg-cobalt rounded-full flex-none inline-block"><!-- decorative --><span class="absolute top-0.5 right-0.5 w-3 h-3 bg-accentInk rounded-full"></span></span></td>
+                          <td class="px-3 py-1.5 w-36"><div class="flex items-center justify-end gap-2 text-pencil"><a href="#" aria-label="Edit page" class="hover:text-ink"><!-- icon: Pencil --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M4 20l.9-3.6L16.4 4.9a2 2 0 0 1 2.8 0l-.1-.1a2 2 0 0 1 0 2.8L7.6 19.1 4 20Z"/><path d="M14.5 6.8l2.7 2.7"/></svg></a><a href="#" aria-label="View page" class="hover:text-ink"><!-- icon: Eye --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></a><button aria-label="More actions" class="hover:text-ink"><!-- icon: Ellipsis --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true"><circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="currentColor" stroke="none"/></svg></button></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="px-4 py-2.5 border-t border-rule flex flex-wrap items-center gap-3">
+                    <span class="t-metaXS text-pencil">showing 28 of 164 · 6 branches collapsed</span>
+                    <span class="flex-1"></span>
+                    <button class="t-metaXS text-accentInk bg-cobalt hover:bg-cobaltDeep rounded-full px-2.5 py-1">publish 2 waiting</button>
+                    <button class="t-metaXS text-graphite hover:text-ink">expand all</button>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- footer link block (compact admin variant) -->
+      <footer data-dms-group="footer" class="w-full border-t border-rule">
+        <div class="mr-auto w-full max-w-content pl-6 lg:pl-12 pr-6 lg:pr-8 py-6">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <span class="t-metaXS text-pencil">admin pages</span>
+            <a href="admin-site.html" class="t-metaXS text-pencil hover:text-graphite">site</a>
+            <a href="admin-pattern-overview.html" class="t-metaXS text-pencil hover:text-graphite">overview</a>
+            <span class="t-metaXS text-cobalt">pages (this page)</span>
+            <a href="admin-pattern-access.html" class="t-metaXS text-pencil hover:text-graphite">access</a>
+            <a href="admin-pattern-data.html" class="t-metaXS text-pencil hover:text-graphite">data</a>
+            <a href="admin-pattern-activity.html" class="t-metaXS text-pencil hover:text-graphite">activity</a>
+            <span class="flex-1"></span>
+            <span class="t-metaXS text-pencil">design system</span>
+            <a href="../design-system/theme.html" class="t-metaXS text-pencil hover:text-graphite">theme</a>
+            <a href="../design-system/patterns.html" class="t-metaXS text-pencil hover:text-graphite">patterns</a>
+            <a href="beta-landing.html" class="t-metaXS text-pencil hover:text-graphite">beta landing</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+  </div>
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

@@ -216,6 +216,25 @@ describe('insertRowsSQL (computed rows → output table)', () => {
     expect(q).not.toContain('ST_GeomFromGeoJSON');
     expect(() => sql.insertRowsSQL({ table: 't', rows: [], dialect: 'postgres' })).toThrow(/rows/i);
   });
+  it('columns option restricts the insert + upsert lists (pre-vot_eff/cost tables)', () => {
+    const columns = sql.INSERT_COLUMNS.filter((c) => !['vot_eff', 'cost'].includes(c));
+    const q = squish(sql.insertRowsSQL({ table: 't', rows: [row], dialect: 'postgres', upsert: true, columns }));
+    expect(q).not.toContain('vot_eff');
+    expect(q).not.toContain('cost');
+    expect(q).toContain('total = EXCLUDED.total');
+    expect(q).toContain('road_information = EXCLUDED.road_information');
+  });
+});
+
+describe('tableColumnsSQL (target-table introspection)', () => {
+  it('postgres: splits schema.table into information_schema filters', () => {
+    const q = squish(sql.tableColumnsSQL({ table: 'excessive_delay.s1_v2_t', dialect: 'postgres' }));
+    expect(q).toContain("table_schema = 'excessive_delay'");
+    expect(q).toContain("table_name = 's1_v2_t'");
+  });
+  it('sqlite: uses pragma_table_info on the unqualified name', () => {
+    expect(sql.tableColumnsSQL({ table: 't', dialect: 'sqlite' })).toContain("pragma_table_info('t')");
+  });
 });
 
 describe('attributionUpdateSQL (transcom buckets → UPDATE ... FROM, pg+sqlite portable)', () => {

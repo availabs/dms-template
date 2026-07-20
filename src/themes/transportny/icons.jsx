@@ -62,6 +62,7 @@ const ArrowUp      = svg(<path d="M12 19V5M5 11l7-7 7 7"/>);
 // ── User / auth ─────────────────────────────────────────────────────
 const User = svg(<><path d="M18.5 20V17.97C18.5 16.73 17.94 15.51 16.81 14.99C15.43 14.37 13.78 14 12 14C10.22 14 8.57 14.37 7.19 14.99C6.06 15.51 5.5 16.73 5.5 17.97V20"/><circle cx="12" cy="7.5" r="3.5"/></>);
 const Lock = svg(<><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></>);
+const Login = svg(<><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></>);
 
 // ── Actions ─────────────────────────────────────────────────────────
 const PencilEdit  = svg(<><path d="M16.21 4.98L17.62 3.58C18.39 2.81 19.65 2.81 20.42 3.58C21.19 4.35 21.19 5.61 20.42 6.38L19.02 7.79M16.21 4.98L10.98 10.22C9.93 11.26 9.41 11.78 9.06 12.42C8.7 13.06 8.34 14.56 8 16C9.44 15.66 10.94 15.3 11.58 14.94C12.22 14.59 12.74 14.07 13.78 13.02L19.02 7.79"/><path d="M21 12C21 16.24 21 18.36 19.68 19.68C18.36 21 16.24 21 12 21C7.76 21 5.64 21 4.32 19.68C3 18.36 3 16.24 3 12C3 7.76 3 5.64 4.32 4.32C5.64 3 7.76 3 12 3"/></>);
@@ -130,7 +131,18 @@ const Building = svg(<path d="M3 21h18M5 21V8l7-5 7 5v13M9 14h6M9 18h6"/>);
 const Map      = svg(<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>);
 const Export   = svg(<path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>);
 
+// ── Product marks (landing page) — one glyph per product, family style:
+// single stroke, one story each. NPMRDS = a corridor whose middle breaks into
+// a travel-time pulse; TSMO = an ops radar sweeping from a roadside station
+// with an incident blip; FreightAtlas = the trifold plan map carrying a
+// freight corridor to a port node.
+const ProductNpmrds = svg(<path d="M3 13.5h3.5l2-5.5 3 8.5 2.5-6 1.5 3H21"/>);
+const ProductTsmo = svg(<><circle cx="6" cy="18" r="1.8"/><path d="M6 11.5A6.5 6.5 0 0 1 12.5 18"/><path d="M6 6A12 12 0 0 1 18 18"/><circle cx="17" cy="7" r="2"/></>);
+const ProductFreightAtlas = svg(<><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13l-6 2.5-6-2.5-6 2.5z"/><path d="M6.5 13.5c3-3.5 7.5-.5 10.5-4.5"/><circle cx="17.5" cy="8.5" r="1.6"/></>);
+
 const icons = {
+  // Product marks
+  ProductNpmrds, ProductTsmo, ProductFreightAtlas,
   // Navigation
   Pages, Sections, Settings, History, Search, Database, Menu, Folder,
   // Freight Atlas — modes + surfaces
@@ -143,7 +155,7 @@ const icons = {
   CaretDown, CaretUp, ChevronRight, ChevronLeft, ChevronDown, ChevronUp,
   ArrowRight, ArrowLeft, ArrowDown, ArrowUp,
   // User / auth
-  User, Lock, Logo,
+  User, Lock, Login, Logo,
   // Actions
   PencilEdit, View, Plus, Minus, XMark, Check, CircleCheck, Trash,
   RefreshCw, ExternalLink, Star, Tag, Info, AlertTriangle,

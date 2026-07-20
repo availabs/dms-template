@@ -1,5 +1,5 @@
 // qa_skills · scope_stories — helper for the "scope user stories" skill.
-//   list                 → print the sitemgmt_pages rows in the Scoping stage (page_key,name,desc)
+//   list                 → print the sitemgmt_pages rows in the Proposed stage (page_key,name,desc)
 //   write <stories.json> → create proposed stories from {page_key:[story,...]} (idempotent)
 // Falcor-only (no CLI) so it runs from anywhere; needs DMS_AUTH_TOKEN + (optional) DMS_HOST.
 import { createFalcorClient } from "../../../dms/packages/dms/cli/src/client.js";
@@ -26,9 +26,9 @@ const mode = process.argv[2] || "list";
 
 if (mode === "list") {
   const pages = (await readRows(PAGES.env, PAGES.view, ["page_key", "name", "surface_label", "route", "description", "stage"]))
-    .filter((p) => p.stage === "Scoping");
+    .filter((p) => p.stage === "Proposed");
   console.log(JSON.stringify(pages, null, 2));
-  console.error(`\n${pages.length} page(s) in Scoping. Propose stories, then: node scope_stories.mjs write <stories.json>`);
+  console.error(`\n${pages.length} page(s) in Proposed. Propose stories, then: node scope_stories.mjs write <stories.json>`);
 } else if (mode === "write") {
   const file = process.argv[3]; if (!file) { console.error("usage: write <stories.json>  ({ \"page_key\": [\"story\", …] })"); process.exit(1); }
   const map = JSON.parse(readFileSync(file, "utf8"));
