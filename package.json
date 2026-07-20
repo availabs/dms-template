@@ -31,6 +31,7 @@
     "@availabs/dms": "file:./src/dms/packages/dms",
     "@availabs/dms-server": "file:./src/dms/packages/dms-server",
     "@carbon/icons-react": "11.76.0",
+    "busboy": "^1.6.0",
     "cron-parser": "^5.6.0",
     "d3-dsv": "^3.0.1",
     "lodash-es": "^4.17.21",
