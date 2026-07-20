@@ -70,7 +70,10 @@ const sections = [
   { group: B.hero, size: "12", data: lexical(
     styled("kicker", text("// nysdot · 2024 state freight plan · public atlas")),
     styled("displayHero", text("NYS Freight Atlas"), text(".", 0, GOLD)),
-    styled("prose", text("The living, interactive companion to the 2024 New York State Freight Plan — every road, rail, port, airport, pipeline, and truck-parking layer the plan analyzes, the performance metrics behind them, and the underlying data to download. Start with the numbers below, then dive into the map, the insights, or the catalog.")),
+    // Copy edit (Alex 2026-07-16, ticket 2192553): "Start with the numbers below…" read as a
+    // promise that the stat strip sits in the top banner (it lives further down the page).
+    // Neutral wording — invite exploration without implying placement.
+    styled("prose", text("The living, interactive companion to the 2024 New York State Freight Plan — every road, rail, port, airport, pipeline, and truck-parking layer the plan analyzes, the performance metrics behind them, and the underlying data to download. Dive into the map, the insights, or the catalog — or scroll on for the numbers that frame it all.")),
     layout("grid-cols-1 md:grid-cols-[max-content_max-content_1fr]", [
       [para(button("Explore the map →", "/freight_atlas", "default"))],
       [para(button("Browse & download the data →", "/about_the_plan", "secondary"))],
@@ -84,7 +87,7 @@ const sections = [
     head("h2", "Explore the Atlas."),
   )},
   { group: B.explore, size: "6", border: "full", data: surfaceCard("interactive map · 56 layers", "Freight Atlas", "The flagship map — every mode and overlay on one canvas, with the 2021↔2050 vintage toggle, feature popups, and per-layer download.", "open the map →", "/freight_atlas") },
-  { group: B.explore, size: "6", border: "full", data: surfaceCard("data & downloads · 24 datasets", "Data & Downloads", "The catalog — every layer to download in CSV, GeoJSON, Shapefile, or GeoPackage, with data dictionaries, vintages, and a Falcor API. No login.", "browse the catalog →", "#") },
+  { group: B.explore, size: "6", border: "full", data: surfaceCard("data & downloads · 24 datasets", "Data & Downloads", "The catalog — every layer to download in CSV, GeoJSON, Shapefile, or GeoPackage, with data dictionaries, vintages, and a Falcor API. No login.", "browse the catalog →", "/freight_data?cat=Freight%20Atlas") },
   { group: B.explore, size: "4", border: "full", data: surfaceCard("8 presets", "Maps Gallery", "Eight curated presets — Freight Network, Truck Parking, Flows, Bottlenecks, Equity — that open the map ready-made.", "8 presets →", "/maps_gallery") },
   { group: B.explore, size: "4", border: "full", data: surfaceCard("6 goals", "Freight Insights", "Dashboards and data stories organized by the plan's six goals — reliability, the parking crisis, flows to 2050, climate & equity.", "6 goals →", "#") },
   { group: B.explore, size: "4", border: "full", data: surfaceCard("the plan", "About & The Plan", "The six goals and 20 strategies, the full report library, what changed since 2019, and how to get involved.", "read the plan →", "/about_the_plan") },

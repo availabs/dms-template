@@ -41,7 +41,19 @@ const lexical = (...nodes) => JSON.stringify({ bgColor: "rgba(0,0,0,0)", isCard:
 const GOLD = "color:#CA8A04";
 
 // ── source: reuse the TRANSCOM externalSource from the built incidents page ───
-const TSRC = cardEd("2182325").externalSource;   // Transcom Events 956/1947 (npmrds2), full column schema
+// Resolved DYNAMICALLY from incidents_v2's current drafts — a hardcoded section id
+// (2182325) died the first time the incidents builder wiped/recreated its sections.
+const TSRC = (() => {
+  const incidents = jget("2181461");
+  for (const ref of incidents.data.draft_sections || []) {
+    const id = typeof ref === "object" ? ref.id : ref;
+    try {
+      const ed = cardEd(String(id));
+      if (ed?.externalSource?.name === "Transcom Events") return ed.externalSource;
+    } catch { /* lexical/non-data sections */ }
+  }
+  throw new Error("no Transcom Events section found on incidents_v2 (2181461) to source TSRC from");
+})();   // Transcom Events 956/1947 (npmrds2), full column schema
 
 // ── page-variable leaves ──────────────────────────────────────────────────────
 // Default time window = the PREVIOUS CALENDAR MONTH, computed at BUILD time (re-run the
@@ -181,7 +193,7 @@ sec(B.res, "12", "Spreadsheet", dw({
     col("coalesce(county_name,'—') as county", "County", { justify: "left" }),
     col("estimated_duration_mins", "Duration · min", { formatFn: " ", justify: "right" }),
     col("round(vehicle_delay) as delay", "Attr. delay · vh", { formatFn: "comma", justify: "right", sort: "desc nulls last" }),
-    col("case when cost is null then '—' when cost >= 1e6 then '$' || round(cost/1e6,2)::text || 'M' when cost >= 1e3 then '$' || round(cost/1e3)::text || 'k' else '$' || cost::text end as cost", "Cost", { justify: "right" }),
+    col("round(cost) as cost", "Cost", { formatFn: "abbreviate_dollar", justify: "right" }),
     { name: "event_id", customName: "", show: true, justify: "right",
       isLink: true, location: "/incident_view?event_id=", searchParams: "value", linkText: "view →" },
   ],
@@ -193,13 +205,13 @@ sec(B.res, "12", "Spreadsheet", dw({
 sec(B.cov, "12", "lexical", lexical(
   styled("kicker", text("// about attributed delay")),
   styled("proseSM", text("Delay and cost are computed only for events with a measured congestion footprint — about 18.5% of all events. Rows without a footprint show “—” and still appear in results. Cost is an interim flat $20/veh-hr basis and will re-base to the AADT class-weighted value-of-time formula as that ETL lands.")),
-  para(button("data & methodology →", "/tsmo-methodology", "plain")),
+  para(button("data & methodology →", "/methodology", "plain")),
 ), { bg: "white", border: "full" });
 
 // ═════════ FOOTER ═════════
 sec(B.foot, "12", "lexical", lexical(
   para(button("incidents", "/incidents_v2", "plain"), button("corridor-view", "/corridor_view", "plain"),
-       button("work-zones", "/workzones_v2", "plain"), button("methodology", "/tsmo-methodology", "plain"),
+       button("work-zones", "/workzones_v2", "plain"), button("methodology", "/methodology", "plain"),
        text("        © NYSDOT · TransportNY DMS v0.2", 0, "color:#64748b;font-size:11px")),
 ));
 

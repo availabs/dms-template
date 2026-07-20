@@ -20,14 +20,22 @@ function transformReportRoutes(routes) {
     return new Date(year, month - 1, day);
   }
 
-  // Helper function to generate an array of 'YYYY-MM-DD' dates
-  function generateDateRange(startStr, endStr) {
+  const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+  // Helper function to generate an array of 'YYYY-MM-DD' dates. `weekdays` is an
+  // optional per-route mask ({monday: true, ..., sunday: false}) — only an explicit
+  // `false` excludes a day, so routes without the field keep every day (the shape
+  // converted old reports carry; see scripts/convert_old_reports.py). The date
+  // filter is already a literal IN-list, so day-of-week exclusion needs no new
+  // filter op — masked days are simply never enumerated.
+  function generateDateRange(startStr, endStr, weekdays) {
     const startDate = parseYMD(startStr);
     const endDate = parseYMD(endStr);
     const dates = [];
 
     // Loop day-by-day from start to end
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      if (weekdays && weekdays[DAY_NAMES[d.getDay()]] === false) continue;
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
@@ -64,7 +72,7 @@ function transformReportRoutes(routes) {
     }
 
     // Generates the range based on your MM-DD-YYYY inputs
-    const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate) : [];
+    const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate, route.weekdays) : [];
     const epochArray = (route.startDate && route.endDate && route.startDate.includes('T') && route.endDate.includes('T')) ? generateEpochRange(route.startDate, route.endDate) : [];
 
     const groups = [

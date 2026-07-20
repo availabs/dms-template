@@ -121,7 +121,9 @@ sec(B.hdr, "4", "Card", dw({
 // ═════════ TONE BAR · year + region controls ═════════
 sec(B.bar, "3", "Filter", dw({
   columns: [{ name: "year", customName: "Year", type: "multiselect", show: true,
-    filters: [{ type: "external", operation: "filter", values: ["2025"], isMulti: true, usePageFilters: true, searchParamKey: "year" }] }],
+    // isMulti:false (Alex 2026-07-16): Year is single-select on all tsmo pages except
+    // incident_search — the dashboards are single-year reads (ticket 2191408).
+    filters: [{ type: "external", operation: "filter", values: ["2025"], isMulti: false, usePageFilters: true, searchParamKey: "year" }] }],
   filters: [],
   display: { totalLength: 1, hideExternalToggle: true, showAttribution: false, filterStyle: "tone_bar" },
   fetchMode: "smart",
@@ -301,16 +303,23 @@ sec(B.foot, "12", "lexical", lexical(
 ));
 
 // ── apply ────────────────────────────────────────────────────────────────────
+// ⚠⚠ STALE — DO NOT RUN (2026-07-16). The live congestion_v2 has 20 authored sections vs this
+// builder's 19 (drift flagged in tsmo-filter-bar-design-tightening.md: "future filter edits to
+// those pages should be surgical"). Running it regresses the drafts — it did, 2026-07-16;
+// restored from published via scratchpad/npmrdsv5-dev2/restore_congestion_draft.mjs. Backport
+// the live configs into this script before it is ever run again.
+throw new Error("build_tsmo_congestion.mjs is STALE vs the live page (20 vs 19 sections) — edit surgically instead");
+// PINNED page id (2026-07-16): the find-or-create path silently created a DUPLICATE
+// congestion_v2 (2193145) because `page show <slug>` resolves against the CLI's default
+// pattern, not tsmo2, and found nothing. Pin the real page and fail loudly instead.
+const PAGE_ID = "2175676";
 let pageId;
-try {
-  pageId = jget(clean(cli("page", "show", SLUG, "--compact"))).id;
-} catch { pageId = null; }
-if (!pageId) {
-  const out = clean(cli("page", "create", "--title", "Congestion (v2)", "--slug", SLUG, "--pattern", PATTERN));
-  pageId = JSON.parse(out).id;
-  console.log("created page", pageId);
-} else {
-  console.log("reusing page", pageId);
+{
+  const row = jget(PAGE_ID);
+  const slug = row?.data?.url_slug;
+  if (slug !== SLUG) throw new Error(`page ${PAGE_ID} slug is ${slug}, expected ${SLUG} — refusing to build`);
+  pageId = PAGE_ID;
+  console.log("reusing pinned page", pageId);
 }
 
 const existing = jget(pageId).data.draft_sections || [];

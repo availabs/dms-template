@@ -31,7 +31,7 @@ Two lineages (task `planning/transportny/tasks/current/qa-build-scripts-migratio
 | build_tsmo2_workzones_v2.mjs | tsmo2/workzones_v2 2182386 | generated | gated ✓ |
 | build_tsmo2_incident_view.mjs | tsmo2/incident_view 2182470 | generated | gated ✓ |
 | build_tsmo2_corridor_view.mjs | tsmo2/corridor_view 2182912 | generated | gated ✓ |
-| build_freightatlas2_freight_atlas.mjs | freightatlas2/freight_atlas 1411761 | generated (460KB map symbology — payloads via temp files) | gated ✓; `shareableState:true` added 2026-07-13 (map_dama ?layers= read — core task map-dama-shareable-layers-read.md) |
+| build_freightatlas2_freight_atlas.mjs | ~~freightatlas2/freight_atlas 1411761~~ **STALE — owner retired 1411761 2026-07-16** | generated (460KB map symbology — payloads via temp files) | The sitemgmt `freightatlas2` surface now tracks the SANDBOX pattern 2175436 → page **2189762** / map section **2189767** (config row 2186151). That page is NOT build-owned; its symbologies are edited directly (see `qa-fix-map-symbology-tickets.md`). TODO: regenerate this build against 2189762 (or retire it) so the tracked page is build-owned again. |
 | build_npmrds2_map_21.mjs | npmrds2/map_21 1473731 | generated | gated ✓ |
 
 **Fidelity gate** (mandatory before a script's FIRST fix-loop rebuild if flagged above): baseline
@@ -45,3 +45,13 @@ Two lineages (task `planning/transportny/tasks/current/qa-build-scripts-migratio
 **Large payloads**: `dms section create --data` accepts a FILE PATH or `-` (stdin) as well as
 inline JSON (CLI patched 2026-07-07) — generated scripts always write payloads to temp files;
 migrated scripts using inline JSON are fine below ~100KB.
+
+**Editable Card cells need an explicit `type` (2026-07-16 gotcha)**: making a Card column
+editable-in-view takes BOTH `allowEditInView` (section + column) AND an explicit editable
+columnType. A bare `col(name, label, {...})` sets **no `type`**, so the cell falls to `Card.jsx`'s
+read-only `DefaultComp` and silently won't edit even with `allowEditInView` on (it still renders
+the value in view, so the bug is invisible until you try to edit). Use `type: "textarea"` for
+prose/multi-paragraph fields (multi-line box; `type: "text"` is a single-line `<input>` — wrong for
+prose), `status_pill`/`select` for dropdowns. Worked example: `build_cr_tickets.mjs`'s `tacol`
+helper + the Details-rail `efld` helper. Full explanation in `src/dms/skills/card-layout.md`
+("Defaults that bite").

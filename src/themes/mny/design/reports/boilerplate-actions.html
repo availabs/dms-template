@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Boilerplate Actions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress &middot; Data Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Boilerplate<br>Actions
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    Nearly a fifth of the dataset is template text reused verbatim across jurisdictions.
+                    What it is, where it clusters, and how to make it locally useful.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">18,378 actions</span>
+                    <span class="px-3 py-1.5 bg-mny-y700 border border-mny-y700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-mny-900">827 templates &middot; 18.9%</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">Actions_Revised &middot; source 1029065 / v1074456</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Boilerplate rows</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">3,467</p>
+              <p class="font-proxima text-[11px] text-mny-y700 font-[600] mt-1">18.9% of the dataset</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Distinct templates</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">827</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">reused across &ge;2 places</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Locally authored</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">14,911</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">81.1% original</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Site-located</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">1.3%</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">of boilerplate has a project site</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Biggest template</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">449&times;</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">&ldquo;Public Awareness Program&rdquo;</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Heaviest county</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">82.8%</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">Ontario is mostly template</p>
+            </div>
+          </div>
+
+          <!-- original vs boilerplate bar -->
+          <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+            <div class="bg-mny-grn" style="width:81.1%;" title="Locally authored — 14,911"></div>
+            <div class="bg-mny-y700" style="width:18.9%;" title="Boilerplate / template reuse — 3,467"></div>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2">
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-grn"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Locally authored (14,911)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Boilerplate / template reuse (3,467)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <!-- VERDICT -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The verdict</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    Legitimate to reuse.<br>Too generic to act on.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      <strong class="text-mny-900 font-[600]">Boilerplate is not a duplicate.</strong> A duplicate is the same action in the same place,
+                      recorded twice &mdash; a mistake to delete. Boilerplate is the same action text reused across
+                      <em>different</em> places: a standard mitigation measure a planning consultant applies to every
+                      municipality in an annex. It is entirely legitimate. The trouble is that it is low-information &mdash;
+                      the identical wording in 45 towns tells you nothing about what any one of them will actually do.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      <strong class="text-mny-900 font-[600]">827 templates account for 3,467 rows &mdash; 18.9% of the dataset.</strong> A single
+                      template, &ldquo;Public Awareness Program,&rdquo; appears 449 times. And the templates themselves drift: that one
+                      name carries 30 slightly different descriptions, so you can&rsquo;t even count &ldquo;how many public-awareness
+                      actions exist&rdquo; cleanly. Reuse without a controlled catalog quietly becomes un-countable.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Reliance is bimodal by county. <strong class="text-mny-900 font-[600]">Ontario&rsquo;s plan is 82.8% template; Saratoga&rsquo;s 63.9%;
+                      Greene&rsquo;s 66.8%.</strong> Meanwhile Sullivan, Onondaga, New York City and Putnam are 0% &mdash; every action locally
+                      authored. Like duplication, boilerplate is a fingerprint of who prepared the annex, not of the hazard.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Tellingly, the template-heavy counties are <em>not</em> the duplicate-heavy ones. The two data-quality
+                      problems are almost disjoint: some annexes were imported twice, others were built from a template
+                      library. Neither is the actions themselves being wrong &mdash; both are artefacts of how the plans were assembled.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">One template</p>
+                      <div class="flex items-baseline gap-3 mb-2">
+                        <span class="font-display text-[72px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">449&times;</span>
+                      </div>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-1">
+                        &ldquo;Public Awareness Program&rdquo; &mdash; across <strong class="text-white font-[600]">28 jurisdictions</strong> in 3 counties, in
+                        <strong class="text-white font-[600]">30 different wordings</strong>.
+                      </p>
+                      <hr class="border-mny-700 my-5">
+                      <div class="flex items-baseline gap-3">
+                        <span class="font-display text-[48px] text-white font-[500] leading-[0.9] tracking-[-0.03em] tabular-nums">0%</span>
+                        <span class="font-display text-[16px] text-mny-y700 font-[500] leading-tight uppercase">of the top templates<br>name a project site</span>
+                      </div>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-5">
+                        The reused text is never tied to a place, a cost that varies, or a local problem. That is exactly
+                        what makes it boilerplate &mdash; and exactly what has to be added back.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- TEMPLATE CATALOG -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">The Template Catalog</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  The most-reused blocks of identical text, by number of copies. Two kinds show up: <strong class="text-mny-700">program
+                  templates</strong> (awareness, code enforcement) that are almost never costed, and <strong class="text-mny-700">standard measures</strong>
+                  (ordinance and code updates) that carry a cost &mdash; but the same cost everywhere. Neither is ever placed on a map.
+                </p>
+                <div class="overflow-x-auto rounded-[10px] border border-mny-100">
+                  <table class="w-full border-collapse font-proxima text-[13px]">
+                    <thead>
+                      <tr class="bg-mny-50 text-left">
+                        <th class="px-4 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500]">Template</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Copies</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Jurisd.</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Has cost</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Has site</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-mny-900">
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Substantial Damage Procedures</td><td class="px-3 py-2 text-right tabular-nums">54</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">26</td><td class="px-3 py-2 text-right tabular-nums">50%</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">0%</td></tr>
+                      <tr class="border-t border-mny-100 bg-mny-50/40"><td class="px-4 py-2 font-[600]">Public Awareness Program <span class="text-mny-400 font-[400]">(structural fire)</span></td><td class="px-3 py-2 text-right tabular-nums">45</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">26</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">2%</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">0%</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Public Awareness Program <span class="text-mny-400 font-[400]">(landslide)</span></td><td class="px-3 py-2 text-right tabular-nums">45</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">26</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">2%</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">0%</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Flood damage prevention ordinance update</td><td class="px-3 py-2 text-right tabular-nums">42</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">41</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn">100%</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">0%</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Update &amp; Enforce NYS Building Code provisions</td><td class="px-3 py-2 text-right tabular-nums">39</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">39</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn">100%</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">0%</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Monitor drought conditions and wildfire risks</td><td class="px-3 py-2 text-right tabular-nums">38</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">38</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn">100%</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">0%</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Code Enforcement</td><td class="px-3 py-2 text-right tabular-nums">37</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">21</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">3%</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">0%</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Protect Power Lines</td><td class="px-3 py-2 text-right tabular-nums">35</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">35</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn">100%</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">0%</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Critical Facility Flood Outreach</td><td class="px-3 py-2 text-right tabular-nums">25</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">25</td><td class="px-3 py-2 text-right tabular-nums text-mny-grn">100%</td><td class="px-3 py-2 text-right tabular-nums text-mny-red">0%</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- NAME FAMILIES -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">The Real Footprint Is Larger</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Counting only <em>verbatim</em> matches undercounts the problem, because templates get lightly reworded per
+                  town. Grouping by name alone shows the true reach &mdash; and how much the wording drifts. The last column is the
+                  measurement tax: one action name, dozens of descriptions.
+                </p>
+                <div class="overflow-x-auto rounded-[10px] border border-mny-100">
+                  <table class="w-full border-collapse font-proxima text-[13px]">
+                    <thead>
+                      <tr class="bg-mny-50 text-left">
+                        <th class="px-4 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500]">Action name</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Rows</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Jurisd.</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Counties</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Distinct descriptions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-mny-900">
+                      <tr class="border-t border-mny-100 bg-mny-y50/50"><td class="px-4 py-2 font-[600]">Public Awareness Program</td><td class="px-3 py-2 text-right tabular-nums">449</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">28</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">3</td><td class="px-3 py-2 text-right tabular-nums font-[700] text-mny-y700">30</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Repetitive Loss Mitigation</td><td class="px-3 py-2 text-right tabular-nums">85</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">72</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">7</td><td class="px-3 py-2 text-right tabular-nums font-[700] text-mny-y700">33</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Flood Damage Prevention Ordinance Update</td><td class="px-3 py-2 text-right tabular-nums">60</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">54</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">4</td><td class="px-3 py-2 text-right tabular-nums">8</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Update Flood Damage Prevention Ordinance</td><td class="px-3 py-2 text-right tabular-nums">46</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">44</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">8</td><td class="px-3 py-2 text-right tabular-nums font-[700] text-mny-y700">20</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Repetitive Loss Properties</td><td class="px-3 py-2 text-right tabular-nums">45</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">35</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">8</td><td class="px-3 py-2 text-right tabular-nums font-[700] text-mny-y700">23</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Tree Maintenance Program</td><td class="px-3 py-2 text-right tabular-nums">36</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">36</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">12</td><td class="px-3 py-2 text-right tabular-nums font-[700] text-mny-y700">22</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">Socially Vulnerable Populations Outreach</td><td class="px-3 py-2 text-right tabular-nums">44</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">24</td><td class="px-3 py-2 text-right tabular-nums text-mny-400">2</td><td class="px-3 py-2 text-right tabular-nums">14</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="font-proxima text-[12px] text-mny-400 mt-3 max-w-[820px]">
+                  Not every shared name is boilerplate: &ldquo;Not Reported&rdquo; appears 62 times with 62 <em>different</em>
+                  descriptions &mdash; a placeholder name over genuinely distinct actions, the mirror image of the problem.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- HOW + WHERE -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <!-- HOW -->
+                <div class="lg:col-span-5">
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">How They&rsquo;re Boilerplate</h3>
+                  <p class="font-proxima text-[14px] text-mny-400 mb-4">
+                    Template rows vs. locally-authored rows. The gaps are real but modest &mdash; because the deeper issue isn&rsquo;t
+                    missing fields, it&rsquo;s that the fields that <em>are</em> filled are identical across every place.
+                  </p>
+                  <div class="space-y-3">
+                    <div>
+                      <div class="flex justify-between font-proxima text-[12px] mb-1"><span class="text-mny-700 font-[600]">Classified by action type</span><span class="text-mny-400 tabular-nums">50% vs 76%</span></div>
+                      <div class="flex gap-1 h-[10px]"><div class="bg-mny-y700 rounded-l-full" style="width:50.5%;"></div><div class="bg-mny-grn/40 rounded-r-full" style="width:25.3%;"></div><div class="flex-1"></div></div>
+                    </div>
+                    <div>
+                      <div class="flex justify-between font-proxima text-[12px] mb-1"><span class="text-mny-700 font-[600]">Has cost</span><span class="text-mny-400 tabular-nums">72% vs 83%</span></div>
+                      <div class="flex gap-1 h-[10px]"><div class="bg-mny-y700 rounded-l-full" style="width:72.4%;"></div><div class="bg-mny-grn/40 rounded-r-full" style="width:10.1%;"></div><div class="flex-1"></div></div>
+                    </div>
+                    <div>
+                      <div class="flex justify-between font-proxima text-[12px] mb-1"><span class="text-mny-700 font-[600]">Has a project site</span><span class="text-mny-400 tabular-nums">1.3% vs 2.4%</span></div>
+                      <div class="flex gap-1 h-[10px]"><div class="bg-mny-red rounded-l-full" style="width:1.3%;min-width:4px;"></div><div class="bg-mny-grn/40" style="width:1.1%;min-width:4px;"></div><div class="flex-1"></div></div>
+                    </div>
+                  </div>
+                  <div class="mt-5 bg-mny-50 rounded-[10px] p-4">
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.6]">
+                      The four tells of a boilerplate action: <strong class="text-mny-900">verbatim text</strong> repeated across towns,
+                      <strong class="text-mny-900">no project site</strong> (essentially 0%), a <strong class="text-mny-900">shorter, generic name</strong> (median 32
+                      vs 38 characters), and <strong class="text-mny-900">weaker classification</strong>. The description reads the same in Geneva as
+                      in Canandaigua &mdash; so it can&rsquo;t tell them apart.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- WHERE -->
+                <div class="lg:col-span-7">
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Where It Clusters</h3>
+                  <p class="font-proxima text-[14px] text-mny-400 mb-4">
+                    Share of each county&rsquo;s actions that are template reuse. As with duplication, the split is by annex, not by hazard.
+                  </p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Ontario</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:82.8%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">82.8%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Greene</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:66.8%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">66.8%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Saratoga</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:63.9%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">63.9%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Allegany</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:43.5%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">43.5%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Rockland</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:33.1%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">33.1%</div></div>
+                    <div class="flex items-center gap-3 pt-1"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-700 font-[600]">Chautauqua</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-400" style="width:20.1%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">20.1%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-700 font-[600]">Westchester</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-400" style="width:15%;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-400 tabular-nums">15.0%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-400 font-[600]">Sullivan</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-grn" style="width:1%;min-width:3px;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-grn font-[600] tabular-nums">0%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-400 font-[600]">Onondaga</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-grn" style="width:1%;min-width:3px;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-grn font-[600] tabular-nums">0%</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-400 font-[600]">New York City</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-grn" style="width:1%;min-width:3px;"></div></div><div class="w-[80px] font-proxima text-[11px] text-mny-grn font-[600] tabular-nums">0%</div></div>
+                  </div>
+                  <p class="font-proxima text-[12px] text-mny-400 mt-4 leading-[1.5]">
+                    At the town level it is sharper still: every one of the City of Geneva&rsquo;s 32 actions (Ontario County) is
+                    template text &mdash; 100% boilerplate. The five duplicate-heavy counties (NYC, Monroe, Broome, Madison, Chautauqua)
+                    are all at or below 20% here &mdash; confirming the two problems come from different annexes.
+                  </p>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-8">
+
+              <!-- SHAPING PLAYBOOK -->
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-6 lg:p-8">
+                <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">Shaping playbook</p>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase leading-tight mb-2">Make the reuse work for the dataset</h3>
+                <p class="font-proxima text-[14px] text-mny-700 mb-6 max-w-[860px]">
+                  The goal is not to delete boilerplate &mdash; it is to turn identical text into locally meaningful records. Four moves,
+                  in leverage order:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">1 &middot; Consolidate the pure programs</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      &ldquo;Public Awareness Program,&rdquo; &ldquo;Substantial Damage Procedures,&rdquo; &ldquo;Update NYS Building Code&rdquo; are genuinely
+                      uniform. Author each <strong class="text-mny-900">once as a shared program</strong> and reference it per jurisdiction, instead of
+                      copy-pasting it 40+ times. One edit then propagates everywhere.
+                    </p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">2 &middot; Localize the place-specific ones</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      &ldquo;Protect Power Lines,&rdquo; &ldquo;Improve Stormwater Management,&rdquo; &ldquo;Critical Facility Flood Outreach&rdquo; describe real
+                      local projects wearing a generic name. Give each a <strong class="text-mny-900">site, a local cost, and a town-specific problem</strong>
+                      &mdash; the fields that are 0% today.
+                    </p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">3 &middot; Standardize the drift</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      One name with 30 descriptions can&rsquo;t be counted. Fold template variants into a <strong class="text-mny-900">controlled catalog</strong>
+                      of named measures so &ldquo;how many awareness actions statewide&rdquo; becomes an answerable question.
+                    </p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">4 &middot; Flag template vs. local</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      Mark each action as adopted-template or locally-authored so dashboards can separate &ldquo;we adopted the standard
+                      program&rdquo; from &ldquo;we identified a specific project.&rdquo; Start with the <strong class="text-mny-900">top ~25 templates</strong>, which cover
+                      a large share of all 3,467 rows.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <p class="font-proxima text-[11px] text-mny-400 mt-8">
+                Source: <code>references/actions/scripts/11_boilerplate.mjs</code> over the joined actions dataset
+                (source 1029065 / view 1074456, 18,378 rows). &ldquo;Boilerplate&rdquo; = identical normalized action name +
+                description reused across &ge;2 distinct localities. See the
+                <a href="duplicate-actions.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Duplicate Actions</a> report for the same-place case, and the
+                <a href="actions-qa.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Actions Data Quality</a> audit for the full picture.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Data Reports</div>
+    <a href="actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Mockups</div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard</a>
+    <a href="../pages/actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List)</a>
+    <a href="../pages/actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Report navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

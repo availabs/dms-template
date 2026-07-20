@@ -65,12 +65,15 @@ function build(PAGE, SLUG, groups, sections) {
     display: { usePagination: false, pageSize: 33, readyToLoad: true, fetchMode: "smart", showAttribution: false, striped: false, ...display },
     data: [], join: { sources: {} } });
   // design order (freight-atlas-gallery.html §01–§08)
-  const CATEGORIES = ["Freight Economy & Equity", "The Multimodal System", "Trade & Commodity Flows", "Rail",
+  const ALL_CATEGORIES = ["Freight Economy & Equity", "The Multimodal System", "Trade & Commodity Flows", "Rail",
     "Maritime, Air & Pipelines", "Performance & Investment", "Safety & Truck Parking", "2050 Outlook"];
-  // baked per-category totals for the header count chips (from the dataset at build time — the
-  // tiles themselves are live Cards; re-run this build after adding figures to refresh counts)
-  const CAT_COUNTS = { "Freight Economy & Equity": 3, "The Multimodal System": 5, "Trade & Commodity Flows": 6,
-    "Rail": 4, "Maritime, Air & Pipelines": 3, "Performance & Investment": 3, "Safety & Truck Parking": 5, "2050 Outlook": 4 };
+  // baked per-category LIVE counts (status available/partial — matches what the tiles render;
+  // from the dataset at build time, re-run this build after adding figures to refresh). Ticket
+  // #2191404 (2026-07-15, Alex): categories with ZERO live maps are dropped entirely — the page
+  // shows 7 themes today; 2050 Outlook reappears here automatically once its figures go live.
+  const CAT_COUNTS = { "Freight Economy & Equity": 3, "The Multimodal System": 5, "Trade & Commodity Flows": 3,
+    "Rail": 2, "Maritime, Air & Pipelines": 3, "Performance & Investment": 2, "Safety & Truck Parking": 4, "2050 Outlook": 0 };
+  const CATEGORIES = ALL_CATEGORIES.filter((cat) => (CAT_COUNTS[cat] || 0) > 0);
 
   const G = { header: randomUUID(), content: randomUUID() };
   const groups = [
@@ -198,14 +201,15 @@ function build(PAGE, SLUG, groups, sections) {
     { group: A.content, size: "8", border: "full", data: lexical(
       styled("prose", text("The NYS Freight Atlas is produced by the New York State Department of Transportation in partnership with the University at Albany's Albany Visualization and Informatics Lab (AVAIL), which the 2024 plan names as the team modernizing the Freight Web Atlas. The Atlas turns the plan's analysis into an interactive, downloadable, metadata-rich public platform for the state's MPOs, researchers, and residents.")),
     )},
-    // Get involved
+    // Get involved — buttons removed (Alex 2026-07-16, closes ticket #134): the public-comment
+    // map and dataset-request surfaces don't exist; dead '#' buttons only reset scroll. Route
+    // everything to the Freight Planning inbox instead (mirrors the sandbox copy's card).
     { group: A.content, size: "4", border: "full", data: lexical(
       styled("kicker", text("get involved")),
       styled("displayXS", text("Have something to add?")),
-      para(button("Public comment map", "#", "plain")),
-      para(button("Request a dataset", "#", "plain")),
-      para(button("Subscribe to updates", "#", "plain")),
-      styled("metaSM", text("Freight Working Group & contacts via NYSDOT Freight Planning.")),
+      styled("proseSM", text("Public comments, dataset requests, corrections, or a source we should include — email the team below and they'll follow up.")),
+      styled("metaSM", text("Freight Working Group & contacts via NYSDOT Freight Planning:")),
+      styled("metaSM", text("dot.sm.mo.freightplan@dot.ny.gov")),
     )},
   ];
   build("2174665", "about", groups, sections); // slug swapped 2026-07-07 (#107): designed About & The Plan now lives at /about; legacy stub → about_deprecated (1479129)

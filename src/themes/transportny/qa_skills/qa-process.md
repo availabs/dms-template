@@ -77,8 +77,8 @@ agent-actionable tickets AND no open elevated Blocker/Major (elevated Minor/Poli
 ## Skills index
 
 `qa-run` (orchestrator) · `qa-sync-inventory` (T0) · `qa-scope-stories` (T1) ·
-`qa-implement-page` (T2) · `qa-assess-page` (T3) · `qa-fix-ticket` (T4) ·
-`qa-address-tickets` (T5). Tools: `tools/cr_sync.mjs`, `tools/qa_state.mjs`,
+`qa-implement-page` (T2) · `qa-assess-page` (T3) · `qa-fix-ticket` (T4, + the map-layer sub-process
+`qa-fix-map-symbology-tickets`) · `qa-address-tickets` (T5). Tools: `tools/cr_sync.mjs`, `tools/qa_state.mjs`,
 `tools/qa_assess.mjs`, `tools/builds/`. Related dms skills:
 `creating-pages-from-a-design-pattern`, `transcribing-a-design-card-to-dms`, `card-layout`,
 `modal-section-group`, `authenticating-the-dms-cli`.

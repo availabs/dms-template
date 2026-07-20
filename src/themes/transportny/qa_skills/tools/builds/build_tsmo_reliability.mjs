@@ -6,7 +6,7 @@
 // "Map 21 Extended" JOINED to FHWA targets 2027/3460, plus the status_pill/
 // target_bar/delta column types. §01 KPI cards are cloned from MAP-21 cards
 // 2173919/20/21 (Interstate / Non-Interstate / TTTR) at runtime and re-filtered.
-// Page variables: year_record (default 2024) + region (derived crosswalk) + system.
+// Page variables: year_record (default 2025) + region (derived crosswalk).
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
@@ -48,11 +48,20 @@ const GOLD = "color:#CA8A04";
 // safe no-op server-side (same as congestion's region_name control). System uses
 // the REAL `is_interstate` boolean column the same pass-through way.
 const xwalk = JSON.parse(fs.readFileSync("scratchpad/npmrdsv5-dev2/reliability/xwalk.json", "utf8"));
+// Region vocabulary (2026-07-16): the Region control now feeds from the `ny regions`
+// boundary source (891/view 1823), whose labels are CLEAN and byte-identical to the xwalk
+// rn values (verified all 11) — this retired the ED-series trailing-space patch for
+// Region 11 ("…New York City ") that ticket 2191500 needed while the control read ED
+// region_name. Control, CASE leaves, and the map's region layer share ONE vocabulary now.
 const regionExpr = (cc = `"county_code"`) => "case " + Object.keys(xwalk).sort((a, b) => +a - +b)
   .map(rc => `when ${cc} in (${xwalk[rc].cc.map(c => `'${c}'`).join(",")}) then '${xwalk[rc].rn}'`)
   .join(" ") + " end";   // NB: no "as region" alias — this string is used as a filter col, not a SELECT col
 const rsCols = () => [];   // option A adds no columns
-const rsLeaves = () => [REGION_LEAF(), SYSTEM_LEAF()];
+// Tickets 2191484/2191485: SYSTEM_LEAF removed with the System control — is_interstate is
+// 0/1/null in view 3394 and the option list drops 0/null as falsy, leaving a single useless
+// option whose selection broke the page. Re-add only with a labeled Interstate/Non-Interstate
+// value map when the data warrants a system toggle.
+const rsLeaves = () => [REGION_LEAF()];
 
 // ── sources ──────────────────────────────────────────────────────────────────
 // resolve a section's element-data robustly across raw-get shapes
@@ -73,6 +82,14 @@ const ED_SRC = {
   view_id: 3488, view_name: "v2 series",
   columns: [{ name: "region_name", type: "character varying" }, { name: "region_code", type: "character varying" }, { name: "year", type: "smallint" }],
 };
+// `ny regions` boundary source — the Region control's option list (clean labels, no ED
+// trailing-space wart, no null row) AND the map's region-boundary layer (view 1823 tiles).
+const REG_SRC = {
+  name: "ny regions", source_id: 891, env: "npmrds2", srcEnv: "npmrds2",
+  isDms: false, baseUrl: "/datasources", type: "gis_dataset",
+  view_id: 1823, view_name: "ny regions",
+  columns: [{ name: "region_name", type: "character varying" }, { name: "region_code", type: "character varying" }],
+};
 
 // ── reliability metric expressions (verbatim from view 3394 calc columns) ─────
 const NHS = `"nhs" in (1,2,3,4,5,6,7,8,9) and "urban_code" is not null and "facility_type" in (1,2,6)`;
@@ -91,7 +108,6 @@ const YEAR_LEAF_PLAIN = (col = "year_record") => ({ col, op: "filter", value: [D
 // Option A: the CASE expression IS the filter col (no section column). is_interstate is a real boolean col.
 // `cc` qualifies county_code with the table alias when a join is present (KPIs join FHWA targets → ds.).
 const REGION_LEAF = (cc = `"county_code"`) => ({ col: regionExpr(cc), op: "filter", value: [], usePageFilters: true, searchParamKey: "region" });
-const SYSTEM_LEAF = () => ({ col: "is_interstate", op: "filter", value: [], usePageFilters: true, searchParamKey: "system" });
 
 const dw = ({ src = RSRC, columns, filters = [], display = {}, fetchMode = "smart", join = { sources: {} } }) => JSON.stringify({
   externalSource: src, columns,
@@ -177,36 +193,41 @@ sec(B.hdr, "4", "Card", dw({
   fetchMode: "smart",
 }));
 
-// ═════════ TONE BAR · region + year + system controls ═════════
-// Region control binds to ED region_name (real col → options auto-populate); shares searchParamKey "region"
-sec(B.bar, "3", "Filter", JSON.stringify({
-  externalSource: ED_SRC,
+// ═════════ TONE BAR · year + region controls ═════════
+// Strip layout (Alex 2026-07-16, live-edited on the page and BACKPORTED here — keep in sync):
+// YEAR FIRST (consistent control order across the tsmo dashboards), Region 4 cols (the longest
+// region label must sit on ONE line beside its label), a 1-col spacer lexical (x-padding only),
+// then the note at 5 cols with ZERO section padding — the zero y-padding keeps the bar thin.
+// Year control binds to view 3394 year_record
+sec(B.bar, "2", "Filter", dw({
+  columns: [{ name: "year_record", customName: "Year", type: "multiselect", show: true,
+    // isMulti:false (Alex 2026-07-16): Year is single-select on all tsmo pages except
+    // incident_search — the dashboards are single-year reads (ticket 2191408).
+    filters: [{ type: "external", operation: "filter", values: ["2025"], isMulti: false, usePageFilters: true, searchParamKey: "year_record" }] }],
+  filters: [],
+  display: { totalLength: 1, hideExternalToggle: true, showAttribution: false, filterStyle: "tone_bar" },
+  src: RSRC,
+}));
+// Region control binds to `ny regions` region_name (real col → options auto-populate,
+// clean labels matching the CASE leaves + the map layer); shares searchParamKey "region"
+sec(B.bar, "4", "Filter", JSON.stringify({
+  externalSource: REG_SRC,
   columns: [{ name: "region_name", customName: "Region", type: "multiselect", show: true,
     filters: [{ type: "external", operation: "filter", values: [], isMulti: true, usePageFilters: true, searchParamKey: "region" }] }],
   filters: { op: "AND", groups: [] },
   display: { totalLength: 1, hideExternalToggle: true, showAttribution: false, filterStyle: "tone_bar", fetchMode: "smart" },
   data: [], join: { sources: {} },
 }));
-// Year control binds to view 3394 year_record
-sec(B.bar, "3", "Filter", dw({
-  columns: [{ name: "year_record", customName: "Year", type: "multiselect", show: true,
-    filters: [{ type: "external", operation: "filter", values: ["2025"], isMulti: true, usePageFilters: true, searchParamKey: "year_record" }] }],
-  filters: [],
-  display: { totalLength: 1, hideExternalToggle: true, showAttribution: false, filterStyle: "tone_bar" },
-  src: RSRC,
-}));
-// System control — binds to the real is_interstate boolean (Interstate = true /
-// Non-Interstate = false; "All NHS" = nothing selected). Drives §03 + §04.
-sec(B.bar, "3", "Filter", dw({
-  columns: [{ name: "is_interstate", customName: "System", type: "multiselect", show: true,
-    filters: [{ type: "external", operation: "filter", values: [], isMulti: true, usePageFilters: true, searchParamKey: "system" }] }],
-  filters: [],
-  display: { totalLength: 1, hideExternalToggle: true, showAttribution: false, filterStyle: "tone_bar" },
-  src: RSRC,
-}));
-sec(B.bar, "3", "lexical", lexical(
-  styled("metaXS", text("LOTTR threshold 1.50 · periods AM / Midday / PM / Weekend")),
-));
+// (System control removed — tickets 2191484/2191485; see rsLeaves note above.)
+// Spacer (Alex): breathing room between the controls and the note, no vertical padding.
+sec(B.bar, "1", "lexical", lexical(para(text("                  "))),
+  { padding: { top: "0", left: "3", right: "3", bottom: "0" } });
+// Two deliberate right-aligned lines instead of one long string wrapping mid-thought.
+const noteLine = (t) => ({ ...styled("metaXS", text(t)), format: "right" });
+sec(B.bar, "5", "lexical", lexical(
+  noteLine("LOTTR threshold 1.50 · periods AM / Midday / PM / Weekend"),
+  noteLine("no region selected = statewide"),
+), { padding: { top: "0", left: "0", right: "0", bottom: "0" } });
 
 // ═════════ § 01 · KPIs vs FEDERAL TARGETS ═════════
 sec(B.kpi, "8", "lexical", lexical(
@@ -215,7 +236,9 @@ sec(B.kpi, "8", "lexical", lexical(
   styled("proseSM", text("FHWA counts a measure as making significant progress when it meets its target or beats its baseline. New York clears all three reliability measures on the target alone — Interstate and non-Interstate person-miles reliable, and truck travel-time reliability.")),
 ));
 sec(B.kpi, "4", "lexical", lexical(
-  para(button("full MAP-21 system performance →", "/map-21", "plain")),
+  // sub:// = ButtonNode's cross-subdomain scheme — the MAP-21 report lives on the npmrds
+  // subdomain (npmrds2 pattern), not tsmo2; a bare /map-21 404'd on this subdomain.
+  para(button("full MAP-21 system performance →", "sub://npmrds/map_21", "plain")),
 ), { padding: { top: "0" } });
 sec(B.kpi, "4", "Card", kpiCard(2173919), { bg: "white", border: "full", height: "fill" });   // Interstate 79.8% ≥75%
 sec(B.kpi, "4", "Card", kpiCard(2173920), { bg: "white", border: "full", height: "fill" });   // Non-Interstate 85.0% ≥70%
@@ -224,34 +247,132 @@ sec(B.kpi, "4", "Card", kpiCard(2173921), { bg: "white", border: "full", height:
 // ═════════ § 02 · LOTTR TREND (all years; reacts to region) ═════════
 sec(B.trend, "12", "lexical", lexical(
   compoundHeader(styled("cardTitleSM", text("Person-miles reliable by year")),
-    styled("kicker", text("// 02   2018–2024 · statewide · PM3 annual"))),
+    styled("kicker", text("// 02   2016–2025 · statewide unless a region is selected · PM3 annual"))),
 ), { border: { top: true, left: true, right: true }, radius: { tl: true, tr: true }, padding: { bottom: "0" }, bg: "white" });
 sec(B.trend, "12", "AVL Graph", dw({
   columns: [
     { name: "year_record", show: true, group: true, sort: "asc", target: "xAxis", customName: "year" },
     { name: `${RELIABLE_INT} as interstate`, type: "calculated", display_name: "interstate", normalName: "interstate", show: true, fn: "exempt", target: "yAxis", color: "#1F3F8F" },
     { name: `${RELIABLE_NONINT} as non_interstate`, type: "calculated", display_name: "non_interstate", normalName: "non_interstate", show: true, fn: "exempt", target: "yAxis", color: "#37576B" },
+    // Ticket 2191681: FHWA target lines — constant series (comma-free, safe in the grouped
+    // query) drawn in the gold the legend lexical + palette slots 3/4 always advertised.
+    { name: `75 as target_interstate`, type: "calculated", display_name: "target_interstate", normalName: "target_interstate", show: true, fn: "exempt", target: "yAxis", color: "#CA8A04" },
+    { name: `70 as target_non_interstate`, type: "calculated", display_name: "target_non_interstate", normalName: "target_non_interstate", show: true, fn: "exempt", target: "yAxis", color: "#CA8A04" },
   ],
-  filters: [REGION_LEAF()],   // all years; Region-scoped; targets in the caption (reference-line recipe is a P3 follow-up). No System leaf — both lines always shown.
+  filters: [REGION_LEAF()],   // all years; Region-scoped. No System leaf — both lines always shown.
   display: { graphType: "LineGraph", height: 300, totalLength: 12, bgColor: "#ffffff", textColor: "#0F1722",
     hideExternalToggle: true, margin: { top: 16, right: 24, bottom: 30, left: 44 },
     colors: { type: "palette", value: ["#1F3F8F", "#37576B", "#CA8A04", "#CA8A04"] },
     xAxis: { show: true, showGridLines: false, axisColor: "transparent", tickColor: "#94a3b8", tickFontSize: "10px", tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" },
-    yAxis: { show: true, showGridLines: true, format: "integer", tickSpacing: 5, domainMin: 65, domainMax: 100, tickColor: "#94a3b8", tickFontSize: "10px", tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" },
+    // Ticket 2191509: domainMin "auto" (LineGraph data-min bottom) — Region 10 dips to 58.5
+    // and Region 11 to 31.5, so ANY fixed floor clips some region. Top stays pinned at 100.
+    yAxis: { show: true, showGridLines: true, format: "integer", tickSpacing: 5, domainMin: "auto", domainMax: 100, tickColor: "#94a3b8", tickFontSize: "10px", tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" },
     legend: { show: false }, tooltip: { show: true } },
 }), { border: { left: true, right: true }, padding: { top: "0", bottom: "0" }, bg: "white" });
 sec(B.trend, "12", "lexical", lexical(
   para(sq("#1F3F8F"), text(" Interstate · % person-miles reliable    "), sq("#37576B"), text(" Non-Interstate NHS    "), dash("#CA8A04"), text(" FHWA targets (≥75% / ≥70%)")),
-  styled("proseSM", text("The 2020 spike is honest but misleading: with traffic volumes collapsed, almost everything ran reliably. Both systems eased back as volumes returned, but each has stayed clear of its 4-yr federal target every year since 2019. The margin, not the direction, is the story: New York is well above the floor on both.")),
+  styled("proseSM", text("The 2020 spike is honest but misleading: with traffic volumes collapsed, almost everything ran reliably. Both systems eased back as volumes returned; statewide, each has stayed clear of its 4-yr federal target every year since 2019. The targets are statewide floors — dense regions can sit below them while the state as a whole clears comfortably.")),
 ), { border: { left: true, right: true, bottom: true }, radius: { bl: true, br: true }, padding: { top: "0" }, bg: "white" });
 
-// ═════════ § 03 · RELIABILITY MAP (placeholder) + LOTTR BINS ═════════
-sec(B.map, "8", "lexical", lexical(
+// ═════════ § 03 · RELIABILITY MAP (LOTTR choropleth) + LOTTR BINS ═════════
+// Live map (2026-07-16, ticket 2191744): `Map` section (the page-state-aware component, NOT
+// map_dama) with ONE symbology, TWO layers:
+//   · LOTTR choropleth — view 3394 tiles (Map 21 Extended carries TMC geometry; verified
+//     tiles 200). Paint = step over max(lottr_amp,midd,pmp,we) with a 0/no-data guard; the
+//     year_record dynamic filter binds to the page's `year_record` variable.
+//   · NYSDOT regions — view 1823 boundary tiles; its region_name dynamic filter binds to the
+//     page's `region` variable with zoomToFilterBounds (select a region → map zooms to it).
+//     It is the symbology's activeLayer — the zoom effect reads the ACTIVE layer's filters.
+// Recipe + gotchas: src/dms/skills/creating-a-map-section.md
+sec(B.map, "12", "lexical", lexical(
   compoundHeader(styled("cardTitleSM", text("Where travel is unreliable")),
-    styled("kicker", text("// 03   worst-period LOTTR by TMC · selected year"))),
-  styled("proseSM", text("Per-segment reliability choropleth for the selected year — every monitored NHS segment colored by its worst-period LOTTR.")),
-  styled("metaXS", text("[BACKFILL→Map · tile layer from view 3394 TMC geometry — pending tile-source decision, same as the congestion corridor map]")),
-), { bg: "white", border: "full", height: "fill" });
+    styled("kicker", text("// 03   worst-period LOTTR by TMC · selected year & region"))),
+), { padding: { bottom: "0" } });
+
+const WORST_LOTTR_ML = ["max",
+  ["to-number", ["get", "lottr_amp"]], ["to-number", ["get", "lottr_midd"]],
+  ["to-number", ["get", "lottr_pmp"]], ["to-number", ["get", "lottr_we"]]];
+const LOTTR_BIN_COLORS = ["#518646", "#a6b26e", "#e8995b", "#d74528"];   // COND ramp, matches §03 bins
+const LOTTR_LID = "lottrl001", REG_LID = "nyregio01", SYM_ID = "rel_lottr_map";
+const TILE = (v, cols) => `https://graph.availabs.org/dama-admin/npmrds2/tiles/${v}/{z}/{x}/{y}/t.pbf?cols=${cols}`;
+const MAP_ED = {
+  tabs: [{ name: "Layers", rows: [{ name: "Where travel is unreliable", type: "symbology", symbologyId: SYM_ID }] }],
+  symbologies: { [SYM_ID]: {
+    id: SYM_ID, name: "Where travel is unreliable — worst-period LOTTR", isVisible: true,
+    description: "Per-TMC worst-period LOTTR (max of AM/Midday/PM/Weekend) over Map 21 Extended tiles, with NYSDOT region boundaries; year + region follow the page filters.",
+    categories: [],
+    symbology: { activeLayer: REG_LID, zoomToFilterBounds: [], layers: {
+      [LOTTR_LID]: {
+        // layer-type "categories": LegendRow only renders swatch ROWS for categories/
+        // choropleth types — "" gives a title-only legend. The runtime legend refresh's
+        // categories branch is guarded for section-embedded layers (no category-data →
+        // "keep the authored legend"), so legend-data below renders verbatim.
+        id: LOTTR_LID, name: "Worst-period LOTTR", type: "line", "layer-type": "categories",
+        // getLayerTileUrl REBUILDS ?cols= from data-column + active dynamic-filter columns,
+        // clobbering anything baked into the source URL — so every column the paint reads
+        // must live here. It's join(",")-composed, so a comma-joined list works.
+        "data-column": "lottr_amp,lottr_midd,lottr_pmp,lottr_we",
+        source_id: 2001, view_id: 3394, order: 0, isVisible: true, usePageFilters: true,
+        sources: [{ id: `npmrds2_map21_extended_2001_${LOTTR_LID}`,
+          source: { type: "vector", format: "pbf", tiles: [TILE(3394, "lottr_amp,lottr_midd,lottr_pmp,lottr_we")] } }],
+        layers: [
+          { id: `${LOTTR_LID}_case`, type: "line", source: `npmrds2_map21_extended_2001_${LOTTR_LID}`, "source-layer": "view_3394",
+            paint: { "line-color": "#0F2D4D", "line-width": 0 }, layout: { visibility: "visible", "line-cap": "round", "line-join": "round" } },
+          { id: LOTTR_LID, type: "line", source: `npmrds2_map21_extended_2001_${LOTTR_LID}`, "source-layer": "view_3394",
+            paint: {
+              "line-color": ["case", ["==", WORST_LOTTR_ML, 0], "#cbd5e1",
+                ["step", WORST_LOTTR_ML, LOTTR_BIN_COLORS[0], 1.25, LOTTR_BIN_COLORS[1], 1.5, LOTTR_BIN_COLORS[2], 2, LOTTR_BIN_COLORS[3]]],
+              "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 8, 1, 11, 2, 14, 4],
+              // TMC geometries are DIRECTIONAL and the two directions overlap exactly —
+              // offset each to its right (≈half the width, zoom-scaled) so both render.
+              "line-offset": ["interpolate", ["linear"], ["zoom"], 5, 0.3, 8, 0.6, 11, 1.2, 14, 2.5],
+              "line-opacity": 0.9,
+            }, layout: { visibility: "visible", "line-cap": "round", "line-join": "round" } },
+        ],
+        "legend-data": [
+          { color: LOTTR_BIN_COLORS[0], label: "under 1.25 · reliable" },
+          { color: LOTTR_BIN_COLORS[1], label: "1.25–1.49 · reliable" },
+          { color: LOTTR_BIN_COLORS[2], label: "1.50–1.99 · unreliable" },
+          { color: LOTTR_BIN_COLORS[3], label: "2.00+ · unreliable" },
+          { color: "#cbd5e1", label: "no data" },
+        ],
+        // page-variable binding: the Year page filter drives which vintage renders
+        "dynamic-filters": [{ column_name: "year_record", searchParamKey: "year_record",
+          values: ["2025"], defaultValue: "2025", dataType: "numeric", zoomToFilterBounds: false }],
+        "hover-columns": [],
+      },
+      [REG_LID]: {
+        id: REG_LID, name: "NYSDOT regions", type: "fill", "layer-type": "",
+        source_id: 891, view_id: 1823, order: 1, isVisible: true, usePageFilters: true,
+        sources: [{ id: `npmrds2_ny_regions_891_${REG_LID}`,
+          source: { type: "vector", format: "pbf", tiles: [TILE(1823, "region_name")] } }],
+        layers: [
+          // heavier ink + zoom-scaled width so the SELECTED region (the only one left once
+          // the page's region filter narrows this layer) reads unmistakably on the map
+          { id: `${REG_LID}_case`, type: "line", source: `npmrds2_ny_regions_891_${REG_LID}`, "source-layer": "view_1823",
+            paint: { "line-color": "#1F3F8F", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.25, 9, 2.25], "line-dasharray": [2, 1.5], "line-opacity": 0.85 }, layout: { visibility: "visible" } },
+          { id: REG_LID, type: "fill", source: `npmrds2_ny_regions_891_${REG_LID}`, "source-layer": "view_1823",
+            paint: { "fill-color": "#1F3F8F", "fill-opacity": 0.06 }, layout: { visibility: "visible" } },
+        ],
+        // boundary/utility layer — keep it out of the legend so only the LOTTR bins show
+        "legend-orientation": "none",
+        "legend-data": [],
+        // page-variable binding: the Region page filter narrows the boundary layer AND
+        // (zoomToFilterBounds) zooms the map to the selected region's extent
+        "dynamic-filters": [{ column_name: "region_name", searchParamKey: "region",
+          values: [], defaultValue: "", zoomToFilterBounds: true }],
+        "hover-columns": [],
+      },
+    } },
+  } },
+  display: { _functions: { providers: [], subscribers: [] } },
+  height: "2/3", zoomPan: true, hideControls: true, blankBaseMap: false,
+  basemapStyle: "Default", legendPosition: "bottom-left",
+  // Explicit statewide start view (Alex 2026-07-16): the component default (z6.6, tuned
+  // for full-height maps) crops the state in this 600px section — frame ALL of NY.
+  setInitialBounds: false, initialBounds: { center: [-75.9, 42.75], zoom: 6 },
+};
+sec(B.map, "8", "Map", JSON.stringify(MAP_ED), { bg: "white", border: "full", height: "fill" });
 // LOTTR bins as a single-row Card (conditional FILTER sums — no GROUP BY, since
 // grouping by a calculated CASE column breaks the UDA fetch). Matches the design's
 // stacked breakdown: 4 bins (miles · %) + a reliable-miles headline.
@@ -299,7 +420,8 @@ sec(B.corr, "12", "Spreadsheet", dw({
     { col: "f_system", op: "filter", value: ["1", "2", "3"] },   // major highways only (drops minor-road single-segment noise)
     { col: "nhs", op: "filter", value: ["1", "2", "3", "4", "5", "6", "7", "8", "9"] }],
   display: { usePagination: true, pageSize: 10, totalLength: 10 },
-}), { border: { left: true, right: true, bottom: true }, radius: { bl: true, br: true }, bg: "white" });
+  // padding.top 0 (Alex 2026-07-16): the table hugs its fused header band
+}), { border: { left: true, right: true, bottom: true }, radius: { bl: true, br: true }, bg: "white", padding: { top: "0" } });
 
 // ═════════ § 05 · SYSTEM SPLIT + TRUCK TTTR ═════════
 sec(B.split, "7", "Card", dw({
@@ -341,12 +463,12 @@ sec(B.split, "12", "lexical", lexical(
   styled("kicker", text("// methodology")),
   styled("cardTitleSM", text("How reliability is measured")),
   styled("proseSM", text("LOTTR divides the 80th-percentile travel time by the 50th-percentile travel time for each TMC, computed separately for four periods: weekday AM (6–10a), Midday (10a–4p), PM (4–8p), and Weekend (6a–8p). A segment is reliable when every period stays below 1.50; person-miles weight each segment by AADT, average occupancy (1.7), and length. TTTR uses the 95th/50th truck ratio over five periods (adding Overnight, 8p–6a) and takes each segment's worst. Defined by MAP-21, codified at 23 CFR 490 Subparts E and F, computed from NPMRDS probe data. PM3 2024 is the final FHWA submission; 2025 will publish after the federal reporting cycle closes.")),
-  para(button("full methodology & data coverage →", "/tsmo-methodology", "plain"), button("  how much delay · congestion →", "/congestion_v2", "plain")),
+  para(button("full methodology & data coverage →", "/methodology", "plain"), button("  how much delay · congestion →", "/congestion_v2", "plain")),
 ), { bg: "white", border: "full" });
 
 // footer
 sec(B.foot, "12", "lexical", lexical(
-  para(button("congestion", "/congestion_v2", "plain"), button("incidents", "/incidents", "plain"), button("work-zones", "/work_zones", "plain"), button("methodology", "/tsmo-methodology", "plain"),
+  para(button("congestion", "/congestion_v2", "plain"), button("incidents", "/incidents", "plain"), button("work-zones", "/work_zones", "plain"), button("methodology", "/methodology", "plain"),
        text("        © NYSDOT · TransportNY DMS v0.2", 0, "color:#64748b;font-size:11px")),
 ));
 
@@ -362,11 +484,10 @@ fs.writeFileSync(gf, JSON.stringify({
   filters: [
     { id: "tsmo-rel-region", values: "", searchKey: "region", useSearchParams: true },
     { id: "tsmo-rel-year", values: "2025", searchKey: "year_record", useSearchParams: true },
-    { id: "tsmo-rel-system", values: "", searchKey: "system", useSearchParams: true },
   ],
 }));
 cli("raw", "update", String(pageId), "--data", gf);
-console.log("bands + page variables (region, year_record, system) registered");
+console.log("bands + page variables (region, year_record) registered");
 
 let n = 0;
 for (const s of S) {
