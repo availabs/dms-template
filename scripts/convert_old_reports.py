@@ -246,9 +246,18 @@ INFO_BOX_GRAIN = {"Route Info Box": "route", "TMC Info Box": "tmc"}
 # value at all.
 INFO_BOX_BUCKET = ("speed", "travel_time_all")
 # source 1410's per-year pm3 views (documentation/npmrds-data-sources.md,
-# table names confirmed 2026-07-09 via data_manager.views) — no coverage
-# outside 2021-2025.
-PM3_VIEW_BY_YEAR = {2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425}
+# table names confirmed 2026-07-09 via data_manager.views). 2018-2020 backfill
+# confirmed 2026-07-20 directly against data_manager.views/gis_datasets: views
+# 3563 (2018, 36,095 rows)/3559 (2019, 46,619 rows)/3555 (2020, 48,700 rows)
+# all carry the full 121-column schema, byte-identical to the 2021-2025 views
+# (speed_pctl_85/lottr_*/tttr_* 100% non-null). A 2017 view also exists
+# (3566, 32,915 rows) but is NOT included here: its schema is only 113
+# columns — missing all 8 speed_pctl_* columns entirely, so `pm3.speed_pctl_85
+# as freeflow` (ensure_pm3_join_template/ensure_bar_graph_summary_pm3_template)
+# would fail outright against it. Adding 2017 needs a no-freeflow template
+# variant or a product decision first, not a drop-in dict entry.
+PM3_VIEW_BY_YEAR = {2018: 3563, 2019: 3559, 2020: 3555,
+                    2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425}
 INFO_BOX_TITLES = {"route": "Route Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})",
                     "tmc": "TMC Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})"}
 # Round 38 (Phase B, item (c)): Info Box `avgTT-byDateRange` — checked 1410's
