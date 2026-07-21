@@ -98,15 +98,34 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // Without all three, `row.id` was always `undefined` on every read — `persistRoutes`
   // could never find an existing row to update and fell back to inserting a new one
   // on every single edit.
-  const loadReportRow = async () => {
-    if (!apiLoad || !item?.id || !externalSource?.columns) return;
+  //
+  // `forItemId` is the page id this specific call was issued for, captured by the
+  // effect below at the moment `item.id` changed — never re-read from the `item`
+  // closure once the async fetch is in flight. Two different report pages share
+  // this ONE mounted component instance (every report's `/edit/...` route matches
+  // the same wildcard React Router route, so switching reports never remounts
+  // `ReportRouteList` — only `item` changes, one render after the URL does, via
+  // EditWrapper's own effect). Without `forItemId`, a page switch mid-fetch left
+  // `reportRow`/`reportRowIdRef` holding the PREVIOUS report's row while `item.id`
+  // already pointed at the new one — and `useGraphPublish`'s orphan-cleanup effect
+  // (which strips any route's `graphIds` not found in the CURRENT page's own
+  // sections) would then see the old report's routes against the new report's
+  // section ids, find every graphId "orphaned," and auto-persist the wipe under the
+  // new report's `report_id` using the old row's id — corrupting a second page with
+  // zero user interaction. Confirmed live 2026-07-21 (see
+  // reportroutelist-graphids-wiped-on-refresh.md's follow-up). The `forItemId`
+  // check after the await re-verifies this load is still the current one before
+  // committing anything, so a slow, now-superseded fetch can't clobber state a
+  // newer navigation already moved past.
+  const loadReportRow = async (forItemId) => {
+    if (!apiLoad || !forItemId || !externalSource?.columns) return;
     const udaConfig = buildUdaConfig({
       externalSource,
       columns: [
         ...externalSource.columns.map(c => ({ ...c, show: true })),
         { name: 'id', systemCol: true, show: true, sort: 'desc' },
       ],
-      filters: { op: "AND", groups: [{ col: "data->>'report_id'", op: "filter", value: String(item.id) }] }
+      filters: { op: "AND", groups: [{ col: "data->>'report_id'", op: "filter", value: String(forItemId) }] }
     });
     const config = {
       format: { ...externalSource },
@@ -114,6 +133,7 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     };
     try {
       const data = await apiLoad(config, "/");
+      if (loadTargetIdRef.current !== forItemId) return; // superseded by a newer navigation
       // A `uda` fetch with an explicit `attributes` list returns each row as a flat
       // object keyed by the request's own attribute strings directly (`data[0]`) —
       // there's no `{data:{value}}` wrapper to unwrap here; that shape only occurs
@@ -143,14 +163,27 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
         setReportRow({ id: null, routes: [] });
       }
     } catch (e) {
+      if (loadTargetIdRef.current !== forItemId) return;
       console.error('<ReportRouteList:loadReportRow>', e);
       reportRowIdRef.current = null;
       setReportRow({ id: null, routes: [] });
     }
   };
 
+  // Which page id the most recently issued load is for — set synchronously below,
+  // before the async fetch even starts, so `loadReportRow`'s post-await checks have
+  // a ground truth to compare against regardless of resolution order.
+  const loadTargetIdRef = useRef(null);
+
   useEffect(() => {
-    loadReportRow();
+    loadTargetIdRef.current = item?.id ?? null;
+    // Drop the previous report's row synchronously, in the same tick `item.id`
+    // changes — every write path (persistRoutes, useGraphPublish's effects) already
+    // bails out on `!reportRow`, so this alone closes the cross-report write window
+    // described above, before `loadReportRow`'s own fetch has even started.
+    reportRowIdRef.current = null;
+    setReportRow(null);
+    loadReportRow(item?.id);
   }, [item?.id, externalSource?.source_id, externalSource?.view_id]);
 
   // Persist a route mutation to this report's row in the storage dataset — creating
