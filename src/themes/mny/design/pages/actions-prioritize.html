@@ -115,32 +115,26 @@
 
             <!-- Progress lede -->
             <div class="col-span-12 lg:col-span-5">
-              <div class="h-full bg-mny-y50 rounded-[12px] border-l-4 border-mny-y700 border-y border-r border-mny-y500/40 p-4 flex flex-col justify-between">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <p class="font-proxima text-[12px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">County priority assigned</p>
-                    <p class="mt-1 flex items-baseline gap-1.5">
-                      <span class="font-display text-[36px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] tabular-nums">259</span>
-                      <span class="font-display text-[18px] text-mny-400 font-[500] leading-[1] tabular-nums">/ 473</span>
-                      <span class="font-proxima text-[13px] text-mny-700 pl-1">55% complete</span>
-                    </p>
-                  </div>
-                  <a href="?county_priority=" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-mny-y700 hover:bg-[#D49B35] rounded-full font-proxima text-[12px] font-[700] text-mny-900 uppercase tracking-wide transition-colors">
-                    214 to go
-                    <!-- icon: ChevronRight -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
-                  </a>
-                </div>
+              <div class="h-full bg-mny-y50 rounded-[12px] border-l-4 border-mny-y700 border-y border-r border-mny-y500/40 p-3 flex flex-col gap-2">
+                <!-- Compact panel: eyebrow label → the assigned/total stat → tier bar.
+                     The "to go" stat, the rounded "TO GO" CTA pill and "% complete" were all
+                     dropped. The amber left accent comes from the section border-width/color
+                     control (radius follows the section). See mny-action-prioritize-v3-*. -->
+                <p class="font-proxima text-[12px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">County priority assigned</p>
+                <p class="flex items-baseline gap-1.5">
+                  <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] tabular-nums">259</span>
+                  <span class="font-display text-[16px] text-mny-400 font-[500] leading-[1] tabular-nums">/ 473</span>
+                </p>
 
                 <!-- Tier-stacked progress bar: the meter IS the distribution -->
-                <div class="mt-3">
+                <div>
                   <div class="flex h-[8px] rounded-full overflow-hidden bg-white border border-mny-y500/40">
                     <div class="bg-mny-y700" style="width:8.0%" title="Tier 1 — 38"></div>
                     <div class="bg-mny-700" style="width:15.6%" title="Tier 2 — 74"></div>
                     <div class="bg-mny-400" style="width:20.3%" title="Tier 3 — 96"></div>
                     <div class="bg-mny-200" style="width:10.8%" title="Tier 4 — 51"></div>
                   </div>
-                  <div class="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                  <div class="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
                     <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></span>T1 · 38</span>
                     <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-700"></span>T2 · 74</span>
                     <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-400"></span>T3 · 96</span>
@@ -156,9 +150,9 @@
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 h-full">
 
                 <!-- ACTIVE state: this cell's link matches the current search params -->
-                <a href="?" class="group bg-mny-50 rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-mny-900 ring-1 ring-mny-900/20 flex flex-col justify-between">
+                <a href="?" class="group bg-mny-50 rounded-[12px] mny-shadow-sm p-3 border-l-4 border-mny-900 ring-1 ring-mny-900/20 flex flex-col justify-between">
                   <p class="font-proxima text-[11px] text-mny-900 font-[700] uppercase leading-[140%] tracking-wide">All actions</p>
-                  <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">473</p>
+                  <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-0.5 tabular-nums">473</p>
                   <p class="font-proxima text-[11px] text-mny-700 font-[600] mt-1 flex items-center gap-1">
                     <!-- icon: CheckmarkFilled -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
@@ -166,21 +160,21 @@
                   </p>
                 </a>
 
-                <a href="?implementation_status=Proposed" class="group bg-white rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-mny-400 hover:ring-1 hover:ring-mny-200 transition-all flex flex-col justify-between">
+                <a href="?implementation_status=Proposed" class="group bg-white rounded-[12px] mny-shadow-sm p-3 border-l-4 border-mny-400 hover:ring-1 hover:ring-mny-200 transition-all flex flex-col justify-between">
                   <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">Proposed</p>
-                  <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">391</p>
+                  <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-0.5 tabular-nums">391</p>
                   <p class="font-proxima text-[11px] text-mny-400 mt-1 group-hover:text-mny-700">83% of actions</p>
                 </a>
 
-                <a href="?implementation_status=In-Progress" class="group bg-white rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-mny-grn hover:ring-1 hover:ring-mny-200 transition-all flex flex-col justify-between">
+                <a href="?implementation_status=In-Progress" class="group bg-white rounded-[12px] mny-shadow-sm p-3 border-l-4 border-mny-grn hover:ring-1 hover:ring-mny-200 transition-all flex flex-col justify-between">
                   <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">In-Progress</p>
-                  <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">21</p>
+                  <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-0.5 tabular-nums">21</p>
                   <p class="font-proxima text-[11px] text-mny-400 mt-1 group-hover:text-mny-700">4% of actions</p>
                 </a>
 
-                <a href="?implementation_status=Discontinued/Paused" class="group bg-white rounded-[12px] mny-shadow-sm p-3.5 border-l-4 border-mny-red hover:ring-1 hover:ring-mny-200 transition-all flex flex-col justify-between">
+                <a href="?implementation_status=Discontinued/Paused" class="group bg-white rounded-[12px] mny-shadow-sm p-3 border-l-4 border-mny-red hover:ring-1 hover:ring-mny-200 transition-all flex flex-col justify-between">
                   <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">Discontinued</p>
-                  <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">4</p>
+                  <p class="font-display text-[24px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-0.5 tabular-nums">4</p>
                   <p class="font-proxima text-[11px] text-mny-400 mt-1 group-hover:text-mny-700">1% of actions</p>
                 </a>
 

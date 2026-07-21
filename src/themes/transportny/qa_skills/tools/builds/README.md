@@ -20,7 +20,7 @@ Two lineages (task `planning/transportny/tasks/current/qa-build-scripts-migratio
 | build_cr_tickets.mjs | sitemgmt/tickets 2185867 + ticket 2185870 | migrated | rebuilt from HERE 2026-07-07 ✓ |
 | build_cr_design.mjs | sitemgmt/design 2186739 | migrated | last run 2026-06-30 — gate before first fix-loop rebuild |
 | build_tsmo_home.mjs | tsmo2/home 1431215 | migrated | rebuilt 2026-07-07 ✓ (also seeds groups JSON) |
-| build_tsmo_congestion.mjs | tsmo2/congestion_v2 2175676 | migrated | last run weeks ago — **gate before rebuild** (author drift possible) |
+| build_tsmo2_congestion_v2.mjs | tsmo2/congestion_v2 2175676 | generated (replaced the stale migrated build_tsmo_congestion.mjs 2026-07-20 — it had drifted 19 vs live 20 sections and was guard-throwing; regenerated from live) | gated ✓ 2026-07-20 (rebuild 20/20 + re-export diff clean) |
 | build_tsmo_reliability.mjs | tsmo2/reliability_v2 2180946 | migrated | same caveat |
 | build_tsmo_incident_search.mjs | tsmo2/incident_search 2183804 | migrated | same caveat |
 | build_fa_home.mjs | freightatlas2/home 2174663 | migrated | same caveat |

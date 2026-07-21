@@ -795,7 +795,12 @@ const multiselect = {
       // selected chips the row WRAPS inside the control's own bounds (the band is min-h so it
       // grows) instead of running horizontally over the next filter section — which both garbled
       // the neighbor's label and put its DOM on top of these chips' × hit targets.
-      inputWrapper: "flex flex-wrap max-w-full items-center gap-1.5 min-w-[72px] min-h-7 px-2 -mx-2 py-1 rounded text-white hover:bg-white/10 cursor-pointer",
+      // resting affordance (2026-07-20, tickets #166/#168): the box was invisible until
+      // hover (only `hover:bg-white/10`, no resting border) — an EMPTY Region control read as
+      // blank space, so clients couldn't find where to click. A faint resting bg + ring makes
+      // the clickable box discoverable at rest on every tone band; hover brightens it. Cross-page
+      // (all tsmo dashboard filter bars use this control style) — that's the intended scope.
+      inputWrapper: "flex flex-wrap max-w-full items-center gap-1.5 min-w-[72px] min-h-7 px-2 py-1 rounded text-white bg-white/5 ring-1 ring-white/25 hover:bg-white/15 hover:ring-white/40 cursor-pointer",
       singleValue:  "font-semibold text-[13px] text-white",
       singlePlaceholder: "text-[13px] text-white/80 italic",
       // multi chips render as plain white values (not gray tokens) to match the
@@ -1827,7 +1832,11 @@ const pages = {
   sectionGroup: {
     // content ↔ rail row (inside the band's max-w-[1480px] content container).
     // items-stretch keeps the rail column full-height so its inner sticky pins.
-    contentRow: "flex flex-row gap-10 items-stretch",
+    // min-h-screen: the band fills at least the viewport so a short results column
+    // doesn't leave the sidebar rail floating in a short area; the rail's own
+    // overflow-y-auto (sideNavContainer2) still scrolls only when its content
+    // genuinely exceeds the viewport. min-height is BC-safe — tall bands are unaffected.
+    contentRow: "flex flex-row gap-10 items-stretch min-h-screen",
     contentCol: "flex-1 min-w-0",
     sideNavContainer1: "w-[302px] shrink-0 hidden xl:block",
     sideNavContainer2: "sticky top-[60px] h-[calc(100vh_-_68px)] overflow-y-auto pr-2",

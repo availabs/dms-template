@@ -815,6 +815,52 @@
         </div>
 
         <!-- ============================================================
+             WORKLIST TABLE STYLES + COLUMN TYPES (Action Prioritize v3)
+             ============================================================ -->
+        <div data-dms="group" data-name="content" class="w-full mb-6">
+          <div class="flex flex-1 w-full flex-col bg-white rounded-[12px] p-6 mny-shadow-md">
+            <h2 class="font-display text-[24px] font-[500] text-[#2D3E4C] uppercase leading-none mb-1">Worklist Table Styles &amp; Column Types</h2>
+            <p class="font-proxima text-[13px] text-[#6D96AE] mb-6">Added for the Action Prioritize (List) worklist. Registered here per the design-system discipline.</p>
+
+            <!-- mny-clean table style (theme.table.styles[2], display.tableStyle:2) -->
+            <h3 class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase mb-1">Table style · <span class="text-[#EAAD43]">mny-clean</span></h3>
+            <p class="font-proxima text-[13px] text-[#37576B] mb-3">Horizontal row rules only — <strong>no vertical cell dividers</strong> (cf. the default <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">mny</code> table above, which has <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">border</code> on every cell). Inherits every other key from <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">styles[0]</code>; select per-section with <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">display.tableStyle: 2</code>, so other tables are unaffected.</p>
+            <div class="relative flex flex-col w-full overflow-x-auto border rounded-[12px] mb-8" style="border-color:#E0EBF0">
+              <div class="sticky top-0 grid grid-cols-4 bg-[#F3F8F9] border-b border-[#E0EBF0]">
+                <div class="font-display font-[500] py-3 pl-4 text-[12px] uppercase text-[#2D3E4C]">Jurisdiction</div>
+                <div class="font-display font-[500] py-3 pl-4 text-[12px] uppercase text-[#2D3E4C]">Status</div>
+                <div class="font-display font-[500] py-3 pl-4 text-[12px] uppercase text-[#2D3E4C] col-span-2">Action Name</div>
+              </div>
+              <div class="grid grid-cols-4 bg-white border-b border-[#E0EBF0]"><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Bloomingburg (Village)</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Proposed</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B] col-span-2">Comprehensive Plan</div></div>
+              <div class="grid grid-cols-4 bg-white border-b border-[#E0EBF0]"><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Sullivan (County)</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">In-Progress</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B] col-span-2">County Road 164 Mitigation</div></div>
+              <div class="grid grid-cols-4 bg-white"><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Sullivan (County)</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B]">Proposed</div><div class="min-h-[36px] py-1 px-4 font-proxima text-[14px] text-[#37576B] col-span-2">County Road 14 Culvert Upsizing</div></div>
+            </div>
+
+            <!-- stacked_bar column type + theme.stackedBar palette -->
+            <h3 class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase mb-1">Column type · <span class="text-[#EAAD43]">stacked_bar</span></h3>
+            <p class="font-proxima text-[13px] text-[#37576B] mb-3">Single-track, multi-segment proportional bar with a counts legend — the meter <em>is</em> the distribution. Reads per-segment counts from sibling <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">selectOnly</code> columns via <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">segments:[{col,label,color}]</code>. mny palette lives in <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">theme.stackedBar.fills</code> (tier1 amber → tier4 pale, tierNone outlined).</p>
+            <div class="max-w-[420px] bg-[#FCF6EC] rounded-[12px] border-l-4 border-[#EAAD43] border-y border-r border-[#F1CA87]/40 p-4 mb-2">
+              <p class="font-proxima text-[12px] text-[#37576B] font-[600] uppercase tracking-wide mb-2">County priority — tier distribution</p>
+              <div class="w-full flex h-[8px] rounded-full overflow-hidden bg-white border border-[#F1CA87]/50">
+                <div class="bg-[#EAAD43]" style="width:8%"></div>
+                <div class="bg-[#37576B]" style="width:16%"></div>
+                <div class="bg-[#6D96AE]" style="width:20%"></div>
+                <div class="bg-[#C5D7E0]" style="width:11%"></div>
+                <div class="bg-white border-l border-[#C5D7E0]" style="width:45%"></div>
+              </div>
+              <div class="pt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-proxima font-[500] text-[#37576B]">
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#EAAD43]"></span>T1 · 38</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#37576B]"></span>T2 · 74</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#6D96AE]"></span>T3 · 96</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#C5D7E0]"></span>T4 · 51</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm border border-[#C5D7E0] bg-white"></span>Not set · 214</span>
+              </div>
+            </div>
+            <p class="font-proxima text-[12px] text-[#6D96AE]">Sample distribution shown; the live worklist reads real per-tier counts (Sullivan currently 0 set / 473 not set).</p>
+          </div>
+        </div>
+
+        <!-- ============================================================
              OVERLAYS (static snapshots)
              ============================================================ -->
         <div data-dms="group" data-name="content" class="w-full mb-6">

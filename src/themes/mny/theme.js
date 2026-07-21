@@ -610,8 +610,33 @@ const theme = {
         openOutHeader: "font-semibold font-[Proxima Nova] text-[#37576B] text-[14px] leading-[17.05px]",
         openOutValue: "font-normal font-[Proxima Nova] text-[#37576B] text-[14px] leading-[19.6px]",
         openOutTitle: "font-medium font-[Oswald] text-[24px] leading-[100%] uppercase text-[#2D3E4C]"
+      },
+      {
+        // "mny-clean" (styles[2]) — design-aligned worklist table: horizontal row rules
+        // only, NO vertical cell dividers (the Action Prioritize mockup has no gridlines).
+        // Inherits every other key from styles[0] ("mny") via getComponentTheme; selected
+        // per-section with display.tableStyle:2, so other mny tables are untouched (BC).
+        // Registered in design-system/components.html.
+        name: "mny-clean",
+        cell: "relative flex items-center min-h-[36px] border-b border-[#E0EBF0]",
       }
     ]
+  },
+  // stacked_bar columnType palette — the Action Prioritize progress lede's tier
+  // distribution (T1 amber → T4 pale + not-set). Registered in components.html.
+  stackedBar: {
+    wrapper: "w-full",
+    track: "w-full flex h-[8px] rounded-full overflow-hidden bg-white border border-[#F1CA87]/50",
+    segment: "h-full shrink-0",
+    legend: "pt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-['Proxima_Nova'] font-[500] text-[#37576B] normal-case tracking-normal",
+    empty: "pt-2 text-[11px] font-['Proxima_Nova'] text-[#6D96AE]",
+    fills: {
+      tier1: "bg-[#EAAD43]",
+      tier2: "bg-[#37576B]",
+      tier3: "bg-[#6D96AE]",
+      tier4: "bg-[#C5D7E0]",
+      tierNone: "bg-white border border-[#C5D7E0]",
+    },
   },
   attribution: {
     wrapper: "w-full flex flex-col gap-[4px] text-[#2D3E4C] text-xs",
@@ -704,6 +729,8 @@ const theme = {
         textXS: "font-medium font-[Oswald] text-[12px] leading-[140%]",
         textXSReg:
             "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
+        textXSSemiBold:
+            "font-semibold font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
         textSM: "font-medium font-[Oswald] text-[14px] leading-[100%] uppercase",
         textSMReg: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
         textSMBold: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",

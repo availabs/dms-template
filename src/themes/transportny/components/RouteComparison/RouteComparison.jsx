@@ -296,10 +296,10 @@ function RouteComparisonPanel() {
     <div className={t.wrapper}>
       <div className={t.card}>
 
-        {/* header */}
+        {/* header — Reset action only. The "Build comparison" title was removed: the
+            rail's own step labels (Scope · Routes · Periods · Metrics) already identify
+            the panel, and a title band here is redundant. */}
         <div className={t.cardHeader}>
-          <Icon icon="Filter" className={t.cardHeaderIcon} />
-          <span className={t.cardHeaderTitle}>Build comparison</span>
           <button type="button" className={t.resetBtn} onClick={resetAll}>Reset</button>
         </div>
 

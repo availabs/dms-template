@@ -12,10 +12,8 @@ export const routeComparisonTheme = {
   wrapper: 'flex flex-col gap-3',
   card: 'rounded-[8px] border border-zinc-950/10 bg-white shadow-sm',
 
-  // ── card header (Build comparison · Reset) ──
-  cardHeader: 'px-4 pt-4 pb-3 border-b border-zinc-950/10 flex items-center gap-2',
-  cardHeaderIcon: 'size-4 text-[#1F3F8F]',
-  cardHeaderTitle: 'font-display font-medium text-[15px] text-[#0F1722] flex-1',
+  // ── card header (Reset action only — title removed) ──
+  cardHeader: 'px-4 pt-3 pb-2.5 border-b border-zinc-950/10 flex items-center justify-end gap-2',
   resetBtn: 'font-mono text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-700 cursor-pointer',
 
   // ── generic numbered/labelled block ──

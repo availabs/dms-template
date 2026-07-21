@@ -143,7 +143,7 @@ Uses env `DMS_HOST=http://localhost:3001 DMS_APP=mitigat-ny-prod DMS_TYPE=prod` 
 
 ---
 
-## Phase 2 — style to the mockup via the mny theme — IN PROGRESS
+## Phase 2 — style to the mockup via the mny theme — DONE (2026-07-14)
 
 **Goal:** make the working page match `actions-prioritize.html` using **theme additions only**
 (`src/themes/mny/theme.js`), driven by per-section/per-column `activeStyle`s. No new platform code.
