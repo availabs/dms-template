@@ -729,6 +729,8 @@ const theme = {
         textXS: "font-medium font-[Oswald] text-[12px] leading-[140%]",
         textXSReg:
             "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
+        textXSSemiBold:
+            "font-semibold font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
         textSM: "font-medium font-[Oswald] text-[14px] leading-[100%] uppercase",
         textSMReg: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
         textSMBold: "font-normal font-[Proxima Nova] text-[14px] leading-[140%]",
