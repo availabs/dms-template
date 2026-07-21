@@ -1,8 +1,11 @@
 const { pipeline } = require("node:stream/promises");
 const { Readable } = require("node:stream");
-const { createWriteStream } = require("node:fs");
+const { createReadStream, createWriteStream } = require("node:fs");
 const { tmpdir } = require("node:os");
 const { join } = require("node:path");
+const split2 = require("split2");
+
+const { getTMASrowProcessor } = require("./utils.js");
 
 const Worker = async ctx => {
 
@@ -16,21 +19,28 @@ const Worker = async ctx => {
   const {
 		source_id,
 		source_name,
+
 		user_id,
 
-		bufferedFile
-  } = task.descriptor;
+		format,
 
-  const url = join(tmpdir(), "test_file.txt");
-  console.log("##################################");
-  console.log("##################################");
-  console.log("URL", url);
-  console.log("##################################");
-  console.log("##################################");
+		tempFilePath
+  } = task.descriptor.args;
+
+  let i = 0;
+
+  async function* test(source) {
+  	for await (const row of source) {
+  		if (i++ < 5) {
+	  		console.log("test::row", row);
+	  	}
+  	}
+  }
 
   await pipeline(
-  	Readable.from([bufferedFile]),
-  	createWriteStream(url)
+  	createReadStream(tempFilePath),
+  	split2(getTMASrowProcessor(format)),
+  	test
   );
 
   result.completedAt = new Date().toLocaleString();

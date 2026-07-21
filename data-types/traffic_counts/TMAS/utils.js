@@ -118,7 +118,7 @@ const getTMASpre2020Row = row => {
 			}
 		})
 	}
-	console.log("CLEANED ROW:", cleanedRow);
+	// console.log("CLEANED ROW:", cleanedRow);
 	throw new Error(`The TMAS file does not look correct: ${ cleanedRow.length }`);
 }
 
@@ -229,40 +229,18 @@ const composeDate = row => {
 	return row;
 }
 
-export const checkTmasFile = text => {
-	const usePre2020 = text.slice(0, 141).split("|").length === 1;
-	if (usePre2020) {
-		return {
-			usePre2020,
-			rows: text.split("\n")
-								.filter(r => r.length)
-								.map(getTMASpre2020Row)
-								.map(composeDate)
-		};
-	}
-	return {
-		usePre2020,
-		rows: text.split("\n")
-							.slice(1)
-							.filter(r => r.length)
-							.map(getTMASpost2020Row)
-							.map(composeDate)
-	}
+const processPre2020row = row => {
+	const data = getTMASpre2020Row(row);
+	return composeDate(data);
+}
+const processPost2020row = row => {
+	const data = getTMASpost2020Row(row);
+	return composeDate(data);
 }
 
-export const PreviewColumns = [
-	"Record Type",
-	"State FIPS Code",
-	"Functional Class",
-	"Station ID",
-	"Direction of Travel",
-	"Lane of Travel",
-	"Date of Data",
-	"Day of Week",
-	"Restrictions"
-]
-const DataColumns = [];
-for (let i = 0; i < 24; ++i) {
-	DataColumns.push(`Traffic Volume, hour ${ i }`);
+const getTMASrowProcessor = format =>
+	format === "pre-2020-format" ? processPre2020row : processPost2020row;
+
+module.exports = {
+	getTMASrowProcessor
 }
-export { DataColumns };
