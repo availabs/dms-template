@@ -321,20 +321,62 @@ export default function ReportRouteList() {
   // query shape fetchDynamicRoute uses above — just against a different dataset). No
   // row yet is a normal, expected state for a freshly created report page, not an
   // error.
+  //
+  // Two things are required to get the row's own `id` back — both silently missing
+  // before this fix, and together the actual root cause of routes/graphIds never
+  // surviving a refresh:
+  // 1. `id` isn't one of `externalSource.columns` (those are just the `data` JSONB
+  //    keys) — it must be pushed as its own `systemCol` column, mirroring the
+  //    convention `getData.js` uses for every other editable dataset row (Card/
+  //    Spreadsheet). `sort: 'desc'` also makes a real read deterministic (prefer the
+  //    newest row) if duplicate rows exist from before this fix.
+  // 2. `createRequest.js`'s `uda` case reads its actual SELECT attribute list from
+  //    `wrapperConfig.filter.attributes` — NOT from anything embedded in
+  //    `udaConfig.options`. Omitting it (as this code did) makes the request fall
+  //    back to fetching bare `data` only, so `id` (and any other explicitly-added
+  //    column) never reaches the response regardless of what's in `options`. Must
+  //    pass `udaConfig.attributes` (the same `columnsToFetch.map(c => c.reqName)`
+  //    list `getData.js` sends) explicitly.
+  // 3. Once `attributes` is a real list (rather than the `['data']` fallback), each
+  //    fetched value comes back keyed by its own full SQL expression string (e.g.
+  //    `"id as id"`, `"data->>'routes' as routes"`), not by a clean alias — `getData.js`
+  //    (`getData.js:557-559`) remaps `row[column.reqName]` into `row[column.name]`
+  //    after every fetch for exactly this reason. `row.id`/`row.routes` must go
+  //    through the same remap or they're reading a key that was never set.
+  // Without all three, `row.id` was always `undefined` on every read — `persistRoutes`
+  // could never find an existing row to update and fell back to inserting a new one
+  // on every single edit.
   const loadReportRow = async () => {
     if (!apiLoad || !item?.id || !externalSource?.columns) return;
     const udaConfig = buildUdaConfig({
       externalSource,
-      columns: externalSource.columns.map(c => ({ ...c, show: true })),
+      columns: [
+        ...externalSource.columns.map(c => ({ ...c, show: true })),
+        { name: 'id', systemCol: true, show: true, sort: 'desc' },
+      ],
       filters: { op: "AND", groups: [{ col: "data->>'report_id'", op: "filter", value: String(item.id) }] }
     });
     const config = {
       format: { ...externalSource },
-      children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options) }, params: {} }]
+      children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options), attributes: udaConfig.attributes }, params: {} }]
     };
     try {
       const data = await apiLoad(config, "/");
-      const row = data?.[0]?.data?.value;
+      // A `uda` fetch with an explicit `attributes` list returns each row as a flat
+      // object keyed by the request's own attribute strings directly (`data[0]`) —
+      // there's no `{data:{value}}` wrapper to unwrap here; that shape only occurs
+      // for the single-bare-`'data'`-attribute fallback this code used before the
+      // `attributes` fix above. A null value comes back Falcor-atom-wrapped
+      // (`{$type:'atom', value:null}`) — unwrap it the same way `getData.js`'s
+      // `cleanValue` does.
+      const rawRow = data?.[0];
+      const row = rawRow
+        ? udaConfig.columnsToFetch.reduce((acc, col) => {
+            const v = rawRow[col.reqName];
+            acc[col.name] = (v && typeof v === 'object' && '$type' in v) ? v.value : v;
+            return acc;
+          }, {})
+        : null;
       if (row) {
         let parsedRoutes = [];
         try {

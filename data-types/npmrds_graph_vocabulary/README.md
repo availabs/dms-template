@@ -25,6 +25,7 @@ regression-risk, unlike duplicating the formulas themselves would be.
 ```
 {
   "measures": { "<measureKey>": { label, expr, fn, requiresJoin, reverseColors }, ... },
+  "baseSource": { source, view, sourceInfo },
   "joins": { "<JOIN_KEY>": { source, view, sourceInfo, joinColumns, mergeStrategy, type }, ... },
   "resolutions": { "<resolutionKey>": { xAxis }, ... },
   "comparisonModes": { "plain": {}, "difference": { comparisonSeriesCombine, defaultColorRange } }
@@ -54,6 +55,30 @@ difference template) but reuses `SPEED_EXPR_TRUCK` verbatim.
   the section already had.
 - `reverseColors` — mirrors old `dataTypes.js`'s per-measure `reverseColors` flag (`speed`/
   `speedTruck`: false; everything else here: true). Feeds the difference-mode color rule below.
+
+### `baseSource`
+
+The single DAMA source every measure expression's `ds.*` columns reference (`ds.epoch`,
+`ds.date`, `ds.tmc`, `ds.travel_time_all_vehicles`, `ds.travel_time_freight_trucks`,
+`ds.travel_time_passenger_vehicles`) — source 583/view 982, "NPMRDS Production V6". Same
+`{source, view, sourceInfo}` shape as a `joins` entry (`sourceInfo` embeds the live column list
+verbatim, captured from a real working report section's `externalSource`, so the JS picker can
+write `state.externalSource` directly without an async live source/view lookup — see the
+composition contract note below).
+
+Not a Python-side concept at all: `convert_old_reports.py` never references this source
+explicitly because every template it mints is a deep-copy of an existing `avl_graph_template`
+row that already carries this `externalSource` (same "inherited for free" mechanism as
+`TMC_IDENTIFICATION_JOIN` — see that entry's note below). A from-scratch JS picker has no
+template to clone from, so — same reasoning, same fix — this needed to become an explicit,
+first-class vocabulary entry.
+
+**Composition contract**: unlike `joins` (which only ever populate `join.sources.tableN`, a
+namespace no other author control writes to), `externalSource` is also the generic "Dataset"
+sectionMenu control's own target. A picker that writes `state.externalSource = {...baseSource}`
+should only do so when no Dataset is set yet (`!state.externalSource?.source_id`) — never
+overwrite an author's own, deliberately different Dataset pick. This is a *default*, not a
+forced value.
 
 ### `joins`
 

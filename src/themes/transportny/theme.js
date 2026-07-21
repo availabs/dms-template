@@ -3,11 +3,15 @@ import QuickLinks from './QuickLinks'
 import Header from './components/Header'
 import AddPageButton from './components/AddPageButton'
 import ReportRouteList from "./components/ReportRouteList/index"
+import { npmrdsMeasureMenu } from "./components/MeasurePicker"
 const theme = {
   pageComponents: {
     "AddPageButton": AddPageButton,
     Header,
     ReportRouteList
+  },
+  sectionMenuExtensions: {
+    "AVL Graph": [npmrdsMeasureMenu]
   },
   "navOptions": {
     "authMenu": {

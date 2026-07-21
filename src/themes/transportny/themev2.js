@@ -37,6 +37,7 @@ import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
 import HeroAtlas from "./HeroAtlas";
 import ReportRouteList from "./components/ReportRouteList"
+import { npmrdsMeasureMenu } from "./components/MeasurePicker"
 
 import icons from "./icons";
 
@@ -2403,6 +2404,15 @@ const pageComponents = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// sectionMenuExtensions — theme-supplied additional sectionMenu item-groups,
+// keyed by ComponentRegistry component name. See sectionMenuExtensions.js /
+// sectionMenu.jsx in the dms submodule for the generic extension point.
+// ─────────────────────────────────────────────────────────────────────────────
+const sectionMenuExtensions = {
+  "AVL Graph": [npmrdsMeasureMenu],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // widgets — preserved widget registry from original theme.js
 // ─────────────────────────────────────────────────────────────────────────────
 const widgets = {
@@ -2578,6 +2588,7 @@ const transportnyTheme = {
   // Preserved from original
   navOptions,
   pageComponents,
+  sectionMenuExtensions,
   widgets,
 };
 
