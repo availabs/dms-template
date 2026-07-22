@@ -55,7 +55,7 @@ const EMPTY_ROUTES = [];
 // closure — the "pending route to add" state belongs to the add-flow UI, not to
 // this row-storage concern.
 export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit }) {
-  const [reportRow, setReportRow] = useState(null);
+  const [rawReportRow, setReportRow] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   // Synchronous mirror of reportRow.id — persistRoutes reads/writes this
@@ -64,6 +64,25 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // a re-render lands). React state updates are async and batched; a ref is
   // not, so it can't go stale between "row created" and "next edit persisted".
   const reportRowIdRef = useRef(null);
+
+  // `rawReportRow` can still belong to the PREVIOUSLY viewed report for one render
+  // after `item.id` changes — this component never remounts across report
+  // navigation (every report's /edit/... route matches the same wildcard route),
+  // only `item` changes, one render after the URL does. Every write to
+  // `rawReportRow` is tagged with the item id it was loaded/persisted for; deriving
+  // `reportRow` by comparing that tag against the CURRENT `item.id` (at render
+  // time, not inside an effect) means every consumer — including
+  // useGraphPublish's orphan-cleanup effect — sees `null` the instant `item.id`
+  // changes, regardless of effect-ordering between this hook's own reset effect
+  // and any other hook's effects in the same commit. Without this, the orphan
+  // cleanup effect could see the previous report's routes (with real graphIds)
+  // alongside the new report's own (different) section ids, treat every route as
+  // orphaned, and persist a corrupted copy of the OLD report's routes under the
+  // NEW report's own id — confirmed live 2026-07-22 (a fresh page created via
+  // "+ Add Page" showed another report's routes, and the new page's own storage
+  // row in the DB contained a byte-for-byte copy of that other report's routes
+  // with graphIds zeroed out).
+  const reportRow = rawReportRow?.forItemId === (item?.id ?? null) ? rawReportRow : null;
   const routes = reportRow?.routes || EMPTY_ROUTES;
 
   // The report STORAGE binding — this section's normal sectionMenu "Dataset" pick.
@@ -164,16 +183,16 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
           parsedRoutes = [];
         }
         reportRowIdRef.current = row.id;
-        setReportRow({ id: row.id, routes: parsedRoutes });
+        setReportRow({ id: row.id, routes: parsedRoutes, forItemId });
       } else {
         reportRowIdRef.current = null;
-        setReportRow({ id: null, routes: [] });
+        setReportRow({ id: null, routes: [], forItemId });
       }
     } catch (e) {
       if (loadTargetIdRef.current !== forItemId) return;
       console.error('<ReportRouteList:loadReportRow>', e);
       reportRowIdRef.current = null;
-      setReportRow({ id: null, routes: [] });
+      setReportRow({ id: null, routes: [], forItemId });
     }
   };
 
@@ -212,7 +231,7 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     const res = await apiUpdate({ data: payload, config: { format: storageDataFormat } });
     const nextId = currentId || res?.id;
     reportRowIdRef.current = nextId;
-    setReportRow({ id: nextId, routes: nextRoutes });
+    setReportRow({ id: nextId, routes: nextRoutes, forItemId: item.id });
   };
 
   // Comparison-series graphs (see buildUdaConfig.js) use each route's `name` as the
