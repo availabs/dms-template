@@ -215,6 +215,24 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     setReportRow({ id: nextId, routes: nextRoutes });
   };
 
+  // Comparison-series graphs (see buildUdaConfig.js) use each route's `name` as the
+  // ONLY series discriminator (both the server's SQL alias and the client's
+  // grouping/legend/color key) — two routes sharing a name collapse into one
+  // series. Rather than threading a separate stable key through the whole
+  // fan-out/grouping/legend pipeline, the restriction is enforced here at the
+  // authoring boundary instead: names are kept unique across a report's own
+  // routes. On ADD (this function) a colliding name is silently disambiguated
+  // (catalog names aren't something the user typed, so there's nothing to
+  // "reject"); on RENAME (ReportRouteList.jsx's onSaveEditName) a collision is
+  // blocked instead, since there the user explicitly chose the new name.
+  const dedupeRouteName = (name) => {
+    const existing = new Set(routes.map(r => r.name));
+    if (!name || !existing.has(name)) return name;
+    let n = 2;
+    while (existing.has(`${name} (${n})`)) n++;
+    return `${name} (${n})`;
+  };
+
   // `newRouteData` is the route object resolved by the add-flow's own catalog
   // lookup — this hook only owns assigning it a local `route_comp_id` and
   // persisting it, not resolving/fetching it.
@@ -239,6 +257,7 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
       const newRoute = {
         color: ROUTE_COLOR_PALETTE[routes.length % ROUTE_COLOR_PALETTE.length],
         ...newRouteData,
+        name: dedupeRouteName(newRouteData.name),
         route_comp_id: `comp-${maxId + 1}`
       };
 

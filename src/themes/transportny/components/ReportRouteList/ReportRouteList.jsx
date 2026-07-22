@@ -203,7 +203,19 @@ export default function ReportRouteList() {
                 editNameValue={editNameValue}
                 onEditNameValueChange={setEditNameValue}
                 onStartEditName={() => { setEditingRouteNameIndex(i); setEditNameValue(r.name); }}
-                onSaveEditName={() => { updateRoute({ index: i, updates: { name: editNameValue } }); setEditingRouteNameIndex(null); }}
+                onSaveEditName={() => {
+                  // Unlike addRoute's auto-suffix (the name came from the catalog, not
+                  // typed by the user), a rename is an explicit user choice — block it
+                  // instead of silently rewriting what they typed. See the dedupeRouteName
+                  // comment in useReportRow.js for why names must stay unique at all.
+                  const collision = routes.some((rt, idx) => idx !== i && rt.name === editNameValue);
+                  if (collision) {
+                    setError(`A route named "${editNameValue}" already exists.`);
+                    return;
+                  }
+                  updateRoute({ index: i, updates: { name: editNameValue } });
+                  setEditingRouteNameIndex(null);
+                }}
                 onCancelEditName={() => setEditingRouteNameIndex(null)}
                 isEditingDates={editingRouteDatesIndex === i}
                 editStartDateValue={editStartDateValue}
