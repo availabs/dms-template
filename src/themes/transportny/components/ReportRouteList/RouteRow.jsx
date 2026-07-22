@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { parseTmcArray } from './utils';
+import { ROUTE_COLOR_PALETTE } from './useReportRow';
 
 const TMC_PREVIEW_COUNT = 6;
 
@@ -26,6 +27,8 @@ export default function RouteRow({
   Button,
   Input,
   Icon,
+  ColorPicker,
+  onChangeColor,
   isEdit,
   saving,
   isExpanded,
@@ -53,6 +56,19 @@ export default function RouteRow({
   onRemove,
 }) {
   const [showAllTmcs, setShowAllTmcs] = useState(false);
+
+  // ColorPicker's own effect fires onChange whenever onChange's IDENTITY changes
+  // (not just when the picked color changes) — see Colorpicker.jsx's
+  // `useEffect(..., [selfColor, onChange])`. The parent recreates onChangeColor as a
+  // fresh inline arrow function every render, so passing it straight through would
+  // re-fire onChange on every render -> updateRoute -> re-render -> new onChangeColor
+  // -> infinite loop (confirmed live: DevTools network tab showed a runaway request
+  // storm). Route the callback through a ref so the function identity handed to
+  // ColorPicker never changes, while always invoking the latest onChangeColor.
+  const onChangeColorRef = useRef(onChangeColor);
+  onChangeColorRef.current = onChangeColor;
+  const stableOnChangeColor = useCallback((c) => onChangeColorRef.current?.(c), []);
+
   const r = route;
   const tmcArray = parseTmcArray(r.tmc_array);
   const isUnassigned = graphs.length > 0 && !(r.graphIds || []).length;
@@ -81,6 +97,7 @@ export default function RouteRow({
               </div>
             ) : (
               <div className={t.editContainer}>
+                {r.color && <span className={t.colorDot} style={{ backgroundColor: r.color }} title={r.color} />}
                 <div className={t.routeTitle}>{r.name}</div>
                 {isUnassigned && <span className={t.unassignedBadge}>Unassigned</span>}
                 {isEdit && isExpanded && (
@@ -151,6 +168,17 @@ export default function RouteRow({
                 </div>
               </div>
             </div>
+            {isEdit && ColorPicker && (
+              <div className={t.colorSection}>
+                <div className={t.colorSectionLabel}>Identity Color</div>
+                <ColorPicker
+                  color={r.color || '#000000'}
+                  onChange={stableOnChangeColor}
+                  colors={ROUTE_COLOR_PALETTE}
+                  showColorPicker={true}
+                />
+              </div>
+            )}
             {graphs.length > 0 && (
               <div className={t.graphChipsWrapper}>
                 <span className={t.graphChipsLabel}>On:</span>

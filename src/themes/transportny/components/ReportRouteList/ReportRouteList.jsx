@@ -21,7 +21,7 @@ export default function ReportRouteList() {
   // actually on screen.
   const isEdit = Boolean(editPageMode);
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
-  const { Button, Input, Icon } = UI || {};
+  const { Button, Input, Icon, ColorPicker } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
   const [loading, setLoading] = useState(false);
   const [pendingRoute, setPendingRoute] = useState(null);
@@ -193,6 +193,8 @@ export default function ReportRouteList() {
                 Button={Button}
                 Input={Input}
                 Icon={Icon}
+                ColorPicker={ColorPicker}
+                onChangeColor={(c) => updateRoute({ index: i, updates: { color: c } })}
                 isEdit={isEdit}
                 saving={saving}
                 isExpanded={!!expandedRoutes[i]}

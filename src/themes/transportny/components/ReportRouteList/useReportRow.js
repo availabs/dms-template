@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { cloneDeep } from 'lodash-es';
 import { buildUdaConfig } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { nameToSlug } from '../../../../dms/packages/dms/src/utils/type-utils';
+import { getColorRange } from '../../../../dms/packages/dms/src/ui/components/graph_new/colorSchemeUnifier';
+
+// Same palette a graph's own default series colors come from
+// (ComponentRegistry/graph_new/config.jsx's `DefaultPalette`) — reused here so a route's
+// auto-assigned identity color visually matches the picker's own swatch options and the
+// graph's "no explicit color set" default state.
+export const ROUTE_COLOR_PALETTE = getColorRange(20, "div7");
 
 function roundToFiveMinutes(dateStr) {
   if (!dateStr || !dateStr.includes('T')) return dateStr;
@@ -226,7 +233,11 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
         }
       });
 
+      // Auto-assign an identity color from the shared palette, cycling by the route's
+      // position — mirrors the old tool's `getRouteColor()`. `routes.length` (the count
+      // BEFORE this route is appended) is the right index: first route gets palette[0], etc.
       const newRoute = {
+        color: ROUTE_COLOR_PALETTE[routes.length % ROUTE_COLOR_PALETTE.length],
         ...newRouteData,
         route_comp_id: `comp-${maxId + 1}`
       };

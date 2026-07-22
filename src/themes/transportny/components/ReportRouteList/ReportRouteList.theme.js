@@ -40,5 +40,8 @@ export const reportRouteListTheme = {
   graphChipsWrapper: 'flex flex-wrap items-center gap-1 pt-2 mt-2 border-t border-slate-100',
   graphChipsLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1',
   graphChip: 'px-1.5 py-0.5 rounded text-[11px] border bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200',
-  graphChipActive: 'px-1.5 py-0.5 rounded text-[11px] border bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+  graphChipActive: 'px-1.5 py-0.5 rounded text-[11px] border bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200',
+  colorDot: 'w-2.5 h-2.5 rounded-full flex-shrink-0 border border-slate-300',
+  colorSection: 'space-y-1 pt-2 mt-2 border-t border-slate-100',
+  colorSectionLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider'
 };

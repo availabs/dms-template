@@ -83,6 +83,10 @@ function transformReportRoutes(routes) {
     return {
       label: route.name,
       filters: { op: "AND", groups: groups },
+      // Rides through resolveComparisonVariants (buildUdaConfig.js) into every assigned
+      // graph's state.comparisonSeries.config, consumed there to build colorsByKey — see
+      // comparison-series-explicit-color.md.
+      ...(route.color ? { color: route.color } : {}),
     };
   });
 }
