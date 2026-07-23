@@ -1963,6 +1963,13 @@ const pages = {
       backgrounds: {
         none: "", white: "bg-white", tint: "bg-slate-50/60",
       },
+      // Drop-shadow options for the inner card box (report-page redesign Gap 03 —
+      // the granular per-side border/radius/bg path had no shadow knob at all;
+      // the old report tool's cards read as one unified box partly because of a
+      // visible shadow). `none` preserves today's default (unset → no shadow).
+      shadows: {
+        none: "", sm: "shadow-sm", md: "shadow-md",
+      },
       // Curated gutter steps (fewer = wider, more usable buttons): flush / tight /
       // default(3) / comfortable / loose / wide.
       paddings: {

@@ -150,6 +150,37 @@ There is no dedicated "design" agent in this environment (checked the available 
    brand-new theme/design system from a blank brief; this is page-pattern-level iteration inside
    an existing, already-built transportny theme. Wrong tool for this job.
 
+## Status update (2026-07-22 → 2026-07-23)
+
+Gaps 1 and 2 below are now **done**, closing the loop opened by the "Open scoping question"
+section. Only Gap 3 remains genuinely unscoped.
+
+- **Gap 1 (inline quick controls)** — fully shipped and live-verified. Library primitive
+  (`sectionHeaderExtensions` registry) in `src/dms/planning/tasks/completed/section-header-extensions.md`;
+  theme consumer (Measure + Comparison Mode pills) in `planning/tasks/completed/avl-graph-quick-controls.md`.
+  See memory `project_report_page_visual_redesign`, `project_avl_graph_quick_controls`.
+- **Gap 2 (route/graph color assignment)** — implemented and live-verified end-to-end (real
+  ClickHouse-backed LineGraph, color picks persist and render correctly). Split across
+  `planning/tasks/current/report-route-color-assignment.md` (theme) and
+  `src/dms/planning/tasks/current/comparison-series-explicit-color.md` (library). Still sitting in
+  `tasks/current/` — not bookkeeping-complete — because several testing-checklist items remain:
+  auto-assigned color on `addRoute`, cross-graph color consistency for the same route,
+  Bar/Pie/Treemap rendering (LineGraph proven, same code path, untested), GridGraph/SunburstGraph
+  regression check. See memory `project_report_route_color_assignment_scoped`.
+- **Bonus fix found + shipped along the way**: two routes/variants with an identical name used to
+  collapse into one series/legend line (`comparisonSeries` used `label` as the sole discriminator).
+  Fixed at the authoring boundary (auto-suffix on add, block on rename) rather than threading a
+  stable key through the whole engine. See memory `project_comparisonseries_duplicate_label_collapse`.
+- **Bonus bug found, NOT fixed**: the BarGraph "Color by Value" + named Scheme bug documented in
+  "Follow-up Q&A" below now has its own task file,
+  `src/dms/planning/tasks/current/bargraph-byvalue-scheme-color-nan-bug.md` — small, fully
+  root-caused, one-line fix (`getColorRange` swatch count), just not yet applied.
+
+**What's actually next**: Gap 3 (visual/density polish of the graph cards — spacing, legend
+placement, attribution-line treatment) is the only item from the original ranked list still
+untouched. The "Open scoping question" below is superseded for (a)/(b); only (c) and (d) are live
+options now.
+
 ## Open scoping question (unresolved — ask next session)
 
 Presented to the user as a multiple-choice before they switched tools; not yet answered. Re-ask
