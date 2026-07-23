@@ -1,11 +1,18 @@
 # Route creation tool — findings
 
-**Status:** map-properties bug (Part 1) is now **fixed and live-verified** — option (a),
-plugin-local workaround, implemented 2026-07-23 in transportNY (still uncommitted there), user
-confirmed working by testing it live the same day. Feature gap catalogued, with deferrals decided
-and the next priority (Marker Placement / auto-routing) identified. Design research (arc step 3)
-and scope/plan (arc step 4) for that next priority have not started. This doc captures the
-2026-07-23 investigation plus two same-day follow-up rounds so a later session doesn't have to
+**Status:** map-properties bug (Part 1) is now **fixed, live-verified, and committed** — option (a),
+plugin-local workaround, implemented and committed 2026-07-23 in transportNY, user confirmed
+working by testing it live the same day. Feature gap catalogued, with deferrals decided. Arc step 3
+(design research) for the next priority (Marker Placement / auto-routing) is **complete** — the
+endpoint is found/traced/confirmed live (Part 5), and all four architecture/UX forks are decided
+(Part 6). Arc step 4 (scope/plan) is **done**, tracked in **two** repos' planning systems: this
+repo's `src/dms/planning/tasks/current/routecreation-marker-placement-autorouting.md` (umbrella
+plan + Phase 1 dms-server proxy, todo entry under `patterns/mapeditor`) and transportNY's own
+`planning/tasks/current/routecreation-marker-placement-autorouting.md` (Phase 2-3 plugin work,
+todo entry under `maps`) — added 2026-07-23 per user request so transportNY has proper local
+tracking too, not just a cross-repo pointer. This doc remains the research/evidence
+record; the task file is the implementation source of truth going forward. This doc captures the
+2026-07-23 investigation plus three same-day follow-up rounds so a later session doesn't have to
 re-derive it.
 
 ## Objective
@@ -561,23 +568,310 @@ before assuming it needs different plumbing.
 
 ---
 
+---
+
+## Part 5 — Auto-routing endpoint, investigated and confirmed live (2026-07-23)
+
+Goal: resolve the open question from Part 4's "Auto-routing follow-up" — is the old tool's
+brand-new-route map-matching call reachable/reusable for the new prototype, and what does it
+actually need.
+
+### Where it lives (not in dms-server / dama at all)
+
+The client call cited in Part 2 (`falcor.get(["routes2","get","route", request])`,
+`RouteCreationLayer.jsx:407-430`) is served by **`avail-falcor`** (a third repo,
+`/home/ryan/code/avail-falcor` — the falcor backend behind `npmrds.devtny.org`, wired to the *old*
+`npmrds_production` Postgres DB, schema `admin2`/`conflation`). This is a completely separate
+service from `dms-server` (which is what the new DMS-pattern prototype talks to). Route definition:
+`routes/folders2.route.js:480`, `{ route: 'routes2.get.route[{keys:requests}]', get: ... }` — **no
+`this.user` auth check** on this route (unlike `routes2.save`/`routes2.delete`/`routes2.batch.upload`
+right next to it, which all throw `"No Authorization"` without one).
+
+Handler chain: `Controller.processRouteRequests(requests)` (`services/folders2Controller.js:1057`)
+parses each request string as `"<JSON locations>|<year>"`, calls `getRoute(locations, year)`
+(`folders2Controller.js:565-588`), which does a plain HTTP POST straight through to an **external,
+independently-hosted map-matching microservice**:
+
+```
+POST https://routing2.availabs.org/route?conflation_map_version={year}_{version}&return_tmcs=1
+Content-Type: application/json
+Body: { "locations": [ { "lat": <num>, "lon": <num> }, ... ] }
+```
+
+`version` defaults to `CONFLATION_VERSION = "v0_6_0"` (`folders2Controller.js:10`). Response is
+`{ "ways": [ "<tmc_id>", ... ] }` (or `{"err":{...}}` if no match found for those points/that
+year's network).
+
+### Confirmed live, end-to-end, using real production data
+
+Queried `admin2.routes` (via `dbq.py old`, VPN-gated) for a route whose `admin2.tmc_array_cache`
+already had a resolved result — route `268046`, year 2022, cached `tmc_array =
+["120N05838","120-05837","120N05837","120-05836"]`. Replayed its exact stored `points` directly
+against `https://routing2.availabs.org/route?conflation_map_version=2022_v0_6_0&return_tmcs=1` from
+this machine (no VPN active for this specific call, no auth header of any kind) and got back:
+
+```json
+{"ways":["120N05838","120-05837","120N05837","120-05836"]}
+```
+
+**Byte-for-byte identical to the cached resolution.** This confirms: the endpoint is reachable with
+zero authentication and zero VPN requirement (VPN was only needed to *read the DB* for a realistic
+test case, not to call the routing service itself), the request/response contract above is correct,
+and the underlying map-matching logic itself is unchanged/still live.
+
+**CORS is wide open**: sent the request with `Origin: http://sandbox.localhost:5174` (the new
+prototype's actual dev origin) and got back `access-control-allow-origin:
+http://sandbox.localhost:5174` (reflects whatever origin is sent) plus `vary: origin` — i.e. this
+isn't just server-reachable, a **browser can call it directly** with no proxy needed, same as any
+same-origin fetch. (Two arbitrary nearby-but-off-network points were tried first and correctly came
+back `{"err":{}}` — not a request-format bug, just no matching road for those specific coordinates.)
+
+### New architectural wrinkle this surfaces (not previously known)
+
+The "which years/versions are valid" metadata (`conflation.conflation_map_versions_meta`,
+`conflation.conflation_map_osm_version` — what `getLatestConflationVersion`/`getConflationYears`
+query in `folders2Controller.js:590-613`) lives **only** in the old `npmrds_production` DB. Checked
+directly: neither the new DMS content DB (`dbq new`, `dms3`/`dms_npmrdsv5`) nor the dama DB (`dbq
+dama`, `npmrds2`) has a `conflation` schema at all. So if the new tool wants to *dynamically*
+discover valid years the same way the old tool does, that's a brand-new cross-DB dependency
+dms-server has never had — versus just hardcoding the known-stable `v0_6_0` + a year range (which
+has been unchanged since before `routecreation.plugin.jsx` existed, per Part 1's timing analysis).
+This is a real design fork, not a formality — flagging for arc step 3/4 rather than deciding here.
+
+### What this means for scoping auto-routing (arc step 3 inputs, not yet decided)
+
+- **No new server-side endpoint is strictly required.** The new prototype's `Comp`/map-click hook
+  could call `routing2.availabs.org` directly from the browser, same contract as above. A thin
+  dms-server proxy route is still an option (consistency with "client talks only to dms-server",
+  room to add server-side caching like `admin2.tmc_array_cache` later) — but it's an *architectural
+  choice* now, not a hard requirement discovered by this investigation.
+- **Year selection is not a separate, deferrable concern from auto-routing** — it's a hard
+  precondition. The routing call itself is `{year}_{version}`-scoped; there is no year-agnostic way
+  to call it. Part 4 items 1 and 2 (auto-routing, TMC-vintage/year) are the same design problem, not
+  two sequential ones — whatever UI/state answers "which year is this route being built against"
+  has to exist before auto-routing can fire at all.
+- **Version (`v0_6_0`) can likely be hardcoded** for now — stable across the entire time window
+  Part 1's investigation covered, and not surfaced as a user-facing choice anywhere in the old tool
+  either (it's an internal implementation constant there too, not a dropdown).
+- Marker UI itself (drop pin, drag to reposition, gradient-by-sequence coloring, recompute on
+  add/move/remove) is presentational work with a clear reference implementation already fully read
+  in Part 2 (`RouteCreationLayer.jsx:304-430`) — no open questions there, it's a matter of porting the
+  interaction pattern into the plugin's existing `useMapTmcHandler`-style hook structure.
+
+---
+
+## Part 6 — Arc step 3 design decisions (2026-07-23)
+
+Two of Part 5's three open forks are now **decided** by the user, plus a follow-up investigation
+that resolves a wrinkle in the second decision.
+
+### Decision 1: dms-server proxy, built swappable
+
+User: go with the dms-server proxy for now, but "build with that in mind" — the routing call is
+very likely to move onto a new, not-yet-built in-house software stack later, replacing
+`routing2.availabs.org` entirely. **Implication for implementation**: the proxy route's handler
+should isolate the `routing2.availabs.org` call behind a single function boundary (e.g. one
+`resolveRoute(locations, year)`-shaped module) that the falcor/REST route calls — so swapping the
+backing implementation later is a one-function edit, not a scattered refactor across route
+registration, request shaping, and response parsing. Don't spread knowledge of the external URL or
+its request/response contract beyond that one module.
+
+### Decision 2: year list sourced from the new system's own NPMRDS metadata, not old `conflation`
+
+User: unsure the new toolset even has a "conflation" concept — it works off the official TMC
+identification shapefiles instead — and the year range should be pulled dynamically from
+already-tracked NPMRDS source metadata, pointing at `src/dms/documentation/npmrds-data-sources.md`.
+
+That doc's "Per-year TMC geometry tile views" table (confirmed live 2026-07-14, reproduced there)
+already lists a `view_id` for **every year 2016-2026** across source 582 (`npmrds_v6`,
+shapefile-enhanced, current gen — missing only 2016) and source 215 (older gen — covers 2016 but
+stops at 2024). Both live in `npmrds2`/dama, the DB the new stack already talks to — **no new
+cross-DB dependency needed**, resolving Part 5's flagged wrinkle.
+
+**Claimed verified live 2026-07-23, since found to be WRONG (corrected 2026-07-23, same-day
+implementation round)**: this section originally claimed, based on querying the old prod DB's
+`conflation.conflation_map_osm_version` for every year with a `v0_6_0` row, that all of
+2016-2026 (11 years, no gaps) were usable. **That query only checked that a DB metadata row
+exists per year — it never called the live routing service.** Directly testing
+`routing2.availabs.org` with real coordinates (a two-point I-90 corridor near Albany, tested
+against years 2016/2018/2020/2021/2022/2023/2024/2025/2026) found **only 2020, 2021, and 2022
+actually resolve** — every other year tested, including the ones on both sides (2016/2018 *and*
+2023-2026), returned `{"err":{}}` for the identical points. So the DB row's existence does not
+mean the routing service can actually route against that year — a real, disproven assumption,
+not just an update. **Implication for Phase 3**: the year list can't just be sourced from
+source-582/215's per-year metadata as originally planned — it needs to be filtered down to (or
+cross-checked against) years the routing service actually supports, which on this one data point
+looks like a narrow 2020-2022 window, not the full shapefile-vintage range. Only one location was
+tested; the true usable range needs verifying across multiple points before Phase 3 is designed
+around it. Until then, `2022` is the safest placeholder (doubly-confirmed: this test, and the
+original Part 5 replay of route 268046).
+
+### New wrinkle surfaced while grounding this: "year" isn't an existing concept in the plugin today
+
+Checked how the routecreation plugin currently resolves its map layer
+(`routecreation/constants.js:5`, `SHAPEFILE_LAYER_KEY = "npmrds_shapefile"`; read in
+`comp.jsx:70-73`, `routecreation.plugin.jsx:33-58`, `dataUpdate.jsx:30-34`,
+`useMapTmcHandler.js:6`): the plugin looks up **one specific symbology layer by that fixed key**
+in `state.symbology`, and reads whatever single `view_id` an author manually attached to it via the
+generic `SourceSelector` UI when building the map page. There is **no year concept anywhere in the
+plugin's own code** — the "year" of the network an author sees is implicitly whatever view an
+admin happened to pick once, with no switching mechanism. This means auto-routing's year selector
+is genuinely new state to add, not a retrofit of an existing year mechanism — but it also raises a
+real UX question not yet answered: **should picking a year in the new auto-routing UI also swap
+which `view_id` the visible shapefile layer points at** (so the map an author sees matches the
+network year they're routing against), **or does it only affect the invisible routing-service call**
+while the map keeps showing whichever static view an admin configured? This is Part 4 item 2's gap,
+now concretely in scope of the auto-routing design rather than a separate later problem.
+
+### Still open (Decision 3, unblocked but not yet asked)
+
+Whether the proxy's version constant is hardcoded `v0_6_0` (Part 5's original recommendation) is
+implicitly still the plan — the user's Decision 2 answer only addressed the *year* half of that
+fork, not version. Nothing in Decision 2's answer contradicts hardcoding version; carrying that
+forward unless corrected.
+
+### Decision 4: year selection swaps the visible map layer too
+
+User: yes — picking a year re-points the shapefile layer's `view_id` at that year's published view
+(source 582, falling back to source 215 for years 582 lacks — currently only 2016, per the
+`npmrds-data-sources.md` tile-view table), not just the invisible routing-service parameter. Author
+clicks against the same TMC network the auto-router snaps to, always in sync. This means the year
+selector's state has to drive **two** things on change, not one: (a) which `view_id` the
+`npmrds_shapefile` symbology layer's `.view_id` resolves to (re-triggering the same
+`getLayerTileUrl` rebuild machinery Part 1 traced), and (b) the `{year}` sent to the new
+dms-server proxy route.
+
+### Mechanism for Decision 4, found in existing docs — not a new invention
+
+`src/dms/skills/editing-map-symbologies.md` (the headless symbology-editing reference — read
+2026-07-23 at the user's pointer) §5 already documents the exact recipe: **"Repoint a layer to a
+new view/source"** — fetch the target view's `metadata.tiles` from `data_manager.views`, then
+replace `sources[]` (re-suffixed `_${layerId}`), `view_id`, `source_id`, and each sub-layer's
+`source`/`source-layer`. Critically, that recipe does **not** touch `data-column`, `layers[].paint`,
+or any of the other per-layer config — meaning the year-swap mechanism is fully orthogonal to
+Part 1's fix (`data-column: 'tmc'`), which lives on the LAYER object untouched by a repoint. No
+interaction risk between the two: swapping years mid-session should not require re-applying or
+re-deriving the click-identity fix.
+
+Also from that doc, confirmed **not applicable** here (so not extra work): `interactive-filters[]`
+snapshot duplication and `legend-data` sync only matter for layers using those features —
+routecreation's shapefile layer uses neither (no interactive filters, no `layer-type` set, so no
+legend rows render for it per the "Legend rows are gated by `layer-type`" gotcha, consistent with
+Part 1's "verified no side effect" note). The repoint is a plain single-layer `sources`/`view_id`
+swap, nothing more elaborate.
+
+One thing this doc surfaces that Part 6 hadn't considered: the doc's §1 "TWO homes" distinction
+(catalog item vs. section's embedded copy — "rendering reads ONLY the copy"). The routecreation
+plugin operates on `state.symbology` at runtime, which is the **embedded copy** on whatever page/
+section it's mounted in — so the year-swap code path is a runtime `setState` on the embedded copy
+(same shape Part 1's fix already uses, `symbologyLayerPath[...]`), not a catalog-item edit. No
+open question here, just confirming which of the two homes applies (the runtime one) so a future
+implementer doesn't second-guess it.
+
+### Mechanism for Decision 4 is largely already built — "View Filter Group" (2026-07-23)
+
+User flagged that a "View Filter Group" control might already let an author swap which DAMA view
+backs a map layer, making Decision 4's mechanism close to free. Investigated — real, but with an
+important nuance about *which* copy applies:
+
+The runtime "pick a view from a pre-configured group, live-swap the tile source" mechanism
+(`layer.viewGroupEnabled` + `filter-source-views` list, authored via
+`mapeditor/MapEditor/components/LayerEditor/ViewGroupControl/index.jsx`) exists in **three
+independent copies**, not one shared implementation:
+1. The author-side editor control (`ViewGroupControl`) — lives in the shared `mapeditor` pattern,
+   used to build the group regardless of where it's consumed.
+2. `patterns/page/.../ComponentRegistry/map_dama/MapManager/MapManager.jsx` (~line 231-278) — the
+   runtime `<select>` for the **legacy** `Map: Dama Map` page-section type. Swap logic: string-replace
+   `layer.view_id` with the new value across the layer's `layers[]` and `sources[]` JSON, then set
+   `view_id` — a plain in-place repoint, no re-fetch of `metadata.tiles` needed since only the
+   `view_id` token changes inside an otherwise-identical tile URL template.
+3. `patterns/mapeditor/MapEditor/components/MapViewerLegend.jsx` (~line 628-660) — a **separate,
+   independent copy of the same runtime dropdown**, but this one belongs to the `mapeditor` pattern's
+   own authoring page (the actual `/edit/...` route), not to either page-section type.
+
+**Checked directly against `map-component-unification.md`** (2026-07-23, per the user's "we use
+`map` only nowadays" concern): the current `map` page-section type genuinely does **not** have this
+control — explicitly listed as deferred / "no current consumer" (lines 45-46, 82: "Unique-to-
+map_dama/: ... view-group selector"). So for a *page-embedded* map, this really is a `map_dama`-only,
+legacy-only feature today — a real gap, not something to build on for future `map`-section work.
+
+**But that gap is irrelevant here.** Routecreation is a **mapeditor plugin**, not a `map`/`map_dama`
+page-section — it runs inside the mapeditor pattern's own authoring page, which uses copy #3
+(`MapViewerLegend.jsx`), independently of the `map`/`map_dama` split entirely. And copy #3 already
+has a purpose-built escape hatch for exactly this scenario:
+
+```js
+if (layer.viewGroupEnabled && !isLayerControlledByPlugin) { /* render generic dropdown */ }
+```
+
+`isLayerControlledByPlugin` (`MapViewerLegend.jsx:427-428`) checks whether any plugin's
+`state.symbology.pluginData[pluginName]['active-layers']` claims this layer id — which
+routecreation's layer already does (it's how `SHAPEFILE_LAYER_KEY` resolution works today, Part 6).
+So the platform was already built anticipating "a plugin wants to own this layer's view-switching
+itself, instead of the generic picker" — routecreation doesn't need to fight or duplicate this
+system, just reuse its swap primitive (`MapViewerLegend.jsx:645-659`, ~15 lines: JSON-stringify +
+`replaceAll(oldViewId, newViewId)` across `layers[]` and `sources[]`, already proven in production)
+from its own year-change handler instead of showing the generic dropdown. **This means implementing
+the "swap the visible layer's view_id" half of Decision 4 is a matter of porting ~15 already-working
+lines, not designing new mechanics.**
+
+### Arc step 3 status: core architecture decisions complete
+
+All four forks from Parts 5-6 are now resolved (proxy w/ swappable boundary; year sourced from new
+stack's own metadata; version hardcoded; year selection swaps the visible layer). What remains
+before arc step 4 (scope/plan) can start is mechanical, not decisional: picking the exact
+proxy-route shape/name, the plugin-level state additions (selected year, marker list, mode toggle),
+and porting the marker-UI interaction pattern from `RouteCreationLayer.jsx:304-430` — no more open
+product questions identified as of 2026-07-23.
+
+---
+
 ## Open questions / next steps
 
-- **Done 2026-07-23**: Part 1 bug fixed via option (a) and **user-confirmed live** (clicked a TMC
-  in the running prototype, selection + highlight work). Fix is still uncommitted in transportNY —
-  commit whenever convenient, no rush.
+- **Done 2026-07-23**: Part 1 bug fixed via option (a), **user-confirmed live**, and **committed**
+  in transportNY.
 - Live-check candidate, downgraded from blocking to informational: whether the *specific*
   `npmrds_shapefile` view(s) in play have multiple published versions with differing tile metadata
   (see "Corrected/sharpened timing mechanism" in Part 1) — interesting for understanding the
   history, no longer needed to justify the fix itself, since option (a) works regardless of why it
   broke.
-- **Next up (user priority, 2026-07-23): Marker Placement / auto-routing mode** (Part 4, item 1) —
-  the biggest remaining gap. Needs its own investigation into the old tool's server-side
-  map-matching endpoint (`routes2 get route`) before scoping a rebuild. Check with the user first
-  whether the lat/lng-to-TMC tooling they recalled from `old_reports_conversion` (see Part 4's
-  "Auto-routing follow-up" note — not found by searching this round) exists somewhere reusable.
-- The "year" / TMC-map-vintage gap (Part 4, item 2) and the broader design-research pass (arc step
-  3) haven't started.
+- **Done 2026-07-23**: auto-routing endpoint found, traced, and confirmed live end-to-end against
+  real production data (Part 5) — reachable with no auth/VPN, CORS-open, contract fully documented.
+- **Decided 2026-07-23 (Part 6)**: dms-server proxy (built as a swappable single-module boundary,
+  anticipating a future in-house replacement for `routing2.availabs.org`); year list sourced from
+  the new stack's own NPMRDS per-year source metadata (`npmrds-data-sources.md`'s source 582/215
+  tile-view table), not the old `conflation` schema. Version (`v0_6_0`) hardcoded. Selecting a year
+  also swaps the visible shapefile layer's `view_id`, via the already-built `MapViewerLegend.jsx`
+  view-group swap primitive (its `isLayerControlledByPlugin` opt-out exists for exactly this case)
+  — confirmed close to free, not a new mechanism, per the "View Filter Group" investigation.
+  **The "this year range fully overlaps what the routing service covers" half of this decision was
+  WRONG — see the correction inside Part 6 (under Decision 2) and the next bullet.**
+- **Done 2026-07-23**: arc step 4 (scope/plan) complete —
+  `src/dms/planning/tasks/current/routecreation-marker-placement-autorouting.md` has the phased plan
+  (Phase 1 dms-server proxy, Phase 2 marker UI, Phase 3 year selector), files-likely-touched list,
+  testing checklist, and flagged open implementation-time decisions.
+- **Done 2026-07-23 (same-day, 4th round)**: user agreed Phase 1 (proxy) can wait since it's
+  genuinely decoupled — started **Phase 2 (marker mode) in transportNY ahead of Phase 1**, using a
+  temporary direct client call to `routing2.availabs.org` (isolated in `hooks/resolveRoute.js`,
+  swappable to the real proxy later). Core mechanics (drop/drag/gradient/mode-toggle/remove/clear)
+  implemented and live-verified. One real bug found+fixed: `setCreationMode` ran side effects
+  inside a React state-updater callback (invalid — updaters must be pure), throwing "Cannot update
+  a component while rendering a different component"; fixed by moving the side effects into the
+  event handler.
+- **Real bug found 2026-07-23, same round**: the year range claim above (2016-2026 "confirmed") was
+  wrong — it was based on a DB metadata table having a row per year, never an actual call to the
+  live routing service. Directly testing `routing2.availabs.org` with real coordinates (I-90 near
+  Albany) across 2016/2018/2020/2021/2022/2023/2024/2025/2026 found **only 2020-2022 actually
+  resolve** — every other year tested returns `{"err":{}}`. Fixed the immediate placeholder
+  (`DEFAULT_ROUTING_YEAR`) to `2022`. After the fix, the full markers→resolve→TMC pipeline was
+  verified live end-to-end: 2 markers near Albany/Schenectady resolved to a real path (CR-90/Vischer
+  Ferry Rd, Moe Rd, I-87 — 11.653 total miles), rendered as a red highlighted line on the map, and
+  listed with mileage in the sidebar, exactly like tmc-clicks mode. **Only one location has been
+  tested** — the true usable year range needs checking across more points before Phase 3's year
+  selector is designed; don't assume 2020-2022 is universal without more testing.
+- **Next up**: Phase 1 (dms-server proxy) — still not started, and now the actual blocker before
+  the temporary direct client call can be retired. Separately, Phase 3's year list design needs
+  redoing given the year-range correction above.
 - Reconcile the dms submodule divergence between transportNY and dms-template (user's own planned
   branch move) before landing any library-level fix from Part 1 — moot for now since option (a) is
   plugin-local, not a library change, but will matter again if (b)/(c) are ever revisited.
