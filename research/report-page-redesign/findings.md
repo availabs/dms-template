@@ -161,6 +161,100 @@ before starting implementation:
 - (d) Whole-page holistic review — run the full transcription-skill atom inventory across all
   four old-tool screenshots before prioritizing anything.
 
+## Follow-up Q&A: value-driven bar color (2026-07-22)
+
+User question (planning-only pass, no code changes made): as an author, can a Bar Graph
+section (e.g. a per-route Speed chart) have bar **height and color both driven by value**
+(heatmap-style bars), and separately, can **color be driven by a different column than
+height**?
+
+**Height+color by the same value — already shipped, UI-reachable today.**
+- `graph_new/config.jsx`'s `barGraph` control group (`displayCdn: graphType === 'BarGraph'`,
+  around line 517) exposes a **"Color by Value"** toggle (`colors.byValue`) and a
+  **"Zero-Centered Colors"** toggle (`colors.byValueSymmetric`, for diverging/difference
+  charts) — sibling toggles to GridGraph's own `byValueSymmetric` option.
+- Implementation: `ui/components/graph_new/components/BarGraph.jsx:144-154` builds a
+  `scaleLinear` (via `buildValueColorScale`, `components/utils.js:108`) off the data's own
+  min/max and passes it as `colors` instead of a flat array. `avl-graph/BarGraph.jsx:337`
+  and `:388` call `colorFunc(value, ii, key, d)` per bar-segment using that segment's own
+  `value` — this is *why* color and height can't be independent in this mode (see below).
+  `avl-graph/utils/index.js:52-56`'s `getColorFunc` just calls the scale directly when
+  `colors` is a function.
+- The color ramp is chosen separately via the **"Colors"** group (`config.jsx:389-403`,
+  `colors.scheme` select + `colors.reverse` toggle) — full Observable Plot catalog
+  (`colorSchemeUnifier.js`) plus AVAIL's legacy `div7`/`seq*` palettes. Default state
+  (`config.jsx:77-82`) bakes a 20-color `div7` **palette** (not a named scheme) at section
+  creation, so out-of-the-box "Color by Value" already has a usable 20-stop gradient without
+  the author touching Colors at all.
+
+**Bug found — live-confirmed by user 2026-07-22, root cause traced to the exact line (not
+fixed — documented only per instructions).** User tried this on a real single-route Speed bar
+chart: toggled "Color by Value" on, then changed "Colors → Scheme", and reported "it changes
+colors sometimes but definitely doesn't completely work." Traced precisely:
+
+- `BarGraph.jsx:132` resolves the scheme with `getColorRange(props.colors.scheme,
+  dataFromProps.keys?.length)`; `keys.length` is **1** for a single-route/single-series chart
+  (exactly the case "Color by Value" targets).
+- `colorSchemeUnifier.js:119-148`'s `getColorRange(scheme, 1)` branches on scheme *kind*,
+  and the two kinds fail differently:
+  - **The 11 pure-categorical schemes** (`accent`, `category10`, `dark2`, `observable10`,
+    `paired`, `pastel1`, `pastel2`, `set1`, `set2`, `set3`, `tableau10`) aren't in
+    `quantitativeSchemes` (`rawPlotSchemes.js:214-264`), so they fall to the `ordinalSchemes`
+    branch, where their entry is a **raw array** (not a function) — `ordinalRange` just
+    slices it to length 1, returning a valid single color (the scheme's first swatch). This
+    is the "changes colors sometimes" the user saw: picking between these actually does
+    change the (single, flat) bar color.
+  - **Every other scheme** — every sequential/diverging/cyclical one (Viridis, Turbo, Magma,
+    RdBu, Spectral, Blues, Rainbow, …, i.e. what anyone would actually reach for to build a
+    heatmap) — *is* in `quantitativeSchemes`, and since `getColorRange`'s default
+    `prefer: "quantitative"` checks that map first, it takes `quantitativeRange(scheme, 1)` →
+    `quantize(interpolator, 1)`. d3-interpolate's `quantize` (`node_modules/d3-interpolate/
+    src/quantize.js:3`) computes `interpolator(i / (n - 1))`; with `n = 1` that's `0 / 0 =
+    NaN`. Every d3-scale-chromatic interpolator is ultimately `d3-interpolate`'s `basis()`
+    spline (`src/basis.js`) indexing into its color array with `Math.floor(t * n)` — `NaN`
+    propagates straight through, so the function returns the literal string
+    `"rgb(NaN, NaN, NaN)"`. That's invalid CSS; the browser drops the `fill` attribute and
+    the bar renders with the SVG default fill (effectively black/unstyled) — this is the
+    "doesn't completely work" part, and it looks identically broken no matter which of these
+    schemes is picked (the failure mode doesn't depend on the scheme, just on `n === 1`).
+- Practical upshot confirmed for the user: **today, for a single-route/single-series bar
+  chart, no Scheme picker choice produces a working gradient.** The only thing that currently
+  renders a real gradient is leaving Scheme untouched, so `colors.type` stays `"palette"` with
+  the baked 20-color `div7` default (`config.jsx:77-82`) — `buildValueColorScale` gets a real
+  20-element array in that case, no `keys.length` involved.
+- If `categorize` is used (2+ routes/series), `keys.length >= 2` and `quantize(interpolator,
+  2)` evaluates `i/(n-1)` at `0/1=0` and `1/1=1` — both valid, no NaN. So the break is
+  specific to the exact single-series case the feature exists for, not a general scheme
+  problem.
+- `GridGraph.jsx:29` sidesteps all of this by always requesting a fixed
+  `getColorRange(scheme, 3)` regardless of series count — never hits `n === 1`. The
+  equivalent fix in `BarGraph.jsx:132` (request a small fixed N, e.g. 5–9, whenever
+  `colors.byValue` is on, instead of `dataFromProps.keys?.length`) would likely resolve it
+  for both failure modes at once, but this pass made no code changes.
+
+**Color by a different variable than height — not supported for Bar Graph.** Color in
+`byValue` mode is mathematically derived from the identical `value` that sets bar height —
+there is no second input. Confirmed via `config.jsx:144-185` (the column `Target` select):
+Bar Graph's target options are only `xAxis` / `yAxis` / `categorize`; a `Color` target option
+exists in the same list but is hard-gated with `displayCdn: ({ display }) =>
+display.graphType === "GridGraph"` (`config.jsx:182-184`) — i.e. it was deliberately built
+for GridGraph and deliberately withheld from BarGraph.
+
+**GridGraph already is the "two independent variables" pattern.** It takes a dedicated
+`color` target column (`GridGraphWrapper`, `components/GridGraph.jsx:38`) to drive the fill
+scale, fully independent of the optional `width`/`height` target columns
+(`GridGraph.jsx:41,44`) that size each cell (e.g. TMC length/miles). So "magnitude drives one
+visual channel, a different column drives another" is an existing, working primitive in this
+same component family — just not extended to bars.
+
+**If this becomes a real task later** (out of scope for this research pass — planning only):
+smallest-enrichment shape, in keeping with the author-empowerment principle
+(`CLAUDE.md`/`src/themes/CLAUDE.md`) — add a second, independent `color` column target to Bar
+Graph (mirroring GridGraph's), and have `BarGraphWrapper`'s byValue scale derive its min/max
+from that column's own values instead of reusing `dataFromProps.min/max` from the
+height-driving `dataColumns`. Would also want to fix the scheme/keys.length bug above in the
+same pass since both touch the same `colors` useMemo block.
+
 ## Cross-references
 
 - `src/themes/transportny/components/ReportRouteList/README.md`
