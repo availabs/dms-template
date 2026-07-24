@@ -64,7 +64,7 @@ function transformReportRoutes(routes) {
     try {
       parsedTmcArray = JSON.parse(route.tmc_array);
     } catch (e) {
-      console.error(`Failed to parse tmc_array for route ${route.route_id}:`, e);
+      console.error(`Failed to parse tmc_array for route ${route.id ?? route.route_id}:`, e);
     }
 
     // Generates the range based on your MM-DD-YYYY inputs
