@@ -6,7 +6,7 @@ import { parseTmcArray } from './utils';
 // position or how many routes are already in the report — the catalog click and this
 // confirmation happen in two different page sections (main content vs. sidebar), so
 // being easy to spot matters more here than in a typical inline confirm.
-// `isDuplicate` is a plain boolean computed by the parent (does `pendingRoute.route_id`
+// `isDuplicate` is a plain boolean computed by the parent (does `pendingRoute.id`
 // already appear in `routes`) — informational only, never blocks Confirm, since
 // re-adding the same route with a different date range is a legitimate use case.
 export default function AddRouteBanner({ theme: t, Button, pendingRoute, saving, isDuplicate, onConfirm, onCancel }) {

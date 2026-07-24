@@ -88,30 +88,59 @@ export default function ReportRouteList() {
       .filter(({ r }) => !q || (r.name || '').toLowerCase().includes(q));
   }, [routes, searchQuery]);
 
+  // `id` (the row's own DMS id) is the universal identity — every catalog row has
+  // one regardless of provenance. `route_id` only ever existed on legacy-imported
+  // rows, so it's checked as a fallback purely to still catch dupes among routes
+  // added to a report BEFORE this fix shipped (their stored copy predates fetching
+  // `id` at all) — never load-bearing for anything added going forward.
+  const sameRoute = (a, b) =>
+    (a?.id != null && b?.id != null && String(a.id) === String(b.id)) ||
+    (a?.route_id != null && b?.route_id != null && String(a.route_id) === String(b.route_id));
+
   const isDuplicateRoute = pendingRoute
-    ? routes.some(r => String(r.route_id) === String(pendingRoute.route_id))
+    ? routes.some(r => sameRoute(r, pendingRoute))
     : false;
 
   const addRouteId = pageState?.filters?.find(f => f.searchKey === 'add_route_id' && f.type === 'action')?.values?.[0];
 
+  // Resolves `add_route_id` (published by the catalog Spreadsheet's `click_publish`
+  // provider, configured to publish/key on a row's `id`) into the full route to
+  // copy from. `id` is a real top-level column on the catalog's split table, not a
+  // `data` JSONB key — the same `systemCol` convention the "Use ID" column-selector
+  // toggle produces (`controls_utils.js`), so it's requested and filtered on the
+  // same way: pushed into `columns` as `{systemCol: true}`, and `attributes` passed
+  // explicitly so the response comes back as flat per-column fields instead of the
+  // single-`data`-blob fallback shape (mirrors `useReportRow.js`'s `loadReportRow`,
+  // which hit the identical gap fetching its own storage row's `id`).
   const fetchDynamicRoute = async () => {
     if (!isEdit || !addRouteId || !apiLoad || !routeSourceInfo) return;
     setLoading(true);
 
     const udaConfig = buildUdaConfig({
       externalSource: routeSourceInfo,
-      columns: routeSourceInfo.columns.map(c => ({ ...c, show: true })),
-      filters: { op: "AND", groups: [{ col: "data->>'route_id'", op: "filter", value: addRouteId.value }] }
+      columns: [
+        ...routeSourceInfo.columns.map(c => ({ ...c, show: true })),
+        { name: 'id', systemCol: true, show: true },
+      ],
+      filters: { op: "AND", groups: [{ col: "id", op: "filter", value: addRouteId.value }] }
     });
 
     const config = {
       format: { ...routeSourceInfo },
-      children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options) }, params: {} }]
+      children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options), attributes: udaConfig.attributes }, params: {} }]
     };
 
     try {
       const data = await apiLoad(config, "/");
-      if (data && data[0]) setPendingRoute(data[0].data.value);
+      const rawRow = data?.[0];
+      const row = rawRow
+        ? udaConfig.columnsToFetch.reduce((acc, col) => {
+            const v = rawRow[col.reqName];
+            acc[col.name] = (v && typeof v === 'object' && '$type' in v) ? v.value : v;
+            return acc;
+          }, {})
+        : null;
+      if (row) setPendingRoute(row);
     } catch (e) {
       console.error('<ReportRouteList:fetchDynamic>', e);
       setError('Could not fetch route details.');
