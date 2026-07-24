@@ -1,4 +1,22 @@
 
+const identity = i => i;
+
+const whiteSpaces = /\s+/g;
+const clean = row => {
+	return row.replaceAll(whiteSpaces, "");
+}
+
+const fcRegex = /^\d{1,2}$/;
+const homogenizeFC = fc => {
+	if (fcRegex.test(fc)) {
+		if (+fc <= 9) {
+			return `${ fc }R`
+		}
+		return `${ +fc - 10 }U`
+	}
+	return fc;
+}
+
 const TMAS_PRE_2020_FORMAT_141 = [
 	{ name: "Record Type",
 		slice: [0, 1]
@@ -7,7 +25,8 @@ const TMAS_PRE_2020_FORMAT_141 = [
 		slice: [1, 3]
 	},
 	{ name: "Functional Class",
-		slice: [3, 5]
+		slice: [3, 5],
+		homogenize: homogenizeFC
 	},
 	{ name: "Station ID",
 		slice: [5, 11]
@@ -53,7 +72,8 @@ const TMAS_PRE_2020_FORMAT_143 = [
 		slice: [1, 3]
 	},
 	{ name: "Functional Class",
-		slice: [3, 5]
+		slice: [3, 5],
+		homogenize: homogenizeFC
 	},
 	{ name: "Station ID",
 		slice: [5, 11]
@@ -90,11 +110,6 @@ TMAS_PRE_2020_FORMAT_143.push({
 	slice: [lastSlice, lastSlice + 1]
 });
 
-const whiteSpaces = /\s+/g;
-const clean = row => {
-	return row.replaceAll(whiteSpaces, "");
-}
-
 const homogenizeTMAS_PRE_2020 = (f, c) => {
 	const func = f.homogenize || identity;
 	return func(c);
@@ -118,20 +133,8 @@ const getTMASpre2020Row = row => {
 			}
 		})
 	}
-	// console.log("CLEANED ROW:", cleanedRow);
+	console.log("CLEANED ROW:", cleanedRow);
 	throw new Error(`The TMAS file does not look correct: ${ cleanedRow.length }`);
-}
-
-const identity = i => i;
-
-const ruRegex = /[rRuU]/g;
-const homogenizeFC = fc => {
-	if (!ruRegex.test(fc)) {
-		if (+fc <= 9) {
-			return `${ +fc }U`
-		}
-		return `${ +fc - 10 }R`
-	}
 }
 
 const TMAS_POST_2020_KEYS = [
@@ -229,6 +232,28 @@ const composeDate = row => {
 	return row;
 }
 
+const TableColumns = [
+	"State FIPS Code",
+	"Functional Class",
+	"Station ID",
+	"Direction of Travel",
+	"Lane of Travel",
+	"Date of Data",
+	"Day of Week",
+	"Restrictions"
+]
+for (let i = 0; i < 24; ++i) {
+	TableColumns.push(`Traffic Volume, hour ${ i }`);
+}
+
+const getRowValues = row => {
+	const rowByNames = row.reduce((a, c) => {
+		a[c.name] = c.value;
+		return a;
+	}, {});
+	return TableColumns.map(col => rowByNames[col]);
+}
+
 const processPre2020row = row => {
 	const data = getTMASpre2020Row(row);
 	return composeDate(data);
@@ -241,6 +266,67 @@ const processPost2020row = row => {
 const getTMASrowProcessor = format =>
 	format === "pre-2020-format" ? processPre2020row : processPost2020row;
 
+
+  
+const TMAScolumns = [
+  { 'name': 'ogc_fid',
+  	'display_name': 'ogc_fid',
+  	'type': 'INTEGER',
+  	'desc': "serialized ID"
+  },
+  { 'name': 'state_fips',
+  	'display_name': 'State FIPS Code',
+  	'type': 'TEXT',
+  	'desc': `the state FIPS code where the data was recorded`
+  },
+  { 'name': 'f_class',
+  	'display_name': 'Functional Class',
+  	'type': 'TEXT',
+  	'desc': `the road's functional class where the data was recorded`
+  },
+  { 'name': 'station_id',
+  	'display_name': 'Station ID',
+  	'type': 'TEXT',
+  	'desc': `the ID of the station where the data was recorded`
+  },
+  { 'name': 'travel_dir',
+  	'display_name': 'Direction of Travel',
+  	'type': 'TEXT',
+  	'desc': `the direction of travel along the road where the data was recorded`
+  },
+  { 'name': 'travel_lane',
+  	'display_name': 'Direction of Travel',
+  	'type': 'TEXT',
+  	'desc': `the road lane where the data was recorded`
+  },
+  { 'name': 'date_recorded',
+  	'display_name': 'Date Recorded',
+  	'type': 'DATE',
+  	'desc': `the date when the data was recorded`
+  },
+  { 'name': 'day_of_week',
+  	'display_name': 'Day of Week',
+  	'type': 'INTEGER',
+  	'desc': `the day of the week, with Sunday = 1, when the data was recorded`
+  },
+  { 'name': 'restrictions',
+  	'display_name': 'Restrictions',
+  	'type': 'TEXT',
+  	'desc': `conditions along road when the data was recorded`
+  }
+];
+
+for (let i = 0; i < 24; ++i) {
+	TMAScolumns.push({
+		'name': `hour_${ i }`,
+		'display_name': `Traffic Volume, hour ${ i }`,
+		'type': "INTEGER",
+		'desc': "the hour, with midnight at hour 0, when the data was recorded"
+	})
+}
+
 module.exports = {
-	getTMASrowProcessor
+	getTMASrowProcessor,
+	getRowValues,
+	TMAScolumns
 }
