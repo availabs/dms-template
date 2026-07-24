@@ -98,7 +98,7 @@ export default function RouteRow({
             ) : (
               <div className={t.editContainer}>
                 {r.color && <span className={t.colorDot} style={{ backgroundColor: r.color }} title={r.color} />}
-                <div className={t.routeTitle}>{r.name}</div>
+                <div className={t.routeTitle} title={r.name}>{r.name}</div>
                 {isUnassigned && <span className={t.unassignedBadge}>Unassigned</span>}
                 {isEdit && isExpanded && (
                   <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={onStartEditName}>
