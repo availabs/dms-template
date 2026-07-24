@@ -3,6 +3,12 @@
 ## Status: IMPLEMENTED, live-verified 2026-07-22 (theme side). Scoped 2026-07-22, plan finalized
 ## 2026-07-22, built + verified same day.
 
+**Cross-repo note:** `ReportRouteList` (the component this task edits) is manually
+duplicated into transportNY with no sync mechanism — see
+[`documentation/reportroutelist-cross-repo-sync.md`](../../../documentation/reportroutelist-cross-repo-sync.md).
+Any change here must be manually ported there too if it needs to be user-testable
+(transportNY is the only place the routecreation-tool end-to-end flow can run).
+
 All 4 theme-side files done (schema/auto-assign, picker UI, publish wiring). Live-verified against
 the pre-existing scratch page `claude_scratch_measure_picker` (id 2195034): color picker renders,
 persists through `updateRoute` → `apiUpdate`, survives a full reload (dot + picker both show the
