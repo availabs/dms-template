@@ -875,3 +875,102 @@ product questions identified as of 2026-07-23.
 - Reconcile the dms submodule divergence between transportNY and dms-template (user's own planned
   branch move) before landing any library-level fix from Part 1 — moot for now since option (a) is
   plugin-local, not a library change, but will matter again if (b)/(c) are ever revisited.
+
+---
+
+## Part 7 — "Routes Data" table shows new routes on one report page but not another (2026-07-24)
+
+### Question
+
+User noticed the "Routes Data" table section appears on both
+`sandbox.localhost:5173/edit/demo_reports` (page id `2110490`) and
+`npmrds.localhost:5173/edit/converted_reports/page_13` (page id `2195787`), both apparently reading
+`view_id 2107427` per network requests — and asked whether they're really the same dataset, since a
+route added via the routecreation tool only ever shows up in the sandbox table.
+
+### Confirmed: yes, genuinely the same dataset, and the write lands in the right place
+
+Read both pages' saved section JSON directly from `dms_npmrdsv5.data_items` (via `dbq.py new`).
+Both "Routes Data" sections are `"element-type": "Spreadsheet"` with a byte-for-byte identical
+`externalSource` block: `source_id: 2107426`, `view_id: 2107427`, `env: "npmrdsv5+routes_data"`,
+same near-no-op filter (`description like " "`). Per `internal-datasets-overview.md` / the
+submodule's split-table convention (`type.endsWith(':data')` → `data_items__{sanitized_type}`), the
+actual row data for this view lives in one physical table:
+`dms_npmrdsv5."data_items__s2107426_v2107427_routes_data"` (64,797 rows). Queried it directly,
+sorted by `id desc`: the two routes created during this session's live marker-mode testing (Part
+6's "2 markers near Albany/Schenectady" test) are right there —
+`id 2195782 "marker_route"` (2026-07-24 08:55) and `id 2195795 "new_route_test"` (2026-07-24
+09:07). **The routecreation tool's writes are correctly landing in the one shared table both pages
+are configured to read.** This is not a write-target/dataset-divergence bug.
+
+(Found two unrelated, harmless-looking orphaned split tables while searching —
+`data_items__s2102215_v2103381_routes_data` (4,033 rows, source/view ids no longer exist in
+`data_items`, an old deleted-and-recreated "Routes Data" source) and
+`data_items__s2107426_vundefined_routes_data` (2 rows, `type = 'routes_data|undefined:data'`,
+rows named "TestSave"/"TESTINGFOREAL" from May 2026) — the latter shows the routecreation save path
+*has* historically resolved `view_id` to literal `undefined` at least once, but that's old data, not
+implicated in today's symptom, and not investigated further.)
+
+### Root cause of the actual symptom: page_13's Spreadsheet section is missing `fetchMode: "force"`
+
+Dispatched an Explore agent to trace the Spreadsheet element's data-loading code
+(`patterns/page/components/sections/components/ComponentRegistry/spreadsheet/`,
+`dataWrapper/useDataLoader.js`). Confirmed:
+
+- demo_reports' Spreadsheet section (`id 2172600`) has `display.fetchMode: "force"`.
+- page_13's Spreadsheet section (`id 2195786`) has **no `fetchMode` key at all**, and no
+  `readyToLoad: true` either.
+- `useDataLoader.js:245-249`: `fetchMode = display?.fetchMode ?? (display?.readyToLoad === true ?
+  'smart' : 'cache')`. With both absent, this resolves to `'cache'`.
+- In `'cache'` mode, View-mode `readyToLoad` is `false`, and the load effect
+  (`useDataLoader.js:253-254`) returns immediately without ever calling `getData`/`apiLoad`. The
+  section just renders whatever `data` array was frozen into its saved JSON the last time an author
+  had it open in Edit mode (Edit mode always force-fetches on its own, independent of this flag;
+  View mode never does when `fetchMode` is absent/`'cache'`).
+- `'force'` mode bypasses both the `readyToLoad` gate and fetch dedup, and `api/index.js:274-277`
+  unconditionally invalidates the relevant `uda` Falcor path before every such fetch — so
+  `'force'` sections always see live data, `'cache'` sections never do in View mode. No shared/stale
+  Falcor cache is involved; it's purely this per-section config flag.
+
+This fully explains the reported symptom, including "I refreshed the table by hand by clicking the
+icon, no effect" — page_13's Spreadsheet never fetches at all in View mode regardless of any
+refresh affordance, since the effect that would call `getData` returns before doing anything.
+
+### Fix applied to the "Report Page" page template (2026-07-24)
+
+User applied the `fetchMode: "force"` fix to page_13 directly (confirmed live in the DB), then asked
+for two things to be carried into the **page template** used by "Add New Page" so future pages don't
+need the same manual fix: (1) `fetchMode: "force"`, (2) an `updated_at` column on the Routes Data
+table, sorted newest-first ("z-a").
+
+Applied directly to `dms_npmrdsv5.data_items` id `2187021` (type `npmrds_sub|page_template`, name
+"Report Page") via `dms raw update 2187021 --data <file>` (full replace of the `draft_sections` top-
+level key only — shallow-merge at the top level leaves `name`/`slug`/`sidebar`/etc. untouched). The
+template's 3rd embedded section (`element-type: Spreadsheet`, title "Add a Route to Your Report") now
+has `display.fetchMode: "force"` and a `updated_at` column (`sort: "desc nulls last"`) appended to its
+`columns` array. Verified by reading the row back from the DB directly. Templates apparently store a
+fully self-contained deep copy of their sections (not `{id,ref}` pointers like a page does) — editing
+the template doesn't touch any already-created page.
+
+**Discrepancy found while doing this**: page_13 itself (both its draft section `2195786` and its
+currently-published section `2195798`, re-checked live) has the `fetchMode: "force"` fix but **not**
+the `updated_at` column/sort — despite the user describing both as already done on that page. Used
+the already-proven `updated_at` column shape from the sandbox demo_reports table (same dataset,
+already live there: `type: text, formatFn: date, sort: "desc nulls last", justify: left,
+valueFontStyle/headerFontStyle: caption`) as the reference instead of page_13 itself. Worth the user
+double-checking page_13 got saved/published with that column if they want it visibly there too — as
+of this check it doesn't have it yet.
+
+**Related artifact found, then also fixed same day**: a separate, reusable **section template**
+`add_route_to_report` (`id 2187290`, type `npmrds_sub|spreadsheet_template`) is what this Spreadsheet
+section was originally stamped from (per its embedded `_appliedTemplate` provenance metadata, dated
+2026-07-01) — it had the identical two gaps (no `fetchMode`, no `updated_at` column). Different
+storage shape from the page template: state lives in a `stateJson` string field (columns/display/
+filters/customBuckets/externalSource), not an embedded `draft_sections` array. Patched the same way
+(`dms raw update 2187290 --data <file>`, full replace of the `stateJson` key only) — verified
+read-back from the DB, both `display.fetchMode: "force"` and the `updated_at` column (`sort: "desc
+nulls last"`) are now present. User also confirmed the same day that page_13 itself now has the
+`updated_at` column added directly (resolving the earlier discrepancy noted above).
+
+**Status: both template artifacts (page template `2187021` and section template `2187290`) now carry
+both fixes. No further known copies of this gap.**
