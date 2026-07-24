@@ -13,14 +13,14 @@ const Worker = require("./worker");
 
 module.exports = {
   workers: {
-    'TMAS_uploader/worker': Worker,
+    'TMAS_volume_uploader/worker': Worker,
   },
 
   routes: (router, helpers) => {
     // Mounts as POST /dama-admin/:pgEnv/actions_location/publish
     router.post('/publish', async (req, res) => {
 
-      console.log("TMAS_uploader/publish REQUEST RECEIVED", req.params.pgEnv);
+      console.log("TMAS_volume_uploader/publish REQUEST RECEIVED", req.params.pgEnv);
 
       try {
 
@@ -56,7 +56,7 @@ module.exports = {
           }
 
           const taskId = await helpers.queueTask({
-            workerPath: 'TMAS_uploader/worker',
+            workerPath: 'TMAS_volume_uploader/worker',
             args
           }, req.params.pgEnv);
 
@@ -64,15 +64,9 @@ module.exports = {
         });
 
         req.pipe(bb);
-
-        // const taskId = await helpers.queueTask({
-        //   workerPath: 'TMAS_uploader/worker',
-        //   createDamaView: helpers.createDamaView,
-        //   ...args
-        // }, req.params.pgEnv);
       }
       catch (err) {
-        console.error('[TMAS_uploader/publish] route failed:', err);
+        console.error('[TMAS_volume_uploader/publish] route failed:', err);
         res.status(500).json({ ok: false, error: err.message || err });
       }
     });

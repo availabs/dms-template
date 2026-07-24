@@ -1,4 +1,22 @@
 
+const identity = i => i;
+
+const whiteSpaces = /\s+/g;
+const clean = row => {
+	return row.replaceAll(whiteSpaces, "");
+}
+
+const fcRegex = /^\d{1,2}$/;
+const homogenizeFC = fc => {
+	if (fcRegex.test(fc)) {
+		if (+fc <= 9) {
+			return `${ fc }R`
+		}
+		return `${ +fc - 10 }U`
+	}
+	return fc;
+}
+
 const TMAS_PRE_2020_FORMAT_141 = [
 	{ name: "Record Type",
 		slice: [0, 1]
@@ -7,7 +25,8 @@ const TMAS_PRE_2020_FORMAT_141 = [
 		slice: [1, 3]
 	},
 	{ name: "Functional Class",
-		slice: [3, 5]
+		slice: [3, 5],
+		homogenize: homogenizeFC
 	},
 	{ name: "Station ID",
 		slice: [5, 11]
@@ -53,7 +72,8 @@ const TMAS_PRE_2020_FORMAT_143 = [
 		slice: [1, 3]
 	},
 	{ name: "Functional Class",
-		slice: [3, 5]
+		slice: [3, 5],
+		homogenize: homogenizeFC
 	},
 	{ name: "Station ID",
 		slice: [5, 11]
@@ -90,11 +110,6 @@ TMAS_PRE_2020_FORMAT_143.push({
 	slice: [lastSlice, lastSlice + 1]
 });
 
-const whiteSpaces = /\s+/g;
-const clean = row => {
-	return row.replaceAll(whiteSpaces, "");
-}
-
 const homogenizeTMAS_PRE_2020 = (f, c) => {
 	const func = f.homogenize || identity;
 	return func(c);
@@ -120,18 +135,6 @@ const getTMASpre2020Row = row => {
 	}
 	console.log("CLEANED ROW:", cleanedRow);
 	throw new Error(`The TMAS file does not look correct: ${ cleanedRow.length }`);
-}
-
-const identity = i => i;
-
-const ruRegex = /[rRuU]/g;
-const homogenizeFC = fc => {
-	if (!ruRegex.test(fc)) {
-		if (+fc <= 9) {
-			return `${ +fc }U`
-		}
-		return `${ +fc - 10 }R`
-	}
 }
 
 const TMAS_POST_2020_KEYS = [

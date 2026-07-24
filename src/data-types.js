@@ -7,13 +7,13 @@ import excessiveDelay from '../data-types/excessive_delay/pages/index.jsx';
 import pm3 from '../data-types/pm3/pages/index.jsx';
 import nowPlaying from '../data-types/now_playing/pages/index.jsx';
 import actions_location from "../data-types/mny/actions_location/pages/index.js"
-import TMAS from "../data-types/traffic_counts/TMAS/pages/index.js"
+import TMASvolume from "../data-types/traffic_counts/TMAS/pages/index.js"
 
 const dataTypesByApp = {
   'mitigat-ny-prod' : {
     fima_nfip_claims_v2_enhanced: enhanceNfipClaimsV2,
     actions_location,
-    tmas_uploader: TMAS
+    tmas_volume_uploader: TMASvolume
   },
   'npmrdsv5': {
     map21,
