@@ -21,7 +21,7 @@
     },
     "travelTime": {
       "label": "Travel Time (min)",
-      "expr": "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), ds.travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles",
+      "expr": "arraySum(mapValues(avgMapIf(map(tmc, toFloat64(travel_time_all_vehicles)), travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles",
       "fn": "exempt",
       "requiresJoin": [],
       "reverseColors": true
