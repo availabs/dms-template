@@ -132,6 +132,35 @@ identifier" error only surfaces if you go looking in the network tab). Fixed in
 (`tmc`/`travel_time_all_vehicles`) for that one expression — see
 `data-types/npmrds_graph_vocabulary/vocabulary.json`'s `measures.travelTime`.
 
+### Third instance — REVERSE drift: `RouteComparison` lives only in transportNY (found 2026-07-27)
+
+Unlike the two cases above (dms-template → transportNY), this one goes the other way.
+**`RouteComparison`** — a page section component described by its own README as "the DMS
+replacement for the legacy npmrds *Batch Reports* tool" (the left builder rail: Scope · Routes ·
+Periods · Metrics, driving a sibling native pivoted Spreadsheet) — exists **only** in transportNY:
+
+- `transportNY/src/dms_themes/transportny/components/RouteComparison/` —
+  `RouteComparison.jsx` (~28KB), `RouteComparison.theme.js`, `parseTmcArray.js`, `index.jsx`,
+  `README.md`. Registered at `themev2.js:39,2449`. Committed in transportNY (`218f5f1`,
+  `3c7bc80`), dated 2026-07-22.
+- **dms-template has no trace of it** — a repo-wide grep is empty, and
+  `git log --all -- src/themes/transportny/components/RouteComparison` returns nothing, so it was
+  never here and then removed; it was authored in transportNY directly.
+- Its own README documents its home as `src/themes/transportny/components/RouteComparison/`
+  (dms-template's path convention, not transportNY's `src/dms_themes/...`), suggesting the
+  dms-template layout was the intent.
+
+**Status: flagged only, no action taken** (user decision 2026-07-27 — "you can flag it / mark it").
+Per the standing rule the same day, the only code that *must* live in transportNY is **plugins**
+(transportNY is a separately-deployed production frontend, and plugins like `routecreation` are one
+of the reasons it has to be deployed at all). `RouteComparison` is not a plugin, so dms-template is
+its canonical home whenever someone picks this up — but it is deliberately not blocking any
+in-flight work.
+
+**Do not** treat this as "reports parity is broken." Route Comparison is a distinct page type
+(Batch Reports), not a section of a report page, and is explicitly out of scope for the report-spec
+work (`planning/tasks/current/report-spec-and-build-script.md`).
+
 ## How to apply (either instance)
 
 Before considering any ReportRouteList / Measure Picker / Quick Controls (or future

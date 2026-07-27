@@ -154,8 +154,23 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     // reports_snap_2 route-persist call, zero graph-data requests, on a
     // section built via this picker before this fix.
     const displayPatch = { graphType, fetchMode: 'force' };
-    if (resolution?.xAxis?.type === 'plain' && resolution.xAxis.column === 'epoch') {
-        displayPatch.xAxis = { format: 'epoch_time', label: 'Time of Day' };
+    // Clock-time x-axis for every epoch-derived resolution, not just raw
+    // 5-minute epoch. `epochMinutesPerUnit` (vocabulary) is the width of one
+    // bucket — 5 for `epoch`, 15 for `intDiv(epoch, 3)`, 60 for
+    // `intDiv(epoch, 12)` — and the formatter needs it, because a tick index
+    // means a different clock time at each width (see graph_new/utils.js's
+    // makeEpochTimeFormat). Its presence is also the signal for "this
+    // resolution is epoch-derived at all": date-based resolutions
+    // (day/weekday/month) omit it and correctly get no epoch formatting.
+    const epochMinutesPerUnit = resolution?.xAxis?.epochMinutesPerUnit;
+    if (epochMinutesPerUnit) {
+        displayPatch.xAxis = { format: 'epoch_time', epochMinutesPerUnit, label: 'Time of Day' };
+    } else {
+        // Explicitly clear a stale epoch format when switching to a date-based
+        // resolution — applyMeasurePick MERGES display.xAxis, so without this a
+        // previously-picked 'epoch_time' would survive onto a day/month graph
+        // and label date buckets as clock times.
+        displayPatch.xAxis = { format: null, epochMinutesPerUnit: null };
     }
     if (yAxisTarget === 'yAxis' && measure.label) {
         displayPatch.yAxis = { label: measure.label };

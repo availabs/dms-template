@@ -13,7 +13,9 @@ todo entry under `maps`) — added 2026-07-23 per user request so transportNY ha
 tracking too, not just a cross-repo pointer. This doc remains the research/evidence
 record; the task file is the implementation source of truth going forward. This doc captures the
 2026-07-23 investigation plus three same-day follow-up rounds so a later session doesn't have to
-re-derive it.
+re-derive it. **2026-07-24 update**: three visual/UX bugs in the shipped TMC-Click/Markers UI
+(sidebar panel overflow, missing Clear All/Remove Last in TMC-Click mode, jarring mode-switch
+layout jump) were reported by the user and root-caused — see Part 8.
 
 ## Objective
 
@@ -974,3 +976,96 @@ nulls last"`) are now present. User also confirmed the same day that page_13 its
 
 **Status: both template artifacts (page template `2187021` and section template `2187290`) now carry
 both fixes. No further known copies of this gap.**
+
+---
+
+## Part 8 — Three UI bugs in the shipped TMC-Click/Markers panel, root-caused (2026-07-24)
+
+User drove the live tool again (via `sandbox.localhost:5173/edit/demo_reports` on transportNY,
+screenshot `~/Pictures/Screenshots/tmc_list_overflow.png`) and reported three visual/UX bugs in
+`RouteEditor.jsx` (`src/pages/TransportNYDataTypes/plugins/routecreation/components/RouteEditor.jsx`,
+transportNY repo). Dispatched an Explore agent read-only; all three are now root-caused with exact
+citations. No code changed yet — this is a triage pass, not a fix.
+
+### 8a. Save Route button pushed out / overflows into the map past a certain number of TMCs
+
+- Outer sidebar panel (`RouteEditor.jsx:56-65`): a CSS grid, absolutely positioned over the map,
+  `style={{ maxHeight: "350px" }}` — **no `overflow` property set at all** (default `overflow:
+  visible`).
+- The TMC List's own scroll region (`RouteEditor.jsx:117-119`) IS properly bounded
+  (`overflow-auto`, `maxHeight: "125px"`) — it does not grow unbounded with row count.
+- Save Route button (`RouteEditor.jsx:120-130`) is a **sibling grid row** of the list, in the same
+  outer container, not sticky/pinned.
+- **Root cause**: the outer container's `maxHeight: 350px` is not enforced (no matching
+  `overflow-y-auto`/`overflow-hidden`) — it's a soft target only. The panel's other rows (mode
+  toggle, search/marker-count row, "TMC List" header, the 125px-capped list, Save Route + padding)
+  sum to roughly 370-400px once the list has enough rows to actually fill its own 125px cap
+  (~3+ TMCs) — before that point everything fits under 350px and nothing visibly breaks, which
+  matches "after a certain number of elements" exactly. Since nothing clips the outer box, the
+  excess simply renders past its bottom edge and into the map.
+- **Likely fix shape** (not applied): make the outer panel a `flex flex-col` with its own
+  `overflow-hidden` + the real `maxHeight`, the TMC list as `flex-1 min-h-0 overflow-auto` (so it's
+  the only element that grows/scrolls), and the Save Route button as a `shrink-0` last child (or a
+  sticky-bottom row) — a standard "scrollable middle, pinned footer" layout instead of a flat grid
+  of unconstrained siblings.
+
+### 8b. No "Clear All" / "Remove Last" in TMC-Click mode
+
+- `RouteEditor.jsx:83-112` branches on `isMarkerMode`: the Marker-mode branch (84-100) renders a
+  "Markers: N" row with inline `Remove Last`/`Clear All` actions wired to
+  `hooks/useMapMarkerHandler.js`'s `removeLastMarker`(60-65)/`clearAllMarkers`(67-73). The
+  TMC-Click branch (101-111) renders **only** a TMC Search input — no bulk-clear/remove-last
+  controls at all.
+- Confirmed this isn't just an unwired button: `hooks/useMapTmcHandler.js` (11-49) only exposes
+  `toggleTmc` — there is no `removeLastTmc`/`clearAllTmc` function defined anywhere for TMC-Click
+  mode, unlike the marker-mode hook which has both. The only removal affordance in TMC-Click mode
+  today is the per-row "Remove" link (`RouteEditor.jsx:38-44` → `comp.jsx:102-107`'s `removeTmc`,
+  single-TMC only). The only way to clear everything is switching modes, which wipes `tmc_array`
+  as a side effect (`comp.jsx:91-100`) — not a dedicated in-mode control.
+- Old tool baseline confirmed real (Part 2, "TMC selection mechanics"): `RouteCreationInfoBox.jsx`
+  has unconditional Remove Last/Clear All that apply to whichever mode is active. So this is a
+  straight parity gap introduced when Marker mode was built (2026-07-23/24) — the marker-mode
+  handlers were added new; the TMC-click equivalents were never ported.
+- **Likely fix shape** (not applied): add `removeLastTmc`/`clearAllTmc` to
+  `useMapTmcHandler.js` mirroring `useMapMarkerHandler.js`'s existing pattern, then render the same
+  inline-actions row (currently Marker-mode-only) in the TMC-Click branch too.
+
+### 8c. Panel changes too much visually when toggling TMC Click ↔ Markers mode
+
+- `comp.jsx` itself doesn't branch on mode for rendering (`comp.jsx:241-276` always mounts
+  `RouteEditor` + `SaveRouteModal` unconditionally). All the mode-dependent visual change is the
+  same conditional block as 8b (`RouteEditor.jsx:83-112`): Marker mode renders a `flex
+  items-center justify-between` row of count-label + two clickable text actions; TMC-Click mode
+  renders a structurally unrelated block (bold label + full-width `<input>`). Different DOM shape,
+  different element types top-to-bottom — React unmounts one subtree and mounts a wholly different
+  one on every toggle, which is what reads as a jarring jump rather than a smooth swap (no shared
+  DOM/animation continuity between the two branches).
+- Nothing else in `RouteEditor.jsx` branches on mode — the TMC List header/scroll region and Save
+  Route button are mode-agnostic.
+- **Likely fix shape** (not applied, more of a polish/design call than a bug fix): give both
+  branches the same wrapper height/padding so the panel's overall size doesn't jump even though the
+  inner content differs — doesn't need to eliminate the content swap itself, just stabilize the
+  container around it.
+
+**Status: all three FIXED and live-verified 2026-07-24** (transportNY, `sandbox.localhost:5173/edit/demo_reports`,
+authenticated session). 8a/8c: `RouteEditor.jsx`'s outer panel is now `flex flex-col overflow-hidden`
+with the TMC list as `flex-1 min-h-0 overflow-auto` and Save Route as a `shrink-0` footer, exactly as
+proposed above. 8b: `useMapTmcHandler.js` got `removeLastTmc`/`clearAllTmc` mirroring
+`useMapMarkerHandler.js`; both render in a shared count+actions row present in both modes (fixing 8c
+as a side effect, per the "likely fix shape" note above). Live-tested with 4 real map-clicked TMCs:
+Remove Last (4→3, miles recalculated 5.382→3.072) and Clear All (→0, empty state) both work
+correctly against real state.
+
+**Follow-up correction, same day**: the first pass kept the outer panel's `maxHeight` at the original
+350px while only fixing the overflow *enforcement* (adding `overflow-hidden` so excess content would
+clip/scroll instead of spilling into the map). User caught that this made the actual bug feel *worse*
+in a different way — adding the new count/actions row (8b's fix) to both modes ate further into the
+same fixed 350px budget, so the TMC list's own viewport (already only whatever was left over after
+every other row) shrank to barely one row before needing to scroll — technically not overflowing
+anymore, but not usable either. Root fix: raised `maxHeight` from 350px to 520px so the list gets a
+real ~5-6 row viewport instead of a token one, re-verified live with the same 4 TMCs (all fully
+visible, no scrolling, Save Route still cleanly below, still never spills past the panel regardless of
+TMC count since the `overflow-hidden`/`flex-1 min-h-0 overflow-auto` structure is unchanged). Lesson
+for next time this panel's content grows: the fix isn't just "does it overflow," it's "does the
+scrollable region get enough real estate to be usable" — a technically-correct clip is still a bad fix
+if it clips down to nothing.

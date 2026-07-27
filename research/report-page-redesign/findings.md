@@ -286,6 +286,82 @@ from that column's own values instead of reusing `dataFromProps.min/max` from th
 height-driving `dataColumns`. Would also want to fix the scheme/keys.length bug above in the
 same pass since both touch the same `colors` useMemo block.
 
+## RRL overflow, tooltip-epoch, and ColorPicker-regression triage (2026-07-24)
+
+User reported three more bugs while test-driving the workflow (`converted_reports/page_13_13`, now
+mostly run from transportNY's dev server due to the route-creation plugin — see
+`reference_transportny_route_creation_source` memory). Live-verified and root-caused all three;
+no code changed yet, this is a triage pass.
+
+### RRL route rows visually overlap ("mega overflow issues")
+
+Live-reproduced on `page_13_13` in both view and edit mode — route-name text from consecutive
+`RouteRow`s renders on top of each other (edit mode is worse: reorder up/down buttons compound the
+collision). Root cause, `src/themes/transportny/components/ReportRouteList/ReportRouteList.theme.js`:
+`editContainer: 'flex items-center gap-1 h-8'` (line 13) is a **fixed** `h-8` (32px) box wrapping the
+color dot + `routeTitle` + unassigned badge, but `routeTitle` (line 11,
+`'font-semibold text-slate-700 text-sm'`) has no `truncate`/`line-clamp` — a long route name (and
+per `creating-routes-and-reports.md`'s own guidance, route names are meant to be long/descriptive,
+e.g. `"NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) - Jan-Feb 2025"`) wraps to 2-3
+lines. `items-center` vertically centers that wrapped text inside the still-32px box; since nothing
+clips it (no `overflow-hidden`), the extra lines spill above/below the box's actual bounds into the
+neighboring row's space — box heights stay compact (so rows stack close together) while the
+rendered text visually escapes, producing the overlap.
+
+**This is a shared-source bug, not a transportNY-only regression.** `ReportRouteList` was fully,
+byte-for-byte synced from dms-template to transportNY on 2026-07-24 (see
+`project_reportroutelist_dms_template_transportny_divergence` memory) — this bug lives in
+dms-template's own copy of `ReportRouteList.theme.js` and would reproduce identically there, not
+just on transportNY's dev server.
+
+**FIXED and live-verified 2026-07-24** (both dms-template's copy and transportNY's synced copy):
+went with option (a) — `routeTitle` now truncates (`truncate flex-1 min-w-0`) with a `title={r.name}`
+attribute for the full name on hover, `unassignedBadge` got `shrink-0` and `iconContainer`/
+`editContainer` got `min-w-0` so the truncation actually takes effect instead of the row just
+growing wider. Verified live on `converted_reports/page_13_13` (transportNY dev server): route rows
+that previously overlapped 2-3 lines deep now render as clean single lines ("NY-9D Northb...", etc.)
+with no collision, in both view and edit mode.
+
+### Hover tooltip shows raw epoch integer instead of clock time
+
+Live-reproduced on the same page's overview LineGraph: tooltip header read `142` while the x-axis
+tick directly below correctly read `12:20`. This is the SAME bug already logged in
+`src/dms/planning/tasks/current/old-reports-conversion.md` (user-reported 2026-07-17, previously
+unrooted) — now root-caused: `packages/dms/src/ui/components/graph_new/GraphComponent.jsx`'s
+`hoverComp` useMemo (lines 89-103) never computes an `xFormat`/`indexFormat` from
+`graphFormat.xAxis.format`, unlike the sibling `xAxis` prop (same file, lines 168-178) which does.
+Every avl-graph chart type's `DefaultHoverComp` falls back to its own bare `Identity`/no-op default
+in that case. See the old-reports-conversion.md entry for the full citation chain and fix shape —
+not duplicating it here since it's a single shared fix point covering every graph type, not
+report-page-redesign-specific.
+
+**FIXED and live-verified 2026-07-24** in both dms-template's `src/dms` submodule and transportNY's
+`src/modules/dms` submodule copy of `GraphComponent.jsx`. Re-tested the exact same hover on
+`page_13_13`'s overview LineGraph: tooltip now reads `11:50` (matching the axis) instead of the
+raw epoch integer.
+
+### Route color picker's saturation gradient missing — confirmed a cross-repo divergence, not a regression
+
+User noticed the per-route `ColorPicker`'s saturation/value gradient (in RRL's per-route color
+picker, `RouteRow.jsx`) looks flat again, having been fixed once already (see
+`feedback_colorpicker_onchange_identity_footgun` memory, fixed 2026-07-22 in dms-template commit
+`c26f4ce2` to `packages/dms/src/ui/components/Colorpicker.jsx`). Confirmed via git: transportNY's
+`dms` submodule checkout (`src/modules/dms`, pinned at `7d9bcc1e "wip"`) does **not** contain commit
+`c26f4ce2` — its copy of `Colorpicker.jsx` still has the original broken
+`bg-[linear-gradient(transparent,_black),_linear-gradient(to_right,_white,_transparent)]`
+Tailwind-arbitrary-value class (confirmed by grepping the live file). This is the same class of gap
+as `project_reportroutelist_dms_template_transportny_divergence` — a dms-template library-level fix
+that was never ported into transportNY's separately-pinned submodule checkout, not a code
+regression. **Fix**: port the same 2-hunk diff from dms-template's `c26f4ce2` into transportNY's
+`src/modules/dms/packages/dms/src/ui/components/Colorpicker.jsx` (move the gradient into the
+existing inline `style` object at both `ColorPicker` and `ColorPickerFlat` call sites, drop the
+dead `bg-[...]` fragment from the shared class string) — mechanical, already-known-correct patch,
+not new design work.
+
+**FIXED and live-verified 2026-07-24** — ported the exact diff. Opened a route's color picker on
+`page_13_13` (transportNY dev server): the saturation/value square now renders a real gradient
+(dark red top-right fading to white/black) instead of a flat color swatch.
+
 ## Cross-references
 
 - `src/themes/transportny/components/ReportRouteList/README.md`

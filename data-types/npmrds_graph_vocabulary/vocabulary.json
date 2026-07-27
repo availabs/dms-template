@@ -758,7 +758,8 @@
     "5-minutes": {
       "xAxis": {
         "type": "plain",
-        "column": "epoch"
+        "column": "epoch",
+        "epochMinutesPerUnit": 5
       }
     },
     "15-minutes": {
@@ -767,7 +768,8 @@
         "expr": "intDiv(epoch, 3) as quarter_hour",
         "target": "xAxis",
         "group": true,
-        "sort": "asc"
+        "sort": "asc",
+        "epochMinutesPerUnit": 15
       }
     },
     "hour": {
@@ -776,7 +778,8 @@
         "expr": "intDiv(epoch, 12) as hour",
         "target": "xAxis",
         "group": true,
-        "sort": "asc"
+        "sort": "asc",
+        "epochMinutesPerUnit": 60
       }
     },
     "day": {
