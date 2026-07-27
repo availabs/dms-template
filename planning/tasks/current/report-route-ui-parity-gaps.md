@@ -29,12 +29,46 @@ opportunistically.
 2. **TMC Search bar unreliable for `-` (one-direction) codes** — reproducibly zooms to
    a wrong/unrelated location; `+` codes are fine. Real bug in the search/zoom-to-code
    logic, worth fixing directly rather than working around with TMC Click mode.
+   **2026-07-27: attempted live repro, could not reproduce.** Tried searching
+   `120-29713` (a real SB TMC near Beacon) three ways against `sandbox.localhost:5173/
+   edit/demo_reports` — bulk paste-style type, and character-by-character key presses
+   from an empty box — and manually replayed the exact `fetchBoundsForFilter` falcor
+   request server-side (`uda/npmrds2/viewsById/3058/options/{filter:{tmc:[...]}}`) for
+   both the `+` and `-` codes; server returned the geometrically-correct bextent for
+   each, and the UI zoomed to the correct spot each time (one screenshot that looked
+   "zoomed way out" turned out to be mid-flyTo-animation, not a settled wrong position).
+   User decided to drop this one rather than keep chasing a repro. Leaving the
+   description above as-is in case it resurfaces with a more specific trigger (a
+   particular page/view_id, a particular TMC) — don't re-attempt without new
+   information.
 3. **Hover popovers show TMC code only, no street name** — sometimes a click is needed
    instead of hover to identify a segment. Minor; a tooltip enrichment.
 4. **`route_id` in the map-tool URL means "editing this route"** — reusing an existing
    route's URL as a scratch pad silently overwrites it on Save, with no confirmation
    dialog. Real footgun; the fix is cheap (a confirm-before-overwrite guard when
    `route_id` is present) and worth doing regardless of spec parity.
+   **FIXED 2026-07-27** (transportNY only, `comp.jsx`/`RouteEditor.jsx`/
+   `SaveRouteModal.jsx`): `routeIdFilterValue` (already derived from the URL's
+   `route_id` page filter) now drives an `isEditingRoute` flag threaded down to both
+   components — "Save Route"/"Save New Route" become "Update Route" when editing, plus
+   a red "You are updating an existing route. Saving will overwrite it, not create a
+   new one." banner in the modal. Live-verified both on the post-save navigation and on
+   a cold page load with `?route_id=...` already in the URL. Not a confirm dialog (user
+   asked for labels/wording specifically, not a blocking prompt) — revisit if the
+   silent-overwrite footgun itself still bites someone.
+5. **TMC Search box could only zoom, not add** — adding a segment always required a
+   map click, even after the search box had already located it exactly. **FIXED
+   2026-07-27** (transportNY only): the search effect now also tracks whether the
+   typed TMC resolved to a real geometry (`searchTmcValid`, from the same
+   `fetchBoundsForFilter` call already used for the zoom), and an "Add" button next to
+   the search box (or Enter in the field) calls the same `toggleTmc` the map-click
+   handler uses — same paint highlighting, same `tmc_array` update, no separate code
+   path. Disabled (with a "TMC not found" hint) for non-existent codes. Live-verified:
+   typed `120+29713`, clicked Add, segment highlighted and appeared in the TMC list
+   with correct mileage/intersection with zero map clicks; typed a fake code
+   (`999+99999`) and confirmed Add stayed disabled. This was explicitly called out by
+   the user as making the tool driveable by claude-in-chrome without needing pixel-
+   accurate map clicks.
 
 ### Report building (`creating-reports.md`)
 
