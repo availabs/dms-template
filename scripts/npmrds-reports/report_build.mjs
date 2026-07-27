@@ -2,7 +2,7 @@
 /**
  * report_build.mjs — build an NPMRDS report page from a declarative spec.
  *
- *   node scripts/report_build.mjs <spec.json> [--summary|--dry-run] [--publish]
+ *   node scripts/npmrds-reports/report_build.mjs <spec.json> [--summary|--dry-run] [--publish]
  *
  * WHY THIS EXISTS
  * ---------------
@@ -51,9 +51,9 @@ import { randomUUID } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-// ── DMS content constants (mirrors scripts/convert_old_reports.py) ──────────
+// ── DMS content constants (mirrors scripts/npmrds-reports/convert_old_reports.py) ──────────
 const APP = process.env.DMS_APP || 'npmrdsv5';
 const SITE_TYPE = process.env.DMS_TYPE || 'dev2';
 const HOST = process.env.DMS_HOST || 'http://localhost:3001';
@@ -74,15 +74,15 @@ const positional = argv.filter(a => !a.startsWith('--'));
 const specPath = positional[0];
 
 if (!specPath) {
-  console.error(`usage: node scripts/report_build.mjs <spec.json> [--summary|--dry-run] [--publish]
+  console.error(`usage: node scripts/npmrds-reports/report_build.mjs <spec.json> [--summary|--dry-run] [--publish]
 
   --summary   print a plain-language description of what the spec will build; no writes, no Vite boot
   --dry-run   compose every graph's state and print it; no writes
   --publish   also create published section copies (default: draft only)
 
   To check that the built page actually renders, run the probe against it:
-    node scripts/report_probe.mjs <slug>            (published pages)
-    node scripts/report_probe.mjs edit/<slug> --auth  (draft-only pages)
+    node scripts/npmrds-reports/report_probe.mjs <slug>            (published pages)
+    node scripts/npmrds-reports/report_probe.mjs edit/<slug> --auth  (draft-only pages)
 `);
   process.exit(1);
 }
@@ -453,5 +453,5 @@ for (const [i, g] of spec.graphs.entries()) {
 console.log(problems === 0 ? '\nstructural checks: all passed' : `\nstructural checks: ${problems} PROBLEM(S)`);
 
 console.log(`\n${problems === 0 ? 'OK' : 'BUILT WITH PROBLEMS'} — /${slug}${DO_PUBLISH ? '' : '  (draft only; add --publish, or publish from the UI)'}`);
-console.log(`check it renders:  node scripts/report_probe.mjs ${DO_PUBLISH ? slug : `edit/${slug} --auth`}`);
+console.log(`check it renders:  node scripts/npmrds-reports/report_probe.mjs ${DO_PUBLISH ? slug : `edit/${slug} --auth`}`);
 process.exit(problems === 0 ? 0 : 1);

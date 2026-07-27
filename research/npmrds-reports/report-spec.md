@@ -1,6 +1,6 @@
 # Report spec format
 
-The declarative input to `scripts/report_build.mjs`: one JSON file describing an NPMRDS report page
+The declarative input to `scripts/npmrds-reports/report_build.mjs`: one JSON file describing an NPMRDS report page
 — its routes, its graphs, and which routes feed which graphs — that the script turns into a live
 DMS page plus a `reports_snap_2` route-snapshot row.
 
@@ -145,10 +145,10 @@ migrate to `routes[]`. Don't build anything that depends on it staying where it 
 ## Modes
 
 ```bash
-node scripts/report_build.mjs <spec.json> --summary   # plain-language review; no writes, no Vite boot
-node scripts/report_build.mjs <spec.json> --dry-run   # compose every graph's state and print it; no writes
-node scripts/report_build.mjs <spec.json>             # build, draft only
-node scripts/report_build.mjs <spec.json> --publish   # also create published section copies
+node scripts/npmrds-reports/report_build.mjs <spec.json> --summary   # plain-language review; no writes, no Vite boot
+node scripts/npmrds-reports/report_build.mjs <spec.json> --dry-run   # compose every graph's state and print it; no writes
+node scripts/npmrds-reports/report_build.mjs <spec.json>             # build, draft only
+node scripts/npmrds-reports/report_build.mjs <spec.json> --publish   # also create published section copies
 ```
 
 `--summary` is the review step for an inferred report: it renders the request, every route instance
@@ -158,7 +158,7 @@ wrong date window or a mis-assigned arm before anything is written.
 `--dry-run`'s **stdout is valid JSON** (the human-facing trailer goes to stderr), so it pipes:
 
 ```bash
-node scripts/report_build.mjs <spec>.json --dry-run 2>/dev/null | jq '.[].key'
+node scripts/npmrds-reports/report_build.mjs <spec>.json --dry-run 2>/dev/null | jq '.[].key'
 ```
 
 Working specs live in `scratchpad/npmrds-sub/report-specs/`.
@@ -183,8 +183,8 @@ Three layers, and only the first two are decided here.
 For layer 3, run the probe:
 
 ```bash
-node scripts/report_probe.mjs <slug>                  # published pages
-node scripts/report_probe.mjs edit/<slug> --auth      # draft-only pages (a page with published='draft'
+node scripts/npmrds-reports/report_probe.mjs <slug>                  # published pages
+node scripts/npmrds-reports/report_probe.mjs edit/<slug> --auth      # draft-only pages (a page with published='draft'
                                                       # legitimately renders nothing at its public URL)
 ```
 

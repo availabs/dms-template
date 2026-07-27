@@ -125,7 +125,7 @@ knobs — no further atom needed there.
 ## Testing checklist
 
 Live-verified 2026-07-23 on two real pages: `converted_reports/tappan_zee_cashless_toll_version_2`
-(read-only view-mode probe, `scripts/report_probe.mjs`) and
+(read-only view-mode probe, `scripts/npmrds-reports/report_probe.mjs`) and
 `converted_reports/claude_scratch_measure_picker` (edit-mode, id 2195034 — backed up first to
 `scratchpad/npmrds-sub/backups/page_2195034.good.json`).
 

@@ -126,7 +126,7 @@ the page row but never materialized sections), so this round attached the 3 stan
 sections via `dms section create` and fixed up two real gaps found along the way (see "Findings"
 below) before it rendered.
 
-All verification via `node scripts/report_probe.mjs edit/claude_scratch_measure_picker --auth`
+All verification via `node scripts/npmrds-reports/report_probe.mjs edit/claude_scratch_measure_picker --auth`
 (`--eval` scripts for interaction, screenshots for ground truth — text-based Playwright locators were
 unreliable, see Findings):
 
@@ -177,7 +177,7 @@ unreliable, see Findings):
   here for whoever next uses `dms section create` for a from-scratch report page.
 - **`dms raw update <id> --data <file>` (and `--set key=<json-array>`) silently no-op on this specific
   split-table (`:data`) row** — the command prints a success response that echoes back the intended
-  new value, but a follow-up direct read (`scripts/dbq.py new`, querying
+  new value, but a follow-up direct read (`scripts/npmrds-reports/dbq.py new`, querying
   `dms_npmrdsv5.data_items__s2177438_v2177440_reports_snap_2` directly) showed the row unchanged, twice,
   with two different write attempts. Root cause not fully isolated (plausibly the same class of gap as
   the documented `raw get`-on-split-rows bug, just on the write side) — worked around by testing

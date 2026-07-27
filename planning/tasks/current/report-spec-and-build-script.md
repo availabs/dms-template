@@ -1,6 +1,6 @@
 # Report spec + `report_build.mjs` (declarative NPMRDS report authoring)
 
-**Status:** Phase A + Phase B COMPLETE — 2026-07-27. `scripts/report_build.mjs` builds a live report
+**Status:** Phase A + Phase B COMPLETE — 2026-07-27. `scripts/npmrds-reports/report_build.mjs` builds a live report
 page from a spec; the parity mechanism is proven (written rows byte-identical to composed states) and
 the first live build (page `2195822`) renders correctly. The format reference is written
 (`research/npmrds-reports/report-spec.md`). The dead `--verify` flag is removed and its live-assertion
@@ -38,7 +38,7 @@ Phase B of a three-phase arc agreed with the user 2026-07-27:
 - **Phase A** (after B): split `src/dms/skills/creating-routes-and-reports.md` into
   `creating-reports.md` (spec-first, with a UI column per step) + `creating-routes.md`; correct its
   stale claims; move its "Known UI gaps" list into a tracked task file.
-- **Phase B** (this file): the spec format + `scripts/report_build.mjs` + live proof.
+- **Phase B** (this file): the spec format + `scripts/npmrds-reports/report_build.mjs` + live proof.
 - **Phase C**: close the ranked UI-parity gaps.
 
 Ordering rationale: writing the skill first would mean carefully documenting click-path workarounds
@@ -48,7 +48,7 @@ that Phase B makes unnecessary.
 
 **In scope:**
 - A report spec JSON format (routes + graphs + provenance).
-- `scripts/report_build.mjs` — spec → live report page (clone Report Page template, compose graph
+- `scripts/npmrds-reports/report_build.mjs` — spec → live report page (clone Report Page template, compose graph
   sections, write the `reports_snap_2` row, optional publish).
 - `--summary` (plain-language "what this report will show", no writes). ~~`--verify` (live
   assertions via `report_probe.mjs`)~~ — dropped, see "The `--verify` decision"; live checking stays
@@ -99,7 +99,7 @@ Three ways a report gets built today:
    publish. Documented in `src/dms/skills/creating-routes-and-reports.md`. Has at least three
    silent failure modes (graph-assignment pill not registering; measure pick lost if Save isn't
    clicked; difference graph needing a no-op re-save to fire its query).
-2. **`scripts/convert_old_reports.py`** (4,991 lines) — fully automated, but only from an *old*
+2. **`scripts/npmrds-reports/convert_old_reports.py`** (4,991 lines) — fully automated, but only from an *old*
    `admin2.reports` row. No path to a new report. Composes graph state by cloning
    `avl_graph_template` rows built by ~30 `ensure_*_template` functions.
 3. Nothing declarative. No artifact states what a report is *supposed* to be, so correctness can
@@ -188,7 +188,7 @@ Design notes:
 - `weekdays` ships despite having no UI control — the runtime already honors it
   (`useGraphPublish.js:34`), so it's free to carry and is the cheapest first parity win.
 
-### 2. `scripts/report_build.mjs`
+### 2. `scripts/npmrds-reports/report_build.mjs`
 
 Node (not Python) specifically so it can `import` the theme's real composition module.
 
@@ -210,7 +210,7 @@ build and exit `1` on failure.
 
 ## Files requiring changes
 
-- **DONE** `scripts/report_build.mjs`
+- **DONE** `scripts/npmrds-reports/report_build.mjs`
 - **DONE** `research/npmrds-reports/report-spec.md` — the format reference (spec fields, the
   resolution-migration caveat, the difference-graph sign convention). Note the path: root
   `documentation/` was a directory this arc invented and it has been removed — the repo's root
@@ -419,7 +419,7 @@ is a repo rule (root `CLAUDE.md`) and any future script hits the same wall. Note
 nastier than it looks: a caller that only checks `total` concludes the row exists and then silently
 iterates an empty list.
 
-Interim options if the CLI fix is deferred: read the split table via `scripts/dbq.py new` (sanctioned
+Interim options if the CLI fix is deferred: read the split table via `scripts/npmrds-reports/dbq.py new` (sanctioned
 for read-only validation, but bypasses the CLI rule), or require `tmc_array` inline in the spec
 (rejected — duplicates catalog data into every spec and goes stale).
 
@@ -431,7 +431,7 @@ seconds later. Flaky DNS, not a down VPN — retry before diagnosing anything as
 
 - **2026-07-27 (session 1)** — Task created. Reuse target (`applyMeasurePick`) identified and read;
   converter's load-bearing details extracted; stack preflight healthy.
-- **2026-07-27** — `scripts/report_build.mjs` WRITTEN. Modes: `--summary` (plain-language review, no
+- **2026-07-27** — `scripts/npmrds-reports/report_build.mjs` WRITTEN. Modes: `--summary` (plain-language review, no
   Vite boot, no writes), `--dry-run` (compose + print, no writes), `--publish`, `--verify`.
   Loads theme/library modules through **Vite's SSR resolver** (`createServer` + `ssrLoadModule`),
   because these sources use extensionless + JSON imports only Vite resolves — which also guarantees
@@ -485,7 +485,7 @@ seconds later. Flaky DNS, not a down VPN — retry before diagnosing anything as
     dead legacy display keys** (§4 — `yAxis.tickFormat`, `display.margins.*`, `xAxis.tickSpacing`;
     nothing in `graph_new` reads any of them).
 - **2026-07-27 (session 2, cont.) — FIRST LIVE BUILD RAN, and the DB side is fully verified.**
-  `node scripts/report_build.mjs scratchpad/npmrds-sub/report-specs/ny9d-beacon.json` (draft only):
+  `node scripts/npmrds-reports/report_build.mjs scratchpad/npmrds-sub/report-specs/ny9d-beacon.json` (draft only):
   - Created page **2195822** slug `converted_reports/ny9d_beacon_spec_test`, 5 draft sections
     (`2195823` ReportRouteList, `2195824`/`2195825`/`2195826` AVL Graph, `2195827` Spreadsheet),
     `reports_snap_2` row **2195828** with 4 route instances. Structural checks all passed.

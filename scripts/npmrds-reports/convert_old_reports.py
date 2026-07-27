@@ -26,7 +26,7 @@ Per converted report this creates:
   - a gap report (stdout + scratchpad/npmrds-sub/old-reports/gaps/)
 
 Usage:
-  python3 scripts/convert_old_reports.py --report-id 1070 [--dry-run]
+  python3 scripts/npmrds-reports/convert_old_reports.py --report-id 1070 [--dry-run]
 """
 
 import argparse
@@ -38,9 +38,9 @@ import sys
 import uuid
 from datetime import datetime, timezone
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import dbq  # noqa: E402 — sibling scripts/ module, read-only CH/PG query runner
+import dbq  # noqa: E402 — sibling scripts/npmrds-reports/ module, read-only CH/PG query runner
 
 # Shared vocabulary artifact (report-graph-vocabulary-picker.md, Workstream 1):
 # the generative core of TEMPLATE_SPECS below (measure expressions, join defs,

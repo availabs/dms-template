@@ -546,14 +546,14 @@ the **old routing API** to translate old routes' points into a TMC list. Initial
 (wrong search terms); user pointed at `scratchpad/` and `convert_old_reports.py` directly, and it's
 in the latter:
 
-- `scripts/convert_old_reports.py:3829`, `resolve_tmc_array(route_id, years, gaps)` — resolves a
+- `scripts/npmrds-reports/convert_old_reports.py:3829`, `resolve_tmc_array(route_id, years, gaps)` — resolves a
   point-drawn old route (one with `points` but a null `tmc_array`) to actual TMCs, **per year**,
   by calling `old_falcor_get([["routes2", "id", [route_id], years, "tmc_array"]])`. Docstring:
   "the same server-side resolution the old client used." Ties directly into the Part 4 "year" gap
   above — this call is explicitly year-scoped, and the script itself logs a `gap` when a route's
   resolved TMC set differs across years (`tmc_array_varies_by_year`), i.e. this is empirically
   confirmed to actually happen, not just theoretical.
-- `scripts/convert_old_reports.py:1611`, `old_falcor_get(paths)` — the transport for the above:
+- `scripts/npmrds-reports/convert_old_reports.py:1611`, `old_falcor_get(paths)` — the transport for the above:
   a plain HTTP GET against `https://graph.availabs.org/graph?paths=...&method=get`, **no auth
   token, no VPN** (unlike the `dms()` helper right above it in the same file, which does attach
   `DMS_AUTH_TOKEN`). This is the live *old production* falcor API, publicly reachable.

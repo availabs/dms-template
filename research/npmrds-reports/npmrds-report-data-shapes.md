@@ -100,7 +100,7 @@ composed one is the more correct of the two.** Do not "fix" composed output to m
 Live section `2195807` had **1,149 rows** of real query results saved into `state.data`, plus a
 matching `display.totalLength: 1148`. A freshly composed section must set `state.data = []`
 (required — BarGraph does `d3groups(undefined)` and crashes on "values is not iterable"; see
-`scripts/convert_old_reports.py:4150-4152`).
+`scripts/npmrds-reports/convert_old_reports.py:4150-4152`).
 
 **Always exclude `data` when diffing a composed state against a live one**, or the diff is ~3,500
 noise keys deep. Same for:
@@ -122,7 +122,7 @@ The set is identical; only order differs. Consumers resolve columns by `target`
 `graph-new-single-categorize-limit`: charts use `find(categorize)` and silently drop a *second*
 categorize column, so anything that starts depending on positional order is a latent hazard.
 
-## 7. `scripts/dbq.py` returns **text**, not rows
+## 7. `scripts/npmrds-reports/dbq.py` returns **text**, not rows
 
 `dbq.pg(target, sql)` shells out with `-t -A` and returns `stdout` as a string. `r['data']` raises
 `TypeError: string indices must be integers`.
@@ -151,7 +151,7 @@ dms dataset query 2107426 --view 2107427 --order id:desc --limit 5 --format json
 
 ## 9. `preflight.py`'s dms-server-log check false-FAILs on a deprecation warning
 
-`scripts/preflight.py` greps the last 200 log lines for `error` and reports FAIL. Node's
+`scripts/npmrds-reports/preflight.py` greps the last 200 log lines for `error` and reports FAIL. Node's
 `[DEP0169] DeprecationWarning: url.parse() ... prone to errors` contains the substring `errors`, so
 a perfectly healthy stack reports:
 
@@ -169,7 +169,7 @@ It used to print `(--dry-run: nothing written)` on stdout after the JSON array, 
 and `json.load`. That trailer now goes to **stderr**. So this works:
 
 ```bash
-node scripts/report_build.mjs <spec>.json --dry-run 2>/dev/null | jq '.[].key'
+node scripts/npmrds-reports/report_build.mjs <spec>.json --dry-run 2>/dev/null | jq '.[].key'
 ```
 
 Keep it that way: any future human-facing line in a machine-readable mode belongs on stderr.

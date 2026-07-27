@@ -4,7 +4,7 @@ Shared, plain-data vocabulary for NPMRDS AVL Graph section generation. Not a DMS
 (no server routes/worker, not registered in `register-datatypes.js`) — just a JSON file two
 independent consumers read:
 
-- **`scripts/convert_old_reports.py`** (Python, old-reports-conversion tool) — sources its
+- **`scripts/npmrds-reports/convert_old_reports.py`** (Python, old-reports-conversion tool) — sources its
   `SPEED_EXPR`/`TRAVEL_TIME_EXPR`/`DELAY_EXPR`/`AVG_DELAY_EXPR`/`CO2_EXPR_PASSENGER`/
   `CO2_EXPR_TRUCK`/`META_JOIN`/`AADT_DIST_JOIN`/`WEEKDAY_EXPR`/`HOUR_EXPR`/`QUARTER_HOUR_EXPR`/
   `MONTH_EXPR`/`DEFAULT_DIFF_COLOR_RANGE` constants from here instead of hardcoding them.
@@ -166,7 +166,7 @@ nested parens, `multiIf` piecewise regressions). Regenerate from the live Python
 
 ```python
 import sys, json
-sys.path.insert(0, "scripts")
+sys.path.insert(0, "scripts/npmrds-reports")
 import convert_old_reports as c
 # read c.SPEED_EXPR, c.DELAY_EXPR, c.META_JOIN, etc. directly and diff against vocabulary.json
 ```

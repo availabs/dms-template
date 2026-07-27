@@ -38,7 +38,7 @@ and more specifically visual/UX than "redesign the report page" suggests. See
   "Templates" concept. Shipped and **live-verified end-to-end 2026-07-21**
   (`src/dms/planning/tasks/completed/report-graph-vocabulary-picker.md`).
 - **Shared vocabulary** — `data-types/npmrds_graph_vocabulary/vocabulary.json` — the measure/
-  resolution/join/comparison-mode expressions, ported out of `scripts/convert_old_reports.py`'s
+  resolution/join/comparison-mode expressions, ported out of `scripts/npmrds-reports/convert_old_reports.py`'s
   `TEMPLATE_SPECS` (a 60-entry dict, still exists, still used by the batch Python converter) so
   both the picker and the converter share one source instead of drifting.
 - Wiring in `src/dms/packages/dms/src/patterns/page/components/sections/sectionMenu.jsx`:
@@ -137,7 +137,7 @@ There is no dedicated "design" agent in this environment (checked the available 
    through the decision ladder (static text → `formatFn` → value-driven column type → Card
    `display`/span → *only as last resort* a new component), build the authorable version, verify
    with a Playwright screenshot diff (`scripts/card-shot.mjs`, or this repo's own
-   `scripts/report_probe.mjs` harness — see `reference_report_probe_harness` memory).
+   `scripts/npmrds-reports/report_probe.mjs` harness — see `reference_report_probe_harness` memory).
 2. **`src/dms/skills/card-layout.md`** — reference/knob-dictionary to keep open whenever a gap
    involves a Card-driven section (most Settings-drawer fields likely are).
 3. **`src/dms/skills/authoring-graphs.md`** — reference for anything in the chart bodies/headers

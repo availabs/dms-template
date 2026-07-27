@@ -21,10 +21,10 @@ editing / saving, still make or use a dedicated scratch page instead (see
 picking a safe URL to *look at*, not a page to interact with.
 
 Usage:
-  python3 scripts/pick_test_report.py                  # one random slug + full URL
-  python3 scripts/pick_test_report.py --count 5         # 5 random slugs
-  python3 scripts/pick_test_report.py --search "bridge" # random match containing "bridge"
-  python3 scripts/pick_test_report.py --list 20         # list 20 (id, slug, title), no randomness
+  python3 scripts/npmrds-reports/pick_test_report.py                  # one random slug + full URL
+  python3 scripts/npmrds-reports/pick_test_report.py --count 5         # 5 random slugs
+  python3 scripts/npmrds-reports/pick_test_report.py --search "bridge" # random match containing "bridge"
+  python3 scripts/npmrds-reports/pick_test_report.py --list 20         # list 20 (id, slug, title), no randomness
 """
 import argparse
 import os

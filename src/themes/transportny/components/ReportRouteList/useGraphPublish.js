@@ -21,7 +21,7 @@ function transformReportRoutes(routes) {
   // Helper function to generate an array of 'YYYY-MM-DD' dates. `weekdays` is an
   // optional per-route mask ({monday: true, ..., sunday: false}) — only an explicit
   // `false` excludes a day, so routes without the field keep every day (the shape
-  // converted old reports carry; see scripts/convert_old_reports.py). The date
+  // converted old reports carry; see scripts/npmrds-reports/convert_old_reports.py). The date
   // filter is already a literal IN-list, so day-of-week exclusion needs no new
   // filter op — masked days are simply never enumerated.
   function generateDateRange(startStr, endStr, weekdays) {

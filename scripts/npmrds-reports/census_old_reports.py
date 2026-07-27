@@ -27,7 +27,7 @@ Answers, corpus-wide:
     already-converted `report_<id>` pages in the new DB (task item (e)).
 
 Usage:
-  python3 scripts/census_old_reports.py
+  python3 scripts/npmrds-reports/census_old_reports.py
 
 Outputs:
   scratchpad/npmrds-sub/old-reports/census/census.json        (full detail)
@@ -579,7 +579,7 @@ def write_summary_md(s):
     L.append("# Old-report conversion gap census\n")
     L.append(f"All {s['total_reports']} `admin2.reports` run through the "
              "converter's analyze path (analysis-only, "
-             "`scripts/census_old_reports.py`).\n")
+             "`scripts/npmrds-reports/census_old_reports.py`).\n")
     cc = s["class_counts"]
     gi = s["graph_instances"]
     L.append("## Convertibility today\n")

@@ -1,5 +1,5 @@
 {
-  "_provenance": "Generated from scripts/convert_old_reports.py (TEMPLATE_SPECS' generative ingredients) and a live avl_graph_template dump (TMC_IDENTIFICATION_JOIN). See src/dms/planning/tasks/current/report-graph-vocabulary-picker.md and this directory's README.md. Do not hand-edit expression strings -- regenerate from the Python source of truth and re-verify via the byte-diff procedure documented in the task file.",
+  "_provenance": "Generated from scripts/npmrds-reports/convert_old_reports.py (TEMPLATE_SPECS' generative ingredients) and a live avl_graph_template dump (TMC_IDENTIFICATION_JOIN). See src/dms/planning/tasks/current/report-graph-vocabulary-picker.md and this directory's README.md. Do not hand-edit expression strings -- regenerate from the Python source of truth and re-verify via the byte-diff procedure documented in the task file.",
   "measures": {
     "speed": {
       "label": "Speed (mph)",

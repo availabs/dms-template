@@ -241,7 +241,7 @@ done either.
       confirming which `cardStyle` `tappan_zee_cashless_toll_version_2`'s actual title Card uses.
 - [x] **Live-verified 2026-07-22** on the existing scratch page `claude_scratch_measure_picker`
       (id 2195034, per `[[feedback_use_own_scratch_page_for_ui_testing]]`) via
-      `node scripts/report_probe.mjs edit/claude_scratch_measure_picker --auth --eval <probe>`.
+      `node scripts/npmrds-reports/report_probe.mjs edit/claude_scratch_measure_picker --auth --eval <probe>`.
       The pill row appears once the AVL Graph section is switched into `SectionEdit` mode
       (`isEdit` true) — same `isReportPage` gate as Measure Picker, confirmed via a temporary
       diagnostic log (removed after use) showing `isEdit`/`canEditSection`/`useDataSource`/

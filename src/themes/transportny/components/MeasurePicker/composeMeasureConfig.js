@@ -7,7 +7,7 @@
  * `columns`/`join`/`comparisonSeries.combine`/`display` color config from an
  * author's Graph Type + Measure + Resolution + Comparison Mode picks.
  *
- * This mirrors scripts/convert_old_reports.py's TEMPLATE_SPECS +
+ * This mirrors scripts/npmrds-reports/convert_old_reports.py's TEMPLATE_SPECS +
  * ensure_graph_templates composition (same ingredients, same shapes) but has
  * no base template to clone from — every field this picker cares about is
  * built from scratch here. See
