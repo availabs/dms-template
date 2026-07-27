@@ -5,7 +5,7 @@
 
 **Cross-repo note:** `ReportRouteList` (the component this task edits) is manually
 duplicated into transportNY with no sync mechanism — see
-[`documentation/reportroutelist-cross-repo-sync.md`](../../../documentation/reportroutelist-cross-repo-sync.md).
+[`research/npmrds-reports/reportroutelist-cross-repo-sync.md`](../../../research/npmrds-reports/reportroutelist-cross-repo-sync.md).
 Any change here must be manually ported there too if it needs to be user-testable
 (transportNY is the only place the routecreation-tool end-to-end flow can run).
 

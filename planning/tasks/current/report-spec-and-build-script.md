@@ -1,11 +1,17 @@
 # Report spec + `report_build.mjs` (declarative NPMRDS report authoring)
 
-**Status:** IN PROGRESS — 2026-07-27. Phase B of the reports-skill refinement arc.
-`scripts/report_build.mjs` EXISTS and its composition path is verified (`--summary` and `--dry-run`
-both working, the parity mechanism proven). **Not yet done: an actual live build.** The blocker that
-stopped it (no CLI read path for a Routes Data row) is now FIXED — see
-`src/dms/planning/tasks/current/cli-dataset-rows-via-uda.md` — so the next session can go straight
-to running a real build with `--verify`.
+**Status:** Phase A + Phase B COMPLETE — 2026-07-27. `scripts/report_build.mjs` builds a live report
+page from a spec; the parity mechanism is proven (written rows byte-identical to composed states) and
+the first live build (page `2195822`) renders correctly. The format reference is written
+(`research/npmrds-reports/report-spec.md`). The dead `--verify` flag is removed and its live-assertion
+successor is deferred with an explicit trigger (see "The `--verify` decision" below). The skill split
+(Phase A) is done: `src/dms/skills/creating-routes-and-reports.md` no longer exists, replaced by
+`creating-reports.md` (spec-first) + `creating-routes.md`, with the old "Known UI gaps" list moved to
+`planning/tasks/current/report-route-ui-parity-gaps.md` (Phase C's tracking file).
+
+Remaining before this file can move to `completed/`: Phase C (the ranked UI-parity gaps) and the two
+follow-ons Phase B spawned — the `minutes_seconds` value format and the difference-graph color
+polarity, which share one mechanism — tracked separately and listed under "Follow-ons" below.
 
 Read this whole file before continuing; three prerequisite bugs were found and fixed along the way
 and their task files carry detail this one only summarizes.
@@ -44,8 +50,9 @@ that Phase B makes unnecessary.
 - A report spec JSON format (routes + graphs + provenance).
 - `scripts/report_build.mjs` — spec → live report page (clone Report Page template, compose graph
   sections, write the `reports_snap_2` row, optional publish).
-- `--summary` (plain-language "what this report will show", no writes) and `--verify` (live
-  assertions via `report_probe.mjs`).
+- `--summary` (plain-language "what this report will show", no writes). ~~`--verify` (live
+  assertions via `report_probe.mjs`)~~ — dropped, see "The `--verify` decision"; live checking stays
+  in `report_probe.mjs` where it belongs.
 - Live proof: rebuild the NY-9D Beacon report from a spec into a NEW page and diff section state
   against the hand-built original (`converted_reports/page_13_13`).
 
@@ -59,7 +66,7 @@ that Phase B makes unnecessary.
   memory `feedback_all_code_in_dms_template`. transportNY is a test bed (the only place
   routecreation-tool routes can be made), not a development target, and its older-pinned theme +
   `@availabs/dms` copies get changes by the manual port procedure in
-  `documentation/reportroutelist-cross-repo-sync.md`. Do NOT treat "only exists in transportNY" as
+  `research/npmrds-reports/reportroutelist-cross-repo-sync.md`. Do NOT treat "only exists in transportNY" as
   a blocker.
   Note the rule is **plugins**, not routecreation specifically: transportNY is a separately-deployed
   *production* frontend and plugins (`src/pages/TransportNYDataTypes/plugins/*`) must live there.
@@ -191,23 +198,25 @@ section rows → write the `reports_snap_2` row (route instances with `route_com
 weekdays, `graphIds` resolved from graph keys) → optionally publish.
 
 Modes: `--summary` (plain-language description, no writes), `--dry-run` (print composed state, no
-writes), `--verify` (see below).
+writes), `--publish`.
 
-### 3. `--verify` assertions (turn the known silent failures into hard checks)
+### 3. ~~`--verify` assertions~~ — SUPERSEDED
 
-Via `report_probe.mjs` + `dbq.py`:
-- every graph section issued a `/graph` request (catches the missing-`fetchMode` / never-fetches
-  class — `project_routes_data_table_fetchmode_gap`)
-- each graph's returned series count == number of route instances assigned to it
-- no route comp has an empty `graphIds`
-- difference graphs: the anchor arm is the one the spec named
+This section originally proposed four live assertions behind a `--verify` flag. Three turned out not
+to need a browser and the fourth belongs on the probe, so the flag was removed rather than finished.
+The reasoning, and the trigger for building its `report_probe.mjs --expect` successor, are in
+**"The `--verify` decision"** below. The structural checks that survived run unconditionally on every
+build and exit `1` on failure.
 
 ## Files requiring changes
 
-- **NEW** `scripts/report_build.mjs`
-- **NEW** `documentation/report-spec.md` — the format reference (spec fields, the
-  resolution-migration caveat, the difference-graph sign convention)
-- **NEW** example spec(s) under `scratchpad/npmrds-sub/report-specs/`
+- **DONE** `scripts/report_build.mjs`
+- **DONE** `research/npmrds-reports/report-spec.md` — the format reference (spec fields, the
+  resolution-migration caveat, the difference-graph sign convention). Note the path: root
+  `documentation/` was a directory this arc invented and it has been removed — the repo's root
+  convention is `planning/` + `research/<topic>/`, and `documentation/` is sanctioned only inside
+  `src/dms/`. The two field-note docs moved to `research/npmrds-reports/` alongside this one.
+- **DONE** example spec at `scratchpad/npmrds-sub/report-specs/ny9d-beacon.json`
 - No edits to `composeMeasureConfig.js` / `MeasurePicker/index.js` / `useDataWrapperAPI.js`
   expected — consumed as-is (see Scope).
 
@@ -221,15 +230,118 @@ Via `report_probe.mjs` + `dbq.py`:
       `fetchMode:force`, `comparisonSeries.enabled`, `$self` subscriber, `__series` categorize col.
       Anchor honored automatically: naming arm #2 as `anchor` emits `combine.invert:true` rather than
       requiring the routes array be reordered.
-- [ ] Byte-compare one composed state against a live UI-built section (not yet done)
-- [ ] Build the NY-9D Beacon spec into a NEW page; diff each graph section's state against
-      `converted_reports/page_13_13`'s hand-built equivalents; explain every difference
-- [ ] `reports_snap_2` row: every route instance has non-empty `graphIds`, correct dates/colors
-- [ ] Difference graph renders with the spec-named anchor as Main (sign convention correct per
-      `reverseColors` — positive travel-time bars = travel time fell)
-- [ ] `--verify` catches a deliberately-broken spec (drop a `graphs` assignment → assertion fires)
-- [ ] Page renders live at its non-`/edit/` URL with real (non-placeholder) values
-- [ ] Published-row check: verify against `data->'sections'`, not `draft_sections`
+- [x] Byte-compare one composed state against a live UI-built section — DONE 2026-07-27, composed
+      `overview` vs live section `2195807`. Every difference explained; **all three key-name
+      divergences resolve in the composed state's favor** (the live section carries inert
+      legacy-`graph`-era keys inherited from the page template). Full writeup:
+      `research/npmrds-reports/npmrds-report-data-shapes.md` §4. Diff must exclude `state.data`,
+      `comparisonSeries.config` and `externalSource.columns` or it's ~3,500 noise keys (§5).
+- [x] Build the NY-9D Beacon spec into a NEW page — DONE 2026-07-27, page `2195822`. All 3 written
+      section rows byte-identical to the composed states; color config byte-identical to
+      `page_13_13`'s hand-built difference sections. Remaining differences vs the hand-built page are
+      all explained: legacy dead display keys the template injects (§4 of the data-shapes doc), and
+      the user's own later hand-edits to `page_13_13` (2195815 → hourly).
+- [x] `reports_snap_2` row: every route instance has non-empty `graphIds`, correct dates/colors —
+      verified, 4 instances × 2 graphIds, 4 **unique** names, correct TMC arrays, and each graph
+      trackingId resolves to exactly 1 section row.
+- [x] Difference graph renders with the spec-named anchor as Main — verified: `invert:false` on both,
+      so anchor = the spec-named `nb_before`/`sb_before` arm and the difference is before − after.
+      **BUT the color direction is semantically backwards** — see the finding below; it is NOT a spec-
+      build defect (byte-identical to the hand-built page) so it does not block this task.
+- [x] Page renders live with real (non-placeholder) values — verified at the **`/edit/` URL** (the
+      page is draft-only, so the public URL legitimately has nothing to render). 3/9 sections carry
+      SVG (other 6 are edit-mode Add placeholders): overview = 4 correctly-labeled series, clock-time
+      x-axis; both difference graphs = diverging bars with mixed ± values. 0 console errors, 0 page
+      errors, 0 pending-at-close.
+      **Rendered on FIRST LOAD with no re-save dance** — the UI click-path needed a section re-open +
+      re-save before difference graphs would fire (memory
+      `project_ny9d_difference_graphs_and_epoch_axis_bug`). The spec path does not. Concrete win.
+- [x] ~~`--verify` catches a deliberately-broken spec~~ — **flag removed instead**, see the decision
+      below. The negative case it was meant to prove (drop a `graphs` assignment) is already covered
+      by the structural checks, which run unconditionally and exit `1`.
+- [ ] Published-row check: verify against `data->'sections'`, not `draft_sections` — **deferred with
+      `--publish` itself.** The page is draft-only by choice and nothing has been published, so
+      there is no published row to check. Do this the first time a spec-built report is published
+      for real.
+- [x] `research/npmrds-reports/report-spec.md` written — full field reference (top-level / `graphs[]`
+      / `routes[]`), the four easy-to-get-wrong semantics (name-collapse, weekday mask, anchor sign,
+      resolution-will-migrate), modes, the three-layer check model, and a worked example.
+
+## The `--verify` decision (2026-07-27): flag removed, `--expect` deferred
+
+`--verify` was specified as four live assertions. Taken one at a time, three of them don't need a
+browser at all:
+
+| intended assertion | needs a browser? |
+|---|---|
+| no route comp has empty `graphIds` | **No** — a structural check, runs pre-write on every build |
+| difference anchor == the spec-named arm | **No** — decidable from `combine.invert`, which the script already computes |
+| every graph section fired a `/graph` request | No *spec* knowledge needed — `report_probe.mjs` reports this unprompted |
+| returned series count == route instances assigned to that graph | **Yes** — the only one needing both live data and the spec |
+
+And as implemented it asserted nothing: it shelled out to `report_probe.mjs <slug>` with no `--auth`
+on the *public* URL of a draft-only page — so it could only ever print `0/0` — then dumped the last
+25 lines for a human to read. Removed 2026-07-27, along with the now-unused `existsSync` import; the
+build's closing line now prints the right probe command instead (`edit/<slug> --auth` when draft).
+
+**Why the remaining assertion isn't the build script's job.** There are three layers: spec → composed
+state, composed state → written row, and written row → what renders. The first two are what "does the
+builder build what the spec says?" means, and both are already proven without a browser (parity by
+construction; written rows byte-identical to composed states). Only the third is open — and its
+failures are **platform bugs, not build bugs**. Both prerequisites folded into this task
+(`epoch-time-format-bucket-width`, `length-query-calculated-groupby-alias`) had a *correct* composed
+state and a broken page. So a spec-aware live check isn't verifying the builder; it's using the spec
+as a statement of intent that makes the rendered output assertable at all.
+
+**Deferred successor: `report_probe.mjs --expect <spec.json>`.** Correct home because the probe
+already holds the live data and would work against *any* page, including hand-built ones like
+`page_13_13` — whereas a flag on the builder only ever checks the case least likely to be wrong.
+Its value is proportional to how often it runs unattended: run once by hand after a build it is
+strictly worse than reading the probe's own output (console errors, pending requests, per-section
+SVG census, series labels — far more signal than four assertions). **Trigger to build it:** three or
+more specs in `scratchpad/npmrds-sub/report-specs/`, or the first graph-engine change that needs
+re-checking against existing spec-built reports.
+
+## Follow-ons (both want one mechanism)
+
+Not Phase B work, but spawned by it, and they should be done together because they need the same
+thing — a **per-measure hint in `vocabulary.json`, consumed by `composeMeasureConfig`** at the point
+it now sets `xAxis.epochMinutesPerUnit`:
+
+1. `src/dms/planning/tasks/current/duration-value-format-mm-ss.md` — a `minutes_seconds` ValueFormat
+   plus a `valueFormat` hint on the duration measures, so travel-time axes render `0:54` not `0.9`.
+2. The difference-graph color polarity below — needs a "lower is better" hint on the same measures.
+
+Both touch shared composition code that the live UI runs, so they need the isolation treatment
+(`feedback_isolate_shared_code_changes`) rather than riding along with anything else.
+
+## Finding: difference-graph color scale reads backwards (pre-existing, NOT a spec-build defect)
+
+Live-observed 2026-07-27 on the spec-built page, then confirmed identical on the hand-built
+`page_13_13`. Both difference sections carry:
+
+```json
+"colors": { "type": "palette", "byValue": true, "byValueSymmetric": true,
+            "value": ["#1a9641","#a6d96a","#ffffbf","#fdae61","#d7191c"] }
+```
+
+Palette index 0 (green) maps to the lowest value and index 4 (red) to the highest. The difference is
+`before − after`, so a **positive** bar means travel time FELL — the improvement the client is paying
+to see — and it renders **red**, while a regression renders green. Neither report sets `reverseColors`.
+
+Not a spec-build regression: the spec-built and hand-built sections' color config are byte-identical,
+so this is a property of the Measure Picker's difference-mode default. Two candidate fixes, both
+outside this task's scope (`applyMeasurePick`/`composeMeasureConfig` are consumed as-is per Scope —
+and changing the default would silently flip every existing difference graph, so it needs the
+isolation treatment of `feedback_isolate_shared_code_changes`):
+
+1. Set `reverseColors` (or reverse the palette) for difference mode where "lower is better" measures
+   are involved — needs a per-measure polarity hint in the vocabulary, since for a measure where
+   higher is better the current direction would be right.
+2. Leave the default and expose the knob in the spec + Measure Picker, so the author decides.
+
+Option 1 is the real fix but requires the vocabulary to know each measure's polarity — the same
+per-measure-hint mechanism the `minutes_seconds` ValueFormat work needs, so they pair naturally.
 
 ## Folded-in prerequisites discovered while building
 
@@ -342,20 +454,118 @@ seconds later. Flaky DNS, not a down VPN — retry before diagnosing anything as
 - **NOT DONE: no live build has been run yet.** Everything above is compose-and-inspect only. The
   first live run should be `--dry-run` → then without it → then `--verify`.
 
+- **2026-07-27 (session 2)** — Spec pointed at the REAL routes; composed-vs-live parity diff done;
+  data-shape gotchas written up durably in **`research/npmrds-reports/npmrds-report-data-shapes.md`** (read it
+  before doing any DB inspection of report pages — 10 items, each one cost real time to rediscover).
+  - **Real route ids**: NB = **2195805** (TMCs `120+29713,+29712,+29714`), SB = **2195804**
+    (`120-29713,-29711,-29712`). `2195803` is a superseded 2-TMC SB variant; `2195782`
+    ("marker_route") was only ever placeholder. Both real routes are *baseline-period* rows —
+    one route per **direction**, not a before/after pair. Before/after is a property of the route
+    **instance's date window**, so the spec's original shape (two instances sharing one `route_id`)
+    was already right; only the ids and windows were wrong.
+  - **Corrected windows: Jan/Feb 2025 vs Jan/Feb 2026** (same season year-over-year, per the actual
+    client ask in memory `project_ny9d_beacon_report_shipped`) — NOT the Mar-Apr 2025 window the
+    placeholder spec carried, which would have compared winter against spring.
+  - `--summary` and `--dry-run` both re-verified against the real routes; route resolution through
+    the fixed `dms dataset query` path works. 3 graphs compose (overview / nb_diff / sb_diff),
+    anchors resolve correctly (`nb_before − others`).
+  - **FIXED in `report_build.mjs`**: `--dry-run`'s trailer line moved from stdout to stderr, so its
+    stdout is now valid JSON and pipes into `jq`/`json.load` without trimming.
+  - **Parity target recorded** for page `2195810` (slug `converted_reports/page_13_13`): 4 route
+    instances `comp-0..comp-3`, colors `#D72638 / #007F5F / #F8A100 / #38BFA7`; graphs by
+    trackingId — `36c04103` overview LineGraph (all 4), `01ed2831` NB diff, `86fbb688` SB diff.
+  - **The live page has since been hand-edited by the user** (their FYI, mid-session): section
+    `2195815`'s resolution is now `hour` rather than the documented 5-minutes, the AVL Graph titles
+    are empty, and sections `2195819`/`2195820` are orphans not in `draft_sections`. So a strict
+    whole-page byte-diff is no longer the right acceptance test — diff per-section against sections
+    known to be Measure-Picker-composed, and attribute the rest to manual edits.
+  - Two findings worth their own attention, both in `npmrds-report-data-shapes.md`: orphan sections
+    `2195819`/`2195820` carry **duplicate trackingIds** with live sections (§3 — collides on the
+    exact key route wiring uses), and the **Report Page template's starter AVL Graph section carries
+    dead legacy display keys** (§4 — `yAxis.tickFormat`, `display.margins.*`, `xAxis.tickSpacing`;
+    nothing in `graph_new` reads any of them).
+- **2026-07-27 (session 2, cont.) — FIRST LIVE BUILD RAN, and the DB side is fully verified.**
+  `node scripts/report_build.mjs scratchpad/npmrds-sub/report-specs/ny9d-beacon.json` (draft only):
+  - Created page **2195822** slug `converted_reports/ny9d_beacon_spec_test`, 5 draft sections
+    (`2195823` ReportRouteList, `2195824`/`2195825`/`2195826` AVL Graph, `2195827` Spreadsheet),
+    `reports_snap_2` row **2195828** with 4 route instances. Structural checks all passed.
+  - **All 3 written AVL Graph section rows are byte-identical to the `--dry-run` composed states**
+    (verified by sorted-JSON compare, not eyeball). So the write path adds/loses nothing — the
+    "CLI-built and UI-built are identical by construction" claim now has its first real evidence.
+  - Snap row correct: 4 **unique** names (incl. the proper `Jan-Feb 2026` labels the hand-built page
+    gets wrong as `... Jan-Feb 2025 (2)`), right dates/colors/TMC arrays, 2 `graphIds` each.
+  - Route→graph wiring resolves correctly: overview fed by all 4 arms, nb_diff by comp-0/comp-2,
+    sb_diff by comp-1/comp-3 — and **each trackingId appears in exactly 1 row**, i.e. none of the
+    duplicate-trackingId orphan collision the hand-built page has.
+  - Fixed a misleading log line: route resolution echoed the *catalog* row name, so two instances
+    sharing one route printed identically and a correct build looked collapsed. Now prints the
+    spec's instance name, with the catalog name in parens when they differ.
+  - **BLOCKED on browser verification: the probe auth token is EXPIRED** (`.dms-auth-token`, minted
+    Jul 24). The edit-route probe rendered the login page ("Welcome back.", `0/1` sections) —
+    `--auth` degrades to anon silently, exactly as `report_probe.mjs`'s header warns. The public-URL
+    probe's `0/0` is separately just the page being draft-only (`published='draft'`, 0 published
+    sections). Neither result is evidence of a build defect. To finish: have Ryan run
+    `scratchpad/npmrds-sub/mint_token.sh`, then re-probe the edit URL — or `--publish` and probe the
+    public URL.
+
 ### Exact next steps for a fresh session
 
-1. `node scripts/report_build.mjs scratchpad/npmrds-sub/report-specs/ny9d-beacon.json --summary`
-   (sanity), then `--dry-run`.
-2. Point the spec's `route_id`s at real routes. The example spec uses `2195782` ("marker_route",
-   9 TMCs) twice, which is fine for a smoke test but is NOT the NY-9D corridor — for the real proof,
-   find the 4 NY-9D instances via
-   `dms dataset query 2107426 --view 2107427 --filter name=<...>`.
-3. Run the build (draft only, no `--publish`), then `--verify`.
-4. Diff the composed graph state against `converted_reports/page_13_13`'s hand-built sections and
-   explain every difference.
-5. Then: `documentation/report-spec.md`, the `minutes_seconds` format
-   (`duration-value-format-mm-ss.md`), and Phase A's skill split.
+**Phase B is done** — everything the old version of this section listed has either been completed or
+consciously dropped. Don't re-derive it; read "The `--verify` decision" and "Follow-ons" above first.
+
+Next, in arc order:
+
+1. ~~**Phase A — the skill split.**~~ **DONE 2026-07-27**, see progress log below.
+2. **The paired follow-ons** (`minutes_seconds` + difference-color polarity) — one vocabulary-hint
+   mechanism, isolated from other changes.
+3. **Phase C** — the ranked UI-parity gaps, which the spec format now makes enumerable: every spec
+   field with no Measure Picker / ReportRouteList control is a gap. `weekdays` is the cheapest
+   (runtime already honors it, no control exists). Now tracked in
+   `planning/tasks/current/report-route-ui-parity-gaps.md` (ranked list, written as part of Phase A).
 
 - **2026-07-27** — Task file created. Investigation complete: reuse target (`applyMeasurePick`)
   identified and read; converter's load-bearing details (`state.data`, section row shape, colspan)
   extracted; stack preflight healthy. Next: write `documentation/report-spec.md` + the script.
+
+- **2026-07-27 (session 3) — Phase B closed out.**
+  - **Root `documentation/` removed.** It was a directory this arc invented (commit `d3373b3`),
+    holding only its own two files; the repo's root convention is `planning/` + `research/<topic>/`,
+    and `documentation/` is sanctioned only inside `src/dms/` per `src/dms/CLAUDE.md`. Both docs
+    moved to `research/npmrds-reports/` and all references rewritten — 6 in-repo files (`todo.md`,
+    2 root task files, 2 `src/dms` task files, `creating-routes-and-reports.md`) and 5 memory files.
+  - **`research/npmrds-reports/report-spec.md` written.** Field reference for all three levels, the
+    four easy-to-get-wrong semantics, the three-layer check model, and a worked before/after example.
+  - **`--verify` removed from `report_build.mjs`** (plus its now-dead `existsSync` import). Full
+    reasoning in "The `--verify` decision" above; the short version is that it asserted nothing and
+    three of its four intended assertions never needed a browser. Usage text and the build's closing
+    line now point at the right probe invocation instead, including `edit/<slug> --auth` for the
+    draft-only case that the old flag got wrong. `--summary` re-run against the real spec to confirm
+    nothing else broke.
+
+- **2026-07-27 (session 4) — Phase A (skill split) done.**
+  - `src/dms/skills/creating-routes-and-reports.md` **deleted**, replaced by
+    `creating-routes.md` (route creation only: TMC-chain identification, the transportNY-only
+    routecreation tool, cross-repo note) and `creating-reports.md` (report building, now spec-first:
+    the main flow is write-a-spec → `report_build.mjs`, with the old UI click-path kept as a
+    documented second column for one-off hand-edits, pointing at `report-spec.md` for the field
+    reference instead of restating it).
+  - **Stale claims corrected, not just moved.** The difference-graph section's "epoch tick format
+    bug NOT fixed" claim was actually resolved earlier the same day by
+    `epoch-time-format-bucket-width.md` (DONE, live-confirmed) — dropped from the new skill rather
+    than carried forward. The "known bugs hit building this" block was entirely superseded (both its
+    bugs are DONE) and was not carried into the new skill. The *other*, still-real re-save quirk (RRL
+    wiring changes not re-triggering a graph's query without an explicit re-save) was kept, as gap
+    #11 in the new tracking file — this task's own testing checklist shows the spec path doesn't hit
+    it, which is evidence but not proof the UI-only cause is fixed.
+  - **"Known UI gaps" list moved** (not just copied) into
+    `planning/tasks/current/report-route-ui-parity-gaps.md` — Phase C's tracking file, gaps ranked
+    by (fix cost) × (how often it bites) rather than left in encounter order. `weekdays` (no UI
+    control despite the runtime already honoring it) ranked cheapest/first.
+  - Updated all cross-references to the old filename: `research/report-page-redesign/findings.md`,
+    2 `src/dms/planning` task files (`length-query-calculated-groupby-alias.md`,
+    `epoch-time-format-bucket-width.md`), the skills `README.md` index, and 3 memory files
+    (`reference_creating_routes_and_reports_skill`, `project_ny9d_difference_graphs_and_epoch_axis_bug`,
+    and the `MEMORY.md` index lines for both).
+  - The doc-path staleness this file's old "Exact next steps" flagged
+    (`documentation/…cross-repo-sync.md`) turned out to already be correct in the live skill file —
+    no fix was needed there.

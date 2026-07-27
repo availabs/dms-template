@@ -301,7 +301,7 @@ collision). Root cause, `src/themes/transportny/components/ReportRouteList/Repor
 `editContainer: 'flex items-center gap-1 h-8'` (line 13) is a **fixed** `h-8` (32px) box wrapping the
 color dot + `routeTitle` + unassigned badge, but `routeTitle` (line 11,
 `'font-semibold text-slate-700 text-sm'`) has no `truncate`/`line-clamp` — a long route name (and
-per `creating-routes-and-reports.md`'s own guidance, route names are meant to be long/descriptive,
+per `creating-routes.md`'s own guidance, route names are meant to be long/descriptive,
 e.g. `"NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) - Jan-Feb 2025"`) wraps to 2-3
 lines. `items-center` vertically centers that wrapped text inside the still-32px box; since nothing
 clips it (no `overflow-hidden`), the extra lines spill above/below the box's actual bounds into the

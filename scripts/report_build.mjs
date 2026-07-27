@@ -2,7 +2,7 @@
 /**
  * report_build.mjs — build an NPMRDS report page from a declarative spec.
  *
- *   node scripts/report_build.mjs <spec.json> [--summary|--dry-run] [--publish] [--verify]
+ *   node scripts/report_build.mjs <spec.json> [--summary|--dry-run] [--publish]
  *
  * WHY THIS EXISTS
  * ---------------
@@ -28,11 +28,24 @@
  * Vite's resolver handles — which also guarantees we exercise the same module
  * graph the browser does.
  *
- * See documentation/report-spec.md for the spec format, and
+ * WHAT THIS DOES NOT DO
+ * ---------------------
+ * It does not load the built page in a browser. Two layers are checked here —
+ * spec → composed state (via the real `applyMeasurePick`) and composed state →
+ * written row (the structural checks below) — and both are decidable without
+ * rendering. The third layer, "does the graph engine do something correct with a
+ * config that is provably what the spec asked for", is a different question: its
+ * failures are platform bugs, not build bugs (see the two folded-in prerequisites
+ * in the task file — both had correct composed state and a broken page). That
+ * check belongs on `report_probe.mjs`, which already holds the live data and can
+ * run against any page rather than only freshly-built ones. Deliberately not
+ * built yet — see the task file's deferred `--expect` note for the trigger.
+ *
+ * See research/npmrds-reports/report-spec.md for the spec format, and
  * planning/tasks/current/report-spec-and-build-script.md for the design record.
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
@@ -61,12 +74,15 @@ const positional = argv.filter(a => !a.startsWith('--'));
 const specPath = positional[0];
 
 if (!specPath) {
-  console.error(`usage: node scripts/report_build.mjs <spec.json> [--summary|--dry-run] [--publish] [--verify]
+  console.error(`usage: node scripts/report_build.mjs <spec.json> [--summary|--dry-run] [--publish]
 
   --summary   print a plain-language description of what the spec will build; no writes, no Vite boot
   --dry-run   compose every graph's state and print it; no writes
   --publish   also create published section copies (default: draft only)
-  --verify    after building, load the page and assert it actually renders
+
+  To check that the built page actually renders, run the probe against it:
+    node scripts/report_probe.mjs <slug>            (published pages)
+    node scripts/report_probe.mjs edit/<slug> --auth  (draft-only pages)
 `);
   process.exit(1);
 }
@@ -74,7 +90,6 @@ if (!specPath) {
 const SUMMARY_ONLY = flags.has('--summary');
 const DRY_RUN = flags.has('--dry-run');
 const DO_PUBLISH = flags.has('--publish');
-const DO_VERIFY = flags.has('--verify');
 
 // ── spec load + validation ─────────────────────────────────────────────────
 const spec = JSON.parse(readFileSync(resolve(specPath), 'utf8'));
@@ -274,7 +289,9 @@ if (DRY_RUN) {
   console.log(JSON.stringify(spec.graphs.map((g, i) => ({
     key: g.key, title: g.title, invert: !!g._invert, state: composedStates[i],
   })), null, 2));
-  console.log('\n(--dry-run: nothing written)\n');
+  // Trailer goes to stderr so --dry-run's stdout stays valid JSON and can be
+  // piped straight into `jq` / json.load without trimming.
+  console.error('\n(--dry-run: nothing written)\n');
   process.exit(0);
 }
 
@@ -296,7 +313,13 @@ for (const r of spec.routes) {
   if (!d.tmc_array) fail(`route_id ${r.route_id} ("${d.name || '?'}") has no tmc_array — cannot feed a graph.`);
   r._row = d;
   const tmcCount = (() => { try { return JSON.parse(d.tmc_array).length; } catch { return '?'; } })();
-  console.log(`  ${r.route_id} "${d.name || r._name}" — ${tmcCount} TMCs`);
+  // Print the SPEC's instance name, not the catalog row's. Two instances routinely
+  // share one catalog route and differ only by date window, so echoing the catalog
+  // name makes a correct build look like it collapsed both arms into one label.
+  const catalogName = d.name || '?';
+  const instanceName = r.name || catalogName;
+  console.log(`  ${r.route_id} "${instanceName}" — ${tmcCount} TMCs`
+    + (instanceName !== catalogName ? `  (catalog: "${catalogName}")` : ''));
 }
 
 // ── create the page ───────────────────────────────────────────────────────
@@ -410,9 +433,10 @@ const snapRes = dms(['raw', 'create', APP, REPORTS_SNAP_TYPE], {
 });
 console.log(`created reports_snap_2 row id=${snapRes?.id} (${routeEntries.length} route instances)`);
 
-// ── verify ────────────────────────────────────────────────────────────────
-// Structural assertions first — these catch the silent-failure class directly,
-// without needing a browser.
+// ── structural checks ─────────────────────────────────────────────────────
+// These catch the silent-failure class directly, without needing a browser: a
+// route feeding no graph, a graph nothing feeds, and the three state keys whose
+// absence makes a section render empty rather than error.
 let problems = 0;
 for (const e of routeEntries) {
   if (!e.graphIds.length) { console.error(`  FAIL route "${e.name}" has empty graphIds — it will feed no graph`); problems++; }
@@ -428,17 +452,6 @@ for (const [i, g] of spec.graphs.entries()) {
 }
 console.log(problems === 0 ? '\nstructural checks: all passed' : `\nstructural checks: ${problems} PROBLEM(S)`);
 
-if (DO_VERIFY) {
-  console.log('\nloading the page to verify it renders...');
-  try {
-    const probe = execFileSync('node', [resolve(REPO, 'scripts/report_probe.mjs'), slug],
-      { encoding: 'utf8', cwd: REPO, maxBuffer: 64 * 1024 * 1024 });
-    console.log(probe.split('\n').slice(-25).join('\n'));
-  } catch (e) {
-    console.error(`  probe failed: ${e.message.split('\n')[0]}`);
-    problems++;
-  }
-}
-
 console.log(`\n${problems === 0 ? 'OK' : 'BUILT WITH PROBLEMS'} — /${slug}${DO_PUBLISH ? '' : '  (draft only; add --publish, or publish from the UI)'}`);
+console.log(`check it renders:  node scripts/report_probe.mjs ${DO_PUBLISH ? slug : `edit/${slug} --auth`}`);
 process.exit(problems === 0 ? 0 : 1);
