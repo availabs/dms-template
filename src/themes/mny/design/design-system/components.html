@@ -857,6 +857,28 @@
               </div>
             </div>
             <p class="font-proxima text-[12px] text-[#6D96AE]">Sample distribution shown; the live worklist reads real per-tier counts (Sullivan currently 0 set / 473 not set).</p>
+
+            <!-- pillBar filter style (theme.filters.styles[].name='pillBar', display.filterStyle:'pillBar') -->
+            <h3 class="font-display text-[16px] font-[500] text-[#2D3E4C] uppercase mb-1 mt-8">Filter style · <span class="text-[#EAAD43]">pillBar</span></h3>
+            <p class="font-proxima text-[13px] text-[#37576B] mb-3">Horizontal <strong>rounded-pill</strong> filter bar — each control is a white <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">rounded-full</code> pill (inline label + value + chevron) inside a tinted <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">bg-mny-50</code> band; the branded toggle, tokens and clear-all inherit from <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">styles[0]</code>. The Filter theme uses the same <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">options.activeStyle</code>/<code class="text-[12px] bg-[#F3F8F9] px-1 rounded">styles[]</code> pattern as <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">table</code>/<code class="text-[12px] bg-[#F3F8F9] px-1 rounded">lexical</code>; pick it per-section in the Filter config's "Filter style" (writes <code class="text-[12px] bg-[#F3F8F9] px-1 rounded">display.filterStyle:'pillBar'</code>), so other filter bars are unaffected (<code class="text-[12px] bg-[#F3F8F9] px-1 rounded">styles[0]</code> = the historical flat map).</p>
+            <div class="bg-[#F3F8F9] rounded-[12px] border border-[#E0EBF0] px-3 py-2.5 flex flex-wrap items-center gap-2">
+              <label class="flex items-center gap-2 bg-white rounded-full pl-3 pr-3 py-1.5 border border-[#E0EBF0]">
+                <span class="font-proxima text-[13px] text-[#37576B]">Search</span>
+                <span class="font-proxima text-[13px] text-[#C5D7E0]">search…</span>
+              </label>
+              <button class="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border border-[#E0EBF0]">
+                <span class="font-proxima text-[13px] text-[#37576B]">Jurisdiction</span>
+                <span class="font-proxima text-[11px] text-[#6D96AE]">▾</span>
+              </button>
+              <button class="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border border-[#E0EBF0]">
+                <span class="font-proxima text-[13px] text-[#37576B]">Implementation Status</span>
+                <span class="font-proxima text-[11px] text-[#6D96AE]">▾</span>
+              </button>
+              <span class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-[#E0EBF0]">
+                <span class="font-proxima text-[13px] text-[#37576B]">Needs Priority</span>
+                <span class="w-9 h-5 rounded-full bg-[#C5D7E0] flex items-center px-0.5"><span class="w-4 h-4 rounded-full bg-white shadow-sm"></span></span>
+              </span>
+            </div>
           </div>
         </div>
 
