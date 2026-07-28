@@ -161,6 +161,29 @@ in-flight work.
 (Batch Reports), not a section of a report page, and is explicitly out of scope for the report-spec
 work (`planning/tasks/current/report-spec-and-build-script.md`).
 
+### Verified in sync (2026-07-28)
+
+User noticed the two-copy situation and asked (a) are they currently in sync, (b)
+could dms-template become the real source of truth with transportNY reduced to just
+the routecreation plugin.
+
+(a) Diffed all 9 files in both `ReportRouteList/` directories byte-for-byte: identical
+except the expected submodule import-path rewrite (`../../../../dms/...` vs
+`../../../../modules/dms/...`) and one stale comment referencing an old script path.
+Both repos' trees were clean and today's commits (`b6b3039 peak time reports` /
+`81158df RRL updates`) landed the same content. Not diverged as of this date.
+
+(b) Confirmed there is genuinely zero dependency mechanism between the repos (no
+submodule, no npm reference, nothing — checked `.gitmodules` and `package.json` in
+both). Getting to "transportNY only runs the plugin" for real would mean either an
+automated sync script or extracting the shared theme into its own repo/package.
+**User's decision: neither — keep the existing manual-copy discipline (dms-template is
+authored, transportNY's copy is never hand-edited independently) with no new tooling.**
+Scope of the fix was also explicitly limited to `ReportRouteList` only, not the rest of
+the theme tree or the library-level extension-point gap (Measure Picker/QuickControls,
+`sectionMenuExtensions`/`sectionHeaderExtensions`) documented above — those remain
+open/unaddressed by this decision.
+
 ## How to apply (either instance)
 
 Before considering any ReportRouteList / Measure Picker / Quick Controls (or future
