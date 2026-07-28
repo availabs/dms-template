@@ -16,7 +16,10 @@ const jget = (id) => JSON.parse(clean(cli("raw", "get", String(id))));
 
 const TICKETS_SRC = { isDms: true, app: "npmrdsv5", type: "sitemgmt_tickets", name: "Site Management — Tickets",
   source_id: 2184923, view_id: 2184924, env: "npmrdsv5+sitemgmt_tickets", srcEnv: "npmrdsv5+sitemgmt_tickets", baseUrl: "/forms",
-  columns: ["ticket_id","title","page_key","severity","priority","status","source","assignee","reporter","opened","updated","description","steps","expected","actual","env","comments"].map(n => ({ name: n, display_name: n, type: "text" })) };
+  // NB: filter/group-by columns MUST be declared here or the query uses the bare name and errors
+  // ("column surface does not exist"); display-only calcs can use explicit data->> SQL instead.
+  // Denormalized page fields (surface/page_name/page_route/page_stage) added 2026-07-16 for the Site filter.
+  columns: ["ticket_id","title","page_key","severity","priority","status","source","assignee","reporter","opened","updated","description","steps","expected","actual","env","comments","surface","page_name","page_route","page_stage"].map(n => ({ name: n, display_name: n, type: "text" })) };
 const SOURCE_PILL = { "ai": "blue", "dev": "slate", "client": "ink", "qa": "zinc" };
 
 // lexical
@@ -28,7 +31,7 @@ const GOLD = "color:#CA8A04";
 
 const SEV_PILL = { "Blocker": "red", "Major": "amber", "Minor": "slate", "Polish": "zinc" };
 const PRIO_PILL = { "Now": "red", "Next": "amber", "Later": "slate" };
-const STATUS_PILL = { "Triage": "slate", "In progress": "blue", "In review": "amber", "Resolved": "green", "Closed": "green" };
+const STATUS_PILL = { "Triage": "slate", "In progress": "blue", "In review": "amber", "Needs decision": "ink", "Needs data": "zinc", "Resolved": "green", "Closed": "green" };
 
 const dw = ({ columns, filters = [], display = {} }) => JSON.stringify({
   externalSource: TICKETS_SRC, columns, filters: { op: "AND", groups: filters },
@@ -39,7 +42,7 @@ const pcol = (name, label, map, over = {}) => ({ name, customName: label, type: 
 const calc = (sql, label, over = {}) => ({ name: sql, type: "calculated", display_name: label, normalName: label, show: true, fn: "exempt", formatFn: " ", justify: "left", hideHeader: false, hideValue: false, ...over });
 const linkNode = (t, url) => ({ type: "link", version: 1, direction: "ltr", format: "", indent: 0, rel: null, target: null, title: null, url, children: [text(t)] });
 const W = "(case (data->>'severity') when 'Blocker' then 5 when 'Major' then 3 when 'Minor' then 2 else 1 end)";
-const OPEN = "('Triage','In progress','In review')", CLOSED = "('Resolved','Closed')";
+const OPEN = "('Triage','In progress','In review','Needs decision','Needs data')", CLOSED = "('Resolved','Closed')";
 // Ticket display number: friendly ticket_id when present, else the DMS row id. Links/filters
 // key on the ROW ID (searchParams:"id" / col:"id") so tickets are openable un-numbered.
 // Comma-free CASE only (the UDA SELECT list is comma-split). 2026-07-15, Alex.
@@ -78,13 +81,14 @@ function applyPage(pageId, groups, S, filters = []) {
 // breadcrumb → header band ("// site management" + Tickets.) → "Where tickets stand" summary (flow
 // strip + resolution bar + severity/source breakdown) → tickets table.
 {
-  const B = { crumb: randomUUID(), hdr: randomUUID(), sum: randomUUID(), bar: randomUUID(), tbl: randomUUID() };
+  const B = { crumb: randomUUID(), hdr: randomUUID(), sum: randomUUID(), chart: randomUUID(), bar: randomUUID(), tbl: randomUUID() };
   const groups = [
     { name: B.crumb, index: 0, theme: "breadcrumb", position: "content", displayName: "Breadcrumb" },
     { name: B.hdr,   index: 1, theme: "header",     position: "content", displayName: "Header" },
     { name: B.sum,   index: 2, theme: "content",    position: "content", displayName: "Summary" },
-    { name: B.bar,   index: 3, theme: "content",    position: "content", displayName: "Filters" },
-    { name: B.tbl,   index: 4, theme: "content",    position: "content", displayName: "Tickets table" },
+    { name: B.chart, index: 3, theme: "content",    position: "content", displayName: "Flow charts" },
+    { name: B.bar,   index: 4, theme: "content",    position: "content", displayName: "Filters" },
+    { name: B.tbl,   index: 5, theme: "content",    position: "content", displayName: "Tickets table" },
   ];
   const S = [];
   const agg = (columns, display = {}) => dw({ columns, filters: [], display: { usePagination: false, pageSize: 1, cardBorder: false, ...display } });
@@ -149,6 +153,37 @@ function applyPage(pageId, groups, S, filters = []) {
     calc(`((count(*) filter (where ${st()} in ${OPEN}))::text || ' open · ' || (count(*) filter (where ${st()} in ${CLOSED}))::text || ' done') as od`, "", { valueFontStyle: "metaMD", hideHeader: true, cellSpan: 4 }),
   ], { cellsGridSize: 12, cellsGridGap: 12, cellsRowGap: 4, cardsPadding: 14, cardStyle: "rowaligned", headerValueLayout: "row", cellsVAlign: "center" }), ...cBot });
 
+  // ── per-day flow charts (opened / resolved) — avlGraph BarGraph on a TIME x-axis ──
+  // xAxis = the day (comma-free substring of the datetime; UDA SELECT is comma-split so no
+  // left()/split_part). `scaleType:"time"` (graph_new enhancement 2026-07-16) positions bars at
+  // their real date with proportional gaps — every day on the axis, empty days = gaps — using only
+  // the days-with-data the live query returns (no zero-filled series). yAxis = count(*). Resolved
+  // chart filters to closed statuses (all carry resolved_date after the backfill).
+  const graphBar = ({ xExpr, xName, color, title, filters = [] }) => dw({
+    columns: [
+      { name: `${xExpr} as ${xName}`, type: "calculated", normalName: xName, show: true, group: true, sort: "asc", target: "xAxis" },
+      { name: `count(*)::integer as n`, type: "calculated", normalName: "n", show: true, fn: "exempt", target: "yAxis", color },
+    ],
+    filters,
+    display: { usePagination: false, totalLength: 366, graphType: "BarGraph", height: 200,
+      bgColor: "#ffffff", textColor: "#0F1722", hideExternalToggle: true,
+      margin: { top: 30, right: 16, bottom: 34, left: 34 },
+      paddingInner: 0.35, paddingOuter: 0,
+      title: { title, position: "start", fontSize: 13, fontWeight: "500" }, description: "",
+      colors: { type: "palette", value: [color] },
+      xAxis: { scaleType: "time", timeFormat: "%-m/%d", show: true, showGridLines: false, axisColor: "transparent", tickColor: "#94a3b8", tickDensity: 1.2,
+               tickFontSize: "9px", tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" },
+      yAxis: { show: true, showGridLines: false, format: "integer", tickColor: "#94a3b8",
+               tickFontSize: "9px", tickFontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" },
+      legend: { show: false }, tooltip: { show: true } },
+  });
+  const chartCard = { bg: "white", border: { top: true, left: true, right: true, bottom: true }, radius: { tl: true, tr: true, bl: true, br: true } };
+  S.push({ group: B.chart, size: "6", et: "AVL Graph", data: graphBar({
+    xExpr: "substring((data->>'opened') from 1 for 10)", xName: "opened_day", color: "#1F3F8F", title: "Tickets opened / day" }), ...chartCard });
+  S.push({ group: B.chart, size: "6", et: "AVL Graph", data: graphBar({
+    xExpr: "substring((data->>'resolved_date') from 1 for 10)", xName: "resolved_day", color: "#10B981", title: "Tickets resolved / day",
+    filters: [{ col: "status", op: "filter", value: ["Resolved", "Closed"] }] }), ...chartCard });
+
   // ── filter bar (status · severity · source) — DMS Filter controls (multiselect chips), each
   // writing a searchParam the table's usePageFilters leaves read. Status facets the 5 raw statuses
   // (finer than the mockup's All/Open/Closed rollup — a value facet is what the primitive does).
@@ -158,9 +193,10 @@ function applyPage(pageId, groups, S, filters = []) {
     filters: { op: "AND", groups: [] },
     display: { totalLength: 1, hideExternalToggle: true, showAttribution: false, filterStyle: "filter_panel_light", fetchMode: "smart" },
     data: [], join: { sources: {} } });
-  S.push({ group: B.bar, size: "4", et: "Filter", data: facet("status", "Status", "status") });
-  S.push({ group: B.bar, size: "4", et: "Filter", data: facet("severity", "Severity", "severity") });
-  S.push({ group: B.bar, size: "4", et: "Filter", data: facet("source", "Source", "source") });
+  S.push({ group: B.bar, size: "3", et: "Filter", data: facet("status", "Status", "status") });
+  S.push({ group: B.bar, size: "3", et: "Filter", data: facet("severity", "Severity", "severity") });
+  S.push({ group: B.bar, size: "3", et: "Filter", data: facet("source", "Source", "source") });
+  S.push({ group: B.bar, size: "3", et: "Filter", data: facet("surface", "Site", "surface") });
 
   // ── tickets table (mockup columns: # · Severity · Source · Status · Ticket · Page · Owner · Updated) ──
   // mockup fidelity: open-first sort (then updated desc); '#'-prefixed id linking to the detail page
@@ -175,6 +211,12 @@ function applyPage(pageId, groups, S, filters = []) {
       { name: `(case when (data->>'status') in ${OPEN} then 0 else 1 end) as openrank`,
         type: "calculated", normalName: "openrank", display_name: "", customName: "", show: true,
         formatFn: " ", hideHeader: true, size: 0, sort: "asc" },
+      // newest-reported-first: sort by the DMS row id (monotonic with creation) desc, right after
+      // openrank. This is the reliable "newest first" key — independent of the `updated` string
+      // format (date-only vs datetime). NO fn (mixed-fn invalid-state trap); comma-free (2026-07-15).
+      { name: `(id)::bigint as idsort`,
+        type: "calculated", normalName: "idsort", display_name: "", customName: "", show: true,
+        formatFn: " ", hideHeader: true, size: 0, sort: "desc" },
       // '#' — displays the friendly ticket_id (falls back to the row id for un-numbered
       // tickets); the LINK carries the DMS ROW ID (searchParams:"id" — rows on non-grouped
       // isDms sections always fetch it), so every ticket is openable the instant it exists.
@@ -190,14 +232,21 @@ function applyPage(pageId, groups, S, filters = []) {
         formatFn: " ", pillColors: { AI: "blue", Dev: "slate", Client: "ink" }, justify: "left", size: 92 },
       pcol("status", "Status", STATUS_PILL, { size: 120 }),
       col("title", "Ticket", { size: 300, wrapText: true, stretch: true }),
+      // Site (surface) shown next to Page — friendly label via comma-free CASE, neutral pill.
+      { name: "(case data->>'surface' when 'tsmo2' then 'TSMO' when 'freightatlas2' then 'Freight Atlas' when 'npmrds2' then 'NPMRDS' else (data->>'surface') end) as site",
+        type: "status_pill", normalName: "site", display_name: "Site", customName: "Site", show: true,
+        formatFn: " ", pillColors: { TSMO: "slate", "Freight Atlas": "slate", NPMRDS: "slate" }, justify: "left", size: 120 },
       col("page_name", "Page", { size: 150 }),
-      col("assignee", "Owner", { size: 78, justify: "center", valueFontStyle: "metaXS" }),
-      col("updated", "Updated", { size: 108, sort: "desc", valueFontStyle: "metaXS" }),
+      col("reporter", "Reporter", { size: 160, valueFontStyle: "metaXS" }),
+      // sort removed — ordering is openrank asc → idsort desc (newest reported first); Updated is
+      // display-only now.
+      col("updated", "Updated", { size: 108, valueFontStyle: "metaXS" }),
     ],
     filters: [
       { col: "status", op: "filter", value: [], usePageFilters: true, searchParamKey: "status" },
       { col: "severity", op: "filter", value: [], usePageFilters: true, searchParamKey: "severity" },
       { col: "source", op: "filter", value: [], usePageFilters: true, searchParamKey: "source" },
+      { col: "surface", op: "filter", value: [], usePageFilters: true, searchParamKey: "surface" },
     ],
     display: { usePagination: true, pageSize: 25, fetchMode: "smart", autoResize: false },
   }), bg: "white", border: { top: true, left: true, right: true, bottom: true }, radius: { tl: true, tr: true, bl: true, br: true } });
@@ -206,6 +255,7 @@ function applyPage(pageId, groups, S, filters = []) {
     { id: "cr-tickets-status", values: "", searchKey: "status", useSearchParams: true },
     { id: "cr-tickets-severity", values: "", searchKey: "severity", useSearchParams: true },
     { id: "cr-tickets-source", values: "", searchKey: "source", useSearchParams: true },
+    { id: "cr-tickets-site", values: "", searchKey: "surface", useSearchParams: true },
   ]);
 }
 
@@ -262,37 +312,59 @@ function applyPage(pageId, groups, S, filters = []) {
   ], { cellsTracksTemplate: "max-content max-content max-content max-content max-content minmax(0,1fr)",
        cellsGridGap: 10, cellsRowGap: 6, cellsPadding: 0, cardsPadding: 0, cardBorder: false, cellsVAlign: "center" }) });
 
-  // content band — left: labeled prose sections + environment chip (READ-ONLY: text columns with
-  // allowEditInView render as permanent inputs — no click-to-swap like pills. Body edits happen on
-  // the datasets table, same surface as Add ticket); right: Details rail.
+  // content band — left: labeled prose sections + environment chip; right: Details rail.
+  // EDITABLE (2026-07-16, Alex): the body prose fields (esp. `resolution`) are edited in view.
+  // They MUST be `type: "textarea"` — a plain text column renders a single-line <input> (cramped,
+  // ugly for multi-paragraph content); the textarea columnType renders the themed multi-line box
+  // (transportnyv2 input.textarea: rounded, bordered, resize-y). Section-level allowEditInView +
+  // per-column allowEditInView enable in-view editing (isDms source + apiUpdate satisfy the gate).
+  const tacol = (name, label, over = {}) => col(name, label, { type: "textarea", allowEditInView: true, hideHeader: false, ...over });
   S.push({ group: B.body, size: "8", et: "Card", data: detail([
-    col("description", "description", { hideHeader: false, valueFontStyle: "prose" }),
-    col("steps", "steps to reproduce", { hideHeader: false, valueFontStyle: "prosePre" }),
-    col("expected", "expected", { hideHeader: false, valueFontStyle: "prose" }),
-    col("actual", "actual", { hideHeader: false, valueFontStyle: "prose" }),
-    col("env", "environment", { hideHeader: false, valueFontStyle: "chip" }),
+    tacol("description", "description", { valueFontStyle: "prose" }),
+    tacol("steps", "steps to reproduce", { valueFontStyle: "prosePre" }),
+    tacol("expected", "expected", { valueFontStyle: "prose" }),
+    tacol("actual", "actual", { valueFontStyle: "prose" }),
+    // triage assessment (agent-written, whitespace preserved) — schema col added 2026-07-15
+    tacol("suggested_solution", "suggested solution", { valueFontStyle: "prosePre" }),
+    // what was actually done (written at Resolved) — closes the loop for the reporter
+    tacol("resolution", "resolution", { valueFontStyle: "prosePre" }),
+    // screenshot / attachment URL — rendered as an inline image (Alex switched from link 2026-07-16)
+    { name: "screenshot", customName: "screenshot", show: true, hideHeader: false, type: "image" },
+    tacol("env", "environment", { valueFontStyle: "chip" }),
   ], { cellsGridSize: 1, cellsRowGap: 12, cardsPadding: 18, cardBorder: false, headerValueLayout: "col",
-       headerFontStyle: "metaXS" }),
+       headerFontStyle: "metaXS", allowEditInView: true }),
     bg: "white", border: { top: true, left: true, right: true, bottom: true }, radius: { tl: true, tr: true, bl: true, br: true } });
   // Details rail — ONE section (a separate fused title section would wrap to the next band row
   // beside the tall left card); title = static first cell. Status is the live control (editable
   // pill, liveEdit persists on change = the mockup's Mark resolved / Reopen).
   const fld = (over = {}) => ({ hideHeader: false, headerFontStyle: "metaXS", cellBorderBottom: true, ...over });
+  // efld: an editable Details field (2026-07-16, Alex — "workflow fields"). Pill columns (severity/
+  // priority/category) click-to-swap to a dropdown like Status (they carry pillColors=mapped_options);
+  // plain text columns (assignee/effort/verified) become inline inputs. Section allowEditInView below.
+  const efld = (over = {}) => fld({ allowEditInView: true, ...over });
   S.push({ group: B.body, size: "4", et: "Card", data: detail([
     stat("dtitle", "Details", { valueFontStyle: "cardTitleSM", cellBorderBottom: true }),
-    pcol("status", "status", STATUS_PILL, fld({ allowEditInView: true })),
+    pcol("status", "status", STATUS_PILL, fld({ allowEditInView: true, setDateOnValue: { field: "resolved_date", values: ["Resolved", "Closed"] } })),
     rcalc(`(case data->>'source' when 'ai' then 'AI' when 'dev' then 'Dev' when 'client' then 'Client' else (data->>'source') end) as src`, "source",
       { type: "status_pill", pillColors: { AI: "blue", Dev: "slate", Client: "ink" }, hideHeader: false, headerFontStyle: "metaXS", cellBorderBottom: true }),
-    col("assignee", "assignee", fld({ valueFontStyle: "proseSM" })),
+    col("assignee", "assignee", efld({ valueFontStyle: "proseSM" })),
     col("reporter", "reporter", fld({ valueFontStyle: "proseSM" })),
-    pcol("severity", "severity", SEV_PILL, fld()),
-    pcol("priority", "priority", PRIO_PILL, fld()),
+    pcol("severity", "severity", SEV_PILL, efld()),
+    pcol("priority", "priority", PRIO_PILL, efld()),
+    // tracking fields (2026-07-15): kind / size / linked duplicate / human confirmation
+    pcol("category", "category", { "bug": "red", "style": "amber", "data": "blue", "content": "slate", "enhancement": "zinc" }, efld()),
+    col("effort", "effort", efld({ valueFontStyle: "metaMD" })),
+    { name: "duplicate_of", customName: "duplicate of", show: true, hideHeader: false, headerFontStyle: "metaXS", cellBorderBottom: true,
+      valueFontStyle: "metaMD", isLink: true, location: "/sitemgmt/ticket?id=", searchParams: "value" },
+    col("verified", "verified", efld({ valueFontStyle: "metaMD" })),
+    col("verified_by", "verified by", efld({ valueFontStyle: "proseSM" })),
     { name: "page_name", customName: "target page", show: true, hideHeader: false, headerFontStyle: "metaXS", cellBorderBottom: true,
       isLink: true, location: "/sitemgmt/page?key=", searchParamsCol: "page_key" },
     col("opened", "opened", fld({ valueFontStyle: "metaMD" })),
+    col("resolved_date", "resolved", fld({ valueFontStyle: "metaMD" })),
     col("updated", "updated", { hideHeader: false, headerFontStyle: "metaXS", valueFontStyle: "metaMD" }),
     col("page_key", "", { hideHeader: true, hideValue: true }),
-  ], { cellsGridSize: 1, cellsRowGap: 6, cardsPadding: 14, headerValueLayout: "col", liveEdit: true }),
+  ], { cellsGridSize: 1, cellsRowGap: 6, cardsPadding: 14, headerValueLayout: "col", liveEdit: true, allowEditInView: true }),
     bg: "white", border: { top: true, left: true, right: true, bottom: true }, radius: { tl: true, tr: true, bl: true, br: true } });
 
   // comments — fused title + prose, click-to-edit (threaded comments = logged enrichment; the

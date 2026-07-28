@@ -55,7 +55,7 @@ const TICK_SRC = { isDms: true, app: APP, type: "sitemgmt_tickets", name: "Site 
   source_id: TICK.source_id, view_id: TICK.view_id, env: TICK.env, srcEnv: TICK.env, baseUrl: "/forms",
   columns: ["ticket_id", "page_key", "surface", "status", "severity"].map(n => ({ name: n, display_name: n, type: "text" })) };
 const STAGES = ["Proposed", "Design", "Implemented", "QA", "Dev Acceptance", "Client Acceptance"];
-const OPEN = new Set(["Triage", "In progress", "In review"]);
+const OPEN = new Set(["Triage", "In progress", "In review", "Needs decision", "Needs data"]);
 // build-time tallies now feed ONLY the header stat line (the tiles + pattern-card numbers/bars
 // are live aggregate Cards — they track the datasets without a rebuild)
 const stageCount = Object.fromEntries(STAGES.map((s) => [s, pages.filter((p) => p.stage === s).length]));
@@ -160,8 +160,8 @@ for (const t of tracked) {
   // mockup's green-left bar; the legend follows segment order ("N done · N open").
   sec(g, "12", "Card", dw(TICK_SRC, {
     columns: [
-      calcCol(`(count(*) filter (where (data->>'status') not in ('Triage','In progress','In review') and (data->>'status') is not null))::text as seg_done`, "seg_done", { selectOnly: true }),
-      calcCol(`(count(*) filter (where (data->>'status') in ('Triage','In progress','In review') or (data->>'status') is null))::text as seg_open`, "seg_open", { selectOnly: true }),
+      calcCol(`(count(*) filter (where (data->>'status') not in ('Triage','In progress','In review','Needs decision','Needs data') and (data->>'status') is not null))::text as seg_done`, "seg_done", { selectOnly: true }),
+      calcCol(`(count(*) filter (where (data->>'status') in ('Triage','In progress','In review','Needs decision','Needs data') or (data->>'status') is null))::text as seg_open`, "seg_open", { selectOnly: true }),
       calcCol(`count(*)::text as tix_total`, "tix_total", {
         type: "stacked_bar",
         segments: [{ col: "seg_done", label: "done", color: "#10b981" }, { col: "seg_open", label: "open", color: "#fca5a5" }],

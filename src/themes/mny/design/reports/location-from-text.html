@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Locating Actions From Text</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress &middot; Data Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[64px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Locating Actions<br>From Text
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    17,695 actions sat on a town or county centroid. We mined their text and geocoded it
+                    against the NY State service &mdash; recovering a real site for 2,399.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">17,695 on a centroid</span>
+                    <span class="px-3 py-1.5 bg-mny-grn border border-mny-grn rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">2,399 recovered</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">NY State geocoder &middot; source 1029065 / v1074456</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">On a centroid</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">17,695</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">town or county middle</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Site-precise before</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">74</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">0.4% of the dataset</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Recovered</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">2,399</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">&rarr; ~2,473 site-precise (33&times;)</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">High / medium conf.</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">702</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">coords + address + route + cross-st</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Coords in the text</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">116</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">the pass ignores these today</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Median gain</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">3.9 km</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">recovered point vs centroid</p>
+            </div>
+          </div>
+
+          <!-- recovered-by-tier bar (share of 2,399; green = high, amber = medium, pale = named road) -->
+          <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+            <div class="bg-mny-grn" style="width:4.71%;" title="Explicit coordinates — 113"></div>
+            <div class="bg-mny-grn/70" style="width:9.0%;" title="Street address — 216"></div>
+            <div class="bg-mny-y700" style="width:4.92%;" title="Intersection — 118"></div>
+            <div class="bg-mny-y700/70" style="width:10.63%;" title="Numbered route — 255"></div>
+            <div class="bg-mny-y500" style="width:70.74%;" title="Named road — 1,697"></div>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2">
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-grn"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Coordinates (113)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-grn/70"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Address (216)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Intersection (118)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700/70"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Numbered route (255)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y500"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Named road &mdash; lower conf. (1,697)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <!-- VERDICT -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The result</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    The descriptions knew where<br>the work was. Now the map does too.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      The <a href="actions-qa.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Actions Data Quality</a>
+                      audit found the map 96.7% complete but 99.6% of its points centroids &mdash; the middle of a town, or of a
+                      whole county. Only 74 of 18,378 actions sat where the work would actually happen. The structured
+                      location fields were empty (1.2% had an address); the conclusion was that precision is a
+                      data-collection problem no code can fix.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Half true. The <em>free text</em> wasn&rsquo;t empty &mdash; the sites were right there in the names and descriptions:
+                      &ldquo;Public Water Well flood mitigation (7737 Main St),&rdquo; &ldquo;Route 10 &mdash; Third Brook Bridge Replacement,&rdquo;
+                      &ldquo;8960 Route 31 Culvert Upsizing (43.07152, &minus;76.95832).&rdquo; So we mined every centroid action&rsquo;s text and geocoded it.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      <strong class="text-mny-900 font-[600]">Using the NY State geocoding service, we recovered a real coordinate for 2,399 of the 17,695
+                      centroid actions</strong> and staged them into the field the pass reads. The NYS street-name locator geocodes a
+                      road with <em>no</em> house number &mdash; something the Census geocoder can&rsquo;t do &mdash; which is what lifted the yield from
+                      ~380 to 2,399. Site-accurate points go from <strong class="text-mny-900 font-[600]">74 to ~2,473, a 33&times; jump</strong>. 116 of them
+                      were explicit lat/longs sitting in descriptions the pass never reads today.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      And they land where the work is: a <strong class="text-mny-900 font-[600]">median 3.9 km off the old centroid</strong> (up to 69 km) &mdash;
+                      an action pulled off the middle of its county onto its actual street. Most of the gain (2,066 of 2,399) is in
+                      jurisdiction-centroid actions; the 332 county-centroid recoveries move the farthest.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      <strong class="text-mny-900 font-[600]">Not all 2,399 are equally sure.</strong> 702 are high/medium confidence &mdash; a coordinate, a street
+                      address, a numbered route, or an intersection. The other 1,697 are <em>named roads</em>: geocoded to the right
+                      road name in the right county, but a generic name like &ldquo;South Street&rdquo; can match the wrong same-named road. A
+                      distance gate keeps every one in-county (90% within 13 km), and they&rsquo;re a conscious trade of some precision
+                      for a lot of coverage.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">Site-precise actions</p>
+                      <div class="flex items-baseline gap-4 mb-2">
+                        <div>
+                          <span class="font-display text-[30px] text-mny-400 font-[500] leading-none tracking-[-0.03em] tabular-nums">74</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">before</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-mny-700 self-center" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                        <div>
+                          <span class="font-display text-[48px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">~2,473</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">after the backfill</span>
+                        </div>
+                      </div>
+                      <hr class="border-mny-700 my-5">
+                      <div class="flex items-baseline gap-3">
+                        <span class="font-display text-[48px] text-white font-[500] leading-[0.9] tracking-[-0.03em] tabular-nums">3.9 km</span>
+                        <span class="font-display text-[16px] text-mny-y700 font-[500] leading-tight uppercase">median move<br>off the centroid</span>
+                      </div>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-5">
+                        2,399 coordinates recovered from the text with the <strong class="text-white font-[600]">NY State geocoder</strong>. Written to
+                        staging; not yet applied to the live dataset.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- WHAT WE RECOVERED -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">What We Recovered</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Each centroid action was scored by the strongest location signal in its text and routed to the geocoder that
+                  fits. Every result was distance-gated against the known centroid; 129 that landed too far were held for review.
+                  Counted once, at its best tier:
+                </p>
+                <div class="space-y-2.5 max-w-[960px]">
+                  <!-- A -->
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-grn flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-full bg-mny-grn flex items-center justify-center flex-shrink-0"><span class="font-display text-[15px] text-white">A</span></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-display text-[15px] text-mny-900 uppercase leading-none">Explicit coordinates <span class="text-mny-grn font-[400] normal-case text-[12px]">&middot; high</span></p>
+                      <p class="font-proxima text-[12px] text-mny-400 mt-1 truncate">A lat/long in the text &middot; <strong class="text-mny-700">parsed, no geocoding, ~0 m</strong> &middot; the pass ignores these fields today</p>
+                    </div>
+                    <div class="text-right flex-shrink-0"><span class="font-display text-[20px] text-mny-900 tabular-nums">113</span></div>
+                  </div>
+                  <!-- B -->
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-grn flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-full bg-mny-grn flex items-center justify-center flex-shrink-0"><span class="font-display text-[15px] text-white">B</span></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-display text-[15px] text-mny-900 uppercase leading-none">Street address <span class="text-mny-grn font-[400] normal-case text-[12px]">&middot; high</span></p>
+                      <p class="font-proxima text-[12px] text-mny-400 mt-1 truncate">&ldquo;7737 Main St&rdquo; &middot; <strong class="text-mny-700">NYS address locator</strong> (rooftop), Census fallback</p>
+                    </div>
+                    <div class="text-right flex-shrink-0"><span class="font-display text-[20px] text-mny-900 tabular-nums">216</span></div>
+                  </div>
+                  <!-- C -->
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-y700 flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-full bg-mny-y700 flex items-center justify-center flex-shrink-0"><span class="font-display text-[15px] text-mny-900">C</span></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-display text-[15px] text-mny-900 uppercase leading-none">Intersection <span class="text-mny-700 font-[400] normal-case text-[12px]">&middot; medium</span></p>
+                      <p class="font-proxima text-[12px] text-mny-400 mt-1 truncate">&ldquo;Emma St and Glenwood Ave&rdquo; &middot; <strong class="text-mny-700">Census geocoder</strong> (NYS locators don&rsquo;t do intersections)</p>
+                    </div>
+                    <div class="text-right flex-shrink-0"><span class="font-display text-[20px] text-mny-900 tabular-nums">118</span></div>
+                  </div>
+                  <!-- D route -->
+                  <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-y700 flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-full bg-mny-y700 flex items-center justify-center flex-shrink-0"><span class="font-display text-[15px] text-mny-900">D</span></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-display text-[15px] text-mny-900 uppercase leading-none">Numbered route <span class="text-mny-700 font-[400] normal-case text-[12px]">&middot; medium</span></p>
+                      <p class="font-proxima text-[12px] text-mny-400 mt-1 truncate">&ldquo;Route 23,&rdquo; &ldquo;CR 65&rdquo; &middot; <strong class="text-mny-700">NYS street-name locator</strong> &mdash; a point on the road</p>
+                    </div>
+                    <div class="text-right flex-shrink-0"><span class="font-display text-[20px] text-mny-900 tabular-nums">255</span></div>
+                  </div>
+                  <!-- D named road -->
+                  <div class="bg-mny-y50 rounded-[10px] p-4 border-l-4 border-mny-y500 flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-full bg-mny-y500 flex items-center justify-center flex-shrink-0"><span class="font-display text-[15px] text-mny-900">D</span></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-display text-[15px] text-mny-900 uppercase leading-none">Named road <span class="text-mny-y700 font-[600] normal-case text-[12px]">&middot; lower confidence</span></p>
+                      <p class="font-proxima text-[12px] text-mny-400 mt-1 truncate">&ldquo;Telegraph Rd,&rdquo; &ldquo;Laws Lane&rdquo; &middot; <strong class="text-mny-700">NYS street-name locator</strong> &middot; generic names risk the wrong same-named road</p>
+                    </div>
+                    <div class="text-right flex-shrink-0"><span class="font-display text-[20px] text-mny-900 tabular-nums">1,697</span></div>
+                  </div>
+                </div>
+                <div class="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                  <p class="lg:col-span-7 font-proxima text-[13px] text-mny-700 leading-[1.6]">
+                    <strong class="text-mny-900 font-[600]">702 high/medium + 1,697 named road = 2,399 applied</strong>, +129 held for review. Geocoder split:
+                    NYS street-name 1,952 &middot; NYS address 207 &middot; Census 127 &middot; parsed 113. The named-facility tier (bridges, plants,
+                    dams) was left for a future pass &mdash; it needs a place-name gazetteer the NYS locators don&rsquo;t cover.
+                  </p>
+                  <div class="lg:col-span-5 bg-mny-y50 border border-mny-y500 rounded-[10px] p-4">
+                    <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-1">Read the named-road tier with care</p>
+                    <p class="font-proxima text-[12px] text-mny-700 leading-[1.55]">
+                      1,697 rows (71% of the total) are single generic street names. They geocode to the right road name and the gate
+                      keeps them in-county, but the tail may be the wrong same-named road. Applying only the 702 high/medium is the
+                      conservative option.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- HOW TIGHT IT LANDED -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">How Tight It Landed</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Distance of each recovered point from the action&rsquo;s old centroid, by tier. Small numbers mean the point barely
+                  moved (already near the town centre); the p90 and max show the reach. Addresses are tightest; named roads spread
+                  more but 90% still land within 13 km.
+                </p>
+                <div class="overflow-x-auto rounded-[10px] border border-mny-100">
+                  <table class="w-full border-collapse font-proxima text-[13px]">
+                    <thead>
+                      <tr class="bg-mny-50 text-left">
+                        <th class="px-4 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500]">Tier</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Applied</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Median</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">p90</th>
+                        <th class="px-3 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500] text-right">Max</th>
+                        <th class="px-4 py-2.5 font-display text-[12px] text-mny-700 uppercase tracking-wide font-[500]">Example</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-mny-900">
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">A · coordinates</td><td class="px-3 py-2 text-right tabular-nums">113</td><td class="px-3 py-2 text-right tabular-nums">5.7</td><td class="px-3 py-2 text-right tabular-nums">20.6</td><td class="px-3 py-2 text-right tabular-nums">40.5</td><td class="px-4 py-2 text-mny-400">Creekside Drive Embankment Protection &middot; +28 km</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">B · street address</td><td class="px-3 py-2 text-right tabular-nums">216</td><td class="px-3 py-2 text-right tabular-nums">2.4</td><td class="px-3 py-2 text-right tabular-nums">16.8</td><td class="px-3 py-2 text-right tabular-nums">35.2</td><td class="px-4 py-2 text-mny-400">3450 Kingsbridge Ave (NYC cloudburst) &middot; +25 km</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">C · intersection</td><td class="px-3 py-2 text-right tabular-nums">118</td><td class="px-3 py-2 text-right tabular-nums">2.7</td><td class="px-3 py-2 text-right tabular-nums">23.1</td><td class="px-3 py-2 text-right tabular-nums">69.4</td><td class="px-4 py-2 text-mny-400">Antler Ave &amp; Lake View Circle Dr &middot; +18 km</td></tr>
+                      <tr class="border-t border-mny-100"><td class="px-4 py-2 font-[600]">D · numbered route</td><td class="px-3 py-2 text-right tabular-nums">255</td><td class="px-3 py-2 text-right tabular-nums">5.3</td><td class="px-3 py-2 text-right tabular-nums">14.3</td><td class="px-3 py-2 text-right tabular-nums">63.9</td><td class="px-4 py-2 text-mny-400">Route 10 &mdash; Third Brook Bridge (Walton) &middot; +18 km</td></tr>
+                      <tr class="border-t border-mny-100 bg-mny-y50/40"><td class="px-4 py-2 font-[600]">D · named road</td><td class="px-3 py-2 text-right tabular-nums">1,697</td><td class="px-3 py-2 text-right tabular-nums">3.7</td><td class="px-3 py-2 text-right tabular-nums">13.2</td><td class="px-3 py-2 text-right tabular-nums">69.0</td><td class="px-4 py-2 text-mny-400">Laws Lane &mdash; Ridge to Walnut &middot; +15 km</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="font-proxima text-[12px] text-mny-400 mt-3">
+                  Overall apply-set median <strong class="text-mny-700">3.9 km</strong>. The gate loosened for coverage (owner&rsquo;s call): ≤25 km from a
+                  jurisdiction centroid, ≤75 km from a county centroid &mdash; enough to catch the wrong-street matches that landed
+                  100&ndash;400 km away, while keeping the legitimate far-corner rural sites.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- WHERE -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-6">
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">County Centroids Move Farthest</h3>
+                  <p class="font-proxima text-[14px] text-mny-400 mb-4">
+                    Of the 2,399 recovered, most were jurisdiction-centroid actions; the county-centroid ones are fewer but each
+                    fix buys the most accuracy (a county centroid starts a median 25.9 km from anywhere real).
+                  </p>
+                  <div class="space-y-3">
+                    <div class="bg-mny-50 rounded-[10px] p-4">
+                      <div class="flex justify-between items-baseline"><span class="font-display text-[14px] text-mny-900 uppercase">Jurisdiction centroid (p3)</span><span class="font-display text-[22px] text-mny-900 tabular-nums">2,066</span></div>
+                      <div class="mt-2 h-[8px] bg-white rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:17.3%;"></div></div>
+                      <p class="font-proxima text-[11px] text-mny-400 mt-1">17.3% of 11,920 recovered</p>
+                    </div>
+                    <div class="bg-mny-50 rounded-[10px] p-4">
+                      <div class="flex justify-between items-baseline"><span class="font-display text-[14px] text-mny-900 uppercase">County centroid (p4)</span><span class="font-display text-[22px] text-mny-900 tabular-nums">332</span></div>
+                      <div class="mt-2 h-[8px] bg-white rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-red" style="width:5.7%;"></div></div>
+                      <p class="font-proxima text-[11px] text-mny-400 mt-1">5.7% of 5,775 recovered &middot; biggest per-action accuracy win</p>
+                    </div>
+                  </div>
+                  <div class="mt-5 bg-mny-y50 border border-mny-y500 rounded-[10px] p-4">
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.6]">
+                      <strong class="text-mny-900 font-[600]">The signal is in local work, not templates.</strong> Only 8.7% of centroid <em>boilerplate</em> rows
+                      carried a recoverable location, vs 25.8% of locally-authored ones &mdash; boilerplate has no site by design. Recovery
+                      hit exactly the actions worth placing. See the
+                      <a href="boilerplate-actions.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Boilerplate</a> report.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="lg:col-span-6">
+                  <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Where The Recoveries Landed</h3>
+                  <p class="font-proxima text-[14px] text-mny-400 mb-4">
+                    Recovered actions by county. Place-specific plans (Westchester, Ulster, the Catskills counties) yield the most;
+                    template-heavy plans yield little.
+                  </p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Westchester</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-grn" style="width:100%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">126</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Ulster</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-grn" style="width:98%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">124</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Allegany</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-grn" style="width:90%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">114</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Broome</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:85%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">107</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Sullivan</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:78%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">98</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Cattaraugus</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:76%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">96</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Suffolk</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:67%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">84</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Chautauqua</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-y700" style="width:64%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">80</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">Delaware</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-400" style="width:57%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">72</div></div>
+                    <div class="flex items-center gap-3"><div class="w-[110px] flex-shrink-0 text-right font-proxima text-[12px] text-mny-900 font-[600]">New York City</div><div class="flex-1 h-[18px] bg-mny-50 rounded-full overflow-hidden border border-mny-100"><div class="h-full bg-mny-400" style="width:54%;"></div></div><div class="w-[44px] font-proxima text-[11px] text-mny-400 tabular-nums text-right">68</div></div>
+                  </div>
+                  <p class="font-proxima text-[11px] text-mny-400 mt-4 leading-[1.5]">
+                    NYC recovers only 68 despite 2,082 actions &mdash; most are city-wide programs, not addressed projects.
+                  </p>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-8">
+
+              <!-- WHAT WE BUILT / WHAT'S LEFT -->
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-6 lg:p-8">
+                <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">What we built &middot; what&rsquo;s left</p>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase leading-tight mb-5">Recovered &amp; staged &mdash; one step from live</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-grn">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">&#10003; Mined coordinates &amp; addresses</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      116 explicit coordinates pulled from descriptions the pass ignores, plus 216 addresses and 118 intersections
+                      geocoded. Written into <code class="text-[11px] bg-mny-50 px-1 rounded">geometry_lat_long_polygon_etc</code>, and
+                      <code class="text-[11px] bg-mny-50 px-1 rounded">address_if_available</code> filled where blank (199 rows).
+                    </p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-grn">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">&#10003; Roads via the NYS geocoder</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      The NY State street-name locator unlocked 255 numbered routes and 1,697 named roads &mdash; the tier the Census
+                      geocoder couldn&rsquo;t touch. This is the whole reason the yield is 2,399, not ~380.
+                    </p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">&rarr; Apply &amp; re-run the pass</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      The write script is built and dry-run-validated (backs up first, idempotent). One <code class="text-[11px] bg-mny-50 px-1 rounded">--apply</code>
+                      to the actions source, then re-run <code class="text-[11px] bg-mny-50 px-1 rounded">actions_location/publish</code> and the 2,399 become precision 1.
+                      <strong class="text-mny-900">Not yet applied &mdash; pending sign-off.</strong>
+                    </p>
+                  </div>
+                  <div class="bg-white rounded-[10px] p-5 border-l-4 border-mny-700">
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">&rarr; The long tail</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">
+                      Named facilities (bridges, plants, dams) still need a place-name gazetteer. And a pipeline tweak &mdash; have rung 1
+                      read the name/description too &mdash; would place <em>future</em> actions with in-text coordinates automatically.
+                    </p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-5 pt-5 border-t border-mny-y500">
+                  <strong class="text-mny-900 font-[600]">The ceiling is still the intake form.</strong> Text mining recovers what planners already wrote; it
+                  can&rsquo;t invent a location that was never described. The actions with no usable signal &mdash; and every future action &mdash; only
+                  become site-accurate if address or coordinates are captured at entry. But mining the existing text turned 74 real
+                  locations into ~2,473, from data already in hand.
+                </p>
+              </div>
+
+              <p class="font-proxima text-[11px] text-mny-400 mt-8">
+                Source: <code>references/actions/scripts/12_location_from_text.mjs</code> (signal detection),
+                <code>14_build_location_updates.mjs</code> (recovery + NY State / Census geocoding →
+                <code>data/location_updates.csv</code>), <code>15_apply_location_updates.mjs</code> (staged write, dry-run).
+                Geocoders: NYS <code>Street_and_Address_Composite</code> + <code>Street_NoNum_and_ZipCode_Composite</code>
+                (gis.ny.gov), U.S. Census one-line. Scope = the 17,695 actions at precision 3/4 (source 1029065 / view 1074456).
+                Companion to the <a href="actions-qa.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Actions Data Quality</a> audit.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Data Reports</div>
+    <a href="actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Mockups</div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard</a>
+    <a href="../pages/actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List)</a>
+    <a href="../pages/actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Report navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

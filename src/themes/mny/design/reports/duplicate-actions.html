@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Duplicate Actions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress &middot; Data Report
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Duplicate<br>Actions
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    1,960 action rows are the same action, in the same place, entered twice. Where they
+                    came from &mdash; and why removing them is the right call.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">18,378 actions</span>
+                    <span class="px-3 py-1.5 bg-mny-red border border-mny-red rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">1,945 duplicate groups</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">Actions_Revised &middot; source 1029065 / v1074456</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Redundant rows</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">1,960</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">10.7% of the dataset</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Unique after dedupe</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">16,418</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">&minus;1,960 rows</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Duplicate groups</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">1,945</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">99% are simple pairs</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Collapse losslessly</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">39%</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">767 groups, zero content lost</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Concentration</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">96%</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">from just 5 counties</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-400">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Already invalid</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">31</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">redundant rows flagged isValid=false</p>
+            </div>
+          </div>
+
+          <!-- Concentration bar -->
+          <div class="mt-3 flex h-[6px] rounded-full overflow-hidden bg-mny-50">
+            <div class="bg-mny-red" style="width:40.3%;" title="New York City — 789 redundant rows"></div>
+            <div class="bg-mny-y700" style="width:21.6%;" title="Chautauqua — 424"></div>
+            <div class="bg-mny-400" style="width:17.1%;" title="Monroe — 335"></div>
+            <div class="bg-mny-700" style="width:13.3%;" title="Broome — 261"></div>
+            <div class="bg-mny-900" style="width:3.7%;" title="Madison — 72"></div>
+            <div class="bg-mny-200" style="width:4.0%;" title="every other county — 79"></div>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2">
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-red"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">New York City (789)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Chautauqua (424)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-400"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Monroe (335)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-700"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Broome (261)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-900"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">Madison (72)</span></div>
+            <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-sm bg-mny-200"></div><span class="font-proxima text-[11px] text-mny-400 font-[500]">All other counties (79)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <!-- VERDICT -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <div class="lg:col-span-7">
+                  <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-2">The verdict</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    One in ten action rows<br>is a second copy of another.
+                  </h2>
+                  <div class="space-y-4 max-w-[640px]">
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      An <strong class="text-mny-900 font-[600]">exact duplicate</strong> here means two or more rows that carry the same
+                      action name and the same description in the same municipality. That is not a design choice or a
+                      near-match &mdash; it is the same action, in the same place, recorded more than once. There are
+                      <strong class="text-mny-900 font-[600]">1,945 such groups covering 1,960 redundant rows</strong>: remove the extras and
+                      18,378 actions become 16,418, with nothing lost.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      The duplication is not spread across the state. <strong class="text-mny-900 font-[600]">Ninety-six percent of it comes
+                      from five county annexes</strong> &mdash; New York City, Chautauqua, Monroe, Broome and Madison. In Monroe and
+                      Madison roughly half of all actions are duplicated; in the other 57 counties the rate is essentially
+                      zero. Duplication is a property of a handful of imports, not of the data-entry process.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      The row ids of a duplicated pair sit far apart (a median of 5,962 ids between them), so this is not a
+                      stray copy-paste of an adjacent row. But <strong class="text-mny-900 font-[600]">two in five pairs share the exact same
+                      creation date.</strong> The signature is unmistakable: each of these five annexes was loaded into the dataset
+                      <em>twice</em> &mdash; two overlapping source workbooks, or a re-run of an import &mdash; leaving a full second copy
+                      with fresh ids.
+                    </p>
+                    <p class="font-proxima text-[16px] leading-[1.65] text-mny-700">
+                      Because every duplicate is by definition the same action in the same place, deleting the extras removes
+                      no distinct action. <strong class="text-mny-900 font-[600]">Thirty-nine percent of groups are identical (or differ only where
+                      one copy left a field blank)</strong> and collapse mechanically. The rest differ only in secondary attributes &mdash;
+                      a project-timeline estimate, a status, a hazard tag &mdash; and are resolved by a simple rule: keep the most
+                      complete, most recently updated copy.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="h-full bg-mny-900 rounded-[12px] p-8 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background:url('../assets/mny/topolines.png');background-size:400px;"></div>
+                    <div class="relative">
+                      <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-4">Where it comes from</p>
+                      <div class="flex items-baseline gap-3 mb-2">
+                        <span class="font-display text-[72px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">96%</span>
+                        <span class="font-display text-[16px] text-mny-y700 font-[500] leading-tight uppercase">of duplicates<br>from 5 annexes</span>
+                      </div>
+                      <p class="font-proxima text-[15px] leading-[1.6] text-mny-200 mt-2">
+                        New York City alone holds <strong class="text-white font-[600]">789</strong> of the 1,960 redundant rows &mdash; roughly
+                        <strong class="text-white font-[600]">two in five</strong>.
+                      </p>
+                      <hr class="border-mny-700 my-5">
+                      <div class="flex items-baseline gap-4">
+                        <div>
+                          <span class="font-display text-[30px] text-mny-400 font-[500] leading-none tracking-[-0.03em] tabular-nums line-through decoration-mny-700">18,378</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">rows today</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-mny-700 self-center" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                        <div>
+                          <span class="font-display text-[48px] text-white font-[500] leading-none tracking-[-0.03em] tabular-nums">16,418</span>
+                          <span class="block font-proxima text-[11px] text-mny-400 uppercase tracking-wider mt-1">unique actions</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- WHERE — county concentration -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Where The Duplicates Are</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Redundant rows by county. The distribution is bimodal: five annexes carry almost all of it, and every
+                  other county sits near zero. That shape is the strongest evidence that duplication came from a repeated
+                  <em>import</em>, not from planners typing the same action twice.
+                </p>
+                <div class="space-y-2.5 max-w-[900px]">
+                  <!-- rows: county, bar (redundant as % of that county), redundant count, % of county -->
+                  <div class="flex items-center gap-3">
+                    <div class="w-[130px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">New York City</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-red rounded-full flex items-center" style="width:37.9%;"><span class="pl-3 font-proxima text-[11px] text-white font-[700]">789</span></div>
+                    </div>
+                    <div class="w-[150px] flex-shrink-0 font-proxima text-[12px] text-mny-400">37.9% of 2,082</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[130px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Monroe</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-red rounded-full flex items-center" style="width:49.9%;"><span class="pl-3 font-proxima text-[11px] text-white font-[700]">335</span></div>
+                    </div>
+                    <div class="w-[150px] flex-shrink-0 font-proxima text-[12px] text-mny-400">49.9% of 671 &mdash; highest</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[130px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Madison</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-red rounded-full flex items-center" style="width:48.3%;"><span class="pl-3 font-proxima text-[11px] text-white font-[700]">72</span></div>
+                    </div>
+                    <div class="w-[150px] flex-shrink-0 font-proxima text-[12px] text-mny-400">48.3% of 149</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[130px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Chautauqua</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full flex items-center" style="width:40.4%;"><span class="pl-3 font-proxima text-[11px] text-mny-900 font-[700]">424</span></div>
+                    </div>
+                    <div class="w-[150px] flex-shrink-0 font-proxima text-[12px] text-mny-400">40.4% of 1,050</div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[130px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-900 font-[600]">Broome</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full flex items-center" style="width:33.8%;"><span class="pl-3 font-proxima text-[11px] text-mny-900 font-[700]">261</span></div>
+                    </div>
+                    <div class="w-[150px] flex-shrink-0 font-proxima text-[12px] text-mny-400">33.8% of 772</div>
+                  </div>
+                  <div class="flex items-center gap-3 opacity-70">
+                    <div class="w-[130px] flex-shrink-0 text-right font-proxima text-[13px] text-mny-700 font-[600]">All 57 others</div>
+                    <div class="flex-1 h-[24px] bg-mny-50 rounded-full relative overflow-hidden border border-mny-100">
+                      <div class="absolute inset-y-0 left-0 bg-mny-200 rounded-full flex items-center" style="width:1.5%;min-width:26px;"><span class="pl-2 font-proxima text-[11px] text-mny-700 font-[700]">79</span></div>
+                    </div>
+                    <div class="w-[150px] flex-shrink-0 font-proxima text-[12px] text-mny-400">&lt;3% each, combined</div>
+                  </div>
+                </div>
+                <p class="font-proxima text-[12px] text-mny-400 mt-4 max-w-[820px]">
+                  <strong class="text-mny-700">Reported separately:</strong> 20 groups (197 rows) &mdash; mostly a generic
+                  &ldquo;Public Awareness Program&rdquo; &mdash; share identical text but carry <em>no</em> county and no jurisdiction. Without a
+                  locality they can&rsquo;t be confirmed co-located, so they are excluded from the count above rather than assumed to be duplicates.
+                </p>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- PROVENANCE -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">What Process Created Them</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Three signals, read together, point to one mechanism: a duplicated bulk import of specific county annexes.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-700">
+                    <p class="font-display text-[30px] text-mny-900 leading-none tabular-nums">0.5%</p>
+                    <p class="font-proxima text-[13px] text-mny-900 font-[600] mt-2">Not adjacent rows</p>
+                    <p class="font-proxima text-[12px] text-mny-400 mt-1 leading-[1.5]">Only 9 of 1,933 pairs have neighbouring ids; the median gap between a pair is 5,962. This isn&rsquo;t a row copied in place &mdash; it&rsquo;s a whole second batch.</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-y700">
+                    <p class="font-display text-[30px] text-mny-900 leading-none tabular-nums">40.6%</p>
+                    <p class="font-proxima text-[13px] text-mny-900 font-[600] mt-2">Share a creation date</p>
+                    <p class="font-proxima text-[12px] text-mny-400 mt-1 leading-[1.5]">Two in five pairs were stamped with the identical <code class="text-[11px] bg-white px-1 rounded">action_creation_date</code> &mdash; created in the same event, then again in another.</p>
+                  </div>
+                  <div class="bg-mny-50 rounded-[10px] p-5 border-l-4 border-mny-red">
+                    <p class="font-display text-[30px] text-mny-900 leading-none tabular-nums">5</p>
+                    <p class="font-proxima text-[13px] text-mny-900 font-[600] mt-2">Counties, not a trend</p>
+                    <p class="font-proxima text-[12px] text-mny-400 mt-1 leading-[1.5]">The duplication is confined to five annexes and near-absent everywhere else. A statewide data-entry habit would look uniform; this looks like five reruns.</p>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-10">
+
+              <!-- SAFE TO DELETE -->
+              <div class="mb-10">
+                <h3 class="font-display font-[500] text-[20px] text-mny-900 uppercase mb-1">Is It Safe To Delete?</h3>
+                <p class="font-proxima text-[14px] text-mny-400 mb-5 max-w-[820px]">
+                  Every group is the same action in the same place, so no distinct action is ever lost. The only question is
+                  which copy&rsquo;s <em>secondary</em> values to keep. Sorted by how much judgement that takes:
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div class="lg:col-span-7 space-y-2.5">
+                    <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-grn">
+                      <div class="flex items-start justify-between gap-4 mb-2">
+                        <div>
+                          <p class="font-display text-[15px] text-mny-900 uppercase leading-none">Identical &mdash; or blank-vs-filled</p>
+                          <p class="font-proxima text-[12px] text-mny-400 mt-1">Copies match on every substantive field, or differ only where one left a field empty.</p>
+                        </div>
+                        <span class="px-2.5 py-[3px] bg-mny-grn text-white font-proxima font-[700] text-[10px] uppercase tracking-wider rounded-full whitespace-nowrap flex-shrink-0">Auto</span>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <div class="flex-1 h-[22px] bg-white rounded-full relative overflow-hidden border border-mny-100">
+                          <div class="absolute inset-y-0 left-0 bg-mny-grn rounded-full" style="width:39.4%;"></div>
+                        </div>
+                        <div class="w-[140px] flex-shrink-0 text-right"><span class="font-display text-[18px] text-mny-900 tabular-nums">767</span><span class="font-proxima text-[12px] text-mny-400 ml-1.5">groups &middot; 39%</span></div>
+                      </div>
+                    </div>
+                    <div class="bg-mny-50 rounded-[10px] p-4 border-l-4 border-mny-y700">
+                      <div class="flex items-start justify-between gap-4 mb-2">
+                        <div>
+                          <p class="font-display text-[15px] text-mny-900 uppercase leading-none">Differ in a secondary field</p>
+                          <p class="font-proxima text-[12px] text-mny-400 mt-1">Same action; copies disagree on an attribute like project timeline or status. Keep the fuller / newer copy.</p>
+                        </div>
+                        <span class="px-2.5 py-[3px] bg-mny-y700 text-mny-900 font-proxima font-[700] text-[10px] uppercase tracking-wider rounded-full whitespace-nowrap flex-shrink-0">Rule</span>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <div class="flex-1 h-[22px] bg-white rounded-full relative overflow-hidden border border-mny-100">
+                          <div class="absolute inset-y-0 left-0 bg-mny-y700 rounded-full" style="width:60.6%;"></div>
+                        </div>
+                        <div class="w-[140px] flex-shrink-0 text-right"><span class="font-display text-[18px] text-mny-900 tabular-nums">1,178</span><span class="font-proxima text-[12px] text-mny-400 ml-1.5">groups &middot; 61%</span></div>
+                      </div>
+                    </div>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] pt-2">
+                      The fields that disagree are almost never the action itself. The most common are the project-timeline
+                      estimate (834 groups), <code class="text-[11px] bg-mny-50 px-1 rounded">action_status</code> and
+                      <code class="text-[11px] bg-mny-50 px-1 rounded">implementation_status</code> (455 / 428), and hazard tags
+                      (419 / 376). None of those change <em>which</em> action it is &mdash; only how one copy was annotated.
+                      And 31 of the redundant rows already carry <code class="text-[11px] bg-mny-50 px-1 rounded">isValid = false</code>,
+                      the dataset&rsquo;s own &ldquo;this row is bad&rdquo; flag.
+                    </p>
+                  </div>
+
+                  <!-- worked example -->
+                  <div class="lg:col-span-5">
+                    <div class="h-full bg-white border border-mny-100 rounded-[12px] p-6 shadow-sm">
+                      <p class="font-proxima text-[12px] text-mny-400 font-[600] uppercase tracking-wider mb-3">A typical pair</p>
+                      <p class="font-proxima text-[15px] text-mny-900 font-[600] leading-tight">&ldquo;Trim Street Culvert Enlargement&rdquo;</p>
+                      <p class="font-proxima text-[12px] text-mny-400 mb-4">Broome County annex</p>
+                      <div class="space-y-2 font-proxima text-[13px]">
+                        <div class="flex justify-between gap-2 border-b border-mny-50 pb-2"><span class="text-mny-400">row id</span><span class="text-mny-900 font-[600] tabular-nums">1,088,612 &nbsp;/&nbsp; 1,090,174</span></div>
+                        <div class="flex justify-between gap-2 border-b border-mny-50 pb-2"><span class="text-mny-400">created</span><span class="text-mny-900 font-[600]">2024 &nbsp;/&nbsp; 2024</span></div>
+                        <div class="flex justify-between gap-2 border-b border-mny-50 pb-2"><span class="text-mny-400">status</span><span class="text-mny-900 font-[600]">identical</span></div>
+                        <div class="flex justify-between gap-2 border-b border-mny-50 pb-2"><span class="text-mny-400">description</span><span class="text-mny-900 font-[600]">identical</span></div>
+                        <div class="flex justify-between gap-2"><span class="text-mny-400">everything else</span><span class="text-mny-grn font-[700]">identical</span></div>
+                      </div>
+                      <p class="font-proxima text-[12px] text-mny-400 mt-4 leading-[1.5]">
+                        Two rows, 1,562 ids apart, same year, byte-for-byte the same action. One of them is noise.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="border-mny-100 mb-8">
+
+              <!-- RECOMMENDATION -->
+              <div class="bg-mny-y50 border border-mny-y500 rounded-[12px] p-6 lg:p-8">
+                <p class="font-proxima text-[12px] text-mny-y700 font-[700] uppercase tracking-wider mb-2">Recommended path</p>
+                <h3 class="font-display font-[500] text-[24px] text-mny-900 uppercase leading-tight mb-4">De-duplicate with a keep-the-richer-copy rule</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">1 &middot; Group</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Match on normalized name + description + locality. That key is conservative: it only flags rows that are the same action in the same place.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">2 &middot; Keep one</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">Within each group keep the survivor that is valid, most complete, and most recently updated; drop the rest. 39% need no choice at all.</p>
+                  </div>
+                  <div>
+                    <p class="font-display text-[15px] text-mny-900 uppercase mb-1">3 &middot; Start with the five</p>
+                    <p class="font-proxima text-[13px] text-mny-700 leading-[1.55]">NYC, Chautauqua, Monroe, Broome and Madison return 96% of the rows. Clearing those five annexes fixes almost the entire problem and every action total that double-counts them.</p>
+                  </div>
+                </div>
+                <p class="font-proxima text-[13px] text-mny-700 leading-[1.6] mt-5 pt-5 border-t border-mny-y500">
+                  <strong class="text-mny-900 font-[600]">Net effect:</strong> 18,378 &rarr; 16,418 action rows (&minus;10.7%), no distinct action removed, every
+                  county and statewide count corrected for double-counting, and fewer actions stacked on the same map point.
+                  The duplicate-heavy counties are, notably, <em>not</em> the template-heavy ones &mdash; see the
+                  <a href="boilerplate-actions.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">Boilerplate Actions</a> report for the complementary pattern.
+                </p>
+              </div>
+
+              <p class="font-proxima text-[11px] text-mny-400 mt-8">
+                Source: <code>references/actions/scripts/10_duplicates.mjs</code> over the joined actions dataset
+                (source 1029065 / view 1074456, 18,378 rows). &ldquo;Exact duplicate&rdquo; = identical normalized action name +
+                description within one county/jurisdiction. Companion to the
+                <a href="actions-qa.html" class="text-mny-700 font-[600] underline decoration-mny-200 hover:decoration-mny-700">Actions Data Quality</a> audit.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Data Reports</div>
+    <a href="actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Locating From Text</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Mockups</div>
+    <a href="../pages/home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="../pages/actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard</a>
+    <a href="../pages/actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List)</a>
+    <a href="../pages/actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Report navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

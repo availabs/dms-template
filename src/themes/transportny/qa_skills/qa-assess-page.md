@@ -68,6 +68,11 @@ Defaults applied: `status=Triage, source=ai, reporter=QA-agent, opened/updated=t
 page/crash/SQL/broken primary nav → Blocker · feature or data wrong → Major · visual divergence
 → Minor · copy/spacing → Polish. Priority: Blocker/Major→Now, Minor→Next, Polish→Later.
 
+**Attach the evidence screenshot** for any visual finding (add-ticket prints the new row id):
+`node tools/attach_screenshot.mjs --ticket <row_id> --image <the shot .png> --caption "…"` —
+uploads it and sets the ticket's `screenshot` column (renders on the detail page). Same tool the
+fix loop uses to attach the after-shot; see qa-fix-ticket.md step 3.
+
 ## 5. Advance the page
 
 ```bash

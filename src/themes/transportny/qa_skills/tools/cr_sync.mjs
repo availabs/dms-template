@@ -128,6 +128,13 @@ function ensureTicketsSchema() {
   config.attributes = config.attributes || [];
   const byName = new Map(config.attributes.map((a) => [a.name, a]));
   let changed = false;
+  // 7-status vocabulary (2026-07-15, Alex): Triage / In progress / In review are the
+  // agent-actionable open set; "Needs decision" parks tickets awaiting a human product/design
+  // call (style or content changes), "Needs data" parks tickets requiring dataset/ETL work we
+  // don't do automatically — both still count as OPEN in every counter, but the QA agent must
+  // not pick them up. Resolved / Closed unchanged.
+  const STATUS_OPTS = ["Triage", "In progress", "In review", "Needs decision", "Needs data", "Resolved", "Closed"]
+    .map((v) => ({ label: v, value: v }));
   const want = [
     { name: "page_name", display_name: "Page", type: "text" },
     { name: "page_route", display_name: "Page route", type: "text" },
@@ -135,9 +142,32 @@ function ensureTicketsSchema() {
     // surface (page_key prefix) — filter ops are exact-match only, so per-pattern ticket
     // queries (overview tickets bars) need it denormalized; LIKE on page_key isn't available.
     { name: "surface", display_name: "Surface", type: "text" },
+    { name: "status", display_name: "Status", type: "select", options: STATUS_OPTS },
+    // triage assessment: the agent's proposed fix / disposition, written during T3 assess
+    { name: "suggested_solution", display_name: "Suggested solution", type: "textarea" },
+    // ── tracking fields (2026-07-15, Alex: "add all the values you suggested") ──
+    // kind of ask — orthogonal to the lifecycle status
+    { name: "category", display_name: "Category", type: "select",
+      options: ["bug", "style", "data", "content", "enhancement"].map((v) => ({ label: v, value: v })) },
+    // what was actually done (written when a ticket is Resolved) + when
+    { name: "resolution", display_name: "Resolution", type: "textarea" },
+    { name: "resolved_date", display_name: "Resolved", type: "text" },
+    // row id of the ticket this duplicates (dupes are kept + linked, not deleted)
+    { name: "duplicate_of", display_name: "Duplicate of", type: "text" },
+    { name: "effort", display_name: "Effort", type: "select",
+      options: ["S", "M", "L"].map((v) => ({ label: v, value: v })) },
+    // reporter/human confirmation that the fix landed ("agent says fixed" ≠ verified)
+    { name: "verified", display_name: "Verified", type: "text" },
+    { name: "verified_by", display_name: "Verified by", type: "text" },
+    // screenshot / attachment URL (one image disambiguates most style reports)
+    { name: "screenshot", display_name: "Screenshot", type: "text" },
   ];
   const added = [];
-  for (const w of want) if (!byName.get(w.name)) { config.attributes.push(w); added.push(w.name); changed = true; }
+  for (const w of want) {
+    const ex = byName.get(w.name);
+    if (!ex) { config.attributes.push(w); added.push(w.name); changed = true; }
+    else if (w.name === "status" && JSON.stringify(ex.options) !== JSON.stringify(STATUS_OPTS)) { ex.options = STATUS_OPTS; ex.type = "select"; added.push("status options"); changed = true; }
+  }
   console.log(`SCHEMA sitemgmt_tickets: ${changed ? `updated (+${added.join(", +")})` : "already coherent"}`);
   if (changed && APPLY) cli("raw", "update", String(TICKETS.source_id), "--data", JSON.stringify({ config: JSON.stringify(config) }));
 }
@@ -332,7 +362,7 @@ if (!CLEAR_TICKETS) {
   // 5) recompute per-page ticket COUNTERS onto sitemgmt_pages (open_bugs / blockers / majors +
   // the rag rollup) — the overview's "Open" column and the QA-process orchestrator read these.
   // open = status ∈ (Triage, In progress, In review). Idempotent: patch only rows that differ.
-  const OPEN_ST = new Set(["Triage", "In progress", "In review"]);
+  const OPEN_ST = new Set(["Triage", "In progress", "In review", "Needs decision", "Needs data"]);
   const byPage = new Map();
   for (const t of trows) {
     if (!t.page_key || !OPEN_ST.has(t.status)) continue;

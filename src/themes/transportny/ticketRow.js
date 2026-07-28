@@ -40,7 +40,7 @@ export const slugFromPathname = (pathname = "") =>
 // asOf is "YYYY-MM-DD"; the caller passes new Date()... (a browser component can,
 // so the row carries a real opened/updated date up front). Phase 2 fields
 // (pathname/pageName/host) attribute the ticket to the current page with no user input.
-export const buildTicketRow = ({ title, severity, description, asOf, pathname, pageName, host, reporterEmail } = {}) => {
+export const buildTicketRow = ({ title, severity, description, asOf, pathname, pageName, host, reporterEmail, envString } = {}) => {
   const row = {
     title: (title || "").trim(),
     severity: severity || DEFAULT_SEVERITY,
@@ -62,5 +62,7 @@ export const buildTicketRow = ({ title, severity, description, asOf, pathname, p
   }
   // Phase 3 — reporter (widget is logged-in-only, so present whenever it renders)
   if (reporterEmail) row.reporter = reporterEmail;
+  // Phase 4 — environment (viewport + user agent, auto-captured; no user input)
+  if (envString) row.env = envString;
   return row;
 };

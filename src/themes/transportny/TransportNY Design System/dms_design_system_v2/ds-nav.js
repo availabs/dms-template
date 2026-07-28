@@ -31,6 +31,7 @@
       { f: 'congestion.html', t: 'congestion' }, { f: 'work-zones.html', t: 'work-zones' },
       { f: 'floating-car.html', t: 'floating-car' }, { f: 'employment-estimates.html', t: 'employment-estimates' },
       { f: 'employment-estimates-mpo.html', t: 'employment · mpo' }, { f: 'lehd-od.html', t: 'lehd-od' },
+      { f: 'route-comparison.html', t: 'route comparison' },
     ]},
     { key: 'fa', label: 'Freight Atlas', landing: 'freight-atlas-home.html', dir: 'pages', pages: [
       { f: 'freight-atlas-home.html', t: 'home' }, { f: 'freight-atlas-map.html', t: 'map' },
