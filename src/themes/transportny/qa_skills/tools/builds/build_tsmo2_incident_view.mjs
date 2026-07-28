@@ -596,6 +596,19 @@ let pageId = items.find((p) => (p.url_slug || p.data?.url_slug) === SLUG)?.id;
 if (!pageId) { pageId = (cli("page", "create", "--pattern", PATTERN, "--title", SLUG, "--slug", SLUG).match(/"id"\s*:\s*"?(\d+)"?/) || [])[1]; console.log("created", SLUG, pageId); }
 else console.log("reusing", SLUG, pageId);
 const existing = JSON.parse(clean(cli("raw", "get", String(pageId)))).data.draft_sections || [];
+
+// ⚠ PARITY GUARD (backfilled 2026-07-28; page_to_build.mjs emits this for newly generated scripts).
+// A rebuild WIPES and recreates, so anything authored on the live page after this script was
+// generated — and never backported here — is DESTROYED. That has happened twice: 6 sections lost on
+// tsmo2/workzones_v2 (2026-07-15/16), and a graph's yAxis.tickSpacing silently reverted on
+// tsmo2/incidents_v2 (2026-07-27) at an IDENTICAL section count. So this count check is necessary but
+// NOT sufficient — before re-running after any live authoring, also prove CONTENT parity:
+//   node src/themes/transportny/qa_skills/tools/builds/fidelity_static.mjs src/themes/transportny/qa_skills/tools/builds/build_tsmo2_incident_view.mjs 2182470
+// If this fires, do NOT edit the count — regenerate:
+//   node src/themes/transportny/qa_skills/tools/page_to_build.mjs --pattern tsmo2 --slug incident_view
+if (existing.length && existing.length !== SECTIONS.length) {
+  throw new Error(`REFUSING TO WIPE ${SLUG}: the live draft has ${existing.length} sections but this builder carries ${SECTIONS.length} — it has drifted, and wiping would drop authored sections it cannot recreate. Regenerate with page_to_build.mjs instead of running this.`);
+}
 for (const e of existing) {
   try { cli("section", "delete", String(e.id), "--page", String(pageId)); }
   catch (err) { console.log("  DELETE FAILED for", e.id, String(err).slice(0, 120)); }

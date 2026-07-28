@@ -24,7 +24,7 @@ the smallest surface:
 
 | Surface | How | Rules |
 |---|---|---|
-| **Section config** | patch the page's OWNING build script (`tools/builds/`, see its README) and RE-RUN it | no owner yet → generate via `tools/page_to_build.mjs` + fidelity gate first; never hand-edit sections a script owns |
+| **Section config** | patch the page's OWNING build script (`tools/builds/`, see its README) and RE-RUN it — **but prove parity first: `tools/builds/fidelity_static.mjs <script> <pageId>`** | A matching section COUNT is NOT proof (32/32 still reverted a graph fix on 2026-07-27). Drifted builder ⇒ do NOT re-run — regenerate via `tools/page_to_build.mjs` + gate, or fix surgically **and backport the same day**. No owner yet ⇒ generate + gate first. Never leave a surgical edit un-backported: the next rebuild silently reverts it |
 | **Theme** | `src/themes/transportny/themev2.js` | additive/BC (new tokens/styles over widened APIs); joins the transportNY sync batch |
 | **Core dms** | `src/dms/packages/dms/src/…` | BC ONLY + its own task file in `src/dms/planning/tasks/current/` (per `feedback_primitive_change_tasks_bc`). Non-BC ⇒ ELEVATE |
 | **Data** | dataset rows via `qa_state.mjs` / a `cr_sync.mjs` enrichment | script-owned columns stay script-owned |

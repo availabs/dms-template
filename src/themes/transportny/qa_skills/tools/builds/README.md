@@ -27,16 +27,77 @@ Two lineages (task `planning/transportny/tasks/current/qa-build-scripts-migratio
 | build_fa_gallery_about.mjs | freightatlas2/maps_gallery 2174664 + **about 2174665** (slug-swap per #107 done; about_deprecated DELETED 2026-07-13) | migrated | gallery rebuilt DATA-DRIVEN 2026-07-13 per the new design: tiles = live figures from `freightatlas_maps` (2189815/v2189816), 8 category groups, live status chips, `?layers=` deep-links. Gotchas encoded in comments: pageSize REQUIRED with usePagination:false; no literal ' as ' in calc string literals (chr(32) dodge). |
 | build_tsmo2_about.mjs | tsmo2/about 2184040 | generated | gated ✓ |
 | build_tsmo2_methodology.mjs | tsmo2/methodology 2184101 | generated | gated ✓ |
-| build_tsmo2_incidents_v2.mjs | tsmo2/incidents_v2 2181461 | generated (captures the #101 view-link fix) | gated ✓ |
-| build_tsmo2_workzones_v2.mjs | tsmo2/workzones_v2 2182386 | generated | gated ✓ |
+| build_tsmo2_incidents_v2.mjs | tsmo2/incidents_v2 2181461 | generated — **REGENERATED from live 2026-07-27** after a re-run silently reverted the 07-16 graph fix (`yAxis.tickSpacing` 2000000 → 2) despite a matching 32-section count. Now carries a runtime parity guard + a pointer to `fidelity_static.mjs`, which is the check that catches same-count drift. | gated ✓ 2026-07-27 — static fidelity 32/32 identical to live, rebuild 32/32, re-export diff clean, `AxisLeft` warning gone and graph verified rendering ~5 ticks at 2M |
+| build_tsmo2_workzones_v2.mjs | tsmo2/workzones_v2 2182386 | generated — **REGENERATED from live 2026-07-27** after drifting 28 vs live 34 (it had been marked "STALE — DO NOT RUN" since it regressed the drafts on 2026-07-15/16). Now carries a **runtime parity guard** instead of that hand-written throw: it compares the live draft section count to `SECTIONS.length` *before* wiping and refuses if they differ. | gated ✓ 2026-07-27 — static fidelity (all 34 exported sections byte-identical to live) + rebuild 34/34 + re-export diff clean + guard verified to refuse a deliberately drifted copy without touching the page |
 | build_tsmo2_incident_view.mjs | tsmo2/incident_view 2182470 | generated | gated ✓ |
-| build_tsmo2_corridor_view.mjs | tsmo2/corridor_view 2182912 | generated | gated ✓ |
+| build_tsmo2_corridor_view.mjs | tsmo2/corridor_view 2182912 | generated + hand-fix 2026-07-27 (#103/#159/#181: corridor strip map added to the empty "Compare & map" group — Map section over source 582/view 984, serverSide county/road/direction/**year** filters) | gated ✓ · rebuilt 24/24 2026-07-27 |
 | build_freightatlas2_freight_atlas.mjs | ~~freightatlas2/freight_atlas 1411761~~ **STALE — owner retired 1411761 2026-07-16** | generated (460KB map symbology — payloads via temp files) | The sitemgmt `freightatlas2` surface now tracks the SANDBOX pattern 2175436 → page **2189762** / map section **2189767** (config row 2186151). That page is NOT build-owned; its symbologies are edited directly (see `qa-fix-map-symbology-tickets.md`). TODO: regenerate this build against 2189762 (or retire it) so the tracked page is build-owned again. |
 | build_npmrds2_map_21.mjs | npmrds2/map_21 1473731 | generated | gated ✓ |
+
+**⚠ LIVE-EDIT DRIFT — check CONTENT, not section counts (2026-07-27 incident).**
+`build_tsmo2_congestion_v2.mjs` was generated 07-20; two fixes (#156, #158) were applied on 07-21 by
+editing the **live sections**; re-running the script on 07-27 silently reverted both. Section counts
+matched (20 vs 20) because the drift was *inside* existing sections' column configs, so the count-parity
+check passed. Restored 07-28 from the orphaned 07-21 published rows.
+
+Before re-running ANY script here: re-export live (`node ../page_to_build.mjs --pattern <p> --slug <s>
+--out /tmp/x.mjs`) and **diff against the committed script**, and check the ticket table for fixes whose
+`resolved_date` is after the script's generation date on that `page_key`. If it happens anyway: the
+pre-rebuild published section rows survive as orphans — `dms raw list "<app>+<pattern>|component"
+--limit 2000` (plus `--offset`), grep for the lost config, lift `element-data` verbatim, fold it into
+the script.
+
+**Armed right now:** `build_tsmo_reliability.mjs` (migrated, ungated) predates **#165**'s 07-21 live fix
+(map legend title no longer truncated to "W..") — re-running it as-is will revert that. Diff before use.
 
 **Fidelity gate** (mandatory before a script's FIRST fix-loop rebuild if flagged above): baseline
 `qa_assess.mjs` + section count → run the script → section count unchanged, no new findings,
 `page_to_build.mjs` re-export diff clean.
+
+**Add a STATIC fidelity check before the first run of a regenerated script.** The two gate steps above
+both require *running* the script, which is the destructive part — that is how workzones_v2 lost 6
+authored sections on 2026-07-15/16. Cheaper and safer: export with `page_to_build.mjs --out <scratch>`,
+then compare each exported `SECTIONS[i]` payload against the corresponding live `draft_sections[i]`
+row's `data` (ignoring `id`/timestamps). If every section is byte-identical, running the script is
+*provably* content-neutral and the gate becomes a formality.
+(Worked example: `fidelity_static.mjs`, used for the 2026-07-27 workzones_v2 regeneration.)
+
+**⚠ A matching section COUNT does not mean a builder is safe to run.** `build_tsmo2_incidents_v2.mjs`
+was 32-for-32 with its live page and still silently reverted a fix when re-run (2026-07-27): the
+2026-07-16 pass had changed the "Attributed delay by year" graph from millions-of-vehicle-hours to raw
+vehicle-hours on the live draft — `display.yAxis.tickSpacing` `2` → `2000000` — and never backported
+it. The rebuild restored `tickSpacing: 2` against a 0–9.79M domain, so `AxisLeft` began logging
+*"ignoring tickSpacing 2 — it would produce 4893180 ticks (max 200)"* and falling back on every render.
+Nothing failed loudly; the section count was identical and the page still drew.
+**So: run `fidelity_static.mjs` before re-running any builder on a page that has been authored since
+the builder was generated** — it is the only check that catches a same-count content drift. Recovery
+came from the published rows, which a draft-only rebuild never touches.
+
+**Every generated script now carries a runtime parity guard — `page_to_build.mjs` emits it** (as of
+2026-07-28), so a regeneration no longer drops it and you don't hand-add it. It sits right after
+`const existing = …draft_sections` and *before* the delete loop, refuses when
+`existing.length !== SECTIONS.length`, and prints the exact `fidelity_static.mjs` command for that
+page (real page id baked in). It replaces the old idiom of a hand-written `STALE — DO NOT RUN` throw
+at the top of the file, which needed a human both to notice the drift and to remember to remove the
+throw afterwards.
+
+Verified by running a deliberately drifted copy (`SECTIONS.pop()`): it refuses with
+*"REFUSING TO WIPE workzones_v2: the live draft has 34 sections but this builder carries 33"* and the
+page is untouched — tested on both an emitted guard (workzones_v2) and a backfilled one (methodology).
+
+**Coverage: 9 of 18 builders — every GENERATED one.** The guard was backfilled into the 7 generated
+scripts that predate the generator emitting it (a pure code addition: it only takes effect on the next
+run, so no rebuild and no page was touched to apply it). The **9 MIGRATED builders have no guard** —
+they don't keep a `const SECTIONS` array (they create sections another way), so `SECTIONS.length` has
+no meaning there and each needs its own "how many sections will I create" expression. Add it per
+script, or regenerate them (which flattens hand-authored structure to a verbatim export — a trade to
+make deliberately, not by default):
+`build_cr_{design,overview,page,tickets}.mjs`, `build_fa_{home,gallery_about}.mjs`,
+`build_tsmo_{home,incident_search,reliability}.mjs`.
+
+**Two scripts remain stale** — `build_tsmo_home.mjs` still carries a `STALE` throw, and
+`build_freightatlas2_freight_atlas.mjs` targets retired page 1411761 (the tracked page is 2189762).
+Both want the same regenerate-and-gate treatment.
 
 **Not owned here** (out of scope): the 7 no-design tracked pages (pending prune decision);
 `build_map21_lottr.mjs` (npmrds_sub report page), `build_emp_overview.mjs`,

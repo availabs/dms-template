@@ -64,10 +64,23 @@ agent-actionable tickets AND no open elevated Blocker/Major (elevated Minor/Poli
 - **Never publish** (`dms page publish`) — humans publish. Assess draft pages via `/edit/<slug>`;
   note view-only behaviors (e.g. isModal groups) as "verify after publish" instead of ticketing.
 - Never delete rows; never edit `sitemgmt_patterns`; never set `client_approved`.
-- Section-config fixes go through the page's **owning build script in `tools/builds/`**
-  (see its README for the custody table + fidelity gate) — patch the script and re-run it;
-  never hand-edit sections a script owns (rebuilds would clobber the hand-edit). Pages without
-  an owner yet: generate one first (`tools/page_to_build.mjs`), gate it, then fix.
+- Section-config fixes go through the page's **owning build script in `tools/builds/`** — but
+  **check the builder is in parity with the live page BEFORE you re-run it** (see its README for the
+  custody table). The decision, in order:
+  1. **Not build-owned** (e.g. the freight-atlas map section) → surgical read-modify-write on the
+     section's `element-data` is the correct fix. See `qa-fix-map-symbology-tickets.md`.
+  2. **Build-owned + in parity** → patch the script, re-run. The normal path.
+  3. **Build-owned + DRIFTED** → do NOT re-run: a rebuild wipes and recreates, so anything authored
+     live and never backported is destroyed. Either regenerate (`tools/page_to_build.mjs`) and gate,
+     or fix surgically and backport.
+  Prove parity with **`tools/builds/fidelity_static.mjs <script> <pageId>`** — a matching section
+  COUNT is not enough. On 2026-07-27 `build_tsmo2_incidents_v2.mjs` was 32-for-32 and still reverted
+  a graph fix (`yAxis.tickSpacing` 2000000 → 2, silently degrading every render); on 2026-07-15/16 a
+  28-vs-34 drift destroyed 6 authored sections outright.
+- **Backport a surgical edit the moment you make it.** An un-backported live edit is a landmine for
+  the next rebuild — that is the exact mechanism behind both incidents above. If you cannot backport,
+  say so on the ticket. Published rows are the recovery source: a draft-only rebuild never touches
+  them, which is what made both recoveries possible.
 - Core `@availabs/dms` fixes: BC only, with their own task file
   (`src/dms/planning/tasks/current/`) per `feedback_primitive_change_tasks_bc`; non-BC ⇒ elevate.
 - Budgets per run (defaults): assess ≤ 5 pages, fix ≤ 10 tickets; one touch per page per stage
@@ -79,6 +92,8 @@ agent-actionable tickets AND no open elevated Blocker/Major (elevated Minor/Poli
 `qa-run` (orchestrator) · `qa-sync-inventory` (T0) · `qa-scope-stories` (T1) ·
 `qa-implement-page` (T2) · `qa-assess-page` (T3) · `qa-fix-ticket` (T4, + the map-layer sub-process
 `qa-fix-map-symbology-tickets`) · `qa-address-tickets` (T5). Tools: `tools/cr_sync.mjs`, `tools/qa_state.mjs`,
-`tools/qa_assess.mjs`, `tools/builds/`. Related dms skills:
+`tools/qa_assess.mjs`, `tools/page_to_build.mjs` (regenerate a drifted builder),
+`tools/builds/fidelity_static.mjs` (prove a builder matches live BEFORE re-running it),
+`tools/builds/`. Related dms skills:
 `creating-pages-from-a-design-pattern`, `transcribing-a-design-card-to-dms`, `card-layout`,
 `modal-section-group`, `authenticating-the-dms-cli`.
