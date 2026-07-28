@@ -99,6 +99,29 @@ const INFO_BOX_BINS = ['amp', 'midd', 'pmp', 'we'];
 // before ever shelling out to Python.
 const INFO_BOX_RELIABILITY_YEARS = { min: 2018, max: 2025 };
 
+// A route instance's optional peak-hour/time-of-day sub-window. The runtime
+// mechanism this rides on (useGraphPublish.js's transformReportRoutes) detects
+// a time component by checking `.includes('T')` on startDate/endDate — so
+// combining is just string concatenation, matching exactly what RouteRow.jsx's
+// date+time inputs already produce by hand. startTime/endTime are kept as
+// separate spec-facing fields rather than folded into startDate/endDate:
+// Route Map/Info Box read startDate/endDate directly for a separate Python
+// path and must never see a time suffix, so only combine at the one call site
+// that writes the reports_snap_2 row's route entries.
+const HHMM_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+function combineDateTime(date, time) {
+  return time ? `${date}T${time}` : date;
+}
+// Inverse of combineDateTime, for --from-page reconstruction: a persisted row
+// only ever carries the combined string (that's the format the runtime/UI
+// both read and write), so recovering a clean startTime/endTime pair back out
+// of the spec means splitting on 'T' rather than assuming the field is bare.
+function splitDateTime(combined) {
+  if (!combined || !combined.includes('T')) return { date: combined };
+  const [date, time] = combined.split('T');
+  return { date, time };
+}
+
 // ── args ───────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
 const VALUE_FLAGS = new Set(['--update', '--from-page', '--out', '--note']);
@@ -360,16 +383,22 @@ function runFromPage(pageArg, outPath) {
     }
   }
 
-  const routes = routeEntries.map((e, i) => ({
-    id: `r${i + 1}`,
-    route_id: Number(e.route_id ?? e.id),
-    name: e.name,
-    ...(e.startDate ? { startDate: e.startDate } : {}),
-    ...(e.endDate ? { endDate: e.endDate } : {}),
-    ...(e.color ? { color: e.color } : {}),
-    ...(e.weekdays ? { weekdays: e.weekdays } : {}),
-    graphs: (e.graphIds || []).map(tid => keyByTrackingId.get(tid)).filter(Boolean),
-  }));
+  const routes = routeEntries.map((e, i) => {
+    const start = splitDateTime(e.startDate);
+    const end = splitDateTime(e.endDate);
+    return {
+      id: `r${i + 1}`,
+      route_id: Number(e.route_id ?? e.id),
+      name: e.name,
+      ...(start.date ? { startDate: start.date } : {}),
+      ...(end.date ? { endDate: end.date } : {}),
+      ...(start.time ? { startTime: start.time } : {}),
+      ...(end.time ? { endTime: end.time } : {}),
+      ...(e.color ? { color: e.color } : {}),
+      ...(e.weekdays ? { weekdays: e.weekdays } : {}),
+      graphs: (e.graphIds || []).map(tid => keyByTrackingId.get(tid)).filter(Boolean),
+    };
+  });
 
   writeSpecOut({
     title: page.title,
@@ -426,6 +455,18 @@ for (const r of spec.routes) {
     const level = r.confidence?.level;
     if (!['low', 'medium', 'high'].includes(level)) {
       fail(`route "${r.id}" has \`confidence\` but \`confidence.level\` is "${level}" — must be "low", "medium", or "high".`);
+    }
+  }
+  // A time-of-day sub-window (peak-hour filtering) rides on the same startDate/
+  // endDate strings useGraphPublish.js already parses (it detects a time
+  // component via `.includes('T')`) — so a time needs a date to attach to, and
+  // both boundaries must agree on whether a time is present.
+  if (r.startTime || r.endTime) {
+    if (!HHMM_RE.test(r.startTime || '') || !HHMM_RE.test(r.endTime || '')) {
+      fail(`route "${r.id}" has \`startTime\`/\`endTime\` but one is missing or not "HH:mm" — both are required together, 24-hour, e.g. "07:00"/"10:00".`);
+    }
+    if (!r.startDate || !r.endDate) {
+      fail(`route "${r.id}" has \`startTime\`/\`endTime\` but no \`startDate\`/\`endDate\` — a time-of-day window needs a date window to apply within.`);
     }
   }
 }
@@ -485,7 +526,9 @@ if (SUMMARY_ONLY) {
   if (spec.intro) console.log(`\nIntro (title-block section):\n  "${spec.intro}"`);
   console.log(`\nRoutes (${spec.routes.length} instance${spec.routes.length === 1 ? '' : 's'}):`);
   for (const r of spec.routes) {
-    const window = r.startDate && r.endDate ? `${r.startDate} → ${r.endDate}` : 'no date window (all available dates)';
+    const window = r.startDate && r.endDate
+      ? `${combineDateTime(r.startDate, r.startTime)} → ${combineDateTime(r.endDate, r.endTime)}`
+      : 'no date window (all available dates)';
     // Semantics per useGraphPublish.js:34 — ONLY an explicit `false` excludes a
     // day, so an absent key means included. Enumerate all seven and subtract.
     const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -1067,8 +1110,8 @@ const routeEntries = spec.routes.map((r, i) => {
     id: r.route_id,
     route_comp_id: `comp-${i}`,
     graphIds: (r.graphs || []).map(gk => graphTrackingIds[spec.graphs.findIndex(g => g.key === gk)]),
-    ...(r.startDate ? { startDate: r.startDate } : {}),
-    ...(r.endDate ? { endDate: r.endDate } : {}),
+    ...(r.startDate ? { startDate: combineDateTime(r.startDate, r.startTime) } : {}),
+    ...(r.endDate ? { endDate: combineDateTime(r.endDate, r.endTime) } : {}),
     ...(r.color ? { color: r.color } : {}),
     ...(r.weekdays ? { weekdays: r.weekdays } : {}),
     isValid: true,

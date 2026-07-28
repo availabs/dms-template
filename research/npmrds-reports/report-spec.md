@@ -87,6 +87,8 @@ share one `route_id` and differ only by window; that is how before/after compari
 | `graphs` | yes in practice | Array of `graphs[].key`. Empty means this instance feeds nothing — the build warns and fails the structural check. |
 | `startDate` | no | Inclusive window start. Omit both dates for all available data. |
 | `endDate` | no | Window end. |
+| `startTime` | no | Time-of-day window start, `"HH:mm"` 24-hour (e.g. `"07:00"`). Requires `endTime` and a `startDate`/`endDate` window — see the semantics below. |
+| `endTime` | no | Time-of-day window end. Requires `startTime`. |
 | `color` | no | Series color, hex. |
 | `weekdays` | no | Day mask — see the semantics below. |
 | `confidence` | no | `{level: "low"\|"medium"\|"high", note}` — flags an inferred, not-determinate choice (typically segment extent — "around Verplank Ave and Beekman St" has no exact answer). Guess-and-flag, not a gate: `level: "low"` prints a "NEEDS REVIEW" banner in both `--summary` and a real build, but never blocks the build. See "Intake checklist" in `creating-reports.md`. |
@@ -138,6 +140,108 @@ means Monday–Friday, not "only Saturday and Sunday excluded from nothing". An 
 
 `weekdays` has **no UI control** today; the runtime honors it regardless, so a spec can express it
 and the Measure Picker cannot. It is the cheapest available parity win.
+
+### `startTime`/`endTime`: a peak-hour (or any time-of-day) sub-window (added 2026-07-28)
+
+Closes the gap tracked as `report-route-ui-parity-gaps.md` gap #11 and
+`client-request-to-report-skill.md` next-steps item #11: no way to express "just the AM/PM peak"
+on a route instance. Reuses an existing, already-live runtime mechanism rather than adding a new
+one — `useGraphPublish.js`'s `transformReportRoutes` already turns a `startDate`/`endDate` pair
+containing a clock time (the exact ISO-ish `"YYYY-MM-DDTHH:mm"` format `ReportRouteList`'s own
+date+time inputs produce) into a real ClickHouse `epoch` IN-filter, ANDed with the date filter —
+this has worked since 2026-06-23 for hand-built routes. The gap was purely that
+`report_build.mjs` had no spec field to feed it.
+
+```json
+{ "id": "am", "route_id": 2126095, "name": "AM Peak",
+  "startDate": "2026-04-20", "endDate": "2026-04-30", "startTime": "07:00", "endTime": "10:00",
+  "graphs": ["overview"] },
+{ "id": "pm", "route_id": 2126095, "name": "PM Peak",
+  "startDate": "2026-04-20", "endDate": "2026-04-30", "startTime": "16:00", "endTime": "19:00",
+  "graphs": ["overview"] }
+```
+
+**The epoch filter is a time-of-day range, independent of date** — so one `startTime`/`endTime`
+pair applies to *every* date in the window, not just the boundary days. The example above is
+exactly how to reproduce the old tool's AM-Peak/PM-Peak sub-window split (each as its own named
+series) rather than a categorical `"amPeak": true` flag: the old tool's peak checkboxes computed
+an envelope into `startTime`/`endTime` and were themselves just this mechanism with a friendlier
+label — see the rules note below on why this spec exposes the raw window instead of AM/PM enums.
+
+**`startDate`/`endDate` stay pure dates on the spec** — `startTime`/`endTime` are separate fields,
+combined into the single time-suffixed string only when writing the `reports_snap_2` row's route
+entries. **Correction, 2026-07-28 (later the same day):** this section originally claimed the time
+window is "simply inert" for Route Map and Info Box graphs. That was wrong, and wrong for a
+checkable reason — `report_build.mjs`'s two build-time Python shell-outs
+(`composeMapGraphState`/`composeInfoBoxGraphState`) genuinely never see `startTime`/`endTime`
+(Route Map's per-report choropleth bake, `pooled_route_map_values`, has no epoch predicate in its
+SQL at all), but that is not the same question as "does the *live rendering* apply the window."
+`findSelfBoundGraphs` (`useGraphPublish.js`) discovers any section with an enabled
+`comparison_series` subscriber bound to `$self` — it does not check element-type — so the same
+epoch-bearing filter list `transformReportRoutes` builds is published to Route Map and Info Box
+sections exactly as it is to AVL Graph, and both ride the same generic
+`comparisonSeries`/`buildUdaConfig.js` query-building path at render time. **Live-verified
+2026-07-28**: a two-instance (AM/PM) build assigning the same route to one Info Box `travelTime`
+graph and two Route Map `speed` graphs produced, per `report_probe.mjs`'s decoded network capture,
+genuinely different results per arm — Info Box: 8.615 min (07:00–09:00) vs 8.498 min
+(16:00–18:00); Route Map's live `colorDomain` re-break: 71.67 mph vs 70.69 mph — over the identical
+TMC and date range, differing only by `startTime`/`endTime`. So **the mechanism already worked with
+zero code changes**, for both graph types, the moment a route carrying `startTime`/`endTime` was
+assigned to them — the earlier claim was an unverified analogy from a genuinely different fact
+(Route Map's static build-time bake ignores epoch), over-generalized to the live render without
+testing it, the same mistake class flagged in `feedback_verify_no_shape_claims_against_code`.
+
+**What is still real:** Route Map's *build-time* choropleth bake (`pooled_route_map_values`) has no
+epoch predicate, so the section's initial/placeholder color breaks and first paint reflect the
+whole date range, not the peak window — only corrected once the live `comparisonSeries` re-break
+runs client-side. Info Box has no equivalent static step (queries live from the first render), so
+this gap doesn't apply there at all. Not fixed in this pass — narrower and lower-priority than the
+"UI half" below, since the page a viewer actually sees is already correct.
+
+**No named shorthand (`"peak": "am"`/`"pm"`) on purpose.** AM/PM windows aren't universal — a
+signal-timing study and a school-zone study don't share one. The old tool's own `amPeak`/`pmPeak`
+checkboxes were dead code (computed an envelope, never reached the query — see
+`old-reports-conversion.md:882-883`), so there's no real precedent to match, only a UI convenience
+to reproduce if a control ever gets built. Writing the literal window per client ask, with the
+reasoning in `why`, matches the "guess and flag" posture the rest of this spec already uses.
+
+**The UI convenience got built, 2026-07-28 (later same day):** `RouteRow.jsx`'s existing date+time
+`<Input>`s (the only UI surface for `startTime`/`endTime`, unchanged) gained a row of one-click
+presets — AM Peak (06:00–10:00), PM Peak (16:00–20:00), PM Peak (alt) (15:00–19:00), Midday
+(10:00–16:00), All Day (clears both) — matching the non-wrapping windows in `REPORTING_BINS`
+(`data-types/map21/constants.js`). Since a route's date/time window is graph-type-agnostic (the
+same `RouteRow` control feeds whichever graphs the route is assigned to), this one control closes
+gap #11's "UI half" for AVL Graph, Route Map, and Info Box simultaneously — no per-graph-type work
+needed, consistent with the correction above. `OVN`/`FREEFLOW` are omitted: both wrap past
+midnight, which `generateEpochRange`'s plain `start<=end` loop can't express (see
+`report-route-ui-parity-gaps.md` gap #11 for the full writeup and live verification).
+
+**Validation**: `startTime`/`endTime` must both be present together (`"HH:mm"`, 24-hour) if either
+is, and both require `startDate`/`endDate` to already be set — a time-of-day window needs a date
+window to apply within; that's a hard build error, not a warning.
+
+**Known pre-existing gap, not fixed by this feature**: `--from-page`'s drift check (the "does the
+live page still match its stored spec" test that decides whether to echo the stored spec or
+reconstruct from live state) only inspects graph-section content — title, `_measurePick`, caption.
+It does not compare the snap row's own `routes` field against the stored spec's `routes[]`, so a
+route hand-edited live via `ReportRouteList` (including its date/time inputs) after a build can go
+undetected as drift, and `--from-page` will happily echo back the stale stored spec instead of
+reconstructing. This has been true since routes first got a `startDate`/`endDate`/`weekdays`
+comparison surface, not introduced here — just newly relevant now that a route field (peak window)
+is more likely to get hand-tweaked post-build. Not fixed in this pass (would touch the shared drift
+check broadly, not just this feature); logged in the task file's next-steps.
+
+Live-verified 2026-07-28: a two-instance (`AM Peak`/`PM Peak`, same `route_id`) LineGraph build
+produced a live query whose two `seriesVariants` carried identical `tmc`/`date` filter groups and
+distinct `epoch` filter lists (`[84..120]` vs `[192..228]`) — confirmed via `report_probe.mjs`'s
+decoded `/graph` capture, not just a structural check. The two series' rendered means
+(8.5179 / 8.4455 minutes) matched a direct ClickHouse query over the same TMC/window/epoch-range
+to 5 decimal places. `--from-page` round-tripped correctly in both branches: the no-drift echo path
+(trivial, since `stripInternal` already preserves `startTime`/`endTime` verbatim) and, after forcing
+drift with a hand-edited section title, the live-reconstruction path (which splits the persisted
+combined date+time string back into clean `startTime`/`endTime` fields). Test page `2196692` +
+sections `2196693`-`2196696` + snap row `2196698` deleted after, confirmed gone via `page show`
+and the split-table dataset query.
 
 ### Difference graphs: anchor and sign
 

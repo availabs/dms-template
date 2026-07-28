@@ -15,6 +15,23 @@ const onTimeChange = (e, currentValue, setter) => {
   setter(e.target.value ? `${date}T${e.target.value}` : date);
 };
 
+// Time-of-day presets an author can apply in one click instead of typing "HH:mm"
+// into both time inputs from memory. Mirrors the non-wrapping windows in
+// REPORTING_BINS (data-types/map21/constants.js, the FHWA time-of-day periods used
+// by the map21 HPMS plugin) as plain HH:mm bounds — duplicated rather than imported,
+// since that file is a server-side CommonJS module for an unrelated plugin, not a
+// client dependency of this theme. OVN (20:00-06:00) and FREEFLOW (22:00-05:00) are
+// deliberately omitted: both wrap past midnight, which the epoch-range mechanism
+// these times feed (useGraphPublish.js's generateEpochRange, a plain start<=end
+// loop) can't express — it would silently produce an empty epoch filter.
+const PEAK_PRESETS = [
+  { label: 'AM Peak', startTime: '06:00', endTime: '10:00' },
+  { label: 'PM Peak', startTime: '16:00', endTime: '20:00' },
+  { label: 'PM Peak (alt)', startTime: '15:00', endTime: '19:00' },
+  { label: 'Midday', startTime: '10:00', endTime: '16:00' },
+  { label: 'All Day', startTime: '', endTime: '' },
+];
+
 // One route's row: expand/collapse, name/date inline editing, TMC list, per-graph
 // assignment chips, remove. Purely presentational — every mutation is a callback
 // prop into the parent's `useReportRow`/`useGraphPublish`-backed handlers; this
@@ -68,6 +85,18 @@ export default function RouteRow({
   const onChangeColorRef = useRef(onChangeColor);
   onChangeColorRef.current = onChangeColor;
   const stableOnChangeColor = useCallback((c) => onChangeColorRef.current?.(c), []);
+
+  // Presets only touch the time-of-day portion, keeping whatever date is already
+  // picked — same combined "YYYY-MM-DDTHH:mm" shape the raw time <Input>s write via
+  // onTimeChange above. Requires both dates set first (buttons disabled otherwise)
+  // rather than writing a dateless "THH:mm" string.
+  const canApplyPreset = !!getDateValue(editStartDateValue) && !!getDateValue(editEndDateValue);
+  const applyPeakPreset = (preset) => {
+    const startDate = getDateValue(editStartDateValue);
+    const endDate = getDateValue(editEndDateValue);
+    onEditStartDateValueChange(preset.startTime ? `${startDate}T${preset.startTime}` : startDate);
+    onEditEndDateValueChange(preset.endTime ? `${endDate}T${preset.endTime}` : endDate);
+  };
 
   const r = route;
   const tmcArray = parseTmcArray(r.tmc_array);
@@ -167,6 +196,23 @@ export default function RouteRow({
                   <Input type="time" value={getTimeValue(isEditingDates ? editEndDateValue : r.endDate)} disabled={!isEditingDates} onChange={(e) => onTimeChange(e, isEditingDates ? editEndDateValue : r.endDate || '', onEditEndDateValueChange)} />
                 </div>
               </div>
+              {isEditingDates && (
+                <div className={t.peakPresetsWrapper}>
+                  <span className={t.peakPresetLabel}>Time of Day:</span>
+                  {PEAK_PRESETS.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      className={t.peakPresetPill}
+                      disabled={!canApplyPreset}
+                      title={canApplyPreset ? `${preset.startTime || 'start'}–${preset.endTime || 'end'}` : 'Set a start and end date first'}
+                      onClick={() => applyPeakPreset(preset)}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {isEdit && ColorPicker && (
               <div className={t.colorSection}>

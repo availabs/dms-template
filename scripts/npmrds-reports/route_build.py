@@ -275,10 +275,9 @@ def cmd_find(args):
         for s in segs:
             note = ""
             if prev is not None:
-                disconnected = (abs(s["start_latitude"] - prev["end_latitude"]) > COORD_TOLERANCE
-                                or abs(s["start_longitude"] - prev["end_longitude"]) > COORD_TOLERANCE)
-                if disconnected:
-                    note = "   <-- BREAK: does not connect to the segment above"
+                gap_m = endpoint_gap_meters(prev, s)
+                if gap_m > GAP_WARN_METERS:
+                    note = f"   <-- gap: {gap_m:,.0f} m from the segment above"
                 elif s["road_order"] != prev["road_order"] + 1:
                     note = (f"   (road_order hole {prev['road_order']:.0f}->"
                             f"{s['road_order']:.0f}; still connects)")

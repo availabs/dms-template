@@ -2,8 +2,11 @@
 
 **Status:** all four gaps DONE as of 2026-07-28 (started 2026-07-27). Remaining work is
 follow-on, tracked in "Next steps" below (route-date cleanup, `--ui-guide` generator, Route
-Map's color_range, Route Compare Component wiring — Route Info Box wiring is DONE, see item 8).
-Supersedes the framing in
+Map's color_range, Route Compare Component wiring). #11's UI half (Route Info Box wiring and
+spec half were already DONE, see items 8 and 11) is now ALSO DONE, 2026-07-28 later session —
+see `report-route-ui-parity-gaps.md` gap #11 for the full writeup, including a correction to
+this file's own item 8/1018 framing below (Route Map/Info Box needed no graph-type-specific
+wiring at all — only a UI preset control, which is graph-type-agnostic). Supersedes the framing in
 `report-spec-and-build-script.md` ("Phase C is the whole remainder"): four gaps sit between
 where the report-spec work landed and the actual goal, and the ranked UI-parity list is only
 one of them.
@@ -532,7 +535,7 @@ choice produces an explicit question to the reviewer rather than a silent guess.
 | Direction(s) | infer, default both | cheap to correct, and both-directions is the common corridor-study shape |
 | Study period(s) | infer, ask if absent | must sit post-2017; same-season year-over-year for before/after |
 | The client's actual question | infer from purpose language | "how signals helped congestion" → travel time, before/after |
-| Peak-only vs all-day | ask | parity gap #11 — changes whether the ask is expressible at all |
+| Peak-only vs all-day | ask | fully expressible either way since parity gap #11 (DONE 2026-07-28) — the ask still needs asking, it just always builds now |
 | Audience | assume client-facing | drives how much prose/labeling to generate |
 | Map screenshot | request when the corridor is ambiguous | see below — sometimes the ONLY usable signal |
 
@@ -747,6 +750,122 @@ any writes. Test page `2196561` + sections `2196562`-`2196565` + snap row `21965
 deleted after, confirmed gone via `dms_npmrdsv5.data_items`/the split-table dataset
 query (not `raw get`, per the established gotcha).
 
+## Second real client request, run end-to-end through the actual skill — 2026-07-28
+
+A second real AVAIL/client email thread (Poughkeepsie road diet: sidewalk reconstruction
+closed 1 lane of westbound US-44/NY-55 near Garden St, City of Poughkeepsie, for "several
+days in late April 2026… around April 20-30"; client gave TMC 120-11332 directly). Built a
+full spec through `route_build.py` + `report_build.mjs` from the raw correspondence, without
+looking at AVAIL's real answer first, then compared against the real report they shipped
+(old-tool `admin2.reports` id 1071, "WB East-West Arterial Poughkeepsie") to check the skill
+against ground truth. **User caution, mid-session, worth keeping attached to every claim
+below: AVAIL's own report is a good reference, not an oracle — it has its own real
+imperfections (see the stale-caption finding below), so a difference from it is a data
+point, not automatically a defect in either report.**
+
+**A real CLI bug hit immediately: `route_build.py find` crashed on every call.**
+`cmd_find`'s contiguity-check printed `<-- BREAK` using an undefined `COORD_TOLERANCE`
+(leftover from before the `build` command's gap check was refactored to
+`endpoint_gap_meters`/`GAP_WARN_METERS` — `find` was never updated to match, so it
+`NameError`'d on the first multi-segment road). Fixed by reusing the same
+`endpoint_gap_meters` helper `build` already uses. This had been silently broken since
+whenever that refactor landed — `find` is the very first command the skill tells a reader
+to run, so this would have blocked step one of `creating-routes.md` for anyone hitting a
+road with more than one segment.
+
+**The route resolved cleanly, high confidence, no guess needed.** TMC 120-11332 is
+US-44 WESTBOUND, DUTCHESS county, ending at "MARKET ST/CIVIC CENTER PLZ" — exactly the
+client's named extent ("mainly between Catherine St and Civic Center Plaza"). Client-given
+TMC, not an inference, so no `confidence` flag on the route itself.
+
+**A real, load-bearing data-availability check the spec format doesn't automate: is the
+study period even inside data coverage?** April 2026 is inside raw NPMRDS coverage
+(`npmrds.s583_v982_NPMRDS_V6` runs 2017-01-01 through 2026-07-12 live) but **outside**
+source 1410's pm3 coverage (2018-2025) — so the InfoBox `reliability` bucket (LOTTR/TTTR/
+Freeflow — the old tool's road_diet-typical "Route Info Box/freeflow, speed" panel) hard-fails
+for this report's entire study window. Substituted `travelTime`/`hoursOfDelay` InfoBox
+buckets instead and said so in the graph's `why`, same pattern as NY-9D's signal_timing
+substitution. This is a case the intake checklist doesn't yet name explicitly (it covers
+segment-extent and date-window guesses, not "is my chosen measure bucket even queryable for
+this year") — worth a checklist line if this recurs.
+
+**A genuinely valuable analytical step the client's own request invited, and the skill
+doesn't currently prompt for: checking the raw data BEFORE trusting the client's date
+guess.** The client explicitly said they couldn't recall exact closure dates ("around April
+20-30"). Querying `npmrds.s583_v982_NPMRDS_V6` directly for this TMC before writing the
+spec found a clean, physically-sensible signal: **daytime (8am-4pm) travel time was
+consistently elevated Monday-Thursday, April 27-30, 2026, and *not* April 20-26** — bounded
+by normal travel times on both sides (April 24 and earlier, May 1 and later). Built the
+report's before/during windows on that finding (`confidence: medium` on the during-instance,
+with the reasoning spelled out) rather than the client's literal, self-described-uncertain
+range.
+
+**Then AVAIL's real report showed this "precise" narrowing was itself too narrow, along a
+different axis I hadn't checked: peak-hour vs. all-day.** Report 1071's `route_comps` split
+every 2026 instance into **AM Peak (7-10am) and PM Peak (4-7pm)** sub-windows and compared
+each against **the same calendar dates one year earlier (April 20-30, 2025)** — year-over-year,
+not adjacent-weeks-same-year. Re-running the raw-data check restricted to those exact peak
+windows changed the substantive conclusion: **AM peak travel time was ~11-25% higher in 2026
+than the same 2025 dates across the *entire* April 20-30 window, including April 20-24** (the
+days my all-day-average check had called "normal baseline") — **but PM peak was *lower* in
+2026 than 2025**, opposite direction. The all-day, single-baseline average I built genuinely
+washed out a real AM/PM divergence; it wasn't just a less-detailed cut, it supported a
+different headline claim ("only the last 4 days were affected") than the peak-split,
+year-over-year cut supports ("AM peak was worse basically the whole time; PM peak wasn't").
+Neither cut is obviously wrong, but they answer "was there an impact" differently, and a
+client-facing report should surface that instead of picking one silently.
+
+**This traces to a real, now twice-confirmed capability gap, not a modeling choice I could
+have made differently within today's spec format**: there is no way to express a peak-hour
+(or any time-of-day) sub-window on a route instance. `routes[].startDate`/`endDate` are dates
+only; there is no `startTime`/`endTime` (the old tool's `route_comps` carry exactly this —
+`startTime`/`endTime` alongside `amPeak`/`pmPeak` flags), and `report_build.mjs` sets every
+graph's `filters` to a hardcoded empty `{op: "AND", groups: []}` with no spec field feeding
+it — confirmed by grep, zero hits for `filters` as a spec-consumed key anywhere in the
+script. The intake checklist already lists "Peak-only vs all-day: **ask**" for exactly this
+reason (`report-route-ui-parity-gaps.md` gap #11) — the right move per that posture was to
+ask or flag this explicitly in the spec's `why`, and this attempt didn't; noted here so the
+gap in *my own process*, not just the tool, is on record.
+
+**AVAIL's actual composition, for the record** (13 sections over 9 route instances, all one
+`route_id`): Route Map (full width, geometry) · Route Info Box combining all 4 peak/year
+comps across 5 measures (speed, travelTime, hoursOfDelay, length, avg_speedlimit) in one
+table · a ~2-year daily hoursOfDelay trend Bar Graph (`comp-7`, April 2024 - April 2026) for
+long-range context — a panel type with no equivalent in this session's report at all · AM
+Peak and PM Peak Line Graphs (2026 vs. 2025 overlay, `plain` mode, 5-minute resolution) · six
+Bar Graphs breaking AM/PM-by-day 2026 and 2025 out separately by measure. **No difference/
+subtraction panel anywhere** — the comparison is entirely overlay-and-eyeball, relying on
+day-resolution bars across the client's full stated range to let the viewer spot which days
+moved, rather than a computed delta. My report's explicit `comparisonMode: "difference"` Bar
+Graph is a real, useful addition beyond AVAIL's typical house style here, not a mistake — but
+it's a difference over the *wrong* baseline (adjacent-weeks-same-year, all-day) given what the
+peak-split check above found.
+
+**AVAIL's report has its own real flaw, per the caution above — not held up as the answer
+key.** The AM Peak Line Graph's caption is generic boilerplate that doesn't match this
+report's own layout: "Hours of Excessive Delay (the graph on the right, below) shows…" when
+no such graph is positioned to the right of it in this report's actual grid — almost
+certainly copy-pasted from a template and never edited for this specific build. Good
+reminder that a human-authored caption can go stale exactly the way an inferred one can.
+
+**Stale doc found while writing the spec**: `creating-reports.md`'s composition-hints table
+(the "spec-buildable today?" column) still says "Route Info Box **not yet**" for
+before/after, road_diet, reliability, and route_comparison — written before Gap 8 (Info Box
+wiring) shipped 2026-07-28, same file, and never updated after. Needs a pass to flip those
+cells now that InfoBox is real, and probably to add a "peak-hour scoping: not yet, see gap
+below" row given what this session found.
+
+**What shipped**: route `2196581` ("US-44/NY-55 Westbound - Garden St, Poughkeepsie"), report
+page `2196582` (`converted_reports/poughkeepsie_garden_st_road_diet`), 6 graphs (LineGraph
+overview, difference BarGraph, two Route Map choropleths, two InfoBox summaries), left as a
+draft pending the user's call on whether to revise toward AVAIL's peak-split/year-over-year
+framing or ship the current within-2026 all-day cut with the gap noted. Real, non-placeholder
+data confirmed via `report_probe.mjs --wait 15000` (first probe at the default wait showed
+0/13 SVGs with content — same screenshot-timing artifact already on file from Gap 3's
+verification, not a build bug; the longer wait rendered both charts and both InfoBox tables
+with real, directionally-sensible values — baseline 2:47 avg travel time / 25.0 mph vs.
+during-window 3:06 / 22.6 mph).
+
 ## Next steps
 
 1. ~~Template-library investigation~~ — **DONE 2026-07-27**, see above. Outcome: no report
@@ -851,6 +970,61 @@ query (not `raw get`, per the established gotcha).
     Zero references in `report_build.mjs`/`report-spec.md`. Needed for the `signal_timing`
     composition class (71% Route Compare Component on speed and travelTime) — the class
     NY-9D belongs to.
+11. **No peak-hour (or any time-of-day) sub-window on a route instance** — found 2026-07-28
+    on the second real client-request test (Poughkeepsie road diet, see write-up above), and
+    it substantively mattered, not just cosmetically: AVAIL's real answer to that request
+    split every route instance into AM Peak (7-10am) / PM Peak (4-7pm), and a peak-restricted
+    check of the raw data found AM peak got measurably worse while PM peak didn't — an
+    all-day average genuinely hides that split, it doesn't just resolve it less precisely.
+
+    **Spec half DONE 2026-07-28**, same day: `routes[].startTime`/`endTime` (`"HH:mm"`,
+    both-or-neither, requires `startDate`/`endDate`). Turned out not to need a new runtime
+    mechanism at all — `useGraphPublish.js`'s `transformReportRoutes` has parsed a time
+    component on `startDate`/`endDate` into a real ClickHouse `epoch` filter since
+    2026-06-23 (predates this task entirely; the earlier claim above that this "needs a
+    route-instance-level… field that composes into the AVL Graph section's `filters`" was
+    half wrong — the mechanism already existed, `report_build.mjs` just never had a spec
+    field to feed it). `report_build.mjs` now combines `startTime`/`endTime` into the exact
+    combined date+time string that hook already parses, only at the `reports_snap_2` route-
+    entry composition step — `spec.routes[].startDate`/`endDate` stay pure dates everywhere
+    else, since Route Map/Info Box read those same fields directly for an unrelated
+    Python-side path that has never been taught to parse a time suffix (deliberately not
+    touched — scope boundary, not an oversight). Full design, the "no named AM/PM shorthand
+    on purpose" rationale, and validation rules are in `report-spec.md`'s `startTime`/
+    `endTime` section.
+
+    **Live-verified**: a two-instance (`AM Peak`/`PM Peak`, one shared `route_id`) LineGraph
+    build produced a live query whose two `seriesVariants` carried identical `tmc`/`date`
+    filters and distinct `epoch` filter lists (`[84..120]` vs `[192..228]`), captured via
+    `report_probe.mjs`'s decoded `/graph` request — not just a structural check. The two
+    series' rendered means (8.5179 / 8.4455 minutes) matched a direct ClickHouse query over
+    the same TMC/window/epoch-range to 5 decimal places. `--from-page` round-tripped
+    correctly in both the no-drift echo path and, after forcing drift with a hand-edited
+    section title, the live-reconstruction path (verified the reconstruction actually splits
+    the persisted combined string back into clean `startTime`/`endTime`, not just that dates
+    survive). Test page `2196692` + sections `2196693`-`2196696` + snap row `2196698`
+    deleted after, confirmed gone via `page show` and the split-table dataset query.
+
+    **Found, not fixed, while doing this**: `--from-page`'s drift check only inspects graph-
+    section content (title/`_measurePick`/caption) — it has never compared the snap row's
+    own `routes` field against the stored spec's `routes[]`, so a route hand-edited live via
+    `ReportRouteList` (dates, weekdays, and now peak windows) can go undetected as drift, and
+    `--from-page` will echo back a stale stored spec instead of reconstructing. Pre-existing
+    since routes first got a comparison surface, not introduced here — just more likely to
+    bite now that peak windows are a spec-buildable, plausibly-hand-tweaked route field.
+    Logged here rather than fixed, since it touches the shared drift check broadly, not just
+    this feature (`feedback_isolate_shared_code_changes`).
+
+    **UI half — DONE 2026-07-28, later session.** `ReportRouteList`'s date/time inputs already
+    existed and already wrote the same combined format; a labeled peak-hour preset row (AM
+    Peak/PM Peak/PM Peak (alt)/Midday/All Day, from `data-types/map21/constants.js`'s
+    `REPORTING_BINS`) was added in `RouteRow.jsx`. Before building it, live-tested the premise
+    that Route Map/Info Box needed separate wiring — they didn't: both already applied the
+    epoch filter live with zero code changes (see `report-route-ui-parity-gaps.md` gap #11 for
+    the full correction and verification). Full writeup there.
+12. `creating-reports.md`'s composition-hints table needs a pass — the "spec-buildable
+    today?" column still says "Route Info Box not yet" in four rows, stale since Gap 8
+    shipped 2026-07-28 in the same file it's contradicting. Found 2026-07-28, not yet fixed.
 
 ## Cleanup owed
 
