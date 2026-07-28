@@ -40,7 +40,8 @@ corrected before anything is built.
 | `title` | yes | Page title, and the `name` on the `reports_snap_2` row. |
 | `slug` | no | Full page slug. Defaults to `<parent>/<title slugified>`. |
 | `parent` | no | Slug of the parent page. Defaults to `converted_reports`. Must already exist. |
-| `description` | no | Written to the snap row's `description`. |
+| `description` | no | Written to the snap row's `description` — **not visible anywhere on the page.** For a client-visible summary use `intro` instead. |
+| `intro` | no | Prose paragraph(s), rendered on the page. See "The title block" below. |
 | `request` | no | The literal client ask, verbatim. Printed by `--summary`, stored on the snap row as `_client_request`. |
 | `graphs` | yes | Non-empty array — see below. |
 | `routes` | yes | Non-empty array — see below. |
@@ -52,13 +53,17 @@ The snap row also records `_built_from_spec` (the spec's path) automatically.
 | field | required | meaning |
 |---|---|---|
 | `key` | yes | Spec-local identifier, unique. Referenced by `routes[].graphs` and `graphs[].anchor`. Never written to the DB. |
-| `graphType` | yes | `BarGraph` \| `LineGraph` \| `GridGraph`. |
-| `measure` | yes | A vocabulary measure — see the enum note below. |
-| `resolution` | yes | `5-minutes` \| `15-minutes` \| `hour` \| `day` \| `weekday` \| `month`. |
+| `graphType` | yes | `BarGraph` \| `LineGraph` \| `GridGraph` \| `Map` \| `InfoBox` — see "Route Map graphs" and "Route/TMC Info Box graphs" below, both different shapes entirely. |
+| `measure` | yes | A vocabulary measure — see the enum note below (Map and InfoBox each have their own, separate list). |
+| `resolution` | AVL Graph only | `5-minutes` \| `15-minutes` \| `hour` \| `day` \| `weekday` \| `month`. Map graphs only need this for `measure: avgHoursOfDelay` (`day` \| `5-minutes`); every other Map measure omits it. InfoBox never uses it (its old-tool component never read `resolution` either). |
+| `grain` | InfoBox only | `route` (default) \| `tmc` — see below. |
+| `bin` | InfoBox `reliability` only | `amp` \| `midd` \| `pmp` \| `we` — the FHWA time-of-day period, required only for the `reliability` measure. |
 | `title` | no | Sets both the section row's `title` and `display.title.title`. |
-| `comparisonMode` | no | `plain` (default) — each assigned route renders as its own series — or `difference`. |
+| `comparisonMode` | no | `plain` (default) — each assigned route renders as its own series — or `difference`. **Not supported on `Map`/`InfoBox`** — fails the build if set (each assigned route already renders as its own choropleth-colored layer / comparisonSeries row, not a subtraction). |
 | `anchor` | difference only | A `routes[].id`. Names the arm the others are subtracted *from*. |
 | `size` | no | Colspan, `"1"`–`"12"`, written as the section row's own `size` field. |
+| `colorRange` | Map only | Array of hex colors, low→high. Defaults to a neutral speed ramp if omitted. |
+| `caption` | AVL Graph only | Prose, rendered as a subtitle line under the chart's own title (`GraphComponent.jsx`'s `GraphTitle`, reading `display.description` — already wired on the render side; this is the write path). **Not supported on `Map`/`InfoBox`** — fails the build if set (neither section type has a title/description render path — Spreadsheet, Info Box's element-type, has no GraphTitle-equivalent). |
 | `why` | no | Free text: why this graph answers part of the request. Printed by `--summary`, never written. |
 
 **Enums are validated at runtime against the live vocabulary**, not against this table — a typo
@@ -84,6 +89,7 @@ share one `route_id` and differ only by window; that is how before/after compari
 | `endDate` | no | Window end. |
 | `color` | no | Series color, hex. |
 | `weekdays` | no | Day mask — see the semantics below. |
+| `confidence` | no | `{level: "low"\|"medium"\|"high", note}` — flags an inferred, not-determinate choice (typically segment extent — "around Verplank Ave and Beekman St" has no exact answer). Guess-and-flag, not a gate: `level: "low"` prints a "NEEDS REVIEW" banner in both `--summary` and a real build, but never blocks the build. See "Intake checklist" in `creating-reports.md`. |
 
 ---
 
@@ -95,6 +101,29 @@ share one `route_id` and differ only by window; that is how before/after compari
 sharing a name collapse into one series.** The script auto-suffixes duplicates (`… (2)`) and warns,
 matching what ReportRouteList does on add — but a report whose two arms silently merged is the
 failure this prevents, so prefer distinct names in the spec.
+
+### `confidence` flags an inferred choice, and never blocks the build
+
+A client request routinely underspecifies the thing a route depends on most — segment
+extent. "Peak travel times on 9D, including the intersections of Verplank Ave and
+Beekman St" names two cross-streets but not how far past them the corridor should run.
+There is no determinate answer, so the right move is a best-guess route plus a
+reviewable flag — not a stalled report waiting for detail the client was never going to
+provide (see the "Guess and flag, don't gate" rule in `creating-reports.md`).
+
+```json
+{ "id": "nb", "route_id": 2195805, "name": "NY-9D Northbound",
+  "confidence": { "level": "low", "note": "Client named Verplank Ave and Beekman St only; extended ~0.3mi past each on the along-road TMC chain. Confirm extent with client." },
+  "graphs": ["overview"] }
+```
+
+`level: "low"` prints a "⚠ NEEDS REVIEW" banner in `--summary` **and** in a real build
+(so the flag survives even if `--summary` is skipped) — but the build always proceeds.
+This is deliberately the only spec field with a gating-adjacent effect that does *not*
+gate: everything else that could block a build (a missing `route_id`, a malformed
+enum) is a hard error, because those are unambiguous mistakes. Confidence is not a
+mistake, it's an acknowledged guess, and the correction mechanism is AVAIL feedback →
+`--update`, not a stalled first draft.
 
 ### The weekday mask excludes only on an explicit `false`
 
@@ -131,6 +160,132 @@ red→highest, so for `before − after` on travel time a *positive* bar (travel
 improvement) renders **red**. Spec-built and hand-built sections are byte-identical here, so this is
 a Measure Picker default, tracked in the task file. It needs a per-measure polarity hint in the
 vocabulary — the same mechanism `duration-value-format-mm-ss.md` needs.
+
+### Route Map graphs (added 2026-07-27)
+
+`{graphType: "Map", measure: "none"|"speed"|"travelTime"|"hoursOfDelay"|"avgHoursOfDelay"}` builds
+a choropleth Map section — TMC segments colored by the measure's value, live dms-server
+ClickHouse tile-join, the same shape as the old tool's "Route Map" panel (the single most
+consistent panel across the old corpus — see
+`planning/tasks/current/client-request-to-report-skill.md`'s composition-rules analysis).
+
+**This is not composed by `applyMeasurePick`.** `report_build.mjs` has no Map-section code of its
+own; it shells out to `convert_old_reports.py --route-map-section` (new
+`build_route_map_section_state` function), which reuses the exact template-minting
+(`ensure_route_map_*_template`) and per-report choropleth-baking machinery built for the
+old-report-conversion task (rounds 47-50) — same reuse principle as the AVL Graph parity
+guarantee above, just against a different script. `measure: "none"` is geometry-only (no
+choropleth, no baking); every other measure gets a real per-report choropleth baked from the
+pooled TMCs and date range across every route assigned to that graph — a graph with no
+resolvable tmcs/dates, or a bake query that returns no values, still builds (placeholder paint
+renders, a warning prints; matches this task's "guess and flag, don't block" rule).
+
+`avgHoursOfDelay` is the one measure that needs `resolution` (`day` or `5-minutes`); every other
+measure is resolution-invariant (a Map choropleth is a whole-range per-TMC aggregate, not a
+time-bucketed series).
+
+Live-verified 2026-07-27: a one-route `measure: "speed"` Map graph built end-to-end, and
+`report_probe.mjs` confirmed the section's own `colorDomain` UDA call returned a real baked value
+matching a direct ClickHouse query over the same TMC/date range, with a populated legend and zero
+console/page errors.
+
+### Route/TMC Info Box graphs (added 2026-07-28)
+
+`{graphType: "InfoBox", measure: "reliability"|"travelTime"|"length"|"aadt"|"hoursOfDelay", grain?:
+"route"|"tmc", bin?: "amp"|"midd"|"pmp"|"we"}` builds a per-route (or per-TMC) summary table — the
+single most consistent panel across the old corpus after Route Map (Route Info Box appears in 100%
+of `before_after` reports at two measures, 86% of `reliability`/`speed_study`, 56% of
+`route_comparison` — see the composition-rules analysis in
+`planning/tasks/current/client-request-to-report-skill.md`).
+
+**This is not an AVL Graph.** Its element-type is `Spreadsheet`, not `AVL Graph`, and like Route Map
+it's composed by shelling out to `convert_old_reports.py --route-info-box-section` (new
+`build_route_info_box_section_state` function) rather than `applyMeasurePick` — same reuse principle,
+reusing the exact template-minting machinery (`ensure_pm3_join_template`/
+`ensure_info_box_traveltime_template`/`ensure_info_box_length_template`/`ensure_info_box_aadt_template`/
+`ensure_info_box_delay_template`) built for old-report conversion (rounds 18/38/40).
+
+**Unlike Route Map, there is no per-report baking step.** Every one of the five measure buckets
+queries live at render time via the cloned template's own join (a cross-engine `pgFederated` join
+against source 1410's per-year view for `reliability`; a plain ClickHouse join for the other four) —
+the same `fetchMode:"force"`/`comparisonSeries` mechanism an AVL Graph section already uses. So an
+Info Box graph composes in one pass, before route resolution, and there is no placeholder-vs-baked
+distinction the way Route Map has one.
+
+`grain` defaults to `"route"`: each assigned route renders as its own row via the `__series`
+comparison-series discriminator (same fan-out mechanism as an AVL Graph section — the structural
+checks below apply to InfoBox exactly as they do to AVL Graph, unlike Map). `grain: "tmc"` groups by
+a plain `tmc` column instead — matches the old tool's TMC Info Box, which only ever rendered one TMC
+at a time.
+
+**`measure: "reliability"` is the one bucket with a real dependency.** It's the LOTTR/TTTR/Freeflow
+join against source 1410 (old code's own internal key for this bucket is the confusingly-reused
+`"speed"` measure — the spec calls it `"reliability"` instead, so it doesn't collide with AVL Graph's
+real speed-in-mph measure). It needs:
+- `bin` — one of the four periods source 1410 actually precomputes (`amp`/`midd`/`pmp`/`we` — AM
+  Peak/Midday/PM Peak/Weekend). There is no "all hours" bin and no live way to compute one.
+- A `year`, derived automatically from the assigned routes' `endDate`/`startDate` (same idiom as
+  Route Map's network-year resolution) — **not** a spec field.
+
+Unlike Route Map's geometry-year clamp (which always has some network to fall back to), a
+`reliability` year outside source 1410's real coverage (2018–2025) has **no fallback** — the build
+fails loudly rather than silently substituting a different year's data. Pick a measure with no year
+dependency (`travelTime`/`length`/`aadt`/`hoursOfDelay`) instead, or a route inside that window.
+
+Live-verified 2026-07-28: a one-route spec with both a `reliability` (`bin: "amp"`) and a
+`travelTime` Info Box graph built end-to-end on a real route (NY-9D Northbound); `report_probe.mjs`
+confirmed both sections queried live and rendered real values (LOTTR≈1.30, TTTR≈2.29, freeflow≈31
+mph; travel time 5:34), correctly distinct from the page's own Add-a-Route Spreadsheet section
+(which shares InfoBox's `Spreadsheet` element-type — see the `--update`/`--from-page` note below).
+An `--update` revision swapping one Info Box graph for another (`0`/`1` created/deleted paths both
+exercised) left exactly the right sections behind with zero duplicates or orphans.
+
+**A real gotcha found while wiring this, not by reasoning:** because an Info Box graph and the page's
+own Add-a-Route section share the `Spreadsheet` element-type (Route Map and AVL Graph each have their
+own unambiguous element-type), `--update`'s reconcile logic — which finds the Add-a-Route section and
+sweeps orphaned graph sections by element-type — needed a real fix, not just a new branch: both now
+consult the stored key map (or, for `--from-page`, each section's own `_infoBoxPick` marker) to tell
+an Info Box graph's Spreadsheet section apart from the Add-a-Route one, rather than matching
+element-type alone.
+
+### The title block (added 2026-07-27)
+
+A client-showable report needs a visible heading and an explanatory paragraph — but
+`item.title`/`item.description` on the page itself are never rendered anywhere in `view.jsx`, and
+no other existing primitive fits a real paragraph (the one "Header" component in the registry is a
+MitigateNY hero banner — bg image, logo, fixed single-line subtitle — wrong shape and wrong look
+for a data report). So the build always inserts one generic "lexical" (Rich Text) section as the
+first section in the main content column: `title: spec.title` (the section's own generic title
+field, the same one every section has) plus a body built from `intro`, split on blank lines into
+paragraphs. An author can hand-edit it afterward like any other Rich Text block — no new component,
+no new control.
+
+**A real rendering gotcha, not just a design choice:** the read-only `RichtextView` component
+requires `element-data.text` to already be a Lexical tree object (`{root:{children:[...]}}}`) — it
+checks `text?.root` directly and renders nothing for a bare string. Only the *edit* component
+auto-upgrades a plain string (via its own `textToLexicalJSON`, `ui/components/lexical/index.jsx`).
+So the builder constructs the tree itself (`textToLexicalTree` in `report_build.mjs`, mirroring
+that same node shape) rather than writing plain text — writing a bare string would build a page
+that looks fine as a draft (edit mode upgrades it on load) and renders **empty** once published.
+
+Tracked in `_specKeyMap` under the reserved key `title_block`, alongside the per-graph keys, so
+`--update` edits it in place instead of duplicating it, and `--from-page` can recover both the
+heading and the intro text for drift detection. It's always built, even with no `intro` — every
+report gets a visible heading.
+
+### Per-graph captions reuse an already-wired, unexposed field (added 2026-07-27)
+
+Unlike the title block, this needed **no new section** — `display.description` already renders as
+a subtitle line under the chart's own title (`GraphComponent.jsx`'s `GraphTitle`), and
+`convert_old_reports.py` already writes old reports' captions into exactly this field. It was a
+write-path gap, not a render gap: `report_build.mjs` didn't set it, and `graph_new/config.jsx` had
+no control for an author to edit it by hand (a `Title` input existed, no `Description`). Both are
+now fixed — one line in the compose step (`state.display.description = g.caption`, survives a
+later measure-pick change untouched since `applyMeasurePick` never touches `description`), and one
+textarea control in the shared `graph_new/config.jsx`.
+
+Route Map sections have no equivalent — Map's view component doesn't render a title/description at
+all — so `caption` on a `Map` graph fails the build rather than silently doing nothing.
 
 ### `resolution` is per-graph today, and that is expected to change
 
@@ -175,6 +330,9 @@ Three layers, and only the first two are decided here.
    with empty `graphIds`, no graph nothing feeds, and per graph `display.fetchMode: "force"`,
    `comparisonSeries.enabled`, and the `$self`-bound `comparison_series` subscriber — the three keys
    whose absence makes a section render empty rather than error. A build with problems exits `1`.
+   **Map graphs** only get the `$self` subscriber check (shared with AVL Graph — RRL discovery is
+   element-type-agnostic) — `fetchMode`/`comparisonSeries.enabled` are AVL-Graph DataWrapper
+   concepts a Map section doesn't have; it queries per-layer via its own tile/join config instead.
 3. **written row → what the page renders.** *Not checked.* Deliberately: failures at this layer are
    platform bugs rather than build bugs — both prerequisites folded into this work
    (`epoch-time-format-bucket-width`, `length-query-calculated-groupby-alias`) had a correct
@@ -201,10 +359,12 @@ missing; see the task file for the trigger.
   "title": "NY-9D Beacon Signal Study - Travel Time Comparison",
   "slug": "converted_reports/ny9d_beacon_spec_test",
   "request": "City of Beacon wants to document how the actuated signals installed ~March 2025 improved congestion on NY-9D through Beacon. Compare Jan/Feb 2025 (before) against Jan/Feb 2026 (after).",
+  "intro": "This report compares travel time on NY-9D through Beacon before and after the actuated signals installed in March 2025.",
   "graphs": [
     { "key": "overview", "title": "Travel Time - all periods",
       "graphType": "LineGraph", "measure": "travelTime", "resolution": "5-minutes",
       "comparisonMode": "plain",
+      "caption": "The line graph above overlays both periods. A lower after-trace during peak hours indicates the signals reduced delay.",
       "why": "One overlaid trace per direction and period, so the client can see the peak shape shift." },
     { "key": "nb_diff", "title": "Northbound Travel Time Difference",
       "graphType": "BarGraph", "measure": "travelTime", "resolution": "5-minutes",

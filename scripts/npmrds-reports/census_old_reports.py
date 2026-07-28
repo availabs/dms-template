@@ -67,15 +67,38 @@ BUILDABLE_TYPES = {"Route Line Graph", "Route Bar Graph", "TMC Grid Graph",
                    # speed×5-min buckets — remaining unmapped diff buckets
                    # are spec work on a proven shape.
                    "Route Difference Graph", "TMC Difference Grid"}
-# No built new-side shape yet. Round 24 REOPENED Route Map / Route
+# No built new-side shape yet, for the residual instances that don't match
+# one of the "mapped" branches below. Round 24 REOPENED Route Map / Route
 # Difference / TMC Difference Grid as in-scope targets (the 2026-07-08
-# gap-log-only ruling was reversed), so this bucket now means "needs shape
-# work before spec work", not "ruled out". [Round 52: both difference types
-# moved to BUILDABLE_TYPES above.] Route/TMC Info Box have a shape
-# ONLY for the reliability bucket (speed x travel_time_all, resolved
-# dynamically); their unmapped keys are either pm3 data gaps (speed
-# measure: year/bin/coverage) or unproven other-measure info boxes, so
-# they stay here rather than in buildable.
+# gap-log-only ruling was reversed). [Round 52: both difference types moved
+# to BUILDABLE_TYPES above.] [Rounds 47-50: Route Map's core measures
+# (none/speed/travelTime/hoursOfDelay/avgHoursOfDelay) DO have a built
+# choropleth shape now and are classified as "mapped" by the branches below
+# (see the `info["type"] == "Route Map"` checks) — they never reach
+# bucket_of() at all. "Route Map" stays in this set ONLY to classify the
+# residual: measures with no template yet (e.g. co2Emissions) or instances
+# where graph_max_year() can't resolve a year. Don't read this set as "Route
+# Map has no shape" — that claim was stale and caused real confusion in
+# client-request-to-report-skill.md 2026-07-27; check the mapped branches
+# below, not this comment, before concluding a type has no shape.] [CORRECTED
+# 2026-07-28: the paragraph below made the IDENTICAL stale-comment mistake
+# about Route/TMC Info Box that the Route Map paragraph above warns against.
+# Rounds 19/38/40/49/58 built FIVE measure buckets, not one: reliability
+# (INFO_BOX_BUCKET, the pm3 LOTTR/TTTR/freeflow join), travel time
+# (INFO_BOX_TRAVELTIME_BUCKETS), length (INFO_BOX_LENGTH_BUCKET), AADT
+# (INFO_BOX_AADT_BUCKET), and hours of delay (INFO_BOX_DELAY_BUCKET) — all
+# classified as "mapped" by the branches below (see the `grain = ...` checks),
+# never reaching bucket_of() at all. Real corpus proof: route_info_box_
+# traveltime/tmc_info_box_traveltime/tmc_info_box_length/tmc_info_box_aadt/
+# route_info_box_delay/tmc_info_box_delay templates all exist and produced
+# real converted pages (old-reports-conversion.md rounds 40/49). "Route Info
+# Box"/"TMC Info Box" stay in this set ONLY to classify the genuine residual:
+# a measure outside all 5 buckets (e.g. `percentile95-byDateRange`, seen in
+# the reliability composition class — no template built for it at all) or a
+# reliability-bucket instance where graph_max_year()/graph_reliability_bin()
+# can't resolve (year outside PM3_VIEW_BY_YEAR, or genuinely undetermined).
+# Read the mapped branches below, not this comment, before concluding either
+# Info Box type has no shape for a given measure.]
 NO_EQUIVALENT_TYPES = {
     "Route Map", "Route Info Box", "TMC Info Box",
 }

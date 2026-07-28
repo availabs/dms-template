@@ -3380,6 +3380,77 @@ REVERSE_COLORS_MEASURES = {
 }
 
 
+def pooled_route_map_values(measure, tmcs, start_date, end_date, resolution=None):
+    """Run the pooled per-TMC CH query behind a Route Map choropleth bake and
+    return the list of non-null values, one per TMC in `tmcs` with data in
+    [start_date, end_date] ('YYYY-MM-DD' strings). Extracted 2026-07-27 so the
+    query text is shared between bake_route_map_choropleth_paint/
+    bake_route_map_delay_paint (old-report conversion path, tmcs/dates resolved
+    from old comps below) and build_route_map_section_state (spec-driven
+    report_build.mjs path, tmcs/dates come straight from the spec's routes) —
+    one definition, so the two callers can't drift apart."""
+    tmc_list = ",".join(f"'{t}'" for t in sorted(tmcs))
+    if measure in ROUTE_MAP_VALUE_EXPR:
+        value_expr = ROUTE_MAP_VALUE_EXPR[measure]
+        sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
+               f"FROM {CH_FACT_TABLE} AS ds "
+               f"JOIN {CH_TMC_IDENT_TABLE} AS table1 ON ds.tmc = table1.tmc "
+               f"WHERE ds.tmc IN ({tmc_list}) "
+               f"AND ds.date >= '{start_date}' AND ds.date <= '{end_date}' "
+               f"GROUP BY ds.tmc")
+    else:
+        value_expr = (HOURS_OF_DELAY_VALUE_EXPR if measure == "hoursOfDelay"
+                     else ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION[resolution])
+        dist_key_body = DIST_KEY_EXPR.rsplit(" as ", 1)[0]
+        # Round 59: CH_META_TABLE spans multiple years (one row per (tmc,
+        # year)) -- without the toYear(ds.date) match this INNER JOIN would
+        # fan out every fact row across every year table1 carries for that
+        # tmc, silently multiplying the pooled value.
+        sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
+               f"FROM {CH_FACT_TABLE} AS ds "
+               f"JOIN {CH_META_TABLE} AS table1 "
+               f"ON ds.tmc = table1.tmc AND toYear(ds.date) = table1.year "
+               f"JOIN {CH_AADT_DIST_TABLE} AS table2 ON {dist_key_body} = table2.key "
+               f"WHERE ds.tmc IN ({tmc_list}) "
+               f"AND ds.date >= '{start_date}' AND ds.date <= '{end_date}' "
+               f"GROUP BY ds.tmc")
+    result = dbq.ch(sql)
+    rows = result.get("data") or []
+    return [r[1] for r in rows if r[1] is not None]
+
+
+def apply_route_map_paint(state, values, color_range, measure, max_round_digits=1):
+    """Shared tail of every Route Map choropleth bake (extracted 2026-07-27):
+    given pooled per-TMC values, compute colors/breaks/paint and mutate
+    state's active choropleth layer in place. Returns False (state left as
+    the template's placeholder paint) if `values` is empty, True otherwise."""
+    if not values:
+        return False
+    colors = (color_range if color_range and len(color_range) >= 2
+             else DEFAULT_SPEED_COLOR_RANGE)
+    # Match GeneralGraphComp.getColorRange()'s reverseColors flip (see
+    # REVERSE_COLORS_MEASURES above) -- old reports' color_range is
+    # authored assuming the DISPLAYED measure controls direction, and the old
+    # tool reverses it upstream for "high is bad" measures before RouteMap.jsx
+    # ever sees it.
+    if measure in REVERSE_COLORS_MEASURES:
+        colors = list(reversed(colors))
+    breaks = quantile_breaks(values, num_bins=len(colors))
+    paint_result = choropleth_paint("value", colors, breaks,
+                                    max_value=round(max(values), max_round_digits))
+    sym_id = next(iter(state["symbologies"]))
+    sym = state["symbologies"][sym_id]["symbology"]
+    lid = sym["activeLayer"]
+    layer = sym["layers"][lid]
+    layer["color-range"] = colors
+    layer["num-bins"] = len(colors)
+    layer["legend-data"] = paint_result["legend"]
+    for l in layer["layers"]:
+        if l["id"] == lid:
+            l["paint"]["line-color"] = paint_result["paint"]
+    return True
+
+
 def bake_route_map_choropleth_paint(state, info, route_map_value_ctx, color_range,
                                     gaps, old_graph, measure):
     """Per-report choropleth bake for a Route-Map Map-section clone whose
@@ -3427,17 +3498,7 @@ def bake_route_map_choropleth_paint(state, info, route_map_value_ctx, color_rang
 
     start_fmt = "-".join([min(starts)[:4], min(starts)[4:6], min(starts)[6:8]])
     end_fmt = "-".join([max(ends)[:4], max(ends)[4:6], max(ends)[6:8]])
-    tmc_list = ",".join(f"'{t}'" for t in sorted(tmcs))
-    value_expr = ROUTE_MAP_VALUE_EXPR[measure]
-    sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
-           f"FROM {CH_FACT_TABLE} AS ds "
-           f"JOIN {CH_TMC_IDENT_TABLE} AS table1 ON ds.tmc = table1.tmc "
-           f"WHERE ds.tmc IN ({tmc_list}) "
-           f"AND ds.date >= '{start_fmt}' AND ds.date <= '{end_fmt}' "
-           f"GROUP BY ds.tmc")
-    result = dbq.ch(sql)
-    rows = result.get("data") or []
-    values = [r[1] for r in rows if r[1] is not None]
+    values = pooled_route_map_values(measure, tmcs, start_fmt, end_fmt)
     if not values:
         gaps.append({"kind": f"route_map_{measure}_no_values", "graph": old_graph.get("id"),
                      "detail": f"pooled CH query over {len(tmcs)} tmc(s), "
@@ -3445,30 +3506,7 @@ def bake_route_map_choropleth_paint(state, info, route_map_value_ctx, color_rang
                                f"choropleth left unbaked (template placeholder "
                                f"default renders)"})
         return
-
-    colors = (color_range if color_range and len(color_range) >= 2
-             else DEFAULT_SPEED_COLOR_RANGE)
-    # Match GeneralGraphComp.getColorRange()'s reverseColors flip (see
-    # REVERSE_COLORS_MEASURES above) -- old reports' color_range is
-    # authored assuming the DISPLAYED measure controls direction, and the old
-    # tool reverses it upstream for "high is bad" measures before RouteMap.jsx
-    # ever sees it.
-    if measure in REVERSE_COLORS_MEASURES:
-        colors = list(reversed(colors))
-    breaks = quantile_breaks(values, num_bins=len(colors))
-    paint_result = choropleth_paint("value", colors, breaks,
-                                    max_value=round(max(values), 1))
-
-    sym_id = next(iter(state["symbologies"]))
-    sym = state["symbologies"][sym_id]["symbology"]
-    lid = sym["activeLayer"]
-    layer = sym["layers"][lid]
-    layer["color-range"] = colors
-    layer["num-bins"] = len(colors)
-    layer["legend-data"] = paint_result["legend"]
-    for l in layer["layers"]:
-        if l["id"] == lid:
-            l["paint"]["line-color"] = paint_result["paint"]
+    apply_route_map_paint(state, values, color_range, measure, max_round_digits=1)
 
 
 def ensure_route_map_avghoursofdelay_template(year, resolution, templates, dry_run):
@@ -3771,30 +3809,11 @@ def bake_route_map_delay_paint(state, info, route_map_value_ctx, color_range,
 
     start_fmt = "-".join([min(starts)[:4], min(starts)[4:6], min(starts)[6:8]])
     end_fmt = "-".join([max(ends)[:4], max(ends)[4:6], max(ends)[6:8]])
-    tmc_list = ",".join(f"'{t}'" for t in sorted(tmcs))
     # hoursOfDelay is resolution-invariant (one expression, no resolution
-    # dispatch needed); avgHoursOfDelay genuinely varies by resolution.
-    value_expr = (HOURS_OF_DELAY_VALUE_EXPR if measure == "hoursOfDelay"
-                 else ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION[resolution])
-    dist_key_body = DIST_KEY_EXPR.rsplit(" as ", 1)[0]
-    # Round 59: CH_META_TABLE now spans multiple years (one row per (tmc,
-    # year), see the META_JOIN comment above) -- without the toYear(ds.date)
-    # match this INNER JOIN would fan out every fact row across every year
-    # table1 carries for that tmc, silently multiplying the pooled value.
-    # (An INNER join -- unlike the templated LEFT join -- just drops any
-    # dates outside table1's year coverage, e.g. 2017, rather than zeroing
-    # them, so no nullIf guard is needed here.)
-    sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
-           f"FROM {CH_FACT_TABLE} AS ds "
-           f"JOIN {CH_META_TABLE} AS table1 "
-           f"ON ds.tmc = table1.tmc AND toYear(ds.date) = table1.year "
-           f"JOIN {CH_AADT_DIST_TABLE} AS table2 ON {dist_key_body} = table2.key "
-           f"WHERE ds.tmc IN ({tmc_list}) "
-           f"AND ds.date >= '{start_fmt}' AND ds.date <= '{end_fmt}' "
-           f"GROUP BY ds.tmc")
-    result = dbq.ch(sql)
-    rows = result.get("data") or []
-    values = [r[1] for r in rows if r[1] is not None]
+    # dispatch needed); avgHoursOfDelay genuinely varies by resolution --
+    # pooled_route_map_values branches on `resolution` internally.
+    values = pooled_route_map_values(measure, tmcs, start_fmt, end_fmt,
+                                     resolution=resolution)
     if not values:
         gaps.append({"kind": f"route_map_{measure}_no_values", "graph": old_graph.get("id"),
                      "detail": f"pooled CH query over {len(tmcs)} tmc(s), "
@@ -3802,25 +3821,174 @@ def bake_route_map_delay_paint(state, info, route_map_value_ctx, color_range,
                                f"choropleth left unbaked (template placeholder "
                                f"default renders)"})
         return
+    apply_route_map_paint(state, values, color_range, measure, max_round_digits=3)
 
-    colors = (color_range if color_range and len(color_range) >= 2
-             else DEFAULT_SPEED_COLOR_RANGE)
-    if measure in REVERSE_COLORS_MEASURES:
-        colors = list(reversed(colors))
-    breaks = quantile_breaks(values, num_bins=len(colors))
-    paint_result = choropleth_paint("value", colors, breaks,
-                                    max_value=round(max(values), 3))
 
-    sym_id = next(iter(state["symbologies"]))
-    sym = state["symbologies"][sym_id]["symbology"]
-    lid = sym["activeLayer"]
-    layer = sym["layers"][lid]
-    layer["color-range"] = colors
-    layer["num-bins"] = len(colors)
-    layer["legend-data"] = paint_result["legend"]
-    for l in layer["layers"]:
-        if l["id"] == lid:
-            l["paint"]["line-color"] = paint_result["paint"]
+ROUTE_MAP_MEASURES = ("none", "speed", "travelTime", "hoursOfDelay", "avgHoursOfDelay")
+
+
+def build_route_map_section_state(measure, year, templates, dry_run,
+                                  resolution=None, tmcs=None,
+                                  start_date=None, end_date=None,
+                                  color_range=None):
+    """Build a ready-to-embed Route Map section state for the spec-driven
+    `report_build.mjs` path (2026-07-27). `report_build.mjs` has NO Map-section
+    code of its own — verified by grep; it only ever emits RRL/AVL Graph/
+    Spreadsheet sections. This is the single entrypoint it shells out to (see
+    `--route-map-section` in main() below) so a spec-built report's Map section
+    reuses the exact same tested template-minting (`ensure_route_map_*_template`)
+    and per-report choropleth-baking (`pooled_route_map_values`/
+    `apply_route_map_paint`) machinery `convert_report` already uses for old-
+    report conversion, rather than a second implementation in JS that could
+    drift from it. Mirrors `convert_report`'s `route_map_tmpl_name` pre-pass
+    dispatch exactly (same year-clamping, same ensure_* dispatch by measure) —
+    see that pre-pass, a few hundred lines below, for the reference this
+    intentionally shadows.
+
+    Returns (element_type, state, gap) — `gap` is a short human-readable string
+    (or None) explaining why the choropleth was left at the template's
+    placeholder paint, e.g. no tmcs/dates given, or a real query returning no
+    values. A placeholder-painted Map section still renders real geometry and
+    real tiles; it just isn't colored by this report's own data yet. Callers
+    decide what to do with `gap` (report_build.mjs prints it as a warning, does
+    not fail the build — matches this task's standing "guess and flag, don't
+    block" rule)."""
+    if measure not in ROUTE_MAP_MEASURES:
+        raise ValueError(f"unknown Route Map measure {measure!r} — known: {ROUTE_MAP_MEASURES}")
+    if measure == "avgHoursOfDelay" and resolution not in ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION:
+        raise ValueError(f"avgHoursOfDelay needs a resolution in "
+                         f"{list(ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION)}, got {resolution!r}")
+    # Same clamp convert_report's pre-pass applies: pre-2017 dates fall back to
+    # the oldest provisioned geometry network rather than erroring.
+    year = min(max(year, min(GEOMETRY_TILE_VIEWS)), max(GEOMETRY_TILE_VIEWS))
+
+    if measure == "none":
+        templates = ensure_route_map_none_template(year, templates, dry_run)
+        tmpl_name = f"route_map_none_{year}"
+    elif measure == "speed":
+        templates = ensure_route_map_speed_template(year, templates, dry_run)
+        tmpl_name = f"route_map_speed_{year}"
+    elif measure == "travelTime":
+        templates = ensure_route_map_traveltime_template(year, templates, dry_run)
+        tmpl_name = f"route_map_travelTime_{year}"
+    elif measure == "hoursOfDelay":
+        templates = ensure_route_map_hoursofdelay_template(year, templates, dry_run)
+        tmpl_name = f"route_map_hoursOfDelay_{year}"
+    else:
+        templates = ensure_route_map_avghoursofdelay_template(year, resolution, templates, dry_run)
+        slug = ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG[resolution]
+        tmpl_name = f"route_map_avgHoursOfDelay_{slug}_{year}"
+
+    tmpl = templates[tmpl_name]
+    state = json.loads(tmpl["data"]["stateJson"])
+    element_type = tmpl["data"].get("elementType", "Map")
+
+    gap = None
+    if measure != "none":
+        # The "none" (geometry-only) template's layer carries no `join` key at
+        # all -- baking is a structural no-op for it, same as build_graph_section_data
+        # already special-cases (is_map and route_map_value_ctx checks).
+        if tmcs and start_date and end_date:
+            values = pooled_route_map_values(measure, tmcs, start_date, end_date,
+                                             resolution=resolution)
+            applied = apply_route_map_paint(
+                state, values, color_range, measure,
+                max_round_digits=1 if measure in ROUTE_MAP_VALUE_EXPR else 3)
+            if not applied:
+                gap = (f"pooled CH query over {len(tmcs)} tmc(s), {start_date}.."
+                      f"{end_date} returned no values — choropleth left unbaked "
+                      f"(template placeholder default renders)")
+        else:
+            gap = ("no tmcs/date range given — choropleth left unbaked "
+                  "(template placeholder default renders)")
+    return element_type, state, gap
+
+
+# The five measure buckets convert_report's real classifier maps for Route/TMC
+# Info Box (see INFO_BOX_GRAIN/INFO_BOX_*_BUCKET above), named for the
+# spec-driven path below. "reliability" is the LOTTR/TTTR/Freeflow pm3 join —
+# INFO_BOX_BUCKET's old internal key is the confusingly-reused `("speed",
+# "travel_time_all")`, but calling it "speed" here would collide with AVL
+# Graph's real speed-in-mph measure, so the spec-facing name is a deliberate
+# rename, not a new bucket.
+INFO_BOX_SPEC_MEASURES = ("reliability", "travelTime", "length", "aadt", "hoursOfDelay")
+
+
+def build_route_info_box_section_state(measure, grain, templates, dry_run,
+                                       year=None, bin_=None):
+    """Build a ready-to-embed Route/TMC Info Box section state for the
+    spec-driven `report_build.mjs` path (2026-07-28) — the same reuse pattern
+    as `build_route_map_section_state` immediately above: report_build.mjs has
+    NO Info Box section code of its own (verified by grep — see the task
+    file's "SECOND CORRECTION" on Route Info Box), so this is the single
+    entrypoint it shells out to (`--route-info-box-section` in main() below),
+    reusing the exact template-minting machinery (`ensure_pm3_join_template`/
+    `ensure_info_box_traveltime_template`/`ensure_info_box_length_template`/
+    `ensure_info_box_aadt_template`/`ensure_info_box_delay_template`)
+    `convert_report` already uses for old-report conversion.
+
+    Unlike Route Map, an Info Box section needs NO per-report baking step at
+    build time: every one of its five buckets queries live at render time via
+    the cloned template's own join (pgFederated for reliability, a plain CH
+    join for the other four) — the same fetchMode:"force"/comparisonSeries
+    mechanism an AVL Graph section already uses. So this function only ever
+    mints-or-reuses a template and clones its state; it never touches
+    ClickHouse itself, and there is no tmcs/start_date/end_date parameter to
+    thread through.
+
+    That also means there is no placeholder-paint fallback the way Route
+    Map's geometry-only "none" template gives every measure something to
+    render even when tmcs/dates are missing. "reliability" hard-depends on
+    `year` resolving into source 1410's actual per-year coverage
+    (PM3_VIEW_BY_YEAR) and `bin` landing on one of the four periods it
+    precomputes (RELIABILITY_BIN_LABELS) — there's no fallback year or bin to
+    substitute, so both raise ValueError rather than gap-log. Callers (i.e.
+    report_build.mjs) are expected to validate year/bin themselves before
+    ever shelling out here, exactly as they already validate Route Map's
+    measure/resolution first — these raises are a defense-in-depth backstop,
+    not the intended failure path.
+
+    Returns (element_type, state) — no `gap` in the return, unlike
+    build_route_map_section_state, since there is nothing to leave unbaked."""
+    if measure not in INFO_BOX_SPEC_MEASURES:
+        raise ValueError(f"unknown Info Box measure {measure!r} — known: {INFO_BOX_SPEC_MEASURES}")
+    if grain not in ("route", "tmc"):
+        raise ValueError(f"unknown Info Box grain {grain!r} — must be 'route' or 'tmc'")
+
+    if measure == "reliability":
+        if year is None or bin_ is None:
+            raise ValueError("Info Box measure 'reliability' needs both `year` and `bin`")
+        if year not in PM3_VIEW_BY_YEAR:
+            raise ValueError(f"year {year} is outside source 1410's "
+                             f"{min(PM3_VIEW_BY_YEAR)}-{max(PM3_VIEW_BY_YEAR)} coverage — "
+                             f"no fallback exists (unlike Route Map's geometry-year clamp); "
+                             f"pick a measure with no year dependency (travelTime/length/"
+                             f"aadt/hoursOfDelay) or a route inside that window instead")
+        if bin_ not in RELIABILITY_BIN_LABELS:
+            raise ValueError(f"unknown bin {bin_!r} — known: {sorted(RELIABILITY_BIN_LABELS)}")
+        templates = ensure_pm3_join_template(grain, year, bin_, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_reliability_{year}_{bin_}"
+    elif measure == "travelTime":
+        templates = ensure_info_box_traveltime_template(grain, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_traveltime"
+    elif measure == "length":
+        templates = ensure_info_box_length_template(grain, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_length"
+    elif measure == "aadt":
+        templates = ensure_info_box_aadt_template(grain, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_aadt"
+    else:  # hoursOfDelay
+        templates = ensure_info_box_delay_template(grain, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_delay"
+
+    tmpl = templates[tmpl_name]
+    state = json.loads(tmpl["data"]["stateJson"])
+    # Same BarGraph-crashes-without-state.data footgun build_graph_section_data
+    # guards against for every old-report graph (including this exact template
+    # type) — cheap to carry over even though Spreadsheet may not need it.
+    state.setdefault("data", [])
+    element_type = tmpl["data"].get("elementType", "Spreadsheet")
+    return element_type, state
 
 
 _TMC_RESOLVE_CACHE = {}
@@ -4977,13 +5145,70 @@ def finish(old_id, old, page_id, gaps, dry_run, slug=None):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
-    ap.add_argument("--report-id", type=int, required=True,
+    ap.add_argument("--report-id", type=int,
                     help="old admin2.reports id to convert")
     ap.add_argument("--dry-run", action="store_true",
                     help="report what would happen without writing")
     ap.add_argument("--replace", action="store_true",
                     help="delete a previously converted page for this report first")
+    ap.add_argument("--route-map-section", action="store_true",
+                    help="build a single Route Map section state and print it as "
+                         "JSON on stdout, for report_build.mjs to embed in a "
+                         "spec-driven report — does not touch any old "
+                         "admin2.reports row. See build_route_map_section_state().")
+    ap.add_argument("--measure", choices=ROUTE_MAP_MEASURES,
+                    help="--route-map-section: none/speed/travelTime/hoursOfDelay/avgHoursOfDelay")
+    ap.add_argument("--year", type=int, help="--route-map-section: network geometry year")
+    ap.add_argument("--resolution", choices=["day", "5-minutes"],
+                    help="--route-map-section: required only for measure avgHoursOfDelay")
+    ap.add_argument("--tmcs", help="--route-map-section: JSON array of TMC strings to bake the choropleth against")
+    ap.add_argument("--start-date", help="--route-map-section: YYYY-MM-DD")
+    ap.add_argument("--end-date", help="--route-map-section: YYYY-MM-DD")
+    ap.add_argument("--color-range", help="--route-map-section: JSON array of hex colors")
+    ap.add_argument("--route-info-box-section", action="store_true",
+                    help="build a single Route/TMC Info Box section state and print it "
+                         "as JSON on stdout, for report_build.mjs to embed in a "
+                         "spec-driven report — does not touch any old admin2.reports "
+                         "row. See build_route_info_box_section_state().")
+    ap.add_argument("--info-box-measure", choices=INFO_BOX_SPEC_MEASURES,
+                    help="--route-info-box-section: reliability/travelTime/length/aadt/hoursOfDelay")
+    ap.add_argument("--grain", choices=["route", "tmc"], default="route",
+                    help="--route-info-box-section: route (comparisonSeries __series "
+                         "discriminator, default) or tmc (single real tmc column)")
+    ap.add_argument("--bin", dest="reliability_bin", choices=sorted(RELIABILITY_BIN_LABELS),
+                    help="--route-info-box-section: required only for "
+                         "--info-box-measure reliability (amp/midd/pmp/we)")
     args = ap.parse_args()
+
+    if args.route_map_section:
+        if not args.measure or not args.year:
+            ap.error("--route-map-section needs --measure and --year")
+        templates = load_graph_templates()
+        element_type, state, gap = build_route_map_section_state(
+            args.measure, args.year, templates, args.dry_run,
+            resolution=args.resolution,
+            tmcs=json.loads(args.tmcs) if args.tmcs else None,
+            start_date=args.start_date, end_date=args.end_date,
+            color_range=json.loads(args.color_range) if args.color_range else None)
+        if gap:
+            print(f"[route-map-section] {gap}", file=sys.stderr)
+        print(json.dumps({"elementType": element_type, "state": state}))
+        return
+
+    if args.route_info_box_section:
+        if not args.info_box_measure:
+            ap.error("--route-info-box-section needs --info-box-measure")
+        if args.info_box_measure == "reliability" and not (args.year and args.reliability_bin):
+            ap.error("--route-info-box-section --info-box-measure reliability needs --year and --bin")
+        templates = load_graph_templates()
+        element_type, state = build_route_info_box_section_state(
+            args.info_box_measure, args.grain, templates, args.dry_run,
+            year=args.year, bin_=args.reliability_bin)
+        print(json.dumps({"elementType": element_type, "state": state}))
+        return
+
+    if not args.report_id:
+        ap.error("--report-id is required unless --route-map-section/--route-info-box-section is set")
     convert_report(args.report_id, dry_run=args.dry_run, replace=args.replace)
 
 

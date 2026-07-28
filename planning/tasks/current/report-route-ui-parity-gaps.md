@@ -1,6 +1,9 @@
 # NPMRDS route/report UI parity gaps (Phase C)
 
-**Status:** NOT STARTED. This is Phase C of the three-phase arc in
+**Status:** IN PROGRESS — 2 of 12 gaps fixed so far: #4 (`route_id` overwrite labeling)
+and #5 (TMC Search-to-add), both live-verified 2026-07-27 in transportNY. Gap #2 (TMC
+search `-` code bug) was investigated live the same day and dropped — could not
+reproduce, see its entry below. This is Phase C of the three-phase arc in
 `report-spec-and-build-script.md` (Phase A: skill split, DONE 2026-07-27 — this file is
 one of its outputs, moved out of `src/dms/skills/creating-routes-and-reports.md`'s old
 "Known UI gaps" section. Phase B: spec format + `report_build.mjs`, DONE).
@@ -72,34 +75,34 @@ opportunistically.
 
 ### Report building (`creating-reports.md`)
 
-5. **RRL's per-instance "ON: Graph N" pill can silently fail to persist** — no error
+6. **RRL's per-instance "ON: Graph N" pill can silently fail to persist** — no error
    shown either way; only detectable by querying `data->'route_comps'` afterward. The
    spec path avoids this by construction (`routes[].graphs` is declarative, `graphIds`
    is computed) but the UI bug itself is still live and worth root-causing.
-6. **RRL has no reliable per-instance rename** — two instances of the same route can't
+7. **RRL has no reliable per-instance rename** — two instances of the same route can't
    be given distinct display labels, only distinct dates/colors. Cheapest workaround
    today is naming the underlying route sensibly up front; a real fix needs the rename
    control's input-commit bug found (typed text doesn't reliably commit).
-7. **Difference-graph anchor is "whichever instance was added to the report first"**
+8. **Difference-graph anchor is "whichever instance was added to the report first"**
    (`route_comp_id` order) — invisible in the UI, so getting the sign right is a
    coin-flip unless you already know the add-order convention. The spec's `anchor`
    field fixes this outright (names the arm explicitly, sets `combine.invert` as
    needed). UI fix would be an explicit "Main" affordance on the RRL graph-pill instead
    of implicit ordering.
-8. **A Measure Picker pick is unsaved (local draft only) until the floppy Save icon is
+9. **A Measure Picker pick is unsaved (local draft only) until the floppy Save icon is
    explicitly clicked** — reload without saving silently discards it, no warning. The
    spec path has no equivalent draft state at all. UI fix: warn on navigate-away with
    unsaved changes, or auto-save.
-9. **`weekdays` day-mask has zero UI control** despite the runtime already honoring it
+10. **`weekdays` day-mask has zero UI control** despite the runtime already honoring it
    (`useGraphPublish.js:34`) — the spec can express "exclude weekends" today and the UI
    cannot. **Cheapest available win**: pure UI addition, no backend/runtime change
    needed at all.
-10. **Peak-hour-only filtering isn't a first-class Resolution/control** — a client ask
+11. **Peak-hour-only filtering isn't a first-class Resolution/control** — a client ask
     for "just the AM/PM peak" currently needs a manual Filters entry (epoch range) via
     the generic Filters menu. Affects both the spec and the UI equally (the spec has no
     shorthand for it either) — this one needs a real design decision (new resolution
     values? a `peakWindow` spec field?) before it's a quick add, unlike #9.
-11. **RRL wiring changes to an existing difference-graph section sometimes need a
+12. **RRL wiring changes to an existing difference-graph section sometimes need a
     manual re-open + re-save before the query fires** — root cause unclear (possibly
     fetchMode not re-triggering on route-assignment change vs. on Measure-pick apply).
     The spec path doesn't hit this (fires correctly on first load, verified 2026-07-27
@@ -108,29 +111,42 @@ opportunistically.
 
 ## Suggested priority order
 
-Ranked by (fix cost) × (how often it bites someone), not file order above:
+Ranked by (fix cost) × (how often it bites someone), not file order above. #4 and #5
+are already done (struck through, left in place so the ranking rationale below still
+reads coherently) — pick up at #10 next.
 
-1. **#9 weekdays UI control** — cheapest, purely additive, runtime already correct.
-2. **#4 route_id overwrite guard** — cheap, prevents real data loss.
-3. **#7 difference-graph anchor UI affordance** — moderate, closes a coin-flip footgun
+1. ~~#4 route_id overwrite guard~~ — **DONE 2026-07-27** (clear Update/Save labeling;
+   not a confirm dialog, see gap #4's entry above).
+2. ~~#5 TMC search-to-add~~ — **DONE 2026-07-27** (Add button/Enter next to the search
+   box, see gap #5's entry above).
+3. **#10 weekdays UI control** — cheapest of what's left, purely additive, runtime
+   already correct.
+4. **#8 difference-graph anchor UI affordance** — moderate, closes a coin-flip footgun
    the spec already proves is fixable (just needs a UI equivalent of the `anchor`
    field).
-4. **#6 RRL rename control** — needs the existing fragile input-commit bug root-caused
+5. **#7 RRL rename control** — needs the existing fragile input-commit bug root-caused
    first.
-5. **#5 RRL pill silent-fail** and **#11 re-save-needed** — both need investigation
+6. **#6 RRL pill silent-fail** and **#12 re-save-needed** — both need investigation
    before a fix is even scoped; group them since they may share a root cause (some
    RRL/graph-state update not propagating to the query layer without an explicit
    Measure-pick save).
-6. **#2 TMC search `-` code bug**, **#3 hover popover** — route-creation polish, lower
-   traffic than the report-building gaps.
-7. **#10 peak-hour filtering** — real gap but needs a design decision first, not just
+7. **#2 TMC search `-` code bug** (investigated 2026-07-27, could not reproduce,
+   dropped per user), **#3 hover popover** — route-creation polish, lower traffic than
+   the report-building gaps.
+8. **#11 peak-hour filtering** — real gap but needs a design decision first, not just
    an implementation.
 
 ## Testing checklist
 
-- [ ] Not started — pick one gap per session per `feedback_isolate_shared_code_changes`
-      if the fix touches shared theme/library code (most of these do:
-      `ReportRouteList/`, `MeasurePicker/`, the routecreation map component).
+- [x] Gap #4 (`route_id` overwrite labeling) — DONE + live-verified 2026-07-27, both on
+      post-save navigation and on a cold page load with `?route_id=...` already present.
+- [x] Gap #5 (TMC Search-to-add) — DONE + live-verified 2026-07-27: real TMC added with
+      zero map clicks, fake TMC correctly left the Add button disabled.
+- [ ] Gap #2 investigated 2026-07-27 (could not reproduce, dropped) — remaining gaps
+      (#1, #3, #6-#12) not started. Pick one gap per session per
+      `feedback_isolate_shared_code_changes` if the fix touches shared theme/library
+      code (most of these do: `ReportRouteList/`, `MeasurePicker/`, the routecreation
+      map component).
 
 ## Progress log
 
@@ -138,3 +154,17 @@ Ranked by (fix cost) × (how often it bites someone), not file order above:
   verbatim from `src/dms/skills/creating-routes-and-reports.md`'s "Known UI gaps"
   section plus the peak-hour and difference-graph-anchor notes embedded elsewhere in
   that file. No fixes attempted yet.
+- **2026-07-27 (later session)** — First two fixes of Phase C. Gap #4 (`route_id`
+  overwrite guard) closed via clear Update/Save labeling (no confirm dialog — user
+  asked for wording, not a blocking prompt). Gap #5, a newly-noticed capability
+  (TMC Search box could zoom but not add), added to this file and fixed same-session:
+  an Add button/Enter next to the search box now adds the TMC directly, reusing the
+  existing zoom-validation call so there's no duplicate query. Both live-verified in
+  transportNY (`comp.jsx`, `RouteEditor.jsx`, `SaveRouteModal.jsx`). Gap #2 (TMC search
+  `-` code bug) was investigated live the same session — three repro attempts and a
+  direct server-side replay of the backing falcor query all came back correct — and
+  dropped per user decision rather than kept open without a reproducible trigger.
+  `src/dms/skills/creating-routes.md` updated to match all three outcomes. Report-
+  building gaps renumbered #5-#11 → #6-#12 to make room for the new route-creation gap
+  #5 (was colliding with the pre-existing report-building #5). See memory
+  `project_routecreation_search_add_and_route_id_labels`.

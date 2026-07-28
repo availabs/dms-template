@@ -555,7 +555,8 @@ Next, in arc order:
     than carried forward. The "known bugs hit building this" block was entirely superseded (both its
     bugs are DONE) and was not carried into the new skill. The *other*, still-real re-save quirk (RRL
     wiring changes not re-triggering a graph's query without an explicit re-save) was kept, as gap
-    #11 in the new tracking file — this task's own testing checklist shows the spec path doesn't hit
+    #12 in the new tracking file (renumbered from #11 2026-07-27 when a new route-creation gap was
+    inserted — see that file's progress log) — this task's own testing checklist shows the spec path doesn't hit
     it, which is evidence but not proof the UI-only cause is fixed.
   - **"Known UI gaps" list moved** (not just copied) into
     `planning/tasks/current/report-route-ui-parity-gaps.md` — Phase C's tracking file, gaps ranked
