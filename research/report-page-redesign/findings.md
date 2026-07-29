@@ -3,6 +3,13 @@
 **Status:** exploratory — scope not yet decided. User is switching tools; this document
 captures research so the next session doesn't re-derive it.
 
+**2026-07-29 note:** several entries below describe testing done against transportNY's
+dev server because that was the only place the route-creation plugin ran. As of
+2026-07-29 that plugin (and macroview) run natively in dms-template
+(`planning/tasks/completed/port-transportny-map-plugins.md`) — transportNY is no longer
+needed for any routes/reports testing. Left as-is below since it's an accurate record of
+what was true at the time.
+
 ## Objective
 
 Compare the old npmrds report-builder tool (legacy React app, `npmrds.devtny.org/report/edit/*`)

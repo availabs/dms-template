@@ -28,7 +28,13 @@ opportunistically.
 
 ## Gaps
 
-### Route creation (transportNY, `creating-routes.md`)
+### Route creation (`creating-routes.md`)
+
+> Gaps below were found and fixed against transportNY's copy of the routecreation
+> plugin (2026-07-27, before the port). As of 2026-07-29 the plugin is native to
+> dms-template (`planning/tasks/completed/port-transportny-map-plugins.md`) and these
+> fixes are already part of the ported copy — transportNY is no longer needed to work
+> on or verify any of this.
 
 1. **Map scroll-zoom is disabled.** Confirmed live (pixel-identical before/after a
    scroll). Workaround: double-click zoom, on-screen `+`/`-` buttons. Cosmetic/low

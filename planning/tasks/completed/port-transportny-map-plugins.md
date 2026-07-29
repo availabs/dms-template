@@ -18,7 +18,7 @@ or section header extensions — configured and loaded through `theme`, not a si
 
 ## Current State
 
-- The registration mechanism itself is done — see `src/dms/planning/tasks/current/map-plugins-theme-registration.md`.
+- The registration mechanism itself is done — see `src/dms/planning/tasks/completed/map-plugins-theme-registration.md`.
   A theme can now declare `theme.mapPlugins = { <name>: <pluginObject> }` and it'll register into
   the same `PluginLibrary` the report-page `Map` section already consumes.
 - All actual plugin *code* lives only in transportNY, at

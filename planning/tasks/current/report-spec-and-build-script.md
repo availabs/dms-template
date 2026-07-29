@@ -60,32 +60,19 @@ that Phase B makes unnecessary.
 - Folders, report discovery/browsing, permissions — **permanently**, per user direction
   2026-07-27; these fold into DMS native primitives later. Do not list them as gaps.
   (Memory: `project_reports_folders_discovery_permissions_out_of_scope`.)
-- Route *creation* (the transportNY-only routecreation map tool). The spec references routes by
-  id; making them is a separate skill.
+- Route *creation* (the routecreation map tool). The spec references routes by id; making them is
+  a separate skill.
 - **Anything in transportNY.** All code here lives in dms-template — user direction 2026-07-27,
-  memory `feedback_all_code_in_dms_template`. transportNY is a test bed (the only place
-  routecreation-tool routes can be made), not a development target, and its older-pinned theme +
-  `@availabs/dms` copies get changes by the manual port procedure in
-  `research/npmrds-reports/reportroutelist-cross-repo-sync.md`. Do NOT treat "only exists in transportNY" as
-  a blocker.
-  Note the rule is **plugins**, not routecreation specifically: transportNY is a separately-deployed
-  *production* frontend and plugins (`src/pages/TransportNYDataTypes/plugins/*`) must live there.
-  Everything else is dms-template.
+  memory `feedback_all_code_in_dms_template`.
 
-  **Cross-repo state verified 2026-07-27 (after the user bumped transportNY's submodule twice):
-  currently byte-aligned — but by MANUAL COPY ONLY, so this is a snapshot, not a guarantee.**
-  Verified there is no auto-sync mechanism of any kind: `src/dms_themes/transportny` is a plain
-  directory (not a symlink), the theme is absent from transportNY's `.gitmodules` (which lists 7
-  other submodules), and `package.json` has no theme dependency and no copy/sync/postinstall
-  script. **It will drift again the moment either side is edited — assume it has, and `diff -rq`
-  rather than trusting this paragraph.** Both repos' `@availabs/dms` are at the identical commit
-  `4e8a1511` (so transportNY now has the `sectionMenuExtensions`/`sectionHeaderExtensions`
-  extension points AND the `GraphComponent.jsx` hover-tooltip `xFormat`/`indexFormat` fix);
-  `MeasurePicker/` and `data-types/npmrds_graph_vocabulary/vocabulary.json` are byte-identical;
-  `QuickControls/` and `ReportRouteList/` differ **only** by the required submodule-path rewrite
-  (`../../../../dms/` → `../../../../modules/dms/`). An earlier draft of this file warned that a
-  spec-built report would render differently on transportNY — that is no longer true. Re-check
-  with a `diff -rq` before repeating the claim either way.
+  **2026-07-29 update: transportNY is no longer needed for routes/reports work at all.** The
+  routecreation plugin (and macroview) have been ported natively into dms-template via
+  `theme.mapPlugins` (`planning/tasks/completed/port-transportny-map-plugins.md`) — the paragraphs
+  below describing the manual cross-repo sync dance, submodule-path rewrites, and "is transportNY
+  currently byte-aligned" checks are now historical. They're kept for context (and because
+  `RouteComparison` was last confirmed to still be transportNY-only — check
+  `research/npmrds-reports/reportroutelist-cross-repo-sync.md` before assuming that's changed too),
+  but nothing in this task requires touching transportNY anymore.
 - Any change to `composeMeasureConfig.js` / `applyMeasurePick` behavior. This task *consumes*
   them. If a gap forces a change there, it affects the live UI too — isolate it
   (`feedback_isolate_shared_code_changes`).
