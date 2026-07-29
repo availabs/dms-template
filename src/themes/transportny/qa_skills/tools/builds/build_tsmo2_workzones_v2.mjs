@@ -3,6 +3,16 @@
 // (verbatim content-as-code; hand-fixes up to that date are captured). Maintain by EDITING the
 // SECTIONS payloads below and re-running — idempotent: wipes by PAGE ID (loud) and recreates.
 // Run from dms-template root with DMS_AUTH_TOKEN set. Draft-only: never publishes.
+//
+// ═══ PAGE SCOPE RULE (#174, 2026-07-28) ══════════════════════════════════════════════════════
+// This page owns the PLANNED/SCHEDULED work set and selects exactly three categories:
+//     {"col":"nysdot_sub_category","op":"filter","value":["Construction","Maintenance","Emergency Operations"]}
+// tsmo2/incidents_v2 is its COMPLEMENT and excludes those same three (see that builder's header).
+// Change one list and you must change the other, or the two dashboards double-count events or drop
+// them between the two. Enforced per section — a section you add will not inherit it.
+// Note Emergency Operations sits here by owner decision (2026-07-28) even though it is arguably a
+// reactive category; if that ever reads wrong to a client, this is the pair to revisit.
+// ════════════════════════════════════════════════════════════════════════════════════════════════
 import { execFileSync } from "node:child_process";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -50,22 +60,15 @@ const GROUPS = [
   "displayName": "§03 How long work zones run"
  },
  {
-  "name": "tsmo-wz-s04",
-  "index": 5,
-  "theme": "content",
-  "position": "content",
-  "displayName": "§04 Active work zones"
- },
- {
   "name": "tsmo-wz-method",
-  "index": 6,
+  "index": 5,
   "theme": "content",
   "position": "content",
   "displayName": "Method note"
  },
  {
   "name": "tsmo-wz-footer",
-  "index": 7,
+  "index": 6,
   "theme": "footer",
   "position": "content",
   "displayName": "Footer"
@@ -614,144 +617,6 @@ const SECTIONS = [
    "top": "0"
   },
   "trackingId": "f1e9a913-57eb-42a9-a8db-fd2a8103fc80",
-  "element-type": "lexical"
- },
- {
-  "size": "12",
-  "type": "tsmo2|component",
-  "group": "tsmo-wz-s04",
-  "title": "",
-  "element": {
-   "element-data": "{\"bgColor\":\"rgba(0,0,0,0)\",\"isCard\":\"\",\"showToolbar\":false,\"text\":{\"root\":{\"type\":\"root\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"layout-container\",\"version\":1,\"templateColumns\":\"items-center grid-cols-[auto_1fr] gap-x-2\",\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"layout-item\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"kicker\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"// 04\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]}]},{\"type\":\"layout-item\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"metaSM\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"what’s active right now — live zones, sized by current delay\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]}]}]},{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"displaySM\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"Active work zones.\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]},{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"proseSM\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"Where active work zones cluster across the state. The map is a labeled placeholder pending the tile-source decision; live active-zone counts are a roadmap item.\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]}]}}}",
-   "element-type": "lexical"
-  },
-  "trackingId": "063d107d-ac85-44ce-bf7b-8239cb60b416",
-  "element-type": "lexical"
- },
- {
-  "bg": "tint",
-  "size": "8",
-  "type": "tsmo2|component",
-  "group": "tsmo-wz-s04",
-  "title": "",
-  "border": {
-   "top": true,
-   "left": true,
-   "right": true,
-   "bottom": true
-  },
-  "radius": {
-   "tl": true,
-   "tr": true
-  },
-  "element": {
-   "element-data": "{\"bgColor\":\"rgba(0,0,0,0)\",\"isCard\":\"\",\"showToolbar\":false,\"text\":{\"root\":{\"type\":\"root\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"layout-container\",\"version\":1,\"templateColumns\":\"items-center grid-cols-[auto_1fr]\",\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"layout-item\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"cardTitleSM\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"Active work zones\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]}]},{\"type\":\"layout-item\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"kicker\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"// 04   statewide\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]}]}]}]}}}",
-   "element-type": "lexical"
-  },
-  "padding": {
-   "bottom": "0"
-  },
-  "trackingId": "b7a2ba12-48d0-4192-aebf-789b8ea808f1",
-  "element-type": "lexical"
- },
- {
-  "bg": "tint",
-  "size": "4",
-  "type": "tsmo2|component",
-  "group": "tsmo-wz-s04",
-  "title": "",
-  "border": {
-   "top": true,
-   "left": true,
-   "right": true,
-   "bottom": true
-  },
-  "height": "fill",
-  "radius": {
-   "tl": true,
-   "tr": true
-  },
-  "element": {
-   "element-data": "{\"bgColor\":\"rgba(0,0,0,0)\",\"isCard\":\"\",\"showToolbar\":false,\"text\":{\"root\":{\"type\":\"root\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"layout-container\",\"version\":1,\"templateColumns\":\"items-center grid-cols-[auto_1fr]\",\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"layout-item\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"cardTitleSM\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"Right now\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]}]}]}]}}}",
-   "element-type": "lexical"
-  },
-  "padding": {
-   "bottom": "0"
-  },
-  "trackingId": "aa757c2f-3b73-4fe6-a9ae-6d02e8f5c4e5",
-  "element-type": "lexical"
- },
- {
-  "bg": "white",
-  "size": "8",
-  "type": "tsmo2|component",
-  "group": "tsmo-wz-s04",
-  "title": "",
-  "border": {
-   "left": true,
-   "right": true
-  },
-  "element": {
-   "element-data": "{\"bgColor\":\"rgba(0,0,0,0)\",\"isCard\":\"\",\"showToolbar\":false,\"text\":{\"root\":{\"type\":\"root\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"proseSM\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"Where active work zones cluster — every NY construction/maintenance zone colored by current delay magnitude.\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]},{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"metaXS\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"[BACKFILL→Map · zone points / TMC choropleth from view 2799 (transcom_event_tmc) geometry — pending tile-source decision, same as the incidents & congestion maps]\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]},{\"type\":\"paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"button\",\"version\":1,\"linkText\":\"corridor view →\",\"path\":\"/corridor_view\",\"style\":\"plain\",\"keepSearchParams\":true}]}]}}}",
-   "element-type": "lexical"
-  },
-  "padding": {
-   "top": "0",
-   "bottom": "0"
-  },
-  "trackingId": "118fe648-b7c3-4f7c-bf4e-9582e5879ca0",
-  "element-type": "lexical"
- },
- {
-  "bg": "white",
-  "size": "4",
-  "type": "tsmo2|component",
-  "group": "tsmo-wz-s04",
-  "title": "",
-  "border": {
-   "left": true,
-   "right": true,
-   "bottom": true
-  },
-  "height": "fill",
-  "radius": {
-   "bl": true,
-   "br": true
-  },
-  "element": {
-   "element-data": "{\"bgColor\":\"rgba(0,0,0,0)\",\"isCard\":\"\",\"showToolbar\":false,\"text\":{\"root\":{\"type\":\"root\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"layout-container\",\"version\":1,\"templateColumns\":\"items-center grid-cols-[auto_1fr] gap-x-2\",\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"layout-item\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"kicker\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"// roadmap\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]}]}]},{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"proseSM\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"Smart Work Zones. Live queue-warning & sensor feeds would let this panel show real-time active-zone counts, queue length, and back-of-queue location per zone — a planned TSMO integration.\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]},{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"metaXS\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"live active-zone counts pending a current-time feed; this dashboard reports attributed delay by period.\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]}]}}}",
-   "element-type": "lexical"
-  },
-  "padding": {
-   "top": "0"
-  },
-  "rowspan": "2",
-  "trackingId": "8ed5a613-a0ca-4259-b324-198d8d4c436a",
-  "element-type": "lexical"
- },
- {
-  "bg": "white",
-  "size": "8",
-  "type": "tsmo2|component",
-  "group": "tsmo-wz-s04",
-  "title": "",
-  "border": {
-   "left": true,
-   "right": true,
-   "bottom": true
-  },
-  "radius": {
-   "bl": true,
-   "br": true
-  },
-  "element": {
-   "element-data": "{\"bgColor\":\"rgba(0,0,0,0)\",\"isCard\":\"\",\"showToolbar\":false,\"text\":{\"root\":{\"type\":\"root\",\"version\":1,\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"children\":[{\"type\":\"styled-paragraph\",\"version\":1,\"styleKey\":\"proseSM\",\"textFormat\":0,\"textStyle\":\"\",\"children\":[{\"type\":\"text\",\"version\":1,\"text\":\"Statewide work-zone footprint — zoom to a region with the Region filter once the map tile source lands.\",\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"detail\":0}]}]}}}",
-   "element-type": "lexical"
-  },
-  "padding": {
-   "top": "0"
-  },
-  "trackingId": "1abaeb30-ba39-423f-9db1-12eef479fd35",
   "element-type": "lexical"
  },
  {

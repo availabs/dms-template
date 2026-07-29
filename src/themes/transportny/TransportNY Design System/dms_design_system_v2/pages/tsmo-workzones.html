@@ -334,70 +334,19 @@
             </div>
           </div>
 
-          <!-- ═════════ § 04 · ACTIVE WORK ZONES (operations) ═════════ -->
-          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
-            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
-
-              <div class="flex items-center gap-2 mb-5" data-dms-section="active-intro">
-                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
-                <span class="font-display font-medium text-[16px] text-[#2D3E4C]">What's active right now</span>
-                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-400">— live zones, sized by current delay</span>
-              </div>
-
-              <div class="grid grid-cols-12 gap-6">
-
-                <!-- Active WZ map -->
-                <div class="col-span-12 lg:col-span-8" data-dms-section="wz-events-map">
-                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Active work zones</span><span class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-500"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>live · 1,284 active</span></div>
-                    <div class="relative tny-map flex-1 min-h-[380px]">
-                      <!-- decorative --><svg viewBox="0 0 800 380" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
-                        <path d="M 90 300 L 220 280 L 380 250 L 540 230 L 700 240" stroke="#cbd5e1" stroke-width="3" fill="none"/>
-                        <path d="M 620 60 L 640 160 L 660 260 L 690 330" stroke="#cbd5e1" stroke-width="3" fill="none"/>
-                        <path d="M 240 60 L 300 170 L 380 250" stroke="#cbd5e1" stroke-width="2.5" fill="none"/>
-                        <path d="M 380 250 L 480 300 L 620 330" stroke="#cbd5e1" stroke-width="2.5" fill="none"/>
-                        <path d="M 220 280 L 380 250" stroke="#D6453B" stroke-width="5" fill="none" opacity="0.85"/>
-                        <path d="M 640 160 L 660 260" stroke="#D6453B" stroke-width="5" fill="none" opacity="0.85"/>
-                        <path d="M 480 300 L 620 330" stroke="#E8843F" stroke-width="4" fill="none" opacity="0.85"/>
-                        <path d="M 90 300 L 220 280" stroke="#E5A646" stroke-width="4" fill="none" opacity="0.85"/>
-                        <circle cx="300" cy="265" r="6" fill="#D6453B"/><circle cx="650" cy="210" r="6" fill="#D6453B"/><circle cx="550" cy="315" r="5" fill="#E8843F"/><circle cx="155" cy="290" r="5" fill="#E5A646"/><circle cx="270" cy="115" r="5" fill="#E5A646"/>
-                      </svg>
-                      <div class="absolute bottom-2 left-2 rounded-[6px] bg-white shadow-md p-2 border border-zinc-950/10">
-                        <div class="font-display uppercase text-[10.5px] tracking-wide text-slate-600 mb-1">WZ delay · current month</div>
-                        <div class="space-y-0.5 font-mono text-[10px]">
-                          <div class="flex items-center gap-2"><span class="h-1 w-4" style="background:#D6453B"></span>&gt; 100k vh</div>
-                          <div class="flex items-center gap-2"><span class="h-1 w-4" style="background:#E8843F"></span>25–100k vh</div>
-                          <div class="flex items-center gap-2"><span class="h-1 w-4" style="background:#E5A646"></span>&lt; 25k vh</div>
-                        </div>
-                      </div>
-                      <div class="absolute top-2 right-2 rounded-[6px] bg-white shadow-md px-2 py-1 border border-zinc-950/10 font-mono text-[10px] text-slate-600">statewide · zoom to region</div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Live companion / Smart Work Zone roadmap -->
-                <div class="col-span-12 lg:col-span-4" data-dms-section="wz-live-companion">
-                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
-                    <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60"><span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Right now</span><span class="font-mono text-[10px] uppercase tracking-wider text-slate-500">statewide</span></div>
-                    <div class="p-5 flex-1 flex flex-col">
-                      <div class="divide-y divide-zinc-950/05">
-                        <div class="flex items-end justify-between pb-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Active zones</span><span class="font-display font-semibold text-[24px] leading-none tabular-nums text-[#0F1722]">1,284</span></div>
-                        <div class="flex items-end justify-between py-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Lane-blocking now</span><span class="font-display font-semibold text-[24px] leading-none tabular-nums text-amber-700">217</span></div>
-                        <div class="flex items-end justify-between pt-3"><span class="font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">Biggest active</span><span class="font-mono text-[12px] tabular-nums text-[#0F1722] text-right leading-tight">I-95 Cross&nbsp;Bronx<br/><span class="text-slate-500">~9.4k vh / day</span></span></div>
-                      </div>
-                      <div class="mt-auto pt-4">
-                        <div class="rounded-[6px] border border-dashed border-zinc-950/15 bg-slate-50/60 p-3">
-                          <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-[#CA8A04] mb-1">// roadmap</div>
-                          <p class="font-proxima text-[11.5px] text-slate-500 leading-[1.5]"><span class="font-medium text-slate-600">Smart Work Zones.</span> Live queue-warning &amp; sensor feeds would let this panel show real-time queue length and back-of-queue location per zone — a planned TSMO integration.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
+          <!-- ═════════ § 04 · ACTIVE WORK ZONES — REMOVED 2026-07-28 (ticket #180) ═════════
+               Removed from the live page and from this mockup on product fit, not feasibility.
+               Two things were missing here and only one was ever buildable:
+                 · the MAP was buildable — transcom_event_tmc (view 2799) is tile-served at SRID 4326
+                   and a date-scoped server-side filter measures 39KB (z7) / 113KB (z10), vs 28.6MB /
+                   62MB for a category-only filter.
+                 · the "Right now" LIVE COUNTS were not — they need Smart Work Zones queue/sensor
+                   feeds that exist in no source here.
+               But this dashboard is historical delay attribution (Year filter, delay by year/region/
+               duration, attribution thru 2025), so "what is active right now" is a live-operations
+               question it is not built to answer — and the map could only be scoped to a date the
+               rest of the page does not cover. Measurements preserved on ticket #180.
+          -->
 
           <!-- ═════════ METHOD NOTE ═════════ -->
           <div class="w-full bg-[#ECEEF2] pb-10 pt-8" data-dms-group="content">

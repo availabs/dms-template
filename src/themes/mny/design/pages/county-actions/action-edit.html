@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Action Edit (Delaware, Kohlertown Route 52)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../../theme/index.css.additions">
+  <style>
+    /* Input primitive: one focus treatment for every control on the page. */
+    .mny-field {
+      width: 100%; font-family: "Source Sans 3", system-ui, sans-serif;
+      color: #2D3E4C; background: #fff; border: 1px solid #C5D7E0;
+      border-radius: 8px; padding: 8px 12px; outline: none;
+    }
+    .mny-field:focus { border-color: #6D96AE; box-shadow: 0 0 0 3px #E0EBF0; }
+    .mny-field::placeholder { color: #6D96AE; }
+    select.mny-field {
+      appearance: none;
+      /* The chevron is the registry's ChevronDown, inlined as a data URI because a
+         <select>'s indicator can't be a child element. Same path as every
+         <!-- icon: ChevronDown --> on these pages — keep the two in step. */
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236D96AE'><path fill-rule='evenodd' d='M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z' clip-rule='evenodd'/></svg>");
+      background-repeat: no-repeat; background-position: right 10px center; background-size: 16px;
+      padding-right: 32px;
+    }
+    /* A field the record has never had a value for — dashed until touched. */
+    .mny-field-empty { border-style: dashed; border-color: #F1CA87; background: #FFFDF9; }
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================
+     TOPNAV — site chrome (fixed floating)
+     ================================================================ -->
+<div class="fixed top-0 z-30 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[24px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg mny-shadow-md pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="../home.html"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto pl-4">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Local Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-3 cursor-pointer hover:text-mny-900">The Plan</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-3 cursor-pointer border-b-2 border-mny-y700 h-full flex items-center">Track Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end gap-1">
+          <div class="flex p-2 justify-center items-center">
+            <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+              <!-- icon: User -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     LAYOUT — default. Bottom padding leaves room for the sticky save bar.
+     ================================================================ -->
+<div data-dms="layout" data-name="default" class="max-w-[1440px] mx-auto pt-[128px] pb-[132px]">
+
+  <!-- ==============================================================
+       LAYOUTGROUP "content" — ONE boxed group holds every section on this
+       page; nothing sits on the topo canvas.
+
+       It opens with IDENTITY in edit mode — same information architecture
+       as the view page, so moving between the two doesn't reshuffle the
+       page. Only the controls change.
+       ============================================================== -->
+  <div data-dms="layoutGroup" data-name="content" class="px-4 xl:px-[64px] w-full">
+    <div class="bg-white rounded-[12px] mny-shadow-md px-6 py-6">
+      <div class="grid grid-cols-12 gap-0">
+
+      <div data-dms="section" data-name="identity" class="col-span-12 pb-5 border-b border-mny-100 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-400">
+            <a href="dashboard.html" class="hover:text-mny-700">Sullivan County Actions</a>
+            <span class="text-mny-200">/</span>
+            <a href="jurisdictions.html" class="hover:text-mny-700">Jurisdictions</a>
+            <span class="text-mny-200">/</span>
+            <a href="workspace.html" class="hover:text-mny-700">Delaware (Town)</a>
+            <span class="text-mny-200">/</span>
+            <a href="action-view.html" class="hover:text-mny-700">Action</a>
+            <span class="text-mny-200">/</span>
+            <span class="text-mny-700">Edit</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mny-y50 border border-mny-y700 font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-900">
+            <!-- icon: Edit -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
+            Editing
+          </span>
+        </div>
+
+        <!-- action name is itself a field here, at display scale -->
+        <div class="mt-3">
+          <label for="f-action-name" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1.5">
+            Action name <span class="text-mny-redk">*</span>
+          </label>
+          <input id="f-action-name" type="text" value="Delaware - Kohlertown Route 52, Culvert Issues"
+                 class="mny-field font-display uppercase tracking-[-0.03em]"
+                 style="font-size:28px;font-weight:500;line-height:1.1;padding:10px 14px;">
+        </div>
+
+        <!-- where it lives + the states, as controls -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-4">
+          <div>
+            <label for="f-jurisdiction" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Jurisdiction</label>
+            <select id="f-jurisdiction" class="mny-field text-[14px] font-[600]">
+              <option>Sullivan (County)</option>
+              <option>Bethel (Town)</option>
+              <option>Bloomingburg (Village)</option>
+              <option>Callicoon (Town)</option>
+              <option>Cochecton (Town)</option>
+              <option selected>Delaware (Town)</option>
+              <option>Fallsburg (Town)</option>
+              <option>Forestburgh (Town)</option>
+              <option>Fremont (Town)</option>
+              <option>Highland (Town)</option>
+              <option>Jeffersonville (Village)</option>
+              <option>Liberty (Town)</option>
+              <option>Liberty (Village)</option>
+              <option>Lumberland (Town)</option>
+              <option>Mamakating (Town)</option>
+              <option>Monticello (Village)</option>
+              <option>Neversink (Town)</option>
+              <option>Rockland (Town)</option>
+              <option>Thompson (Town)</option>
+              <option>Tusten (Town)</option>
+              <option>Woodridge (Village)</option>
+              <option>Wurtsboro (Village)</option>
+              <option>Ateres (Village)</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-status" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">
+              Action status <span class="text-mny-redk">*</span>
+            </label>
+            <select id="f-status" class="mny-field text-[14px] font-[600]">
+              <option>Proposed - Not Started</option>
+              <option selected>In-Progress</option>
+              <option>Completed</option>
+              <option>Discontinued</option>
+              <option>Progress Not Reported</option>
+              <option>Preliminary Development - Not Ready for Review</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-status-date" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">
+              Status date <span class="text-mny-redk">*</span>
+            </label>
+            <input id="f-status-date" type="date" value="2026-05-01" class="mny-field text-[14px] font-[600]">
+          </div>
+          <div>
+            <label for="f-readiness" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Mitigation action readiness</label>
+            <select id="f-readiness" class="mny-field text-[14px] font-[600]">
+              <option>Problem Identified Only</option>
+              <option>Solution Defined</option>
+              <option selected>HMP Review Ready</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- COUNTY PRIORITY — the field the workspace exists to fill, so it
+             gets the accent treatment here rather than being one select
+             among forty. -->
+        <div id="county-priority" class="mt-4 rounded-[12px] border-l-4 border-mny-y700 border-y border-r border-mny-y500/40 bg-mny-y50 p-4">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div class="flex-1 min-w-[280px]">
+              <label for="f-county-priority" class="block font-proxima text-[12px] font-[700] uppercase tracking-wide text-mny-700 mb-1.5">County priority tier</label>
+              <select id="f-county-priority" class="mny-field mny-field-empty text-[15px] font-[600] max-w-[440px]">
+                <option value="" selected>— Not set —</option>
+                <option>Tier 1 – Top Implementation Priority</option>
+                <option>Tier 2 – Significant Priority</option>
+                <option>Tier 3 – Important but Secondary Priority</option>
+                <option>Tier 4 – Long-Term/Opportunistic</option>
+                <option>Not Reported</option>
+              </select>
+            </div>
+            <p class="font-proxima text-[12px] text-mny-700 leading-[1.5] max-w-[380px]">
+              None of Sullivan's <strong class="text-mny-900 font-[600]">475</strong> actions has a tier yet.
+              Setting one here also clears it from the
+              <a href="workspace.html" class="text-mny-y700 font-[600] underline decoration-mny-y500 hover:decoration-mny-y700">prioritization worklist</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+        <!-- ========================================================
+             SECTION — THE CASE (col-8)
+             ======================================================== -->
+        <div data-dms="section" data-name="the-case" class="col-span-12 lg:col-span-8 lg:pr-6">
+          <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1] pb-3 border-b border-mny-100">The case for this action</h2>
+
+          <div class="pt-5">
+            <label for="f-problem" class="flex items-center gap-2 mb-2">
+              <span class="size-6 rounded-full bg-mny-redk/10 flex items-center justify-center shrink-0">
+                <!-- icon: Warning -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-redk" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
+              </span>
+              <span class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">The problem <span class="text-mny-redk">*</span></span>
+            </label>
+            <textarea id="f-problem" rows="5" class="mny-field text-[15px] leading-[145%]">State Route 52 in Kohlertown experiences severe flooding on a continuous basis due to culvert issues and requires coordination of various agencies responsible for transportation services. Undersized culverts often result in the flooding of roadways due to the inability to handle the influx of water. Debris build-up in these undersized pipes may also result in water back-flow, leading to further roadway flooding and impacting the integrity of the culverts.</textarea>
+            <p class="font-proxima text-[12px] text-mny-400 mt-1.5">What is at risk, and why. Reviewers read this first.</p>
+          </div>
+
+          <div class="pt-6 mt-6 border-t border-mny-50">
+            <label for="f-solution" class="flex items-center gap-2 mb-2">
+              <span class="size-6 rounded-full bg-mny-grn/15 flex items-center justify-center shrink-0">
+                <!-- icon: Tools -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-grn" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z"/></svg>
+              </span>
+              <span class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em]">The solution <span class="text-mny-redk">*</span></span>
+            </label>
+            <textarea id="f-solution" rows="6" class="mny-field text-[15px] leading-[145%]">To reduce the long-term risk to flooding for existing assets and future developments, specifically along State Route 52 and adjacent roads in Kohlertown near border of Jeffersonville/Callicoon, the Town Highway Department will work with County Public Works and NYS DOT to upsize of two culverts and an associated stormwater drain to increase stormwater drainage capacity. The state Department of Transportation is currently replacing one culvert, and the county Department of Public Works is working on an overflow storage or redirection solution.</textarea>
+            <p class="font-proxima text-[12px] text-mny-400 mt-1.5">What gets built or done, by whom, and to what standard.</p>
+          </div>
+
+          <div class="pt-6 mt-6 border-t border-mny-50">
+            <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] mb-3">Alternative considered</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="f-alt" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Alternative action</label>
+                <input id="f-alt" type="text" value="Elevate roads" class="mny-field text-[14px]">
+              </div>
+              <div>
+                <label for="f-alt-eval" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Why it was not chosen</label>
+                <input id="f-alt-eval" type="text" value="Cost prohibitive" class="mny-field text-[14px]">
+              </div>
+            </div>
+          </div>
+
+          <!-- COST & GOALS -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 mt-6 border-t border-mny-100">
+
+            <div>
+              <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2 border-b border-mny-50 mb-3">Cost &amp; benefit</h3>
+              <div class="space-y-3">
+                <div>
+                  <label for="f-cost-range" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Cost range</label>
+                  <select id="f-cost-range" class="mny-field text-[14px] font-[600] tabular-nums">
+                    <option>No Associated Costs</option>
+                    <option>&lt;$10,000</option>
+                    <option>$10,000 - $50,000</option>
+                    <option selected>$50,000 - $150,000</option>
+                    <option>$150,000 - $500,000</option>
+                    <option>$500,000 - $1,000,000</option>
+                    <option>$1,000,000 - $2,000,000</option>
+                    <option>$2,000,000 - $10,000,000</option>
+                    <option>$10,000,000 - $50,000,000</option>
+                    <option>&gt;$50,000,000</option>
+                    <option>Not Reported</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="f-est-cost" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Estimated cost ($)</label>
+                  <input id="f-est-cost" type="text" placeholder="e.g. 120000" class="mny-field mny-field-empty text-[14px] tabular-nums">
+                  <p class="font-proxima text-[11px] text-mny-400 mt-1">Empty on every Sullivan action — a figure here strengthens a grant application.</p>
+                </div>
+                <div>
+                  <label for="f-costs-reasonable" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">
+                    Costs reasonable vs. benefits <span class="text-mny-redk">*</span>
+                  </label>
+                  <select id="f-costs-reasonable" class="mny-field text-[14px] font-[600]">
+                    <option selected>Yes</option>
+                    <option>No</option>
+                    <option>Not Reported</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="f-cost-benefit" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Why it pays off</label>
+                  <textarea id="f-cost-benefit" rows="6" class="mny-field text-[14px] leading-[145%]">Overall flooding will be reduced, which will result in less frequency of road closures and reduced damage occurring to culverts and roadways during severe events. Businesses are likely to remain in place if they are able to remain open, or re-open sooner following a flood.</textarea>
+                </div>
+                <div>
+                  <label for="f-cost-notes" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Cost notes</label>
+                  <input id="f-cost-notes" type="text" value="High" class="mny-field text-[14px]">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2 border-b border-mny-50 mb-3">Goals it advances</h3>
+
+              <fieldset>
+                <legend class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-2">NYS Hazard Mitigation Plan goals</legend>
+                <div class="space-y-1.5">
+                  <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" checked class="mt-0.5 size-4 rounded border-mny-200 text-mny-900 focus:ring-mny-100">
+                    <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]"><strong class="font-[700]">1</strong> · Protect &amp; improve the health and safety of all people &amp; communities</span>
+                  </label>
+                  <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" class="mt-0.5 size-4 rounded border-mny-200 text-mny-900 focus:ring-mny-100">
+                    <span class="font-proxima text-[13px] text-mny-700 leading-[1.35]"><strong class="font-[700]">2</strong> · Federal, state &amp; local coordination</span>
+                  </label>
+                  <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" checked class="mt-0.5 size-4 rounded border-mny-200 text-mny-900 focus:ring-mny-100">
+                    <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]"><strong class="font-[700]">3</strong> · Protect existing property</span>
+                  </label>
+                  <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" class="mt-0.5 size-4 rounded border-mny-200 text-mny-900 focus:ring-mny-100">
+                    <span class="font-proxima text-[13px] text-mny-700 leading-[1.35]"><strong class="font-[700]">4</strong> · Increase awareness</span>
+                  </label>
+                  <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" class="mt-0.5 size-4 rounded border-mny-200 text-mny-900 focus:ring-mny-100">
+                    <span class="font-proxima text-[13px] text-mny-700 leading-[1.35]"><strong class="font-[700]">5</strong> · Preserve &amp; restore natural systems</span>
+                  </label>
+                  <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" checked class="mt-0.5 size-4 rounded border-mny-200 text-mny-900 focus:ring-mny-100">
+                    <span class="font-proxima text-[13px] text-mny-900 leading-[1.35]"><strong class="font-[700]">6</strong> · Build stronger</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <div class="mt-4">
+                <label for="f-lhmp-goals" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Local plan goals / objectives</label>
+                <input id="f-lhmp-goals" type="text" value="2, 5" class="mny-field text-[14px] tabular-nums">
+                <p class="font-proxima text-[11px] text-mny-400 mt-1">Free text — enter the goal numbers as the local plan writes them.</p>
+              </div>
+
+              <div class="mt-4">
+                <label for="f-local-priority" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Local priority</label>
+                <input id="f-local-priority" type="text" value="High" class="mny-field text-[14px]">
+                <p class="font-proxima text-[11px] text-mny-400 mt-1">The jurisdiction's own ranking. Distinct from the county tier above.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — KEY FACTS RAIL (col-4, sticky)
+             ======================================================== -->
+        <div data-dms="section" data-name="key-facts" class="col-span-12 lg:col-span-4 pt-6 lg:pt-0">
+          <div class="lg:sticky lg:top-[120px] rounded-[12px] border border-mny-100 bg-mny-50 p-4">
+            <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2.5 border-b border-mny-200 mb-3">Key facts</h2>
+
+            <div class="space-y-3">
+
+              <div>
+                <label for="f-hazard-1" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Primary hazard</label>
+                <select id="f-hazard-1" class="mny-field text-[14px] font-[600]">
+                  <option>Avalanche</option><option>Coastal Hazards</option><option>Drought</option>
+                  <option>Earthquake</option><option>Extreme Cold</option><option>Extreme Heat</option>
+                  <option selected>Flooding</option><option>Hail</option><option>Hurricane</option>
+                  <option>Ice Storm</option><option>Landslide</option><option>Lightning</option>
+                  <option>MOST or ALL formal hazards</option><option>Snowstorm</option><option>Tornado</option>
+                  <option>Tsunami/Seiche</option><option>Wildfire</option><option>Wind</option>
+                </select>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label for="f-hazard-2" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Secondary</label>
+                  <select id="f-hazard-2" class="mny-field mny-field-empty text-[13px]">
+                    <option value="" selected>—</option>
+                    <option>Flooding</option><option>Hurricane</option><option>Ice Storm</option>
+                    <option>Snowstorm</option><option>Wind</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="f-hazard-3" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Tertiary</label>
+                  <select id="f-hazard-3" class="mny-field mny-field-empty text-[13px]">
+                    <option value="" selected>—</option>
+                    <option>Flooding</option><option>Hurricane</option><option>Ice Storm</option>
+                    <option>Snowstorm</option><option>Wind</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-mny-200">
+                <label for="f-action-type" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Primary action type</label>
+                <select id="f-action-type" class="mny-field text-[14px] font-[600]">
+                  <option>Acquisition, Elevation or Relocation</option>
+                  <option>Codes/ Ordinance/ Zoning/ Policy/ Law/ Governance</option>
+                  <option selected>Community Infrastructure (Drainage, Underground Utilities)</option>
+                  <option>Dam Rehabilitation/Removal</option>
+                  <option>Education, Awareness, Outreach</option>
+                  <option>Establishing Long-Term Programs</option>
+                  <option>Floodproofing, other</option>
+                  <option>Other Large Flood Control (Levees, Floodwalls; Safe Rooms)</option>
+                  <option>Planning</option>
+                  <option>Power (Microgrids, Emergency Power for Critical Facilities)</option>
+                  <option>Preparedness &amp; Response</option>
+                  <option>Project Scoping</option>
+                  <option>Studies and/ or Risk Assessment</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="f-timeline" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">
+                  Time to implement <span class="text-mny-redk">*</span>
+                </label>
+                <select id="f-timeline" class="mny-field text-[14px] font-[600]">
+                  <option>Ongoing</option>
+                  <option>Less than 2 years</option>
+                  <option selected>2-4 years</option>
+                  <option>More than 4 years</option>
+                  <option>Not Reported</option>
+                </select>
+              </div>
+
+              <div class="pt-3 border-t border-mny-200">
+                <label for="f-lead-agency" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">
+                  Lead agency / department <span class="text-mny-redk">*</span>
+                </label>
+                <input id="f-lead-agency" type="text" value="Highway Department" class="mny-field text-[14px] font-[600]">
+              </div>
+
+              <div>
+                <label for="f-funding" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Potential funding sources</label>
+                <textarea id="f-funding" rows="2" class="mny-field text-[13px] leading-[140%]">FEMA HMA, CHIPS, NYS DOT, County Budget, Town Budget</textarea>
+              </div>
+
+              <div>
+                <label for="f-partners" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Partners</label>
+                <input id="f-partners" type="text" placeholder="e.g. County DPW, NYS DOT" class="mny-field mny-field-empty text-[13px]">
+              </div>
+
+              <!-- LOCATION — the actions_location waterfall's input -->
+              <div id="location" class="pt-3 border-t border-mny-200">
+                <label for="f-geom" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Site coordinates</label>
+                <input id="f-geom" type="text" placeholder="41.7580, -74.9299" class="mny-field mny-field-empty text-[13px] tabular-nums">
+                <label for="f-address" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mt-2 mb-1">Address</label>
+                <input id="f-address" type="text" placeholder="State Route 52, Kohlertown NY" class="mny-field mny-field-empty text-[13px]">
+                <p class="font-proxima text-[11px] text-mny-700 leading-[1.45] mt-1.5">
+                  With neither, the action maps to the <strong class="text-mny-900 font-[600]">town centroid</strong>.
+                  A coordinate here promotes it to precision&nbsp;1.
+                </p>
+              </div>
+
+              <div class="pt-3 border-t border-mny-200">
+                <label for="f-in-last-hmp" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Included in last HMP</label>
+                <select id="f-in-last-hmp" class="mny-field text-[13px] font-[600]">
+                  <option selected>Yes</option>
+                  <option>No</option>
+                </select>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — SCREENING QUESTIONS (col-12)
+             Same chip grid as the view page, each chip now a 3-way
+             control. Unanswered ones keep the dashed accent so the work
+             remaining is visible while you scroll.
+             ======================================================== -->
+        <div id="screening" data-dms="section" data-name="screening" class="col-span-12 pt-8">
+          <div class="flex flex-wrap items-end justify-between gap-3 pb-3 border-b border-mny-100">
+            <div>
+              <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Screening questions</h2>
+              <p class="font-proxima text-[14px] text-mny-400 leading-[140%] mt-1.5">
+                The eleven eligibility and scoping questions FEMA and DHSES review
+              </p>
+            </div>
+            <span class="font-proxima text-[12px] text-mny-y700 font-[600]"><strong class="font-[700] tabular-nums">5</strong> still unanswered</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5 mt-4">
+
+            <div class="rounded-[10px] border border-mny-grn/40 bg-mny-grn/[0.08] px-3 py-2.5">
+              <label for="q1" class="block font-proxima text-[13px] text-mny-900 leading-[1.35] mb-1.5">Related to a critical facility <span class="text-mny-redk">*</span></label>
+              <select id="q1" class="mny-field text-[13px] font-[600] py-1.5"><option selected>Yes</option><option>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-mny-grn/40 bg-mny-grn/[0.08] px-3 py-2.5">
+              <label for="q2" class="block font-proxima text-[13px] text-mny-900 leading-[1.35] mb-1.5">Includes work on or assessment of a culvert</label>
+              <select id="q2" class="mny-field text-[13px] font-[600] py-1.5"><option selected>Yes</option><option>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+              <label for="q3" class="block font-proxima text-[13px] text-mny-700 leading-[1.35] mb-1.5">Includes potential for acquisition / buyout <span class="text-mny-redk">*</span></label>
+              <select id="q3" class="mny-field text-[13px] font-[600] py-1.5"><option>Yes</option><option selected>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+              <label for="q4" class="block font-proxima text-[13px] text-mny-700 leading-[1.35] mb-1.5">Includes a generator</label>
+              <select id="q4" class="mny-field text-[13px] font-[600] py-1.5"><option>Yes</option><option selected>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+              <label for="q5" class="block font-proxima text-[13px] text-mny-700 leading-[1.35] mb-1.5">Addresses climate change adaptation</label>
+              <select id="q5" class="mny-field text-[13px] font-[600] py-1.5"><option>Yes</option><option selected>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-mny-100 bg-white px-3 py-2.5">
+              <label for="q6" class="block font-proxima text-[13px] text-mny-700 leading-[1.35] mb-1.5">Mitigates climate change (GHG reduction) <span class="text-mny-redk">*</span></label>
+              <select id="q6" class="mny-field text-[13px] font-[600] py-1.5"><option>Yes</option><option selected>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5">
+              <label for="q7" class="block font-proxima text-[13px] text-mny-900 leading-[1.35] mb-1.5">Protects repetitive / severe repetitive loss properties <span class="text-mny-redk">*</span></label>
+              <select id="q7" class="mny-field mny-field-empty text-[13px] font-[600] py-1.5"><option value="" selected>— Not answered —</option><option>Yes</option><option>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5">
+              <label for="q8" class="block font-proxima text-[13px] text-mny-900 leading-[1.35] mb-1.5">Known environmental / historic preservation concerns</label>
+              <select id="q8" class="mny-field mny-field-empty text-[13px] font-[600] py-1.5"><option value="" selected>— Not answered —</option><option>Yes</option><option>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5">
+              <label for="q9" class="block font-proxima text-[13px] text-mny-900 leading-[1.35] mb-1.5">Protects or assesses risk to vulnerable populations</label>
+              <select id="q9" class="mny-field mny-field-empty text-[13px] font-[600] py-1.5"><option value="" selected>— Not answered —</option><option>Yes</option><option>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5">
+              <label for="q10" class="block font-proxima text-[13px] text-mny-900 leading-[1.35] mb-1.5">Supports Community Rating System (CRS) points</label>
+              <select id="q10" class="mny-field mny-field-empty text-[13px] font-[600] py-1.5"><option value="" selected>— Not answered —</option><option>Yes</option><option>No</option><option>Not Reported</option></select>
+            </div>
+
+            <div class="rounded-[10px] border border-dashed border-mny-y700 bg-mny-y50 px-3 py-2.5">
+              <label for="q11" class="block font-proxima text-[13px] text-mny-900 leading-[1.35] mb-1.5">Aligns with a Climate Smart Communities action</label>
+              <select id="q11" class="mny-field mny-field-empty text-[13px] font-[600] py-1.5"><option value="" selected>— Not answered —</option><option>Yes</option><option>No</option><option>Not Reported</option></select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — RECORD & CONTACT (col-12)
+             ======================================================== -->
+        <div data-dms="section" data-name="record-contact" class="col-span-12 pt-8">
+          <h2 class="font-display text-[16px] font-[500] text-mny-900 uppercase tracking-[0.02em] pb-2.5 border-b border-mny-100 mb-4">Record &amp; contact</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            <div>
+              <label for="f-action-number" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Action number</label>
+              <input id="f-action-number" type="text" value="2026-DelawareT-03" class="mny-field text-[14px] tabular-nums">
+            </div>
+            <div>
+              <label for="f-created" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Action creation date</label>
+              <input id="f-created" type="text" value="2021" class="mny-field text-[14px] tabular-nums">
+            </div>
+            <div>
+              <label for="f-source" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Plan source</label>
+              <select id="f-source" class="mny-field text-[14px]">
+                <option selected>LHMP</option><option>SHMP</option><option>NYRCR</option>
+              </select>
+            </div>
+            <div>
+              <label for="f-mechanism" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Existing planning mechanism</label>
+              <input id="f-mechanism" type="text" value="Not disclosed" class="mny-field text-[14px]">
+            </div>
+            <div>
+              <label for="f-poc" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Point of contact</label>
+              <input id="f-poc" type="text" placeholder="Name" class="mny-field mny-field-empty text-[14px]">
+            </div>
+            <div>
+              <label for="f-poc-title" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">POC title</label>
+              <input id="f-poc-title" type="text" placeholder="e.g. Highway Superintendent" class="mny-field mny-field-empty text-[14px]">
+            </div>
+            <div>
+              <label for="f-poc-email" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">POC email</label>
+              <input id="f-poc-email" type="email" placeholder="name@townofdelaware.org" class="mny-field mny-field-empty text-[14px]">
+            </div>
+            <div>
+              <label for="f-status-details" class="block font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Action status details</label>
+              <input id="f-status-details" type="text" placeholder="What changed, and when" class="mny-field mny-field-empty text-[14px]">
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             SECTION — PAGE INDEX (design-system scaffolding, col-12)
+             Reviewer navigation, not product content — it never ships
+             on a live DMS page. Kept inside the content group so no
+             section sits on the topo canvas.
+             ======================================================== -->
+        <div data-dms="section" data-name="page-index" class="col-span-12 pt-6">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-mny-200 pt-4">
+            <span class="font-display text-[11px] font-[500] uppercase tracking-[0.08em] text-mny-400">County Actions Workflow</span>
+          <a href="dashboard.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">1 · Dashboard</a>
+          <a href="jurisdictions.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">2 · Jurisdictions</a>
+          <a href="workspace.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">3 · Workspace</a>
+          <a href="action-view.html" class="font-proxima text-[13px] text-mny-700 hover:text-mny-900">4 · Action View</a>
+          <span class="font-proxima text-[13px] font-[700] text-mny-y700">5 · Action Edit</span>
+            <span class="ml-auto font-proxima text-[12px] text-mny-400">Action id 1100379 · editing draft · not saved</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================================================================
+     STICKY SAVE BAR
+     Fixed to the bottom so Save is reachable from any scroll position —
+     a 40-field form whose only Save is at the very bottom is how edits
+     get abandoned halfway.
+     ================================================================ -->
+<div class="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-mny-200 mny-shadow-md">
+  <div class="max-w-[1440px] mx-auto px-4 xl:px-[64px] py-3">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+
+      <div class="flex flex-wrap items-center gap-4 min-w-0">
+        <!-- unsaved-changes state -->
+        <span class="inline-flex items-center gap-2 font-proxima text-[13px] font-[600] text-mny-900">
+          <span class="size-2 rounded-full bg-mny-y700"></span>
+          Unsaved changes
+        </span>
+        <span class="font-proxima text-[12px] text-mny-400 truncate">
+          Delaware — Kohlertown Route 52, Culvert Issues · Delaware (Town)
+        </span>
+        <!-- required-field readout: honest about what still blocks a save -->
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-y50 border border-mny-y500/50 font-proxima text-[12px] font-[600] text-mny-900">
+          <!-- icon: Warning -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-y700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
+          1 required field empty
+          <a href="#screening" class="underline decoration-mny-y500 hover:decoration-mny-y700">Go to it</a>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="action-view.html" class="px-4 py-2 font-proxima text-[13px] font-[600] text-mny-700 hover:text-mny-900">Cancel</a>
+        <button class="px-4 py-2.5 bg-white border border-mny-200 rounded-full font-proxima text-[13px] font-[600] text-mny-900 hover:border-mny-400 transition-colors">Save</button>
+        <a href="action-view.html" class="flex items-center gap-2 px-5 py-2.5 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors">
+          <!-- icon: Save -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+          Save &amp; close
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FLOATING DESIGN-SYSTEM NAV WIDGET
+     Lifted above the save bar on this page so the two don't collide.
+     ================================================================ -->
+<div id="dsWidget" style="position:fixed;bottom:88px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:230px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;max-height:70vh;overflow-y:auto;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">1</span> Theme</a>
+    <a href="../../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">2</span> Layouts</a>
+    <a href="../../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">3</span> Grid</a>
+    <a href="../../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">4</span> Components</a>
+    <a href="../../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">5</span> Patterns</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:10px 16px 6px;border-top:1px solid #E0EBF0;margin-top:6px;">Pages</div>
+    <a href="../home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Home</a>
+    <a href="../home-v2.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Home v2</a>
+    <a href="../section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Section Landing</a>
+    <a href="../actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Actions Dashboard</a>
+    <a href="../actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Prioritize (List)</a>
+    <a href="../actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Prioritize (Cards)</a>
+    <a href="../actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Actions Location Overview</a>
+    <a href="../datasets-files.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Datasets &amp; Files</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:10px 16px 6px;border-top:1px solid #E0EBF0;margin-top:6px;">County Actions Workflow</div>
+    <a href="dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">1</span> Dashboard</a>
+    <a href="jurisdictions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">2</span> Jurisdictions</a>
+    <a href="workspace.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">3</span> Workspace</a>
+    <a href="action-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">4</span> Action View</a>
+    <a href="action-edit.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#6D96AE;min-width:14px;">5</span> Action Edit</a>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:10px 16px 6px;border-top:1px solid #E0EBF0;margin-top:6px;">Reports</div>
+    <a href="../../reports/actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Actions QA</a>
+    <a href="../../reports/duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Duplicate Actions</a>
+    <a href="../../reports/boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Boilerplate Actions</a>
+    <a href="../../reports/location-from-text.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;">Locating From Text</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <!-- decorative -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+<!-- Clear the dashed "never had a value" accent once a field is touched. -->
+<script>
+  document.querySelectorAll('.mny-field-empty').forEach(function (el) {
+    el.addEventListener('change', function () { if (el.value) el.classList.remove('mny-field-empty'); });
+    el.addEventListener('input', function () { if (el.value) el.classList.remove('mny-field-empty'); });
+  });
+</script>
+
+</body>
+</html>

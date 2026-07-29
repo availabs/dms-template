@@ -66,7 +66,18 @@ CircleSolid,
   CircleFilled,
   TableBuilt,
   Home,
- Map
+ Map,
+  // Referenced by the mny design-system mockups (actions-prioritize.html and the
+  // county-actions workflow pages). Registered here so those glyph names resolve
+  // when the mockups become live DMS pages — an unregistered name renders Default.
+  Add,
+  ArrowsVertical,
+  Building,
+  Close,
+  List,
+  Location,
+  Save,
+  Tools
 } from '@carbon/icons-react';
 import {FEMA} from './fema_icon'
 
@@ -77,6 +88,16 @@ const Default = ({...props}) => (
 );
 
 const CarbonIcons = {
+  // -- referenced by the design-system mockups
+  Add,
+  ArrowsVertical,
+  Building,
+  Close,
+  List,
+  Location,
+  Save,
+  Tools,
+  // --
   ToolKit,
   Map,
   View,
@@ -311,6 +332,23 @@ const iconList = [
   {icon:"CheckmarkFilled", label: "Status - CheckmarkFilled" },
   {icon:"CircleSolid", label: "Status - CircleSolid" },
   {icon:"CircleFilled", label: "Status - CircleFilled" },
+  // ---- UI / workflow icons used by the county-actions design pages
+  // Plain-name aliases. These five already ship under other registry keys
+  // (ArrowDown / ArrowRight / Community / "Status - *"); the aliases let a page
+  // reference the Carbon name it actually inlines. Additive — the old keys still work.
+  {icon:"ChevronDown", label: "ChevronDown"},
+  {icon:"ChevronRight", label: "ChevronRight"},
+  {icon:"Events", label: "Events"},
+  {icon:"Warning", label: "Warning"},
+  {icon:"CheckmarkFilled", label: "CheckmarkFilled"},
+  {icon:"Add", label: "Add"},
+  {icon:"ArrowsVertical", label: "ArrowsVertical"},
+  {icon:"Building", label: "Building"},
+  {icon:"Close", label: "Close"},
+  {icon:"List", label: "List"},
+  {icon:"Location", label: "Location"},
+  {icon:"Save", label: "Save"},
+  {icon:"Tools", label: "Tools"},
 
 
 ]

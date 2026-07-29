@@ -28,8 +28,8 @@ Two lineages (task `planning/transportny/tasks/current/qa-build-scripts-migratio
 | build_tsmo2_about.mjs | tsmo2/about 2184040 | generated | gated ✓ |
 | build_tsmo2_methodology.mjs | tsmo2/methodology 2184101 | generated | gated ✓ |
 | build_tsmo2_incidents_v2.mjs | tsmo2/incidents_v2 2181461 | generated — **REGENERATED from live 2026-07-27** after a re-run silently reverted the 07-16 graph fix (`yAxis.tickSpacing` 2000000 → 2) despite a matching 32-section count. Now carries a runtime parity guard + a pointer to `fidelity_static.mjs`, which is the check that catches same-count drift. | gated ✓ 2026-07-27 — static fidelity 32/32 identical to live, rebuild 32/32, re-export diff clean, `AxisLeft` warning gone and graph verified rendering ~5 ticks at 2M |
-| build_tsmo2_workzones_v2.mjs | tsmo2/workzones_v2 2182386 | generated — **REGENERATED from live 2026-07-27** after drifting 28 vs live 34 (it had been marked "STALE — DO NOT RUN" since it regressed the drafts on 2026-07-15/16). Now carries a **runtime parity guard** instead of that hand-written throw: it compares the live draft section count to `SECTIONS.length` *before* wiping and refuses if they differ. | gated ✓ 2026-07-27 — static fidelity (all 34 exported sections byte-identical to live) + rebuild 34/34 + re-export diff clean + guard verified to refuse a deliberately drifted copy without touching the page |
-| build_tsmo2_incident_view.mjs | tsmo2/incident_view 2182470 | generated | gated ✓ |
+| build_tsmo2_workzones_v2.mjs | tsmo2/workzones_v2 2182386 — **§04 "Active work zones" REMOVED 2026-07-28 (#180, out of scope): 34→28 sections, 8→7 groups, group indices re-sequenced. Parity proven before the edit (34==34 byte-identical), the 6 live placeholders deleted so the runtime guard could pass honestly (28==28), rebuilt 28/28.** | generated — **REGENERATED from live 2026-07-27** after drifting 28 vs live 34 (it had been marked "STALE — DO NOT RUN" since it regressed the drafts on 2026-07-15/16). Now carries a **runtime parity guard** instead of that hand-written throw: it compares the live draft section count to `SECTIONS.length` *before* wiping and refuses if they differ. | gated ✓ 2026-07-27 — static fidelity (all 34 exported sections byte-identical to live) + rebuild 34/34 + re-export diff clean + guard verified to refuse a deliberately drifted copy without touching the page |
+| build_tsmo2_incident_view.mjs | tsmo2/incident_view 2182470 — **2026-07-28 (row 2196812): event-POINT layer added over source 956/view 1947 (always-on, serverSide event_id, `layer-type` MUST stay `""` — `"categories"` triggers a 66k-value domain fetch), hideIfNull notice Card, statewide initialBounds. Backported a live `height` edit ("fill"→"1/3") that fidelity_static caught. Guard gained an `ALLOW_SECTION_COUNT_CHANGE=1` opt-in for intentional structural changes.** | generated | gated ✓ |
 | build_tsmo2_corridor_view.mjs | tsmo2/corridor_view 2182912 | generated + hand-fix 2026-07-27 (#103/#159/#181: corridor strip map added to the empty "Compare & map" group — Map section over source 582/view 984, serverSide county/road/direction/**year** filters) | gated ✓ · rebuilt 24/24 2026-07-27 |
 | build_freightatlas2_freight_atlas.mjs | ~~freightatlas2/freight_atlas 1411761~~ **STALE — owner retired 1411761 2026-07-16** | generated (460KB map symbology — payloads via temp files) | The sitemgmt `freightatlas2` surface now tracks the SANDBOX pattern 2175436 → page **2189762** / map section **2189767** (config row 2186151). That page is NOT build-owned; its symbologies are edited directly (see `qa-fix-map-symbology-tickets.md`). TODO: regenerate this build against 2189762 (or retire it) so the tracked page is build-owned again. |
 | build_npmrds2_map_21.mjs | npmrds2/map_21 1473731 | generated | gated ✓ |
@@ -49,6 +49,28 @@ the script.
 
 **Armed right now:** `build_tsmo_reliability.mjs` (migrated, ungated) predates **#165**'s 07-21 live fix
 (map legend title no longer truncated to "W..") — re-running it as-is will revert that. Diff before use.
+
+**⚠ VIEWING A PAGE IN `/edit` MUTATES ITS SECTIONS — it is itself a drift source (2026-07-28).**
+Opening `/edit/<slug>` on a build-owned page makes the editor re-save the sections it renders, so a
+builder that was byte-identical to live can fail `fidelity_static.mjs` minutes later with nobody
+having authored anything. Two flavours, and only the second matters:
+
+- *Harmless, now normalised by `fidelity_static.mjs`*: an unset page-variable leaf's `"value": []`
+  comes back as `"value": [""]` (behaviourally identical — `buildUdaConfig` drops all-empty
+  filter/exclude leaves, which is also what stops them compiling to `IN ('')` and blanking the
+  section), and an empty `join: {"sources": {}}` is added.
+- *Real config drift, still reported*: `useDataSource`'s runtime reconcile rewrites
+  `externalSource` — `baseUrl` blanked, `isEditable` added, and every column def reshaped
+  (`display_name` → `display: ""`, `"INTEGER"` → `"integer"`). Observed on incidents_v2 sections
+  2196881/2196886 after a verification pass. The page still renders, but the committed builder and
+  live have diverged — the same condition that let the 07-16 graph fix get reverted.
+
+Practical rules: **verify page changes on the PUBLISHED view, or via the CLI, not `/edit`**, and if
+you must open `/edit`, re-run the builder afterwards to restore parity (it is content-neutral when
+fidelity passes) and re-check. Open question worth deciding once: adopt the editor-normalised
+`externalSource` shape into the builders (regenerate, so the drift stops recurring) or keep
+re-running to restore the authored shape — nobody has established whether the blanked `baseUrl`
+matters.
 
 **Fidelity gate** (mandatory before a script's FIRST fix-loop rebuild if flagged above): baseline
 `qa_assess.mjs` + section count → run the script → section count unchanged, no new findings,
