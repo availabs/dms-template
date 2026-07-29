@@ -94,6 +94,16 @@ const CONVERTER_SCRIPT = resolve(REPO, 'scripts/npmrds-reports/convert_old_repor
 // spec-facing name avoids colliding with AVL Graph's real speed-in-mph measure).
 const INFO_BOX_MEASURES = ['reliability', 'travelTime', 'length', 'aadt', 'hoursOfDelay'];
 const INFO_BOX_BINS = ['amp', 'midd', 'pmp', 'we'];
+
+// A `graphType: "RouteCompare"` graph is likewise not an AVL Graph — it shells
+// out to convert_old_reports.py's `--route-compare-section` (see
+// composeRouteCompareGraphState below), reusing the shared, generic,
+// per-measure Route Compare Component template (round 25) already built for
+// old-report conversion. Mirrors Python's MEASURE_EXPR keys exactly — keep in
+// sync if that dict changes. NOT the theme's custom `RouteComparison.jsx`
+// page component (an unrelated Batch-Reports-replacement tool) — this mints a
+// plain Spreadsheet section (comparisonSeries row fan-out + a delta column).
+const ROUTE_COMPARE_MEASURES = ['speed', 'travelTime'];
 // Mirrors Python's PM3_VIEW_BY_YEAR range (source 1410's per-year pm3 join) —
 // an Info Box "reliability" graph outside this window has no fallback (unlike
 // Route Map's geometry-year clamp), so it's a hard build error, checked here
@@ -243,16 +253,20 @@ function writeSpecOut(spec, outPath) {
 }
 
 // AVL Graph/Map are unambiguous graph element-types; Spreadsheet is NOT — an
-// Info Box graph and the page's own Add-a-Route section share it. Only count
-// a Spreadsheet section as a graph here if it actually carries the
-// `_infoBoxPick` marker composeInfoBoxGraphState stamps onto every Info Box
-// build (mirrors `_routeMapPick`) — the Add-a-Route section, a verbatim
-// template clone, never has one.
+// Info Box graph, a Route Compare graph, and the page's own Add-a-Route
+// section all share it. Only count a Spreadsheet section as a graph here if
+// it actually carries the `_infoBoxPick` or `_routeComparePick` marker
+// composeInfoBoxGraphState/composeRouteCompareGraphState stamps onto every
+// build of that type (mirrors `_routeMapPick`) — the Add-a-Route section, a
+// verbatim template clone, never has either.
 function isGraphSectionElement(s) {
   const type = s.data.element['element-type'];
   if (['AVL Graph', 'Map'].includes(type)) return true;
   if (type !== 'Spreadsheet') return false;
-  try { return !!JSON.parse(s.data.element['element-data'])._infoBoxPick; } catch { return false; }
+  try {
+    const state = JSON.parse(s.data.element['element-data']);
+    return !!(state._infoBoxPick || state._routeComparePick);
+  } catch { return false; }
 }
 
 // ── --from-page: reverse a live page back into a spec ──────────────────────
@@ -297,6 +311,14 @@ function runFromPage(pageArg, outPath) {
         let state = {};
         try { state = JSON.parse(s.data.element['element-data']); } catch { /* leave {} */ }
         if (s.data.element['element-type'] === 'Spreadsheet') {
+          // Route Compare and Info Box share element-type Spreadsheet — tell
+          // them apart by which marker is present before diffing.
+          if (state._routeComparePick) {
+            const pick = state._routeComparePick;
+            const expected = { measure: storedGraph.measure };
+            if (JSON.stringify(pick) !== JSON.stringify(expected)) { drifted = true; break; }
+            continue;
+          }
           // Info Box: no applyMeasurePick, diff against its own _infoBoxPick marker instead.
           const pick = state._infoBoxPick || {};
           const expected = { measure: storedGraph.measure, grain: storedGraph.grain || 'route',
@@ -348,13 +370,17 @@ function runFromPage(pageArg, outPath) {
       };
     }
     if (elType === 'Spreadsheet') {
-      let pick = null;
-      try { pick = JSON.parse(s.data.element['element-data'])._infoBoxPick || null; } catch { /* leave null */ }
+      let state = {};
+      try { state = JSON.parse(s.data.element['element-data']); } catch { /* leave {} */ }
+      if (state._routeComparePick) {
+        return { key, title: s.data.title || undefined, graphType: 'RouteCompare', measure: state._routeComparePick.measure };
+      }
+      const pick = state._infoBoxPick || null;
       return {
         key, title: s.data.title || undefined, graphType: 'InfoBox',
         measure: pick?.measure ?? null, grain: pick?.grain || 'route',
         ...(pick?.bin ? { bin: pick.bin } : {}),
-        ...(pick ? {} : { _needsReview: 'Info Box measure not recoverable from this section (built before the _infoBoxPick marker existed) — re-pick manually' }),
+        ...(pick ? {} : { _needsReview: 'Info Box/Route Compare measure not recoverable from this section (built before the _infoBoxPick/_routeComparePick marker existed) — re-pick manually' }),
       };
     }
     let state = {};
@@ -501,6 +527,7 @@ for (const g of spec.graphs) {
   if (g.comparisonMode !== 'difference') continue;
   if (g.graphType === 'Map') fail(`graph "${g.key}": Route Map doesn't support comparisonMode "difference" — each assigned route already renders as its own choropleth-colored layer.`);
   if (g.graphType === 'InfoBox') fail(`graph "${g.key}": Info Box doesn't support comparisonMode "difference" — each assigned route already renders as its own row via the comparisonSeries discriminator, not a subtraction.`);
+  if (g.graphType === 'RouteCompare') fail(`graph "${g.key}": Route Compare doesn't support comparisonMode "difference" — its delta column already IS the %-diff-from-anchor; a separate difference mode would be redundant.`);
   if (!g.anchor) {
     console.warn(`  note: difference graph "${g.key}" has no \`anchor\`; defaulting to "${g._assigned[0].id}" (first assigned route). Set \`anchor\` to be explicit about the sign.`);
     g._invert = false;
@@ -553,6 +580,8 @@ if (SUMMARY_ONLY) {
       ? `Map, ${g.measure}${g.measure === 'avgHoursOfDelay' ? ` (${RES_LABEL[g.resolution] || g.resolution})` : ''} choropleth`
       : g.graphType === 'InfoBox'
       ? `Info Box (${g.grain || 'route'} grain), ${g.measure}${g.measure === 'reliability' ? ` [bin: ${g.bin}]` : ''}`
+      : g.graphType === 'RouteCompare'
+      ? `Route Compare, ${g.measure} (% vs anchor route)`
       : `${g.graphType}, ${g.measure}, ${RES_LABEL[g.resolution] || g.resolution} buckets`;
     console.log(`  • ${g.title || g.key} — ${detail}`);
     console.log(`      ${mode}; ${g._assigned.length} route(s): ${g._assigned.map(r => r.id).join(', ')}`);
@@ -635,6 +664,14 @@ try {
       if (g.caption) fail(`graph "${g.key}": Info Box has no caption/description render path (Spreadsheet has no GraphTitle-equivalent, unlike AVL Graph) — drop \`caption\` or move this graph to an AVL Graph type.`);
       continue;
     }
+    if (g.graphType === 'RouteCompare') {
+      // Route Compare Component is not an AVL Graph either — no `resolution`,
+      // no `applyMeasurePick`, and (like Info Box) no caption render path.
+      // See composeRouteCompareGraphState below for how its state is built.
+      if (!ROUTE_COMPARE_MEASURES.includes(g.measure)) fail(`graph "${g.key}": unknown Route Compare measure "${g.measure}". Known: ${ROUTE_COMPARE_MEASURES.join(', ')}`);
+      if (g.caption) fail(`graph "${g.key}": Route Compare has no caption/description render path (Spreadsheet has no GraphTitle-equivalent, unlike AVL Graph) — drop \`caption\` or move this graph to an AVL Graph type.`);
+      continue;
+    }
     if (!graphTypes.has(g.graphType)) fail(`graph "${g.key}": unknown graphType "${g.graphType}". Known: ${[...graphTypes].join(', ')}`);
     if (!vocab.measures[g.measure]) fail(`graph "${g.key}": unknown measure "${g.measure}". Known: ${Object.keys(vocab.measures).join(', ')}`);
     if (!vocab.resolutions[g.resolution]) fail(`graph "${g.key}": unknown resolution "${g.resolution}". Known: ${Object.keys(vocab.resolutions).join(', ')}`);
@@ -669,6 +706,7 @@ try {
   composedStates = spec.graphs.map((g) => {
     if (g.graphType === 'Map') return undefined; // composed separately — see composeMapGraphState below
     if (g.graphType === 'InfoBox') return undefined; // composed separately — see composeInfoBoxGraphState below
+    if (g.graphType === 'RouteCompare') return undefined; // composed separately — see composeRouteCompareGraphState below
     // Start from the component's own defaultState (which already includes the
     // `data: []` that BarGraph crashes without — see the converter's note).
     const state = structuredClone(avlGraph.defaultState);
@@ -789,6 +827,35 @@ function composeInfoBoxGraphState(g) {
   return built;
 }
 
+// ── compose Route Compare Component graph state ────────────────────────────
+// Shells out to convert_old_reports.py, same reuse principle as
+// composeMapGraphState/composeInfoBoxGraphState above — the shared,
+// generic, per-measure `ensure_route_compare_template` (round 25) already
+// exists there. Like Info Box, this needs NO per-report baking step: the
+// anchor and every compare row resolve live at render time via
+// comparisonSeries + dms-server's __ANCHOR__(<expr>) mechanism, reading
+// whichever route the page's own route list currently has first — so this
+// composes in a single pass, immediately, exactly like Info Box.
+function composeRouteCompareGraphState(g) {
+  const args = [CONVERTER_SCRIPT, '--route-compare-section', '--compare-measure', g.measure];
+  if (DRY_RUN) args.push('--dry-run');
+  const out = execFileSync('python3', args, { cwd: REPO, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'inherit'] });
+  const lines = out.trim().split('\n').filter(Boolean);
+  let built;
+  try {
+    built = JSON.parse(lines[lines.length - 1]);
+  } catch {
+    fail(`graph "${g.key}": could not parse Route Compare builder output:\n${out}`);
+  }
+  // Bookkeeping only, mirrors Info Box's state._infoBoxPick — lets
+  // --from-page recover a Route Compare graph's measure exactly, and lets
+  // isGraphSectionElement tell a Route Compare section apart from Info Box
+  // and the page's own Add-a-Route section (all three are element-type
+  // "Spreadsheet").
+  built.state._routeComparePick = { measure: g.measure };
+  return built;
+}
+
 // Composed unconditionally, before the --dry-run/route-resolution branches
 // below — unlike Route Map there is no placeholder-vs-baked distinction, so
 // this only ever runs once.
@@ -797,6 +864,12 @@ for (const [i, g] of spec.graphs.entries()) {
   const built = composeInfoBoxGraphState(g);
   composedStates[i] = built.state;
   g._infoBoxElementType = built.elementType;
+}
+for (const [i, g] of spec.graphs.entries()) {
+  if (g.graphType !== 'RouteCompare') continue;
+  const built = composeRouteCompareGraphState(g);
+  composedStates[i] = built.state;
+  g._routeCompareElementType = built.elementType;
 }
 
 if (DRY_RUN) {
@@ -912,7 +985,7 @@ function graphSectionData(g, i, trackingId) {
     trackingId,
     ...(g.size ? { size: String(g.size) } : {}),
     element: {
-      'element-type': g._mapElementType || g._infoBoxElementType || 'AVL Graph',
+      'element-type': g._mapElementType || g._infoBoxElementType || g._routeCompareElementType || 'AVL Graph',
       // element-data is a JSON STRING, not an object (see the CLI skill's
       // element-data gotcha) — a nested object here is silently unusable.
       'element-data': JSON.stringify(composedStates[i]),

@@ -1558,8 +1558,36 @@ TEMPLATE_SPECS = {
 }
 TEMPLATE_BASE_NAME = "tmc_travel_time_line_graph"
 # Route Compare Component's per-measure raw expression (see ROUTE_COMPARE_BUCKET
-# above) — only speed is in scope this round.
-MEASURE_EXPR = {"speed": SPEED_EXPR}
+# above). speed + travelTime cover the signal_timing composition class (71%
+# each) — the rest of ROUTE_COMPARE_BUCKET's corpus scope.
+#
+# travelTime does NOT reuse TRAVEL_TIME_EXPR verbatim — it needs its own
+# ds.-qualified copy, for a real reason found live (2026-07-29), not
+# theoretical: round 35 (2026-07-13) originally set TRAVEL_TIME_EXPR to
+# `ds.`-qualified columns (mirrors SPEED_EXPR exactly), verified correct for
+# every WITH-JOIN template that uses it (this one, and Route Map's choropleth
+# via TRAVEL_TIME_VALUE_EXPR). The 2026-07-24 vocabulary.json fix (see
+# research/npmrds-reports/reportroutelist-cross-repo-sync.md) then stripped
+# the `ds.` prefix from GRAPH_VOCAB's travelTime expr — correctly, for THAT
+# fix's own context (AVL Graph's no-join vocabulary path, where `ds.` is
+# unresolvable) — but TRAVEL_TIME_EXPR is defined as
+# `GRAPH_VOCAB["measures"]["travelTime"]["expr"]`, so that fix silently
+# regressed every WITH-JOIN caller too. Live-caught here: bare columns make
+# `build_route_compare_section_state`'s delta query fail with ClickHouse
+# error "Aggregate function avgMapIf(...) is found inside another aggregate
+# function" — with the `ds.` prefix restored (this constant), the exact same
+# query returns correct values (cross-checked against Info Box's travelTime
+# numbers for the same routes: 5.3729/4.5079 min, exact match). Route Map's
+# travelTime choropleth likely has this same live regression today (also
+# WITH-JOIN, also derives from TRAVEL_TIME_EXPR) — flagged, not fixed here;
+# out of this task's scope, and Route Map's failure mode may differ (a
+# choropleth bake rather than a live query, so it might not error the same
+# way — needs its own check before assuming the fix is identical).
+ROUTE_COMPARE_TRAVELTIME_EXPR = (
+    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
+    "ds.travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles"
+)
+MEASURE_EXPR = {"speed": SPEED_EXPR, "travelTime": ROUTE_COMPARE_TRAVELTIME_EXPR}
 
 
 # ── Low-level helpers ────────────────────────────────────────────────────────
@@ -3991,6 +4019,38 @@ def build_route_info_box_section_state(measure, grain, templates, dry_run,
     return element_type, state
 
 
+def build_route_compare_section_state(measure, templates, dry_run):
+    """Build a ready-to-embed Route Compare Component section state for the
+    spec-driven `report_build.mjs` path (2026-07-29) — same reuse pattern as
+    `build_route_info_box_section_state` immediately above: report_build.mjs
+    has no Route Compare section code of its own, so this is the single
+    entrypoint it shells out to (`--route-compare-section` in main() below),
+    reusing `ensure_route_compare_template`'s shared, generic, per-measure
+    template (round 25) rather than a second implementation.
+
+    Like Info Box and unlike Route Map, this needs NO per-report baking step:
+    `ensure_route_compare_template`'s own docstring explains why — nothing
+    report-specific is baked into the SQL (no base route, no literal label);
+    every row's anchor and %-diff resolve live at render time via
+    `comparisonSeries` + dms-server's `__ANCHOR__(<expr>)` mechanism, reading
+    whichever route the page's own route list currently has first. So this
+    function only ever mints-or-reuses a template and clones its state, the
+    same as `build_route_info_box_section_state` — one shared template per
+    measure, reused across every report.
+
+    Returns (element_type, state) — no `gap`, since there is nothing to leave
+    unbaked (mirrors Info Box's return shape, not Route Map's)."""
+    if measure not in MEASURE_EXPR:
+        raise ValueError(f"unknown Route Compare measure {measure!r} — known: {sorted(MEASURE_EXPR)}")
+    templates = ensure_route_compare_template(measure, templates, dry_run)
+    tmpl = templates[f"route_compare_{measure}"]
+    state = json.loads(tmpl["data"]["stateJson"])
+    # Same BarGraph-crashes-without-state.data footgun Info Box already carries over.
+    state.setdefault("data", [])
+    element_type = tmpl["data"].get("elementType", "Spreadsheet")
+    return element_type, state
+
+
 _TMC_RESOLVE_CACHE = {}
 
 
@@ -5179,6 +5239,13 @@ def main():
     ap.add_argument("--bin", dest="reliability_bin", choices=sorted(RELIABILITY_BIN_LABELS),
                     help="--route-info-box-section: required only for "
                          "--info-box-measure reliability (amp/midd/pmp/we)")
+    ap.add_argument("--route-compare-section", action="store_true",
+                    help="build a single Route Compare Component section state and print "
+                         "it as JSON on stdout, for report_build.mjs to embed in a "
+                         "spec-driven report — does not touch any old admin2.reports "
+                         "row. See build_route_compare_section_state().")
+    ap.add_argument("--compare-measure", choices=sorted(MEASURE_EXPR),
+                    help="--route-compare-section: speed/travelTime")
     args = ap.parse_args()
 
     if args.route_map_section:
@@ -5208,8 +5275,18 @@ def main():
         print(json.dumps({"elementType": element_type, "state": state}))
         return
 
+    if args.route_compare_section:
+        if not args.compare_measure:
+            ap.error("--route-compare-section needs --compare-measure")
+        templates = load_graph_templates()
+        element_type, state = build_route_compare_section_state(
+            args.compare_measure, templates, args.dry_run)
+        print(json.dumps({"elementType": element_type, "state": state}))
+        return
+
     if not args.report_id:
-        ap.error("--report-id is required unless --route-map-section/--route-info-box-section is set")
+        ap.error("--report-id is required unless --route-map-section/--route-info-box-section/"
+                 "--route-compare-section is set")
     convert_report(args.report_id, dry_run=args.dry_run, replace=args.replace)
 
 

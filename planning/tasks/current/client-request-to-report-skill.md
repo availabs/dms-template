@@ -2,7 +2,8 @@
 
 **Status:** all four gaps DONE as of 2026-07-28 (started 2026-07-27). Remaining work is
 follow-on, tracked in "Next steps" below (route-date cleanup, `--ui-guide` generator, Route
-Map's color_range, Route Compare Component wiring). #11's UI half (Route Info Box wiring and
+Map's color_range). Item 10, Route Compare Component wiring, is now ALSO DONE (2026-07-29) —
+see below. #11's UI half (Route Info Box wiring and
 spec half were already DONE, see items 8 and 11) is now ALSO DONE, 2026-07-28 later session —
 see `report-route-ui-parity-gaps.md` gap #11 for the full writeup, including a correction to
 this file's own item 8/1018 framing below (Route Map/Info Box needed no graph-type-specific
@@ -962,14 +963,74 @@ during-window 3:06 / 22.6 mph).
 9. Route Map's other buildable-but-unwired-here corner: `report_build.mjs` doesn't yet resolve a
    Map graph's `color_range` from anything spec-level (only a literal `g.colorRange` array is
    honored, no default-per-measure palette).
-10. **Wire Route Compare Component into `report_build.mjs`** — found 2026-07-28 while
-    correcting item 8, same class of gap, tracked immediately rather than left to go stale
-    again: a base + N-compare-rows %-diff-from-base shape (`ensure_route_compare_template`,
-    round 25) already exists in `convert_old_reports.py`, minted as a DMS Spreadsheet section,
-    and is classified `BUILDABLE_TYPES` (not `NO_EQUIVALENT_TYPES`) by `census_old_reports.py`.
-    Zero references in `report_build.mjs`/`report-spec.md`. Needed for the `signal_timing`
-    composition class (71% Route Compare Component on speed and travelTime) — the class
-    NY-9D belongs to.
+10. ~~Wire Route Compare Component into `report_build.mjs`~~ — **DONE 2026-07-29.** Found
+    2026-07-28 while correcting item 8, same class of gap, tracked immediately rather than
+    left to go stale again: a base + N-compare-rows %-diff-from-base shape
+    (`ensure_route_compare_template`, round 25) already existed in `convert_old_reports.py`,
+    minted as a DMS Spreadsheet section, classified `BUILDABLE_TYPES` (not
+    `NO_EQUIVALENT_TYPES`) by `census_old_reports.py`, but with zero references in
+    `report_build.mjs`/`report-spec.md`. Needed for the `signal_timing` composition class
+    (71% Route Compare Component on speed and travelTime) — the class NY-9D belongs to.
+
+    **Wiring, mirrored from Route Map/Info Box's own reuse pattern**: new
+    `build_route_compare_section_state(measure, templates, dry_run)` in
+    `convert_old_reports.py` (near-verbatim shape of `build_route_info_box_section_state` —
+    no per-report baking, mint-or-reuse a shared per-measure template, clone its state) behind
+    a new `--route-compare-section`/`--compare-measure` CLI mode; `report_build.mjs` got a new
+    `composeRouteCompareGraphState(g)` (mirrors `composeInfoBoxGraphState`, composed
+    unconditionally in a single pass, no route/date resolution needed) and a `RouteCompare`
+    branch everywhere `Map`/`InfoBox` already had one (vocab validation, `comparisonMode`
+    guard, `--summary` detail line, element-type fallback chain). Spec format:
+    `{graphType: "RouteCompare", measure: "speed"|"travelTime"}` — no `resolution`, no
+    `comparisonMode`, no `caption`, no `anchor` field of its own (anchor is always the first
+    route in `routes[]`). Full field docs in `report-spec.md`'s new "Route Compare graphs"
+    section.
+
+    **A second Spreadsheet-element-type disambiguation bug, same class as item 8's, fixed
+    proactively rather than found live**: `RouteCompare` sections are element-type
+    `Spreadsheet`, same as Info Box and the page's own Add-a-Route section, so
+    `isGraphSectionElement` (used by `--from-page`) and the drift-detection/live-reconstruction
+    branches inside `runFromPage` all needed a `_routeComparePick` marker check (mirrors
+    `_infoBoxPick`) added *before* assuming any un-marked Spreadsheet section is Info Box —
+    otherwise a page mixing both graph types would have misclassified one as the other on
+    reversal. The main `--update` reconcile path needed no change: it already keys off the
+    stored key→trackingId map, not element-type markers.
+
+    **A real, live-caught correctness bug in the travelTime measure, not the wiring itself**:
+    `MEASURE_EXPR["travelTime"]` can't reuse the shared `TRAVEL_TIME_EXPR` constant
+    (`GRAPH_VOCAB`-derived) verbatim — its current bare-column form (correct for AVL Graph's
+    no-join path since the 2026-07-24 vocabulary fix, see
+    `research/npmrds-reports/reportroutelist-cross-repo-sync.md`) makes the delta query fail
+    with a real ClickHouse error ("Aggregate function avgMapIf(...) is found inside another
+    aggregate function") once wrapped in `__ANCHOR__(...)` for a WITH-JOIN template like this
+    one. Round 35 (2026-07-13) had already solved this once with a `ds.`-qualified form,
+    verified correct for join-having templates, before the 2026-07-24 fix (correct for its own
+    no-join context) silently regressed it back. **Fixed by forking a new, dedicated constant**
+    (`ROUTE_COMPARE_TRAVELTIME_EXPR`, `ds.`-qualified, used only by `MEASURE_EXPR`) instead of
+    editing the shared constant a third time, which would just flip AVL Graph back to broken.
+    **Route Map's travelTime choropleth (`TRAVEL_TIME_VALUE_EXPR`, derived from the same shared
+    constant) likely carries this same live regression today** — flagged, not fixed or even
+    rebuilt-and-probed to confirm, out of this item's scope. Full writeup in
+    `report-spec.md`'s "Route Compare graphs" section (search "read before touching
+    `travelTime` expressions again").
+
+    **Live-verified 2026-07-29** end-to-end on a real (draft, unpublished) scratch page
+    (`claude_scratch_route_compare_test`, deleted after): two routes (NY-9D NB/SB), three
+    graphs — `RouteCompare`/speed, `RouteCompare`/travelTime, and an `InfoBox`/travelTime graph
+    on the same page specifically to stress the disambiguation fix. Anchor row rendered exact
+    `0`/neutral gray for both RouteCompare graphs; the non-anchor row's delta matched
+    `(value − anchor) / anchor * 100` for both measures (speed: 24.74 vs. 20.76 mph →
+    **+19.19%**; travelTime: 4.51 vs. 5.37 min → **−16.10%**), and the travelTime values
+    cross-checked exactly against the Info Box travelTime section's own numbers for the same
+    two routes (5.3729/4.5079 min in both). `report_probe.mjs --auth` showed zero console
+    errors after the `ds.`-prefix fix (one real error before it, root-caused above). `--update`
+    reconciled cleanly (`0 created, 4 updated, 0 deleted`; hit the same pre-existing
+    auth-requires-a-token gap in `dms section delete` noted at item 8, unrelated, worked around
+    the same way). `--from-page` round-tripped correctly both on the fast "no drift" path and,
+    after a hand-edited section title forced full live reconstruction, on the slow path too —
+    all three graphs recovered with the correct `graphType`/`measure`, including the
+    hand-edited title, and neither `RouteCompare` graph was misclassified as `InfoBox` or
+    vice versa.
 11. **No peak-hour (or any time-of-day) sub-window on a route instance** — found 2026-07-28
     on the second real client-request test (Poughkeepsie road diet, see write-up above), and
     it substantively mattered, not just cosmetically: AVAIL's real answer to that request

@@ -53,17 +53,17 @@ The snap row also records `_built_from_spec` (the spec's path) automatically.
 | field | required | meaning |
 |---|---|---|
 | `key` | yes | Spec-local identifier, unique. Referenced by `routes[].graphs` and `graphs[].anchor`. Never written to the DB. |
-| `graphType` | yes | `BarGraph` \| `LineGraph` \| `GridGraph` \| `Map` \| `InfoBox` — see "Route Map graphs" and "Route/TMC Info Box graphs" below, both different shapes entirely. |
-| `measure` | yes | A vocabulary measure — see the enum note below (Map and InfoBox each have their own, separate list). |
-| `resolution` | AVL Graph only | `5-minutes` \| `15-minutes` \| `hour` \| `day` \| `weekday` \| `month`. Map graphs only need this for `measure: avgHoursOfDelay` (`day` \| `5-minutes`); every other Map measure omits it. InfoBox never uses it (its old-tool component never read `resolution` either). |
+| `graphType` | yes | `BarGraph` \| `LineGraph` \| `GridGraph` \| `Map` \| `InfoBox` \| `RouteCompare` — see "Route Map graphs", "Route/TMC Info Box graphs", and "Route Compare graphs" below, three different shapes entirely. |
+| `measure` | yes | A vocabulary measure — see the enum note below (Map, InfoBox, and RouteCompare each have their own, separate list). |
+| `resolution` | AVL Graph only | `5-minutes` \| `15-minutes` \| `hour` \| `day` \| `weekday` \| `month`. Map graphs only need this for `measure: avgHoursOfDelay` (`day` \| `5-minutes`); every other Map measure omits it. InfoBox/RouteCompare never use it (neither old-tool component ever read `resolution` either). |
 | `grain` | InfoBox only | `route` (default) \| `tmc` — see below. |
 | `bin` | InfoBox `reliability` only | `amp` \| `midd` \| `pmp` \| `we` — the FHWA time-of-day period, required only for the `reliability` measure. |
 | `title` | no | Sets both the section row's `title` and `display.title.title`. |
-| `comparisonMode` | no | `plain` (default) — each assigned route renders as its own series — or `difference`. **Not supported on `Map`/`InfoBox`** — fails the build if set (each assigned route already renders as its own choropleth-colored layer / comparisonSeries row, not a subtraction). |
-| `anchor` | difference only | A `routes[].id`. Names the arm the others are subtracted *from*. |
+| `comparisonMode` | no | `plain` (default) — each assigned route renders as its own series — or `difference`. **Not supported on `Map`/`InfoBox`/`RouteCompare`** — fails the build if set (each assigned route already renders as its own choropleth-colored layer / comparisonSeries row / %-vs-anchor delta row, not a subtraction). |
+| `anchor` | difference only | A `routes[].id`. Names the arm the others are subtracted *from*. RouteCompare has no field of its own for this — its anchor is always whichever route is first in `routes[]`, same convention a difference graph's implicit anchor uses. |
 | `size` | no | Colspan, `"1"`–`"12"`, written as the section row's own `size` field. |
 | `colorRange` | Map only | Array of hex colors, low→high. Defaults to a neutral speed ramp if omitted. |
-| `caption` | AVL Graph only | Prose, rendered as a subtitle line under the chart's own title (`GraphComponent.jsx`'s `GraphTitle`, reading `display.description` — already wired on the render side; this is the write path). **Not supported on `Map`/`InfoBox`** — fails the build if set (neither section type has a title/description render path — Spreadsheet, Info Box's element-type, has no GraphTitle-equivalent). |
+| `caption` | AVL Graph only | Prose, rendered as a subtitle line under the chart's own title (`GraphComponent.jsx`'s `GraphTitle`, reading `display.description` — already wired on the render side; this is the write path). **Not supported on `Map`/`InfoBox`/`RouteCompare`** — fails the build if set (none of the three has a title/description render path — Spreadsheet, Info Box's and RouteCompare's shared element-type, has no GraphTitle-equivalent). |
 | `why` | no | Free text: why this graph answers part of the request. Printed by `--summary`, never written. |
 
 **Enums are validated at runtime against the live vocabulary**, not against this table — a typo
@@ -351,6 +351,63 @@ sweeps orphaned graph sections by element-type — needed a real fix, not just a
 consult the stored key map (or, for `--from-page`, each section's own `_infoBoxPick` marker) to tell
 an Info Box graph's Spreadsheet section apart from the Add-a-Route one, rather than matching
 element-type alone.
+
+### Route Compare graphs (added 2026-07-29)
+
+**Not the theme's custom `RouteComparison.jsx` page component** — a completely different, unrelated
+tool ("the DMS replacement for the legacy npmrds *Batch Reports* tool"), out of scope for this spec
+entirely. "Route Compare" here is the old-tool report/graph type name, converted to a plain
+`Spreadsheet` section — one row per assigned route, a value column, and a `%` vs. anchor delta
+column — needed for the `signal_timing` composition class (71% Route Compare Component on speed and
+travelTime — the class NY-9D belongs to).
+
+`{graphType: "RouteCompare", measure: "speed"|"travelTime"}` builds the section. Like Info Box and
+unlike Route Map, there is **no per-report baking step**: composed by shelling out to
+`convert_old_reports.py --route-compare-section` (new `build_route_compare_section_state` function),
+reusing the shared, generic, per-measure `ensure_route_compare_template` (round 25) — one template per
+measure, reused across every report. The anchor (the "Main"/base row) and every compare row's %-diff
+resolve live at render time via `comparisonSeries` + dms-server's `__ANCHOR__(<expr>)` mechanism,
+reading whichever route the page's own route list currently has first — same convention a difference
+graph's implicit anchor uses (see "Difference graphs: anchor and sign" above), and no `anchor` field
+of its own: reorder `routes[]` to change which one is first instead.
+
+No `resolution`, no `comparisonMode` (a `RouteCompare` graph's delta column already *is* the
+%-diff-from-anchor; `comparisonMode: "difference"` is rejected as redundant), no `caption`
+(`Spreadsheet` has no `GraphTitle`-equivalent render path, same restriction as Route Map/Info Box).
+
+Live-verified 2026-07-29: a two-route (NB/SB) spec with `speed` and `travelTime` `RouteCompare`
+graphs, plus a `travelTime` Info Box graph on the same page (to stress-test the Spreadsheet
+disambiguation below). Anchor row rendered exact `0`/neutral; the other row's delta matched
+`(value − anchor) / anchor * 100` to the rendered precision for both measures (speed: 24.74 vs. 20.76
+mph → **+19.19%**; travelTime: 4.51 vs. 5.37 min → **−16.10%**), the travelTime numbers cross-checked
+exactly against the Info Box travelTime section's own values for the same two routes. `--update` and
+`--from-page` round-trips both correct, including a forced-drift (`--from-page` after a hand-edited
+section title) reconstruction pass that correctly told the `RouteCompare` and `InfoBox` sections apart
+from each other and from the page's own Add-a-Route section — see the same Spreadsheet
+disambiguation gotcha noted for Info Box above; `RouteCompare` sections carry a `_routeComparePick`
+marker (mirrors `_infoBoxPick`/`_routeMapPick`), and `isGraphSectionElement`/the drift-detection and
+live-reconstruction branches in `report_build.mjs` now check for either marker before falling back to
+"neither, must be Add-a-Route."
+
+**A real, live-caught bug, not theoretical — read before touching `travelTime` expressions again:**
+`travelTime`'s raw SQL expression needs `ds.`-qualified columns here (`ds.tmc`,
+`ds.travel_time_all_vehicles`), NOT the bare columns `TRAVEL_TIME_EXPR`/`vocabulary.json` currently use.
+Round 35 (2026-07-13) originally set `TRAVEL_TIME_EXPR` to the `ds.`-qualified form, verified correct
+for every template that has a join (this one, and Route Map's choropleth via
+`TRAVEL_TIME_VALUE_EXPR`). The 2026-07-24 vocabulary fix (see
+`research/npmrds-reports/reportroutelist-cross-repo-sync.md`) then stripped the `ds.` prefix —
+correctly, for *that* fix's own context (AVL Graph's no-join vocabulary path) — but because
+`TRAVEL_TIME_EXPR` is one constant shared by both contexts, it silently regressed every with-join
+caller too. Bare columns make the delta query fail with a real ClickHouse error ("Aggregate function
+avgMapIf(...) is found inside another aggregate function") — restoring `ds.`-qualification fixes it
+(confirmed live, values cross-checked against Info Box). **Fixed here by forking a new, dedicated
+constant** (`ROUTE_COMPARE_TRAVELTIME_EXPR` in `convert_old_reports.py`) rather than editing the
+shared `TRAVEL_TIME_EXPR`/`vocabulary.json` a third time — that would just flip AVL Graph's no-join
+path back to broken. **Route Map's travelTime choropleth likely carries this same live regression
+today**, independent of anything touched in this round (also with-join, also derives from
+`TRAVEL_TIME_EXPR`) — flagged, not fixed, not even rebuilt-and-probed to confirm; its failure mode may
+differ (a choropleth bake rather than a live query) so don't assume the fix is identical without
+checking first.
 
 ### The title block (added 2026-07-27)
 
