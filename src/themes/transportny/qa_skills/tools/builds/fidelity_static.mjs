@@ -37,7 +37,34 @@ if (typeof refs === "string") refs = JSON.parse(refs);
 const liveIds = refs.map(r => String(r.id));
 console.log(`live draft sections:        ${liveIds.length}`);
 
-const SERVER = new Set(["id", "createdAt", "updatedAt", "created_at", "updated_at"]);
+// Keys the server/editor add, never authored in a builder.
+const SERVER = new Set(["id", "createdAt", "updatedAt", "created_at", "updated_at", "type"]);
+
+// EDITOR NOISE. Opening a build-owned page in /edit re-saves the sections it renders, and the
+// editor writes three harmless variations the builder never contains. Normalising them keeps this
+// check trustworthy — a guard that false-alarms on every page someone has viewed gets muted, and
+// then the real drift (a reverted fix) sails through.
+//   1. `"value": []` on an unset page-variable leaf comes back as `"value": [""]`. Behaviourally
+//      identical: buildUdaConfig drops filter/exclude leaves whose values are all empty strings
+//      (otherwise they would compile to `IN ('')` and blank the section).
+//   2. an empty `join: {"sources": {}}` is added.
+//   3. `element-data` is re-serialized compactly (whitespace only — column catalogs stay intact).
+// (3) is inherent to comparing parsed objects. (1) and (2) are normalised here.
+const denoise = (o) => {
+    if (Array.isArray(o)) return o.map(denoise);
+    if (o && typeof o === "object") {
+        const out = {};
+        for (const [k, v] of Object.entries(o)) {
+            if (k === "join" && v && typeof v === "object" && !Object.keys(v.sources || {}).length
+                && Object.keys(v).length <= 1) continue;
+            if (k === "value" && Array.isArray(v) && v.length && v.every(x => x === "")) { out[k] = []; continue; }
+            out[k] = denoise(v);
+        }
+        return out;
+    }
+    return o;
+};
+
 const strip = (o) => {
   if (Array.isArray(o)) return o.map(strip);
   if (o && typeof o === "object") {
@@ -54,16 +81,16 @@ for (let i = 0; i < Math.max(exported.length, liveIds.length); i++) {
   if (!sid) { console.log(`  [${i}] exported has no live counterpart`); mismatched++; continue; }
   if (!exported[i]) { console.log(`  [${i}] live section ${sid} missing from export`); mismatched++; continue; }
   const live = JSON.parse(clean(cli("raw", "get", sid))).data;
-  const a = JSON.stringify(strip(exported[i]));
-  const b = JSON.stringify(strip(live));
+  const a = JSON.stringify(denoise(strip(exported[i])));
+  const b = JSON.stringify(denoise(strip(live)));
   if (a !== b) {
     mismatched++;
     console.log(`  [${i}] MISMATCH vs live section ${sid} (export ${a.length}b vs live ${b.length}b)`);
-    const ka = Object.keys(strip(exported[i])), kb = Object.keys(strip(live));
+    const ka = Object.keys(denoise(strip(exported[i]))), kb = Object.keys(denoise(strip(live)));
     console.log(`        export keys: ${ka.join(",")}`);
     console.log(`        live   keys: ${kb.join(",")}`);
     for (const k of new Set([...ka, ...kb])) {
-      const va = JSON.stringify(strip(exported[i])[k]), vb = JSON.stringify(strip(live)[k]);
+      const va = JSON.stringify(denoise(strip(exported[i]))[k]), vb = JSON.stringify(denoise(strip(live))[k]);
       if (va !== vb) console.log(`        ≠ ${k}: export ${String(va).slice(0,80)} | live ${String(vb).slice(0,80)}`);
     }
   }
