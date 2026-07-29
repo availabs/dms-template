@@ -36,6 +36,8 @@ import QuickLinks from "./QuickLinks";
 import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
+import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
 
 import icons from "./icons";
@@ -1832,6 +1834,12 @@ const pages = {
       menuPosition:  "absolute top-2 right-2 items-center",
       editIcon:      "hover:text-[#1F3F8F] size-5",
       contentWrapper:"h-full",
+      // Layout only, no background — the gray "head-band" seen in the design
+      // audit screenshots turned out to belong to a separate, sibling Card
+      // section's own "title_bar" style (see avl-graph-quick-controls.md's
+      // "Open visual question" note), not this row, so there's nothing to
+      // visually match here.
+      headerExtensionsRow: "px-3 pb-2",
     }],
   },
 
@@ -1999,6 +2007,13 @@ const pages = {
       // Inner-card background options (per-side border carries no bg of its own).
       backgrounds: {
         none: "", white: "bg-white", tint: "bg-slate-50/60",
+      },
+      // Drop-shadow options for the inner card box (report-page redesign Gap 03 —
+      // the granular per-side border/radius/bg path had no shadow knob at all;
+      // the old report tool's cards read as one unified box partly because of a
+      // visible shadow). `none` preserves today's default (unset → no shadow).
+      shadows: {
+        none: "", sm: "shadow-sm", md: "shadow-md",
       },
       // Curated gutter steps (fewer = wider, more usable buttons): flush / tight /
       // default(3) / comfortable / loose / wide.
@@ -2458,6 +2473,28 @@ const pageComponents = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// sectionMenuExtensions — theme-supplied additional sectionMenu item-groups,
+// keyed by ComponentRegistry component name. See sectionMenuExtensions.js /
+// sectionMenu.jsx in the dms submodule for the generic extension point.
+// ─────────────────────────────────────────────────────────────────────────────
+const sectionMenuExtensions = {
+  "AVL Graph": [npmrdsMeasureMenu],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// sectionHeaderExtensions — theme-supplied inline header content, keyed by
+// ComponentRegistry component name. See sectionHeaderExtensions.js / section.jsx
+// in the dms submodule for the generic extension point (siblings to
+// sectionMenuExtensions above, but rendered inline in the header band instead
+// of the Settings drawer). npmrdsQuickControls reuses the exact same
+// Measure/Comparison Mode state as npmrdsMeasureMenu above — see
+// components/QuickControls and components/MeasurePicker's applyMeasurePick.
+// ─────────────────────────────────────────────────────────────────────────────
+const sectionHeaderExtensions = {
+  "AVL Graph": [npmrdsQuickControls],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // widgets — preserved widget registry from original theme.js
 // ─────────────────────────────────────────────────────────────────────────────
 const widgets = {
@@ -2633,6 +2670,8 @@ const transportnyTheme = {
   // Preserved from original
   navOptions,
   pageComponents,
+  sectionMenuExtensions,
+  sectionHeaderExtensions,
   widgets,
 };
 

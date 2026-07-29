@@ -2,7 +2,7 @@
 """preflight.py — one-command health check of the whole old-reports dev stack.
 Run at session start or whenever something hangs. Read-only; fails fast.
 
-  python3 scripts/preflight.py
+  python3 scripts/npmrds-reports/preflight.py
 
 Checks: vite (5173), dms-server (3001 + /graph roundtrip), old/new/dama
 Postgres, ClickHouse, stray long-running ClickHouse queries (the
@@ -18,7 +18,7 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dbq
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LOG = os.path.join(REPO, "scratchpad/npmrds-sub/dms-server.log")
 failures = []
 remote_failures = 0
