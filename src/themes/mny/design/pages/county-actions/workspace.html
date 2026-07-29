@@ -115,23 +115,23 @@
               <div class="h-full bg-mny-y50 rounded-[12px] border-l-4 border-mny-y700 border-y border-r border-mny-y500/40 p-3 flex flex-col gap-2">
                 <p class="font-proxima text-[12px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">County priority assigned</p>
                 <p class="flex items-baseline gap-1.5">
-                  <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">0</span>
+                  <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">1</span>
                   <span class="font-display text-[16px] text-mny-400 font-[500] leading-[1] tabular-nums">/ 475</span>
                 </p>
 
                 <!-- Tier-stacked meter — empty, because nothing is tiered yet -->
                 <div>
-                  <div class="flex h-[8px] rounded-full overflow-hidden bg-white border border-dashed border-mny-y700"></div>
+                  <div class="flex h-[8px] rounded-full overflow-hidden bg-white border border-dashed border-mny-y700"><div class="bg-mny-700" style="width:0.2%;min-width:3px" title="Tier 2 — 1"></div></div>
                   <div class="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
                     <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-400 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-y700"></span>T1 · 0</span>
-                    <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-400 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-700"></span>T2 · 0</span>
+                    <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-400 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-700"></span>T2 · 1</span>
                     <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-400 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-400"></span>T3 · 0</span>
                     <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-400 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-200"></span>T4 · 0</span>
-                    <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-900 font-[600]"><span class="w-2.5 h-2.5 rounded-sm border border-mny-y700 bg-white"></span>Not set · 475</span>
+                    <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-900 font-[600]"><span class="w-2.5 h-2.5 rounded-sm border border-mny-y700 bg-white"></span>Not set · 474</span>
                   </div>
                 </div>
                 <p class="font-proxima text-[12px] text-mny-700 leading-[140%] mt-0.5">
-                  Nothing in Sullivan has been tiered yet — this worklist is where that starts.
+                  One tiered so far. The other 474 are what this worklist is for.
                 </p>
               </div>
             </div>
@@ -176,9 +176,27 @@
 
         <!-- ========================================================
              SECTION 3 — FILTER BAR (Filter section, "bar" style, col-12)
+
+             Two rows on purpose. Row 1 is scope + free text. Row 2 is the
+             GAP row: one chip per field plan review sends back, which is
+             what the dashboard's needs-attention tiles deep-link into.
+
+             Each gap chip is a viewer-facing leaf on this section's filter
+             tree with usePageFilters + searchParamKey, so its ON state
+             lives in the URL and a tile can arrive with it already lit:
+
+               · unary `empty` leaf  → ExternalFilters renders a TOGGLE
+                 (?needs_priority=1 · ?needs_cost=1 · ?needs_action_type=1)
+               · `<dim>_state` value filter → for gaps where an explicit
+                 non-blank answer still counts as a gap
+                 (?critical_facility_state=unanswered · ?cost_state=invalid)
+
+             Shown here as arriving from the dashboard's priority tile:
+             "Needs a tier" is ON, the rest are off.
              ======================================================== -->
         <div data-dms="section" data-name="filter-bar" class="col-span-12 pb-4">
-          <div class="flex flex-wrap items-center gap-2 bg-mny-50 rounded-[12px] px-3 py-2.5 border border-mny-100">
+          <div class="bg-mny-50 rounded-[12px] px-3 py-2.5 border border-mny-100">
+            <div class="flex flex-wrap items-center gap-2">
 
             <label class="flex items-center gap-2 bg-white rounded-full pl-3 pr-2 py-1.5 border border-mny-200 flex-1 min-w-[200px] max-w-[300px] focus-within:border-mny-400">
               <!-- icon: Search -->
@@ -215,14 +233,6 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
             </button>
 
-            <!-- Needs-priority toggle — ON -->
-            <button class="flex items-center gap-2 bg-mny-y50 rounded-full pl-2.5 pr-3 py-1.5 border border-mny-y700 transition-colors" aria-pressed="true">
-              <span class="w-8 h-[18px] rounded-full bg-mny-y700 flex items-center px-[2px] justify-end">
-                <span class="w-3.5 h-3.5 rounded-full bg-white"></span>
-              </span>
-              <span class="font-proxima text-[13px] font-[600] text-mny-900">Needs priority</span>
-            </button>
-
             <!-- No duplicate "Fallsburg (Town) ×" token: the jurisdiction control
                  above already shows the active value and carries its own clear. -->
             <button class="font-proxima text-[12px] font-[600] text-mny-400 hover:text-mny-900 underline underline-offset-2 px-1">Clear all</button>
@@ -233,323 +243,239 @@
               <span class="font-proxima text-[12px] text-mny-400"><span class="font-[700] text-mny-700 tabular-nums">30</span> of 475 actions</span>
             </div>
 
+            </div>
+
+            <!-- ── GAP ROW ─────────────────────────────────────────────────
+                 The dashboard's needs-attention tiles land here. Counts are
+                 the county-wide figures; they don't re-scope to Fallsburg
+                 because the chip's job is to say how much work the filter
+                 would surface, not to restate the current result count.
+                 ──────────────────────────────────────────────────────────── -->
+            <div class="flex flex-wrap items-center gap-2 mt-2.5 pt-2.5 border-t border-mny-100">
+              <span class="font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 mr-0.5">Show only actions that need</span>
+
+              <!-- ON — arrived from ?needs_priority=1 -->
+              <button class="flex items-center gap-2 bg-mny-y50 rounded-full pl-2.5 pr-3 py-1.5 border border-mny-y700 transition-colors" aria-pressed="true">
+                <span class="w-8 h-[18px] rounded-full bg-mny-y700 flex items-center px-[2px] justify-end">
+                  <span class="w-3.5 h-3.5 rounded-full bg-white"></span>
+                </span>
+                <span class="font-proxima text-[13px] font-[600] text-mny-900">a tier</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-700 tabular-nums">475</span>
+              </button>
+
+              <!-- OFF -->
+              <button class="flex items-center gap-2 bg-white rounded-full pl-2.5 pr-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors" aria-pressed="false">
+                <span class="w-8 h-[18px] rounded-full bg-mny-200 flex items-center px-[2px] justify-start">
+                  <span class="w-3.5 h-3.5 rounded-full bg-white"></span>
+                </span>
+                <span class="font-proxima text-[13px] text-mny-700">a cost range</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-400 tabular-nums">227</span>
+              </button>
+
+              <!-- OFF -->
+              <button class="flex items-center gap-2 bg-white rounded-full pl-2.5 pr-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors" aria-pressed="false">
+                <span class="w-8 h-[18px] rounded-full bg-mny-200 flex items-center px-[2px] justify-start">
+                  <span class="w-3.5 h-3.5 rounded-full bg-white"></span>
+                </span>
+                <span class="font-proxima text-[13px] text-mny-700">an action type</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-400 tabular-nums">226</span>
+              </button>
+
+              <!-- OFF — state-column filter, not a unary empty toggle -->
+              <button class="flex items-center gap-2 bg-white rounded-full pl-2.5 pr-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors" aria-pressed="false">
+                <span class="w-8 h-[18px] rounded-full bg-mny-200 flex items-center px-[2px] justify-start">
+                  <span class="w-3.5 h-3.5 rounded-full bg-white"></span>
+                </span>
+                <span class="font-proxima text-[13px] text-mny-700">a critical-facility answer</span>
+                <span class="font-proxima text-[11px] font-[700] text-mny-400 tabular-nums">196</span>
+              </button>
+
+              <!-- the cost_state=invalid drill-in, distinct from "missing" -->
+              <a href="workspace.html?cost_state=invalid" class="flex items-center gap-1.5 ml-1 font-proxima text-[12px] font-[600] text-mny-redk hover:text-mny-900">
+                <!-- icon: Warning -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
+                64 bad cost values
+              </a>
+            </div>
+
           </div>
         </div>
 
         <!-- ========================================================
              SECTION 4 — WORKLIST TABLE (Spreadsheet, col-12)
-             Every row carries BOTH a priority control (the work) and an
-             explicit View link (the read) — the live page hid the latter
-             inside an expanded panel.
+
+             A bulk-edit grid, not a read-only list. FOUR columns are
+             inline-editable via per-column `allowEditInView`
+             (Card.config.jsx / spreadsheet/config.jsx): action type, cost
+             range, critical facility, county priority — i.e. exactly the
+             four gaps the dashboard's needs-attention band counts, so a
+             tile's deep link lands somewhere the fix is actually possible.
+
+             Requirements for the live build:
+               · source must be internal/editable and apiUpdate present —
+                 dataWrapper/index.jsx:479 gates allowEdit on
+                 (isDms || isEditable) && display.allowEditInView && apiUpdate
+               · do NOT group by columns: the same line forces allowEdit
+                 false when groupByColumnsLength is set
+               · select columns need mapped_options for the dropdown
+                 (index.jsx:531)
+               · editable columns still render when empty — index.jsx:665
+                 exempts `col.allowEditInView` from the hideIfNull skip,
+                 which is what lets a gap show as an empty control
+
+             Every row also keeps an explicit View link (the live page hid
+             it inside the expanded panel). All values verbatim from the
+             dataset; see the generator note in the task doc.
              ======================================================== -->
         <div data-dms="section" data-name="worklist" class="col-span-12">
-          <div class="rounded-[12px] border border-mny-100 overflow-hidden">
-            <table class="w-full border-collapse">
-              <thead>
-                <tr class="bg-mny-50">
-                  <th class="w-[40px] border-b border-mny-100"></th>
-                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[130px]">Status</th>
-                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">
-                    <span class="inline-flex items-center gap-1 cursor-pointer hover:text-mny-900">Action Name
-                      <!-- icon: ArrowsVertical -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 20V4m0 0L4.5 7.5M8 4l3.5 3.5M16 4v16m0 0 3.5-3.5M16 20l-3.5-3.5"/></svg>
-                    </span>
-                  </th>
-                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[124px]">Hazard</th>
-                  <th class="px-3 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[264px]">County Priority</th>
-                  <th class="px-3 py-3 text-right font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[92px]">Open</th>
-                </tr>
-              </thead>
-              <tbody>
-
-                <!-- ROW — unset (every Sullivan row starts here) -->
-                <tr class="border-b border-mny-50 bg-mny-y50/40 hover:bg-mny-y50/70">
-                  <td class="pl-3 border-l-2 border-mny-y500 align-middle">
-                    <button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail">
-                      <!-- icon: ChevronRight -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-grn"></span>Completed</span></td>
-                  <td class="px-3 py-3">
-                    <a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Maplewood Ave Flooding/Culvert Issues</a>
-                    <span class="block font-proxima text-[11px] text-mny-400 tabular-nums mt-0.5">36105-0029</span>
-                  </td>
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
-                  <td class="px-3 py-2.5">
-                    <button class="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-full border border-dashed border-mny-y700 bg-white hover:bg-mny-y50 transition-colors">
-                      <span class="font-proxima text-[13px] font-[600] text-mny-900">Set priority</span>
-                      <!-- icon: ChevronDown -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-2.5 text-right whitespace-nowrap">
-                    <a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action">
-                      <!-- icon: View -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                    </a>
-                    <a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action">
-                      <!-- icon: Edit -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
-                    </a>
-                  </td>
-                </tr>
-
-                <!-- ROW — Tier 1 assigned, to show the resolved state -->
-                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
-                  <td class="pl-3 border-l-2 border-transparent align-middle">
-                    <button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail">
-                      <!-- icon: ChevronRight -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
-                  <td class="px-3 py-3">
-                    <a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Woodbourne Firehouse Generator</a>
-                    <span class="block font-proxima text-[11px] text-mny-400 tabular-nums mt-0.5">36105-0031</span>
-                  </td>
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Most / all</td>
-                  <td class="px-3 py-2.5">
-                    <button class="w-full flex items-center justify-between gap-2 pl-1.5 pr-2 py-1.5 rounded-full border border-mny-y700 bg-mny-y50 hover:bg-[#F9EFDD] transition-colors">
-                      <span class="flex items-center gap-2 min-w-0">
-                        <span class="size-6 shrink-0 rounded-full bg-mny-y700 text-mny-900 font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">1</span>
-                        <span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Top Implementation Priority</span>
-                      </span>
-                      <!-- icon: ChevronDown -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-700 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-2.5 text-right whitespace-nowrap">
-                    <a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action">
-                      <!-- icon: View -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                    </a>
-                    <a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action">
-                      <!-- icon: Edit -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
-                    </a>
-                  </td>
-                </tr>
-
-                <!-- ROW — unset + EXPANDED detail -->
-                <tr class="bg-mny-y50/40">
-                  <td class="pl-3 border-l-2 border-mny-y500 align-middle">
-                    <button class="size-6 rounded-md flex items-center justify-center text-mny-900 bg-mny-100" aria-label="Hide action detail">
-                      <!-- icon: ChevronDown -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
-                  <td class="px-3 py-3">
-                    <a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Hasbrouck Drive Culvert Replacement</a>
-                    <span class="block font-proxima text-[11px] text-mny-400 tabular-nums mt-0.5">36105-0033</span>
-                  </td>
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
-                  <td class="px-3 py-2.5">
-                    <button class="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-full border border-dashed border-mny-y700 bg-white hover:bg-mny-y50 transition-colors">
-                      <span class="font-proxima text-[13px] font-[600] text-mny-900">Set priority</span>
-                      <!-- icon: ChevronDown -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-2.5 text-right whitespace-nowrap">
-                    <a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-900 bg-mny-100" title="View action" aria-label="View action">
-                      <!-- icon: View -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                    </a>
-                    <a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action">
-                      <!-- icon: Edit -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
-                    </a>
-                  </td>
-                </tr>
-                <!-- expanded detail panel -->
-                <tr class="border-b border-mny-50 bg-mny-y50/40">
-                  <td class="border-l-2 border-mny-y500"></td>
-                  <td colspan="5" class="px-3 pb-4 pt-0">
-                    <div class="bg-white rounded-[10px] border border-mny-100 p-4">
-                      <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3">
-                        <div>
-                          <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Description of the Problem</p>
-                          <p class="font-proxima text-[13px] text-mny-700 leading-[1.5]">Hasbrouck Drive experiences repeated washouts during heavy rain events; the existing culvert is undersized for current flows and closes the road to emergency vehicles.</p>
-                        </div>
-                        <div>
-                          <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Description of the Solution</p>
-                          <p class="font-proxima text-[13px] text-mny-700 leading-[1.5]">Resize and replace the culvert based on an engineering study, using a box culvert sized to current hydrology, to keep the road open through design storms.</p>
-                        </div>
+          <!-- Table toolbar. Four columns are inline-editable (per-column
+               allowEditInView); the pencil in each header marks them. The gap
+               legend teaches the dashed-amber convention once, so the rows
+               don't have to explain themselves. Column chooser keeps the
+               editable set an authoring decision, not a frozen one. -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <span class="font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700">Edit in place</span>
+              <span class="flex items-center gap-1.5 font-proxima text-[12px] text-mny-700">
+                <span class="w-7 h-[18px] rounded-full bg-white border border-dashed border-mny-y700"></span>still needs a value
+              </span>
+              <span class="flex items-center gap-1.5 font-proxima text-[12px] text-mny-700">
+                <span class="w-7 h-[18px] rounded-full bg-mny-50 border border-mny-200"></span>set
+              </span>
+              <span class="flex items-center gap-1.5 font-proxima text-[12px] text-mny-700">
+                <span class="w-7 h-[18px] rounded-full bg-mny-redk/[0.06] border border-mny-redk/40"></span>bad value
+              </span>
+              <span class="font-proxima text-[12px] text-mny-400">· changes save on pick</span>
+            </div>
+            <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
+              <!-- icon: Column -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15M3.75 4.5h16.5v15H3.75z"/></svg>
+              <span class="font-proxima text-[13px] text-mny-700">Columns</span>
+              <span class="font-proxima text-[13px] text-mny-900 font-[600] tabular-nums">4 editable</span>
+              <!-- icon: ChevronDown -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+            </button>
+          </div>
+            <!-- overflow-x-auto: eight columns need ~1040px; below that the table
+                 scrolls inside its own container rather than crushing the name. -->
+            <div class="rounded-[12px] border border-mny-100 overflow-hidden">
+              <div class="overflow-x-auto">
+              <table class="w-full border-collapse min-w-[1040px]">
+                <thead>
+                  <tr class="bg-mny-50">
+                    <th class="w-[40px] border-b border-mny-100"></th>
+                    <th class="px-2 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100"><span class="inline-flex items-center gap-1 cursor-pointer hover:text-mny-900">Action Name <!-- icon: ArrowsVertical --><svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 20V4m0 0L4.5 7.5M8 4l3.5 3.5M16 4v16m0 0 3.5-3.5M16 20l-3.5-3.5"/></svg></span></th>
+                    <th class="px-2 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[116px]">Status</th>
+                    <th class="px-2 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[164px]"><span class="inline-flex items-center gap-1">Action Type <!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></span></th>
+                    <th class="px-2 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[140px]"><span class="inline-flex items-center gap-1">Cost Range <!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></span></th>
+                    <th class="px-2 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[96px]"><span class="inline-flex items-center gap-1">Crit. Fac. <!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></span></th>
+                    <th class="px-2 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[196px]"><span class="inline-flex items-center gap-1">County Priority <!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400 inline-block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></span></th>
+                    <th class="px-2 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[76px] text-right">Open</th>
+                  </tr>
+                </thead>
+                <tbody>
+              <tr class="border-b border-mny-50 bg-mny-y50/40 hover:bg-mny-y50/70">
+                <td class="pl-3 border-l-2 border-mny-y500 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Maplewood Ave Flooding/Culvert Issues</a><span class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5"><span class="font-proxima text-[11px] text-mny-400 tabular-nums">36105-0029</span></span></td>
+                <td class="px-2 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-grn"></span>Completed</span></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="Community Infrastructure (Drainage, Underground Utilities)"><span class="font-proxima text-[13px] text-mny-900 truncate">Community Infrastructure</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="$150,000 - $500,000"><span class="font-proxima text-[13px] text-mny-900 truncate">$150k – $500k</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="Related to a critical facility"><span class="font-proxima text-[13px] text-mny-900 truncate">Yes</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50" title="No county tier assigned"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Set priority</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 text-right whitespace-nowrap"><a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action"><!-- icon: View --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></a><a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action"><!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></a></td>
+              </tr>
+              <tr class="border-b border-mny-50 hover:bg-mny-50/60">
+                <td class="pl-3 border-l-2 border-transparent align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Marsh Rd. Aging Culverts/Flooding Issues</a><span class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5"><span class="font-proxima text-[11px] text-mny-400 tabular-nums">36105-0028</span></span></td>
+                <td class="px-2 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="Community Infrastructure (Drainage, Underground Utilities)"><span class="font-proxima text-[13px] text-mny-900 truncate">Community Infrastructure</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="$150,000 - $500,000"><span class="font-proxima text-[13px] text-mny-900 truncate">$150k – $500k</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="Related to a critical facility"><span class="font-proxima text-[13px] text-mny-900 truncate">Yes</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-1.5 pr-2 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400"><span class="flex items-center gap-2 min-w-0"><span class="size-6 shrink-0 rounded-full bg-mny-700 text-white font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">2</span><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Significant Priority</span></span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 text-right whitespace-nowrap"><a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action"><!-- icon: View --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></a><a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action"><!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></a></td>
+              </tr>
+              <tr class="border-b border-mny-50 bg-mny-y50/40 hover:bg-mny-y50/70">
+                <td class="pl-3 border-l-2 border-mny-y500 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Acquire generator for Mountaindale Fire District</a><span class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5"><span class="font-proxima text-[11px] text-mny-400 tabular-nums">36105-0027</span></span></td>
+                <td class="px-2 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="Power (Microgrids, Emergency Power for Critical Facilities)"><span class="font-proxima text-[13px] text-mny-900 truncate">Power / microgrids</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-y50 border border-mny-y500 hover:border-mny-y700" title="An explicit answer, but no dollar band — grant scoring needs one"><span class="font-proxima text-[13px] text-mny-700 truncate">Not Reported</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="Related to a critical facility"><span class="font-proxima text-[13px] text-mny-900 truncate">Yes</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50" title="No county tier assigned"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Set priority</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 text-right whitespace-nowrap"><a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action"><!-- icon: View --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></a><a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action"><!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></a></td>
+              </tr>
+              <tr class="border-b border-mny-50 bg-mny-y50/40 hover:bg-mny-y50/70">
+                <td class="pl-3 border-l-2 border-mny-y500 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Groos Pond Dam Rehab</a><span class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5"><span class="font-proxima text-[11px] text-mny-400 tabular-nums">2026-FallsburgT-10</span><span class="inline-flex items-center gap-1 font-proxima text-[11px] font-[600] text-mny-redk" title="primary_hazard_type is empty"><span><!-- icon: Warning --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg></span>no hazard type</span></span></td>
+                <td class="px-2 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="Dam Rehabilitation/Removal"><span class="font-proxima text-[13px] text-mny-900 truncate">Dam rehab / removal</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-redk/[0.06] border border-mny-redk/40 hover:border-mny-redk" title="cost_range holds "Preliminary Development - Not Ready for Review" — a status note, not a cost"><span class="flex items-center gap-1 min-w-0"><span class="text-mny-redk"><!-- icon: Warning --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg></span><span class="font-proxima text-[13px] font-[600] text-mny-redk truncate">Bad value</span></span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-redk" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-mny-50 border border-mny-200 hover:border-mny-400" title="Related to a critical facility"><span class="font-proxima text-[13px] text-mny-900 truncate">Yes</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50" title="No county tier assigned"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Set priority</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 text-right whitespace-nowrap"><a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action"><!-- icon: View --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></a><a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action"><!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></a></td>
+              </tr>
+              <tr class="bg-mny-y50/40">
+                <td class="pl-3 border-l-2 border-mny-y500 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-900 bg-mny-100" aria-label="Hide action detail"><!-- icon: ChevronDown --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Bertholif Road Flooding/Bank Erosion</a><span class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5"><span class="font-proxima text-[11px] text-mny-400 italic">no action number</span><span class="inline-flex items-center gap-1 font-proxima text-[11px] font-[600] text-mny-redk" title="description_of_the_solution_action_description is empty"><span><!-- icon: Warning --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg></span>no solution described</span></span></td>
+                <td class="px-2 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Set type</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Set cost</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50" title="Related to a critical facility"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">—</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50" title="No county tier assigned"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Set priority</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 text-right whitespace-nowrap"><a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action"><!-- icon: View --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></a><a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action"><!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></a></td>
+              </tr>
+              <tr class="border-b border-mny-50 bg-mny-y50/40">
+                <td class="border-l-2 border-mny-y500"></td>
+                <td colspan="7" class="px-3 pb-4 pt-0">
+                  <div class="bg-white rounded-[10px] border border-mny-100 p-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3">
+                      <div>
+                        <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Description of the Problem</p>
+                        <p class="font-proxima text-[13px] text-mny-700 leading-[1.5]">Bertholif Road experiences flooding and bank erosion during heavy rain events, undermining the road edge.</p>
                       </div>
-                      <div class="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-mny-50">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-50 border border-mny-100 font-proxima text-[12px] text-mny-700">
-                          <!-- icon: Currency -->
-                          <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-6a.75.75 0 0 1 .75.75v.316a3.78 3.78 0 0 1 1.653.713c.426.33.744.74.925 1.2a.75.75 0 0 1-1.395.55 1.35 1.35 0 0 0-.447-.563 2.187 2.187 0 0 0-.736-.363V9.3c.698.093 1.383.32 1.959.696.787.514 1.29 1.27 1.29 2.13 0 .86-.504 1.616-1.29 2.13-.576.377-1.261.603-1.96.696v.299a.75.75 0 1 1-1.5 0v-.3c-.697-.092-1.382-.318-1.958-.695-.482-.315-.857-.717-1.078-1.176a.75.75 0 1 1 1.352-.65c.16.331.44.596.822.845.322.211.717.35 1.062.4V9.3c-.698-.093-1.383-.32-1.959-.696C6.508 8.09 6 7.334 6 6.474c0-.86.508-1.616 1.29-2.13.576-.377 1.261-.603 1.96-.696V3.75A.75.75 0 0 1 10 3Z" clip-rule="evenodd"/></svg>
-                          $150,000 – $500,000
-                        </span>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-50 border border-mny-100 font-proxima text-[12px] text-mny-700">
-                          <!-- icon: Events -->
-                          <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .29.166.552.427.677l3 1.5a.75.75 0 0 0 .67-1.342L10.75 9.53V5Z" clip-rule="evenodd"/></svg>
-                          2–4 years
-                        </span>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-50 border border-mny-100 font-proxima text-[12px] text-mny-700">
-                          <img src="../../assets/mny/hazards/mny-flood.webp" alt="" class="size-4 object-contain" onerror="this.style.display='none'">
-                          Flooding
-                        </span>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-50 border border-mny-100 font-proxima text-[12px] text-mny-700">
-                          <!-- icon: Building -->
-                          <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
-                          Fallsburg Highway Dept
-                        </span>
-                        <a href="action-view.html" class="ml-auto font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900 flex items-center gap-1">
-                          Open full action
-                          <!-- icon: ChevronRight -->
-                          <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
-                        </a>
+                      <div>
+                        <p class="font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400 mb-1">Description of the Solution</p>
+                        <p class="font-proxima text-[13px] text-mny-400 italic leading-[1.5]">Not recorded yet — one of 60 Sullivan actions with a problem but no solution. <a href="action-edit.html" class="text-mny-y700 font-[600] not-italic underline decoration-mny-y500 hover:decoration-mny-y700">Write one</a>.</p>
                       </div>
                     </div>
-                  </td>
-                </tr>
-
-                <!-- ROW — MENU OPEN: the 5 tiers of county_priority, labels
-                     verbatim from the source's option list -->
-                <tr class="border-b border-mny-50 bg-mny-y50/40 hover:bg-mny-y50/70">
-                  <td class="pl-3 border-l-2 border-mny-y500 align-middle">
-                    <button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail">
-                      <!-- icon: ChevronRight -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>In-Progress</span></td>
-                  <td class="px-3 py-3">
-                    <a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Sewer Plant Flood Protection Study</a>
-                    <span class="block font-proxima text-[11px] text-mny-400 tabular-nums mt-0.5">36105-0037</span>
-                  </td>
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
-                  <td class="px-3 py-2.5 relative">
-                    <button class="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-full border-2 border-mny-y700 bg-white ring-2 ring-mny-y700/20">
-                      <span class="font-proxima text-[13px] font-[600] text-mny-900">Set priority</span>
-                      <!-- icon: ChevronUp -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.78 11.78a.75.75 0 0 1-1.06 0L10 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd"/></svg>
-                    </button>
-
-                    <!-- MultiSelect (singleSelectOnly) rendering the tiers. Anchored
-                         upward (bottom-, not top-) because this row sits near the
-                         bottom of the table's overflow-hidden wrapper — the live
-                         primitive flips the same way rather than being clipped. -->
-                    <div class="absolute z-20 left-3 right-3 bottom-[46px] bg-white rounded-[10px] border border-mny-100 shadow-lg py-1.5">
-                      <div class="px-3 pb-1.5 mb-1 border-b border-mny-50 font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">County Priority</div>
-                      <button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-y50">
-                        <span class="size-6 shrink-0 rounded-full bg-mny-y700 text-mny-900 font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">1</span>
-                        <span class="font-proxima text-[13px] text-mny-900 text-left">Top Implementation Priority</span>
-                      </button>
-                      <button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-50">
-                        <span class="size-6 shrink-0 rounded-full bg-mny-700 text-white font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">2</span>
-                        <span class="font-proxima text-[13px] text-mny-900 text-left">Significant Priority</span>
-                      </button>
-                      <button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-50">
-                        <span class="size-6 shrink-0 rounded-full bg-mny-400 text-white font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">3</span>
-                        <span class="font-proxima text-[13px] text-mny-900 text-left">Important but Secondary Priority</span>
-                      </button>
-                      <button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-50">
-                        <span class="size-6 shrink-0 rounded-full bg-mny-200 text-mny-700 font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">4</span>
-                        <span class="font-proxima text-[13px] text-mny-900 text-left">Long-Term/Opportunistic</span>
-                      </button>
-                      <div class="border-t border-mny-50 mt-1 pt-1">
-                        <button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-50">
-                          <span class="size-6 shrink-0 rounded-full border border-dashed border-mny-200 flex items-center justify-center text-mny-400 font-proxima text-[13px]">—</span>
-                          <span class="font-proxima text-[13px] text-mny-400 text-left">Not Reported</span>
-                        </button>
-                      </div>
+                    <div class="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-mny-50">
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-mny-50 border border-mny-100 font-proxima text-[12px] text-mny-700">
+                        <img src="../../assets/mny/hazards/mny-flood.webp" alt="" class="size-4 object-contain" onerror="this.style.display='none'">Flooding
+                      </span>
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-dashed border-mny-y700 font-proxima text-[12px] font-[600] text-mny-900">4 fields still empty</span>
+                      <a href="action-edit.html" class="ml-auto font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900 flex items-center gap-1">
+                        Open full action
+                        <!-- icon: ChevronRight -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                      </a>
                     </div>
-                  </td>
-                  <td class="px-3 py-2.5 text-right whitespace-nowrap">
-                    <a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action">
-                      <!-- icon: View -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                    </a>
-                    <a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action">
-                      <!-- icon: Edit -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
-                    </a>
-                  </td>
-                </tr>
-
-                <!-- ROW — Tier 3 -->
-                <tr class="border-b border-mny-50 hover:bg-mny-50/60">
-                  <td class="pl-3 border-l-2 border-transparent align-middle">
-                    <button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail">
-                      <!-- icon: ChevronRight -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
-                  <td class="px-3 py-3">
-                    <a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Public Outreach on Flood Insurance</a>
-                    <span class="block font-proxima text-[11px] text-mny-400 tabular-nums mt-0.5">36105-0041</span>
-                  </td>
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-700">Flooding</td>
-                  <td class="px-3 py-2.5">
-                    <button class="w-full flex items-center justify-between gap-2 pl-1.5 pr-2 py-1.5 rounded-full border border-mny-200 bg-mny-50 hover:border-mny-400 transition-colors">
-                      <span class="flex items-center gap-2 min-w-0">
-                        <span class="size-6 shrink-0 rounded-full bg-mny-400 text-white font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">3</span>
-                        <span class="font-proxima text-[13px] font-[600] text-mny-700 truncate">Important but Secondary</span>
-                      </span>
-                      <!-- icon: ChevronDown -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-2.5 text-right whitespace-nowrap">
-                    <a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action">
-                      <!-- icon: View -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                    </a>
-                    <a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action">
-                      <!-- icon: Edit -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
-                    </a>
-                  </td>
-                </tr>
-
-                <!-- ROW — an action with no solution text yet (60 in Sullivan) -->
-                <tr class="hover:bg-mny-50/60">
-                  <td class="pl-3 border-l-2 border-mny-y500 align-middle">
-                    <button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail">
-                      <!-- icon: ChevronRight -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
-                  <td class="px-3 py-3">
-                    <a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Neversink River Bank Stabilization</a>
-                    <span class="flex items-center gap-2 mt-0.5">
-                      <span class="font-proxima text-[11px] text-mny-400 tabular-nums">36105-0044</span>
-                      <span class="inline-flex items-center gap-1 font-proxima text-[11px] font-[600] text-mny-redk" title="Problem statement present, solution description empty">
-                        <!-- icon: Warning -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
-                        No solution described
-                      </span>
-                    </span>
-                  </td>
-                  <td class="px-3 py-3 font-proxima text-[13px] text-mny-400 italic">Not set</td>
-                  <td class="px-3 py-2.5">
-                    <button class="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-full border border-dashed border-mny-y700 bg-white hover:bg-mny-y50 transition-colors">
-                      <span class="font-proxima text-[13px] font-[600] text-mny-900">Set priority</span>
-                      <!-- icon: ChevronDown -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
-                    </button>
-                  </td>
-                  <td class="px-3 py-2.5 text-right whitespace-nowrap">
-                    <a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action">
-                      <!-- icon: View -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                    </a>
-                    <a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action">
-                      <!-- icon: Edit -->
-                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
-                    </a>
-                  </td>
-                </tr>
-
-              </tbody>
-            </table>
+                  </div>
+                </td>
+              </tr>
+              <tr class="bg-mny-y50/40 hover:bg-mny-y50/70">
+                <td class="pl-3 border-l-2 border-mny-y500 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><!-- icon: ChevronRight --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-3 py-3"><a href="action-view.html" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Fallsburg - Clark Road Flooding Issues/Pipe Failure</a><span class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5"><span class="font-proxima text-[11px] text-mny-400 italic">no action number</span><span class="inline-flex items-center gap-1 font-proxima text-[11px] font-[600] text-mny-redk" title="description_of_the_solution_action_description is empty"><span><!-- icon: Warning --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg></span>no solution described</span></span></td>
+                <td class="px-2 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-200"></span>Proposed</span></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Set type</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Set cost</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-dashed border-mny-y700 hover:bg-mny-y50" title="Related to a critical facility"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">—</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button></td>
+                <td class="px-2 py-2.5 align-middle relative"><button class="w-full flex items-center justify-between gap-1.5 rounded-full transition-colors pl-2.5 pr-1.5 py-1.5 bg-white border border-2 border-mny-y700 ring-2 ring-mny-y700/20"><span class="font-proxima text-[13px] font-[600] text-mny-900 truncate">Set priority</span><!-- icon: ChevronDown --> <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mny-700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg></button>
+                  <!-- MultiSelect (singleSelectOnly) — labels verbatim from the source's
+                       county_priority option list. Anchored upward: this row sits near the
+                       bottom of the table's overflow-hidden wrapper. -->
+                  <div class="absolute z-20 right-2 bottom-[46px] w-[264px] bg-white rounded-[10px] border border-mny-100 shadow-lg py-1.5">
+                    <div class="px-3 pb-1.5 mb-1 border-b border-mny-50 font-display text-[10px] font-[500] uppercase tracking-wider text-mny-400">County Priority</div>
+                    <button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-y50"><span class="size-6 shrink-0 rounded-full bg-mny-y700 text-mny-900 font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">1</span><span class="font-proxima text-[13px] text-mny-900 text-left whitespace-nowrap">Top Implementation Priority</span></button>
+                    <button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-50"><span class="size-6 shrink-0 rounded-full bg-mny-700 text-white font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">2</span><span class="font-proxima text-[13px] text-mny-900 text-left whitespace-nowrap">Significant Priority</span></button>
+                    <button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-50"><span class="size-6 shrink-0 rounded-full bg-mny-400 text-white font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">3</span><span class="font-proxima text-[13px] text-mny-900 text-left whitespace-nowrap">Important but Secondary Priority</span></button>
+                    <button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-50"><span class="size-6 shrink-0 rounded-full bg-mny-200 text-mny-700 font-display text-[13px] font-[600] flex items-center justify-center tabular-nums">4</span><span class="font-proxima text-[13px] text-mny-900 text-left whitespace-nowrap">Long-Term/Opportunistic</span></button>
+                    <div class="border-t border-mny-50 mt-1 pt-1"><button class="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-mny-50"><span class="size-6 shrink-0 rounded-full border border-dashed border-mny-200 flex items-center justify-center text-mny-400 font-proxima text-[13px]">—</span><span class="font-proxima text-[13px] text-mny-400 text-left">Not Reported</span></button></div>
+                  </div></td>
+                <td class="px-2 py-2.5 text-right whitespace-nowrap"><a href="action-view.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="View action" aria-label="View action"><!-- icon: View --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></a><a href="action-edit.html" class="inline-flex items-center justify-center size-7 rounded-md text-mny-400 hover:text-mny-900 hover:bg-mny-100" title="Edit action" aria-label="Edit action"><!-- icon: Edit --><svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></a></td>
+              </tr>
+                </tbody>
+              </table>
+              </div>
 
             <!-- pagination -->
             <div class="flex flex-wrap items-center justify-between gap-3 bg-mny-50 border-t border-mny-100 px-3 py-2.5">

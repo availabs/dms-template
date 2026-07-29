@@ -174,9 +174,47 @@
 
         <!-- ========================================================
              SECTION — NEEDS ATTENTION (Card, col-12)
-             The county-planner band. Every number is a real gap in
-             Sullivan's 475 rows; every tile links into the workspace
-             pre-filtered to exactly those actions.
+
+             IMPLEMENTATION CONTRACT — read before rebuilding this live.
+
+             Every tile is (a) a live count and (b) a deep link that turns
+             ONE filter on in the workspace. Nothing here is generated
+             prose: the label states the RULE and the number states the
+             STATE, so the copy stays true at any count. That is
+             deliberate — an earlier draft said "Not one action has been
+             tiered yet", which goes stale the moment someone tiers one
+             and no author would remember to edit it.
+
+             COUNTS come from comma-free 0/1 calculated columns with
+             fn:sum. Commas inside a calc column on a DMS-internal
+             (isDms) source silently fragment the SQL and the cell renders
+             0 with no error — this exact counter hit that bug on page
+             2262755 (rendered 0, should have been 473). So: no COALESCE,
+             no NULLIF, no concat(), no IN (...). Use LIKE, =, IS NULL,
+             ~ regex, nested CASE.
+
+             LINKS drive viewer-facing filters through page state. Two
+             shapes, picked by whether a third state carries meaning:
+
+               · Unary `empty` leaf + usePageFilters + searchParamKey.
+                 ExternalFilters renders these as a TOGGLE chip and reads
+                 ON/OFF from the URL ("the URL is the source of truth"),
+                 pushing values:['1']. Used where the gap is simply
+                 "blank": ?needs_priority=1 · ?needs_cost=1 ·
+                 ?needs_action_type=1
+               · A `<dim>_state` calc column + value filter, where an
+                 explicit non-blank answer is also a gap. Used for
+                 cost_state=invalid (a status string sitting in the cost
+                 field) and critical_facility_state=unanswered (blank OR
+                 "Not Reported"): ?cost_state=invalid ·
+                 ?critical_facility_state=unanswered
+
+             The state columns, comma-free (see the task doc for all four):
+               cost_state:
+                 CASE WHEN data->>'cost_range' ~ '^[<>]?\$' THEN 'ok'
+                      WHEN data->>'cost_range' IS NULL THEN 'missing'
+                      WHEN data->>'cost_range' = 'Not Reported' THEN 'not_reported'
+                      ELSE 'invalid' END AS cost_state
              ======================================================== -->
         <div data-dms="section" data-name="needs-attention" class="col-span-12 pb-6">
           <div class="rounded-[12px] border-l-4 border-mny-y700 border-y border-r border-mny-y500/40 bg-mny-y50 p-4">
@@ -184,8 +222,8 @@
               <div>
                 <h2 class="font-display text-[24px] font-[500] text-mny-900 uppercase leading-[1]">Needs your attention</h2>
                 <p class="font-proxima text-[14px] text-mny-700 leading-[140%] mt-1.5 max-w-[640px]">
-                  Gaps that will hold up plan review. Each one opens the workspace filtered to just
-                  those actions.
+                  Fields plan review will send back. Each tile opens the workspace with that one
+                  filter switched on.
                 </p>
               </div>
               <a href="workspace.html" class="font-proxima text-[12px] font-[700] uppercase tracking-wider text-mny-700 hover:text-mny-900 flex items-center gap-1">
@@ -197,55 +235,65 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
-              <a href="workspace.html?needs=priority" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors">
+              <!-- TILE — county tier · unary empty toggle on county_priority -->
+              <a href="workspace.html?needs_priority=1" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors flex flex-col">
                 <div class="flex items-baseline gap-1.5">
                   <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">475</span>
                   <span class="font-display text-[14px] text-mny-400 font-[500] leading-[1] tabular-nums">/ 475</span>
                 </div>
-                <p class="font-proxima text-[13px] font-[600] text-mny-900 mt-1.5 leading-[135%]">No county priority set</p>
+                <p class="font-proxima text-[13px] font-[600] text-mny-900 mt-1.5 leading-[135%]">No county tier assigned</p>
                 <p class="font-proxima text-[12px] text-mny-700 mt-1 leading-[140%]">
-                  Not one action has been tiered yet. This is the plan-review blocker.
+                  Every action needs a tier before the plan can go to review.
                 </p>
-                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-2 group-hover:text-mny-900">Prioritize now →</p>
+                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-auto pt-2 group-hover:text-mny-900">Set tiers →</p>
               </a>
 
-              <a href="workspace.html?needs=cost" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors">
+              <!-- TILE — cost · empty toggle for missing, state column for invalid -->
+              <a href="workspace.html?needs_cost=1" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors flex flex-col">
                 <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">227</span>
                 <p class="font-proxima text-[13px] font-[600] text-mny-900 mt-1.5 leading-[135%]">No cost range</p>
                 <p class="font-proxima text-[12px] text-mny-700 mt-1 leading-[140%]">
-                  A further <strong class="text-mny-redk font-[700]">64</strong> carry a status string in
-                  the cost field instead of a dollar band.
+                  Grant scoring needs a dollar band on every action.
                 </p>
-                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-2 group-hover:text-mny-900">Fix cost data →</p>
+                <!-- the second cost state, as its own count + link rather than prose -->
+                <span class="inline-flex items-center gap-1 mt-2 font-proxima text-[11px] font-[600] text-mny-redk">
+                  <!-- icon: Warning -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.63-1.516 2.63H3.72c-1.347 0-2.19-1.463-1.516-2.63L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
+                  64 hold a status note, not a cost
+                </span>
+                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-auto pt-2 group-hover:text-mny-900">Fix cost data →</p>
               </a>
 
-              <a href="workspace.html?needs=action_type" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors">
+              <!-- TILE — action type · unary empty toggle -->
+              <a href="workspace.html?needs_action_type=1" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors flex flex-col">
                 <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">226</span>
                 <p class="font-proxima text-[13px] font-[600] text-mny-900 mt-1.5 leading-[135%]">No action type</p>
                 <p class="font-proxima text-[12px] text-mny-700 mt-1 leading-[140%]">
-                  Nearly half the portfolio can't be rolled up by mitigation category.
+                  Without one, an action can't roll up by mitigation category.
                 </p>
-                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-2 group-hover:text-mny-900">Classify actions →</p>
+                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-auto pt-2 group-hover:text-mny-900">Classify actions →</p>
               </a>
 
-              <a href="workspace.html?needs=critical_facility" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors">
+              <!-- TILE — critical facility · state column (blank OR "Not Reported") -->
+              <a href="workspace.html?critical_facility_state=unanswered" class="group bg-white rounded-[10px] border border-mny-y500/50 p-3 hover:border-mny-y700 transition-colors flex flex-col">
                 <span class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.05em] tabular-nums">196</span>
                 <p class="font-proxima text-[13px] font-[600] text-mny-900 mt-1.5 leading-[135%]">Critical facility unanswered</p>
                 <p class="font-proxima text-[12px] text-mny-700 mt-1 leading-[140%]">
-                  Blank or “Not Reported” — a required field for BRIC and HMGP scoring.
+                  Blank or “Not Reported”. Required for BRIC and HMGP scoring.
                 </p>
-                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-2 group-hover:text-mny-900">Answer these →</p>
+                <p class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-y700 mt-auto pt-2 group-hover:text-mny-900">Answer these →</p>
               </a>
 
             </div>
 
-            <!-- secondary gaps: real, but not review blockers -->
+            <!-- Secondary gaps: real, but not review blockers. Counts + links only —
+                 each is a plain unary `empty` toggle on its own column. -->
             <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-3 pt-3 border-t border-mny-y500/40">
               <span class="font-proxima text-[11px] font-[700] uppercase tracking-wider text-mny-700">Also missing</span>
-              <a href="workspace.html?needs=solution" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">60</strong> no solution description</a>
-              <a href="workspace.html?needs=hazard" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">30</strong> no hazard type</a>
-              <a href="workspace.html?needs=problem" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">17</strong> no problem statement</a>
-              <a href="workspace.html?needs=location" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">3</strong> unmapped</a>
+              <a href="workspace.html?needs_solution=1" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">60</strong> no solution description</a>
+              <a href="workspace.html?needs_hazard=1" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">30</strong> no hazard type</a>
+              <a href="workspace.html?needs_problem=1" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">17</strong> no problem statement</a>
+              <a href="workspace.html?needs_location=1" class="font-proxima text-[12px] text-mny-700 hover:text-mny-900 underline decoration-mny-y500 underline-offset-2"><strong class="font-[700] tabular-nums">3</strong> unmapped</a>
             </div>
           </div>
         </div>
