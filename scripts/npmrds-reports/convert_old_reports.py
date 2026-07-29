@@ -5039,7 +5039,7 @@ def convert_report(old_id, dry_run=False, replace=False):
 
     if dry_run:
         print(f"[dry-run] would create page '{slug}' ('{old['name']}') with "
-              f"{len(convertible)} graph(s) (+RRL +Add-a-Route), "
+              f"{len(convertible)} graph(s) (+RRL), "
               f"{len(route_entries)} route(s); {len(skipped)} graph(s) skipped")
         return finish(old_id, old, None, gaps, dry_run)
 
@@ -5053,9 +5053,11 @@ def convert_report(old_id, dry_run=False, replace=False):
     page_id = res["id"]
     print(f"created page id={page_id} slug={slug}")
 
-    # -- draft sections (RRL first/sidebar, then graphs, then Add-a-Route)
+    # -- draft sections (RRL first/sidebar, then graphs). No Add-a-Route
+    # Spreadsheet section is cloned anymore — the template no longer has one to
+    # clone from (RRL's own inline "Add a route" search replaces it, see
+    # dms-template's add-route-flow-improvements.md task).
     rrl_tmpl = template_section_by_type(page_template, "ReportRouteList")
-    sheet_tmpl = template_section_by_type(page_template, "Spreadsheet")
     section_datas = [build_cloned_section_data(page_id, rrl_tmpl, str(uuid.uuid4()))]
     # Route-Map choropleth baking (M2) needs each graph's assigned comps'
     # TMCs/date ranges — all three pieces already computed above for the
@@ -5084,7 +5086,6 @@ def convert_report(old_id, dry_run=False, replace=False):
                                      route_map_value_ctx=route_map_value_ctx,
                                      diff_invert=route_diff_invert.get(
                                          g.get("id"), False)))
-    section_datas.append(build_cloned_section_data(page_id, sheet_tmpl, str(uuid.uuid4())))
 
     draft_ids = []
     for sd in section_datas:

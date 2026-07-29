@@ -7,8 +7,9 @@
  * WHY THIS EXISTS
  * ---------------
  * A report is a DMS page (from the "Report Page" page template) carrying a
- * ReportRouteList panel, N AVL Graph sections, and an "Add a Route" Spreadsheet,
- * plus one `reports_snap_2` row holding the route instances. Building that by
+ * ReportRouteList panel (which now has its own inline "Add a route" search —
+ * see add-route-flow-improvements.md) and N AVL Graph sections, plus one
+ * `reports_snap_2` row holding the route instances. Building that by
  * clicking has several silent failure modes (a graph-assignment pill that
  * doesn't register; a measure pick lost because Save wasn't clicked; an
  * anchor/compare order that is invisible in the UI). A spec makes the intended
@@ -891,6 +892,7 @@ function clonedSection(tmplSection, trackingId) {
     type: COMPONENT_TYPE,
     group: tmplSection.group || 'default',
     ...(tmplSection.level ? { level: tmplSection.level } : {}),
+    ...(tmplSection.hideInView ? { hideInView: tmplSection.hideInView } : {}),
     title: tmplSection.title || '',
     parent: parentRef,
     trackingId,
@@ -982,26 +984,29 @@ if (updateCtx) {
   titleBlockTrackingId = updateCtx.oldKeyMap['title_block'] || randomUUID();
   const keptTrackingIds = new Set([...graphTrackingIds, titleBlockTrackingId]);
 
-  // RRL/Add-a-Route-Spreadsheet aren't in the key map — a Report Page always
-  // has exactly one of each, so find them live rather than tracking them
-  // separately. An Info Box graph is ALSO element-type "Spreadsheet" (unlike
-  // AVL Graph/Map, which are unambiguous), so a bare element-type match would
-  // sometimes pick an Info Box graph's own section instead of the real
-  // Add-a-Route sheet — exclude any Spreadsheet section this revision's OLD
-  // key map already tracks as a graph key.
+  // RRL isn't in the key map — a Report Page always has exactly one, so find it
+  // live rather than tracking it separately. An Info Box graph is ALSO
+  // element-type "Spreadsheet" (unlike AVL Graph/Map, which are unambiguous):
+  // exclude any Spreadsheet section this revision's OLD key map already tracks
+  // as a graph key, so the sweep below doesn't misidentify a pre-existing page's
+  // own frozen Add-a-Route-to-Report section (a page built/reconciled before
+  // the standalone catalog section was retired — see
+  // add-route-flow-improvements.md) as an Info Box graph.
   const trackedGraphTrackingIds = new Set(
     Object.entries(updateCtx.oldKeyMap).filter(([k]) => k !== 'title_block').map(([, v]) => v));
   const rrlSection = updateCtx.sections.find(s => s.data.element['element-type'] === 'ReportRouteList');
-  const spreadsheetSection = updateCtx.sections.find(s =>
-    s.data.element['element-type'] === 'Spreadsheet' && !trackedGraphTrackingIds.has(s.data.trackingId));
   if (!rrlSection) fail(`page ${pageId} has no ReportRouteList section — can't reconcile (hand-deleted?).`);
-  if (!spreadsheetSection) fail(`page ${pageId} has no Spreadsheet section — can't reconcile (hand-deleted?).`);
 
+  // No Add-a-Route Spreadsheet section is created or re-synced here on purpose:
+  // the Report Page template no longer has one to clone from (RRL's own inline
+  // search replaces it, see add-route-flow-improvements.md). A page built before
+  // that change still carries its own frozen copy — untouched by this reconcile
+  // (it's excluded from the deletion sweep below the same way it always was),
+  // per that task's explicit "don't retroactively touch existing pages" decision.
   sectionDatas = [
     clonedSection(templateSectionByType('ReportRouteList'), rrlSection.data.trackingId),
     titleBlockSectionData(titleBlockTrackingId),
     ...spec.graphs.map((g, i) => graphSectionData(g, i, graphTrackingIds[i])),
-    clonedSection(templateSectionByType('Spreadsheet'), spreadsheetSection.data.trackingId),
   ];
 
   let created = 0, updated = 0, deleted = 0;
@@ -1076,7 +1081,6 @@ if (updateCtx) {
     clonedSection(templateSectionByType('ReportRouteList'), randomUUID()),
     titleBlockSectionData(titleBlockTrackingId),
     ...spec.graphs.map((g, i) => graphSectionData(g, i, graphTrackingIds[i])),
-    clonedSection(templateSectionByType('Spreadsheet'), randomUUID()),
   ];
   const draftIds = sectionDatas.map(sd => dms(['section', 'create', String(pageId), '--pattern', PATTERN], sd)?.id);
   console.log(`created ${draftIds.length} draft sections: ${draftIds.join(', ')}`);
