@@ -45,8 +45,11 @@ UI-parity list (`report-route-ui-parity-gaps.md`) is only one of them.
 | Route Map `color_range` default | `report_build.mjs` only honors a literal `g.colorRange` array, no default-per-measure palette | not started |
 | `--verify-routing` | Experimental map-matching route validator — the service appears to ignore the request body (returns a byte-identical wrong-county TMC list regardless of input), and is arguably the wrong oracle anyway since it's bound to one conflation-map vintage while a report queries a different TMC universe. The better fix is a per-year TMC-vintage membership check (data already exists, source 582) — not built. See archive's Gap 2 for full detail | flagged 2026-07-27, not fixed |
 | `--from-page` route-field drift | Drift check compares graph-section content (title/`_measurePick`/caption) but never the snap row's own `routes[]` — a route hand-edited live (dates, weekdays, peak windows) goes undetected as drift | found 2026-07-28, not fixed |
-| Route Map travelTime regression (flagged, unconfirmed) | `TRAVEL_TIME_VALUE_EXPR` likely carries the same bare-column-vs-join ClickHouse error that was fixed for Route Compare's travelTime (`ROUTE_COMPARE_TRAVELTIME_EXPR`) — not rebuilt-and-probed to confirm | flagged 2026-07-29, not verified |
 | Measure-queryable-for-year check | Intake checklist doesn't yet ask "is this measure bucket even covered for the requested year" (e.g. pm3 `reliability` coverage 2018-2025 vs. raw NPMRDS coverage 2017-present) | found 2026-07-28 on the Poughkeepsie case study, worth a checklist line if it recurs |
+
+Route Map's travelTime choropleth was checked against this same regression concern and ruled out
+(VERIFIED 2026-07-30, see `planning/todo.md` and `report-spec.md`'s "Route Compare graphs" section) —
+no fix needed, removed from this table.
 
 ## Template library — what the old tool's 216 templates and 869 reports actually show
 

@@ -404,11 +404,19 @@ avgMapIf(...) is found inside another aggregate function") — restoring `ds.`-q
 (confirmed live, values cross-checked against Info Box). **Fixed here by forking a new, dedicated
 constant** (`ROUTE_COMPARE_TRAVELTIME_EXPR` in `convert_old_reports.py`) rather than editing the
 shared `TRAVEL_TIME_EXPR`/`vocabulary.json` a third time — that would just flip AVL Graph's no-join
-path back to broken. **Route Map's travelTime choropleth likely carries this same live regression
-today**, independent of anything touched in this round (also with-join, also derives from
-`TRAVEL_TIME_EXPR`) — flagged, not fixed, not even rebuilt-and-probed to confirm; its failure mode may
-differ (a choropleth bake rather than a live query) so don't assume the fix is identical without
-checking first.
+path back to broken. **Route Map's travelTime choropleth (`TRAVEL_TIME_VALUE_EXPR`, also with-join,
+also derives from `TRAVEL_TIME_EXPR`) does NOT carry this regression — checked and ruled out
+2026-07-30** (`planning/todo.md`'s "Check Route Map's travelTime choropleth..." item). Ran the same
+bare-column expression, same `table1` LEFT JOIN, same real NY-9D TMCs/dates, two ways: (1) the actual
+`--route-map-section --measure travelTime` repro end to end — no error, real quantile breaks baked;
+(2) a direct ClickHouse diff of the bare-column expression against a `ds.`-qualified control, straight
+via `dbq.py ch` — byte-identical values. Two structural reasons it was never at risk: Route Compare's
+"aggregate found inside aggregate" error came specifically from wrapping the bare expression in
+dms-server's `__ANCHOR__(...)` delta composition, which the Map choropleth's CH-join tile path doesn't
+use at all (`query.columns`+`groupBy`+`join` run directly, no anchor/window wrapping — see
+`tile-join-clickhouse-source.md`); and the join predicate is exactly `ds.tmc = table1.tmc`, so an
+ambiguous bare `tmc` reference can't diverge in value between the two sides, while
+`travel_time_all_vehicles` only exists on the `ds` side at all (no ambiguity possible there either).
 
 ### The title block (added 2026-07-27)
 
