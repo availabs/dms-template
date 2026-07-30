@@ -1105,9 +1105,14 @@ during-window 3:06 / 22.6 mph).
     that Route Map/Info Box needed separate wiring — they didn't: both already applied the
     epoch filter live with zero code changes (see `report-route-ui-parity-gaps.md` gap #11 for
     the full correction and verification). Full writeup there.
-12. `creating-reports.md`'s composition-hints table needs a pass — the "spec-buildable
-    today?" column still says "Route Info Box not yet" in four rows, stale since Gap 8
-    shipped 2026-07-28 in the same file it's contradicting. Found 2026-07-28, not yet fixed.
+12. **FIXED** — `creating-reports.md`'s composition-hints table needed a pass since the
+    "spec-buildable today?" column said "Route Info Box not yet" in four rows, stale since Gap 8
+    shipped 2026-07-28 in the same file it was contradicting. Found 2026-07-28; the table was
+    updated 2026-07-29 alongside item 10's Route Compare wiring (same pass fixed the
+    `signal_timing` row's "Route Compare Component not yet" for the identical reason). This
+    item itself went undetected as fixed until 2026-07-30's arc review — a reminder that a
+    "found, not yet fixed" note needs its own follow-up check once an adjacent item in the
+    same file closes.
 
 ## Cleanup owed
 
