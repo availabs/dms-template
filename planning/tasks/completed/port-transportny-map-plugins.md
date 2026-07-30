@@ -77,8 +77,7 @@ earlier research work — a ready-made test fixture):
 
 ### Phase 2 — macroview — DONE, live-verified 2026-07-29
 
-**Root cause found and fixed in transportNY, 2026-07-29** — see transportNY's
-`planning/tasks/current/macroview-panel-hooks-crash.md` for the full writeup. Summary: macroview's
+**Root cause found and fixed in transportNY, 2026-07-29.** Summary: macroview's
 `externalPanel`/`internalPanel` were implemented as full React components with hooks
 (`useState`/`useMemo`/`useEffect`), but the plugin contract calls them as **plain function calls**
 (not JSX) from the shared `ExternalPluginPanel`/`InternalPluginPanel` — a Rules-of-Hooks violation
@@ -88,6 +87,41 @@ the plugin that's actually mounted via JSX) and making both panel functions pure
 reads of already-computed shared state. Live-verified at `npmrds.localhost:5174/macro` — panel
 renders, Geography dropdown populated with real county options, Year/Measure/Peak controls
 populated, Legend shows real computed color breaks, zero console errors.
+
+**Full root-cause detail (rescued 2026-07-30 from transportNY's `macroview-panel-hooks-crash.md`,
+the only place it existed — reproduced here in full since it has real diagnostic value beyond the
+one-paragraph summary above):**
+
+`ExternalPluginPanel` calls `externalPanel()` once per candidate tab (to check if it has controls)
+plus once more for the active tab; any variation in how many times that happens between two renders
+(tab count changing, `PluginLibrary` not yet populated on first render, etc.) desyncs the hook count
+for that fiber and crashes. `InternalPanel` had the identical issue (gated on `activePluginName`
+truthiness instead of a tab-count loop), just less immediately visible since it's only ever called
+once per render. This was unrelated to (and not caught by) an earlier assessment that macroview was
+"already migrated, no functional work needed" — that assessment covered the `MapEditorContext`/
+`CMSContext` swap specifically (confirmed correct), not this separate structural bug.
+
+Fix specifics: `comp.jsx` gained the geometry-options fetch effect (writing
+`pluginData.macroview.geomControlOptions` via `setState` instead of local `useState`/`useMemo`),
+the geography-based border-filter effect, the sub-measure-normalization effect, the
+color-domain/paint/legend effect, the PM3-views cache-warm effect, and five initial-geometry-style
+effects previously in `internalPanel.jsx` — all copied verbatim in logic, only relocated, writing
+outputs into shared `pluginData` state instead of local component state. `externalPanel.jsx`/
+`internalPanel.jsx` were reduced to plain functions reading `state` via `get()`. `utils.jsx` gained
+`buildGeomControlOptions(geomData)`, a pure extraction of a `useMemo` that used to live inside
+`externalPanel.jsx`.
+
+**A second, separate bug was found after the crash fix**: with the panel no longer crashing, the
+map area itself stayed collapsed to 0 height (canvas existed, style/tiles/sprite all fetched fine,
+nothing visible). Root cause: the "Macro" page's persisted component data had
+`element['element-data'].height` set to the literal string `"100vh"` — not one of the `Map`
+component's recognized `HEIGHT_OPTIONS` keys (`full`/`screen`/`1`/`2/3`/`1/3`/`1/4`) — so the height
+lookup returned `undefined` and the container collapsed. Not a code bug, a stale/invalid persisted
+config value on that one page. Fixed by correcting the DB row directly (`height: "100vh"` →
+`"full"`) rather than changing component code — confirmed transportNY and dms-template's local dev
+instances share the same backend DB, so the one fix applied to both repos' pages at once.
+**Flag for anyone porting a map plugin in the future**: whatever page/section hosts it needs a
+valid `height` key, not a raw CSS string, or the map comes up blank/collapsed.
 
 - [x] Root-cause the crash (transportNY, 2026-07-29)
 - [x] Fix in transportNY: `comp.jsx`, `externalPanel.jsx`, `internalPanel.jsx`, `utils.jsx` (new
