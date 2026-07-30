@@ -67,6 +67,12 @@ export const DEFAULT_PICK = {
     measure: 'speed',
     resolution: '5-minutes',
     comparisonMode: 'plain',
+    // Difference-only: which of the two assigned routes is the anchor
+    // ("Main") arm. false (default) = the first-assigned route, matching the
+    // runtime's own implicit convention (seriesVariants[0]); true flips it via
+    // comparisonSeries.combine.invert. See npmrdsMeasureMenu's "Anchor Route"
+    // item and report-spec.md's "Difference graphs: anchor and sign".
+    anchorInvert: false,
 };
 
 // Tags every column this picker generates as metadata (documents provenance
@@ -125,7 +131,7 @@ function buildDiffColors(measure, graphType) {
  * `defaultColors` should be the component's own defaultState.display.colors,
  * used to restore a sane palette when comparisonMode is 'plain'.
  */
-export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, externalSourceColumns, defaultColors }) {
+export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors }) {
     const measure = vocab.measures[measureKey];
     if (!measure) return null;
 
@@ -180,7 +186,7 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     return {
         columns: [yAxisColumn, xAxisColumn].filter(Boolean),
         join,
-        comparisonSeriesCombine: isDifference ? { mode: 'difference' } : null,
+        comparisonSeriesCombine: isDifference ? { mode: 'difference', ...(anchorInvert ? { invert: true } : {}) } : null,
         displayPatch,
     };
 }

@@ -1,11 +1,12 @@
 # NPMRDS route/report UI parity gaps (Phase C)
 
-**Status:** IN PROGRESS — 4 of 12 gaps fixed so far (#4 `route_id` overwrite labeling,
+**Status:** IN PROGRESS — 5 of 12 gaps fixed so far (#4 `route_id` overwrite labeling,
 #5 TMC Search-to-add, both live-verified 2026-07-27 in transportNY; #11 peak-hour filtering,
 both spec and UI halves, live-verified 2026-07-28 in dms-template AND ported + re-verified
 in transportNY the same day — see its entry below, including a correction to the "inert for
 Map/Info Box" claim made earlier the same day; #10 weekdays UI control, live-verified
-2026-07-30 in dms-template only, not yet ported to transportNY).
+2026-07-30 in dms-template only, not yet ported to transportNY; #8 difference-graph anchor
+UI affordance, live-verified 2026-07-30 in dms-template only, not yet ported to transportNY).
 Gap #2 (TMC search `-` code bug) was investigated live 2026-07-27
 and dropped — could not reproduce, see its entry below. This is Phase C of the
 three-phase arc in
@@ -98,8 +99,65 @@ opportunistically.
    (`route_comp_id` order) — invisible in the UI, so getting the sign right is a
    coin-flip unless you already know the add-order convention. The spec's `anchor`
    field fixes this outright (names the arm explicitly, sets `combine.invert` as
-   needed). UI fix would be an explicit "Main" affordance on the RRL graph-pill instead
-   of implicit ordering.
+   needed). **IMPLEMENTED + LIVE-VERIFIED 2026-07-30** — decided (with user input) to
+   put the control in the graph's own Measure Picker rather than on the RRL
+   graph-pill as originally suggested above: an "Anchor Route" item was added to
+   `MeasurePicker/index.js`'s `npmrdsMeasureMenu`, shown only when Comparison Mode is
+   `difference` AND exactly two routes are currently assigned to that graph (the
+   server only supports the 2-arm case — see report-spec.md's "Difference graphs:
+   anchor and sign"). It lists the two routes by their live label and lets the author
+   pick which is the anchor ("Main"); picking sets `comparisonSeries.combine.invert`
+   (`true` when the second-assigned route is chosen, absent when the first is).
+   `anchorInvert` was added to the Measure Picker's persisted pick state
+   (`display._measurePick`), the same "smart default generator" mechanism
+   graphType/measure/resolution/comparisonMode already use — so it survives any
+   *other* Measure Picker field changing (re-composition preserves it, doesn't
+   silently reset it back to the default anchor), confirmed live below.
+
+   **Reads the same resolved, ordered route list the query itself uses**: RRL
+   publishes each graph's assigned+transformed routes to its own self-derived action
+   param (`useGraphPublish.js`'s `transformReportRoutes`) at
+   `pageState.filters[...].values`, keyed by `selfParamKey(trackingId||id)` — the
+   anchor selector reads that same array, so it can't independently drift from what
+   the graph actually queries. Needed threading `pageState` through
+   `getSectionMenuItems`/the `sectionMenuExtensions` builder call (`section.jsx`,
+   `sectionMenu.jsx`) since extensions previously only received `sectionState`, not
+   page-level state — a small, generically-useful plumbing addition, not
+   NPMRDS-specific.
+
+   **Known limitation, inherent to the underlying mechanism, not this UI**:
+   `combine.invert` is positional (first-vs-second assigned route), not identity-based
+   — if an author later reorders which route is assigned first to a difference graph
+   (RRL supports route reordering), a previously-set anchor pick's *meaning* can
+   silently flip without the stored `invert` value changing. This is a property of
+   `comparisonSeries.combine` itself (the runtime has no route-identity concept for
+   the anchor, just array position), not something this fix could have avoided short
+   of a deeper runtime change — flagged here for whoever eventually touches that area,
+   not a follow-up item for this gap.
+
+   **Deliberately NOT added to QuickControls** (the header-pill entry point,
+   `QuickControls/index.jsx`) — that surface already deliberately excludes Graph
+   Type/Resolution as out of scope for a one-click pill row (see
+   `avl-graph-quick-controls.md`'s "Scope"); Anchor Route is narrower still, so it
+   stays Settings-drawer-only.
+
+   **Live verification (2026-07-30)**: built a scratch page
+   (`converted_reports/claude_scratch_gap8_anchor`, one difference-mode Bar Graph fed
+   by two route instances — "Before"/"After" windows on the same single-TMC route,
+   deleted after use) via `report_build.mjs`. Via a headless Playwright script driving
+   the real Settings drawer: (1) with no anchor pick made, the item is absent from the
+   route list until Comparison Mode is `difference` and exactly 2 routes resolve —
+   confirmed present with both route labels the moment both were true; (2) picking
+   "After" then clicking the section's Save icon persisted
+   `comparisonSeries.combine = {mode:"difference", invert:true}` and
+   `_measurePick.anchorInvert:true` on the draft section row (confirmed via `dms raw
+   get`) — captured live `/graph` traffic also showed the resulting per-bucket
+   difference values with mixed signs, confirming the flip reached the actual query,
+   not just stored state; (3) separately changing Resolution (day → hour) afterward
+   left `invert:true` untouched — confirms the anchor pick survives unrelated
+   Measure Picker re-composition; (4) picking "Before" again correctly cleared
+   `invert` entirely (not left as `false`) — `combine` reverted to `{mode:
+   "difference"}` byte-for-byte.
 9. **A Measure Picker pick is unsaved (local draft only) until the floppy Save icon is
    explicitly clicked** — reload without saving silently discards it, no warning. The
    spec path has no equivalent draft state at all. UI fix: warn on navigate-away with
@@ -174,9 +232,9 @@ opportunistically.
 
 ## Suggested priority order
 
-Ranked by (fix cost) × (how often it bites someone), not file order above. #4, #5, and
-#11 are already done (struck through, left in place so the ranking rationale below
-still reads coherently) — pick up at #10 next.
+Ranked by (fix cost) × (how often it bites someone), not file order above. #4, #5,
+#8, #10, and #11 are already done (struck through, left in place so the ranking
+rationale below still reads coherently) — pick up at #7 next.
 
 1. ~~#4 route_id overwrite guard~~ — **DONE 2026-07-27** (clear Update/Save labeling;
    not a confirm dialog, see gap #4's entry above).
@@ -184,9 +242,9 @@ still reads coherently) — pick up at #10 next.
    box, see gap #5's entry above).
 3. ~~#10 weekdays UI control~~ — **DONE + live-verified 2026-07-30** (see gap #10's
    entry above).
-4. **#8 difference-graph anchor UI affordance** — moderate, closes a coin-flip footgun
-   the spec already proves is fixable (just needs a UI equivalent of the `anchor`
-   field).
+4. ~~#8 difference-graph anchor UI affordance~~ — **DONE + live-verified 2026-07-30**
+   (an "Anchor Route" item in the graph's own Measure Picker; see gap #8's entry
+   above).
 5. **#7 RRL rename control** — needs the existing fragile input-commit bug root-caused
    first.
 6. **#6 RRL pill silent-fail** and **#12 re-save-needed** — both need investigation
@@ -224,8 +282,16 @@ still reads coherently) — pick up at #10 next.
       after). Not yet ported to transportNY's divergent `ReportRouteList` copy — do
       that as a separate step if/when transportNY needs it (see
       `project_reportroutelist_dms_template_transportny_divergence`).
+- [x] Gap #8 (difference-graph anchor UI affordance) — DONE + live-verified
+      2026-07-30: "Anchor Route" item appears in the graph's Measure Picker only when
+      Comparison Mode is `difference` and exactly 2 routes resolve for that graph;
+      picking the second-assigned route persisted `combine.invert:true` (confirmed via
+      `dms raw get`, plus live `/graph` traffic showing the flipped-sign values);
+      changing an unrelated field (Resolution) afterward left `invert:true` untouched;
+      reverting the pick correctly cleared `invert` entirely rather than leaving
+      `false`. Not yet ported to transportNY (same divergence noted for gap #10).
 - [ ] Gap #2 investigated 2026-07-27 (could not reproduce, dropped) — remaining gaps
-      (#1, #3, #6-#9, #12) not started. Pick one gap per session per
+      (#1, #3, #6, #7, #9, #12) not started. Pick one gap per session per
       `feedback_isolate_shared_code_changes` if the fix touches shared theme/library
       code (most of these do: `ReportRouteList/`, `MeasurePicker/`, the routecreation
       map component).
@@ -350,3 +416,27 @@ still reads coherently) — pick up at #10 next.
   (fetched via `dms raw get`, except the `:data` snap row whose type was already
   known from the captured network payload) and confirmed via a follow-up `raw get`
   that every row was actually gone.
+
+- **2026-07-30, gap #8 (difference-graph anchor UI affordance):** asked the user
+  whether the "Main" control should live on the RRL graph-pill (as the gap's
+  original writeup suggested) or inside the graph's own Measure Picker — RRL's own
+  README explicitly documents that a cross-section write from RRL into a graph's
+  row was considered and rejected once already (the `graph_comps` leak), which
+  would have been required for the RRL-pill option since RRL's `apiUpdate` is
+  scoped only to its own row. User picked the Measure Picker option, consistent
+  with that prior architectural decision. Implementation needed `pageState`
+  threaded through `getSectionMenuItems`/the `sectionMenuExtensions` builder call
+  (previously only `sectionState` reached extensions) so the picker could read the
+  same resolved route order RRL publishes per graph, plus a new `anchorInvert`
+  field in the Measure Picker's persisted `_measurePick` state (mirroring how
+  graphType/measure/resolution/comparisonMode already survive re-composition) so
+  picking an anchor doesn't get silently reset by an unrelated later pick. Built a
+  scratch page via `report_build.mjs` (two route instances feeding one
+  difference-mode Bar Graph) and drove the real Settings drawer with a headless
+  Playwright script — see gap #8's entry above for the full verification writeup.
+  Confirmed via `dms raw get` at each step rather than trusting on-screen labels
+  alone, and confirmed real `/graph` traffic reflected the sign flip, not just
+  stored config. Deleted the scratch page (page + 3 sections + draft-history row)
+  via `dms raw delete` afterward; left the orphaned `reports_snap_2` row alone
+  rather than risk a wrong delete on a split-table row (matches this project's
+  existing caution around `reports_snap_2` row deletes).
