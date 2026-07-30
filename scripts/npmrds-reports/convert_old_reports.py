@@ -474,13 +474,22 @@ def _diff_colors(bar, reverse):
     """Display patch for a difference template's default diverging colors:
     zero-centered (byValueSymmetric, the R52 platform toggle — old
     d3.scaleQuantize([-max, +max]) parity); bars also need byValue (grids
-    always color by value). reverse=True mirrors old getColorRange()'s
-    reverseColors handling for the REVERSE_COLORS_MEASURES set — applied to
-    the template's own DEFAULT ramp here; reports carrying a real color_range
-    get the same reversal from the generic wiring in
+    always color by value). `reverse` is the measure's RAW-VALUE
+    REVERSE_COLORS_MEASURES membership (old getColorRange()'s reverseColors
+    handling), validated correct for coloring a raw value (round 51: low/good
+    travelTime -> green). A difference graph colors a before-minus-after
+    DELTA, not a raw value, and going from "which raw value is good" to
+    "which delta sign is good" inverts the polarity for every measure (a
+    positive travelTime delta means time fell -- also good -- but sits at the
+    opposite end of the domain from a low raw value). So the diff-mode ramp
+    applies the NEGATION of `reverse`, not `reverse` itself -- fixed
+    2026-07-30, mirrors composeMeasureConfig.js's buildDiffColors (see
+    "Finding: difference-graph color scale reads backwards" in
+    report-spec-and-build-script.md). Reports carrying a real color_range get
+    the same (now-corrected) reversal from the generic wiring in
     build_graph_section_data."""
-    value = (list(reversed(DEFAULT_DIFF_COLOR_RANGE)) if reverse
-             else list(DEFAULT_DIFF_COLOR_RANGE))
+    value = (list(DEFAULT_DIFF_COLOR_RANGE) if reverse
+             else list(reversed(DEFAULT_DIFF_COLOR_RANGE)))
     cfg = {"type": "palette", "value": value, "byValueSymmetric": True}
     if bar:
         cfg["byValue"] = True
@@ -4399,8 +4408,19 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         # short/good travel times red and long/bad ones green (backwards).
         # Only the Map path (bake_route_map_choropleth_paint/
         # bake_route_map_delay_paint) had this applied, since round 50.
-        colors = (list(reversed(color_range))
-                  if info["measure"] in REVERSE_COLORS_MEASURES else color_range)
+        #
+        # 2026-07-30 fix: that reversal rule is validated correct for RAW
+        # VALUE coloring (TMC Grid Graph, Route Bar Graph), but two of
+        # COLOR_RANGE_GRAPH_TYPES — Route Difference Graph / TMC Difference
+        # Grid — color a before-minus-after DELTA instead, and the polarity
+        # inverts between those two cases (see _diff_colors' docstring for
+        # the derivation; same bug, same fix, different call path — this one
+        # fires when the OLD report carried its own custom color_range
+        # instead of the template's default ramp).
+        wants_reverse = info["measure"] in REVERSE_COLORS_MEASURES
+        if old_graph.get("type") in DIFFERENCE_GRAPH_TYPES:
+            wants_reverse = not wants_reverse
+        colors = list(reversed(color_range)) if wants_reverse else color_range
         colors_cfg = {"type": "palette", "value": colors}
         # BarGraph colors by series by default (one color per route) — these
         # converted reports are single-series magnitude charts (the old
