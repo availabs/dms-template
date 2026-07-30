@@ -47,38 +47,6 @@ export const SaveRouteModal = ({
             type="textarea"
           />
         </div>
-        <div className="flex gap-4 my-4">
-          <ModalInputField
-            label="Start Date"
-            value={modalState.startDate}
-            path={"startDate"}
-            onChange={setRouteMeta}
-            type="date"
-          />
-          <ModalInputField
-            label="End Date"
-            value={modalState.endDate}
-            path={"endDate"}
-            onChange={setRouteMeta}
-            type="date"
-          />
-        </div>
-        <div className="flex gap-4 my-4">
-          <ModalInputField
-            label="Start Time"
-            value={modalState.startTime}
-            path={"startTime"}
-            onChange={setRouteMeta}
-            type="time"
-          />
-          <ModalInputField
-            label="End Time"
-            value={modalState.endTime}
-            path={"endTime"}
-            onChange={setRouteMeta}
-            type="time"
-          />
-        </div>
         <div className="absolute" style={{ bottom: "20px", right: "20px" }}>
           <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
             <button

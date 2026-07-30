@@ -31,10 +31,6 @@ const INITIAL_MODAL_STATE = {
   open: false,
   name: "",
   description: "",
-  startDate: "",
-  startTime: "",
-  endDate: "",
-  endTime: "",
   id: null,
 };
 
@@ -155,7 +151,7 @@ const Comp = ({ state, setState, map }) => {
   }, [searchInputTmc, searchTmcValid, toggleTmc, setState, pluginDataPath]);
 
   const addItem = async () => {
-    const { open, startDate, startTime, endDate, endTime, ...rest } = modalState;
+    const { open, ...rest } = modalState;
     const sourceType = routesSource.type || (routesSource.name ? nameToSlug(routesSource.name) : undefined);
 
     const now = new Date();
@@ -163,9 +159,11 @@ const Comp = ({ state, setState, map }) => {
 
     const payload = {
       ...rest,
-      metadata: JSON.stringify({
-        ...(startDate && endDate ? { dates: [`${startDate}T${startTime || "00:00:00"}`, `${endDate}T${endTime || "23:59:59"}`] } : {})
-      }),
+      // A route is a geometry, not a time window — the report's route instance
+      // owns the dates (see the "route dates are dead weight" gap writeup in
+      // client-request-to-report-skill.md). metadata carries no other field, so
+      // this always writes "{}", matching route_build.py's CLI equivalent exactly.
+      metadata: JSON.stringify({}),
       tmc_array: JSON.stringify(tmc_array || []),
       updated_at: formattedTimestamp,
       ...(!modalState.id && { created_at: formattedTimestamp }),
@@ -210,7 +208,6 @@ const Comp = ({ state, setState, map }) => {
       const NAME_COL = "data->>'name' as name";
       const DESC_COL = "data->>'description' as description";
       const TMC_COL = "data->>'tmc_array' as tmc_array";
-      const METADATA_COL = "data->>'metadata' as metadata";
       const loadRouteDataPath = [
         "uda",
         `${app}+${INTERNAL_ROUTES_TYPE}`,
@@ -218,28 +215,13 @@ const Comp = ({ state, setState, map }) => {
         INTERNAL_ROUTES_VIEW_ID,
         "dataById",
         [routeIdFilterValue],
-        [NAME_COL, DESC_COL, TMC_COL, METADATA_COL],
+        [NAME_COL, DESC_COL, TMC_COL],
       ];
 
       falcor.get(loadRouteDataPath).then((res) => {
         const curRouteFromApi = get(res, ["json", ...loadRouteDataPath.slice(0, -1)]);
         if (!curRouteFromApi) return;
         const curRouteTmcArray = JSON.parse(curRouteFromApi[TMC_COL]);
-        const curRouteMetadata = JSON.parse(curRouteFromApi[METADATA_COL]);
-
-        let startDate = "", endDate = "", startTime = "", endTime = "";
-        if (curRouteMetadata?.dates?.length >= 2) {
-          const start = new Date(curRouteMetadata.dates[0]);
-          const end = new Date(curRouteMetadata.dates[1]);
-          if (!isNaN(start)) {
-            startDate = start.toISOString().split('T')[0];
-            startTime = start.toTimeString().split(':').slice(0, 2).join(':');
-          }
-          if (!isNaN(end)) {
-            endDate = end.toISOString().split('T')[0];
-            endTime = end.toTimeString().split(':').slice(0, 2).join(':');
-          }
-        }
 
         setState((draft) => set(draft, `${pluginDataPath}['tmc_array']`, curRouteTmcArray));
         setModalState((prev) => ({
@@ -247,10 +229,6 @@ const Comp = ({ state, setState, map }) => {
           name: curRouteFromApi[NAME_COL],
           description: curRouteFromApi[DESC_COL],
           id: routeIdFilterValue,
-          startDate,
-          endDate,
-          startTime,
-          endTime,
         }));
         const geographyFilter = [{ display_name: "tmc", column_name: "tmc", values: curRouteTmcArray, zoomToFilterBounds: true }];
         setGeoBounds(geographyFilter);

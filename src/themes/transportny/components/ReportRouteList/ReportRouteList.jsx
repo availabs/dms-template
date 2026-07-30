@@ -30,6 +30,7 @@ export default function ReportRouteList() {
   const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
   const [editStartDateValue, setEditStartDateValue] = useState('');
   const [editEndDateValue, setEditEndDateValue] = useState('');
+  const [editWeekdaysValue, setEditWeekdaysValue] = useState({});
   // Rendering-only — filters which already-added routes are displayed, never the
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
@@ -207,8 +208,26 @@ export default function ReportRouteList() {
                 editEndDateValue={editEndDateValue}
                 onEditStartDateValueChange={setEditStartDateValue}
                 onEditEndDateValueChange={setEditEndDateValue}
-                onStartEditDates={() => { setEditingRouteDatesIndex(i); setEditStartDateValue(r.startDate); setEditEndDateValue(r.endDate); }}
-                onSaveEditDates={() => { updateRoute({ index: i, updates: { startDate: editStartDateValue, endDate: editEndDateValue } }); setEditingRouteDatesIndex(null); }}
+                editWeekdaysValue={editWeekdaysValue}
+                onEditWeekdaysValueChange={setEditWeekdaysValue}
+                onStartEditDates={() => { setEditingRouteDatesIndex(i); setEditStartDateValue(r.startDate); setEditEndDateValue(r.endDate); setEditWeekdaysValue(r.weekdays || {}); }}
+                onSaveEditDates={() => {
+                  // Only explicit `false` entries are meaningful (see useGraphPublish.js's
+                  // generateDateRange) — stripping `true`/absent keys keeps storage matching
+                  // the existing convention (e.g. converted old reports' `{saturday:false,
+                  // sunday:false}`) and collapses back to `undefined` (all days) when every
+                  // toggle is back on, instead of persisting a same-meaning-but-verbose object.
+                  const excluded = Object.fromEntries(Object.entries(editWeekdaysValue).filter(([, v]) => v === false));
+                  updateRoute({
+                    index: i,
+                    updates: {
+                      startDate: editStartDateValue,
+                      endDate: editEndDateValue,
+                      weekdays: Object.keys(excluded).length ? excluded : undefined,
+                    },
+                  });
+                  setEditingRouteDatesIndex(null);
+                }}
                 onCancelEditDates={() => setEditingRouteDatesIndex(null)}
                 graphs={graphs}
                 onToggleGraph={(sectionId) => toggleRouteGraph(i, sectionId)}

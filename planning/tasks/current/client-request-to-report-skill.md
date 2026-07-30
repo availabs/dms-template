@@ -1,9 +1,9 @@
 # Client request → report: the skill arc
 
 **Status:** all four gaps DONE as of 2026-07-28 (started 2026-07-27). Remaining work is
-follow-on, tracked in "Next steps" below (route-date cleanup, `--ui-guide` generator, Route
-Map's color_range). Item 10, Route Compare Component wiring, is now ALSO DONE (2026-07-29) —
-see below. #11's UI half (Route Info Box wiring and
+follow-on, tracked in "Next steps" below (`--ui-guide` generator, Route Map's `color_range`).
+Items 6 (route-date cleanup) and 10 (Route Compare Component wiring) are now ALSO DONE
+(2026-07-29) — see below. #11's UI half (Route Info Box wiring and
 spec half were already DONE, see items 8 and 11) is now ALSO DONE, 2026-07-28 later session —
 see `report-route-ui-parity-gaps.md` gap #11 for the full writeup, including a correction to
 this file's own item 8/1018 framing below (Route Map/Info Box needed no graph-type-specific
@@ -502,6 +502,27 @@ geometry; the window belongs to the report's route instance. Existing rows keep 
 bundled with anything else. `route_build.py` already refuses a date field with a message
 explaining why.
 
+**DONE 2026-07-29.** This note predates the map-plugin port (2026-07-27→29) that made
+`routecreation` a dms-template-native plugin — "transportNY-only" is stale framing; the actual
+edit is `src/themes/transportny/components/routecreation/` **in dms-template**, which is now the
+plugin's actively-developed home (transportNY's own copy untouched, consistent with "transportNY
+no longer necessary for routes/reports work"). Removed `startDate`/`startTime`/`endDate`/`endTime`
+from `INITIAL_MODAL_STATE`, the `addItem` save payload (now always writes `metadata:
+JSON.stringify({})`, byte-matching `route_build.py`'s own `"metadata": "{}"`), and the
+metadata-parsing block in the route-load effect (`METADATA_COL`/`curRouteMetadata` are now
+entirely unused, so dropped too) — all in `comp.jsx`. Removed the two date/time `ModalInputField`
+rows from `SaveRouteModal.jsx`, leaving Name/Description only.
+
+**Live-verified 2026-07-29** on the existing `converted_reports/route_creation_demo` scratch
+fixture (the same one the map-plugin port used, and which explicitly flagged "save/load a route"
+as not yet tested there): added TMC `120-12083` (1.388 mi, same TMC the port's click-to-select
+test resolved), opened "Save New Route" — modal now shows only Name/Description, confirmed by
+screenshot — saved as `claude_scratch_route_dates_cleanup_test`, and the button correctly flipped
+to "Update Route" with `?route_id=2197815` in the URL. Queried the live DB row directly
+(`dms dataset query 2107426 --view 2107427 --filter id=2197815`): `metadata` is the literal string
+`"{}"`, `tmc_array`/`name`/`description` all correct, no dates anywhere. Deleted the test route
+after (`raw delete npmrdsv5 "routes_data|2107427:data" 2197815`).
+
 ## Intake contract (user ask 2026-07-27): what the skill should require up front
 
 "I want it to be able to ask / request / require certain data (like, is a map screenshot
@@ -902,7 +923,8 @@ during-window 3:06 / 22.6 mph).
 5. ~~Gap 4 — rules file + intake checklist into `creating-reports.md`~~ — **DONE 2026-07-28**,
    see above. All four gaps are now closed; remaining items below are follow-on work, not part
    of the original four-gap arc.
-6. Drop plugin route dates (isolated transportNY change).
+6. ~~Drop plugin route dates~~ — **DONE 2026-07-29**, see the gap writeup above (framing
+   corrected from "transportNY-only" to dms-template, post map-plugin-port).
 7. `--ui-guide` generator — emits the human click-path for a given spec, and doubles as the
    Phase C parity harness (any spec field with no UI control emits a flagged gap instead of
    silently omitting).

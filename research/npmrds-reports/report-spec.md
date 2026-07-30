@@ -138,8 +138,9 @@ Per `useGraphPublish.js:34`, an **absent** key means the day is *included*. So:
 means Monday–Friday, not "only Saturday and Sunday excluded from nothing". An empty or absent
 `weekdays` means all seven days. (Easy to read backwards — it was, on the first pass.)
 
-`weekdays` has **no UI control** today; the runtime honors it regardless, so a spec can express it
-and the Measure Picker cannot. It is the cheapest available parity win.
+`weekdays` got a UI control 2026-07-30 — a "Days of Week" toggle row (plus Weekdays/Weekends/All
+Days presets) next to `RouteRow.jsx`'s date-edit inputs, saving down to only the `false` entries on
+this same normalized shape. See `report-route-ui-parity-gaps.md` gap #10 for the live verification.
 
 ### `startTime`/`endTime`: a peak-hour (or any time-of-day) sub-window (added 2026-07-28)
 

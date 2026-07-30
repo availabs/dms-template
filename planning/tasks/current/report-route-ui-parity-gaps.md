@@ -1,10 +1,11 @@
 # NPMRDS route/report UI parity gaps (Phase C)
 
-**Status:** IN PROGRESS — 3 of 12 gaps fixed so far (#4 `route_id` overwrite labeling,
+**Status:** IN PROGRESS — 4 of 12 gaps fixed so far (#4 `route_id` overwrite labeling,
 #5 TMC Search-to-add, both live-verified 2026-07-27 in transportNY; #11 peak-hour filtering,
 both spec and UI halves, live-verified 2026-07-28 in dms-template AND ported + re-verified
 in transportNY the same day — see its entry below, including a correction to the "inert for
-Map/Info Box" claim made earlier the same day).
+Map/Info Box" claim made earlier the same day; #10 weekdays UI control, live-verified
+2026-07-30 in dms-template only, not yet ported to transportNY).
 Gap #2 (TMC search `-` code bug) was investigated live 2026-07-27
 and dropped — could not reproduce, see its entry below. This is Phase C of the
 three-phase arc in
@@ -106,7 +107,33 @@ opportunistically.
 10. **`weekdays` day-mask has zero UI control** despite the runtime already honoring it
    (`useGraphPublish.js:34`) — the spec can express "exclude weekends" today and the UI
    cannot. **Cheapest available win**: pure UI addition, no backend/runtime change
-   needed at all.
+   needed at all. **IMPLEMENTED 2026-07-30** — a "Days of Week" 7-button toggle row
+   (Su–Sa) plus Weekdays/Weekends/All Days presets, added to `RouteRow.jsx`'s existing
+   date-edit block (same `isEditingDates` gating as the peak-hour presets from gap #11,
+   since a weekday mask is a natural companion to a date range, not its own edit mode).
+   `isDayOn`/toggle semantics mirror `useGraphPublish.js`'s "only an explicit `false`
+   excludes" rule exactly. On save (`ReportRouteList.jsx`'s `onSaveEditDates`), the local
+   edit state (a full 7-key boolean object, easiest to toggle) is normalized down to
+   only its `false` entries before persisting — matching the existing storage
+   convention (e.g. converted old reports' `{saturday:false,sunday:false}`) and
+   collapsing to `undefined` (all days) when every toggle is back on, rather than
+   persisting a same-meaning-but-verbose object. Also added a read-only summary line
+   ("Weekdays only" / "Weekends only" / "Excludes Tu, We") shown next to the date range
+   whenever a route has an active exclusion, so the mask is visible without entering
+   edit mode — renders as nothing when unrestricted, so unaffected routes look
+   unchanged. **DONE + live-verified 2026-07-30** on a scratch page
+   (`converted_reports/claude_scratch_weekdays_gap10`, deleted after). Confirmed via
+   `report_probe.mjs --auth --eval`: toggling Sat/Sun off and Saving persisted
+   `weekdays":{"saturday":false,"sunday":false}` on the `reports_snap_2` row (only the
+   `false` entries, not a full 7-key object); the graph's next live query captured by
+   the probe carried exactly 9 dates (the 11-day `2026-04-20`→`30` range minus
+   `2026-04-25`/`26`), with the InfoBox `travelTime` value changing accordingly
+   (8.6559→8.6798 min). The "Weekends" preset correctly excluded Mon-Fri and showed a
+   "Weekends only" summary; "All Days" cleared every exclusion and the follow-up query
+   returned the exact original value (8.6559 min) byte-for-byte, confirming a clean
+   round trip back to "no restriction." The read-only summary line
+   ("Weekdays only"/"Weekends only") also survived a full page reload, confirming it
+   reads the persisted shape correctly, not just client-side edit state.
 11. **Peak-hour-only filtering isn't a first-class Resolution/control.** **DONE 2026-07-28**
     (both halves, same day). **Spec half**: `routes[].startTime`/`endTime` (`"HH:mm"`) expresses
     it, composed by `report_build.mjs` into the same combined date+time string `useGraphPublish.js`
@@ -155,8 +182,8 @@ still reads coherently) — pick up at #10 next.
    not a confirm dialog, see gap #4's entry above).
 2. ~~#5 TMC search-to-add~~ — **DONE 2026-07-27** (Add button/Enter next to the search
    box, see gap #5's entry above).
-3. **#10 weekdays UI control** — cheapest of what's left, purely additive, runtime
-   already correct.
+3. ~~#10 weekdays UI control~~ — **DONE + live-verified 2026-07-30** (see gap #10's
+   entry above).
 4. **#8 difference-graph anchor UI affordance** — moderate, closes a coin-flip footgun
    the spec already proves is fixable (just needs a UI equivalent of the `anchor`
    field).
@@ -190,8 +217,15 @@ still reads coherently) — pick up at #10 next.
       the correct `HH:mm` pair, "All Day" clears both, and Save persists + triggers a
       live re-query reflecting the new window (Info Box travel time value changed
       after save, matching the applied AM Peak window).
+- [x] Gap #10 (weekdays UI control) — DONE + live-verified 2026-07-30: toggle buttons,
+      the "Weekends"/"All Days" presets, the persisted storage shape (`false`-only
+      keys), the live re-query's date-list shrinkage, and the read-only summary
+      line's survival across a page reload all confirmed on a scratch page (deleted
+      after). Not yet ported to transportNY's divergent `ReportRouteList` copy — do
+      that as a separate step if/when transportNY needs it (see
+      `project_reportroutelist_dms_template_transportny_divergence`).
 - [ ] Gap #2 investigated 2026-07-27 (could not reproduce, dropped) — remaining gaps
-      (#1, #3, #6-#10, #12, #11's UI half) not started. Pick one gap per session per
+      (#1, #3, #6-#9, #12) not started. Pick one gap per session per
       `feedback_isolate_shared_code_changes` if the fix touches shared theme/library
       code (most of these do: `ReportRouteList/`, `MeasurePicker/`, the routecreation
       map component).
@@ -274,3 +308,45 @@ still reads coherently) — pick up at #10 next.
   `2196819` + 4 sections + snap row `2196824` deleted after. See
   `project_reportroutelist_dms_template_transportny_divergence` memory for the port
   mechanics.
+
+- **2026-07-30** — Gap #10 (weekdays UI control) implemented in dms-template only so
+  far (not yet ported to transportNY — that's a separate step once this is
+  live-verified, per the divergence memory). Added a "Days of Week" toggle row
+  (Su–Sa + Weekdays/Weekends/All Days presets) to `RouteRow.jsx`'s existing
+  `isEditingDates` block, alongside the peak-hour presets from gap #11 — grouped
+  there rather than as its own edit mode since a weekday mask is naturally a
+  companion to the date range being edited, not a separate concept (and the user
+  had already declined mixing a day-of-week preset into the *time-of-day* row
+  specifically, back in gap #11 — this is a distinct control, not that one).
+  `ReportRouteList.jsx`'s `onSaveEditDates` normalizes the local 7-key boolean edit
+  state down to only its `false` entries before calling `updateRoute` (which already
+  handled arbitrary fields generically, so no change needed there), matching the
+  storage convention converted old reports already use and collapsing back to
+  `undefined` when every day is re-enabled. Also added a read-only summary line
+  next to the date range (outside edit mode) so an active exclusion is visible
+  without opening the editor. Built a scratch verification page via
+  `report_build.mjs` (`converted_reports/claude_scratch_weekdays_gap10`, page
+  `2197817`, sections `2197818-20`, snap row `2197821` — one InfoBox `travelTime`
+  graph, one route on known-good `route_id` 2126095, `2026-04-20`→`2026-04-30`, no
+  weekend exclusion in the spec) to click through in the browser, but the first
+  `report_probe.mjs --auth` run hung waiting for the route row's expand button —
+  root cause: `scratchpad/npmrds-sub/.dms-auth-token` was >6h old (minted the
+  previous day) and the dev site's JWTs expire at 6h, so the page silently
+  rendered as anonymous (no edit UI at all) rather than erroring. Incorrectly
+  asked the user to run `mint_token.sh` themselves instead of just running it — the
+  user corrected this (again; see the updated [[feedback-mint-token-yourself]]
+  memory) and minted it. Re-ran the probe with the fresh token and it worked
+  immediately, confirming the earlier failure really was just token staleness, not
+  a deeper browser-auth issue (the user separately clarified, correctly, that a
+  minted token alone doesn't grant a real logged-in browser session in general —
+  but this specific script's `--auth` flag sidesteps that by injecting the token
+  straight into a fresh headless browser's `localStorage` before navigation, which
+  doesn't need one). Two eval passes (`weekdays_gap10_eval.mjs` +
+  `weekdays_gap10_eval2.mjs`, both under the job's tmp dir) confirmed everything in
+  the entry above. Cleanup used `dms raw delete <app> <type> <id>` — first attempt
+  passed the wrong positional args (extra bare ids where the CLI expects `<app>
+  <type> <id>` per call) and silently "succeeded" against a non-existent app/type
+  combo without actually deleting anything; re-ran with each row's real app/type
+  (fetched via `dms raw get`, except the `:data` snap row whose type was already
+  known from the captured network payload) and confirmed via a follow-up `raw get`
+  that every row was actually gone.
