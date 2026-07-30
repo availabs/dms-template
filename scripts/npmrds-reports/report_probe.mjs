@@ -11,13 +11,13 @@
 //   - full-page screenshot + machine-readable JSON dump
 //
 // Usage:
-//   node scripts/report_probe.mjs <slug-or-full-url> [options]
+//   node scripts/npmrds-reports/report_probe.mjs <slug-or-full-url> [options]
 //
 // Examples:
-//   node scripts/report_probe.mjs report_1070
-//   node scripts/report_probe.mjs report_1070 --grep hours_of_delay --wait 10000
-//   node scripts/report_probe.mjs report_796 --section "Travel Time" --no-json
-//   node scripts/report_probe.mjs report_11 --eval scratchpad/npmrds-sub/tmp/my_probe.mjs
+//   node scripts/npmrds-reports/report_probe.mjs report_1070
+//   node scripts/npmrds-reports/report_probe.mjs report_1070 --grep hours_of_delay --wait 10000
+//   node scripts/npmrds-reports/report_probe.mjs report_796 --section "Travel Time" --no-json
+//   node scripts/npmrds-reports/report_probe.mjs report_11 --eval scratchpad/npmrds-sub/tmp/my_probe.mjs
 //
 // Options:
 //   --wait <ms>       settle time after networkidle (default 6000)
@@ -49,13 +49,13 @@ import { writeFileSync, mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 // ---- args ----------------------------------------------------------------
 const argv = process.argv.slice(2);
 const target = argv[0];
 if (!target || target.startsWith('--')) {
-  console.error('usage: node scripts/report_probe.mjs <slug-or-url> [--wait ms] [--grep s]... [see header]');
+  console.error('usage: node scripts/npmrds-reports/report_probe.mjs <slug-or-url> [--wait ms] [--grep s]... [see header]');
   process.exit(2);
 }
 const opts = {

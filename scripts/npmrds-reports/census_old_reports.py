@@ -27,7 +27,7 @@ Answers, corpus-wide:
     already-converted `report_<id>` pages in the new DB (task item (e)).
 
 Usage:
-  python3 scripts/census_old_reports.py
+  python3 scripts/npmrds-reports/census_old_reports.py
 
 Outputs:
   scratchpad/npmrds-sub/old-reports/census/census.json        (full detail)
@@ -43,11 +43,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from convert_old_reports import (  # noqa: E402
     REPO, GRAPH_TEMPLATE_MAP, TEMPLATE_SPECS, COLOR_RANGE_GRAPH_TYPES,
     ROUTES_CATALOG_TABLE, INFO_BOX_GRAIN, INFO_BOX_BUCKET,
-    INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR,
+    INFO_BOX_TRAVELTIME_BUCKETS, PM3_VIEW_BY_YEAR, BAR_SUMMARY_PM3_BUCKET,
     INFO_BOX_LENGTH_BUCKET, INFO_BOX_AADT_BUCKET, INFO_BOX_DELAY_BUCKET,
     GEOMETRY_TILE_VIEWS, DIFFERENCE_GRAPH_TYPES,
     ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION, ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG,
-    ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE,
+    ROUTE_COMPARE_BUCKET, MEASURE_EXPR, PAGE_TYPE, REPORTS_SNAP_TABLE,
     analyze_graph, flatten_route_comps, route_settings_gaps,
     resolve_difference_pair, report_is_pre_2017_only,
     aadt_override_of, graph_max_year, graph_reliability_bin, psql_old, psql_new,
@@ -67,15 +67,38 @@ BUILDABLE_TYPES = {"Route Line Graph", "Route Bar Graph", "TMC Grid Graph",
                    # speed×5-min buckets — remaining unmapped diff buckets
                    # are spec work on a proven shape.
                    "Route Difference Graph", "TMC Difference Grid"}
-# No built new-side shape yet. Round 24 REOPENED Route Map / Route
+# No built new-side shape yet, for the residual instances that don't match
+# one of the "mapped" branches below. Round 24 REOPENED Route Map / Route
 # Difference / TMC Difference Grid as in-scope targets (the 2026-07-08
-# gap-log-only ruling was reversed), so this bucket now means "needs shape
-# work before spec work", not "ruled out". [Round 52: both difference types
-# moved to BUILDABLE_TYPES above.] Route/TMC Info Box have a shape
-# ONLY for the reliability bucket (speed x travel_time_all, resolved
-# dynamically); their unmapped keys are either pm3 data gaps (speed
-# measure: year/bin/coverage) or unproven other-measure info boxes, so
-# they stay here rather than in buildable.
+# gap-log-only ruling was reversed). [Round 52: both difference types moved
+# to BUILDABLE_TYPES above.] [Rounds 47-50: Route Map's core measures
+# (none/speed/travelTime/hoursOfDelay/avgHoursOfDelay) DO have a built
+# choropleth shape now and are classified as "mapped" by the branches below
+# (see the `info["type"] == "Route Map"` checks) — they never reach
+# bucket_of() at all. "Route Map" stays in this set ONLY to classify the
+# residual: measures with no template yet (e.g. co2Emissions) or instances
+# where graph_max_year() can't resolve a year. Don't read this set as "Route
+# Map has no shape" — that claim was stale and caused real confusion in
+# client-request-to-report-skill.md 2026-07-27; check the mapped branches
+# below, not this comment, before concluding a type has no shape.] [CORRECTED
+# 2026-07-28: the paragraph below made the IDENTICAL stale-comment mistake
+# about Route/TMC Info Box that the Route Map paragraph above warns against.
+# Rounds 19/38/40/49/58 built FIVE measure buckets, not one: reliability
+# (INFO_BOX_BUCKET, the pm3 LOTTR/TTTR/freeflow join), travel time
+# (INFO_BOX_TRAVELTIME_BUCKETS), length (INFO_BOX_LENGTH_BUCKET), AADT
+# (INFO_BOX_AADT_BUCKET), and hours of delay (INFO_BOX_DELAY_BUCKET) — all
+# classified as "mapped" by the branches below (see the `grain = ...` checks),
+# never reaching bucket_of() at all. Real corpus proof: route_info_box_
+# traveltime/tmc_info_box_traveltime/tmc_info_box_length/tmc_info_box_aadt/
+# route_info_box_delay/tmc_info_box_delay templates all exist and produced
+# real converted pages (old-reports-conversion.md rounds 40/49). "Route Info
+# Box"/"TMC Info Box" stay in this set ONLY to classify the genuine residual:
+# a measure outside all 5 buckets (e.g. `percentile95-byDateRange`, seen in
+# the reliability composition class — no template built for it at all) or a
+# reliability-bucket instance where graph_max_year()/graph_reliability_bin()
+# can't resolve (year outside PM3_VIEW_BY_YEAR, or genuinely undetermined).
+# Read the mapped branches below, not this comment, before concluding either
+# Info Box type has no shape for a given measure.]
 NO_EQUIVALENT_TYPES = {
     "Route Map", "Route Info Box", "TMC Info Box",
 }
@@ -152,18 +175,26 @@ def fetch_catalog_route_ids():
 
 
 def fetch_converted_pages():
-    """{old_report_id(int): page_id} for already-converted `report_<id>`
-    pages live in the new DB (convert_report's slug scheme)."""
+    """{old_report_id(int): page_id} for already-converted pages live in the
+    new DB. Keyed off the reports_snap_2 row's own `_converted_from_old_
+    report_id` marker (set at creation, convert_report's `snap` dict) rather
+    than the page's url_slug: url_slug is title-derived and the DMS page
+    editor recomputes it on every title save (by design — URLs are meant to
+    track the title), so it silently drifts away from whatever slug scheme
+    the converter used at creation. Matching on a fixed slug pattern here
+    previously undercounted converted pages to near-zero once the live
+    corpus's slugs had drifted (and let convert_report's own `--replace`
+    leave stale duplicate pages behind for the same reason — see
+    find_page_by_old_report_id)."""
     out = psql_new(
-        "SELECT json_agg(row_to_json(t)) FROM (SELECT id, "
-        "data->>'url_slug' AS slug FROM dms_npmrdsv5.data_items "
-        f"WHERE type = '{PAGE_TYPE}' "
-        "AND data->>'url_slug' LIKE 'report\\_%') t")
+        f"SELECT json_agg(row_to_json(t)) FROM (SELECT "
+        "data->>'_converted_from_old_report_id' AS old_id, "
+        f"data->>'report_id' AS page_id FROM {REPORTS_SNAP_TABLE} "
+        "WHERE data ? '_converted_from_old_report_id') t")
     pages = {}
     for row in (json.loads(out) if out else None) or []:
-        suffix = (row["slug"] or "")[len("report_"):]
-        if suffix.isdigit():
-            pages[int(suffix)] = row["id"]
+        if row["old_id"] and row["old_id"].isdigit():
+            pages[int(row["old_id"])] = int(row["page_id"])
     return pages
 
 
@@ -304,6 +335,15 @@ def analyze_report(old, old_route_facts=None):
                            max(GEOMETRY_TILE_VIEWS))
                 slug = ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG[info["resolution"]]
                 mapped.append((g, info, f"route_map_avgHoursOfDelay_{slug}_{year}"))
+                continue
+        elif (info["type"] == "Bar Graph Summary"
+                and (info["measure"], info["data_column"]) == BAR_SUMMARY_PM3_BUCKET):
+            # Same pm3-keyed, bin-independent join as the Info Box reliability
+            # bucket above — mirrors convert_report's bar_summary_pm3_tmpl_name
+            # pre-pass (wired round 68, see BAR_SUMMARY_PM3_BUCKET).
+            year = graph_max_year(info, comps_by_id)
+            if year in PM3_VIEW_BY_YEAR:
+                mapped.append((g, info, f"tmc_freeflow_summary_bar_graph_{year}"))
                 continue
         elif GRAPH_TEMPLATE_MAP.get(key):
             mapped.append((g, info, GRAPH_TEMPLATE_MAP[key]))
@@ -562,7 +602,7 @@ def write_summary_md(s):
     L.append("# Old-report conversion gap census\n")
     L.append(f"All {s['total_reports']} `admin2.reports` run through the "
              "converter's analyze path (analysis-only, "
-             "`scripts/census_old_reports.py`).\n")
+             "`scripts/npmrds-reports/census_old_reports.py`).\n")
     cc = s["class_counts"]
     gi = s["graph_instances"]
     L.append("## Convertibility today\n")

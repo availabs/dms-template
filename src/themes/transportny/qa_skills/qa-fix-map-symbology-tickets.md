@@ -19,8 +19,27 @@ Freight Atlas has had **two** `freight_atlas` pages and it is the #1 source of w
   really about `1411761` get **Closed** (owner call, 2026-07-16).
 
 Confirm the target by matching the client's description to the live paint (below) before editing.
-`draft_sections[0].id === sections[0].id` on these pages — the draft row **is** the published row,
-so a section edit is live on the view immediately (no publish; no guardrail issue).
+
+⚠ **Check draft vs published EVERY time — they have diverged** (corrected 2026-07-27, ticket #188).
+This skill used to say `draft_sections[0].id === sections[0].id` on these pages, so one edit was
+live immediately. Page **2189762** has since been published, and now has **`draft_sections=[2189767]`
+but `sections=[2194587]`** — two separate rows with identical content. 2189767 is the DRAFT; the
+client sees **2194587**. Editing only the draft leaves the complaint live; editing only published is
+reverted by the next publish, so **patch BOTH rows** with the same payload:
+
+```bash
+node src/dms/packages/dms/cli/bin/dms.js page dump <pageId> \
+  | python3 -c "import json,sys; d=json.load(sys.stdin)['data']; \
+    f=lambda k:[s['id'] for s in (json.loads(d[k]) if isinstance(d[k],str) else d[k])]; \
+    print('published',f('sections'),'draft',f('draft_sections'))"
+```
+
+Patching both rows is a section-data edit, not `dms page publish`, so the never-publish guardrail
+still holds.
+
+⚠ **`element-data` shape varies by section.** On the atlas Map section it is stored as an **object**;
+other section types store a JSON **string**. Preserve whichever shape the row already has —
+stringifying an object adds ~65KB of escaping and changes the stored shape.
 
 ## 1. Reproduce + verify (headless, on the view)
 
@@ -37,6 +56,14 @@ where draft≠published you verify on `/edit/<slug>?layers=` instead (needs a fr
 just the fixed layer.
 
 ## 2. Read the current paint before deciding the fix
+
+⚠ **A layer's `data-column`/`label` describe only the SELECTED view.** If the layer has
+`interactive-filters`, it is an umbrella over several measures (the layer list shows "N views" and
+the card gets a `SHOW` dropdown) and `selectedInteractiveFilterIndex` picks the default. Naming or
+judging such a layer from `data-column` alone mislabels every other view — symbology 2100213 looked
+like an AADT layer but carries 7 (AADT · F System · AADT Combination/Single Trucks · Through Lanes ·
+Toll Roads · NHS), and the first triage of #188 proposed renaming it "Traffic Volume (AADT)" on that
+basis. Always dump `interactive-filters` before deciding a rename.
 
 `fa_qa/dump_fa_symbologies.mjs <pageId>` lists every symbology's id/name/paint/legend. For a
 categorical/choropleth, dump the full layer (paint expression + `legend-data` + `interactive-filters`).

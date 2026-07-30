@@ -1,0 +1,353 @@
+# Report page redesign — findings & recommended approach
+
+**Status:** exploratory — scope not yet decided. User is switching tools; this document
+captures research so the next session doesn't re-derive it.
+
+**2026-07-29 note:** several entries below describe testing done against transportNY's
+dev server because that was the only place the route-creation plugin ran. As of
+2026-07-29 that plugin (and macroview) run natively in dms-template
+(`planning/tasks/completed/port-transportny-map-plugins.md`) — transportNY is no longer
+needed for any routes/reports testing. Left as-is below since it's an accurate record of
+what was true at the time.
+
+## Objective
+
+Compare the old npmrds report-builder tool (legacy React app, `npmrds.devtny.org/report/edit/*`)
+against the new DMS-based report page (transportny theme) and figure out what, if anything, still
+needs visual/UX redesign work. Triggered by the user gathering screenshots of both tools side by
+side and asking how to best approach a redesign.
+
+Screenshots referenced (local, not copied into the repo):
+- Old tool, edit mode: `~/Pictures/Screenshots/report_520_old.png`, `old_33_edit.png`
+- Old tool, view mode: `~/Pictures/Screenshots/report_914_avg_winter.png`, `old_33.png`
+- New tool: `~/Pictures/Screenshots/tappan_latest_dms.png`, `edit_graph.png`, `edit_measure_dms.png`
+
+## Bottom line up front
+
+This is **not greenfield**. A large chunk of old→new feature parity already shipped, most of it
+in the last few days (see git log: `2ab7505` "RRL fixes, now has custom sectionMenu item for
+adding graphs" → `d7778fe` → `468966b` "more RRL persistence fixes"). The open work is narrower
+and more specifically visual/UX than "redesign the report page" suggests. See
+[Gap analysis](#gap-analysis-what-might-still-be-worth-redesigning) below.
+
+## What's already shipped (don't re-build this)
+
+- **`ReportRouteList`** — `src/themes/transportny/components/ReportRouteList/` — the route
+  management side panel. A real `ComponentRegistry` section component (its own `EditComp`/
+  `ViewComp`/`defaultState`/`controls`), not a Card config. Done, stable, README at
+  `ReportRouteList/README.md` covers the storage model and self-binding mechanism in detail.
+- **The Measure Picker** — `src/themes/transportny/components/MeasurePicker/`
+  (`composeMeasureConfig.js` + `index.js`) — a `sectionMenu.jsx` extension (registered via
+  `sectionMenuExtensions.js`) for the `"AVL Graph"` component. Renders 4 nested selects (Graph
+  Type / Measure / Resolution / Comparison Mode); each pick composes and writes
+  `columns`/`join`/`comparisonSeriesCombine`/`display` into the section's live draft state via
+  `dwAPI.setState`. This is the new-tool analogue of the old tool's "Graphs" catalog +
+  "Templates" concept. Shipped and **live-verified end-to-end 2026-07-21**
+  (`src/dms/planning/tasks/completed/report-graph-vocabulary-picker.md`).
+- **Shared vocabulary** — `data-types/npmrds_graph_vocabulary/vocabulary.json` — the measure/
+  resolution/join/comparison-mode expressions, ported out of `scripts/npmrds-reports/convert_old_reports.py`'s
+  `TEMPLATE_SPECS` (a 60-entry dict, still exists, still used by the batch Python converter) so
+  both the picker and the converter share one source instead of drifting.
+- Wiring in `src/dms/packages/dms/src/patterns/page/components/sections/sectionMenu.jsx`:
+  imports `getSectionMenuExtensions`, splices theme-supplied extension item-groups (e.g. the
+  Measure picker) between the built-in `columns` and `filter` groups — purely additive, doesn't
+  touch existing `join`/`comparisonSeries`/`pivot` groups.
+
+**Explicitly deferred** (tracked already, don't re-litigate without new user input — see
+`src/dms/planning/tasks/completed/report-graph-vocabulary-picker.md` and
+`~/.claude/projects/-home-ryan-code-dms-template/memory/project_report_builder_ui_scoping.md`):
+- Resolution derived dynamically from a route's own settings (old tool never asks up front; new
+  tool currently does, as an explicit picker field).
+- Old-tool template reuse: route-placeholder `$0/$1` substitution + rolling-year substitution.
+- Peak/weekday and relative-date filter controls beyond plain start/end date.
+- Resolution/TMC-compatibility validation on route→graph assignment in `ReportRouteList` (old
+  tool's approach: silent per-graph-type filtering, not blocking).
+- An unspecified "some concerns" about `ReportRouteList` the user flagged once, never detailed.
+- `reportroutelist-graphids-wiped-on-refresh.md` — fixed and live-verified 2026-07-20, but the
+  task file still sits in `tasks/current/` rather than `completed/` (bookkeeping, not a real gap).
+
+## Old-tool architecture (ground truth)
+
+Source: `/home/ryan/code/transportNY/src/sites/npmrds/pages/analysis/`.
+
+- `reports/components/ReportBase.jsx` — the report editor page. One class (subclassed as
+  `EditReportClass`/`ViewReportClass`) owns all report state, mounts `<GraphLayout>` +
+  `<Sidebar>`, renders page-level "Hide/Show Controls", "Save as Report", "Save as Template".
+- `components/Sidebar/index.jsx` + `SidebarContainer.jsx` — the "Controls" sidebar shell: a
+  generic collapsible base+extension two-panel container, reused for Routes/Stations/Graphs
+  detail views.
+  - `ActiveRouteComponents.jsx`, `RouteComponent.jsx`, `RouteGroupComponent.jsx` — routes list,
+    "Add New Group", "Routes"/"Folders" add-dropdowns, per-route detail (dates, color).
+  - `ActiveGraphComponents.jsx`, `GraphSelector.jsx` — the "Graphs" list: a **fixed catalog**
+    (`GRAPH_TYPES` array in `tmc_graphs/index.jsx`, entries like `{type, category, saveImage,
+    isColorfull}`), grouped by category; `+`/`−` on an active graph adds/removes an *instance* of
+    that type (not a type picker per instance).
+  - `ColorRangeSelector.jsx` — a **separate** color-*range* picker (ColorBrewer-style palettes,
+    diverging/sequential, length 3–9, reversible) for choropleth/heatmap-style graphs flagged
+    `isColorfull`. Distinct from per-route color.
+- `GraphLayout/index.jsx` + `GridLayout.jsx` (react-grid-layout) + `GraphFactory.jsx` (type→
+  component dispatch).
+- `tmc_graphs/graphClasses/GraphContainer.jsx`, `GeneralGraphComp.jsx`, `HybridGraphComp.jsx` —
+  shared per-graph chrome. **Key mechanism**: every graph type implements `generateHeaderData()`
+  returning declarative control descriptors (`{title:"Reverse TMCs", type:"boolean-toggle"}`,
+  `{title:"Main", type:"single-select"}`, shorthands like `single-select-route` expanded generically
+  by `expandHeaderData()`). A shared `MenuBar` in `GraphContainer` renders these generically by
+  `type`. So the old tool's inline per-graph toolbar buttons (Main/Compare, Reverse TMCs, Display
+  Data 2, Show Compare) are bespoke *data*, rendered through **one generic component**, sitting
+  directly in the graph's own header — not a settings drawer. The icon row (eye/file/save/
+  paint-brush/+/−) is fully generic, gated by props (`saveImage`, `hasMessageBox`, `setColorRange`).
+- Templates (`store/index.js` `saveTemplate`/`_loadTemplate`): capture `route_comps` +
+  `graph_comps` (grid layout + per-graph state) + `station_comps` + `colorRange`; on save,
+  literal route IDs get rewritten to placeholder tokens (`$0`, `$1`, …) and — if "Save Years As
+  Recent" is checked — literal years/dates get rewritten to `{recent-N}` relative tokens. Only
+  templates matching the current route/station *count* are offered on load.
+- Colors, two independent systems: (a) per-route/station free-form HSV picker
+  (`Sidebar/components/ColorPicker.jsx`, react-color Saturation+Hue), new routes auto-assigned
+  from a shared cycling palette (`COLORS`/`getRouteColor()`/`getStationColor()` in
+  `store/index.js`); (b) the `ColorRangeSelector` described above, unrelated, for graph fill
+  ranges not route identity.
+
+## Gap analysis: what might still be worth redesigning
+
+Ranked by how concrete/confirmed the gap is:
+
+1. **Inline per-graph quick controls vs. generic Settings drawer.** The old tool's `MenuBar`
+   surfaces 1-4 hot toggles (Main/Compare, Reverse TMCs, Display Data 2) directly in the graph's
+   own header bar — one click. The new tool routes the equivalent settings (Measure, Comparison
+   Mode, Filters, Display) through the generic per-section Settings side-drawer (see
+   `edit_graph.png`/`edit_measure_dms.png`: Type → AVL Graph Settings → ... → Measure → Graph
+   Type/Measure/Resolution/Comparison Mode, several clicks deep). This is the sharpest,
+   best-evidenced UX regression and the most likely candidate for a first design pass. Likely
+   shape of a fix, per the themes design philosophy (`src/themes/CLAUDE.md`): not a bespoke
+   component, but a Card/avlGraph-level enrichment — e.g. a themeable "quick controls" row in the
+   section header exposing an author-chosen subset of `display`/`comparisonSeries` fields as
+   inline toggles/selects, in the spirit of `authoring-graphs.md`'s header+hero-stat pattern.
+2. **Route/graph color assignment.** The old tool has two explicit, separate color systems (free
+   per-route HSV color + a graph color-range picker). Whether anything equivalent exists in
+   `ReportRouteList`/`MeasurePicker` today was **not confirmed** during this research pass — worth
+   checking before assuming it's missing.
+3. **Visual/density polish of the graph cards themselves.** Spacing, borders, legend placement,
+   and the attribution-line treatment (visible in `tappan_latest_dms.png`) differ from the old
+   tool's cleaner card chrome. Lower-confidence gap — more a matter of taste/polish than a
+   functional hole.
+4. Everything in "explicitly deferred" above is already tracked and scoped elsewhere; don't
+   duplicate that scoping here.
+
+## Recommended methodology
+
+There is no dedicated "design" agent in this environment (checked the available agent roster:
+`claude`, `claude-code-guide`, `Explore`, `general-purpose`, `Plan`, `repo-convention-reviewer`,
+`statusline-setup` — none design-specific). The right tool is a **skill**, not an agent:
+
+1. **`src/dms/skills/transcribing-a-design-card-to-dms.md`** — primary/governing methodology.
+   Purpose-built for exactly this: inventory a design mockup/screenshot into atoms, map each atom
+   through the decision ladder (static text → `formatFn` → value-driven column type → Card
+   `display`/span → *only as last resort* a new component), build the authorable version, verify
+   with a Playwright screenshot diff (`scripts/card-shot.mjs`, or this repo's own
+   `scripts/npmrds-reports/report_probe.mjs` harness — see `reference_report_probe_harness` memory).
+2. **`src/dms/skills/card-layout.md`** — reference/knob-dictionary to keep open whenever a gap
+   involves a Card-driven section (most Settings-drawer fields likely are).
+3. **`src/dms/skills/authoring-graphs.md`** — reference for anything in the chart bodies/headers
+   themselves (target lines, bar/line display knobs, header+hero-stat composition) — directly
+   relevant to gap #1 above.
+4. **`src/dms/skills/creating-page-section-components.md`** — fallback only, and only for
+   `ReportRouteList` specifically (the one genuinely non-Card component in this page), if the
+   decision ladder in (1) bottoms out.
+5. **Skip `src/dms/skills/designing-a-dms-design-system.md`** — that skill is for birthing a
+   brand-new theme/design system from a blank brief; this is page-pattern-level iteration inside
+   an existing, already-built transportny theme. Wrong tool for this job.
+
+## Current status
+
+All three gaps below now have a status — see
+[`planning/tasks/current/report-page-redesign.md`](../../planning/tasks/current/report-page-redesign.md)
+for the current, maintained status of all three (this section used to duplicate that tracking
+in-place and the two drifted out of sync; that file is now the only place status is tracked, this
+research doc stays focused on the original audit/ground-truth/methodology above). Full
+implementation history for all three gaps lives in that file's companion archive,
+`report-page-redesign-archive.md`.
+
+Two things found along the way, while verifying Gap 2, are tracked separately rather than as part
+of this redesign: a duplicate-route-name series collapse bug (`comparisonseries-stable-series-key.md`
+in the `dms` submodule, now fixed) and a BarGraph "Color by Value" NaN bug (see "Follow-up Q&A"
+below, and `src/dms/planning/tasks/current/bargraph-byvalue-scheme-color-nan-bug.md` — root-caused,
+not yet applied).
+
+## Follow-up Q&A: value-driven bar color (2026-07-22)
+
+User question (planning-only pass, no code changes made): as an author, can a Bar Graph
+section (e.g. a per-route Speed chart) have bar **height and color both driven by value**
+(heatmap-style bars), and separately, can **color be driven by a different column than
+height**?
+
+**Height+color by the same value — already shipped, UI-reachable today.**
+- `graph_new/config.jsx`'s `barGraph` control group (`displayCdn: graphType === 'BarGraph'`,
+  around line 517) exposes a **"Color by Value"** toggle (`colors.byValue`) and a
+  **"Zero-Centered Colors"** toggle (`colors.byValueSymmetric`, for diverging/difference
+  charts) — sibling toggles to GridGraph's own `byValueSymmetric` option.
+- Implementation: `ui/components/graph_new/components/BarGraph.jsx:144-154` builds a
+  `scaleLinear` (via `buildValueColorScale`, `components/utils.js:108`) off the data's own
+  min/max and passes it as `colors` instead of a flat array. `avl-graph/BarGraph.jsx:337`
+  and `:388` call `colorFunc(value, ii, key, d)` per bar-segment using that segment's own
+  `value` — this is *why* color and height can't be independent in this mode (see below).
+  `avl-graph/utils/index.js:52-56`'s `getColorFunc` just calls the scale directly when
+  `colors` is a function.
+- The color ramp is chosen separately via the **"Colors"** group (`config.jsx:389-403`,
+  `colors.scheme` select + `colors.reverse` toggle) — full Observable Plot catalog
+  (`colorSchemeUnifier.js`) plus AVAIL's legacy `div7`/`seq*` palettes. Default state
+  (`config.jsx:77-82`) bakes a 20-color `div7` **palette** (not a named scheme) at section
+  creation, so out-of-the-box "Color by Value" already has a usable 20-stop gradient without
+  the author touching Colors at all.
+
+**Bug found — live-confirmed by user 2026-07-22, root cause traced to the exact line (not
+fixed — documented only per instructions).** User tried this on a real single-route Speed bar
+chart: toggled "Color by Value" on, then changed "Colors → Scheme", and reported "it changes
+colors sometimes but definitely doesn't completely work." Traced precisely:
+
+- `BarGraph.jsx:132` resolves the scheme with `getColorRange(props.colors.scheme,
+  dataFromProps.keys?.length)`; `keys.length` is **1** for a single-route/single-series chart
+  (exactly the case "Color by Value" targets).
+- `colorSchemeUnifier.js:119-148`'s `getColorRange(scheme, 1)` branches on scheme *kind*,
+  and the two kinds fail differently:
+  - **The 11 pure-categorical schemes** (`accent`, `category10`, `dark2`, `observable10`,
+    `paired`, `pastel1`, `pastel2`, `set1`, `set2`, `set3`, `tableau10`) aren't in
+    `quantitativeSchemes` (`rawPlotSchemes.js:214-264`), so they fall to the `ordinalSchemes`
+    branch, where their entry is a **raw array** (not a function) — `ordinalRange` just
+    slices it to length 1, returning a valid single color (the scheme's first swatch). This
+    is the "changes colors sometimes" the user saw: picking between these actually does
+    change the (single, flat) bar color.
+  - **Every other scheme** — every sequential/diverging/cyclical one (Viridis, Turbo, Magma,
+    RdBu, Spectral, Blues, Rainbow, …, i.e. what anyone would actually reach for to build a
+    heatmap) — *is* in `quantitativeSchemes`, and since `getColorRange`'s default
+    `prefer: "quantitative"` checks that map first, it takes `quantitativeRange(scheme, 1)` →
+    `quantize(interpolator, 1)`. d3-interpolate's `quantize` (`node_modules/d3-interpolate/
+    src/quantize.js:3`) computes `interpolator(i / (n - 1))`; with `n = 1` that's `0 / 0 =
+    NaN`. Every d3-scale-chromatic interpolator is ultimately `d3-interpolate`'s `basis()`
+    spline (`src/basis.js`) indexing into its color array with `Math.floor(t * n)` — `NaN`
+    propagates straight through, so the function returns the literal string
+    `"rgb(NaN, NaN, NaN)"`. That's invalid CSS; the browser drops the `fill` attribute and
+    the bar renders with the SVG default fill (effectively black/unstyled) — this is the
+    "doesn't completely work" part, and it looks identically broken no matter which of these
+    schemes is picked (the failure mode doesn't depend on the scheme, just on `n === 1`).
+- Practical upshot confirmed for the user: **today, for a single-route/single-series bar
+  chart, no Scheme picker choice produces a working gradient.** The only thing that currently
+  renders a real gradient is leaving Scheme untouched, so `colors.type` stays `"palette"` with
+  the baked 20-color `div7` default (`config.jsx:77-82`) — `buildValueColorScale` gets a real
+  20-element array in that case, no `keys.length` involved.
+- If `categorize` is used (2+ routes/series), `keys.length >= 2` and `quantize(interpolator,
+  2)` evaluates `i/(n-1)` at `0/1=0` and `1/1=1` — both valid, no NaN. So the break is
+  specific to the exact single-series case the feature exists for, not a general scheme
+  problem.
+- `GridGraph.jsx:29` sidesteps all of this by always requesting a fixed
+  `getColorRange(scheme, 3)` regardless of series count — never hits `n === 1`. The
+  equivalent fix in `BarGraph.jsx:132` (request a small fixed N, e.g. 5–9, whenever
+  `colors.byValue` is on, instead of `dataFromProps.keys?.length`) would likely resolve it
+  for both failure modes at once, but this pass made no code changes.
+
+**Color by a different variable than height — not supported for Bar Graph.** Color in
+`byValue` mode is mathematically derived from the identical `value` that sets bar height —
+there is no second input. Confirmed via `config.jsx:144-185` (the column `Target` select):
+Bar Graph's target options are only `xAxis` / `yAxis` / `categorize`; a `Color` target option
+exists in the same list but is hard-gated with `displayCdn: ({ display }) =>
+display.graphType === "GridGraph"` (`config.jsx:182-184`) — i.e. it was deliberately built
+for GridGraph and deliberately withheld from BarGraph.
+
+**GridGraph already is the "two independent variables" pattern.** It takes a dedicated
+`color` target column (`GridGraphWrapper`, `components/GridGraph.jsx:38`) to drive the fill
+scale, fully independent of the optional `width`/`height` target columns
+(`GridGraph.jsx:41,44`) that size each cell (e.g. TMC length/miles). So "magnitude drives one
+visual channel, a different column drives another" is an existing, working primitive in this
+same component family — just not extended to bars.
+
+**If this becomes a real task later** (out of scope for this research pass — planning only):
+smallest-enrichment shape, in keeping with the author-empowerment principle
+(`CLAUDE.md`/`src/themes/CLAUDE.md`) — add a second, independent `color` column target to Bar
+Graph (mirroring GridGraph's), and have `BarGraphWrapper`'s byValue scale derive its min/max
+from that column's own values instead of reusing `dataFromProps.min/max` from the
+height-driving `dataColumns`. Would also want to fix the scheme/keys.length bug above in the
+same pass since both touch the same `colors` useMemo block.
+
+## RRL overflow, tooltip-epoch, and ColorPicker-regression triage (2026-07-24)
+
+User reported three more bugs while test-driving the workflow (`converted_reports/page_13_13`, now
+mostly run from transportNY's dev server due to the route-creation plugin — see
+`reference_transportny_route_creation_source` memory). Live-verified and root-caused all three;
+no code changed yet, this is a triage pass.
+
+### RRL route rows visually overlap ("mega overflow issues")
+
+Live-reproduced on `page_13_13` in both view and edit mode — route-name text from consecutive
+`RouteRow`s renders on top of each other (edit mode is worse: reorder up/down buttons compound the
+collision). Root cause, `src/themes/transportny/components/ReportRouteList/ReportRouteList.theme.js`:
+`editContainer: 'flex items-center gap-1 h-8'` (line 13) is a **fixed** `h-8` (32px) box wrapping the
+color dot + `routeTitle` + unassigned badge, but `routeTitle` (line 11,
+`'font-semibold text-slate-700 text-sm'`) has no `truncate`/`line-clamp` — a long route name (and
+per `creating-routes.md`'s own guidance, route names are meant to be long/descriptive,
+e.g. `"NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) - Jan-Feb 2025"`) wraps to 2-3
+lines. `items-center` vertically centers that wrapped text inside the still-32px box; since nothing
+clips it (no `overflow-hidden`), the extra lines spill above/below the box's actual bounds into the
+neighboring row's space — box heights stay compact (so rows stack close together) while the
+rendered text visually escapes, producing the overlap.
+
+**This is a shared-source bug, not a transportNY-only regression.** `ReportRouteList` was fully,
+byte-for-byte synced from dms-template to transportNY on 2026-07-24 (see
+`project_reportroutelist_dms_template_transportny_divergence` memory) — this bug lives in
+dms-template's own copy of `ReportRouteList.theme.js` and would reproduce identically there, not
+just on transportNY's dev server.
+
+**FIXED and live-verified 2026-07-24** (both dms-template's copy and transportNY's synced copy):
+went with option (a) — `routeTitle` now truncates (`truncate flex-1 min-w-0`) with a `title={r.name}`
+attribute for the full name on hover, `unassignedBadge` got `shrink-0` and `iconContainer`/
+`editContainer` got `min-w-0` so the truncation actually takes effect instead of the row just
+growing wider. Verified live on `converted_reports/page_13_13` (transportNY dev server): route rows
+that previously overlapped 2-3 lines deep now render as clean single lines ("NY-9D Northb...", etc.)
+with no collision, in both view and edit mode.
+
+### Hover tooltip shows raw epoch integer instead of clock time
+
+Live-reproduced on the same page's overview LineGraph: tooltip header read `142` while the x-axis
+tick directly below correctly read `12:20`. This is the SAME bug already logged in
+`src/dms/planning/tasks/current/old-reports-conversion.md` (user-reported 2026-07-17, previously
+unrooted) — now root-caused: `packages/dms/src/ui/components/graph_new/GraphComponent.jsx`'s
+`hoverComp` useMemo (lines 89-103) never computes an `xFormat`/`indexFormat` from
+`graphFormat.xAxis.format`, unlike the sibling `xAxis` prop (same file, lines 168-178) which does.
+Every avl-graph chart type's `DefaultHoverComp` falls back to its own bare `Identity`/no-op default
+in that case. See the old-reports-conversion.md entry for the full citation chain and fix shape —
+not duplicating it here since it's a single shared fix point covering every graph type, not
+report-page-redesign-specific.
+
+**FIXED and live-verified 2026-07-24** in both dms-template's `src/dms` submodule and transportNY's
+`src/modules/dms` submodule copy of `GraphComponent.jsx`. Re-tested the exact same hover on
+`page_13_13`'s overview LineGraph: tooltip now reads `11:50` (matching the axis) instead of the
+raw epoch integer.
+
+### Route color picker's saturation gradient missing — confirmed a cross-repo divergence, not a regression
+
+User noticed the per-route `ColorPicker`'s saturation/value gradient (in RRL's per-route color
+picker, `RouteRow.jsx`) looks flat again, having been fixed once already (see
+`feedback_colorpicker_onchange_identity_footgun` memory, fixed 2026-07-22 in dms-template commit
+`c26f4ce2` to `packages/dms/src/ui/components/Colorpicker.jsx`). Confirmed via git: transportNY's
+`dms` submodule checkout (`src/modules/dms`, pinned at `7d9bcc1e "wip"`) does **not** contain commit
+`c26f4ce2` — its copy of `Colorpicker.jsx` still has the original broken
+`bg-[linear-gradient(transparent,_black),_linear-gradient(to_right,_white,_transparent)]`
+Tailwind-arbitrary-value class (confirmed by grepping the live file). This is the same class of gap
+as `project_reportroutelist_dms_template_transportny_divergence` — a dms-template library-level fix
+that was never ported into transportNY's separately-pinned submodule checkout, not a code
+regression. **Fix**: port the same 2-hunk diff from dms-template's `c26f4ce2` into transportNY's
+`src/modules/dms/packages/dms/src/ui/components/Colorpicker.jsx` (move the gradient into the
+existing inline `style` object at both `ColorPicker` and `ColorPickerFlat` call sites, drop the
+dead `bg-[...]` fragment from the shared class string) — mechanical, already-known-correct patch,
+not new design work.
+
+**FIXED and live-verified 2026-07-24** — ported the exact diff. Opened a route's color picker on
+`page_13_13` (transportNY dev server): the saturation/value square now renders a real gradient
+(dark red top-right fading to white/black) instead of a flat color swatch.
+
+## Cross-references
+
+- `src/themes/transportny/components/ReportRouteList/README.md`
+- `src/dms/planning/tasks/completed/report-graph-vocabulary-picker.md`
+- `src/dms/planning/tasks/current/reportroutelist-graphids-wiped-on-refresh.md`
+- `src/dms/planning/tasks/current/reportroutelist-page-templates.md`
+- Memory: `project_report_builder_ui_scoping`, `reference_old_npmrds_tool_source`,
+  `project_reportroutelist_ux_polish_done`, `reference_report_probe_harness`

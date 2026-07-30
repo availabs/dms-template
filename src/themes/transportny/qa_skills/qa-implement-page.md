@@ -26,6 +26,16 @@ leave at Proposed/report (no design).
    `src/themes/transportny/qa_skills/tools/builds/build_<surface>_<slug>.mjs` (committed, NOT
    scratchpad), modeled on the existing `build_cr_*.mjs` idiom (find-or-create by slug, delete +
    recreate sections, idempotent).
+   It stays the source of truth only while it MATCHES the live page — the moment someone authors on
+   the page without backporting, re-running the script silently reverts their work (twice in July
+   2026: 6 sections destroyed, and a graph's `tickSpacing` reverted at an identical section count).
+   So every script needs the **runtime parity guard** — right after it reads `data.draft_sections`
+   and *before* the delete loop, throw when `existing.length !== SECTIONS.length`.
+   `page_to_build.mjs` EMITS this automatically (since 2026-07-28), so a generated script already has
+   it; only a hand-written script needs it added (copy from any generated builder). The count check is
+   necessary but NOT sufficient — prove content parity with
+   `tools/builds/fidelity_static.mjs <script> <pageId>`, which the emitted guard's comment spells out
+   for that page.
 4. Any design element or story a DMS primitive can't express → ticket it
    (`severity=Major, title="[build] <element/story> not expressible"`, description names the
    smallest primitive/data enrichment that would unblock — per the themes-guide discipline),

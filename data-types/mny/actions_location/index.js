@@ -56,8 +56,6 @@ module.exports = {
             categories:[["Action Locations"]]
           }, req.params.pgEnv);
 
-console.log("newDamaSource", newDamaSource);
-
           args.sourceId = newDamaSource.source_id;
         }
 
