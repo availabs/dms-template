@@ -28,6 +28,11 @@ fold into DMS native primitives later, per user direction 2026-07-27 (memory
 `project_reports_folders_discovery_permissions_out_of_scope`). Don't add them here even
 opportunistically.
 
+**Amended 2026-07-31:** route organization/tagging is back in scope — see
+`dynamic-reports-and-route-tags.md`. Report discovery/browsing and permissions are still out of
+scope here; this list stays about route-creation and report-building UI parity, not route
+organization.
+
 ## Gaps
 
 ### Route creation (`creating-routes.md`)
