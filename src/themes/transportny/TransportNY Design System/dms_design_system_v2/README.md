@@ -1,6 +1,7 @@
 # TransportNY · DMS Design System v2
 
-**v0.2 · 2026-05-26** · A second-pass DMS-format implementation of the
+**v0.2 · 2026-05-26** (last revised **2026-07-31** — NPMRDS Reports rebuilt around the template
+shelf; see `pages/npmrds-reports.html`) · A second-pass DMS-format implementation of the
 TransportNY brand. Translates the high-fidelity HTML/JSX prototypes in
 `../design_handoff_transportny_design_system/` into the deliverable
 shape mandated by the up-to-date DMS authoring skills.
@@ -108,8 +109,38 @@ dms_design_system_v2/
     ├── freight-atlas-about.html   · About & The Plan (six goals, report library, what-changed)
     │   ── Datasets (the datasets pattern as its own product surface) ──
     ├── datasets-catalog.html      · data catalog · rail + source cards (public + auth-gated admin)
-    └── datasets-source.html       · single Source page · Overview tab (description, metadata, downloads)
+    ├── datasets-source.html       · single Source page · Overview tab (description, metadata, downloads)
+│   ── NPMRDS (the six-page category — one product, one contract) ──
+    ├── npmrds-home.html           · Home · four product sections (Macro View · Reports · Route
+    │                                Comparison · MAP-21), each opened by its own doorway card and
+    │                                carrying that product's stats or links-into-views; sticky
+    │                                in-page nav + documentation card in a `sidebar` rail
+    ├── npmrds-reports.html        · report library · TEMPLATE SHELF first (12 cards, each with a
+    │                                layout-derived preview plate), search moved into a modal
+    │                                section group (4 states drawn as siblings below the fold)
+    ├── npmrds-macro.html          · full-page map workbench (controls left, measure context right)
+    ├── npmrds-report.html         · the individual report canvas (route rail + graph-card grid)
+    ├── map-21.html                ·  ⎫
+    ├── map-21-system-performance.html ⎬ retrofitted into the NPMRDS category
+    ├── map-21-lottr.html          ·  ⎪ (nav, header, breadcrumb, freshness, footer)
+    ├── map-21-trend.html          ·  ⎭
+    └── route-comparison.html      · retrofitted likewise
 ```
+
+The nine `npmrds-*` / `map-21*` / `route-comparison` pages form the **NPMRDS category** —
+one `ds-nav.js` section, one SideNav, and a nine-item cross-page contract (page-header shape,
+breadcrumb rule, the data-freshness strip, the measure vocabulary, the route-row treatment, the
+download affordance, the shared empty/loading/error states, and the compound-card rule). The
+contract is written out at the top of `pages/npmrds-home.html` and specified in
+`planning/transportny/tasks/current/npmrds-category-design-set.md`. The four new compositions the
+set introduced — **data-freshness strip**, **search-first index with facet chips** (inline *and*
+in-dialog placements), **map workbench with measure-context panel**, **report canvas (rail +
+graph-card grid)** — are documented in `design-system/patterns.html` §10–13, joined by
+**§14 preview plate · the shape of a report** (the 16:10 report-shape thumbnail, its fallback
+order, and the two saturations the categorical palette needs when it fills large areas). Content is real: NPMRDS speed data complete
+through **June 2026** (July partial, continuous since January 2017, 14.38B observations), PM3
+reporting year **2025**, a **869**-report library with **32** rebuilt as DMS pages, and the actual
+`npmrds_docs` page set.
 
 The two `datasets-*.html` pages mock the **datasets pattern (DataManager) as its
 own product surface** — the generic, un-skinned counterpart to the Freight-Atlas
@@ -157,7 +188,7 @@ so they read like real product surfaces.
 
 | Spec section                  | This folder                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
-| §7 deliverable structure      | `theme/` + `design-system/` (5 pages) + `pages/` (9 handoff examples + 7 Freight Atlas) ✓ |
+| §7 deliverable structure      | `theme/` + `design-system/` (5 pages) + `pages/` (**43** product mockups across 8 families: platform · **NPMRDS ×9** · Freight Atlas ×7 · TSMO ×10 · explorers · Site Management ×5 · Datasets ×2) ✓ |
 | §7.2 design-system/theme      | `design-system/theme.html` — brand, palette, data viz, surface, type, icons, elevation ✓ |
 | §7.3 design-system/layouts    | `design-system/layouts.html` — hierarchy diagram + 3 Layout variants + 8 LayoutGroup variants + nesting + naming reference ✓ |
 | §7.4 design-system/grid       | `design-system/grid.html` — `gridSize`, `defaultSize`, the `sizes` vocabulary, span examples, row-span examples, in-editor overlay, picker rules ✓ |
@@ -186,9 +217,17 @@ The visual signature is:
 - **Editorial moments.** A warm bone surface (#F5F1E8) is reserved for
   printable narrative cards (jurisdictional profiles, public-read
   notices) — used sparingly.
-- **Numbers are mono.** All KPI values and table cells use tabular-nums
-  in `ui-monospace`. Oswald is reserved for headings and chrome;
-  Proxima Nova / Source Sans 3 for running prose; never the reverse.
+- **Numbers are tabular; the big ones are Oswald.** Every numeric uses
+  `tabular-nums`. Inline metadata and table cells are `ui-monospace`
+  (`metaMD` / `metaSM` / `chromeTick`), but **large KPI figures are Oswald**
+  — the `statXL` / `statLG` / `statMD` ladder in `theme.html § type`, i.e.
+  `displayHero` / `displayMD` / `displaySM` weights plus `tabular-nums`.
+  An earlier revision of this paragraph said all KPI values were
+  `ui-monospace`; the handoff, `theme.html`'s stat ladder, and every
+  drawn page disagree (see the transcription note in `pages/map-21.html`:
+  "handoff wins over brief"). Oswald is otherwise reserved for headings
+  and chrome; Proxima Nova / Source Sans 3 for running prose; never the
+  reverse.
 - **Tone-bar press.** Primary CTAs ship a 4px bottom edge that
   compresses to 2px on `:active` for an 80ms tactile press.
 

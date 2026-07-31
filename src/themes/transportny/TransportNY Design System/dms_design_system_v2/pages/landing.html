@@ -14,60 +14,60 @@
 
 
 
-<!-- LAYOUT · app · landing (SideNav + TopNav utility bar) -->
+<!-- LAYOUT · app · landing (SideNav only — no TopNav; see the note above the hero) -->
 <div class="bg-white" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
 
     <!-- SIDENAV — full dark nav; head = the LogoNav product switcher (closed).
          Open-state of the switcher dropdown is documented on components.html. -->
-    <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
-      <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
-        <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center gap-2 px-3">
-          <!-- decorative: NYS logo mark (theme.logo img asset, not a registry icon) --><svg class="h-9 w-auto text-white" viewBox="0 0 40 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M2 10l8-3 6 2 7-6 8 1 7 3-3 6-9 4-7 6-5-4-8-2z"/></svg>
-          <span class="font-display font-semibold uppercase text-white text-[15px] tracking-wide flex-1">TransportNY</span>
-          <!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+    <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+      <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+        <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="landing.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="TransportNY"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">TransportNY</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+        <!-- PLATFORM group = the three product sites ONLY (secondaryNav, 2026-07-29). Each link
+             leaves for that product's subdomain, so none of them is ever the "active" row. -->
+        <div class="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Platform</div>
+        <div class="flex-1 py-4 overflow-y-auto">
+          <a href="getting-started.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ProductNpmrds --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 13.5h3.5l2-5.5 3 8.5 2.5-6 1.5 3H21"/></svg><span class="flex-1">NPMRDS</span></a>
+          <a href="congestion.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ProductTsmo --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="6" cy="18" r="1.8"/><path d="M6 11.5A6.5 6.5 0 0 1 12.5 18"/><path d="M6 6A12 12 0 0 1 18 18"/><circle cx="17" cy="7" r="2"/></svg><span class="flex-1">TSMO</span></a>
+          <a href="freight-atlas-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ProductFreightAtlas --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13l-6 2.5-6-2.5-6 2.5z"/><path d="M6.5 13.5c3-3.5 7.5-.5 10.5-4.5"/><circle cx="17.5" cy="8.5" r="1.6"/></svg><span class="flex-1">Freight Atlas</span></a>
         </div>
-        <div class="px-4 pt-3 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Platform</div>
-        <div class="flex-1 py-1">
-          <a class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><!-- icon: House --><svg class="size-[18px] text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11h13V9"/></svg><span class="text-[13px]">Home</span></a>
-          <a href="freight-atlas-home.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Atlas --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13M15 6.5v13"/></svg><span class="text-[13px]">Freight Atlas</span></a>
-          <a href="freight-atlas-data.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Database --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.66 3.58 3 8 3s8-1.34 8-3v-13"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="text-[13px]">Data Sources</span></a>
-          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Book --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-2.5"/></svg><span class="text-[13px]">Documentation</span></a>
+        <!-- utility group — theme-owned rows beneath the authored nav -->
+        <div class="border-t border-[#2a3545] py-2">
+          <a href="freight-atlas-data.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530]"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.66 3.58 3 8 3s8-1.34 8-3v-13"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+          <a href="docs-overview.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530]"><!-- icon: Book --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-2.5"/></svg><span class="flex-1">Docs</span></a>
         </div>
         <div class="border-t border-[#2a3545] py-2">
-          <a href="login.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530]"><!-- icon: Login --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg><span class="text-[13px]">Sign in</span></a>
+          <a class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] cursor-pointer"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg><span class="flex-1">Report an issue</span></a>
+          <div class="mx-3 mb-1 mt-1 flex items-center gap-2 rounded bg-[#1e2530] px-2 py-2">
+            <div class="size-7 shrink-0 rounded-full bg-[#2a3545] flex items-center justify-center"><!-- icon: User --><svg class="size-[15px] text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6"/></svg></div>
+            <div class="min-w-0 flex-1">
+              <div class="truncate font-proxima text-[10.5px] text-slate-400">availabs@gmail.com</div>
+              <div class="font-display text-[12px] uppercase tracking-wide text-white">AVAIL</div>
+            </div>
+            <!-- icon: PencilEdit --><svg class="size-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+          </div>
         </div>
       </div>
     </aside>
 
-    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
 
-    <!-- TopNav LayoutGroup · utility bar (brand lives in the SideNav LogoNav) -->
-    <header class="w-full z-20 bg-white border-b border-zinc-950/10" data-dms-group="topnav">
-      <div class="w-full h-[60px] flex items-center">
-        <div class="mx-auto max-w-[1280px] w-full flex items-center justify-between px-8">
-          <div class="hidden lg:flex items-center gap-8">
-            <a class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Products</a>
-            <a class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Data</a>
-            <a class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">Documentation</a>
-            <a class="font-display font-medium text-[13.5px] uppercase tracking-wide text-slate-700 hover:text-[#0F1722] cursor-pointer">About</a>
-          </div>
-          <div class="flex items-center gap-3">
-            <a href="login.html" class="cursor-pointer inline-flex items-center gap-2 px-3 h-9 text-slate-700 hover:text-[#0F1722] hover:bg-slate-100 font-proxima text-[13px] rounded-[6px]">Sign in</a>
-            <a href="getting-started.html" class="tny-press cursor-pointer inline-flex items-center gap-2 px-4 h-10 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[13px] tracking-wide rounded-[6px]">Get started</a>
-          </div>
-        </div>
-      </div>
-    </header>
+    <!-- NO TopNav on this page. The utility bar (Products/Data/Documentation/About + Sign in +
+         Get started) was in the original comp but the built page renders the SideNav only —
+         navigation and sign-in both live there, and a second horizontal bar duplicated them.
+         Kept out of the mockup to match (2026-07-29). -->
 
-    <!-- HERO LayoutGroup · "the gantry" — dusk guide-sign band; the three products
-         hang beneath the headline as illuminated exit panels (the page's CTAs). -->
-    <div id="hero-band" class="w-full relative overflow-hidden border-b-4 border-[#FACC15]" style="background:linear-gradient(180deg,#FCFDFE 0%,#EDF1F6 100%)" data-dms-group="hero">
-      <div id="hero-canvas" class="absolute inset-0" aria-hidden="true"></div>
-      <div class="absolute inset-0 pointer-events-none" aria-hidden="true" style="background:linear-gradient(90deg, rgba(252,253,254,0.96) 0%, rgba(252,253,254,0.86) 38%, rgba(252,253,254,0.45) 64%, rgba(252,253,254,0.08) 84%, rgba(252,253,254,0) 100%)"></div>
+    <!-- HERO LayoutGroup · the three products hang beneath the headline as illuminated exit
+         panels (the page's CTAs).
+         Treatment = the shared `.tny-hero-topo` token (_shared.css), same as the 8 sibling
+         mockups, over a 1px zinc rule — which is what the built page renders. This block used to
+         carry a bespoke vertical gradient, a left→right white fade, and a 4px #FACC15 bottom rule;
+         the fade only existed to veil the deleted three.js atlas, and the yellow rule was never
+         built (probed live 2026-07-29: zero yellow bottom-borders on the page). -->
+    <div id="hero-band" class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
       <div class="relative mx-auto max-w-[1280px] w-full px-8 pt-14 pb-12 grid grid-cols-12 gap-6">
         <div class="col-span-12" data-dms-section="hero-copy">
-          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#B45309]">// nysdot · public release · 2026.Q2</span>
+          <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#B45309]">// TransportNY · public release</span>
           <h1 class="mt-3 font-display font-semibold text-[58px] leading-[1.04] tracking-tight text-[#0F1722] max-w-[900px]">
             New York's transportation data,<br/>in the open<span class="text-[#CA8A04]">.</span>
           </h1>
@@ -194,19 +194,24 @@
           <div class="font-display uppercase text-[11px] tracking-wide text-slate-700 mb-2">Products</div>
           <ul class="space-y-1 font-proxima text-[12.5px] text-slate-600">
             <li><a class="hover:text-[#1F3F8F]" href="getting-started.html">NPMRDS</a></li>
+            <li><a class="hover:text-[#1F3F8F]" href="congestion.html">TSMO</a></li>
+            <li><a class="hover:text-[#1F3F8F]" href="freight-atlas-home.html">Freight Atlas</a></li>
             <li><a class="hover:text-[#1F3F8F]" href="map-21-system-performance.html">MAP-21 PM3</a></li>
-            <li><a class="hover:text-[#1F3F8F]" href="floating-car.html">Floating Car</a></li>
-            <li><a class="hover:text-[#1F3F8F]" href="congestion.html">Congestion</a></li>
-            <li><a class="hover:text-[#1F3F8F]" href="work-zones.html">Work zones</a></li>
           </ul>
         </div>
         <div class="col-span-6 md:col-span-2" data-dms-section="footer-resources">
           <div class="font-display uppercase text-[11px] tracking-wide text-slate-700 mb-2">Resources</div>
           <ul class="space-y-1 font-proxima text-[12.5px] text-slate-600">
+            <!-- Ticket 2197781 (2026-07-29): these were three href-less anchors that still carried the
+                 hover affordance, so they read as working links and shipped that way. Now:
+                   · API Guide       → live /docs/ap_is             (npmrds_docs "APIs" section)
+                   · Data Dictionary → live /docs/npmrds/appendix   (holds the Data Dictionary section)
+                   · What's New      → REMOVED — no changelog page exists in any pattern.
+                 No comp file exists for the APIs or Appendix docs pages, so the two remaining items stay
+                 href-less HERE while being wired live; add docs-apis.html / docs-appendix.html to point them. -->
             <li><a class="hover:text-[#1F3F8F]" href="docs-overview.html">User Guide</a></li>
             <li><a class="hover:text-[#1F3F8F]">API Guide</a></li>
             <li><a class="hover:text-[#1F3F8F]">Data Dictionary</a></li>
-            <li><a class="hover:text-[#1F3F8F]">What's New</a></li>
           </ul>
         </div>
         <div class="col-span-12 md:col-span-4" data-dms-section="footer-contact">
@@ -223,155 +228,16 @@
       </div>
     </footer>
 
-    </div><!-- /content column (lg:ml-60) -->
+    </div><!-- /content column (lg:ml-64) -->
 
   </div>
 </div>
 <script src="../ds-nav.js"></script>
-
-<script src="../assets/ny_roads_data.js"></script>
-<script type="module">
-// Hero atlas — NY's motorway/trunk network (OSM) drawn as engineer's linework,
-// with traffic pulses streaming along the interstates. Light field, ink lines.
-import * as THREE from 'https://unpkg.com/three@0.170.0/build/three.module.js';
-
-const mount = document.getElementById('hero-canvas');
-const band = document.getElementById('hero-band');
-const D = window.NY_ROADS;
-if (mount && D) {
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const Q = D.q, ASPECT = D.aspect;
-  const toWorld = (vx, vy) => [vx / Q * ASPECT, vy / Q];
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 20);
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  mount.appendChild(renderer.domElement);
-
-  const group = new THREE.Group();
-  scene.add(group);
-
-  // merged line segments per class, with per-chain birth time for the draw-on
-  const lineMat = (hex, alpha) => new THREE.ShaderMaterial({
-    transparent: true,
-    uniforms: { uT: { value: reduced ? 1 : 0 }, uColor: { value: new THREE.Color(hex) }, uAlpha: { value: alpha } },
-    vertexShader: `attribute float aBirth; varying float vB;
-      void main(){ vB = aBirth; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-    fragmentShader: `uniform vec3 uColor; uniform float uT; uniform float uAlpha; varying float vB;
-      void main(){ float a = uAlpha * smoothstep(vB, vB + 0.22, uT); if (a < 0.003) discard; gl_FragColor = vec4(uColor, a); }`,
-  });
-  const buildLines = (chains, hex, alpha) => {
-    const pos = [], birth = [];
-    for (const flat of chains) {
-      const b = Math.random() * 0.75;
-      for (let i = 0; i + 3 < flat.length; i += 2) {
-        const [x1, y1] = toWorld(flat[i], flat[i + 1]);
-        const [x2, y2] = toWorld(flat[i + 2], flat[i + 3]);
-        pos.push(x1, y1, 0, x2, y2, 0); birth.push(b, b);
-      }
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    g.setAttribute('aBirth', new THREE.Float32BufferAttribute(birth, 1));
-    const m = new THREE.LineSegments(g, lineMat(hex, alpha));
-    group.add(m); return m;
-  };
-  const trunkLines = buildLines(D.trunk, '#8FA3B8', 0.34);
-  const mwLines = buildLines(D.motorway, '#1E3A5F', 0.64);
-
-  // pulses along the longer motorway chains
-  const chains = D.motorway.map(flat => {
-    const pts = []; for (let i = 0; i < flat.length; i += 2) pts.push(toWorld(flat[i], flat[i + 1]));
-    const cum = [0];
-    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
-    return { pts, cum, len: cum[cum.length - 1] };
-  }).filter(c => c.len > 0.02).sort((a, b) => b.len - a.len);
-  const totalLen = chains.reduce((s, c) => s + c.len, 0);
-
-  const N = 460;
-  const parts = [];
-  for (let i = 0; i < N; i++) {
-    let r = Math.random() * totalLen, ci = 0;
-    while (ci < chains.length - 1 && r > chains[ci].len) { r -= chains[ci].len; ci++; }
-    parts.push({ c: chains[ci], u: Math.random(), v: (0.008 + Math.random() * 0.02) / chains[ci].len * (Math.random() < 0.5 ? 1 : -1) });
-  }
-  const pPos = new Float32Array(N * 3), pCol = new Float32Array(N * 3), pSize = new Float32Array(N);
-  const gold = new THREE.Color('#F59E0B'), blue = new THREE.Color('#1F3F8F');
-  for (let i = 0; i < N; i++) {
-    const isGold = Math.random() < 0.16;
-    (isGold ? gold : blue).toArray(pCol, i * 3);
-    pSize[i] = isGold ? 4.4 : 2.7;
-  }
-  const sample = (c, u) => {
-    const target = u * c.len; let lo = 0, hi = c.cum.length - 1;
-    while (lo < hi - 1) { const mid = (lo + hi) >> 1; c.cum[mid] < target ? lo = mid : hi = mid; }
-    const span = c.cum[hi] - c.cum[lo] || 1e-9, t = (target - c.cum[lo]) / span;
-    return [c.pts[lo][0] + (c.pts[hi][0] - c.pts[lo][0]) * t, c.pts[lo][1] + (c.pts[hi][1] - c.pts[lo][1]) * t];
-  };
-  const pGeom = new THREE.BufferGeometry();
-  pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-  pGeom.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
-  pGeom.setAttribute('aSize', new THREE.BufferAttribute(pSize, 1));
-  const pMat = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false,
-    uniforms: { uT: { value: reduced ? 1 : 0 }, uPx: { value: renderer.getPixelRatio() } },
-    vertexShader: `attribute float aSize; uniform float uPx; varying vec3 vC;
-      void main(){ vC = color; vec4 mv = modelViewMatrix * vec4(position,1.0);
-        gl_PointSize = aSize * uPx; gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `uniform float uT; varying vec3 vC;
-      void main(){ float d = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.12, d) * 0.95 * smoothstep(0.55, 1.0, uT);
-        if (a < 0.01) discard; gl_FragColor = vec4(vC, a); }`,
-    vertexColors: true,
-  });
-  const points = new THREE.Points(pGeom, pMat);
-  group.add(points);
-
-  const updateParts = (dt) => {
-    for (let i = 0; i < N; i++) {
-      const p = parts[i];
-      p.u += p.v * dt * 60 * 0.016;
-      if (p.u > 1) p.u -= 1; if (p.u < 0) p.u += 1;
-      const [x, y] = sample(p.c, p.u);
-      pPos[i * 3] = x; pPos[i * 3 + 1] = y; pPos[i * 3 + 2] = 0.001;
-    }
-    pGeom.attributes.position.needsUpdate = true;
-  };
-
-  // frame the state on the right half of the band; slight tilt for depth
-  const cx = ASPECT / 2, cy = 0.5, TILT = 0.34;
-  const layout = () => {
-    const w = band.clientWidth, h = Math.max(band.clientHeight, 1);
-    renderer.setSize(w, h);
-    camera.aspect = w / h;
-    // cover fit: the network spans the band edge-to-edge (full lon range,
-    // Long Island touching the right edge); the vertical slice favors the
-    // dense southern/central corridors and crops the sparse North Country.
-    const viewW = ASPECT * 1.03;
-    const dist = viewW / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
-    const viewH = 2 * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const cyT = Math.min(0.5, Math.max(0.32, viewH / 2 * 0.92));
-    camera.position.set(cx, cyT - dist * Math.sin(TILT), dist * Math.cos(TILT));
-    camera.lookAt(cx, cyT, 0);
-    camera.updateProjectionMatrix();
-  };
-  layout();
-  new ResizeObserver(layout).observe(band);
-
-  const t0 = performance.now();
-  const tick = () => {
-    const t = (performance.now() - t0) / 1000;
-    const uT = Math.min(1, t / 2.4);
-    mwLines.material.uniforms.uT.value = uT;
-    trunkLines.material.uniforms.uT.value = uT;
-    pMat.uniforms.uT.value = uT;
-    updateParts(1 / 60);
-    renderer.render(scene, camera);
-    if (!reduced) requestAnimationFrame(tick);
-  };
-  if (reduced) { updateParts(0); renderer.render(scene, camera); }
-  else requestAnimationFrame(tick);
-}
-</script>
+<!-- The three.js "hero atlas" (animated OSM motorway linework + traffic pulses) that used to
+     mount into #hero-canvas here was REMOVED 2026-07-15 — Alex: "that dependency isn't worth the
+     small design win". It is gone from the theme (HeroAtlas.jsx), the LayoutGroup Background key,
+     public/data/ny_roads.json and the `three` package, so the built page has a STATIC hero band.
+     Removed from this mockup 2026-07-29 to match. ../assets/ny_roads_data.js is now unreferenced
+     by this page. The hero's gradient + yellow bottom rule ARE the hero treatment. -->
 </body>
 </html>

@@ -81,7 +81,7 @@ that Phase B makes unnecessary.
   rather than trusting this paragraph.** Both repos' `@availabs/dms` are at the identical commit
   `4e8a1511` (so transportNY now has the `sectionMenuExtensions`/`sectionHeaderExtensions`
   extension points AND the `GraphComponent.jsx` hover-tooltip `xFormat`/`indexFormat` fix);
-  `MeasurePicker/` and `data-types/npmrds_graph_vocabulary/vocabulary.json` are byte-identical;
+  `MeasurePicker/` and `src/themes/transportny/components/MeasurePicker/vocabulary.json` are byte-identical;
   `QuickControls/` and `ReportRouteList/` differ **only** by the required submodule-path rewrite
   (`../../../../dms/` → `../../../../modules/dms/`). An earlier draft of this file warned that a
   spec-built report would render differently on transportNY — that is no longer true. Re-check

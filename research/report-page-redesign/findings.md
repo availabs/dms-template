@@ -37,7 +37,7 @@ and more specifically visual/UX than "redesign the report page" suggests. See
   `dwAPI.setState`. This is the new-tool analogue of the old tool's "Graphs" catalog +
   "Templates" concept. Shipped and **live-verified end-to-end 2026-07-21**
   (`src/dms/planning/tasks/completed/report-graph-vocabulary-picker.md`).
-- **Shared vocabulary** — `data-types/npmrds_graph_vocabulary/vocabulary.json` — the measure/
+- **Shared vocabulary** — `src/themes/transportny/components/MeasurePicker/vocabulary.json` — the measure/
   resolution/join/comparison-mode expressions, ported out of `scripts/npmrds-reports/convert_old_reports.py`'s
   `TEMPLATE_SPECS` (a 60-entry dict, still exists, still used by the batch Python converter) so
   both the picker and the converter share one source instead of drifting.

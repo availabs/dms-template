@@ -111,7 +111,7 @@ sequential/cyclical options built in `colorSchemeUnifier.js`) and `colors.revers
 is a faithful, already-shipped equivalent of the old tool's `ColorRangeSelector`. One related wrinkle
 worth noting but **not itself in scope**: `MeasurePicker/composeMeasureConfig.js`'s `buildDiffColors()`
 auto-writes `display.colors` from the measure's vocabulary entry whenever Comparison Mode is
-"difference" (`data-types/npmrds_graph_vocabulary/vocabulary.json`'s `comparisonModes.difference.
+"difference" (`src/themes/transportny/components/MeasurePicker/vocabulary.json`'s `comparisonModes.difference.
 defaultColorRange`) — an author's manual `colors.scheme` override could get silently clobbered the
 next time Measure or Comparison Mode is changed via the picker/QuickControls. Not addressed here;
 flag if it becomes a real complaint.

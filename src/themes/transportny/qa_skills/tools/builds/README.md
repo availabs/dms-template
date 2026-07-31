@@ -15,7 +15,7 @@ Two lineages (task `planning/transportny/tasks/current/qa-build-scripts-migratio
 
 | Script | Page(s) | Lineage | Fidelity |
 |---|---|---|---|
-| build_cr_overview.mjs | sitemgmt/overview 2184939 | migrated | rebuilt 2026-07-07 ✓ |
+| build_cr_overview.mjs | sitemgmt/overview 2184939 | migrated | rebuilt 2026-07-29 ✓ (landing enrolled; before/after payload diff clean — see note) |
 | build_cr_page.mjs | sitemgmt/page 2185886 | migrated | rebuilt 2026-07-07 ✓ |
 | build_cr_tickets.mjs | sitemgmt/tickets 2185867 + ticket 2185870 | migrated | rebuilt from HERE 2026-07-07 ✓ |
 | build_cr_design.mjs | sitemgmt/design 2186739 | migrated | last run 2026-06-30 — gate before first fix-loop rebuild |
@@ -49,6 +49,20 @@ the script.
 
 **Armed right now:** `build_tsmo_reliability.mjs` (migrated, ungated) predates **#165**'s 07-21 live fix
 (map legend title no longer truncated to "W..") — re-running it as-is will revert that. Diff before use.
+
+**GENERATIVE builders can't use `fidelity_static.mjs`.** It parses a `const SECTIONS = [...]` literal, so
+it only works on scripts produced by `page_to_build.mjs`. The four `build_cr_*.mjs` scripts *compose*
+their sections from live data, so use a **before/after payload diff** instead: dump the draft sections,
+run the builder, dump again, and compare payloads grouped by their distinguishing key (for the overview,
+the `surface` filter value). Pre-existing groups must come back byte-identical; anything else is either
+an intended data-driven counter change or a regression. Worked example — the 2026-07-29 landing
+enrolment: `tsmo2`/`freightatlas2`/`npmrds2` blocks byte-identical, only the header counter text moved
+(`3 patterns · 19 pages` → `4 patterns · 20 pages`) plus the new `landing` block. **That diff earned its
+keep**: it caught the overview's identity card printing `t.pattern` — which is the raw pattern **id**
+`2175436` for the Freight Atlas row — so a client-facing card would have read "2175436 · 6 pages".
+Fixed to key on `t.surface`. Two `sitemgmt_pages` reads also silently returned NOTHING until the CLI got
+`DMS_AUTH_TOKEN`: the `sitemgmt` pattern is auth-gated, and an unauthenticated `raw get` on its pages
+returns empty rather than erroring — always pass the token when touching control-room pages.
 
 **⚠ VIEWING A PAGE IN `/edit` MUTATES ITS SECTIONS — it is itself a drift source (2026-07-28).**
 Opening `/edit/<slug>` on a build-owned page makes the editor re-save the sections it renders, so a

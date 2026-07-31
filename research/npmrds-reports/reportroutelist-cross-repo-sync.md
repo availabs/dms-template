@@ -114,7 +114,7 @@ commits behind and a real bump risks pulling in a lot of unrelated, unverified c
   - `theme.js` (v1) was **not** touched — it doesn't have `ReportRouteList` registered
     either, and nothing observed in this session suggested it's the active theme for
     any live site.
-  - **Repo root**: `data-types/npmrds_graph_vocabulary/{README.md,vocabulary.json}`
+  - **Repo root**: `src/themes/transportny/components/MeasurePicker/{README.md,vocabulary.json}`
     copied wholesale (transportNY had no `data-types/` directory at all) —
     `composeMeasureConfig.js` imports this by a repo-root-relative path
     (`../../../../../data-types/...`), and since both copies sit at the same relative
@@ -130,7 +130,7 @@ fails silently downstream (blank chart; the actual ClickHouse "Unknown expressio
 identifier" error only surfaces if you go looking in the network tab). Fixed in
 **both** copies of `vocabulary.json` by using bare column names
 (`tmc`/`travel_time_all_vehicles`) for that one expression — see
-`data-types/npmrds_graph_vocabulary/vocabulary.json`'s `measures.travelTime`.
+`src/themes/transportny/components/MeasurePicker/vocabulary.json`'s `measures.travelTime`.
 
 ### Third instance — REVERSE drift: `RouteComparison` lives only in transportNY (found 2026-07-27)
 
