@@ -1,6 +1,6 @@
 # Dynamic Reports, Route Tags & Add-Route Flow — next-phase scoping
 
-## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). Remaining opens are sequencing + a few scheduling/verification items, see "Open questions" at the bottom.
+## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. Remaining opens are sequencing + a few scheduling/verification items, see "Open questions" at the bottom.
 
 **Priority directive (2026-07-31):** this arc (all items below) takes priority over every other
 currently-tracked gap/bug in the reports/routes space — `report-route-ui-parity-gaps.md`,
@@ -68,6 +68,87 @@ directly; Dynamic Report: sets the URL param via the page-variable system, see i
 item 2 (tags) even more clearly the thing to build first — both item 1 and item 3's actual UI work
 now route through the same component.
 
+**Shared modal — implementation, DONE + live-verified 2026-07-31.** Built
+`src/themes/transportny/components/RouteTagBrowserModal/` (`RouteTagBrowserModal.jsx` +
+`.theme.js`, `useTagBrowser.js`, `tagCategories.js`). Single-pane drill-down (root → category →
+value, breadcrumb-navigated), mirroring the old tool's folder-browser organizing effect per
+`research/route-creation/findings.md`, not its literal multi-type listing. Root view: name search
+(lifted from the old `AddRouteSearch.jsx`/`useRouteSearch.js`, now deleted — superseded) +
+category tiles (County/Region/Agency/Auto-generated/Other tags). County/Region/Agency drill into a
+**hardcoded fixed value list** (`tagCategories.js`) rather than a live-discovered one — see finding
+below for why. Selecting a value queries routes via the proven `array_contains` filter
+(`uda-array-contains-filter.md`); "Other tags" (open-ended `project:`/custom tags, no fixed
+vocabulary) instead does a `like` substring match against the raw `tags` JSON text. Props are
+generic (`selectionMode: 'any'|'exact'`, `requiredCount`, `excludeRouteIds`, `onConfirm`) so a
+future Dynamic Reports consumer needs zero changes to this file — only RRL is actually wired to it
+today. `useReportRow.js` gained a batched `addRoutes(array)` (replacing the old single-item
+`addRoute`) so a multi-select confirm persists in one `persistRoutes` call instead of racing
+several single-item calls against a stale `routes` closure.
+
+**Finding: no live "distinct tag values + counts" query exists in the UDA engine.** Checked whether
+`groupBy` on a `multiselect` column unnests into per-value counts (the way scalar-column filter
+UIs do via `ConditionValueInput.jsx`'s `useColumnOptions`) — it doesn't. The actual row/count-fetch
+path (`buildSimpleFilterSql`/`simpleFilter`,
+`src/dms/packages/dms-server/src/routes/uda/query_sets/postgres.js:216-319`) calls
+`handleGroupBy(groupBy)`, a dumb pass-through with no multiselect awareness. The one place that
+does unnest (`jsonb_array_elements_text`/`hasArrayElements`, same file lines 109-198) only exists
+inside `simpleFilterLength`'s CTE-wrapped count path, for author-typed calculated columns — not
+reachable from a normal multiselect groupBy request. Building that server-side primitive isn't
+justified yet at current near-zero tag volume, so County/Region/Agency are hardcoded enumerable
+folder shells instead (62 NY counties, NYSDOT's 11 regions verbatim from `admin2.folders`
+type='AVAIL', and a grounded ~18-code agency list from `admin2.folders` type='group' filtered to
+real agency/MPO codes — see `dbq.py old` queries run 2026-07-31). Revisit if `project:`/custom tag
+volume grows enough that "Other tags" free-text search stops being adequate.
+
+**Finding: join-source bindings snapshot their column list at author-configure time and never
+refresh — a real, pre-existing platform gap, not specific to this feature.** `ReportRouteList.jsx`'s
+`routeSourceInfo` (the "Add Join Source" binding backing route search/browse) is a frozen JSON
+snapshot baked into each section's stored `element-data` when the join was configured — the "Report
+Page" template's own RRL section (row 2187646, template page 2187021) was last configured
+2026-05-13, so its `sourceInfo.columns` snapshot has only the original 11 `routes_data` attributes
+and is missing `tags` (added 2026-07-31) entirely. Confirmed via `dms raw list
+npmrdsv5+npmrds_sub|component` that dozens of already-created reports share this same stale
+snapshot (they were all created from this template). Querying `array_contains` on `tags` through
+the normal `buildUdaConfig` column-type lookup silently produced `WHERE tags = ANY($3)` (a bare,
+unresolved column reference — Postgres error "column tags does not exist") instead of the correct
+`EXISTS (SELECT 1 FROM jsonb_array_elements_text(...))` conversion, because `getColumn('tags')`
+found nothing to resolve against. **Fix applied in `useTagBrowser.js`'s `fetchCatalogRows`**: don't
+trust `routeSourceInfo.columns` for the `tags` column at all — strip any stale/absent entry and
+inject an authoritative `{name:'tags', type:'multiselect'}` definition explicitly before calling
+`buildUdaConfig`. This makes tag filtering work on every report regardless of when its join was
+last configured, without touching the broader (out-of-scope) problem of the template's/every
+existing report's frozen snapshot never refreshing for any other future schema change.
+
+**Fix, same day: already-added routes were being hidden everywhere, not just the default
+suggestion list.** Ryan caught this live-testing: the old `AddRouteSearch.jsx`'s own comment said
+re-adding a catalog route already on the report is legitimate ("a different date range is a
+legitimate use case"), but my first cut applied `excludeRouteIds` to every view (recent, name
+search, tag-browse) uniformly, so a route already on the report became unfindable anywhere in the
+new modal — the opposite of that stated intent. Fixed in `RouteTagBrowserModal.jsx`: exclusion now
+only applies to the fully-unscoped root "recent" list (the passive default-suggestion view, where
+hiding dupes reduces noise); any deliberate lookup — a name search, a tag-browsed folder, "Other
+tags" free text — always shows already-added routes too, flagged with an "Already on report" badge
+rather than hidden, so re-adding for a different date/time window stays a normal, easy action.
+`addRoutes`/`persistRoutes` already handled a repeated catalog `id` correctly (fresh
+`route_comp_id`, name auto-suffixed via the existing dedupe-against-growing-set logic) — this was
+purely a display-layer bug.
+
+**Verification (2026-07-31):** scratch report `converted_reports/claude_scratch_tag_browser`
+(built via `report_build.mjs`, one pre-existing route already on it to test `excludeRouteIds`).
+Live-clicked through in Chrome: root search + recent list (regression-checked against the old
+inline box's behavior), County → Albany (real match, a second test route
+`id 2198216`/`tags:["county:Albany"]` created for this pass), Agency → NYSDOT (empty-state
+render, no crash), cross-view multi-select (selected one route at root, drilled into Agency,
+selection count survived the navigation), and a final confirm that persisted 2 routes in one
+`reports_snap_2` write (verified via `dbq.py new` against `data_items__s2177438_v2177440_reports_snap_2`).
+Scratch report and two scratch test routes (`id 2198206` from Phase 1, `id 2198216` from this
+pass) left in place — harmless disposable dev data, per existing convention, safe to delete
+opportunistically.
+
+**Verify URL:** `http://npmrds.localhost:5173/edit/converted_reports/claude_scratch_tag_browser` —
+click "+ Add Route", expect the tag-browser modal (search + County/Region/Agency/Auto-generated/
+Other tags tiles); County → Albany should show "Claude Tags Test Route 2 (county browse)".
+
 ---
 
 ## 2. Route Tags ("folder approximation")
@@ -83,8 +164,78 @@ for continuous TMC-linear chains; the plan is to port or replicate that generati
 Next concrete step: infer a starting tag vocabulary by inspecting how the old tool's folders were
 actually structured — names/hierarchy/categories used in the `folders2` tree (see
 `research/route-creation/findings.md`'s folder findings, ~line 296). The folder *structure* is real
-signal even though the old tool had no tagging system of its own. Not yet done — a DB-inspection
-task queued for whenever this item gets picked up, not attempted yet.
+signal even though the old tool had no tagging system of its own.
+
+**Old-DB tag-taxonomy inspection — DONE 2026-07-31.** Queried the old Postgres directly
+(`dbq.py old`, schema `admin2`) rather than relying on the `findings.md` code-read, since
+`folders2Controller.js` lives in a server repo not present on this machine. Actual tables:
+`admin2.folders` (395 rows: id/name/description/**type**/owner/icon/color/editable — no
+`parent_id`) + `admin2.stuff_in_folders` (junction: folder_id/stuff_type/stuff_id; nesting is
+folder-rows where `stuff_type='folder'`, not a parent-id column).
+
+- **`type='AVAIL'` (11 rows) = NYSDOT's own Region 1–11 taxonomy, verbatim** ("Region 1 - Capital
+  District" … "Region 11 - New York City"). These hold **routes only** — 2,973 distinct routes
+  total across all 11 — real signal, but sparse: only ~6% of all 49,218 routes in the DB are
+  filed under a region folder.
+- **`type='group'` (40 rows) = a real agency/ownership axis, distinct from geography.** Two kinds
+  mixed together: NYSDOT's own internal divisions (`WLD`, `SDD`, `TDD`, `MDD`, all owned by
+  `NYSDOT`) and MPO/external-partner accounts (`CDTC`, `GBNRTC`, `NYMTC`, `OCTC`, `SMTC`, `UCTC`,
+  `PDCTC`, `BMTS`, `HOCTS`, etc. — each owned by itself). These hold 2,689 distinct routes plus
+  reports (186 under `NYSDOT` alone) and even templates (26 under `NYSDOT`) — genuinely
+  cross-content-type organization, unlike region.
+- **`type='user'` (344 rows) is overwhelmingly noise, not signal.** ~245 of the 344 are literally
+  named `"My Stuff"` — an auto-created default container, one per user account — and together
+  they hold 43,553 of the 49,215 total route-folder assignments (88%). This is personal dumping,
+  not an applied taxonomy; most of it isn't worth mining.
+- **Two recurring patterns did surface inside the user-folder noise**, worth carrying forward as
+  tag categories even though the folders themselves are throwaway: (a) **county-name
+  subfolders** — e.g. a `CMAQ` folder with 19 direct children each named for a NY county
+  (Albany, Chautauqua, Dutchess, Erie1/Erie2, Genesee, Greene, Jefferson, Livingston, Monroe1/
+  Monroe2, Montgomery, Niagara, Onondaga, Ontario, Orleans, Rensselaer, Saratoga, Schenectady,
+  Schoharie, Wayne); (b) **project/PIN-number root folders** — e.g. `"980689 -
+  ProjectInfo_forBatchReport_20240613"`, `"X02505 - ProjectInfo_forBatchReport_20240613"`,
+  `"PIN3"` — routes/reports organized by a specific DOT project identifier.
+- **Route *names* (not folders) turned out to be the real generation-provenance signal.** Of all
+  49,218 routes: only **2,962 (6%)** match a clean auto-generated corridor pattern —
+  `{road name} {5-digit county FIPS} {N/S/E/W}`, e.g. `"NY-32 36001 S"` — and every single one of
+  them was created by the same account (`created_by=1`), and is exactly the set filed under the
+  Region folders above. This is the real, DB-grounded version of the original illustrative
+  `auto_generated`/`tmc_linear`/`county:{fips}` scheme. The other **38,412 routes (78% of the
+  entire table)** were created by one *different* account (`created_by=652`) with heterogeneous,
+  machine-looking names — TMC-code+timestamp (`N11678IX5M11072N_20250415_004804`, ~14,666 of
+  them), asset-id_project-id_name (`5500150_4538_MILL ROAD-CO RD82`, ~6,024), bare numbers
+  (`"161"`, `"339"`, ~4,997), and more — reading like an automated per-incident/per-event
+  ingestion feed, not anything a human organized. The remaining ~7,800 or so are genuinely
+  human-typed one-offs (e.g. `"I90 NB Buffalo Incident Long Route"`,
+  `"787 traffic study area"`).
+
+**Proposed starting tag categories, each grounded in one of the findings above** (not yet built —
+this is the vocabulary proposal the taxonomy inspection was for; confirm with Ryan before wiring):
+
+**Confirmed by Ryan, 2026-07-31: proceed with this taxonomy as proposed**, no changes — safe to
+wire into `SaveRouteModal.jsx`'s tag autocomplete/suggestion list and the shared modal's
+folder-derivation logic (see item 1/3's shared modal, now in progress).
+
+1. **`county:{name}`** — the strongest, most complete geographic signal. Directly derivable from
+   the route name for the clean corridor-generator pattern, and independently corroborated by the
+   ad hoc `CMAQ`-style per-county user folders. Should be the primary geography tag.
+2. **`region:{1-11}`** — NYSDOT's own fixed 11-value enum (the `AVAIL` folders, verbatim). Every NY
+   county maps deterministically to exactly one region, so this could be a *derived* tag computed
+   from `county:` rather than one an author assigns by hand — worth deciding at build time, not
+   re-litigating here.
+3. **`agency:{code}`** — the NYSDOT-division / MPO-partner axis from the `group` folders
+   (`WLD`/`SDD`/`TDD`/`MDD`, `CDTC`/`GBNRTC`/`NYMTC`/`OCTC`/`SMTC`/`UCTC`/`PDCTC`/etc.) — a real
+   organizational dimension, orthogonal to geography.
+4. **`project:{pin}`** — ad hoc in the old system but a recurring, real pattern (routes tied to a
+   specific DOT project/study number).
+5. **`auto_generated`** (provenance flag, not a value-pair) — for routes produced by the new
+   TMC-linear chain generator this arc still wants to build, mirroring the real
+   `created_by=1`-vs-`created_by=652`-vs-human-typed distinction found above.
+
+**Explicit non-goal, reconfirmed by this inspection:** no retroactive tag backfill onto the 49,218
+legacy old-DB routes is implied here — this was vocabulary research to inform the *new* system's
+tag categories, not a migration task. Consistent with the scope limiter already on record below
+("don't over-invest in a lossless migration").
 
 **Users can add their own tags too (2026-07-31 clarification).** Tags aren't only system-applied
 (generation provenance, geography). Authors need to be able to add custom tags to routes as well —
@@ -327,10 +478,11 @@ Dynamic Reports just needs to end up linkable-into from wherever that lands.
 Still open:
 
 1. Priority order across the three items (and the Add-Graph sub-item under #1) — sequential or
-   parallel? (Item 2 + the shared modal are clearly first among equals now; the rest of the
-   ordering isn't decided.)
-2. Old-DB folder-structure inspection to derive a starting tag taxonomy (item 2) — not yet done,
-   needs scheduling relative to the rest of this arc.
+   parallel? (Item 2's Phase 1 + the shared modal are now both built; the rest of the ordering
+   isn't decided — Add-Graph sub-item, TMC-linear auto-generation, and Dynamic Reports itself are
+   all still unstarted.)
+2. ~~The proposed tag taxonomy~~ — confirmed by Ryan 2026-07-31, proceed as proposed. See item 2's
+   "Proposed starting tag categories" section.
 3. Since Dynamic Report template pages are shared/reused (not per-instance), does editing a
    template's structure need any special draft/publish handling beyond what DMS pages already do,
    to avoid disrupting a concurrent viewer? Probably already covered by the existing
@@ -350,12 +502,18 @@ Resolved 2026-07-31 (same-day, across two follow-up rounds):
   `tags` column and rides the existing generic `array_contains` UDA filter. See item 2's
   "Technical grounding" section.
 - ~~Where does tag-editing UI live~~ — `SaveRouteModal.jsx`, alongside Name/Description.
-- ~~Shared modal for normal + Dynamic Report route-picking~~ — yes, one shared component.
+- ~~Shared modal for normal + Dynamic Report route-picking~~ — yes, one shared component; built and
+  live-verified 2026-07-31 (`RouteTagBrowserModal`), wired into RRL. See item 1's "Shared modal —
+  implementation" section. Dynamic Reports' own consumption of it still waits on that system
+  existing.
 - ~~Dynamic Report page model: shared vs. per-instance~~ — one shared page per template. See item
   3's "Architecture confirmed" section for follow-on implications.
 - ~~Is the Add-Graph modal part of this arc or a peer item~~ — part of this arc.
 - ~~Does TMC metadata already carry a linear/sequence field to chain on~~ — Ryan recalls yes, not
   yet independently verified against the schema. See item 2's tagging-scheme section.
+- ~~Old-DB folder-structure inspection to derive a starting tag taxonomy~~ — done 2026-07-31,
+  queried `admin2.folders`/`admin2.stuff_in_folders` directly. See item 2's "Old-DB tag-taxonomy
+  inspection" section for findings and the resulting proposed tag categories.
 
 ## Cross-references
 
@@ -390,3 +548,7 @@ Resolved 2026-07-31 (same-day, across two follow-up rounds):
 - `src/themes/transportny/components/routecreation/constants.js`,
   `components/SaveRouteModal.jsx` — current route storage shape (`routes_data` dataset, split
   type) and current save-modal fields (Name/Description only)
+- `src/themes/transportny/components/RouteTagBrowserModal/` — the shared tag-folder-browsing modal
+  itself (`RouteTagBrowserModal.jsx`, `useTagBrowser.js`, `tagCategories.js`), built 2026-07-31; see
+  item 1's "Shared modal — implementation" section for the two platform findings hit while building
+  it (no live tag-discovery query; join-source snapshot staleness)

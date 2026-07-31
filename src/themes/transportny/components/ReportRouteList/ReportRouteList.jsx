@@ -4,9 +4,8 @@ import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/sr
 import { reportRouteListTheme } from './ReportRouteList.theme';
 import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
-import { useRouteSearch } from './useRouteSearch';
 import RouteRow from './RouteRow';
-import AddRouteSearch from './AddRouteSearch';
+import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 
 export default function ReportRouteList() {
   const { apiLoad, apiUpdate, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
@@ -34,14 +33,10 @@ export default function ReportRouteList() {
   // Rendering-only — filters which already-added routes are displayed, never the
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
-  // The inline "Add a route" box's own typed term (separate from `searchQuery`
-  // above, which filters routes already ON the report — these are two distinct
-  // search boxes).
-  const [addRouteSearchTerm, setAddRouteSearchTerm] = useState('');
-  const [justAddedName, setJustAddedName] = useState('');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // The route CATALOG binding — read-only, backs the inline "Add a route" search box
-  // (see `useRouteSearch`). Bound via the sectionMenu's "Add Join Source" slot rather
+  // The route CATALOG binding — read-only, backs the "Add Route" tag-browser modal
+  // (see `RouteTagBrowserModal`). Bound via the sectionMenu's "Add Join Source" slot rather
   // than `externalSource` (which is this component's STORAGE binding, see
   // useReportRow): an author picks a join source + view and stops there (never
   // configures join columns), which leaves `isJoinComplete()` false and keeps this
@@ -60,7 +55,7 @@ export default function ReportRouteList() {
     error,
     setError,
     persistRoutes,
-    addRoute,
+    addRoutes,
     removeRoute,
     reorderRoutes,
     updateRoute,
@@ -93,34 +88,23 @@ export default function ReportRouteList() {
       .filter(({ r }) => !q || (r.name || '').toLowerCase().includes(q));
   }, [routes, searchQuery]);
 
-  // `id` (the row's own DMS id) is the universal identity — every catalog row has
-  // one regardless of provenance. `route_id` only ever existed on legacy-imported
-  // rows, so it's checked as a fallback purely to still catch dupes among routes
-  // added to a report BEFORE this fix shipped (their stored copy predates fetching
-  // `id` at all) — never load-bearing for anything added going forward.
-  const sameRoute = (a, b) =>
-    (a?.id != null && b?.id != null && String(a.id) === String(b.id)) ||
-    (a?.route_id != null && b?.route_id != null && String(a.route_id) === String(b.route_id));
+  // `id` (the row's own DMS id) is the universal identity — every catalog row has one
+  // regardless of provenance. `route_id` only ever existed on legacy-imported rows, kept as a
+  // fallback purely to still catch dupes among routes added to a report BEFORE this fix shipped
+  // (their stored copy predates fetching `id` at all) — never load-bearing for anything added
+  // going forward. Never clutter the modal's default/browse views with routes already on this
+  // report — re-adding one is still allowed (a different date range is a legitimate use case),
+  // just not surfaced as a default suggestion.
+  const excludeRouteIds = useMemo(
+    () => routes.flatMap((r) => [r.id, r.route_id]).filter((v) => v != null),
+    [routes]
+  );
 
-  const isAddSearching = addRouteSearchTerm.trim().length >= 2;
-  const { results: addRouteResults, loading: addRouteLoading, error: addRouteError } = useRouteSearch({
-    apiLoad,
-    routeSourceInfo,
-    enabled: isEdit,
-    searchTerm: addRouteSearchTerm,
-  });
-  // Never clutter the recent/search list with routes already on this report —
-  // re-adding one is still allowed (a different date range is a legitimate use
-  // case), just not surfaced as a default suggestion.
-  const visibleAddRouteResults = addRouteResults.filter((r) => !routes.some((rt) => sameRoute(rt, r)));
-
-  const handleAddRoute = async (row) => {
+  const handleConfirmAddRoutes = async (selectedRoutes) => {
     try {
-      await addRoute(row);
-      setJustAddedName(row.name);
-      setTimeout(() => setJustAddedName(''), 2000);
+      await addRoutes(selectedRoutes);
     } catch (e) {
-      // addRoute already records the error in useReportRow's `error` state.
+      // addRoutes already records the error in useReportRow's `error` state.
     }
   };
 
@@ -136,19 +120,20 @@ export default function ReportRouteList() {
       {isRoutesExpanded && (
         <>
           {isEdit && (
-            <AddRouteSearch
-              theme={t}
-              Input={Input}
-              Icon={Icon}
-              searchTerm={addRouteSearchTerm}
-              onSearchTermChange={setAddRouteSearchTerm}
-              isSearching={isAddSearching}
-              results={visibleAddRouteResults}
-              loading={addRouteLoading}
-              error={addRouteError}
-              onAdd={handleAddRoute}
-              justAddedName={justAddedName}
-            />
+            <div className={t.addRouteWrapper}>
+              <Button themeOptions={{ size: 'sm', color: 'transparent' }} onClick={() => setIsAddModalOpen(true)}>
+                <Icon icon="Plus" className={t.addRouteSearchIcon} /> Add Route
+              </Button>
+              <RouteTagBrowserModal
+                open={isAddModalOpen}
+                setOpen={setIsAddModalOpen}
+                apiLoad={apiLoad}
+                routeSourceInfo={routeSourceInfo}
+                selectionMode="any"
+                excludeRouteIds={excludeRouteIds}
+                onConfirm={handleConfirmAddRoutes}
+              />
+            </div>
           )}
           {!reportRow ? (
             <div className={t.skeletonWrapper}>
