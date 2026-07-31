@@ -37,6 +37,7 @@ import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
 import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
 
@@ -2479,6 +2480,7 @@ const pageComponents = {
 // ─────────────────────────────────────────────────────────────────────────────
 const sectionMenuExtensions = {
   "AVL Graph": [npmrdsMeasureMenu],
+  "Card": [calloutStatMenu],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

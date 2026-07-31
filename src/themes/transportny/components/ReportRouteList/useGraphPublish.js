@@ -93,13 +93,23 @@ function transformReportRoutes(routes) {
 
 const EMPTY_SECTIONS = [];
 
+// Sections whose `element-type` (the ComponentRegistry key — see section.jsx's
+// RegisteredComponents lookup) identifies them as a hero-stat Card rather than a
+// real data/graph section. Anything else self-bound (currently only "AVL Graph")
+// gets the "Graph" label — the generic default so a future self-bindable section
+// type reads as data unless it's specifically a Callout Stat.
+const STAT_ELEMENT_TYPES = new Set(['Card']);
+
 // Finds sibling page sections carrying an enabled `comparison_series` subscriber
-// wired to the `$self` sentinel (see `buildUdaConfig.js`) — i.e. graphs ready to
-// receive a per-instance route list. Each match's own key is derived from its own
-// section id via `selfParamKey`, so publishing needs no author-typed param key.
-// Ordinal labels number only the discovered graphs, not their position among all
-// sections, so interleaved non-graph sections don't create label gaps.
+// wired to the `$self` sentinel (see `buildUdaConfig.js`) — i.e. graphs (or hero
+// stats) ready to receive a per-instance route list. Each match's own key is
+// derived from its own section id via `selfParamKey`, so publishing needs no
+// author-typed param key. Ordinal labels number only the discovered sections of
+// the SAME kind, not their position among all sections, so a report mixing
+// graphs and stats gets "Graph 1", "Stat 1", "Graph 2" rather than "Graph 1",
+// "Graph 3" (gaps) or a single shared counter that conflates the two kinds.
 function findSelfBoundGraphs(sectionList) {
+  const counts = {};
   return (sectionList || [])
     .map((section) => {
       if (section?.id == null) return null;
@@ -116,14 +126,18 @@ function findSelfBoundGraphs(sectionList) {
         ? subscribers.find((s) => s?.functionId === 'comparison_series' && s?.enabled && s?.paramKey === SELF_PARAM_KEY_SENTINEL)
         : null;
       if (!sub) return null;
+      const kind = STAT_ELEMENT_TYPES.has(section?.element?.['element-type']) ? 'Stat' : 'Graph';
       // Prefer trackingId (stable across publish) over the DB row id (reminted on
       // every publish — see the draft/published section-identity task notes) —
       // must match usePageFilterSync's own trackingId-first resolution exactly, or
       // this discovery and the graph's own self-key diverge.
-      return { sectionId: String(section.trackingId || section.id) };
+      return { sectionId: String(section.trackingId || section.id), kind };
     })
     .filter(Boolean)
-    .map((g, i) => ({ ...g, paramKey: selfParamKey(g.sectionId), label: `Graph ${i + 1}` }));
+    .map((g) => {
+      counts[g.kind] = (counts[g.kind] || 0) + 1;
+      return { ...g, paramKey: selfParamKey(g.sectionId), label: `${g.kind} ${counts[g.kind]}` };
+    });
 }
 
 // Discovers sibling graph sections and publishes each one's assigned route subset to
