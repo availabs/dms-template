@@ -1663,6 +1663,22 @@ def fetch_old_report(report_id):
     return json.loads(out)
 
 
+def fetch_old_template(template_id):
+    """Mirrors fetch_old_report but reads admin2.templates — same row shape
+    (id/name/route_comps/graph_comps/station_comps/color_range) plus `routes`,
+    the template's route-slot COUNT (1-9, distinct from `len(route_comps)`:
+    one real conceptual route can back several route_comps, each a different
+    date/settings VIEW of it — see dynamic-reports-and-route-tags.md item 3's
+    "Old-template porting" section, template 244's 11-comps/1-route case)."""
+    out = psql_old(
+        "SELECT row_to_json(t) FROM (SELECT id, name, description, routes, "
+        "route_comps, graph_comps, station_comps, color_range "
+        f"FROM admin2.templates WHERE id = {int(template_id)}) t")
+    if not out:
+        raise RuntimeError(f"Old template {template_id} not found in admin2.templates")
+    return json.loads(out)
+
+
 def fetch_old_routes(route_ids):
     if not route_ids:
         return {}
@@ -1901,6 +1917,52 @@ def build_route_entry(rc, old_route, graph_tracking_ids, old_report_id, gaps,
     # First-class day-of-week mask (old settings shape kept verbatim:
     # {monday: bool, ..., sunday: bool}); transformReportRoutes drops
     # explicitly-false days from the enumerated date filter.
+    if settings.get("weekdays"):
+        entry["weekdays"] = settings["weekdays"]
+    return entry
+
+
+def build_slot_entry(rc, graph_tracking_ids, old_template_id):
+    """build_route_entry's twin for template conversion (`convert_template`) —
+    an unfilled ROUTE SLOT placeholder, not a resolved route. Per the unified
+    mechanism design (dynamic-reports-and-route-tags.md item 3, revised
+    2026-08-03 per Ryan: "treat all templates as if they have no routes,
+    pull from graph_comps only"): every old comp's `routeId` is ignored as
+    data (never fetched, never resolved to a real tmc_array) — it's reused
+    ONLY as a grouping key (`route_slot_group`), because the old tool's own
+    `routeId` value (a real id, a `$N` placeholder, or a `synthetic:...` key)
+    already IS that comp's route-slot identity: several comps can share one
+    value when they're different date/settings VIEWS of the conceptual same
+    route (e.g. template 244 "Year Over Year"'s 11 comps, all routeId
+    163181 — one route, 11 time windows). `useDynamicReportRoutes.js`
+    resolves every slot sharing a group against the SAME real route a viewer
+    supplies once.
+
+    Unlike build_route_entry, `graphIds` is NEVER gated on tmc-resolvability
+    — a slot never has a tmc_array by definition (that's what makes it a
+    slot), and `useGraphPublish.js`'s `transformReportRoutes` (fixed
+    2026-08-03, the same day this function was written) already excludes any
+    route/slot with no real tmc_array from publishing — so an always-present
+    graphIds assignment is safe: inert until a real route fills the slot,
+    then works immediately, exactly like any other authored graph
+    assignment."""
+    settings = rc.get("settings") or {}
+    start = to_datetime_str(settings.get("startDate"), settings.get("startTime"))
+    end = to_datetime_str(settings.get("endDate"), settings.get("endTime"))
+    entry = {
+        "name": route_comp_display_name(rc, None),
+        "route_comp_id": rc.get("compId") or "",
+        "route_slot_group": str(rc.get("routeId")),
+        "graphIds": list(graph_tracking_ids),
+        "isValid": True,
+        "color": rc.get("color") or "",
+        "_old_settings": settings,
+        "_old_template_id": old_template_id,
+    }
+    if start:
+        entry["startDate"] = start
+    if end:
+        entry["endDate"] = end
     if settings.get("weekdays"):
         entry["weekdays"] = settings["weekdays"]
     return entry
@@ -4581,6 +4643,18 @@ def find_page_by_old_report_id(old_id):
     return int(out) if out else None
 
 
+def find_page_by_old_template_id(old_id):
+    """find_page_by_old_report_id's twin for admin2.templates conversions — a
+    separate marker key (`_converted_from_old_template_id`) so a template and
+    a report can never collide on the same old id, and so template-converted
+    pages aren't accidentally picked up by the report-side idempotency check
+    or vice versa."""
+    out = psql_new(
+        f"SELECT data->>'report_id' FROM {REPORTS_SNAP_TABLE} "
+        f"WHERE data->>'_converted_from_old_template_id' = '{old_id}' LIMIT 1")
+    return int(out) if out else None
+
+
 def delete_converted_page(page_id):
     """Delete a previously converted page + its section rows + its snap rows.
     All deletes go through the CLI (requires the auth token)."""
@@ -5224,10 +5298,347 @@ def finish(old_id, old, page_id, gaps, dry_run, slug=None):
     return report
 
 
+def finish_template(old_id, old, page_id, gaps, dry_run, slug=None):
+    """finish()'s twin for template conversions — identical shape, a
+    separate gap-report filename prefix (`template_<id>.json`, not
+    `report_<id>.json`) so a template and a report sharing the same numeric
+    id never collide on one gap-report file."""
+    os.makedirs(GAPS_DIR, exist_ok=True)
+    report = {"old_template_id": old_id, "old_name": old.get("name"),
+              "new_page_id": page_id, "dry_run": dry_run,
+              "converted_at": now_iso(), "gaps": gaps}
+    path = os.path.join(GAPS_DIR, f"template_{old_id}.json")
+    with open(path, "w") as f:
+        json.dump(report, f, indent=2)
+    print(f"\n--- gap report ({len(gaps)} item(s)) → {path}")
+    for g in gaps:
+        print(f"  [{g['kind']}] " + json.dumps(
+            {k: v for k, v in g.items() if k != 'kind'})[:200])
+    if page_id and not dry_run:
+        print(f"\nview it: http://npmrds.localhost:5173/{slug or f'template_{old_id}'} "
+              f"(page id {page_id})")
+    return report
+
+
+def convert_template(old_id, dry_run=False, replace=False):
+    """Ports one admin2.templates row into a Dynamic Report page — the
+    "unified mechanism" design (dynamic-reports-and-route-tags.md item 3,
+    revised 2026-08-03 per Ryan: treat every candidate as if it has no
+    routes, build purely from graph_comps). Reuses convert_report()'s own
+    analysis/template-minting/section-building logic (build_graph_section_data
+    et al. — confirmed by reading that logic never touches real per-route
+    data, only comp SETTINGS (dates/resolution) and the classified graph
+    shape) but builds ROUTE SLOTS (build_slot_entry) instead of resolving
+    real routes, and marks the page as a Dynamic Report (a `routeSlots`
+    page filter) instead of a normal one.
+
+    Deliberately duplicated from convert_report() rather than refactored to
+    share code (2026-08-03 decision) — convert_report() is a single,
+    tightly-coupled ~550-line function already proven against 36 real
+    conversions; forking it mid-body to reuse pieces risked destabilizing
+    that function for a one-time port of a curated ~28-candidate set. Some
+    drift between the two is an accepted, deliberate cost of that choice.
+
+    Route Map sections are SKIPPED for now (gap-logged, not converted) —
+    their per-report choropleth color-break baking
+    (bake_route_map_choropleth_paint/bake_route_map_delay_paint) needs real
+    per-TMC values pooled across the report's actual routes, which doesn't
+    exist for an unfilled slot. Route Difference Graph / TMC Difference Grid
+    are also skipped — their Main/Compare pair resolution
+    (resolve_difference_pair) needs real route facts (tmc_key equality) this
+    mode never fetches. Neither of the 28 candidates surveyed 2026-08-03
+    needs either gap closed to convert; both are flagged for whichever
+    future candidate does."""
+    gaps = []
+    old = fetch_old_template(old_id)
+    print(f"\n=== old template {old_id}: '{old['name']}' ===")
+
+    existing = find_page_by_old_template_id(old_id)
+    if existing:
+        if not replace:
+            raise RuntimeError(
+                f"page for old template {old_id} already exists (id {existing}) "
+                f"— pass --replace")
+        if dry_run:
+            print(f"[dry-run] would delete existing page {existing} first")
+        else:
+            delete_converted_page(existing)
+
+    title = old["name"] or f"Template {old_id}"
+    slug = compute_report_slug(title, exclude_id=existing)
+
+    route_comps = flatten_route_comps(old.get("route_comps"), gaps)
+    for rc in route_comps:
+        route_settings_gaps(rc.get("settings") or {}, rc.get("name"), gaps)
+        # No real old_route to fall back on — per the unified design, real
+        # per-route data is never fetched for a template conversion.
+        rc["name"] = route_comp_display_name(rc, None)
+
+    if old.get("station_comps"):
+        gaps.append({"kind": "station_comps",
+                     "detail": f"{len(old['station_comps'])} station comps not converted"})
+
+    for i, g in enumerate(old.get("graph_comps") or []):
+        if g.get("id") is None:
+            g["id"] = f"graph-idx-{i}"
+
+    comps_by_id = {rc.get("compId"): rc for rc in route_comps if rc.get("compId")}
+    graph_templates = load_graph_templates()
+    page_template = load_page_template()
+    analyzed = [(g, analyze_graph(g, comps_by_id, gaps))
+                for g in old.get("graph_comps") or []]
+
+    # Route Difference Graph / TMC Difference Grid: pair resolution needs a
+    # same-physical-route check keyed off real route facts (tmc_key) this
+    # mode deliberately never fetches. Skipped, gap-logged — see docstring.
+    for g, info in analyzed:
+        if info["type"] in DIFFERENCE_GRAPH_TYPES:
+            gaps.append({"kind": "route_difference_unsupported_in_template_mode",
+                         "graph": g.get("id"),
+                         "detail": "Difference-graph pair resolution needs real "
+                                   "route facts this conversion mode doesn't "
+                                   "fetch — not designed yet, see "
+                                   "convert_template()'s docstring"})
+
+    needed = {GRAPH_TEMPLATE_MAP.get((i["type"], i["measure"], i["resolution"],
+                                      i["data_column"]))
+              for _, i in analyzed
+              if i["type"] not in INFO_BOX_GRAIN
+              and i["type"] not in DIFFERENCE_GRAPH_TYPES} - {None}
+    graph_templates = ensure_graph_templates(needed, graph_templates, dry_run)
+
+    info_box_tmpl_name = {}
+    info_box_bin_year = {}
+    info_box_gap_logged = set()
+    for g, info in analyzed:
+        grain = INFO_BOX_GRAIN.get(info["type"])
+        if not grain:
+            continue
+        gid = g.get("id")
+        measure_col = (info["measure"], info["data_column"])
+        if measure_col in INFO_BOX_TRAVELTIME_BUCKETS:
+            graph_templates = ensure_info_box_traveltime_template(grain, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_traveltime"
+            continue
+        if measure_col == INFO_BOX_LENGTH_BUCKET:
+            graph_templates = ensure_info_box_length_template(grain, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_length"
+            continue
+        if measure_col == INFO_BOX_AADT_BUCKET:
+            graph_templates = ensure_info_box_aadt_template(grain, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_aadt"
+            continue
+        if measure_col == INFO_BOX_DELAY_BUCKET:
+            graph_templates = ensure_info_box_delay_template(grain, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_delay"
+            continue
+        if measure_col != INFO_BOX_BUCKET:
+            continue
+        year = graph_max_year(info, comps_by_id)
+        bin_ = graph_reliability_bin(info, comps_by_id)
+        if year is None:
+            gaps.append({"kind": "info_box_year_undetermined", "graph": gid,
+                         "detail": "no assigned comp has a startDate/endDate"})
+            info_box_gap_logged.add(gid)
+        elif year not in PM3_VIEW_BY_YEAR:
+            gaps.append({"kind": "info_box_year_outside_pm3_coverage", "graph": gid,
+                         "detail": f"max year {year} outside pm3 coverage"})
+            info_box_gap_logged.add(gid)
+        elif bin_ is None:
+            gaps.append({"kind": "info_box_bin_undetermined", "graph": gid,
+                         "detail": "assigned comp(s) don't land unambiguously on one bin"})
+            info_box_gap_logged.add(gid)
+        else:
+            graph_templates = ensure_pm3_join_template(grain, year, bin_, graph_templates, dry_run)
+            info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}_{bin_}"
+            info_box_bin_year[gid] = (year, bin_)
+
+    bar_summary_pm3_tmpl_name = {}
+    bar_summary_pm3_gap_logged = set()
+    for g, info in analyzed:
+        if (info["type"] != "Bar Graph Summary"
+                or (info["measure"], info["data_column"]) != BAR_SUMMARY_PM3_BUCKET):
+            continue
+        gid = g.get("id")
+        year = graph_max_year(info, comps_by_id)
+        if year is None:
+            gaps.append({"kind": "bar_summary_freeflow_year_undetermined", "graph": gid,
+                         "detail": "no assigned comp has a startDate/endDate"})
+            bar_summary_pm3_gap_logged.add(gid)
+        elif year not in PM3_VIEW_BY_YEAR:
+            gaps.append({"kind": "bar_summary_freeflow_outside_pm3_coverage", "graph": gid,
+                         "detail": f"max year {year} outside pm3 coverage"})
+            bar_summary_pm3_gap_logged.add(gid)
+        else:
+            graph_templates = ensure_bar_graph_summary_pm3_template(year, graph_templates, dry_run)
+            bar_summary_pm3_tmpl_name[gid] = f"tmc_freeflow_summary_bar_graph_{year}"
+
+    route_compare_tmpl_name = {}
+    route_compare_gap_logged = set()
+    for g, info in analyzed:
+        if info["type"] != "Route Compare Component":
+            continue
+        gid = g.get("id")
+        if info["measure"] not in MEASURE_EXPR:
+            continue
+        if (info["measure"], info["data_column"]) != (ROUTE_COMPARE_BUCKET[0], ROUTE_COMPARE_BUCKET[2]):
+            continue
+        if len(info["assigned"]) < 2:
+            gaps.append({"kind": "route_compare_insufficient_comps", "graph": gid,
+                         "detail": f"{len(info['assigned'])} assigned comp(s), need >= 2"})
+            route_compare_gap_logged.add(gid)
+            continue
+        graph_templates = ensure_route_compare_template(info["measure"], graph_templates, dry_run)
+        route_compare_tmpl_name[gid] = f"route_compare_{info['measure']}"
+
+    # Route Map: DEFERRED, not converted (see function docstring) — every
+    # instance is gap-logged and excluded from `convertible` below.
+    route_map_gap_logged = set()
+    for g, info in analyzed:
+        if info["type"] == "Route Map":
+            gaps.append({"kind": "route_map_deferred_needs_real_route_data",
+                         "graph": g.get("id"),
+                         "detail": "Route Map's per-report choropleth color-break "
+                                   "baking needs real per-TMC values pooled across "
+                                   "this report's actual routes — none exist yet "
+                                   "for an unfilled slot; not built this pass, see "
+                                   "convert_template()'s docstring"})
+            route_map_gap_logged.add(g.get("id"))
+
+    convertible, skipped = [], []
+    for g, info in analyzed:
+        gid = g.get("id")
+        is_info_box = info["type"] in INFO_BOX_GRAIN
+        is_route_compare = info["type"] == "Route Compare Component"
+        is_bar_summary_pm3 = (info["type"] == "Bar Graph Summary"
+                             and (info["measure"], info["data_column"]) == BAR_SUMMARY_PM3_BUCKET)
+        key = (info["type"], info["measure"], info["resolution"], info["data_column"])
+        if gid in route_map_gap_logged or info["type"] in DIFFERENCE_GRAPH_TYPES:
+            skipped.append(g)
+            continue
+        tmpl_name = (info_box_tmpl_name.get(gid) if is_info_box
+                    else route_compare_tmpl_name.get(gid) if is_route_compare
+                    else bar_summary_pm3_tmpl_name.get(gid) if is_bar_summary_pm3
+                    else GRAPH_TEMPLATE_MAP.get(key))
+        if tmpl_name and tmpl_name in graph_templates:
+            convertible.append((g, info, graph_templates[tmpl_name]))
+            continue
+        skipped.append(g)
+        if (gid in info_box_gap_logged or gid in route_compare_gap_logged
+                or gid in bar_summary_pm3_gap_logged):
+            continue
+        gaps.append({"kind": "unmapped_graph", "detail": {
+            "graph": gid, "graph_type": info["type"],
+            "measure": info["measure"], "resolution": info["resolution"],
+            "dataColumn": info["data_column"],
+            "reason": ("no template mapping" if not tmpl_name
+                       else f"template '{tmpl_name}' not found in DB")}})
+
+    # overrides.aadt: a template SLOT comp's override value is illustrative
+    # (whatever the last template author typed), not tied to any real route —
+    # carrying it through would bake a stale example value into every future
+    # viewer's real route. Deliberately not applied at all in this mode.
+
+    if old.get("color_range") and any(
+            g.get("type") in COLOR_RANGE_GRAPH_TYPES for g in skipped):
+        gaps.append({"kind": "color_range", "detail": old["color_range"]})
+
+    graph_tracking_ids = [str(uuid.uuid4()) for _ in convertible]
+    graphs_for_comp = {cid: [tid for (g, info, _), tid
+                             in zip(convertible, graph_tracking_ids)
+                             if cid in info["assigned"]]
+                       for cid in comps_by_id}
+
+    # -- route SLOT entries for the reports_snap_2 row (build_slot_entry, not
+    # build_route_entry — no real route resolution at all, see that
+    # function's docstring for the route_slot_group grouping mechanism)
+    route_entries = [
+        build_slot_entry(rc, graphs_for_comp.get(rc.get("compId"), []), old_id)
+        for rc in route_comps]
+
+    if dry_run:
+        print(f"[dry-run] would create page '{slug}' ('{old['name']}') with "
+              f"{len(convertible)} graph(s) (+RRL), {len(route_entries)} route "
+              f"slot(s); {len(skipped)} graph(s) skipped")
+        return finish_template(old_id, old, None, gaps, dry_run)
+
+    # -- page
+    parent_id = ensure_parent_page(dry_run)
+    res = dms(["page", "create", "--pattern", PATTERN,
+               "--title", title, "--slug", slug],
+              data={"index": "0", "parent": str(parent_id),
+                    "sidebar": page_template.get("sidebar", "left"),
+                    "published": "draft"})
+    page_id = res["id"]
+    print(f"created page id={page_id} slug={slug}")
+
+    # -- Dynamic Report page filter (routeSlots) — same shape RRL's own
+    # toggleDynamicReport writes (ReportRouteList.jsx), applied at creation
+    # instead of via a follow-up UI toggle.
+    dms(["raw", "update", str(page_id)],
+        data={"filters": [{"id": "dyn-report-routes", "searchKey": "routes",
+                           "useSearchParams": True, "values": "",
+                           "type": "routeSlots"}]})
+    print("set page as Dynamic Report (routeSlots filter)")
+
+    # -- draft sections (RRL first/sidebar, then graphs)
+    rrl_tmpl = template_section_by_type(page_template, "ReportRouteList")
+    section_datas = [build_cloned_section_data(page_id, rrl_tmpl, str(uuid.uuid4()))]
+    for (g, info, tmpl), tid in zip(convertible, graph_tracking_ids):
+        bin_year = info_box_bin_year.get(g.get("id"))
+        if bin_year:
+            year_, bin_ = bin_year
+            info["title"] = f"{info['title']} ({RELIABILITY_BIN_LABELS[bin_]}, {year_})"
+        section_datas.append(
+            build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
+                                     color_range=old.get("color_range"),
+                                     aadt_override=None,
+                                     route_map_value_ctx=None,
+                                     diff_invert=False))
+
+    draft_ids = []
+    for sd in section_datas:
+        r = dms(["section", "create", str(page_id), "--pattern", PATTERN], data=sd)
+        draft_ids.append(r["id"])
+    print(f"created {len(draft_ids)} draft sections: {draft_ids}")
+
+    published_refs = []
+    for sd in section_datas:
+        r = dms(["raw", "create", "npmrdsv5", COMPONENT_TYPE], data=sd)
+        published_refs.append({"id": str(r["id"]), "ref": f"npmrdsv5+{COMPONENT_TYPE}"})
+    groups = page_template.get("draft_section_groups") or [
+        {"name": "default", "index": 0, "theme": "content", "position": "content"}]
+    dms(["raw", "update", str(page_id)],
+        data={"sections": published_refs, "section_groups": groups,
+              "draft_section_groups": groups, "published": "", "has_changes": False})
+    print(f"published page (published section rows: {[r['id'] for r in published_refs]})")
+
+    snap = {
+        "report_id": str(page_id),
+        "routes": json.dumps(route_entries),
+        "name": old.get("name") or "",
+        "description": old.get("description") or "",
+        "_converted_from_old_template_id": old_id,
+        "_converted_at": now_iso(),
+        "_old_created_by": old.get("created_by"),
+        "_old_created_at": old.get("created_at"),
+        "_old_updated_at": old.get("updated_at"),
+    }
+    r = dms(["raw", "create", "npmrdsv5", REPORTS_SNAP_TYPE], data=snap)
+    print(f"created reports_snap_2 row id={r['id']} (report_id={page_id}, "
+          f"{len(route_entries)} route slots)")
+
+    return finish_template(old_id, old, page_id, gaps, dry_run, slug=slug)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
     ap.add_argument("--report-id", type=int,
                     help="old admin2.reports id to convert")
+    ap.add_argument("--template-id", type=int,
+                    help="old admin2.templates id to convert into a Dynamic "
+                         "Report page (route-slots, graph_comps-only — see "
+                         "convert_template())")
     ap.add_argument("--dry-run", action="store_true",
                     help="report what would happen without writing")
     ap.add_argument("--replace", action="store_true",
@@ -5304,9 +5715,13 @@ def main():
         print(json.dumps({"elementType": element_type, "state": state}))
         return
 
+    if args.template_id:
+        convert_template(args.template_id, dry_run=args.dry_run, replace=args.replace)
+        return
+
     if not args.report_id:
-        ap.error("--report-id is required unless --route-map-section/--route-info-box-section/"
-                 "--route-compare-section is set")
+        ap.error("--report-id or --template-id is required unless --route-map-section/"
+                 "--route-info-box-section/--route-compare-section is set")
     convert_report(args.report_id, dry_run=args.dry_run, replace=args.replace)
 
 

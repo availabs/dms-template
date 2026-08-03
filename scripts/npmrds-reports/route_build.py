@@ -108,6 +108,13 @@ ROUTES_SOURCE_ID = 2107426
 ROUTES_VIEW_ID = 2107427
 
 TMC_TABLE = "npmrds_raw_tmc_identification.s455_v3464_NPMRDS_TMC_Identification_V5_V6"
+# Year-matched alternative to TMC_TABLE. TMC_TABLE is a single frozen vintage —
+# fine for current-year routes, but a real (growing, further back) slice of
+# historical TMCs aren't in it: checked 2026-08-03, 2022 is 99.9% covered,
+# 2018 only 95.4%. This source has the same columns per (tmc, year), so
+# --tmc-year swaps in the correct vintage instead of hard-erroring on
+# "TMC does not exist" for TMCs that are only missing from the frozen snapshot.
+TMC_TABLE_BY_YEAR = "npmrds_meta.s582_v983_NPMRDS_V6_tmc_meta"
 TMC_COLS = ("tmc", "road", "direction", "county", "state", "intersection",
             "miles", "road_order", "tmclinear",
             "start_latitude", "start_longitude", "end_latitude", "end_longitude")
@@ -230,15 +237,38 @@ def verify_routing(name, ordered, rows_by_tmc, year):
     print("      Not necessarily wrong — the router picks its own optimal path.")
 
 
-def fetch_tmcs(tmcs):
-    """Look up rows for an explicit TMC list. Returns {tmc: row-dict}."""
+# ClickHouse's default max_query_size is 256 KiB — a single `IN (...)` list
+# built from tens of thousands of TMCs (a full-year corridor-generation batch
+# easily exceeds this) blows past it with a SYNTAX_ERROR at the truncation
+# point. 4000 TMCs/batch (~9-10 bytes each quoted) stays well under that with
+# room to spare for the rest of the query text.
+TMC_FETCH_BATCH = 4000
+
+
+def fetch_tmcs(tmcs, tmc_year=None):
+    """Look up rows for an explicit TMC list. Returns {tmc: row-dict}.
+
+    tmc_year=None uses the frozen current-vintage table (TMC_TABLE). Pass a
+    year to validate against that year's own slice of TMC_TABLE_BY_YEAR
+    instead — needed for historical corridors whose TMCs may have dropped out
+    of the frozen snapshot (see TMC_TABLE_BY_YEAR's comment)."""
     if not tmcs:
         return {}
-    in_list = ", ".join(sql_str(t) for t in tmcs)
-    sql = (f"select {', '.join(TMC_COLS)} from {TMC_TABLE} "
-           f"where tmc in ({in_list})")
-    res = dbq.ch(sql)
-    return {row[0]: dict(zip(TMC_COLS, row)) for row in res.get("data", [])}
+    table = TMC_TABLE
+    year_clause = ""
+    if tmc_year is not None:
+        table = TMC_TABLE_BY_YEAR
+        year_clause = f" and year = {int(tmc_year)}"
+    out = {}
+    tmcs = list(tmcs)
+    for i in range(0, len(tmcs), TMC_FETCH_BATCH):
+        batch = tmcs[i:i + TMC_FETCH_BATCH]
+        in_list = ", ".join(sql_str(t) for t in batch)
+        sql = (f"select {', '.join(TMC_COLS)} from {table} "
+               f"where tmc in ({in_list}){year_clause}")
+        res = dbq.ch(sql)
+        out.update({row[0]: dict(zip(TMC_COLS, row)) for row in res.get("data", [])})
+    return out
 
 
 # ── find ──────────────────────────────────────────────────────────────────
@@ -417,7 +447,7 @@ def cmd_build(args):
                     f"Nothing in the report path reads a route's own dates.")
 
     all_tmcs = sorted({t for r in routes for t in r["tmcs"]})
-    rows_by_tmc = fetch_tmcs(all_tmcs)
+    rows_by_tmc = fetch_tmcs(all_tmcs, tmc_year=args.tmc_year)
 
     validated = []
     for r in routes:
@@ -453,7 +483,7 @@ def cmd_build(args):
             verify_routing(r["name"], ordered, rows_by_tmc, args.routing_year)
         if warnings and args.strict:
             strict_failures.append((r["name"], warnings))
-        payloads.append({
+        payload = {
             "name": r["name"],
             # Compact separators so the stored string is byte-identical to what
             # the plugin's JSON.stringify(tmc_array) writes — a CLI row and a UI
@@ -461,7 +491,14 @@ def cmd_build(args):
             "tmc_array": json.dumps(ordered, separators=(",", ":")),
             "description": r.get("description", ""),
             "metadata": "{}",
-        })
+        }
+        if r.get("tags"):
+            # Same JSON-array-string convention as tmc_array — matches how the
+            # routecreation tool's own `tags` multiselect column is written
+            # (planning/tasks/current/dynamic-reports-and-route-tags.md,
+            # Route Tags Phase 1, 2026-07-31).
+            payload["tags"] = json.dumps(r["tags"], separators=(",", ":"))
+        payloads.append(payload)
         print()
 
     if strict_failures:
@@ -528,6 +565,11 @@ def main():
     b.add_argument("--routing-year", type=int, default=DEFAULT_ROUTING_YEAR,
                    help=f"conflation map vintage for --verify-routing "
                         f"(known-good: {', '.join(str(y) for y in ROUTING_YEARS)})")
+    b.add_argument("--tmc-year", type=int, default=None,
+                   help="validate TMCs against this year's own vintage "
+                        f"({TMC_TABLE_BY_YEAR}) instead of the frozen current "
+                        f"snapshot ({TMC_TABLE}) — use for historical-year "
+                        "corridors whose TMCs may not be in the frozen table")
 
     args = p.parse_args()
     return cmd_find(args) if args.cmd == "find" else cmd_build(args)

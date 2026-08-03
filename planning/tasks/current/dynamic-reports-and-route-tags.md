@@ -1,6 +1,6 @@
 # Dynamic Reports, Route Tags & Add-Route Flow — next-phase scoping
 
-## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. **Add-Graph modal (item 1's sub-item) is DONE and live-verified, 2026-08-03** — see item 1's "Implementation plan, 2026-08-03" section, including a real platform bug (`useGraphPublish.js` orphan-cleanup race) found and fixed along the way. **Dynamic Reports (item 3) — Ryan picked this as the next thread, 2026-08-03, with old-template porting explicitly carved out as a separate task. Core mechanism DONE + live-verified, 2026-08-03** — route slots filled via URL param, a "Dynamic Report" toggle in RRL, view-time resolution against the route catalog, all built and proven end-to-end (two different real routes rendering on the same shared page via different `?routes=` values). See item 3's "Implementation plan, 2026-08-03" section, including a pre-existing/unrelated platform finding (one LineGraph section that never renders a line, isolated away from Dynamic Reports and left for separate investigation) and old-template porting still deliberately out of scope. **Ryan then manually tested the mechanism and found a real bug, fixed same day, 2026-08-03**: an unresolved route (no `tmc_array`) made its graph run a full unfiltered network-wide query instead of showing nothing — see item 3's new manual-testing section. One related UX question (slot-count/URL-count mismatch re-triggering the blocking picker over already-rendered content) is flagged but not fixed, pending Ryan's steer — see "Open questions" item 2b. TMC-linear auto-generation remains unstarted.
+## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. **Add-Graph modal (item 1's sub-item) is DONE and live-verified, 2026-08-03** — see item 1's "Implementation plan, 2026-08-03" section, including a real platform bug (`useGraphPublish.js` orphan-cleanup race) found and fixed along the way. **Dynamic Reports (item 3) — Ryan picked this as the next thread, 2026-08-03, with old-template porting explicitly carved out as a separate task. Core mechanism DONE + live-verified, 2026-08-03** — route slots filled via URL param, a "Dynamic Report" toggle in RRL, view-time resolution against the route catalog, all built and proven end-to-end (two different real routes rendering on the same shared page via different `?routes=` values). See item 3's "Implementation plan, 2026-08-03" section, including a pre-existing/unrelated platform finding (one LineGraph section that never renders a line, isolated away from Dynamic Reports and left for separate investigation) and old-template porting still deliberately out of scope. **Ryan then manually tested the mechanism and found a real bug, fixed same day, 2026-08-03**: an unresolved route (no `tmc_array`) made its graph run a full unfiltered network-wide query instead of showing nothing — see item 3's new manual-testing section. One related UX question (slot-count/URL-count mismatch re-triggering the blocking picker over already-rendered content) is flagged but not fixed, pending Ryan's steer — see "Open questions" item 2b. **Old-template porting — scoping DONE, 2026-08-03 (nothing built yet):** Ryan steered toward reusing the existing `convert_old_reports.py` pipeline against a curated, most-used subset of the 216 `admin2.templates` rows. Found real usage signal via `admin2.stuff_in_folders`'s `type='group'` (shared agency-account) folders — 28 deduped candidates (17 from the vendor's own AVAIL-account starter series, 11 real NYSDOT operational templates). `TEMPLATE_SPECS` coverage cross-checked (reused `analyze_report()` directly): 4 fully mapped today, 1 cheap, 23 hit a concentrated gap (mostly Route/TMC Info Box missing a "speed" measure bucket, plus Route Map/Info Box failing to resolve relative-date placeholders like `{recent-0}`). Mechanism design **unified 2026-08-03 per Ryan's own steer** ("treat all templates as if they have no routes, pull from `graph_comps` only") — all 28 build the same way via `convert_old_reports.py`'s existing `build_graph_section_data()` (confirmed already route-data-independent) + today's route-slot mechanism, no path split; the 4 candidates with real example routes become verification fixtures, not a different build path. Relative-date support explicitly deferred by Ryan ("eventually, not right now") — fixed author-set dates for this pass. **Template 244 ("Year Over Year (Beginner)") built + live-verified, 2026-08-03** — new `--template-id` mode in `convert_old_reports.py` (`convert_template()`, deliberately duplicated not refactored from `convert_report()`), plus a backward-compatible `route_slot_group` extension to the already-shipped `useDynamicReportRoutes.js`/`ReportRouteList.jsx` so 244's 11 date-window route rows (all one conceptual route) resolve against a single real route pick instead of 11. Full picker→resolve→render flow live-verified with real data (17/19 panels; Route Map deferred by design). See item 3's "Template 244 built + live-verified" section for the full record, including a live-caught correction (an old `admin2.routes` id is NOT a valid `?routes=` value — wrong id space from the new catalog) and two non-bugs recorded so they aren't re-investigated. Still not started: the other 27 candidates. TMC-linear auto-generation (item 2) has a different, concurrent investigation in progress (see item 2's "Generation mechanism found" section) — not yet reconciled with this status line.
 
 **Priority directive (2026-07-31):** this arc (all items below) takes priority over every other
 currently-tracked gap/bug in the reports/routes space — `report-route-ui-parity-gaps.md`,
@@ -436,6 +436,132 @@ folder-rows where `stuff_type='folder'`, not a parent-id column).
   human-typed one-offs (e.g. `"I90 NB Buffalo Incident Long Route"`,
   `"787 traffic study area"`).
 
+**Generation mechanism found, 2026-08-03 — the old tool's corridor-route generator.** Not part of
+avail-falcor's live API (no route/endpoint does this on demand) — it's a one-off batch script,
+`/home/ryan/code/avail-falcor/tasks/folders/create_and_load_corridors.py` (sibling repo, last run
+per its own git history Jan 2023). Exact methodology:
+
+1. Source table: `tmc_metadata_2022` in the old NPMRDS production DB (`dbq.py old` — NYSDOT's own
+   enrichment of FHWA TMC identification, columns include `roadname`, `county_code`, `region_code`,
+   `road_order`, `tmclinear`; confirmed still present and matching the script's query verbatim).
+2. Per NYSDOT region (1–11): `SELECT DISTINCT tmclinear, roadname, county_code, direction,
+   road_order, tmc FROM tmc_metadata_2022 WHERE region_code = %s AND tmclinear IS NOT NULL AND
+   roadname IS NOT NULL`.
+3. Group rows by composite key `tmclinear|roadname|county_code|direction` — i.e. one route per
+   (linear-corridor id, road name, county, direction-of-travel) combination.
+4. Within each group, sort member TMCs by `road_order` and use that order as the route's
+   `tmc_array`.
+5. Insert one `admin2.routes` row per group: `name = "{roadname} {county_code} {direction}"` (e.g.
+   `"NY-32 36001 S"` — exactly the 2,962-route pattern found above), `description =
+   "Auto-generated route from TMC Linear: {tmclinear}"`, `created_by` = the `availabs@gmail.com`
+   account (id=1 — matches the `created_by=1` finding above exactly).
+6. Create one `admin2.folders` row per region (`type='AVAIL'`, description "Collection of
+   auto-generated routes created using TMC Linears from 2022") and file that region's routes into
+   it via `admin2.stuff_in_folders`. This is the origin of the 11 `AVAIL`-type region folders found
+   above.
+
+**Confirmed the old generator only ever ran once, 2022 data only (2026-08-03).** The script hardcodes
+`tmc_metadata_2022` and was only ever edited in Nov 2022/Jan 2023 (git history) — never touched again
+for a later year. DB timestamps confirm a single generation event: all 2,983 auto-generated routes
+were created on `2023-03-01` (2,970 of them) with a tiny `2023-08-15` follow-up batch (13 more,
+likely a rerun/patch for stragglers) — there is no evidence it was ever run for 2016/2017/.../2021/2023+.
+
+**Porting vs. regenerating — regenerating per-year is not just feasible, it's close to a drop-in
+replacement (checked 2026-08-03 against `src/dms/documentation/npmrds-data-sources.md`).**
+`tmc_metadata_2022`'s Postgres schema (roadname/county_code/region_code/road_order/tmclinear
+together) doesn't exist as-is in the current stack, BUT the already-registered ClickHouse DAMA
+source **582/983 (`clickhouse.npmrds_meta.s582_v983_NPMRDS_V6_tmc_meta`, aka `META_JOIN` — see the
+data-sources doc's measure-swap table)** carries the exact same enrichment columns
+(`tmclinear`, `road_order`, `county_code`, `region_code`, `direction`) **plus a `year` column** —
+one row per (tmc, year), confirmed live for 2016, 2018–2026 (no 2017 row, a known pre-existing gap
+in this source). Verified by running the old script's actual query against it (just `roadname` →
+`road`, `WHERE year = %s` added, Postgres → ClickHouse dialect): clean 0-blank `region_code`/
+`county_code` for 2020–2023, some blank rows in 2016–2019 and 2024–2026 (191–529 rows, small
+fraction of ~20–50k), `road_order` never null in any year. **Net: the new per-year generator script
+is close to a line-for-line port of `create_and_load_corridors.py`'s query, run once per year
+2016/2018–2026 instead of once against a frozen 2022 snapshot** — the real new work is where to
+insert the output (there's no `admin2.routes`/`admin2.folders` equivalent in the new system; routes
+now live as DMS dataset rows per the routecreation tool's `routes_data` convention above) and
+deciding the `auto_generated`/`tmc_linear`/`county`/`region`/`year` tag values at insert time rather
+than raw SQL folders.
+
+**Sanity check: reproduced the real 2022 run almost exactly (2026-08-03).** Ran the old script's
+grouping logic verbatim against 582/983 `WHERE year=2022`, all 11 regions, no changes to the
+algorithm. Per-region corridor-group counts vs. the old DB's actual 2022 output (`admin2.folders`
+type=`AVAIL`, joined through `stuff_in_folders`):
+
+| region | new (582/983, 2022) | old (real DB) |
+|---|---|---|
+| 1 | 268 | 265 |
+| 2 | 134 | 132 |
+| 3 | 171 | 161 |
+| 4 | 170 | 168 |
+| 5 | 451 | 440 |
+| 6 | 50 | 50 |
+| 7 | 105 | 105 |
+| 8 | 379 | 367 |
+| 9 | 104 | 98 |
+| 10 | 264 | 251 |
+| 11 | 1001 | 936 |
+| **total** | **3097** | **~2973** |
+
+Same shape everywhere (region 11/NYC dominant in both, region 6 smallest in both), two regions
+exact, the rest within ~4-7%. The small consistent overcount is expected network-vintage drift
+(the old script hit a bare `tmc_metadata_2022` table that itself got silently refreshed over time —
+confirmed **62 different versioned snapshots** of `tmc_metadata_2022_v...` exist in the old DB,
+Nov 2022 through mid-2024 — not a methodology bug.
+
+**Legacy migration confirmed incomplete AND duplicated (2026-08-03) — Ryan's recollection was a
+manual DB-dump-and-upload of "all" old routes; the real data doesn't match that.** Checked directly
+against the real storage table (`dms_npmrdsv5.data_items__s2107426_v2107427_routes_data`, Postgres):
+old `admin2.routes` has 49,218 rows; the new dataset has 64,803 total, of which 64,762 carry a
+legacy `route_id` field (41 are genuinely new, map-tool-created rows with no legacy id) — but those
+64,762 resolve to only **32,568 distinct old route_ids**. Breakdown: 32,194 old routes got inserted
+**twice** (spot-checked — byte-identical `name`+`tmc_array` pairs under two different new ids, i.e.
+the same upload batch ran twice, not a fix-and-rerun), 374 came over exactly once, and **16,650 of
+the old 49,218 (34%) never made it over at all**. No tags/folders came with it either way (expected
+— this dataset has no tags column, confirmed earlier from `route_build.py`'s 7-key row shape).
+Not fixed, not being fixed as part of this — a separate dedupe-and-backfill decision whenever
+Ryan wants it; flagged here so this task doesn't quietly build on top of an assumed-clean migration.
+
+**Real gap found in `route_build.py`'s existing TMC validator, worth knowing before reusing it
+as-is (2026-08-03).** `route_build.py build` validates every TMC against
+`npmrds_raw_tmc_identification.s455_v3464_NPMRDS_TMC_Identification_V5_V6` — a single frozen
+vintage, not year-matched. Checked how many of a given year's 582/983 corridor TMCs that frozen
+table actually contains: **2022 → 22,286/22,306 (99.9%)**, **2018 → 18,113/18,983 (95.4%)**. Recent
+years are fine; for 2016-2019 a real (if modest) slice of historical TMCs would hard-error as
+"does not exist" if fed through `route_build.py`'s validator unmodified — needs either a
+year-matched validation source or an acceptance that some older-year corridors get dropped/flagged
+rather than blocking the whole batch.
+
+**Built and validated the 2024 pilot (2026-08-03).** `scripts/npmrds-reports/route_gen_corridors.py`
+(new) generates the spec; `route_build.py` gained `--tmc-year` (validates against the correct
+vintage of `582/983` instead of the frozen table) and a TMC-fetch batching fix (a single `IN (...)`
+list for a full year's TMCs — tens of thousands — exceeds ClickHouse's 256 KiB `max_query_size`;
+now batches in chunks of 4000). 2024 → 8,660 corridor routes, dry-run through the full validator:
+zero hard errors, zero duplicate names, zero mixed-direction/multi-road issues.
+
+**Known limitation, confirmed inherited from the old tool, NOT fixed — flagged for a future
+decision (2026-08-03).** Grouping by `county_code` (both the old tool's key and this port's) means
+a `tmclinear` that crosses a county line gets artificially truncated at the boundary, even when the
+physical road is continuous — the corridor just stops, skips the other county's segments, and (if
+the linear re-enters the original county further on) resumes with a large phantom gap. Confirmed
+**byte-for-byte** against a real old-DB route: the 2024 pilot's `I-87 NORTHBOUND, ALBANY county`
+corridor and the real old-DB route `id 6055` (`I-87 36001 N`, TMC Linear 209, created by the
+original 2023 generator) have the **identical** TMC chain, same exact skip across the Greene/Albany
+county line. Ryan's call (2026-08-03): **ship it matching the old tool's behavior for now** (a
+county-scoped-agency use case genuinely wants "stop at the county line" as a feature, not a bug),
+but revisit later — dropping `county_code` from the grouping key would give geometrically continuous
+corridors at the cost of changing the naming/count shape from what's now the established baseline.
+Not scheduled; just don't let this get silently forgotten if `route_gen_corridors.py` gets reused
+for another year without revisiting it.
+
+**Naming: year embedded in the name, not just the description.** Since each (corridor, year) is a
+separate row by design, `route_gen_corridors.py` names routes `"{road} {county_code} {direction}
+({year})"` (e.g. `"I-87 36001 NORTHBOUND (2024)"`) — otherwise every year's regeneration of the same
+real-world corridor would collide on one ambiguous name in every search/picker. Open to revisiting
+if Ryan wants a different convention once tags exist and can carry the year instead.
+
 **Proposed starting tag categories, each grounded in one of the findings above** (not yet built —
 this is the vocabulary proposal the taxonomy inspection was for; confirm with Ryan before wiring):
 
@@ -697,6 +823,265 @@ not scoped further here.
 
 **Out of scope here:** the landing page itself — that's the coworker's design work, applied later.
 Dynamic Reports just needs to end up linkable-into from wherever that lands.
+
+**Old-template porting — scoping pass, 2026-08-03 (candidate selection only, nothing built).**
+Ryan's steer: don't port all 216, use the existing `convert_old_reports.py` pipeline (per
+`old-reports-conversion.md`'s 2026-07-13 strategic frame, which explicitly deferred converting
+`admin2.templates` the same way it converts `admin2.reports` until "full-template conversion
+becomes relevant (authoring UI era)" — arguably now), and **pick the most-used templates**, the
+same way only a curated subset of the 869 old reports (36 so far) has been converted, not all of
+them.
+
+**"Most used" resolved via real usage signal, not statistics.** `admin2.templates` carries no
+usage-count column, and no `admin2.reports` row links back to the template it was created from —
+so adoption can't be counted directly. But `admin2.stuff_in_folders`/`admin2.folders` (the same
+tables item 2's tag-taxonomy inspection queried for routes) has a `stuff_type='template'` axis:
+207/216 templates (96%) are filed somewhere, and — same noise pattern item 2 found for routes —
+133 of those are under personal `type='user'` "My Stuff" folders (not signal). The other **74 are
+filed under real `type='group'` (shared agency-account) folders** — someone besides the creator,
+or the creator acting deliberately rather than just saving, chose to keep it somewhere shared.
+Queried 2026-08-03 (`dbq.py old`):
+
+| folder (owner) | n templates | character |
+|---|---|---|
+| AVAIL (the vendor's own account) | 24 | a deliberate, maintained Beginner/Intermediate/Advanced starter series |
+| NYSDOT | 26 | real agency operational templates, mixed with some one-off/incident-named saves |
+| MHV | 13 | almost entirely test-named noise ("Bar Graph tests", "Route Bar Graph tests…") |
+| OCTC/CDTC/MDD/TDD/WLD/SDD/123/NPMRDS New Users | 11 total | 1-3 each, mixed |
+
+No `type='AVAIL'` (NYSDOT region) folder holds any templates at all — unlike routes/reports,
+templates were never organized by geography, only by account/agency.
+
+**Recommended candidate set — the AVAIL series + real NYSDOT operational templates, deduped.**
+Within both groups, several names recur as near-identical iterations (same-day "v1"/"v2"/"vT1"
+saves, or explicit test/QA saves) — picked one canonical row per name-family, favoring the version
+with the longest post-creation edit history (a real `updated_at` well after `created_at` signals
+active refinement, not a one-off save) or the most complete `graph_comps` panel count:
+
+- **AVAIL series (17, deduped from 24):** Single Route Default (`id 77`), Single Route Before and
+  After (Beginner) (`221` — edited as recently as 2026-05-11, still actively maintained), Year Over
+  Year (Beginner) (`244`), Monthly Congestion (Beginner) (`207`), Monthly Hours of Delay Comparisons
+  (Beginner) (`260`), Seasonality Report (Intermediate) (`247`), This Month vs. Last Month vs. Last
+  Year (Advanced) (`239`), Change Over Time Analysis - Month (`238`, the "v1" iteration), Single Day
+  (`252`), Single Day Incident (Advanced) (`245`), Two Route Comparison or Bi-Directional Route
+  Comparison (`211`), Bi-Directional Route Analysis (Intermediate)-V2 (`228`), Weekly Averages
+  (`265`), Recurrent/Non-Recurrent Congestion Inspection Template (`210`), Project 5 Report - Erie
+  Blvd/Empire State Trail Template (`165`), Project Review Report Template 5 - State Fair (`164`).
+  **Excluded outright:** `256`/`257`/`258`/`259` ("Snapshot v2 (Test Save)" / "(Testing Save As)" /
+  "(Beginner) (Testing Saves)" ×2) — a QA session's saves, all created within 35 minutes of each
+  other 2023-03-08, not real content.
+- **NYSDOT operational (11, deduped from 26):** Bottleneck Examples (`204`, 6 route slots), Freight
+  Bottlenecks (`110`), TSMO CMAQ Lane Closures (`131`, the 2-slot/11-panel final iteration),
+  COVID Comparison (`90`), Experiential Travel Time (`132`), Floating Car - Average Day (`278`),
+  Floating Car - Week (`276`), Incident Analysis (`291`), Batch Report - Two Route x Two Times
+  (`279`), Two Deployment Template (`283`), Two Routes x Two Dates (V2) (`281`). **Excluded**:
+  incident/corridor-specific one-offs that read as reports mistakenly saved into the templates
+  table rather than genuine reusable shapes (`I-687 SB Bottleneck`, `I-87 Northbound, April 11, 2019
+  Sign Comparison`, `K Bridge Comparison`, `NYC 5th Ave_New Report_MI`, `NYC Outage Congestion mtg
+  Version`, `LIE EB Francis Lewis…`, `Van Wyck CO2 Test`) and internal-division admin saves
+  (`SDD`/`WLD`/`TDD Template`).
+- **One folded-in special case: `Rochester Inner Loop` (`id 246`, NYSDOT, 3 slots) is not its own
+  archetype** — its `description` is a verbatim copy of the "Snapshot" report description ("The
+  Snapshot report compares an average day for a year against weekday and monthly averages…"),
+  i.e. it's a real client instance of the **Snapshot (Beginner)** archetype the *other*
+  investigation (`client-request-to-report-skill-archive.md`) already found independently via
+  reused report-description text (15 reports, before that count was partly walked back as
+  QA-duplication). Cross-checked: **no clean "Snapshot (Beginner)" template row exists at all** —
+  every row actually named that is one of the excluded 2023-03-08 test saves above. So this
+  archetype is real (two independent signals now point at it) but has no ready-to-convert template
+  row; it would need to be seeded from a real report instead (e.g. `246` itself, or one of the 15
+  description-sharing reports) rather than from `admin2.templates` directly. Flagged, not resolved.
+
+**TEMPLATE_SPECS coverage cross-check — DONE, 2026-08-03.** Reused `census_old_reports.py`'s real
+`analyze_report()` (imported, not reimplemented) against the 28 candidates' actual
+`route_comps`/`graph_comps` — same function the corpus census runs over the 869 `admin2.reports`
+rows, just pointed at `admin2.templates` rows instead. Read-only, no writes. Script:
+`/home/ryan/.claude/jobs/57a760cb/tmp/template_coverage_check.py` (job scratch dir — copy out if
+this needs to survive past this session).
+
+- **4 of 28 fully mapped today, zero new work**: `238` (Change Over Time Analysis - Month v1),
+  `244` (Year Over Year (Beginner)), `265` (Weekly Averages), `278` (Floating Car - Average Day).
+- **1 more needs only cheap, proven-shape spec additions**: `90` (COVID Comparison).
+- **23 of 28 hit at least one "no_equivalent"/"tail" gap** — sounds worse than it is: it's
+  overwhelmingly **one concentrated root cause**, not 23 separate problems. Per-candidate real-gap
+  graph types: `Route Info Box` in 14/23, `TMC Info Box` in 7/23, `Route Map` in 6/23 (two rare
+  one-offs: `Traffic Volume Graph`/`vmt` and a literal `Experiential Travel Time` old graph type,
+  1/23 each, tail/never-examined).
+- **Root-caused, not just observed:** checked template `207`'s actual comp settings directly.
+  `Route Info Box`'s "speed" measure is a genuine, real gap — the 5 built Info Box buckets
+  (reliability/travelTime/length/AADT/delay, per `old-reports-conversion-archive.md`'s round
+  19/38/40/49/58 history) never included plain `speed` as its own bucket. But `Route Map`'s "speed"
+  gap is **not** a missing-shape gap — Route Map's speed choropleth was fully built in rounds 47-50
+  (confirmed earlier in this same file). It's failing here because `graph_max_year()` requires an
+  8-digit `YYYYMMDD` in a comp's `startDate`/`endDate`, and template `207`'s actual settings carry
+  **`"startDate": "{recent-0}0101"`** — a relative-date placeholder meant to resolve to "this year"
+  at use time, never taught to the old-reports converter (which only ever saw concrete dates on
+  real `admin2.reports` rows). This is the same class of dynamism this doc's own "Dynamic naming"
+  note already flagged for report *titles* (`{type}` placeholders) — turns out it applies to
+  *dates* too, and is a distinct, real, currently-unhandled gap, not a template-vocabulary gap.
+
+**A bigger structural finding that changes the mechanism design: most candidates have no real route
+data to convert at all.** Checked every candidate's `route_comps[].routeId` values directly:
+
+| routeId shape | candidates | which |
+|---|---|---|
+| real numeric (resolves in `admin2.routes`) | **4** | `221`, `244`, `246`, `278` |
+| `$0`/`$1`/… placeholder (never a real route) | **23** | everything else |
+| `synthetic:<tmc-key>` (point-drawn, never saved) | **1** | `291` (Incident Analysis) |
+
+So only 4 of the 28 candidates are actually "ordinary report shells with real example routes" (the
+`old-reports-conversion.md` durable-facts framing that motivated reusing the converter pipeline
+literally) — the other 24 are **already parametric** in the old system, using `$N` as a route-slot
+placeholder the exact same way `graph_comps[].activeRouteComponents` already uses `comp-N` to
+reference them. Running the existing `convert_report()` pipeline against a `$N`-placeholder
+template would correctly detect `no_valid_routes` and refuse to build a page (`fetch_old_routes`
+would resolve nothing) — same as the 213 already-documented unproducible `admin2.reports` shells.
+**This means "convert via the pipeline, then flip to dynamic" is only viable for 4 of the 28
+candidates; the other 24 need a different, direct-to-dynamic authoring path.** Good news buried in
+this: `activeRouteComponents`'s `comp-N` referencing is **independent of whether the underlying
+`routeId` is `$0` or a real number** — the graph→route linkage is by `compId`, not by the route
+value — so the comp-N ↔ route-slot-N mapping this arc's Dynamic Reports mechanism already uses
+carries over cleanly to both groups with no special-casing needed.
+
+**Unified mechanism design — REVISED 2026-08-03 per Ryan's steer.** Ryan's call, reading the two-path
+split above: treat every candidate uniformly as graph_comps-only, ignoring whether it happens to
+carry a real routeId — since every candidate ends up as a route-slot page regardless, building a
+real converted page first (Path A) only to immediately strip its routes back out was doing work
+that gets thrown away. Confirmed this holds: `analyze_report()`'s classification (the coverage
+cross-check above) is driven entirely by comp **settings** (dates/resolution/dataColumn), not by
+whether `routeId` is real — so collapsing to one path changes nothing about the coverage numbers
+above, only the build mechanism.
+
+**A better technical vehicle than originally drafted, found while designing this.** The first draft
+of this section proposed reusing this arc's own JS `composeMeasureConfig`/`applyMeasurePickToState`
+(built today for the Add-Graph modal). Checked that against what candidates actually need before
+committing: `composeMeasureConfig.js` only covers Measure Picker's 4-control vocabulary — plain/
+difference Bar/Line graphs — and can't build Route Map, Route/TMC Info Box, Bar Graph Summary, or
+TMC Difference Grid at all. Fourteen of the 23 "real-gap" candidates need Route Info Box; most
+candidates' *mapped* panels also lean on Map/Info Box/Bar Graph Summary. So the JS path was too
+narrow. `convert_old_reports.py` already has the right function:
+**`build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph, ...)`** (line 4365) —
+the same function `convert_report()` already calls for every real report's graph, covering every
+graph type this pipeline knows. Read its body: it clones the shared graph-template row's
+`stateJson` (already minted by `ensure_graph_templates()` from `TEMPLATE_SPECS`, independent of any
+specific report) and patches in report-level cosmetics — `color_range`, `description`, layout
+`size`, AADT override, Route Map choropleth baking — **never touching real per-route `tmc_array`/
+date data**. It's already separable from route resolution; nothing needs extracting or reimplementing
+the way the JS side would have.
+
+**Unified build steps, all 28 candidates, no path split:**
+1. New `fetch_old_template(id)` (mirrors `fetch_old_report()`, reads `admin2.templates` — identical
+   row shape plus the `routes` slot-count field).
+2. Run the existing classification (`analyze_graph()` per `graph_comp`) — already proven by the
+   coverage cross-check above, zero new code.
+3. For each **mapped** graph_comp: `ensure_graph_templates()` + `build_graph_section_data()` —
+   the exact same two calls `convert_report()` already makes for real reports, completely
+   unmodified.
+4. Instead of resolving real per-route `comparisonSeries` data (meaningless for `$N`/synthetic
+   placeholders), create the page with **N route slots** (today's built Dynamic Report mechanism)
+   and wire each slot's `graphIds` per that graph's `activeRouteComponents` (`comp-N`) → slot-N —
+   the same `comp-N` convention RRL's `route_comp_id` already uses, confirmed independent of
+   whether the underlying `routeId` was real or a placeholder.
+5. Toggle "Dynamic Report" on (the `routeSlots` page-filter built earlier today).
+
+**Verification, using the 4 real-routeId candidates as fixtures, not a separate path.** `221`/`244`/
+`246`/`278` each already reference one real, resolvable route — after building all 28 uniformly via
+the steps above, those 4 specifically get a free, ready-made `?routes=<real id>` test value, so
+they're the cheapest to verify with actual rendered data first (and `244` is also already 100%
+TEMPLATE_SPECS-mapped — the natural first candidate to build end-to-end as proof). The other 24
+verify structurally (panel count/types/slot count match the old template) plus one live smoke-test
+per candidate against any real catalog route. This also fully retires the earlier draft's Path-A
+`graphIds`-preservation problem — no concrete-route page is ever created, so there's nothing to
+remove or preserve.
+
+**Relative dates (`{recent-N}`) — explicitly deferred by Ryan, 2026-08-03: "will need to be done
+eventually, but not right now."** For this pass, every route slot gets one fixed, author-set date
+range (today's real, already-built capability) — no attempt to resolve `{recent-0}`/`{recent-1}`-
+style placeholders. Not an open question anymore; a deliberate scope cut, revisit later.
+
+**Not yet done:** final candidate-list confirmation from Ryan (the 28 above are a proposal, not a
+commitment), the actual `--from-template` CLI mode + slot/graphIds wiring code, and any real
+pages — this whole section is scoping only, per the standing "show plan, get confirmation before
+large implementation" rule.
+
+**Template 244 built + live-verified, 2026-08-03.** Ryan's call: build 244 for real now (not the
+whole 28-candidate list yet). New `--template-id` CLI mode in `convert_old_reports.py`:
+`fetch_old_template()`, `find_page_by_old_template_id()`, `build_slot_entry()` (route-slot twin of
+`build_route_entry()`, see its docstring for the `route_slot_group` grouping mechanism), and
+`convert_template()` — a deliberately **duplicated**, not refactored, copy of `convert_report()`'s
+analysis/section-building body (convert_report() is a single proven ~550-line function backing 36
+real conversions; forking it mid-body risked destabilizing it for a one-time curated port — accepted
+drift is the cost of that call). Route Map and Route Difference Graph/TMC Difference Grid are
+deliberately **not converted** (gap-logged, not built) — Route Map's per-report choropleth
+color-break baking needs real per-TMC data pooled across the report's actual routes, which doesn't
+exist for an unfilled slot; Difference-pair resolution needs real route facts (tmc_key equality)
+this mode never fetches. Neither gap blocks 244 (it has 2 Route Map instances, correctly skipped;
+0 Difference instances).
+
+**JS side: extended (not forked) the already-shipped Dynamic Report resolution to support many
+route-ROWS sharing one real route.** Template 244's `routes: 1` (one conceptual route) has **11
+route_comps** — all referencing the same old routeId, each a different date-window VIEW of that one
+route ("2024", "2023", … "2016", an avg-day rollup, a by-day rollup). The originally-shipped
+`useDynamicReportRoutes.js` was strictly positional (`routeIds[i]` fills `slots[i]`) — wrong for
+this shape, since it would ask a viewer for 11 different real routes instead of 1. Added
+`route_slot_group` (a new optional field on each persisted route/slot row) +
+`distinctRouteSlotGroups()`/`routeSlotGroupKey()` (exported from `useDynamicReportRoutes.js`, reused
+by `ReportRouteList.jsx` so both sides agree on one grouping, not two driftable copies): slots
+sharing a group resolve against the *same* URL-supplied real route; `requiredCount`/
+`needsRouteSelection` key off the distinct-group count, not raw route-row count. **Backward
+compatible by construction**: a slot with no `route_slot_group` falls back to grouping by its own
+`route_comp_id` (always unique per slot), reproducing the original positional behavior byte-for-byte
+for every Dynamic Report authored before this field existed (the `claude_scratch_dynamic_report_demo`
+built earlier today is unaffected). `build_slot_entry()`'s `route_slot_group` value is simply the old
+system's own `routeId` string (real, `$N`, or `synthetic:...`) — reused as a grouping key, not a new
+concept ported from the old tool (the old tool's actual `route_comps[].type === 'group'` nested-route
+feature is unrelated and still just flattened away, unchanged, exactly as before).
+
+**Verification finding — the real routeId "free fixture" assumption from the earlier scoping pass
+was wrong, caught by live-testing, not assumed.** `221`/`244`/`246`/`278`'s old routeId lives in
+`admin2.routes` (the OLD system) — a completely different id space from the NEW `routes_data`
+catalog `?routes=` resolves against. Confirmed live: old routeId `163181` (244's real route) doesn't
+exist in the new catalog at all. Fixed by calling the existing `ensure_route_in_catalog()` (already
+built for real-report conversion, just not part of `convert_template()`'s own mechanism) once,
+by hand, to upsert that one real old route ("Rochester Inner Loop 2") into the new catalog —
+producing new catalog id `2198772`, the actual valid `?routes=` test value. This is a one-time
+verification step, not part of the ported page's mechanism; a future viewer of this page picks
+*any* real catalog route via the picker, same as any other Dynamic Report.
+
+**Full mechanism live-verified** on `converted_reports/year_over_year_beginner_0` (page id
+`2198445`): no `?routes=` param → blocking picker correctly shows "Select 1 more (0/1)" (not 11,
+confirming `distinctRouteSlotGroups` collapsed 11 rows to 1 required pick); searched "Rochester Inner
+Loop 2" in the tag-browser modal, selected, confirmed → URL became `?routes=2198772` → all 11 RRL
+rows resolved to the same real route ("Rochester Inner Loop 2") with real per-row date windows
+intact; 17 of 19 converted panels render real data (TMC Info Box/Length, Route Compare Component/
+Speed with real per-year deltas, Route Bar Graph/Travel Time for 2016-2022, Route Line Graph/Travel
+Time, two By-Day rollup bar graphs) — confirmed visually via screenshot, not just network-response
+counts. Zero console errors.
+
+**Two things NOT wrong with the conversion, worth recording so they aren't re-investigated:**
+- **`report_probe.mjs` reported "0/19 sections with svg content" — a false negative, not a real
+  bug.** Its SVG-emptiness heuristic ran before this page's unusually large resolution-fetch chain
+  (68 `/graph` API calls, this page's `--wait 4000` wasn't enough) finished painting; a manual
+  browser screenshot moments later showed the same panels fully rendered with real data. Not
+  chased further (the manual verification is conclusive) — flagged in case a future probe run
+  against a Dynamic Report needs a longer `--wait`.
+- **Some "Avg. Hours of Delay" panels (2020/2021/2022) render blank while the same measure for 2017
+  renders real data, and "Travel Time" renders for every year including 2020-2022.** Looks like a
+  genuine, real per-year AADT-data-coverage gap specific to this one test route/measure (not a
+  Dynamic-Report- or conversion-specific bug — the exact same blank panel would very likely occur
+  for a *normal*, non-dynamic converted report using this same real route) — consistent with the
+  standing "data issues are out of scope" directive. Not investigated further.
+
+**Verify URL:** `http://npmrds.localhost:5173/converted_reports/year_over_year_beginner_0` (no
+param) → blocking picker, "Select 1 more (0/1)"; pick any real route (e.g. search "Rochester Inner
+Loop 2") → confirms to `?routes=2198772`, 17/19 panels render real data across 11 date-range RRL
+rows all bound to the one picked route. Edit at `.../edit/converted_reports/year_over_year_beginner_0`
+to see the raw 11 slot placeholders and the "Dynamic Report" toggle.
+
+**Not yet done:** the other 27 candidates (this pass built only 244, per Ryan's steer); Route Map /
+Route Difference Graph support for template conversion; any generalization of the one-off
+`ensure_route_in_catalog()` verification step into the mechanism itself (deliberately not needed —
+real viewers already have real catalog routes to pick from via the normal picker).
 
 **Implementation plan, 2026-08-03 (mechanism only — Ryan's steer: old-template porting is a
 separate task, not this pass).** Full plan-mode design session; grounding and rationale below,
@@ -977,10 +1362,15 @@ Still open:
    itself is NOT part of the draft/publish content model at all — `apiUpdate({data:{filters:...}}})`
    writes immediately, no separate publish step, confirmed live 2026-08-03 toggling the new
    "Dynamic Report" switch.)
-4. How many of the old tool's 216 templates actually get ported as real Dynamic Report pages — all
-   216, or a curated subset following panel-frequency concentration (see item 3's architecture
-   note)? Still deferred — a separate task per Ryan's 2026-08-03 steer, not part of the mechanism
-   build.
+4. ~~How many of the old tool's 216 templates actually get ported~~ — Ryan confirmed 2026-08-03: not
+   all 216, a curated most-used subset via the existing conversion pipeline. Candidate selection
+   done (28 deduped candidates via `stuff_in_folders` group-folder signal); `TEMPLATE_SPECS`
+   coverage cross-check done (4 fully mapped, 1 cheap, 23 hit a concentrated Info Box/Route Map gap);
+   mechanism unified 2026-08-03 (all 28 built the same way, via `build_graph_section_data()` +
+   route slots, no path split — see item 3's "Unified mechanism design" section). Still open: final
+   candidate-list confirmation, and writing the actual `--from-template` CLI code (not started).
+   ~~Relative-date (`{recent-N}`) handling~~ — Ryan explicitly deferred 2026-08-03 ("needed
+   eventually, not right now"); fixed author-set dates for this pass, not an open question anymore.
 5. ~~Add-Graph modal~~ — design questions resolved by Ryan 2026-08-03 (placement, auto-assign
    scope, preview mechanism, vocabulary scope); built and live-verified the same day, including a
    platform bug fix (`useGraphPublish.js` orphan-cleanup race). See item 1's "Implementation plan,

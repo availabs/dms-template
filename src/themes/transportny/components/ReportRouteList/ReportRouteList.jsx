@@ -7,7 +7,7 @@ import { reportRouteListTheme } from './ReportRouteList.theme';
 import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
-import { useDynamicReportRoutes } from './useDynamicReportRoutes';
+import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
 import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
@@ -106,7 +106,13 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
     routeIds,
     enabled: isDynamicReport && !isEdit && routeIds.length > 0,
   });
-  const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routes.length;
+  // Grouped, not raw route count (2026-08-03): several slot rows can share one `route_slot_group`
+  // when they're different date/settings VIEWS of the same one real route a viewer picks once (see
+  // useDynamicReportRoutes.js) — the required/expected URL id count is the number of DISTINCT
+  // groups, not the number of persisted route rows. Falls back to one group per row (identical to
+  // `routes.length`) for every Dynamic Report authored before this field existed.
+  const routeSlotGroups = distinctRouteSlotGroups(routes);
+  const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routeSlotGroups.length;
 
   // A viewer sees the resolved real routes (both in this panel and in every self-bound graph);
   // an author always authors against the raw placeholders. Identical to `routes` for every normal
@@ -202,7 +208,7 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
           apiLoad={apiLoad}
           routeSourceInfo={routeSourceInfo}
           selectionMode="exact"
-          requiredCount={routes.length}
+          requiredCount={routeSlotGroups.length}
           onConfirm={(selectedRoutes) => {
             const params = convertToUrlParams({ [routeSlotFilter.searchKey]: selectedRoutes.map(r => r.id) });
             navigate(`${pathname}?${params}`);
