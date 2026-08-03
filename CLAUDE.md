@@ -137,6 +137,12 @@ There are two separate planning systems, split by what the task touches:
 
 **Before implementing any task, read the relevant `planning-rules.md`** — it defines the workflow for task files, progress tracking, and completion. The task file in the matching `planning/tasks/current/` is the source of truth for implementation status and must be updated as work progresses, not just at the end. If a root-level task turns out to require a library change, continue that part of the work under `src/dms/planning/` instead.
 
+## Skills (how-to guides)
+
+`src/dms/skills/` is an indexed library of how-to guides for recurring authoring tasks (building a section component, theming, creating pages/reports/routes, navigating a live page's DOM for browser automation, etc.) — start at [`src/dms/skills/README.md`](./src/dms/skills/README.md) for the index. Skills are a peer to `planning/` (work tracking) and `documentation/`/`research/` (reference material), not a replacement: check the index before starting non-trivial authoring or live-verification work, since the answer may already be written down.
+
+Some skills — `traversing-dms-pages.md` and `traversing-report-pages.md` in particular — are explicitly living documents: update them in the same session whenever a live UI check surfaces a fact they don't yet have, and fix anything that's gone stale.
+
 ## Naming Conventions
 
 **Use underscores, not hyphens, for new identifiers.** Applies to directory names under `data-types/`, dataType plugin registration names, DMS source/view types, type strings (`{parent}:{instance}|{rowKind}`), database table/column names, and any string identifier you control. Examples: `now_playing` (not `now-playing`), `now_playing_stream`, `enhance_nfip_claims`. Existing hyphenated names (`enhance-nfip-claims`, `_example-hello-world`) are not retroactively renamed, but new code follows the underscore convention.
