@@ -59,36 +59,51 @@ function transformReportRoutes(routes) {
     return epochs;
   }
 
-  return routes.map(route => {
-    let parsedTmcArray = [];
-    try {
-      parsedTmcArray = JSON.parse(route.tmc_array);
-    } catch (e) {
-      console.error(`Failed to parse tmc_array for route ${route.id ?? route.route_id}:`, e);
-    }
+  return routes
+    .map(route => {
+      // `null` (not `[]`) distinguishes "no known TMCs yet" (an unfilled Dynamic Report
+      // slot, or a genuinely malformed tmc_array) from "resolved to zero TMCs" — both are
+      // filtered out below, before an empty-value `tmc` filter leaf can ever reach
+      // buildUdaConfig.js. That guard (mapFilterGroupCols) drops any filter/exclude leaf
+      // whose value list is empty *by design*, so the query WIDENS to "no constraint"
+      // instead of matching nothing — exactly backwards for a route with no TMCs, which
+      // must contribute no data at all. Publishing this route anyway used to run a full,
+      // unfiltered, network-wide query mislabeled with the route's name/color — found live
+      // 2026-08-03 while investigating a Dynamic Report slot with no resolved route.
+      let parsedTmcArray = null;
+      if (route.tmc_array) {
+        try {
+          parsedTmcArray = JSON.parse(route.tmc_array);
+        } catch (e) {
+          console.error(`Failed to parse tmc_array for route ${route.name ?? route.id ?? route.route_id}:`, e);
+        }
+      }
+      return { route, parsedTmcArray };
+    })
+    .filter(({ parsedTmcArray }) => Array.isArray(parsedTmcArray) && parsedTmcArray.length > 0)
+    .map(({ route, parsedTmcArray }) => {
+      // Generates the range based on your MM-DD-YYYY inputs
+      const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate, route.weekdays) : [];
+      const epochArray = (route.startDate && route.endDate && route.startDate.includes('T') && route.endDate.includes('T')) ? generateEpochRange(route.startDate, route.endDate) : [];
 
-    // Generates the range based on your MM-DD-YYYY inputs
-    const dateArray = route.startDate && route.endDate ? generateDateRange(route.startDate, route.endDate, route.weekdays) : [];
-    const epochArray = (route.startDate && route.endDate && route.startDate.includes('T') && route.endDate.includes('T')) ? generateEpochRange(route.startDate, route.endDate) : [];
+      const groups = [
+        { op: "filter", col: "tmc", value: parsedTmcArray },
+        { op: "filter", col: "date", value: dateArray },
+      ];
 
-    const groups = [
-      { op: "filter", col: "tmc", value: parsedTmcArray },
-      { op: "filter", col: "date", value: dateArray },
-    ];
+      if (epochArray.length > 0) {
+        groups.push({ op: "filter", col: "epoch", value: epochArray });
+      }
 
-    if (epochArray.length > 0) {
-      groups.push({ op: "filter", col: "epoch", value: epochArray });
-    }
-
-    return {
-      label: route.name,
-      filters: { op: "AND", groups: groups },
-      // Rides through resolveComparisonVariants (buildUdaConfig.js) into every assigned
-      // graph's state.comparisonSeries.config, consumed there to build colorsByKey — see
-      // comparison-series-explicit-color.md.
-      ...(route.color ? { color: route.color } : {}),
-    };
-  });
+      return {
+        label: route.name,
+        filters: { op: "AND", groups: groups },
+        // Rides through resolveComparisonVariants (buildUdaConfig.js) into every assigned
+        // graph's state.comparisonSeries.config, consumed there to build colorsByKey — see
+        // comparison-series-explicit-color.md.
+        ...(route.color ? { color: route.color } : {}),
+      };
+    });
 }
 
 const EMPTY_SECTIONS = [];

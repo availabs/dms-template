@@ -1,6 +1,6 @@
 # Dynamic Reports, Route Tags & Add-Route Flow — next-phase scoping
 
-## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. **Add-Graph modal (item 1's sub-item) is DONE and live-verified, 2026-08-03** — see item 1's "Implementation plan, 2026-08-03" section, including a real platform bug (`useGraphPublish.js` orphan-cleanup race) found and fixed along the way. **Dynamic Reports (item 3) — Ryan picked this as the next thread, 2026-08-03, with old-template porting explicitly carved out as a separate task. Core mechanism DONE + live-verified, 2026-08-03** — route slots filled via URL param, a "Dynamic Report" toggle in RRL, view-time resolution against the route catalog, all built and proven end-to-end (two different real routes rendering on the same shared page via different `?routes=` values). See item 3's "Implementation plan, 2026-08-03" section, including a pre-existing/unrelated platform finding (one LineGraph section that never renders a line, isolated away from Dynamic Reports and left for separate investigation) and old-template porting still deliberately out of scope. TMC-linear auto-generation remains unstarted.
+## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. **Add-Graph modal (item 1's sub-item) is DONE and live-verified, 2026-08-03** — see item 1's "Implementation plan, 2026-08-03" section, including a real platform bug (`useGraphPublish.js` orphan-cleanup race) found and fixed along the way. **Dynamic Reports (item 3) — Ryan picked this as the next thread, 2026-08-03, with old-template porting explicitly carved out as a separate task. Core mechanism DONE + live-verified, 2026-08-03** — route slots filled via URL param, a "Dynamic Report" toggle in RRL, view-time resolution against the route catalog, all built and proven end-to-end (two different real routes rendering on the same shared page via different `?routes=` values). See item 3's "Implementation plan, 2026-08-03" section, including a pre-existing/unrelated platform finding (one LineGraph section that never renders a line, isolated away from Dynamic Reports and left for separate investigation) and old-template porting still deliberately out of scope. **Ryan then manually tested the mechanism and found a real bug, fixed same day, 2026-08-03**: an unresolved route (no `tmc_array`) made its graph run a full unfiltered network-wide query instead of showing nothing — see item 3's new manual-testing section. One related UX question (slot-count/URL-count mismatch re-triggering the blocking picker over already-rendered content) is flagged but not fixed, pending Ryan's steer — see "Open questions" item 2b. TMC-linear auto-generation remains unstarted.
 
 **Priority directive (2026-07-31):** this arc (all items below) takes priority over every other
 currently-tracked gap/bug in the reports/routes space — `report-route-ui-parity-gaps.md`,
@@ -898,6 +898,58 @@ Modified: `useTagBrowser.js` (imports the extracted helper), `ReportRouteList.js
   the same page. Edit at `.../edit/converted_reports/claude_scratch_dynamic_report_demo` to see the
   raw "Primary Route" slot, the "Dynamic Report" toggle, and "+ Add Route Slot".
 
+**Real bug found and fixed, 2026-08-03 (Ryan's manual testing): an unresolved route (any route with
+no known `tmc_array` — a Dynamic Report slot placeholder, or a manually-added one mid-edit) made its
+assigned graph(s) run a full, UNFILTERED, network-wide ClickHouse query instead of showing nothing,
+mislabeled with that route's name/color.** Ryan hit this by hand on the live demo (adding a second
+"Route Slot 2", assigning it to the Speed graph, then editing with no `?routes=` param) and reported
+three linked symptoms: (1) the URL's `?routes=` param persisting into edit mode "makes adding graphs
+and stuff not work very well"; (2) `useGraphPublish.js:67`'s `Failed to parse tmc_array for route
+undefined` console error when a graph is limited to routes with no real TMCs; (3) a graph that still
+"had route data" while editing with no routes selected, even though view mode looked correct.
+Root-caused live (not just from reading code) on `converted_reports/claude_scratch_dynamic_report_demo`,
+which Ryan had left with 2 persisted route slots ("Primary Route" assigned to both graphs, "Route
+Slot 2" newly assigned to the Speed graph only) from his own testing:
+
+- **(2) and (3) are the same bug, and it's worse than "stale."** `transformReportRoutes`
+  (`useGraphPublish.js`) always emitted a `{col:'tmc', op:'filter', value: parsedTmcArray}` leaf even
+  when `parsedTmcArray` was `[]` (a route with no `tmc_array` at all — the normal state of an
+  unfilled slot). `mapFilterGroupCols` in core `buildUdaConfig.js` (lines ~200-212) *by design* drops
+  any `filter`/`exclude` leaf whose value list is empty, on the theory that an unset filter should
+  WIDEN the query rather than blank it (correct for its actual use case — an unset page-filter
+  control). For a route's `tmc` leaf this is exactly backwards: dropping it means the "Travel Time by
+  Day" graph ran a real, unfiltered, whole-network ClickHouse query for the route's date range and
+  rendered it labeled "Primary Route" — confirmed live via `read_network_requests` (the decoded
+  `seriesVariants` request had a `date` group but no `tmc` group at all) and via the section's own
+  persisted `element-data.data` (59 rows, ~75,053 "minutes" of travel time — an obvious network-wide
+  sum, not one corridor). This is not a caching/staleness issue; it's a real query silently running
+  over the wrong (unbounded) scope every time a route lacks TMCs, in edit mode AND (had the demo's
+  URL param round-trip ever landed on an empty-tmc route) in view mode too.
+- **Fixed in `transformReportRoutes`** (`useGraphPublish.js`): a route with no `tmc_array`, or one
+  that fails to parse, is now excluded from the published comparison-series list entirely — no
+  variant is published for it — rather than publishing a variant with an empty `tmc` filter. The core
+  `buildUdaConfig.js` empty-leaf-drop guard is untouched (it's correct for its real, load-bearing use
+  case; the fix belongs in NPMRDS-specific code producing a leaf that should never be empty in the
+  first place, per `feedback_isolate_shared_code_changes`). Also fixes (2): the console error is gone
+  because a route with no `tmc_array` is now skipped before the `JSON.parse` call, not just
+  try/caught after it fails.
+  Live-reverified post-fix: reloading the edit page (no `?routes=` param) now shows both graphs
+  correctly empty, zero console errors, and — confirmed via `read_network_requests` — no query is
+  issued for either graph at all (nothing to fetch, since no route publishes a variant). View mode
+  with a real route (`?routes=2195805`) still renders correctly, confirming the fix doesn't affect
+  the resolved-route path.
+- **(1) is a real, separate, still-open UX issue — not fixed, needs a design call.** Reproduced live:
+  a slot-count/URL-count mismatch (here, 2 persisted slots vs. 1 id in the URL, from adding "Route
+  Slot 2" mid-session) makes `needsRouteSelection` pop the blocking `RouteTagBrowserModal` — "Select 2
+  more (0/2)" — *on top of* the already-correctly-rendered 1-route view, rather than either (a)
+  pre-populating the picker with the route(s) already resolved from the URL, or (b) not gating at all
+  until the author explicitly republishes a URL with the new slot count. Confirmed this is exactly
+  what Ryan hit going view → edit → add a slot → back to view with a stale URL. Needs Ryan's steer on
+  desired behavior before touching it — see "Open questions" below.
+- Scratch report state: `claude_scratch_dynamic_report_demo` now has 2 persisted slots ("Primary
+  Route", "Route Slot 2") instead of the original 1, left as-is (harmless, matches existing
+  disposable-scratch-data convention) — useful for re-testing the mismatch case in (1) later.
+
 ---
 
 ## Open questions for triage
@@ -909,6 +961,15 @@ Still open:
    build, 2026-08-03. TMC-linear auto-generation remains unstarted.
 2. ~~The proposed tag taxonomy~~ — confirmed by Ryan 2026-07-31, proceed as proposed. See item 2's
    "Proposed starting tag categories" section.
+2b. **New, 2026-08-03 (Ryan's manual testing): what should happen when a Dynamic Report's persisted
+   slot count and its URL's route-id count disagree** (e.g. after adding a route slot in edit mode
+   without also republishing a wider URL)? Currently the blocking `RouteTagBrowserModal` pops
+   "Select N more (0/N)" over the already-rendered partial view, discarding whatever the URL already
+   resolved. Options: pre-populate the picker with the already-resolved route(s) so the author only
+   picks the *additional* slot(s); or don't gate at all in edit mode (only viewers hitting a live
+   share link need the gate — an author editing the template already sees the raw placeholders and
+   the URL is incidental); or something else. See item 3's new manual-testing section for the full
+   repro. Not fixed — needs Ryan's steer before touching it.
 3. Since Dynamic Report template pages are shared/reused (not per-instance), does editing a
    template's structure need any special draft/publish handling beyond what DMS pages already do,
    to avoid disrupting a concurrent viewer? Probably already covered by the existing
