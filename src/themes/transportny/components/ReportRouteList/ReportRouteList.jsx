@@ -183,6 +183,7 @@ export default function ReportRouteList() {
         <RouteTagBrowserModal
           open={true}
           setOpen={() => {}}
+          dismissible={false}
           apiLoad={apiLoad}
           routeSourceInfo={routeSourceInfo}
           selectionMode="exact"

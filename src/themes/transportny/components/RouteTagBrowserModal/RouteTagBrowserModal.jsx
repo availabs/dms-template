@@ -20,6 +20,11 @@ export default function RouteTagBrowserModal({
   requiredCount = 0,
   excludeRouteIds,
   onConfirm,
+  // False for a blocking entry gate (Dynamic Reports' no-route-selected-yet case, see
+  // ReportRouteList.jsx) where `setOpen` is a deliberate no-op and there's nothing to cancel
+  // back to. Only affects Cancel's disabled styling here — the caller's own no-op `setOpen`
+  // already makes backdrop-click/Escape (see Modal.jsx/useModalOverlay.js) inert either way.
+  dismissible = true,
 }) {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Input, Icon, Modal } = UI || {};
@@ -250,7 +255,7 @@ export default function RouteTagBrowserModal({
         <div className={t.footer}>
           <div className={t.footerCount}>{countMessage}</div>
           <div className={t.footerButtons}>
-            <Button themeOptions={{ size: 'sm', color: 'transparent' }} onClick={() => setOpen?.(false)}>Cancel</Button>
+            <Button themeOptions={{ size: 'sm', color: 'transparent' }} disabled={!dismissible} onClick={() => setOpen?.(false)}>Cancel</Button>
             <Button themeOptions={{ size: 'sm', color: 'primary' }} disabled={!canConfirm} onClick={handleConfirm}>
               Add {selectedCount || ''} Route{selectedCount === 1 ? '' : 's'}
             </Button>
