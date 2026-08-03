@@ -113,6 +113,23 @@
 
 ## Phase C — filter pill styles (#3, library)
 
+> **Phase C — DONE (2026-07-21), verified on :5200.** **C1 needed no work — the library mechanism
+> already shipped:** `ExternalFilters.jsx:61` + `RenderFilters.jsx:29` already resolve
+> `getComponentTheme(theme,'filters', state.display.filterStyle)` (styles[] + inheritance from
+> styles[0]), and `FilterComponent.config.js:20` already exposes a "Filter style" selector (options
+> built from `theme.filters.styles[].name`, writes `display.filterStyle`). **C2:** restructured mny
+> `theme.filters` flat map → `{options:{activeStyle:0}, styles:[{name:'default',…verbatim}, {name:'pillBar',…}]}`
+> (styles[0] = old map → BC), added the `pillBar` variant (tinted band + rounded-full white pill
+> controls, `placement:'inline'`, `conditionsGrid` flex-wrap w-full; toggle/tokens/clear-all inherited
+> from styles[0]); set `display.filterStyle:'pillBar'` on Filter 2262759; registered pillBar in
+> `design-system/components.html`. **BC fix (found via grep):** `RenderFilterValueSelector.jsx` read
+> `themeFromContext.filters` **directly** (would fall back to default theme under the new styles[]
+> shape, un-branding value selectors site-wide) → changed both reads to `getComponentTheme(…, 'filters')`
+> (resolves styles[0] for styles[] themes, flat map as-is for others → BC). **Note:** the mockup's
+> single-row bar (view-switch at the right end) isn't reached because the live page keeps the List/Card
+> view toggle as a separate 1/3 section, so the filter band is 2/3 width and "Needs priority" wraps —
+> a layout choice, not a styling gap; full-row would mean folding the view toggle into the filter.
+
 ### Task C1: Filter `activeStyle`/`styles[]` mechanism (subagent)
 
 **Files:** `src/dms/planning/tasks/current/filter-scoped-styles.md` (new); Filter theme + `ExternalFilters`/`RenderFilters` theme consumption + `Filter` config selector in `src/dms/…`.

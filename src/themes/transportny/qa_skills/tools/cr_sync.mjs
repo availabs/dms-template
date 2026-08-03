@@ -227,6 +227,8 @@ const PAGES_DIR = "src/themes/transportny/TransportNY Design System/dms_design_s
 const SURFACE_PREFIX = { tsmo2: "tsmo-", freightatlas2: "freight-atlas-" };
 const KEY_FILE_OVERRIDE = {
   "tsmo2:corridor_view": "tsmo-corridor.html",
+  // the live page moved /about → /about_the_plan (ticket #107); the mockup kept its old name
+  "freightatlas2:about_the_plan": "freight-atlas-about.html",
   "freightatlas2:maps_gallery": "freight-atlas-gallery.html",
   "freightatlas2:freight_atlas": "freight-atlas-map.html",
   "freightatlas2:data_downloads": "freight-atlas-data.html",

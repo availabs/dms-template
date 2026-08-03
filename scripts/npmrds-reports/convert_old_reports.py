@@ -26,7 +26,7 @@ Per converted report this creates:
   - a gap report (stdout + scratchpad/npmrds-sub/old-reports/gaps/)
 
 Usage:
-  python3 scripts/convert_old_reports.py --report-id 1070 [--dry-run]
+  python3 scripts/npmrds-reports/convert_old_reports.py --report-id 1070 [--dry-run]
 """
 
 import argparse
@@ -38,9 +38,20 @@ import sys
 import uuid
 from datetime import datetime, timezone
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import dbq  # noqa: E402 — sibling scripts/ module, read-only CH/PG query runner
+import dbq  # noqa: E402 — sibling scripts/npmrds-reports/ module, read-only CH/PG query runner
+
+# Shared vocabulary artifact (report-graph-vocabulary-picker.md, Workstream 1):
+# the generative core of TEMPLATE_SPECS below (measure expressions, join defs,
+# resolution/axis expressions, comparison-mode color rule) lives in this JSON
+# so this script and the planned NPMRDS "Measure" picker (src/themes/
+# transportny/) consume the exact same formulas instead of two hand-synced
+# copies. See data-types/npmrds_graph_vocabulary/README.md for the full field
+# reference and the regeneration/verification procedure.
+VOCAB_PATH = os.path.join(REPO, "data-types/npmrds_graph_vocabulary/vocabulary.json")
+with open(VOCAB_PATH) as _f:
+    GRAPH_VOCAB = json.load(_f)
 
 # ── New-system constants (npmrdsv5/dev2 dev site) ──────────────────────────
 DMS_ENV = {
@@ -246,11 +257,30 @@ INFO_BOX_GRAIN = {"Route Info Box": "route", "TMC Info Box": "tmc"}
 # value at all.
 INFO_BOX_BUCKET = ("speed", "travel_time_all")
 # source 1410's per-year pm3 views (documentation/npmrds-data-sources.md,
-# table names confirmed 2026-07-09 via data_manager.views) — no coverage
-# outside 2021-2025.
-PM3_VIEW_BY_YEAR = {2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425}
+# table names confirmed 2026-07-09 via data_manager.views). 2018-2020 backfill
+# confirmed 2026-07-20 directly against data_manager.views/gis_datasets: views
+# 3563 (2018, 36,095 rows)/3559 (2019, 46,619 rows)/3555 (2020, 48,700 rows)
+# all carry the full 121-column schema, byte-identical to the 2021-2025 views
+# (speed_pctl_85/lottr_*/tttr_* 100% non-null). A 2017 view also exists
+# (3566, 32,915 rows) but is NOT included here: its schema is only 113
+# columns — missing all 8 speed_pctl_* columns entirely, so `pm3.speed_pctl_85
+# as freeflow` (ensure_pm3_join_template/ensure_bar_graph_summary_pm3_template)
+# would fail outright against it. Adding 2017 needs a no-freeflow template
+# variant or a product decision first, not a drop-in dict entry.
+PM3_VIEW_BY_YEAR = {2018: 3563, 2019: 3559, 2020: 3555,
+                    2021: 2587, 2022: 2575, 2023: 2567, 2024: 2568, 2025: 3425}
 INFO_BOX_TITLES = {"route": "Route Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})",
                     "tmc": "TMC Reliability (LOTTR / TTTR / Freeflow, {bin}, {year})"}
+# Bar Graph Summary's `freeflow-byDateRange` measure — same pm3-keyed join as
+# INFO_BOX_BUCKET above (source 1410's speed_pctl_85), bin-independent (a Bar
+# Graph Summary bar is a whole-date-range aggregate, and 1410's speed
+# percentiles have no time-of-day dimension anyway), so only `year` needs
+# resolving. Built round 38 (ensure_bar_graph_summary_pm3_template) but left
+# UNWIRED — the real corpus's 62 instances were all pre-2019-dated, outside
+# 1410's then-current 2021-2025 coverage, so wiring it in would have produced
+# 0 real flips. The round-66 2018-2020 backfill made that reasoning stale (22
+# instances newly feasible at 2018, +1 at 2019); wired in round 68 (2026-07-20).
+BAR_SUMMARY_PM3_BUCKET = ("freeflow-byDateRange", "travel_time_all")
 # Round 38 (Phase B, item (c)): Info Box `avgTT-byDateRange` — checked 1410's
 # live schema (`s1410_v3425_pm_3`, 121 columns) directly: NO avg-travel-time
 # column exists there at all (only speed percentiles, LOTTR/TTTR ratios,
@@ -437,20 +467,29 @@ SINGLE_ACTIVE_COMP_TYPES = {"Hours of Delay Graph", "TMC Info Box",
 # red at the negative end, green positive — speed is reverseColors:false).
 # Reports with a real color_range get it wired by the generic
 # COLOR_RANGE_GRAPH_TYPES branch in build_graph_section_data instead.
-DEFAULT_DIFF_COLOR_RANGE = ["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"]
+DEFAULT_DIFF_COLOR_RANGE = GRAPH_VOCAB["comparisonModes"]["difference"]["defaultColorRange"]
 
 
 def _diff_colors(bar, reverse):
     """Display patch for a difference template's default diverging colors:
     zero-centered (byValueSymmetric, the R52 platform toggle — old
     d3.scaleQuantize([-max, +max]) parity); bars also need byValue (grids
-    always color by value). reverse=True mirrors old getColorRange()'s
-    reverseColors handling for the REVERSE_COLORS_MEASURES set — applied to
-    the template's own DEFAULT ramp here; reports carrying a real color_range
-    get the same reversal from the generic wiring in
+    always color by value). `reverse` is the measure's RAW-VALUE
+    REVERSE_COLORS_MEASURES membership (old getColorRange()'s reverseColors
+    handling), validated correct for coloring a raw value (round 51: low/good
+    travelTime -> green). A difference graph colors a before-minus-after
+    DELTA, not a raw value, and going from "which raw value is good" to
+    "which delta sign is good" inverts the polarity for every measure (a
+    positive travelTime delta means time fell -- also good -- but sits at the
+    opposite end of the domain from a low raw value). So the diff-mode ramp
+    applies the NEGATION of `reverse`, not `reverse` itself -- fixed
+    2026-07-30, mirrors composeMeasureConfig.js's buildDiffColors (see
+    "Finding: difference-graph color scale reads backwards" in
+    report-spec-and-build-script.md). Reports carrying a real color_range get
+    the same (now-corrected) reversal from the generic wiring in
     build_graph_section_data."""
-    value = (list(reversed(DEFAULT_DIFF_COLOR_RANGE)) if reverse
-             else list(DEFAULT_DIFF_COLOR_RANGE))
+    value = (list(DEFAULT_DIFF_COLOR_RANGE) if reverse
+             else list(reversed(DEFAULT_DIFF_COLOR_RANGE)))
     cfg = {"type": "palette", "value": value, "byValueSymmetric": True}
     if bar:
         cfg["byValue"] = True
@@ -481,10 +520,7 @@ ALL_WEEKDAYS = {"monday", "tuesday", "wednesday", "thursday", "friday",
 # per-row approximation avg(miles*3600/nullIf(tt,0)) used in rounds 1-34,
 # which round 34 measured at +13% off the old UI's displayed value
 # (26.02 vs 23.03 on report 520 comp-1, "WB Arterial Weave 2018").
-SPEED_EXPR = (
-    "(arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) * 3600) / "
-    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
-    "ds.travel_time_all_vehicles != 0))) as speed")
+SPEED_EXPR = GRAPH_VOCAB["measures"]["speed"]["expr"]
 # Bar Graph Summary (round 34) proved this expression live first (one
 # whole-range value per arm, old allReducer semantics); round 35 unified the
 # constants — keeping the summary's own name so its TEMPLATE_SPECS entry
@@ -506,18 +542,14 @@ SPEED_VALUE_EXPR = SPEED_EXPR.rsplit(" as ", 1)[0] + " as value"
 # hoursOfDelay is NOT built the same way: its volume term — total AADT
 # distribution vs the truck share — needs the old server's delay route read
 # first; see the round-52 GRAPH_TEMPLATE_MAP comment.)
-SPEED_EXPR_TRUCK = SPEED_EXPR.replace("travel_time_all_vehicles",
-                                      "travel_time_freight_trucks")
+SPEED_EXPR_TRUCK = GRAPH_VOCAB["measures"]["speedTruck"]["expr"]
 # Old-faithful route travel time (round 35): same two-level shape — the old
 # travelTime measure is the ROUTE TRAVERSAL time in MINUTES (sum over TMCs of
 # each TMC's mean tt, / 60), not the mean single-segment time in seconds that
 # rounds 1-34 rendered (avg(tt) — wrong quantity AND scale; round 34 measured
 # 103.5s vs the old tool's 4.58min on the report-520 fixture). Same avgMapIf
 # 0-as-missing skip as SPEED_EXPR (subsumes round 23's nullIf fix).
-TRAVEL_TIME_EXPR = (
-    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
-    "ds.travel_time_all_vehicles != 0))) / 60 "
-    "as travel_time_all_vehicles")
+TRAVEL_TIME_EXPR = GRAPH_VOCAB["measures"]["travelTime"]["expr"]
 # Route Map travelTime choropleth (M3): same "value" realiasing SPEED_VALUE_EXPR
 # already uses for its own Map-layer tile-property column — TRAVEL_TIME_EXPR is
 # already self-aggregating/per-TMC under a bare GROUP BY tmc (same round-35 proof
@@ -556,11 +588,7 @@ TRAVEL_TIME_VALUE_EXPR = TRAVEL_TIME_EXPR.rsplit(" as ", 1)[0] + " as value"
 # signal to gate on here. Every other table1.* reference in this expression
 # (miles, avg_speedlimit, faciltype) comes from the SAME row, so a join miss
 # zeroes them all together -- gating on aadt alone is sufficient.
-DELAY_EXPR = ("(greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.miles / "
-              "greatest(20, table1.avg_speedlimit * 0.6)) * 3600)) / 3600) "
-              "* (nullIf(table1.aadt, 0) / (if(table1.faciltype > 1, 2, 1))) "
-              "* arrayElement(table2.distributions, ds.epoch + 1) "
-              "as hours_of_delay")
+DELAY_EXPR = GRAPH_VOCAB["measures"]["hoursOfDelay"]["expr"]
 # Route Map hoursOfDelay (M3): unlike avgHoursOfDelay, this measure's old
 # tmcReducer is a plain SUM across per-bucket values (dataTypes.js:
 # `tmcReducer: sumReducer`), and each bucket's own "hoursOfDelay" value is
@@ -591,8 +619,7 @@ HOURS_OF_DELAY_VALUE_EXPR = f"(sum({DELAY_EXPR.rsplit(' as ', 1)[0]})) as value"
 # this as the real, author-facing "already aggregated server-side" option) —
 # the expression is self-aggregating (contains its own sum()/count()), so no
 # extra wrapping fn is needed or correct.
-AVG_DELAY_EXPR = (f"(sum({DELAY_EXPR.rsplit(' as ', 1)[0]}) "
-                  "/ count(DISTINCT ds.date)) as avg_hours_of_delay")
+AVG_DELAY_EXPR = GRAPH_VOCAB["measures"]["avgHoursOfDelay"]["expr"]
 
 # Route Map avgHoursOfDelay (M3, 2026-07-15): unlike speed/travelTime/
 # hoursOfDelay, this measure is GENUINELY resolution-dependent for the Map,
@@ -698,48 +725,16 @@ AVG_DELAY_SUMMARY_WEEKDAY_EXPR = _avg_delay_summary_expr("toDayOfWeek(ds.date)")
 # greatest()/division/subtraction on a ClickHouse Nullable all propagate NULL
 # as expected). 2017-dated hoursOfDelay/CO2 reports are gap-logged, not
 # unblocked -- out of scope per the standing "data issues, not code" ruling.
-META_JOIN = {
-    "source": 582, "view": 983,
-    "sourceInfo": {
-        "name": "NPMRDS_V6_tmc_meta",
-        "columns": [{"name": n, "type": "string"} for n in
-                    ["tmc", "miles", "avg_speedlimit", "aadt", "aadt_singl",
-                     "aadt_combi", "congestion_level", "directionality",
-                     "f_system", "faciltype", "year"]],
-        "source_id": 582, "env": "npmrds2", "srcEnv": "npmrds2",
-        "isDms": False, "baseUrl": "", "type": "NPMRDS_V6_tmc_meta",
-        "view_id": 983,
-    },
-    "joinColumns": [
-        {"dsColumn": "tmc", "joinSourceColumn": "tmc"},
-        {"dsColumn": "toYear(ds.date) as meta_year", "joinSourceColumn": "year"},
-    ],
-    "mergeStrategy": "join", "type": "left",
-}
+META_JOIN = GRAPH_VOCAB["joins"]["META_JOIN"]
+AADT_DIST_JOIN = GRAPH_VOCAB["joins"]["AADT_DIST_JOIN"]
 # dist_key mirrors old getDist(): WEEKEND collapses to [weekdayType, roadType],
 # WEEKDAY needs congestion_level + directionality + roadType — all only
 # available on table1 (NPMRDS_V6_tmc_meta, META_JOIN above), joined as a calculated dsColumn
 # expression (the platform fix verified in the round-3 notes) rather than a
-# plain column so it can reference an already-joined alias.
-DIST_KEY_EXPR = (
-    "if(toDayOfWeek(ds.date, 2) IN (6,7), "
-    "concat('WEEKEND_', if(table1.f_system < 3, 'FREEWAY', 'NONFREEWAY')), "
-    "concat('WEEKDAY_', table1.congestion_level, '_', table1.directionality, '_', "
-    "if(table1.f_system < 3, 'FREEWAY', 'NONFREEWAY'))) as dist_key"
-)
-AADT_DIST_JOIN = {
-    "source": 2056, "view": 3524,
-    "sourceInfo": {
-        "name": "aadt_distributions",
-        "columns": [{"name": "key", "type": "string"},
-                    {"name": "distributions", "type": "array"}],
-        "source_id": 2056, "env": "npmrds2", "srcEnv": "npmrds2",
-        "isDms": False, "baseUrl": "", "type": "aadt_distributions",
-        "view_id": 3524,
-    },
-    "joinColumns": [{"dsColumn": DIST_KEY_EXPR, "joinSourceColumn": "key"}],
-    "mergeStrategy": "join", "type": "left",
-}
+# plain column so it can reference an already-joined alias. Read off
+# AADT_DIST_JOIN's own joinColumns rather than duplicated separately, so it
+# can never drift from the join that actually uses it.
+DIST_KEY_EXPR = AADT_DIST_JOIN["joinColumns"][0]["dsColumn"]
 # CO2 emissions (avail-falcor getCo2Emissions.js's calcEmissions/getCo2/
 # forCars/forTrucks): per epoch, split AADT into car
 # (table1.aadt - (aadt_singl + aadt_combi)) vs truck (aadt_singl + aadt_combi),
@@ -814,12 +809,16 @@ _AADT_TRUCK_EXPR = ("((table1.aadt_singl + table1.aadt_combi) "
 # earlier table1.miles inside _SPEED_CAR_EXPR/_SPEED_TRUCK_EXPR needs no
 # guard of its own since this outer one already nulls the final product
 # regardless of what that inner (possibly wrong-on-a-miss) speed computed.
-CO2_EXPR_PASSENGER = (
-    f"(({_CO2_CAR_FACTOR.format(s=_SPEED_CAR_EXPR)}) "
-    f"* ({_AADT_CAR_EXPR} * nullIf(table1.miles, 0)) / 1000000) as avg_co2_emissions")
-CO2_EXPR_TRUCK = (
-    f"(({_CO2_TRUCK_FACTOR.format(s=_SPEED_TRUCK_EXPR)}) "
-    f"* ({_AADT_TRUCK_EXPR} * nullIf(table1.miles, 0)) / 1000000) as avg_co2_emissions")
+# CO2_EXPR_PASSENGER/CO2_EXPR_TRUCK are read from the shared vocabulary (both
+# co2Emissions_passenger/truck and avgCo2Emissions_passenger/truck share the
+# exact same "expr" — only the aggregation "fn" differs, which TEMPLATE_SPECS
+# entries below set independently). The _CO2_*_FACTOR/_SPEED_*_EXPR/
+# _AADT_*_EXPR fragments above stay Python-only: they're never composed into
+# these two constants anymore, but AADT_OVERRIDE_SUBS below still needs
+# _AADT_CAR_EXPR/_AADT_TRUCK_EXPR's exact substrings to find and replace
+# inside whichever of these two expressions a report actually uses.
+CO2_EXPR_PASSENGER = GRAPH_VOCAB["measures"]["co2Emissions_passenger"]["expr"]
+CO2_EXPR_TRUCK = GRAPH_VOCAB["measures"]["co2Emissions_truck"]["expr"]
 
 # ── overrides.aadt (old getHoursOfDelay.js getAADT / getCo2Emissions.js
 # calcEmissions) ─────────────────────────────────────────────────────────────
@@ -870,7 +869,13 @@ AADT_OVERRIDE_SUBS = [
 # Guard against the fragments drifting out of sync with the expressions they
 # must match inside live template rows (which were written from these same
 # constants) — a silent mismatch would convert the graph WITHOUT the override.
+# DELAY_EXPR/CO2_EXPR_PASSENGER/CO2_EXPR_TRUCK now come from the shared
+# vocabulary JSON (not composed from these same fragments in this file
+# anymore), so these three assertions are the only thing still tying the
+# fragments to the vocabulary's expression strings.
 assert _AADT_DELAY_FRAGMENT in DELAY_EXPR
+assert _AADT_CAR_EXPR in CO2_EXPR_PASSENGER
+assert _AADT_TRUCK_EXPR in CO2_EXPR_TRUCK
 
 
 def aadt_override_of(rc):
@@ -895,7 +900,7 @@ def aadt_override_of(rc):
 # rather than a name string, so "sort": "asc" orders Monday->Sunday correctly
 # (a future author-facing label lookup for 1-7 -> day name is a display
 # refinement, not attempted here — conversion correctness over pixel parity).
-WEEKDAY_EXPR = "toDayOfWeek(ds.date, 1) as weekday"
+WEEKDAY_EXPR = GRAPH_VOCAB["resolutions"]["weekday"]["xAxis"]["expr"]
 
 # "Hours of Delay Graph" per-resolution xAxis buckets beyond 5-minutes/day
 # (round 12, 2026-07-09) — same queryHelpers.js getResolution() switch as
@@ -906,9 +911,9 @@ WEEKDAY_EXPR = "toDayOfWeek(ds.date, 1) as weekday"
 # bucket (e.g. hour bucket 7 sums every 7:00-7:55 epoch on every date in
 # range) — same "bounded, not per-timestamp" shape as the 5-minutes/epoch
 # template, just a coarser bucket.
-HOUR_EXPR = "intDiv(ds.epoch, 12) as hour"
-QUARTER_HOUR_EXPR = "intDiv(ds.epoch, 3) as quarter_hour"
-MONTH_EXPR = "toStartOfMonth(ds.date) as month"
+HOUR_EXPR = GRAPH_VOCAB["resolutions"]["hour"]["xAxis"]["expr"]
+QUARTER_HOUR_EXPR = GRAPH_VOCAB["resolutions"]["15-minutes"]["xAxis"]["expr"]
+MONTH_EXPR = GRAPH_VOCAB["resolutions"]["month"]["xAxis"]["expr"]
 
 # "Hours of Delay Graph" (old HoursOfDelayGraph.jsx) is NOT the same shape as
 # the Route-Bar-Graph delay templates above: generateGraphData([route], ...)
@@ -1562,8 +1567,36 @@ TEMPLATE_SPECS = {
 }
 TEMPLATE_BASE_NAME = "tmc_travel_time_line_graph"
 # Route Compare Component's per-measure raw expression (see ROUTE_COMPARE_BUCKET
-# above) — only speed is in scope this round.
-MEASURE_EXPR = {"speed": SPEED_EXPR}
+# above). speed + travelTime cover the signal_timing composition class (71%
+# each) — the rest of ROUTE_COMPARE_BUCKET's corpus scope.
+#
+# travelTime does NOT reuse TRAVEL_TIME_EXPR verbatim — it needs its own
+# ds.-qualified copy, for a real reason found live (2026-07-29), not
+# theoretical: round 35 (2026-07-13) originally set TRAVEL_TIME_EXPR to
+# `ds.`-qualified columns (mirrors SPEED_EXPR exactly), verified correct for
+# every WITH-JOIN template that uses it (this one, and Route Map's choropleth
+# via TRAVEL_TIME_VALUE_EXPR). The 2026-07-24 vocabulary.json fix (see
+# research/npmrds-reports/reportroutelist-cross-repo-sync.md) then stripped
+# the `ds.` prefix from GRAPH_VOCAB's travelTime expr — correctly, for THAT
+# fix's own context (AVL Graph's no-join vocabulary path, where `ds.` is
+# unresolvable) — but TRAVEL_TIME_EXPR is defined as
+# `GRAPH_VOCAB["measures"]["travelTime"]["expr"]`, so that fix silently
+# regressed every WITH-JOIN caller too. Live-caught here: bare columns make
+# `build_route_compare_section_state`'s delta query fail with ClickHouse
+# error "Aggregate function avgMapIf(...) is found inside another aggregate
+# function" — with the `ds.` prefix restored (this constant), the exact same
+# query returns correct values (cross-checked against Info Box's travelTime
+# numbers for the same routes: 5.3729/4.5079 min, exact match). Route Map's
+# travelTime choropleth likely has this same live regression today (also
+# WITH-JOIN, also derives from TRAVEL_TIME_EXPR) — flagged, not fixed here;
+# out of this task's scope, and Route Map's failure mode may differ (a
+# choropleth bake rather than a live query, so it might not error the same
+# way — needs its own check before assuming the fix is identical).
+ROUTE_COMPARE_TRAVELTIME_EXPR = (
+    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), "
+    "ds.travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles"
+)
+MEASURE_EXPR = {"speed": SPEED_EXPR, "travelTime": ROUTE_COMPARE_TRAVELTIME_EXPR}
 
 
 # ── Low-level helpers ────────────────────────────────────────────────────────
@@ -3384,6 +3417,77 @@ REVERSE_COLORS_MEASURES = {
 }
 
 
+def pooled_route_map_values(measure, tmcs, start_date, end_date, resolution=None):
+    """Run the pooled per-TMC CH query behind a Route Map choropleth bake and
+    return the list of non-null values, one per TMC in `tmcs` with data in
+    [start_date, end_date] ('YYYY-MM-DD' strings). Extracted 2026-07-27 so the
+    query text is shared between bake_route_map_choropleth_paint/
+    bake_route_map_delay_paint (old-report conversion path, tmcs/dates resolved
+    from old comps below) and build_route_map_section_state (spec-driven
+    report_build.mjs path, tmcs/dates come straight from the spec's routes) —
+    one definition, so the two callers can't drift apart."""
+    tmc_list = ",".join(f"'{t}'" for t in sorted(tmcs))
+    if measure in ROUTE_MAP_VALUE_EXPR:
+        value_expr = ROUTE_MAP_VALUE_EXPR[measure]
+        sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
+               f"FROM {CH_FACT_TABLE} AS ds "
+               f"JOIN {CH_TMC_IDENT_TABLE} AS table1 ON ds.tmc = table1.tmc "
+               f"WHERE ds.tmc IN ({tmc_list}) "
+               f"AND ds.date >= '{start_date}' AND ds.date <= '{end_date}' "
+               f"GROUP BY ds.tmc")
+    else:
+        value_expr = (HOURS_OF_DELAY_VALUE_EXPR if measure == "hoursOfDelay"
+                     else ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION[resolution])
+        dist_key_body = DIST_KEY_EXPR.rsplit(" as ", 1)[0]
+        # Round 59: CH_META_TABLE spans multiple years (one row per (tmc,
+        # year)) -- without the toYear(ds.date) match this INNER JOIN would
+        # fan out every fact row across every year table1 carries for that
+        # tmc, silently multiplying the pooled value.
+        sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
+               f"FROM {CH_FACT_TABLE} AS ds "
+               f"JOIN {CH_META_TABLE} AS table1 "
+               f"ON ds.tmc = table1.tmc AND toYear(ds.date) = table1.year "
+               f"JOIN {CH_AADT_DIST_TABLE} AS table2 ON {dist_key_body} = table2.key "
+               f"WHERE ds.tmc IN ({tmc_list}) "
+               f"AND ds.date >= '{start_date}' AND ds.date <= '{end_date}' "
+               f"GROUP BY ds.tmc")
+    result = dbq.ch(sql)
+    rows = result.get("data") or []
+    return [r[1] for r in rows if r[1] is not None]
+
+
+def apply_route_map_paint(state, values, color_range, measure, max_round_digits=1):
+    """Shared tail of every Route Map choropleth bake (extracted 2026-07-27):
+    given pooled per-TMC values, compute colors/breaks/paint and mutate
+    state's active choropleth layer in place. Returns False (state left as
+    the template's placeholder paint) if `values` is empty, True otherwise."""
+    if not values:
+        return False
+    colors = (color_range if color_range and len(color_range) >= 2
+             else DEFAULT_SPEED_COLOR_RANGE)
+    # Match GeneralGraphComp.getColorRange()'s reverseColors flip (see
+    # REVERSE_COLORS_MEASURES above) -- old reports' color_range is
+    # authored assuming the DISPLAYED measure controls direction, and the old
+    # tool reverses it upstream for "high is bad" measures before RouteMap.jsx
+    # ever sees it.
+    if measure in REVERSE_COLORS_MEASURES:
+        colors = list(reversed(colors))
+    breaks = quantile_breaks(values, num_bins=len(colors))
+    paint_result = choropleth_paint("value", colors, breaks,
+                                    max_value=round(max(values), max_round_digits))
+    sym_id = next(iter(state["symbologies"]))
+    sym = state["symbologies"][sym_id]["symbology"]
+    lid = sym["activeLayer"]
+    layer = sym["layers"][lid]
+    layer["color-range"] = colors
+    layer["num-bins"] = len(colors)
+    layer["legend-data"] = paint_result["legend"]
+    for l in layer["layers"]:
+        if l["id"] == lid:
+            l["paint"]["line-color"] = paint_result["paint"]
+    return True
+
+
 def bake_route_map_choropleth_paint(state, info, route_map_value_ctx, color_range,
                                     gaps, old_graph, measure):
     """Per-report choropleth bake for a Route-Map Map-section clone whose
@@ -3431,17 +3535,7 @@ def bake_route_map_choropleth_paint(state, info, route_map_value_ctx, color_rang
 
     start_fmt = "-".join([min(starts)[:4], min(starts)[4:6], min(starts)[6:8]])
     end_fmt = "-".join([max(ends)[:4], max(ends)[4:6], max(ends)[6:8]])
-    tmc_list = ",".join(f"'{t}'" for t in sorted(tmcs))
-    value_expr = ROUTE_MAP_VALUE_EXPR[measure]
-    sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
-           f"FROM {CH_FACT_TABLE} AS ds "
-           f"JOIN {CH_TMC_IDENT_TABLE} AS table1 ON ds.tmc = table1.tmc "
-           f"WHERE ds.tmc IN ({tmc_list}) "
-           f"AND ds.date >= '{start_fmt}' AND ds.date <= '{end_fmt}' "
-           f"GROUP BY ds.tmc")
-    result = dbq.ch(sql)
-    rows = result.get("data") or []
-    values = [r[1] for r in rows if r[1] is not None]
+    values = pooled_route_map_values(measure, tmcs, start_fmt, end_fmt)
     if not values:
         gaps.append({"kind": f"route_map_{measure}_no_values", "graph": old_graph.get("id"),
                      "detail": f"pooled CH query over {len(tmcs)} tmc(s), "
@@ -3449,30 +3543,7 @@ def bake_route_map_choropleth_paint(state, info, route_map_value_ctx, color_rang
                                f"choropleth left unbaked (template placeholder "
                                f"default renders)"})
         return
-
-    colors = (color_range if color_range and len(color_range) >= 2
-             else DEFAULT_SPEED_COLOR_RANGE)
-    # Match GeneralGraphComp.getColorRange()'s reverseColors flip (see
-    # REVERSE_COLORS_MEASURES above) -- old reports' color_range is
-    # authored assuming the DISPLAYED measure controls direction, and the old
-    # tool reverses it upstream for "high is bad" measures before RouteMap.jsx
-    # ever sees it.
-    if measure in REVERSE_COLORS_MEASURES:
-        colors = list(reversed(colors))
-    breaks = quantile_breaks(values, num_bins=len(colors))
-    paint_result = choropleth_paint("value", colors, breaks,
-                                    max_value=round(max(values), 1))
-
-    sym_id = next(iter(state["symbologies"]))
-    sym = state["symbologies"][sym_id]["symbology"]
-    lid = sym["activeLayer"]
-    layer = sym["layers"][lid]
-    layer["color-range"] = colors
-    layer["num-bins"] = len(colors)
-    layer["legend-data"] = paint_result["legend"]
-    for l in layer["layers"]:
-        if l["id"] == lid:
-            l["paint"]["line-color"] = paint_result["paint"]
+    apply_route_map_paint(state, values, color_range, measure, max_round_digits=1)
 
 
 def ensure_route_map_avghoursofdelay_template(year, resolution, templates, dry_run):
@@ -3775,30 +3846,11 @@ def bake_route_map_delay_paint(state, info, route_map_value_ctx, color_range,
 
     start_fmt = "-".join([min(starts)[:4], min(starts)[4:6], min(starts)[6:8]])
     end_fmt = "-".join([max(ends)[:4], max(ends)[4:6], max(ends)[6:8]])
-    tmc_list = ",".join(f"'{t}'" for t in sorted(tmcs))
     # hoursOfDelay is resolution-invariant (one expression, no resolution
-    # dispatch needed); avgHoursOfDelay genuinely varies by resolution.
-    value_expr = (HOURS_OF_DELAY_VALUE_EXPR if measure == "hoursOfDelay"
-                 else ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION[resolution])
-    dist_key_body = DIST_KEY_EXPR.rsplit(" as ", 1)[0]
-    # Round 59: CH_META_TABLE now spans multiple years (one row per (tmc,
-    # year), see the META_JOIN comment above) -- without the toYear(ds.date)
-    # match this INNER JOIN would fan out every fact row across every year
-    # table1 carries for that tmc, silently multiplying the pooled value.
-    # (An INNER join -- unlike the templated LEFT join -- just drops any
-    # dates outside table1's year coverage, e.g. 2017, rather than zeroing
-    # them, so no nullIf guard is needed here.)
-    sql = (f"SELECT ds.tmc AS tmc, {value_expr} "
-           f"FROM {CH_FACT_TABLE} AS ds "
-           f"JOIN {CH_META_TABLE} AS table1 "
-           f"ON ds.tmc = table1.tmc AND toYear(ds.date) = table1.year "
-           f"JOIN {CH_AADT_DIST_TABLE} AS table2 ON {dist_key_body} = table2.key "
-           f"WHERE ds.tmc IN ({tmc_list}) "
-           f"AND ds.date >= '{start_fmt}' AND ds.date <= '{end_fmt}' "
-           f"GROUP BY ds.tmc")
-    result = dbq.ch(sql)
-    rows = result.get("data") or []
-    values = [r[1] for r in rows if r[1] is not None]
+    # dispatch needed); avgHoursOfDelay genuinely varies by resolution --
+    # pooled_route_map_values branches on `resolution` internally.
+    values = pooled_route_map_values(measure, tmcs, start_fmt, end_fmt,
+                                     resolution=resolution)
     if not values:
         gaps.append({"kind": f"route_map_{measure}_no_values", "graph": old_graph.get("id"),
                      "detail": f"pooled CH query over {len(tmcs)} tmc(s), "
@@ -3806,25 +3858,206 @@ def bake_route_map_delay_paint(state, info, route_map_value_ctx, color_range,
                                f"choropleth left unbaked (template placeholder "
                                f"default renders)"})
         return
+    apply_route_map_paint(state, values, color_range, measure, max_round_digits=3)
 
-    colors = (color_range if color_range and len(color_range) >= 2
-             else DEFAULT_SPEED_COLOR_RANGE)
-    if measure in REVERSE_COLORS_MEASURES:
-        colors = list(reversed(colors))
-    breaks = quantile_breaks(values, num_bins=len(colors))
-    paint_result = choropleth_paint("value", colors, breaks,
-                                    max_value=round(max(values), 3))
 
-    sym_id = next(iter(state["symbologies"]))
-    sym = state["symbologies"][sym_id]["symbology"]
-    lid = sym["activeLayer"]
-    layer = sym["layers"][lid]
-    layer["color-range"] = colors
-    layer["num-bins"] = len(colors)
-    layer["legend-data"] = paint_result["legend"]
-    for l in layer["layers"]:
-        if l["id"] == lid:
-            l["paint"]["line-color"] = paint_result["paint"]
+ROUTE_MAP_MEASURES = ("none", "speed", "travelTime", "hoursOfDelay", "avgHoursOfDelay")
+
+
+def build_route_map_section_state(measure, year, templates, dry_run,
+                                  resolution=None, tmcs=None,
+                                  start_date=None, end_date=None,
+                                  color_range=None):
+    """Build a ready-to-embed Route Map section state for the spec-driven
+    `report_build.mjs` path (2026-07-27). `report_build.mjs` has NO Map-section
+    code of its own — verified by grep; it only ever emits RRL/AVL Graph/
+    Spreadsheet sections. This is the single entrypoint it shells out to (see
+    `--route-map-section` in main() below) so a spec-built report's Map section
+    reuses the exact same tested template-minting (`ensure_route_map_*_template`)
+    and per-report choropleth-baking (`pooled_route_map_values`/
+    `apply_route_map_paint`) machinery `convert_report` already uses for old-
+    report conversion, rather than a second implementation in JS that could
+    drift from it. Mirrors `convert_report`'s `route_map_tmpl_name` pre-pass
+    dispatch exactly (same year-clamping, same ensure_* dispatch by measure) —
+    see that pre-pass, a few hundred lines below, for the reference this
+    intentionally shadows.
+
+    Returns (element_type, state, gap) — `gap` is a short human-readable string
+    (or None) explaining why the choropleth was left at the template's
+    placeholder paint, e.g. no tmcs/dates given, or a real query returning no
+    values. A placeholder-painted Map section still renders real geometry and
+    real tiles; it just isn't colored by this report's own data yet. Callers
+    decide what to do with `gap` (report_build.mjs prints it as a warning, does
+    not fail the build — matches this task's standing "guess and flag, don't
+    block" rule)."""
+    if measure not in ROUTE_MAP_MEASURES:
+        raise ValueError(f"unknown Route Map measure {measure!r} — known: {ROUTE_MAP_MEASURES}")
+    if measure == "avgHoursOfDelay" and resolution not in ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION:
+        raise ValueError(f"avgHoursOfDelay needs a resolution in "
+                         f"{list(ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION)}, got {resolution!r}")
+    # Same clamp convert_report's pre-pass applies: pre-2017 dates fall back to
+    # the oldest provisioned geometry network rather than erroring.
+    year = min(max(year, min(GEOMETRY_TILE_VIEWS)), max(GEOMETRY_TILE_VIEWS))
+
+    if measure == "none":
+        templates = ensure_route_map_none_template(year, templates, dry_run)
+        tmpl_name = f"route_map_none_{year}"
+    elif measure == "speed":
+        templates = ensure_route_map_speed_template(year, templates, dry_run)
+        tmpl_name = f"route_map_speed_{year}"
+    elif measure == "travelTime":
+        templates = ensure_route_map_traveltime_template(year, templates, dry_run)
+        tmpl_name = f"route_map_travelTime_{year}"
+    elif measure == "hoursOfDelay":
+        templates = ensure_route_map_hoursofdelay_template(year, templates, dry_run)
+        tmpl_name = f"route_map_hoursOfDelay_{year}"
+    else:
+        templates = ensure_route_map_avghoursofdelay_template(year, resolution, templates, dry_run)
+        slug = ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG[resolution]
+        tmpl_name = f"route_map_avgHoursOfDelay_{slug}_{year}"
+
+    tmpl = templates[tmpl_name]
+    state = json.loads(tmpl["data"]["stateJson"])
+    element_type = tmpl["data"].get("elementType", "Map")
+
+    gap = None
+    if measure != "none":
+        # The "none" (geometry-only) template's layer carries no `join` key at
+        # all -- baking is a structural no-op for it, same as build_graph_section_data
+        # already special-cases (is_map and route_map_value_ctx checks).
+        if tmcs and start_date and end_date:
+            values = pooled_route_map_values(measure, tmcs, start_date, end_date,
+                                             resolution=resolution)
+            applied = apply_route_map_paint(
+                state, values, color_range, measure,
+                max_round_digits=1 if measure in ROUTE_MAP_VALUE_EXPR else 3)
+            if not applied:
+                gap = (f"pooled CH query over {len(tmcs)} tmc(s), {start_date}.."
+                      f"{end_date} returned no values — choropleth left unbaked "
+                      f"(template placeholder default renders)")
+        else:
+            gap = ("no tmcs/date range given — choropleth left unbaked "
+                  "(template placeholder default renders)")
+    return element_type, state, gap
+
+
+# The five measure buckets convert_report's real classifier maps for Route/TMC
+# Info Box (see INFO_BOX_GRAIN/INFO_BOX_*_BUCKET above), named for the
+# spec-driven path below. "reliability" is the LOTTR/TTTR/Freeflow pm3 join —
+# INFO_BOX_BUCKET's old internal key is the confusingly-reused `("speed",
+# "travel_time_all")`, but calling it "speed" here would collide with AVL
+# Graph's real speed-in-mph measure, so the spec-facing name is a deliberate
+# rename, not a new bucket.
+INFO_BOX_SPEC_MEASURES = ("reliability", "travelTime", "length", "aadt", "hoursOfDelay")
+
+
+def build_route_info_box_section_state(measure, grain, templates, dry_run,
+                                       year=None, bin_=None):
+    """Build a ready-to-embed Route/TMC Info Box section state for the
+    spec-driven `report_build.mjs` path (2026-07-28) — the same reuse pattern
+    as `build_route_map_section_state` immediately above: report_build.mjs has
+    NO Info Box section code of its own (verified by grep — see the task
+    file's "SECOND CORRECTION" on Route Info Box), so this is the single
+    entrypoint it shells out to (`--route-info-box-section` in main() below),
+    reusing the exact template-minting machinery (`ensure_pm3_join_template`/
+    `ensure_info_box_traveltime_template`/`ensure_info_box_length_template`/
+    `ensure_info_box_aadt_template`/`ensure_info_box_delay_template`)
+    `convert_report` already uses for old-report conversion.
+
+    Unlike Route Map, an Info Box section needs NO per-report baking step at
+    build time: every one of its five buckets queries live at render time via
+    the cloned template's own join (pgFederated for reliability, a plain CH
+    join for the other four) — the same fetchMode:"force"/comparisonSeries
+    mechanism an AVL Graph section already uses. So this function only ever
+    mints-or-reuses a template and clones its state; it never touches
+    ClickHouse itself, and there is no tmcs/start_date/end_date parameter to
+    thread through.
+
+    That also means there is no placeholder-paint fallback the way Route
+    Map's geometry-only "none" template gives every measure something to
+    render even when tmcs/dates are missing. "reliability" hard-depends on
+    `year` resolving into source 1410's actual per-year coverage
+    (PM3_VIEW_BY_YEAR) and `bin` landing on one of the four periods it
+    precomputes (RELIABILITY_BIN_LABELS) — there's no fallback year or bin to
+    substitute, so both raise ValueError rather than gap-log. Callers (i.e.
+    report_build.mjs) are expected to validate year/bin themselves before
+    ever shelling out here, exactly as they already validate Route Map's
+    measure/resolution first — these raises are a defense-in-depth backstop,
+    not the intended failure path.
+
+    Returns (element_type, state) — no `gap` in the return, unlike
+    build_route_map_section_state, since there is nothing to leave unbaked."""
+    if measure not in INFO_BOX_SPEC_MEASURES:
+        raise ValueError(f"unknown Info Box measure {measure!r} — known: {INFO_BOX_SPEC_MEASURES}")
+    if grain not in ("route", "tmc"):
+        raise ValueError(f"unknown Info Box grain {grain!r} — must be 'route' or 'tmc'")
+
+    if measure == "reliability":
+        if year is None or bin_ is None:
+            raise ValueError("Info Box measure 'reliability' needs both `year` and `bin`")
+        if year not in PM3_VIEW_BY_YEAR:
+            raise ValueError(f"year {year} is outside source 1410's "
+                             f"{min(PM3_VIEW_BY_YEAR)}-{max(PM3_VIEW_BY_YEAR)} coverage — "
+                             f"no fallback exists (unlike Route Map's geometry-year clamp); "
+                             f"pick a measure with no year dependency (travelTime/length/"
+                             f"aadt/hoursOfDelay) or a route inside that window instead")
+        if bin_ not in RELIABILITY_BIN_LABELS:
+            raise ValueError(f"unknown bin {bin_!r} — known: {sorted(RELIABILITY_BIN_LABELS)}")
+        templates = ensure_pm3_join_template(grain, year, bin_, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_reliability_{year}_{bin_}"
+    elif measure == "travelTime":
+        templates = ensure_info_box_traveltime_template(grain, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_traveltime"
+    elif measure == "length":
+        templates = ensure_info_box_length_template(grain, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_length"
+    elif measure == "aadt":
+        templates = ensure_info_box_aadt_template(grain, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_aadt"
+    else:  # hoursOfDelay
+        templates = ensure_info_box_delay_template(grain, templates, dry_run)
+        tmpl_name = f"{grain}_info_box_delay"
+
+    tmpl = templates[tmpl_name]
+    state = json.loads(tmpl["data"]["stateJson"])
+    # Same BarGraph-crashes-without-state.data footgun build_graph_section_data
+    # guards against for every old-report graph (including this exact template
+    # type) — cheap to carry over even though Spreadsheet may not need it.
+    state.setdefault("data", [])
+    element_type = tmpl["data"].get("elementType", "Spreadsheet")
+    return element_type, state
+
+
+def build_route_compare_section_state(measure, templates, dry_run):
+    """Build a ready-to-embed Route Compare Component section state for the
+    spec-driven `report_build.mjs` path (2026-07-29) — same reuse pattern as
+    `build_route_info_box_section_state` immediately above: report_build.mjs
+    has no Route Compare section code of its own, so this is the single
+    entrypoint it shells out to (`--route-compare-section` in main() below),
+    reusing `ensure_route_compare_template`'s shared, generic, per-measure
+    template (round 25) rather than a second implementation.
+
+    Like Info Box and unlike Route Map, this needs NO per-report baking step:
+    `ensure_route_compare_template`'s own docstring explains why — nothing
+    report-specific is baked into the SQL (no base route, no literal label);
+    every row's anchor and %-diff resolve live at render time via
+    `comparisonSeries` + dms-server's `__ANCHOR__(<expr>)` mechanism, reading
+    whichever route the page's own route list currently has first. So this
+    function only ever mints-or-reuses a template and clones its state, the
+    same as `build_route_info_box_section_state` — one shared template per
+    measure, reused across every report.
+
+    Returns (element_type, state) — no `gap`, since there is nothing to leave
+    unbaked (mirrors Info Box's return shape, not Route Map's)."""
+    if measure not in MEASURE_EXPR:
+        raise ValueError(f"unknown Route Compare measure {measure!r} — known: {sorted(MEASURE_EXPR)}")
+    templates = ensure_route_compare_template(measure, templates, dry_run)
+    tmpl = templates[f"route_compare_{measure}"]
+    state = json.loads(tmpl["data"]["stateJson"])
+    # Same BarGraph-crashes-without-state.data footgun Info Box already carries over.
+    state.setdefault("data", [])
+    element_type = tmpl["data"].get("elementType", "Spreadsheet")
+    return element_type, state
 
 
 _TMC_RESOLVE_CACHE = {}
@@ -3974,6 +4207,27 @@ def analyze_graph(g, comps_by_id, gaps):
     else:
         assigned = [c for c in (state.get("activeRouteComponents") or [])
                     if c in comps_by_id] or list(comps_by_id)
+        if gtype == "Route Line Graph" and not (state.get("activeRouteComponents") or []):
+            # RouteLineGraph.jsx (transportNY) overrides GeneralGraphComp's
+            # getResolution()/getActiveRouteComponents(): with no explicit
+            # comp selection it does NOT show every comp regardless of
+            # resolution (unlike the generic `or list(comps_by_id)` fallback
+            # above) — it shows only the comps matching ONE resolution group:
+            # state.resolution if some comp actually has it, else routes[0]'s
+            # (original report order) resolution. Comps in other resolution
+            # groups are silently excluded from the graph by default (real
+            # old-tool behavior, not a data loss bug) until an author flips
+            # the "Resolution" selector it shows whenever >1 group exists —
+            # not replicated here, so conversion always lands on the default
+            # group, same as an unopened old report would render.
+            order = list(comps_by_id)
+            res_of = lambda c: (comps_by_id[c].get("settings") or {}).get("resolution") or "5-minutes"
+            default_res = res_of(order[0]) if order else "5-minutes"
+            state_res = state.get("resolution")
+            state_res = state_res if isinstance(state_res, str) else None
+            winning_res = state_res if state_res and any(
+                res_of(c) == state_res for c in order) else default_res
+            assigned = [c for c in order if res_of(c) == winning_res]
 
     if gtype == "Hours of Delay Graph":
         measure = "hoursOfDelay"
@@ -4064,11 +4318,22 @@ def analyze_graph(g, comps_by_id, gaps):
         # route_map_tmpl_name branch never reads info["resolution"] at all,
         # so a mixed set there is analyzer noise, not a real gap (confirmed
         # 2026-07-17: 145 of the corpus's 146 Route-Map mixed-resolution
-        # instances are non-avgHoursOfDelay).
+        # instances are non-avgHoursOfDelay). Route Compare Component
+        # (2026-07-20): RouteCompareComponent.jsx reduces each assigned comp
+        # to ONE whole-date-range scalar independently (allReducer/reducer),
+        # exactly like ensure_route_compare_template's self-aggregating
+        # MEASURE_EXPR — the `resolution` parameter threaded through
+        # generateGraphData/generateTableData/renderGraph is never actually
+        # referenced in that component's body, confirmed by reading it
+        # directly. A mixed resolution set across its base+compare rows is
+        # analyzer noise, not a real gap (breakdown: 21 of the corpus's 159
+        # mixed_resolutions_on_graph instances were this type).
         route_map_resolution_irrelevant = (
             gtype == "Route Map" and measure != "avgHoursOfDelay")
+        resolution_irrelevant = (route_map_resolution_irrelevant
+                                  or gtype == "Route Compare Component")
         if (gtype not in INFO_BOX_GRAIN and gtype not in DIFFERENCE_GRAPH_TYPES
-                and not route_map_resolution_irrelevant):
+                and not resolution_irrelevant):
             gaps.append({"kind": "mixed_resolutions_on_graph", "graph": g.get("id"),
                          "detail": sorted(map(str, resolutions))})
     data_columns = {(comps_by_id[c].get("settings") or {}).get("dataColumn")
@@ -4143,8 +4408,19 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
         # short/good travel times red and long/bad ones green (backwards).
         # Only the Map path (bake_route_map_choropleth_paint/
         # bake_route_map_delay_paint) had this applied, since round 50.
-        colors = (list(reversed(color_range))
-                  if info["measure"] in REVERSE_COLORS_MEASURES else color_range)
+        #
+        # 2026-07-30 fix: that reversal rule is validated correct for RAW
+        # VALUE coloring (TMC Grid Graph, Route Bar Graph), but two of
+        # COLOR_RANGE_GRAPH_TYPES — Route Difference Graph / TMC Difference
+        # Grid — color a before-minus-after DELTA instead, and the polarity
+        # inverts between those two cases (see _diff_colors' docstring for
+        # the derivation; same bug, same fix, different call path — this one
+        # fires when the OLD report carried its own custom color_range
+        # instead of the template's default ramp).
+        wants_reverse = info["measure"] in REVERSE_COLORS_MEASURES
+        if old_graph.get("type") in DIFFERENCE_GRAPH_TYPES:
+            wants_reverse = not wants_reverse
+        colors = list(reversed(color_range)) if wants_reverse else color_range
         colors_cfg = {"type": "palette", "value": colors}
         # BarGraph colors by series by default (one color per route) — these
         # converted reports are single-series magnitude charts (the old
@@ -4249,10 +4525,59 @@ def build_cloned_section_data(page_id, tmpl_section, tracking_id):
 
 # ── New-side operations (all writes via CLI) ────────────────────────────────
 
-def find_page_by_slug(slug):
+def find_page_by_slug(slug, exclude_id=None):
+    cond = f"AND id != {int(exclude_id)}" if exclude_id else ""
     out = psql_new(
         "SELECT id FROM dms_npmrdsv5.data_items "
-        f"WHERE type = '{PAGE_TYPE}' AND data->>'url_slug' = '{slug}' LIMIT 1")
+        f"WHERE type = '{PAGE_TYPE}' AND data->>'url_slug' = '{slug}' {cond} LIMIT 1")
+    return int(out) if out else None
+
+
+def to_snake_case(s):
+    """Port of the DMS page editor's own toSnakeCase()
+    (patterns/page/pages/_utils/index.js) -- same regex, same behavior."""
+    if not s:
+        return s
+    parts = re.findall(
+        r'[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+', s)
+    return "_".join(p.lower() for p in parts)
+
+
+def compute_report_slug(title, index="0", exclude_id=None):
+    """Mirrors the page editor's getUrlSlug() (same file) so a converted
+    page's slug is born equal to what the admin UI would independently
+    compute from parent+title -- the scheme 34/37 already-converted pages
+    live on today, not the report_<old_id> scheme this function used to
+    return. That scheme was never stable: the editor's updateTitle()
+    recomputes url_slug from the title on every save (intentional platform
+    behavior, see find_page_by_old_report_id's docstring), so a page minted
+    as report_<old_id> silently flipped to converted_reports/<title> the
+    first time anyone opened/saved it -- and flipped BACK to report_<old_id>
+    on every --replace reconversion, breaking whatever URL was live in the
+    meantime. Minting the same slug the UI converges to means reconversion
+    no longer changes the URL at all. exclude_id lets a --replace call skip
+    the page about to be deleted so it never collides with itself."""
+    base = f"{CONVERTED_PARENT_SLUG}/{to_snake_case(title)}"
+    if find_page_by_slug(base, exclude_id=exclude_id) is None:
+        return base
+    return f"{base}_{index}"
+
+
+def find_page_by_old_report_id(old_id):
+    """Reliable "has old report <old_id> already been converted" check.
+    NOT slug-based on purpose: url_slug is title-derived and the DMS page
+    editor recomputes it (getUrlSlug in patterns/page/pages/_utils/index.js)
+    on every title save, by design (URLs are meant to track the title) —
+    so a converted page's slug can drift away from whatever `report_<old_id>`
+    the converter set at creation with zero warning. Matching on that stale
+    slug pattern left `--replace` unable to find (and thus delete) the old
+    page before creating a new one — confirmed live: old reports 1033/1056
+    each ended up with 2 duplicate pages before this fix. `_converted_from_
+    old_report_id` (set on the reports_snap_2 row at creation, see `snap`
+    below) never changes, so it's the durable link back to the old id."""
+    out = psql_new(
+        f"SELECT data->>'report_id' FROM {REPORTS_SNAP_TABLE} "
+        f"WHERE data->>'_converted_from_old_report_id' = '{old_id}' LIMIT 1")
     return int(out) if out else None
 
 
@@ -4261,6 +4586,9 @@ def delete_converted_page(page_id):
     All deletes go through the CLI (requires the auth token)."""
     page = dms(["raw", "get", str(page_id)])
     d = page["data"]
+    if d is None:
+        print(f"page {page_id} not found (already deleted?) — skipping")
+        return
     section_ids = {s["id"] for s in (d.get("draft_sections") or [])}
     section_ids |= {s["id"] for s in (d.get("sections") or [])}
     for sid in sorted(section_ids, key=int):
@@ -4331,16 +4659,19 @@ def convert_report(old_id, dry_run=False, replace=False):
     old = fetch_old_report(old_id)
     print(f"\n=== old report {old_id}: '{old['name']}' ===")
 
-    slug = f"report_{old_id}"
-    existing = find_page_by_slug(slug)
+    existing = find_page_by_old_report_id(old_id)
     if existing:
         if not replace:
             raise RuntimeError(
-                f"page '{slug}' already exists (id {existing}) — pass --replace")
+                f"page for old report {old_id} already exists (id {existing}) "
+                f"— pass --replace")
         if dry_run:
             print(f"[dry-run] would delete existing page {existing} first")
         else:
             delete_converted_page(existing)
+
+    title = old["name"] or f"Report {old_id}"
+    slug = compute_report_slug(title, exclude_id=existing)
 
     # -- old-side pieces
     route_comps = flatten_route_comps(old.get("route_comps"), gaps)
@@ -4531,6 +4862,31 @@ def convert_report(old_id, dry_run=False, replace=False):
             info_box_tmpl_name[gid] = f"{grain}_info_box_reliability_{year}_{bin_}"
             info_box_bin_year[gid] = (year, bin_)
 
+    # Bar Graph Summary freeflow-byDateRange: same per-report/year pm3 join as
+    # the Info Box reliability bucket above, but bin-independent — see
+    # BAR_SUMMARY_PM3_BUCKET/ensure_bar_graph_summary_pm3_template.
+    bar_summary_pm3_tmpl_name = {}
+    bar_summary_pm3_gap_logged = set()
+    for g, info in analyzed:
+        if (info["type"] != "Bar Graph Summary"
+                or (info["measure"], info["data_column"]) != BAR_SUMMARY_PM3_BUCKET):
+            continue
+        gid = g.get("id")
+        year = graph_max_year(info, comps_by_id)
+        if year is None:
+            gaps.append({"kind": "bar_summary_freeflow_year_undetermined", "graph": gid,
+                         "detail": "no assigned comp has a startDate/endDate "
+                                   "to period-match the pm3 join"})
+            bar_summary_pm3_gap_logged.add(gid)
+        elif year not in PM3_VIEW_BY_YEAR:
+            gaps.append({"kind": "bar_summary_freeflow_outside_pm3_coverage", "graph": gid,
+                         "detail": f"max year {year} outside 1410's "
+                                   f"{min(PM3_VIEW_BY_YEAR)}-{max(PM3_VIEW_BY_YEAR)} coverage"})
+            bar_summary_pm3_gap_logged.add(gid)
+        else:
+            graph_templates = ensure_bar_graph_summary_pm3_template(year, graph_templates, dry_run)
+            bar_summary_pm3_tmpl_name[gid] = f"tmc_freeflow_summary_bar_graph_{year}"
+
     # Route Compare Component: base (first assigned comp) + N compare rows,
     # %-diff-from-base via a delta column (round 24) — see
     # ensure_route_compare_template above. Only ROUTE_COMPARE_BUCKET is
@@ -4544,7 +4900,13 @@ def convert_report(old_id, dry_run=False, replace=False):
         gid = g.get("id")
         if info["measure"] not in MEASURE_EXPR:
             continue  # outside this round's supported measure — generic gap below
-        if (info["measure"], info["resolution"], info["data_column"]) != ROUTE_COMPARE_BUCKET:
+        # Resolution is deliberately NOT part of this match (2026-07-20):
+        # ensure_route_compare_template's MEASURE_EXPR is a whole-date-range
+        # self-aggregating expression with no resolution dimension at all,
+        # matching RouteCompareComponent.jsx's own real behavior (see the
+        # resolution_irrelevant note in analyze_graph above) — info["resolution"]
+        # is frequently None here (mixed across comps) and that's fine.
+        if (info["measure"], info["data_column"]) != (ROUTE_COMPARE_BUCKET[0], ROUTE_COMPARE_BUCKET[2]):
             continue
         if len(info["assigned"]) < 2:
             gaps.append({"kind": "route_compare_insufficient_comps", "graph": gid,
@@ -4636,6 +4998,8 @@ def convert_report(old_id, dry_run=False, replace=False):
         is_info_box = info["type"] in INFO_BOX_GRAIN
         is_route_compare = info["type"] == "Route Compare Component"
         is_route_map = info["type"] == "Route Map"
+        is_bar_summary_pm3 = (info["type"] == "Bar Graph Summary"
+                             and (info["measure"], info["data_column"]) == BAR_SUMMARY_PM3_BUCKET)
         key = (info["type"], info["measure"], info["resolution"],
                info["data_column"])
         # A pairless difference graph must skip even though its bucket has a
@@ -4648,13 +5012,14 @@ def convert_report(old_id, dry_run=False, replace=False):
         tmpl_name = (info_box_tmpl_name.get(gid) if is_info_box
                     else route_compare_tmpl_name.get(gid) if is_route_compare
                     else route_map_tmpl_name.get(gid) if is_route_map
+                    else bar_summary_pm3_tmpl_name.get(gid) if is_bar_summary_pm3
                     else GRAPH_TEMPLATE_MAP.get(key))
         if tmpl_name and tmpl_name in graph_templates:
             convertible.append((g, info, graph_templates[tmpl_name]))
             continue
         skipped.append(g)
         if (gid in info_box_gap_logged or gid in route_compare_gap_logged
-                or gid in route_map_gap_logged):
+                or gid in route_map_gap_logged or gid in bar_summary_pm3_gap_logged):
             continue  # specific reason already gap-logged above
         gaps.append({"kind": "unmapped_graph", "detail": {
             "graph": gid, "graph_type": info["type"],
@@ -4754,23 +5119,25 @@ def convert_report(old_id, dry_run=False, replace=False):
 
     if dry_run:
         print(f"[dry-run] would create page '{slug}' ('{old['name']}') with "
-              f"{len(convertible)} graph(s) (+RRL +Add-a-Route), "
+              f"{len(convertible)} graph(s) (+RRL), "
               f"{len(route_entries)} route(s); {len(skipped)} graph(s) skipped")
         return finish(old_id, old, None, gaps, dry_run)
 
     # -- page
     parent_id = ensure_parent_page(dry_run)
     res = dms(["page", "create", "--pattern", PATTERN,
-               "--title", old["name"] or slug, "--slug", slug],
+               "--title", title, "--slug", slug],
               data={"index": "0", "parent": str(parent_id),
                     "sidebar": page_template.get("sidebar", "left"),
                     "published": "draft"})
     page_id = res["id"]
     print(f"created page id={page_id} slug={slug}")
 
-    # -- draft sections (RRL first/sidebar, then graphs, then Add-a-Route)
+    # -- draft sections (RRL first/sidebar, then graphs). No Add-a-Route
+    # Spreadsheet section is cloned anymore — the template no longer has one to
+    # clone from (RRL's own inline "Add a route" search replaces it, see
+    # dms-template's add-route-flow-improvements.md task).
     rrl_tmpl = template_section_by_type(page_template, "ReportRouteList")
-    sheet_tmpl = template_section_by_type(page_template, "Spreadsheet")
     section_datas = [build_cloned_section_data(page_id, rrl_tmpl, str(uuid.uuid4()))]
     # Route-Map choropleth baking (M2) needs each graph's assigned comps'
     # TMCs/date ranges — all three pieces already computed above for the
@@ -4799,7 +5166,6 @@ def convert_report(old_id, dry_run=False, replace=False):
                                      route_map_value_ctx=route_map_value_ctx,
                                      diff_invert=route_diff_invert.get(
                                          g.get("id"), False)))
-    section_datas.append(build_cloned_section_data(page_id, sheet_tmpl, str(uuid.uuid4())))
 
     draft_ids = []
     for sd in section_datas:
@@ -4837,10 +5203,10 @@ def convert_report(old_id, dry_run=False, replace=False):
     print(f"created reports_snap_2 row id={r['id']} (report_id={page_id}, "
           f"{len(route_entries)} routes)")
 
-    return finish(old_id, old, page_id, gaps, dry_run)
+    return finish(old_id, old, page_id, gaps, dry_run, slug=slug)
 
 
-def finish(old_id, old, page_id, gaps, dry_run):
+def finish(old_id, old, page_id, gaps, dry_run, slug=None):
     os.makedirs(GAPS_DIR, exist_ok=True)
     report = {"old_report_id": old_id, "old_name": old.get("name"),
               "new_page_id": page_id, "dry_run": dry_run,
@@ -4853,20 +5219,94 @@ def finish(old_id, old, page_id, gaps, dry_run):
         print(f"  [{g['kind']}] " + json.dumps(
             {k: v for k, v in g.items() if k != 'kind'})[:200])
     if page_id and not dry_run:
-        print(f"\nview it: http://npmrds.localhost:5173/report_{old_id} "
+        print(f"\nview it: http://npmrds.localhost:5173/{slug or f'report_{old_id}'} "
               f"(page id {page_id})")
     return report
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
-    ap.add_argument("--report-id", type=int, required=True,
+    ap.add_argument("--report-id", type=int,
                     help="old admin2.reports id to convert")
     ap.add_argument("--dry-run", action="store_true",
                     help="report what would happen without writing")
     ap.add_argument("--replace", action="store_true",
                     help="delete a previously converted page for this report first")
+    ap.add_argument("--route-map-section", action="store_true",
+                    help="build a single Route Map section state and print it as "
+                         "JSON on stdout, for report_build.mjs to embed in a "
+                         "spec-driven report — does not touch any old "
+                         "admin2.reports row. See build_route_map_section_state().")
+    ap.add_argument("--measure", choices=ROUTE_MAP_MEASURES,
+                    help="--route-map-section: none/speed/travelTime/hoursOfDelay/avgHoursOfDelay")
+    ap.add_argument("--year", type=int, help="--route-map-section: network geometry year")
+    ap.add_argument("--resolution", choices=["day", "5-minutes"],
+                    help="--route-map-section: required only for measure avgHoursOfDelay")
+    ap.add_argument("--tmcs", help="--route-map-section: JSON array of TMC strings to bake the choropleth against")
+    ap.add_argument("--start-date", help="--route-map-section: YYYY-MM-DD")
+    ap.add_argument("--end-date", help="--route-map-section: YYYY-MM-DD")
+    ap.add_argument("--color-range", help="--route-map-section: JSON array of hex colors")
+    ap.add_argument("--route-info-box-section", action="store_true",
+                    help="build a single Route/TMC Info Box section state and print it "
+                         "as JSON on stdout, for report_build.mjs to embed in a "
+                         "spec-driven report — does not touch any old admin2.reports "
+                         "row. See build_route_info_box_section_state().")
+    ap.add_argument("--info-box-measure", choices=INFO_BOX_SPEC_MEASURES,
+                    help="--route-info-box-section: reliability/travelTime/length/aadt/hoursOfDelay")
+    ap.add_argument("--grain", choices=["route", "tmc"], default="route",
+                    help="--route-info-box-section: route (comparisonSeries __series "
+                         "discriminator, default) or tmc (single real tmc column)")
+    ap.add_argument("--bin", dest="reliability_bin", choices=sorted(RELIABILITY_BIN_LABELS),
+                    help="--route-info-box-section: required only for "
+                         "--info-box-measure reliability (amp/midd/pmp/we)")
+    ap.add_argument("--route-compare-section", action="store_true",
+                    help="build a single Route Compare Component section state and print "
+                         "it as JSON on stdout, for report_build.mjs to embed in a "
+                         "spec-driven report — does not touch any old admin2.reports "
+                         "row. See build_route_compare_section_state().")
+    ap.add_argument("--compare-measure", choices=sorted(MEASURE_EXPR),
+                    help="--route-compare-section: speed/travelTime")
     args = ap.parse_args()
+
+    if args.route_map_section:
+        if not args.measure or not args.year:
+            ap.error("--route-map-section needs --measure and --year")
+        templates = load_graph_templates()
+        element_type, state, gap = build_route_map_section_state(
+            args.measure, args.year, templates, args.dry_run,
+            resolution=args.resolution,
+            tmcs=json.loads(args.tmcs) if args.tmcs else None,
+            start_date=args.start_date, end_date=args.end_date,
+            color_range=json.loads(args.color_range) if args.color_range else None)
+        if gap:
+            print(f"[route-map-section] {gap}", file=sys.stderr)
+        print(json.dumps({"elementType": element_type, "state": state}))
+        return
+
+    if args.route_info_box_section:
+        if not args.info_box_measure:
+            ap.error("--route-info-box-section needs --info-box-measure")
+        if args.info_box_measure == "reliability" and not (args.year and args.reliability_bin):
+            ap.error("--route-info-box-section --info-box-measure reliability needs --year and --bin")
+        templates = load_graph_templates()
+        element_type, state = build_route_info_box_section_state(
+            args.info_box_measure, args.grain, templates, args.dry_run,
+            year=args.year, bin_=args.reliability_bin)
+        print(json.dumps({"elementType": element_type, "state": state}))
+        return
+
+    if args.route_compare_section:
+        if not args.compare_measure:
+            ap.error("--route-compare-section needs --compare-measure")
+        templates = load_graph_templates()
+        element_type, state = build_route_compare_section_state(
+            args.compare_measure, templates, args.dry_run)
+        print(json.dumps({"elementType": element_type, "state": state}))
+        return
+
+    if not args.report_id:
+        ap.error("--report-id is required unless --route-map-section/--route-info-box-section/"
+                 "--route-compare-section is set")
     convert_report(args.report_id, dry_run=args.dry_run, replace=args.replace)
 
 

@@ -37,7 +37,13 @@ mny/design/
 │   ├── actions-prioritization.html     prioritize actions — card view (tiers across counties)
 │   ├── actions-location-overview.html  MapLibre map (donut clusters by status) + statewide exec summary
 │   ├── datasets-files.html             the datasets pattern
-│   └── site-management*.html           admin surfaces
+│   ├── site-management*.html           admin surfaces
+│   └── county-actions/               ← COUNTY ACTIONS WORKFLOW — one linked 5-page flow
+│       ├── dashboard.html              1 · county actions dashboard (stats + needs-attention + map + table)
+│       ├── jurisdictions.html          2 · pick a jurisdiction, or take the whole county
+│       ├── workspace.html              3 · prioritization worklist + create-action modal
+│       ├── action-view.html            4 · read one action (redesign of the live /actions/view)
+│       └── action-edit.html            5 · edit one action (same IA, editable + sticky save bar)
 ├── reports/                          ← data-analysis reports (NOT for DMS migration)
 │   ├── actions-qa.html                 actions data-quality / location-precision audit
 │   ├── duplicate-actions.html          same-place redundant rows — cause + safe-to-delete case
@@ -59,6 +65,50 @@ mny/design/
 > `pages/actions-location-overview.html` loads MapLibre GL + the generated
 > `assets/mny/data/actions_locations.geojson`, so it (and the reports, for their relative asset
 > links) must be viewed over a local server (`python3 -m http.server` in `design/`), not `file://`.
+> The same applies to `pages/county-actions/dashboard.html`, which fetches
+> `assets/mny/data/sullivan_boundaries.geojson` and `sullivan_actions.geojson`.
+
+---
+
+## `pages/county-actions/` — the County Actions Workflow
+
+One **linked five-page flow**, not five independent mockups: a county planner moves
+dashboard → jurisdictions → workspace → action view ⇄ action edit, and every page carries the
+breadcrumb and footer index back out. It is the design for the live `actions` pattern
+(`mitigat-ny-prod`, pattern `2265530`, base_url `actions`), whose `view` page is currently the
+actions form transcribed as eight flat half-width Cards.
+
+**Every number, name and quoted sentence on these five pages is real Sullivan County data** —
+geoid `36105`, 475 actions across 23 jurisdictions, pulled from the DMS internal actions dataset
+(source `1029065` / view `1074456`). Aggregates are baked by
+[`references/actions/scripts/16_sullivan_map.mjs`](../../../../references/actions/scripts/16_sullivan_map.mjs)
+into `references/actions/data/sullivan_stats.json`; re-run it to refresh them. The specimen action
+on pages 4 and 5 is id `1100379` (*Delaware — Kohlertown Route 52, Culvert Issues*), prose verbatim.
+
+**Layout rule for this section: one boxed `content` LayoutGroup per page, and nothing on the topo
+canvas.** No page here uses an unboxed `header` or `footer` group — identity bands, stat strips and
+the footer page index all sit inside the white surface with everything else, and the topo texture
+shows only in the Layout's outer gutter. Only genuinely fixed chrome floats over the canvas (TopNav,
+the `action-edit` sticky save bar, the design-system widget). Note the knock-on when copying patterns
+out of these pages: chrome toned for the topo canvas (`bg-white` pills, `hover:bg-white`) goes
+invisible on the white surface — the tinted `bg-mny-50` variants here are the version that reads.
+
+Two facts the pages state rather than hide, because they shape the design:
+
+- **County priority is unset on all 475 actions.** The workspace's progress meter is therefore
+  empty by design — that is the job the page exists to do, not a placeholder.
+- **Nothing in Sullivan has a site coordinate.** 472 mapped actions sit on 26 town/county
+  centroids, so the dashboard map draws the **county outline and 21 jurisdiction polygons** under
+  the donut clusters: the polygon is the real unit of precision, and the caveat panel says so.
+  Ateres (Village) has 11 actions but no polygon in the NFIP layer, and is flagged as such.
+
+Sullivan was chosen over higher-fill counties (Chemung, Niagara) for continuity with the existing
+`actions-prioritize.html` / `actions-dashboard.html` mockups. Its trade-off: `estimated_cost` is
+empty on every row and point-of-contact on 439 of 475, so pages 4–5 double as the reference for how
+**empty** fields present (collapsed behind a "show 18 empty fields" toggle on view; dashed amber
+`.mny-field-empty` inputs on edit).
+
+Full rationale, per-page section tables and the figures: `planning/mitigateny/tasks/current/county-actions-workflow-design.md`.
 
 ---
 

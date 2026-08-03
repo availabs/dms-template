@@ -22,13 +22,13 @@ fast (5s) with a VPN hint instead of hanging when mercury/neptune are
 unreachable.
 
 CLI:
-  python3 scripts/dbq.py old "SELECT count(*) FROM admin2.reports"
-  python3 scripts/dbq.py new "SELECT id, type FROM dms_npmrdsv5.data_items LIMIT 5" --csv
-  python3 scripts/dbq.py ch  "SELECT count() FROM npmrds.s583_v982_NPMRDS_V6"
-  python3 scripts/dbq.py ch  "DESCRIBE npmrds.s583_v982_NPMRDS_V6" --format PrettyCompact
-  python3 scripts/dbq.py old -f peek.sql          # SQL from file
-  echo "SELECT 1" | python3 scripts/dbq.py dama -  # SQL from stdin
-  python3 scripts/dbq.py graph '[["dms","data","npmrdsv5+dev2:site","length"]]'
+  python3 scripts/npmrds-reports/dbq.py old "SELECT count(*) FROM admin2.reports"
+  python3 scripts/npmrds-reports/dbq.py new "SELECT id, type FROM dms_npmrdsv5.data_items LIMIT 5" --csv
+  python3 scripts/npmrds-reports/dbq.py ch  "SELECT count() FROM npmrds.s583_v982_NPMRDS_V6"
+  python3 scripts/npmrds-reports/dbq.py ch  "DESCRIBE npmrds.s583_v982_NPMRDS_V6" --format PrettyCompact
+  python3 scripts/npmrds-reports/dbq.py old -f peek.sql          # SQL from file
+  echo "SELECT 1" | python3 scripts/npmrds-reports/dbq.py dama -  # SQL from stdin
+  python3 scripts/npmrds-reports/dbq.py graph '[["dms","data","npmrdsv5+dev2:site","length"]]'
 
 Import (from scripts/ or with scripts/ on sys.path):
   import dbq
@@ -47,7 +47,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PG_CONFIGS = {
     "old": os.environ.get("DBQ_OLD_CONFIG",
         "/home/ryan/code/avail-falcor/db_service/npmrds.config.json"),

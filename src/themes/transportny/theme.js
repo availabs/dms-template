@@ -3,11 +3,25 @@ import QuickLinks from './QuickLinks'
 import Header from './components/Header'
 import AddPageButton from './components/AddPageButton'
 import ReportRouteList from "./components/ReportRouteList/index"
+import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { npmrdsQuickControls } from "./components/QuickControls"
+import { RoutecreationPlugin } from "./components/routecreation/routecreation.plugin"
+import { MacroviewPlugin } from "./components/macroview/macroview.plugin"
 const theme = {
   pageComponents: {
     "AddPageButton": AddPageButton,
     Header,
     ReportRouteList
+  },
+  sectionMenuExtensions: {
+    "AVL Graph": [npmrdsMeasureMenu]
+  },
+  sectionHeaderExtensions: {
+    "AVL Graph": [npmrdsQuickControls]
+  },
+  mapPlugins: {
+    routecreation: RoutecreationPlugin,
+    macroview: MacroviewPlugin
   },
   "navOptions": {
     "authMenu": {
@@ -121,7 +135,8 @@ const theme = {
           "topBarButtonsView": "z-10",
           "menuPosition": "absolute top-[6px] right-[6px] items-center",
           "editIcon": "hover:text-blue-500 size-6",
-          "contentWrapper": "h-full"
+          "contentWrapper": "h-full",
+          "headerExtensionsRow": "px-3 pb-2"
         }
       ]
     },

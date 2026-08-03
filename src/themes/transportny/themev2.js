@@ -36,6 +36,9 @@ import QuickLinks from "./QuickLinks";
 import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
+import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { calloutStatMenu } from "./components/CalloutStatPicker"
+import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
 
 import icons from "./icons";
@@ -711,7 +714,18 @@ const button = {
 const input = {
   input:          "relative w-full block appearance-none rounded-[6px] px-3 h-11 text-[14px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus:outline-none focus:border-[#1F3F8F] focus:ring-2 focus:ring-[#1F3F8F]/15 aria-invalid:border-[#EF4444] disabled:opacity-50 disabled:bg-slate-50",
   inputContainer: "group flex relative w-full",
-  textarea:       "relative block h-full w-full appearance-none rounded-[6px] px-3 py-2 text-[14px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus:outline-none focus:border-[#1F3F8F] focus:ring-2 focus:ring-[#1F3F8F]/15 resize-y",
+  // Auto-growing prose box (2026-07-27, Alex — ticket-detail textareas "showed a fixed height that
+  // needs to be dragged or scrolled"). `field-sizing-content` (Tailwind 4 → CSS
+  // `field-sizing: content`) sizes the textarea to its content, so long fields like a ticket's
+  // resolution render in full. Two things had to go with it:
+  //   · `h-full` — took its height from the parent cell, which pinned the box and made growth
+  //     impossible; `min-h-24` replaces it as the floor for short/empty values.
+  //   · nothing else: `resize-y` stays, so a user can still drag when they want to shrink a huge one.
+  // `max-h-[70vh]` keeps a pathological value (a 8k-char resolution) from pushing the rest of the
+  // page off screen — it scrolls only past that point. Where `field-sizing` is unsupported the box
+  // degrades to `min-h-24` + drag, i.e. today's behaviour rather than a broken one.
+  // Scope: every textarea in this theme (datasets/CR detail pages, forms), which is the intent.
+  textarea:       "relative block field-sizing-content min-h-24 max-h-[70vh] w-full appearance-none rounded-[6px] px-3 py-2 text-[14px] text-[#0F1722] placeholder:text-slate-400 border border-zinc-950/15 hover:border-zinc-950/30 bg-white focus:outline-none focus:border-[#1F3F8F] focus:ring-2 focus:ring-[#1F3F8F]/15 resize-y",
   confirmButtonContainer: "absolute right-0 hidden group-hover:flex items-center",
   editButton:    "py-1.5 px-2 text-slate-400 hover:text-[#1F3F8F] cursor-pointer",
   cancelButton:  "text-slate-400 hover:text-[#EF4444] cursor-pointer py-1.5 pr-1",
@@ -1821,6 +1835,12 @@ const pages = {
       menuPosition:  "absolute top-2 right-2 items-center",
       editIcon:      "hover:text-[#1F3F8F] size-5",
       contentWrapper:"h-full",
+      // Layout only, no background — the gray "head-band" seen in the design
+      // audit screenshots turned out to belong to a separate, sibling Card
+      // section's own "title_bar" style (see avl-graph-quick-controls.md's
+      // "Open visual question" note), not this row, so there's nothing to
+      // visually match here.
+      headerExtensionsRow: "px-3 pb-2",
     }],
   },
 
@@ -1988,6 +2008,13 @@ const pages = {
       // Inner-card background options (per-side border carries no bg of its own).
       backgrounds: {
         none: "", white: "bg-white", tint: "bg-slate-50/60",
+      },
+      // Drop-shadow options for the inner card box (report-page redesign Gap 03 —
+      // the granular per-side border/radius/bg path had no shadow knob at all;
+      // the old report tool's cards read as one unified box partly because of a
+      // visible shadow). `none` preserves today's default (unset → no shadow).
+      shadows: {
+        none: "", sm: "shadow-sm", md: "shadow-md",
       },
       // Curated gutter steps (fewer = wider, more usable buttons): flush / tight /
       // default(3) / comfortable / loose / wide.
@@ -2447,6 +2474,29 @@ const pageComponents = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// sectionMenuExtensions — theme-supplied additional sectionMenu item-groups,
+// keyed by ComponentRegistry component name. See sectionMenuExtensions.js /
+// sectionMenu.jsx in the dms submodule for the generic extension point.
+// ─────────────────────────────────────────────────────────────────────────────
+const sectionMenuExtensions = {
+  "AVL Graph": [npmrdsMeasureMenu],
+  "Card": [calloutStatMenu],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// sectionHeaderExtensions — theme-supplied inline header content, keyed by
+// ComponentRegistry component name. See sectionHeaderExtensions.js / section.jsx
+// in the dms submodule for the generic extension point (siblings to
+// sectionMenuExtensions above, but rendered inline in the header band instead
+// of the Settings drawer). npmrdsQuickControls reuses the exact same
+// Measure/Comparison Mode state as npmrdsMeasureMenu above — see
+// components/QuickControls and components/MeasurePicker's applyMeasurePick.
+// ─────────────────────────────────────────────────────────────────────────────
+const sectionHeaderExtensions = {
+  "AVL Graph": [npmrdsQuickControls],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // widgets — preserved widget registry from original theme.js
 // ─────────────────────────────────────────────────────────────────────────────
 const widgets = {
@@ -2622,6 +2672,8 @@ const transportnyTheme = {
   // Preserved from original
   navOptions,
   pageComponents,
+  sectionMenuExtensions,
+  sectionHeaderExtensions,
   widgets,
 };
 

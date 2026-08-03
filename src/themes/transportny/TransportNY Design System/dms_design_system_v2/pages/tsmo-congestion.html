@@ -213,6 +213,10 @@
                   <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
                     <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
                     <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Seasonality · monthly share of each region's delay · 2025</span>
+                    <!-- colour key (#164): the heat shading was the only encoding and reviewers had
+                         no way to read it. Stated in the header rather than as a swatch legend —
+                         `data_color_cell` has no legend primitive. -->
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500">darker = more</span>
                     <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">CY 2025 · complete</span>
                   </div>
                   <div class="p-4 flex-1">
@@ -376,7 +380,11 @@
                     <div class="mt-4 flex flex-wrap gap-6 font-mono text-[10.5px] uppercase tracking-[0.18em]">
                       <a href="tsmo-methodology.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">full methodology &amp; data coverage <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
                       <a href="tsmo-reliability.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">how predictable is travel · reliability <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
-                      <a href="tsmo-corridor.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">drill into a corridor <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
+                      <!-- "drill into a corridor" removed (#172, 2026-07-27): this page filters by
+                           NYSDOT region, corridor view is county-keyed with no region column, so the
+                           drill could never carry the selection through — it silently landed on the
+                           default county. The neutral "open corridor explorer" link in the TMC delay
+                           map card above is the way over. -->
                     </div>
                   </div>
                 </div>

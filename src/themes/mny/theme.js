@@ -828,30 +828,59 @@ const theme = {
     ]
   },
   filters: {
-    filtersWrapper: "w-full flex flex-col rounded-md",
-    // --- interactive chrome (Phase 3 follow-up): Needs-priority toggle + active tokens + clear-all.
-    // New keys, unused by existing filter sections → BC. The toggle button is a `group` with data-on. ---
-    toggleChip: "group inline-flex items-center cursor-pointer h-[38px]",
-    toggleChipOn: "",
-    toggleTrack: "w-9 h-5 rounded-full bg-[#C5D7E0] group-data-[on]:bg-[#EAAD43] flex items-center px-0.5 transition-colors",
-    toggleKnob: "w-4 h-4 rounded-full bg-white shadow-sm transition-transform group-data-[on]:translate-x-4",
-    activeTokensWrapper: "flex flex-wrap items-center gap-2 mt-3",
-    activeToken: "inline-flex items-center gap-1 bg-[#C5D7E0] rounded-full pl-2.5 pr-1.5 py-1 font-['Proxima_Nova'] text-[12px] text-[#37576B]",
-    activeTokenRemove: "text-[#6D96AE] hover:text-[#2D3E4C] cursor-pointer",
-    clearAll: "font-['Proxima_Nova'] text-[12px] font-[600] text-[#6D96AE] hover:text-[#2D3E4C] underline underline-offset-2 cursor-pointer",
-    filterLabel:
-      "py-0.5 font-[Proxima Nova] font-regular text-[14px] text-[#2D3E4C] leading-[140%] tracking-[0px] capitalize text-balance",
-    loadingText: "pl-0.5 font-thin text-[#2D3E4C]",
-    filterSettingsWrapperInline: "w-2/3",
-    filterSettingsWrapperStacked: "w-full",
-    labelWrapperInline: "w-1/3 text-xs",
-    labelWrapperStacked: "w-full text-xs",
-    input:
-      "w-full max-h-[150px] flex rounded-[12px] px-[10px] py-[4px] gap-[6px] text-[14px] text-[#37576B] border leading-[140%] tracking-[0px] bg-white overflow-auto scrollbar-sm text-nowrap",
-    settingPillsWrapper: "flex flex-row flex-wrap gap-1",
-    settingPill:
-      "px-1 py-0.5 bg-orange-500/15 text-orange-700 hover:bg-orange-500/25 rounded-md",
-    settingLabel: "text-gray-900 font-regular min-w-fit",
+    // options/styles pattern (same as `lexical`/`table`): a section picks a
+    // variant by name via `display.filterStyle` (see FilterComponent.config.js);
+    // getComponentTheme resolves it with inheritance from styles[0]. styles[0]
+    // is the historical flat map, verbatim → existing filter sections are BC.
+    options: { activeStyle: 0 },
+    styles: [
+      {
+        name: "default",
+        filtersWrapper: "w-full flex flex-col rounded-md",
+        // --- interactive chrome (Phase 3 follow-up): Needs-priority toggle + active tokens + clear-all.
+        // New keys, unused by existing filter sections → BC. The toggle button is a `group` with data-on. ---
+        toggleChip: "group inline-flex items-center cursor-pointer h-[38px]",
+        toggleChipOn: "",
+        toggleTrack: "w-9 h-5 rounded-full bg-[#C5D7E0] group-data-[on]:bg-[#EAAD43] flex items-center px-0.5 transition-colors",
+        toggleKnob: "w-4 h-4 rounded-full bg-white shadow-sm transition-transform group-data-[on]:translate-x-4",
+        activeTokensWrapper: "flex flex-wrap items-center gap-2 mt-3",
+        activeToken: "inline-flex items-center gap-1 bg-[#C5D7E0] rounded-full pl-2.5 pr-1.5 py-1 font-['Proxima_Nova'] text-[12px] text-[#37576B]",
+        activeTokenRemove: "text-[#6D96AE] hover:text-[#2D3E4C] cursor-pointer",
+        clearAll: "font-['Proxima_Nova'] text-[12px] font-[600] text-[#6D96AE] hover:text-[#2D3E4C] underline underline-offset-2 cursor-pointer",
+        filterLabel:
+          "py-0.5 font-[Proxima Nova] font-regular text-[14px] text-[#2D3E4C] leading-[140%] tracking-[0px] capitalize text-balance",
+        loadingText: "pl-0.5 font-thin text-[#2D3E4C]",
+        filterSettingsWrapperInline: "w-2/3",
+        filterSettingsWrapperStacked: "w-full",
+        labelWrapperInline: "w-1/3 text-xs",
+        labelWrapperStacked: "w-full text-xs",
+        input:
+          "w-full max-h-[150px] flex rounded-[12px] px-[10px] py-[4px] gap-[6px] text-[14px] text-[#37576B] border leading-[140%] tracking-[0px] bg-white overflow-auto scrollbar-sm text-nowrap",
+        settingPillsWrapper: "flex flex-row flex-wrap gap-1",
+        settingPill:
+          "px-1 py-0.5 bg-orange-500/15 text-orange-700 hover:bg-orange-500/25 rounded-md",
+        settingLabel: "text-gray-900 font-regular min-w-fit",
+      },
+      {
+        // Style 1: pillBar — horizontal rounded-pill filter bar (MNY Action
+        // Prioritize v3, gap #3). Everything not overridden here inherits from
+        // styles[0] (toggle switch, tokens, clear-all, loadingText, input …).
+        // `placement:'inline'` puts each label beside its control inside a
+        // white rounded-full pill; the whole set sits in a tinted band.
+        name: "pillBar",
+        placement: "inline",
+        filtersWrapper:
+          "w-full bg-[#F3F8F9] rounded-[12px] border border-[#E0EBF0] px-3 py-2.5 flex flex-wrap items-center gap-2",
+        conditionsGrid: "w-full flex flex-wrap items-center gap-2",
+        conditionRowInline:
+          "flex items-center gap-1.5 bg-white rounded-full pl-3 pr-2.5 py-1 border border-[#E0EBF0] hover:border-[#6D96AE] transition-colors",
+        labelWrapperInline: "w-auto shrink-0",
+        filterSettingsWrapperInline: "w-auto",
+        filterLabel:
+          "font-['Proxima_Nova'] text-[13px] text-[#37576B] whitespace-nowrap capitalize",
+        activeTokensWrapper: "flex flex-wrap items-center gap-2",
+      },
+    ],
   },
   graph: {
     text: "text-[#2D3E4C] font-[Oswald] font-semibold text-[12px] leading-[100%] tracking-[0px] uppercase",

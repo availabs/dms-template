@@ -88,13 +88,42 @@ special-casing. Hand-typed literal `paramKey`s also still work; `'$self'` is add
 
 ## Edit-mode gating
 
-Every mutation (`persistRoutes`, the orphan-cleanup effect, the add-route fetch) and every mutating
-control (reorder, rename, remove, the graph-assignment chips) is gated on `PageContext`'s
-`editPageMode` — not this component's own `props.isEdit`, which means "this section's own settings
-editor is open," not "the page is in edit mode" (see Gotchas). Outside edit mode the panel renders
-read-only. This matters: before the gate existed, merely *viewing* a published report could silently
-strip a route's graph assignments (the orphan-cleanup effect compared draft-captured ids against the
-published id set and concluded they were stale).
+Two independent flags, both required before any mutation fires — conflating them (or dropping
+either) was a real bug, fixed 2026-08-03 (see `planning/tasks/current/reportroutelist.md`):
+
+- `PageContext`'s `editPageMode` — is the page open at `/edit/...` at all. This alone decides which
+  sections array (`draft_sections` vs `sections`) is currently on screen (`useGraphPublish`'s
+  `sectionsKey`) and whether an author sees raw Dynamic Report slot placeholders vs a viewer's
+  resolved routes. It says nothing about whether *this* section has been individually opened for
+  editing — before the fix, RRL used this flag alone, so every mutating control went live the
+  instant the page opened at `/edit/...`, without the user ever entering this section's own edit
+  mode, unlike every other content-bearing section (Card, Spreadsheet) on the same page.
+- This component's own `props.isEdit` — dataWrapper's per-section signal, true only while *this*
+  section's own settings editor is open (the "Edit" pencil in its Settings menu, same mechanism
+  every section gets — `sectionArray.jsx`'s `edit.index === i` toggle). Destructured in
+  `ReportRouteList.jsx` as `sectionEditorOpen`.
+
+`canMutate = editPageMode && sectionEditorOpen` gates every mutation (`persistRoutes`, the
+orphan-cleanup effect, the add-route fetch, the Dynamic Report toggle) and every mutating control
+(reorder, rename, remove, date-edit, the graph-assignment chips, +Add Route/Route Slot/Graph) — the
+user must click this section's own "Edit" pencil before any of it is even reachable, matching how
+Card/Spreadsheet gate row CRUD via `SectionEdit` vs `SectionView`. Outside that, the panel renders
+read-only. `editPageMode` alone still gates the read-only/display-only decisions listed above (it
+matters that those keep working regardless of whether this section's own pencil is open — sibling
+graphs still need to discover draft sections, and Dynamic Report authors still need to see raw
+placeholders, without first clicking into RRL specifically). This distinction also fixed the
+original bug this gate was built for: before *any* gate existed, merely *viewing* a published report
+could silently strip a route's graph assignments (the orphan-cleanup effect compared draft-captured
+ids against the published id set and concluded they were stale).
+
+**Publish/Discard still don't apply to route content, and that's not a gap this fix addresses.**
+RRL's routes live in the separate `reports_snap_2` dataset row (see Storage above), which the page's
+`sections`/`draft_sections`/Publish/Discard machinery (`editFunctions.jsx`'s `publish`/
+`discardChanges`) never touches — same as Card/Spreadsheet row CRUD (`dataWrapper/index.jsx`'s
+`updateItem`/`addItem`/`removeItem`, always an immediate `apiUpdate` straight to the bound dataset,
+no staging). This gate gets RRL to require entering the section's own edit mode before mutating, the
+same as every other content-bearing section; it does not add undo/publish for route content, because
+no dataset-content edit anywhere in DMS has that today.
 
 ## Where the template lives
 

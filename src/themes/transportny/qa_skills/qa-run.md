@@ -35,4 +35,8 @@ one touch per page per stage. Say what was skipped for budget in the report.
 ## Invariants (repeat of the hard guardrails)
 
 Never publish · never delete · never edit `sitemgmt_patterns` · never set `client_approved` ·
-stages only move forward except the T5 re-entry · all writes through `qa_state.mjs`/`cr_sync.mjs`.
+stages only move forward except the T5 re-entry · all writes through `qa_state.mjs`/`cr_sync.mjs` ·
+**never re-run a build script without first proving it matches the live page**
+(`tools/builds/fidelity_static.mjs <script> <pageId>` — a matching section count is not proof) ·
+**backport any surgical section edit to its owning build script the same day**, or say on the ticket
+that you couldn't.

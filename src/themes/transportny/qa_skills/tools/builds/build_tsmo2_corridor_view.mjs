@@ -3,6 +3,32 @@
 // (verbatim content-as-code; hand-fixes up to that date are captured). Maintain by EDITING the
 // SECTIONS payloads below and re-running — idempotent: wipes by PAGE ID (loud) and recreates.
 // Run from dms-template root with DMS_AUTH_TOKEN set. Draft-only: never publishes.
+//
+// Hand-fixes since generation:
+//  · 2026-07-27 (#103/#159/#181) — filled the previously EMPTY "Compare & map" group with the corridor
+//    strip map: heading lexical + Map section (compound card). The Map is a line layer over source 582 /
+//    view 984 (NPMRDS meta PG twin) with three `serverSide` dynamic-filters bound to the page's own
+//    county/road/direction search params, so the tile is reduced in PostGIS (2.17MB → ~13KB measured)
+//    and `zoomToFilterBounds` on `road` zooms to the selection. `defaultValue` on each filter mirrors
+//    the page filter defaults — without it an unresolved filter would request UNFILTERED tiles.
+//    Prerequisite that made this possible: view 984's wkb_geometry had SRID 0 (every tile 204) until
+//    `UpdateGeometrySRID(...,4326)` on 2026-07-27 — see planning/transportny/tasks/current/tsmo2-missing-maps.md.
+//    Deviation from the mockup: the strip is 300px ("1/3") not the mockup's 128px, which was a
+//    decorative SVG ribbon; an interactive map that short can't show a 22-mile corridor.
+//  · 2026-07-27 (#103) — TRANSCOM incidents drawn ON the time-space grid as open→close spans,
+//    coloured by category. NO core work: `grid_cell_bands` (subscriber) + `load_publish`
+//    derivation:"list" (provider) already exist — proven on incident_view §17→§23, widened here from
+//    one event to every incident on the selected corridor+day. Chain: the new "Incidents on this
+//    corridor" Spreadsheet (2799 ⋈ meta 984 on tmc, filtered by the page's county/road/direction/date)
+//    emits one row per (tmc, category, event_id) and publishes four lists — `cvBandsCrash`,
+//    `cvBandsWorkZone`, `cvBandsHazard`, `cvBandsOther` — each entry `"tmc|HH:MM|HH:MM"`. The grid
+//    subscribes four times, one colour per bucket, keyed on a new `max(ds.tmc) as rowtmc` column.
+//    `bound_start_time`/`bound_end_time` are 5-min epoch indices 0-287 — the same encoding the grid's
+//    `tod` axis uses, so they map across with no conversion.
+//    TWO THINGS TO KNOW: (a) the provider pins `meta.year = 2024` to match the GRID's hardcoded
+//    vintage — a band whose rowKey isn't a grid row silently never draws, so the two must agree
+//    (see the corridor vintage ticket); (b) the grid starts at `ds.epoch >= 60` (05:00), so an
+//    incident that opens and closes before 05:00 is outside the x domain and draws nothing.
 import { execFileSync } from "node:child_process";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -300,7 +326,7 @@ const SECTIONS = [
    "left": true
   },
   "element": {
-   "element-data": "{\"externalSource\":{\"name\":\"NPMRDS\",\"source_id\":583,\"view_id\":982,\"view_name\":\"NPMRDS_V6\",\"type\":\"npmrds\",\"env\":\"npmrds2\",\"srcEnv\":\"npmrds2\",\"isDms\":false,\"baseUrl\":\"/datasources\",\"columns\":[{\"desc\":null,\"name\":\"tmc\",\"type\":\"STRING\",\"display_name\":\"tmc\"},{\"desc\":null,\"name\":\"date\",\"type\":\"STRING\",\"display_name\":\"date\"},{\"desc\":null,\"name\":\"epoch\",\"type\":\"INTEGER\",\"display_name\":\"epoch\"},{\"desc\":null,\"name\":\"travel_time_all_vehicles\",\"type\":\"NUMBER\",\"display_name\":\"travel_time_all_vehicles\"},{\"desc\":null,\"name\":\"data_density_all_vehicles\",\"type\":\"STRING\",\"display_name\":\"data_density_all_vehicles\"},{\"desc\":null,\"name\":\"state\",\"type\":\"STRING\",\"display_name\":\"state\"}]},\"join\":{\"operator\":\"=\",\"sources\":{\"ds\":{},\"meta\":{\"source\":582,\"view\":983,\"env\":\"npmrds2\",\"type\":\"left\",\"mergeStrategy\":\"join\",\"sourceInfo\":{\"isDms\":false,\"env\":\"npmrds2\",\"source_id\":582,\"view_id\":983,\"columns\":[{\"desc\":null,\"name\":\"tmc\",\"type\":\"STRING\",\"display_name\":\"tmc\"},{\"desc\":null,\"name\":\"tmclinear\",\"type\":\"INTEGER\",\"display_name\":\"tmclinear\"},{\"desc\":null,\"name\":\"road_order\",\"type\":\"NUMBER\",\"display_name\":\"road_order\"},{\"desc\":null,\"name\":\"direction\",\"type\":\"STRING\",\"display_name\":\"direction\"},{\"desc\":null,\"name\":\"county\",\"type\":\"STRING\",\"display_name\":\"county\"},{\"desc\":null,\"name\":\"state\",\"type\":\"STRING\",\"display_name\":\"state\"},{\"desc\":null,\"name\":\"miles\",\"type\":\"NUMBER\",\"display_name\":\"miles\"},{\"desc\":null,\"name\":\"aadt\",\"type\":\"NUMBER\",\"display_name\":\"aadt\"},{\"desc\":null,\"name\":\"f_system\",\"type\":\"INTEGER\",\"display_name\":\"f_system\"},{\"desc\":null,\"name\":\"road\",\"type\":\"STRING\",\"display_name\":\"road\"},{\"desc\":null,\"name\":\"intersection\",\"type\":\"STRING\",\"display_name\":\"intersection\"},{\"desc\":null,\"name\":\"start_longitude\",\"type\":\"NUMBER\",\"display_name\":\"start_longitude\"},{\"desc\":null,\"name\":\"end_longitude\",\"type\":\"NUMBER\",\"display_name\":\"end_longitude\"},{\"desc\":null,\"name\":\"year\",\"type\":\"STRING\",\"display_name\":\"year\"},{\"desc\":null,\"name\":\"wkb_geometry\",\"type\":\"STRING\",\"display_name\":\"wkb_geometry\"}]},\"joinColumns\":[{\"dsColumn\":\"tmc\",\"joinSourceColumn\":\"tmc\"}]}}},\"columns\":[{\"show\":true,\"name\":\"if(empty(coalesce(meta.intersection,'')), ds.tmc, concat(meta.intersection,'  ·  ',ds.tmc)) as seg\",\"normalName\":\"seg\",\"key\":\"seg\",\"target\":\"yAxis\",\"group\":true},{\"show\":true,\"fn\":\"exempt\",\"name\":\"max(meta.road_order) as roadpos\",\"normalName\":\"roadpos\",\"key\":\"roadpos\",\"selectOnly\":true,\"sort\":\"asc\"},{\"show\":true,\"name\":\"concat(leftPad(toString(intDiv(toUInt32(ds.epoch)*5,60)),2,'0'),':',leftPad(toString(modulo(toUInt32(ds.epoch)*5,60)),2,'0')) as tod\",\"normalName\":\"tod\",\"key\":\"tod\",\"target\":\"xAxis\",\"group\":true,\"sort\":\"asc\"},{\"show\":true,\"fn\":\"exempt\",\"name\":\"least(round(avg(meta.miles/nullif(ds.travel_time_all_vehicles,0)*3600)),80) as speed\",\"normalName\":\"speed\",\"key\":\"speed\",\"target\":\"color\",\"customName\":\"Speed · mph\"},{\"show\":true,\"fn\":\"exempt\",\"name\":\"round(max(meta.miles),3) as rowmiles\",\"normalName\":\"rowmiles\",\"key\":\"rowmiles\",\"target\":\"height\"}],\"filters\":{\"op\":\"AND\",\"groups\":[{\"col\":\"meta.county\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"county\"},{\"col\":\"meta.road\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"road\"},{\"col\":\"meta.direction\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"direction\"},{\"col\":\"ds.date\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"date\"},{\"col\":\"meta.year\",\"op\":\"filter\",\"value\":[\"2024\"]},{\"col\":\"ds.epoch\",\"op\":\"gte\",\"value\":[\"60\"]}]},\"display\":{\"graphType\":\"GridGraph\",\"bgColor\":\"#ffffff\",\"textColor\":\"#0F1722\",\"height\":800,\"fetchMode\":\"smart\",\"showAttribution\":false,\"readyToLoad\":true,\"colors\":{\"type\":\"palette\",\"value\":[\"#D6453B\",\"#F2CB3D\",\"#4C9A57\"]},\"margin\":{\"top\":16,\"right\":4,\"bottom\":40,\"left\":200},\"xAxis\":{\"show\":true,\"position\":\"bottom\",\"tickColor\":\"#94a3b8\",\"tickFontSize\":\"9px\",\"tickFontFamily\":\"ui-monospace, monospace\",\"rotateLabels\":true,\"tickDensity\":2},\"yAxis\":{\"show\":true,\"tickColor\":\"#475569\",\"tickFontSize\":\"10px\",\"tickFontFamily\":\"ui-sans-serif, system-ui\",\"showGridLines\":false},\"legend\":{\"show\":false},\"tooltip\":{\"show\":true,\"singleCell\":true}},\"data\":[]}",
+   "element-data": "{\"externalSource\":{\"name\":\"NPMRDS\",\"source_id\":583,\"view_id\":982,\"view_name\":\"NPMRDS_V6\",\"type\":\"npmrds\",\"env\":\"npmrds2\",\"srcEnv\":\"npmrds2\",\"isDms\":false,\"baseUrl\":\"/datasources\",\"columns\":[{\"desc\":null,\"name\":\"tmc\",\"type\":\"STRING\",\"display_name\":\"tmc\"},{\"desc\":null,\"name\":\"date\",\"type\":\"STRING\",\"display_name\":\"date\"},{\"desc\":null,\"name\":\"epoch\",\"type\":\"INTEGER\",\"display_name\":\"epoch\"},{\"desc\":null,\"name\":\"travel_time_all_vehicles\",\"type\":\"NUMBER\",\"display_name\":\"travel_time_all_vehicles\"},{\"desc\":null,\"name\":\"data_density_all_vehicles\",\"type\":\"STRING\",\"display_name\":\"data_density_all_vehicles\"},{\"desc\":null,\"name\":\"state\",\"type\":\"STRING\",\"display_name\":\"state\"}]},\"join\":{\"operator\":\"=\",\"sources\":{\"ds\":{},\"meta\":{\"source\":582,\"view\":983,\"env\":\"npmrds2\",\"type\":\"left\",\"mergeStrategy\":\"join\",\"sourceInfo\":{\"isDms\":false,\"env\":\"npmrds2\",\"source_id\":582,\"view_id\":983,\"columns\":[{\"desc\":null,\"name\":\"tmc\",\"type\":\"STRING\",\"display_name\":\"tmc\"},{\"desc\":null,\"name\":\"tmclinear\",\"type\":\"INTEGER\",\"display_name\":\"tmclinear\"},{\"desc\":null,\"name\":\"road_order\",\"type\":\"NUMBER\",\"display_name\":\"road_order\"},{\"desc\":null,\"name\":\"direction\",\"type\":\"STRING\",\"display_name\":\"direction\"},{\"desc\":null,\"name\":\"county\",\"type\":\"STRING\",\"display_name\":\"county\"},{\"desc\":null,\"name\":\"state\",\"type\":\"STRING\",\"display_name\":\"state\"},{\"desc\":null,\"name\":\"miles\",\"type\":\"NUMBER\",\"display_name\":\"miles\"},{\"desc\":null,\"name\":\"aadt\",\"type\":\"NUMBER\",\"display_name\":\"aadt\"},{\"desc\":null,\"name\":\"f_system\",\"type\":\"INTEGER\",\"display_name\":\"f_system\"},{\"desc\":null,\"name\":\"road\",\"type\":\"STRING\",\"display_name\":\"road\"},{\"desc\":null,\"name\":\"intersection\",\"type\":\"STRING\",\"display_name\":\"intersection\"},{\"desc\":null,\"name\":\"start_longitude\",\"type\":\"NUMBER\",\"display_name\":\"start_longitude\"},{\"desc\":null,\"name\":\"end_longitude\",\"type\":\"NUMBER\",\"display_name\":\"end_longitude\"},{\"desc\":null,\"name\":\"year\",\"type\":\"STRING\",\"display_name\":\"year\"},{\"desc\":null,\"name\":\"wkb_geometry\",\"type\":\"STRING\",\"display_name\":\"wkb_geometry\"}]},\"joinColumns\":[{\"dsColumn\":\"tmc\",\"joinSourceColumn\":\"tmc\"}]}}},\"columns\":[{\"show\":true,\"name\":\"if(empty(coalesce(meta.intersection,'')), ds.tmc, concat(meta.intersection,'  ·  ',ds.tmc)) as seg\",\"normalName\":\"seg\",\"key\":\"seg\",\"target\":\"yAxis\",\"group\":true},{\"show\":true,\"fn\":\"exempt\",\"name\":\"max(meta.road_order) as roadpos\",\"normalName\":\"roadpos\",\"key\":\"roadpos\",\"selectOnly\":true,\"sort\":\"asc\"},{\"show\":true,\"name\":\"concat(leftPad(toString(intDiv(toUInt32(ds.epoch)*5,60)),2,'0'),':',leftPad(toString(modulo(toUInt32(ds.epoch)*5,60)),2,'0')) as tod\",\"normalName\":\"tod\",\"key\":\"tod\",\"target\":\"xAxis\",\"group\":true,\"sort\":\"asc\"},{\"show\":true,\"fn\":\"exempt\",\"name\":\"least(round(avg(meta.miles/nullif(ds.travel_time_all_vehicles,0)*3600)),80) as speed\",\"normalName\":\"speed\",\"key\":\"speed\",\"target\":\"color\",\"customName\":\"Speed · mph\"},{\"show\":true,\"fn\":\"exempt\",\"name\":\"round(max(meta.miles),3) as rowmiles\",\"normalName\":\"rowmiles\",\"key\":\"rowmiles\",\"target\":\"height\"},{\"show\":true,\"fn\":\"exempt\",\"name\":\"max(ds.tmc) as rowtmc\",\"type\":\"calculated\",\"normalName\":\"rowtmc\",\"selectOnly\":true}],\"filters\":{\"op\":\"AND\",\"groups\":[{\"col\":\"meta.county\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"county\"},{\"col\":\"meta.road\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"road\"},{\"col\":\"meta.direction\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"direction\"},{\"col\":\"ds.date\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"date\"},{\"col\":\"meta.year\",\"op\":\"filter\",\"value\":[\"2024\"]},{\"col\":\"ds.epoch\",\"op\":\"gte\",\"value\":[\"60\"]}]},\"display\":{\"graphType\":\"GridGraph\",\"bgColor\":\"#ffffff\",\"textColor\":\"#0F1722\",\"height\":800,\"fetchMode\":\"smart\",\"showAttribution\":false,\"readyToLoad\":true,\"colors\":{\"type\":\"palette\",\"value\":[\"#D6453B\",\"#F2CB3D\",\"#4C9A57\"]},\"margin\":{\"top\":16,\"right\":4,\"bottom\":40,\"left\":200},\"xAxis\":{\"show\":true,\"position\":\"bottom\",\"tickColor\":\"#94a3b8\",\"tickFontSize\":\"9px\",\"tickFontFamily\":\"ui-monospace, monospace\",\"rotateLabels\":true,\"tickDensity\":2},\"yAxis\":{\"show\":true,\"tickColor\":\"#475569\",\"tickFontSize\":\"10px\",\"tickFontFamily\":\"ui-sans-serif, system-ui\",\"showGridLines\":false},\"legend\":{\"show\":false},\"tooltip\":{\"show\":true,\"singleCell\":true},\"_functions\":{\"providers\":[],\"subscribers\":[{\"functionId\":\"grid_cell_bands\",\"enabled\":true,\"paramKey\":\"cvBandsCrash\",\"args\":{\"column\":\"rowtmc\",\"stroke\":\"#0F1722\",\"strokeWidth\":2}},{\"functionId\":\"grid_cell_bands\",\"enabled\":true,\"paramKey\":\"cvBandsWorkZone\",\"args\":{\"column\":\"rowtmc\",\"stroke\":\"#1F3F8F\",\"strokeWidth\":2}},{\"functionId\":\"grid_cell_bands\",\"enabled\":true,\"paramKey\":\"cvBandsHazard\",\"args\":{\"column\":\"rowtmc\",\"stroke\":\"#7C3AED\",\"strokeWidth\":2}},{\"functionId\":\"grid_cell_bands\",\"enabled\":true,\"paramKey\":\"cvBandsOther\",\"args\":{\"column\":\"rowtmc\",\"stroke\":\"#64748B\",\"strokeWidth\":1.5}}]}},\"data\":[]}",
    "element-type": "AVL Graph"
   },
   "padding": {
@@ -355,6 +381,55 @@ const SECTIONS = [
   },
   "trackingId": "784606a8-498c-4d8d-a69e-72890eb6520d",
   "element-type": "lexical"
+ },
+ {
+  "bg": "tint",
+  "size": "12",
+  "group": "tsmo-cv-grid",
+  "title": "",
+  "border": {
+   "top": true,
+   "left": true,
+   "right": true,
+   "bottom": true
+  },
+  "radius": {
+   "tl": true,
+   "tr": true
+  },
+  "padding": {
+   "bottom": "0"
+  },
+  "trackingId": "c0a11d0f-9a1e-4b7c-8f21-6d2b7e4a1f03",
+  "element": {
+   "element-data": "{\"bgColor\":\"rgba(0,0,0,0)\",\"isCard\":\"\",\"showToolbar\":false,\"text\":{\"root\":{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Incidents on this corridor\",\"type\":\"text\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"styled-paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"styleKey\":\"displaySM\"},{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"↑  spans are drawn on the grid above — outline colour = category\",\"type\":\"text\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"styled-paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"styleKey\":\"kicker\"}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"layout-item\",\"version\":1},{\"children\":[{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"// transcom event_tmc 2799 ⋈ meta 984\",\"type\":\"text\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"styled-paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"styleKey\":\"kicker\"},{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"TRANSCOM events touching the selected corridor on the selected day, by TMC · open → close\",\"type\":\"text\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"styled-paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"styleKey\":\"metaSM\"}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"layout-item\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"layout-container\",\"version\":1,\"templateColumns\":\"grid-cols-1 md:grid-cols-2\"},{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"color: #0F1722\",\"text\":\"■ \",\"type\":\"text\",\"version\":1},{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Crash    \",\"type\":\"text\",\"version\":1},{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"color: #1F3F8F\",\"text\":\"■ \",\"type\":\"text\",\"version\":1},{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Work zone    \",\"type\":\"text\",\"version\":1},{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"color: #7C3AED\",\"text\":\"■ \",\"type\":\"text\",\"version\":1},{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Road hazard    \",\"type\":\"text\",\"version\":1},{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"color: #64748B\",\"text\":\"■ \",\"type\":\"text\",\"version\":1},{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Other\",\"type\":\"text\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"styled-paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"styleKey\":\"kicker\"}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}}",
+   "element-type": "lexical"
+  },
+  "element-type": "lexical"
+ },
+ {
+  "bg": "white",
+  "size": "12",
+  "group": "tsmo-cv-grid",
+  "title": "",
+  "border": {
+   "left": true,
+   "right": true,
+   "bottom": true
+  },
+  "radius": {
+   "bl": true,
+   "br": true
+  },
+  "padding": {
+   "top": "0"
+  },
+  "trackingId": "c0a11d0f-9a1e-4b7c-8f21-6d2b7e4a1f04",
+  "element": {
+   "element-data": "{\"externalSource\":{\"name\":\"Transcom Event TMC\",\"source_id\":1635,\"view_id\":2799,\"view_name\":\"transcom_event_tmc\",\"type\":\"transcom\",\"env\":\"npmrds2\",\"srcEnv\":\"npmrds2\",\"isDms\":false,\"baseUrl\":\"/datasources\",\"columns\":[{\"desc\":null,\"name\":\"ogc_fid\",\"type\":\"INTEGER\",\"display_name\":\"ogc_fid\"},{\"desc\":null,\"name\":\"event_id\",\"type\":\"STRING\",\"display_name\":\"event_id\"},{\"desc\":null,\"name\":\"tmc\",\"type\":\"STRING\",\"display_name\":\"tmc\"},{\"desc\":null,\"name\":\"bound_start_date\",\"type\":\"STRING\",\"display_name\":\"bound_start_date\"},{\"desc\":null,\"name\":\"bound_start_time\",\"type\":\"INTEGER\",\"display_name\":\"bound_start_time\"},{\"desc\":null,\"name\":\"bound_end_date\",\"type\":\"STRING\",\"display_name\":\"bound_end_date\"},{\"desc\":null,\"name\":\"bound_end_time\",\"type\":\"INTEGER\",\"display_name\":\"bound_end_time\"},{\"desc\":null,\"name\":\"delay\",\"type\":\"NUMBER\",\"display_name\":\"delay\"},{\"desc\":null,\"name\":\"raw_delay\",\"type\":\"NUMBER\",\"display_name\":\"raw_delay\"},{\"desc\":null,\"name\":\"direction\",\"type\":\"STRING\",\"display_name\":\"direction\"},{\"desc\":null,\"name\":\"county\",\"type\":\"STRING\",\"display_name\":\"county\"},{\"desc\":null,\"name\":\"state\",\"type\":\"STRING\",\"display_name\":\"state\"},{\"desc\":null,\"name\":\"day_of_week\",\"type\":\"STRING\",\"display_name\":\"day_of_week\"},{\"desc\":null,\"name\":\"month\",\"type\":\"INTEGER\",\"display_name\":\"month\"},{\"desc\":null,\"name\":\"day_of_month\",\"type\":\"INTEGER\",\"display_name\":\"day_of_month\"},{\"desc\":null,\"name\":\"month_year\",\"type\":\"STRING\",\"display_name\":\"month_year\"},{\"desc\":null,\"name\":\"nysdot_sub_category\",\"type\":\"STRING\",\"display_name\":\"nysdot_sub_category\"},{\"desc\":null,\"name\":\"state_code\",\"type\":\"STRING\",\"display_name\":\"state_code\"},{\"desc\":null,\"name\":\"region_name\",\"type\":\"STRING\",\"display_name\":\"region_name\"},{\"desc\":null,\"name\":\"f_system\",\"type\":\"INTEGER\",\"display_name\":\"f_system\"},{\"desc\":null,\"name\":\"tmclinear\",\"type\":\"INTEGER\",\"display_name\":\"tmclinear\"},{\"desc\":null,\"name\":\"road_name\",\"type\":\"STRING\",\"display_name\":\"road_name\"}]},\"join\":{\"operator\":\"=\",\"sources\":{\"ds\":{},\"meta\":{\"source\":582,\"view\":984,\"env\":\"npmrds2\",\"type\":\"left\",\"mergeStrategy\":\"join\",\"sourceInfo\":{\"isDms\":false,\"env\":\"npmrds2\",\"source_id\":582,\"view_id\":984,\"columns\":[{\"desc\":null,\"name\":\"tmc\",\"type\":\"STRING\",\"display_name\":\"tmc\"},{\"desc\":null,\"name\":\"road\",\"type\":\"STRING\",\"display_name\":\"road\"},{\"desc\":null,\"name\":\"intersection\",\"type\":\"STRING\",\"display_name\":\"intersection\"},{\"desc\":null,\"name\":\"road_order\",\"type\":\"NUMBER\",\"display_name\":\"road_order\"},{\"desc\":null,\"name\":\"year\",\"type\":\"STRING\",\"display_name\":\"year\"}]},\"joinColumns\":[{\"dsColumn\":\"tmc\",\"joinSourceColumn\":\"tmc\"}]}}},\"columns\":[{\"show\":true,\"name\":\"tmc\",\"group\":true,\"customName\":\"TMC\",\"justify\":\"left\"},{\"show\":true,\"fn\":\"exempt\",\"name\":\"max(meta.intersection) as xstreet\",\"type\":\"calculated\",\"normalName\":\"xstreet\",\"customName\":\"Cross street\",\"justify\":\"left\",\"valueFontStyle\":\"metaSM\"},{\"show\":true,\"name\":\"nysdot_sub_category\",\"group\":true,\"customName\":\"Category\",\"justify\":\"left\"},{\"show\":true,\"fn\":\"exempt\",\"name\":\"lpad((min(ds.bound_start_time)*5/60)::text, 2, '0') || ':' || lpad((min(ds.bound_start_time)*5%60)::text, 2, '0') as opened\",\"type\":\"calculated\",\"normalName\":\"opened\",\"customName\":\"Open\",\"justify\":\"right\"},{\"show\":true,\"fn\":\"exempt\",\"name\":\"lpad((max(ds.bound_end_time)*5/60)::text, 2, '0') || ':' || lpad((max(ds.bound_end_time)*5%60)::text, 2, '0') as closed\",\"type\":\"calculated\",\"normalName\":\"closed\",\"customName\":\"Close\",\"justify\":\"right\"},{\"show\":true,\"name\":\"event_id\",\"group\":true,\"customName\":\"Event\",\"justify\":\"left\",\"isLink\":true,\"location\":\"/incident_view?event_id=\",\"searchParams\":\"value\"},{\"show\":true,\"fn\":\"exempt\",\"name\":\"max(meta.road_order) as roadpos\",\"type\":\"calculated\",\"normalName\":\"roadpos\",\"selectOnly\":true,\"sort\":\"asc\"},{\"show\":true,\"fn\":\"exempt\",\"type\":\"calculated\",\"selectOnly\":true,\"normalName\":\"band_crash\",\"name\":\"case when ds.nysdot_sub_category = 'Crash' then ds.tmc || '|' || lpad((min(ds.bound_start_time)*5/60)::text, 2, '0') || ':' || lpad((min(ds.bound_start_time)*5%60)::text, 2, '0') || '|' || lpad((max(ds.bound_end_time)*5/60)::text, 2, '0') || ':' || lpad((max(ds.bound_end_time)*5%60)::text, 2, '0') else 'none|00:00|00:00' end as band_crash\"},{\"show\":true,\"fn\":\"exempt\",\"type\":\"calculated\",\"selectOnly\":true,\"normalName\":\"band_workzone\",\"name\":\"case when ds.nysdot_sub_category in ('Construction', 'Maintenance') then ds.tmc || '|' || lpad((min(ds.bound_start_time)*5/60)::text, 2, '0') || ':' || lpad((min(ds.bound_start_time)*5%60)::text, 2, '0') || '|' || lpad((max(ds.bound_end_time)*5/60)::text, 2, '0') || ':' || lpad((max(ds.bound_end_time)*5%60)::text, 2, '0') else 'none|00:00|00:00' end as band_workzone\"},{\"show\":true,\"fn\":\"exempt\",\"type\":\"calculated\",\"selectOnly\":true,\"normalName\":\"band_hazard\",\"name\":\"case when ds.nysdot_sub_category = 'Road Hazard' then ds.tmc || '|' || lpad((min(ds.bound_start_time)*5/60)::text, 2, '0') || ':' || lpad((min(ds.bound_start_time)*5%60)::text, 2, '0') || '|' || lpad((max(ds.bound_end_time)*5/60)::text, 2, '0') || ':' || lpad((max(ds.bound_end_time)*5%60)::text, 2, '0') else 'none|00:00|00:00' end as band_hazard\"},{\"show\":true,\"fn\":\"exempt\",\"type\":\"calculated\",\"selectOnly\":true,\"normalName\":\"band_other\",\"name\":\"case when ds.nysdot_sub_category not in ('Crash', 'Construction', 'Maintenance', 'Road Hazard') then ds.tmc || '|' || lpad((min(ds.bound_start_time)*5/60)::text, 2, '0') || ':' || lpad((min(ds.bound_start_time)*5%60)::text, 2, '0') || '|' || lpad((max(ds.bound_end_time)*5/60)::text, 2, '0') || ':' || lpad((max(ds.bound_end_time)*5%60)::text, 2, '0') else 'none|00:00|00:00' end as band_other\"}],\"filters\":{\"op\":\"AND\",\"groups\":[{\"col\":\"meta.county\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"county\"},{\"col\":\"meta.road\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"road\"},{\"col\":\"meta.direction\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"direction\"},{\"col\":\"meta.year\",\"op\":\"filter\",\"value\":[\"2024\"]},{\"col\":\"ds.bound_start_date\",\"op\":\"filter\",\"value\":[],\"usePageFilters\":true,\"searchParamKey\":\"date\"}]},\"display\":{\"usePagination\":false,\"pageSize\":200,\"fetchMode\":\"smart\",\"readyToLoad\":true,\"showAttribution\":false,\"striped\":false,\"autoResize\":false,\"maxHeight\":260,\"_functions\":{\"providers\":[{\"functionId\":\"load_publish\",\"enabled\":true,\"args\":{\"derivation\":\"list\",\"publishes\":[{\"column\":\"band_crash\",\"paramKey\":\"cvBandsCrash\",\"emptyValue\":\"none|00:00|00:00\"},{\"column\":\"band_workzone\",\"paramKey\":\"cvBandsWorkZone\",\"emptyValue\":\"none|00:00|00:00\"},{\"column\":\"band_hazard\",\"paramKey\":\"cvBandsHazard\",\"emptyValue\":\"none|00:00|00:00\"},{\"column\":\"band_other\",\"paramKey\":\"cvBandsOther\",\"emptyValue\":\"none|00:00|00:00\"}]}}],\"subscribers\":[]}}}",
+   "element-type": "Spreadsheet"
+  },
+  "element-type": "Spreadsheet"
  },
  {
   "size": "12",
@@ -421,6 +496,55 @@ const SECTIONS = [
   "element-type": "Card"
  },
  {
+  "bg": "tint",
+  "size": "12",
+  "group": "tsmo-cv-compare",
+  "title": "",
+  "border": {
+   "top": true,
+   "left": true,
+   "right": true,
+   "bottom": true
+  },
+  "radius": {
+   "tl": true,
+   "tr": true
+  },
+  "padding": {
+   "bottom": "0"
+  },
+  "trackingId": "c0a11d0f-9a1e-4b7c-8f21-6d2b7e4a1f01",
+  "element": {
+   "element-data": "{\"bgColor\":\"rgba(0,0,0,0)\",\"isCard\":\"\",\"showToolbar\":false,\"text\":{\"root\":{\"children\":[{\"children\":[{\"children\":[{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Corridor strip map\",\"type\":\"text\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"styled-paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"styleKey\":\"displaySM\"},{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"↓  the segments feeding the grid above\",\"type\":\"text\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"styled-paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"styleKey\":\"kicker\"}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"layout-item\",\"version\":1},{\"children\":[{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"// npmrds meta 984\",\"type\":\"text\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"styled-paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"styleKey\":\"kicker\"},{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"selected county · road · direction — zooms to the corridor\",\"type\":\"text\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"styled-paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\",\"styleKey\":\"metaSM\"}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"layout-item\",\"version\":1}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"layout-container\",\"version\":1,\"templateColumns\":\"grid-cols-1 md:grid-cols-2\"}],\"direction\":\"ltr\",\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}}",
+   "element-type": "lexical"
+  },
+  "element-type": "lexical"
+ },
+ {
+  "bg": "white",
+  "size": "12",
+  "group": "tsmo-cv-compare",
+  "title": "",
+  "border": {
+   "left": true,
+   "right": true,
+   "bottom": true
+  },
+  "radius": {
+   "bl": true,
+   "br": true
+  },
+  "padding": {
+   "top": "0"
+  },
+  "trackingId": "c0a11d0f-9a1e-4b7c-8f21-6d2b7e4a1f02",
+  "element": {
+   "element-data": "{\"tabs\":[{\"name\":\"Layers\",\"rows\":[{\"name\":\"Selected corridor\",\"type\":\"symbology\",\"symbologyId\":\"cv_corr_map\"}]}],\"symbologies\":{\"cv_corr_map\":{\"id\":\"cv_corr_map\",\"name\":\"Selected corridor\",\"isVisible\":true,\"description\":\"The selected corridor's TMC geometries (NPMRDS meta, source 582 / view 984), filtered server-side to the page's county + road + direction and zoomed to fit. Answers #181: shows exactly which links the corridor resolved to.\",\"categories\":[],\"symbology\":{\"activeLayer\":\"corr01\",\"zoomToFilterBounds\":[],\"layers\":{\"corr01\":{\"id\":\"corr01\",\"name\":\"Corridor TMCs\",\"type\":\"line\",\"layer-type\":\"categories\",\"data-column\":\"tmc\",\"source_id\":582,\"view_id\":984,\"order\":0,\"isVisible\":true,\"usePageFilters\":true,\"sources\":[{\"id\":\"npmrds2_meta_582_corr01\",\"source\":{\"type\":\"vector\",\"format\":\"pbf\",\"tiles\":[\"https://graph.availabs.org/dama-admin/npmrds2/tiles/984/{z}/{x}/{y}/t.pbf?cols=tmc\"]}}],\"layers\":[{\"id\":\"corr01_case\",\"type\":\"line\",\"source\":\"npmrds2_meta_582_corr01\",\"source-layer\":\"view_984\",\"paint\":{\"line-color\":\"#0F1722\",\"line-opacity\":0.25,\"line-width\":[\"interpolate\",[\"linear\"],[\"zoom\"],8,4,11,7,14,11,16,14],\"line-offset\":[\"interpolate\",[\"linear\"],[\"zoom\"],8,0.6,11,1.2,14,2.5,16,3.5]},\"layout\":{\"visibility\":\"visible\",\"line-cap\":\"round\",\"line-join\":\"round\"}},{\"id\":\"corr01\",\"type\":\"line\",\"source\":\"npmrds2_meta_582_corr01\",\"source-layer\":\"view_984\",\"paint\":{\"line-color\":\"#1F3F8F\",\"line-opacity\":0.95,\"line-width\":[\"interpolate\",[\"linear\"],[\"zoom\"],8,2,11,3.5,14,6,16,8],\"line-offset\":[\"interpolate\",[\"linear\"],[\"zoom\"],8,0.6,11,1.2,14,2.5,16,3.5]},\"layout\":{\"visibility\":\"visible\",\"line-cap\":\"round\",\"line-join\":\"round\"}}],\"legend-data\":[{\"color\":\"#1F3F8F\",\"label\":\"selected corridor\"}],\"dynamic-filters\":[{\"column_name\":\"county\",\"searchParamKey\":\"county\",\"serverSide\":true,\"values\":[],\"defaultValue\":\"QUEENS\",\"zoomToFilterBounds\":false},{\"column_name\":\"road\",\"searchParamKey\":\"road\",\"serverSide\":true,\"values\":[],\"defaultValue\":\"I-495\",\"zoomToFilterBounds\":true},{\"column_name\":\"direction\",\"searchParamKey\":\"direction\",\"serverSide\":true,\"values\":[],\"defaultValue\":\"WESTBOUND\",\"zoomToFilterBounds\":false},{\"column_name\":\"year\",\"searchParamKey\":\"year\",\"serverSide\":true,\"values\":[],\"defaultValue\":\"2026\",\"dataType\":\"numeric\",\"zoomToFilterBounds\":false}],\"hover-columns\":[]}}}}},\"display\":{\"_functions\":{\"providers\":[],\"subscribers\":[]}},\"height\":\"1/3\",\"zoomPan\":true,\"hideControls\":false,\"blankBaseMap\":false,\"basemapStyle\":\"Default\",\"legendPosition\":\"hide\",\"setInitialBounds\":false,\"initialBounds\":null}",
+   "element-type": "Map"
+  },
+  "element-type": "Map"
+ },
+ {
   "size": "12",
   "group": "tsmo-cv-method",
   "title": "",
@@ -452,6 +576,19 @@ let pageId = items.find((p) => (p.url_slug || p.data?.url_slug) === SLUG)?.id;
 if (!pageId) { pageId = (cli("page", "create", "--pattern", PATTERN, "--title", SLUG, "--slug", SLUG).match(/"id"\s*:\s*"?(\d+)"?/) || [])[1]; console.log("created", SLUG, pageId); }
 else console.log("reusing", SLUG, pageId);
 const existing = JSON.parse(clean(cli("raw", "get", String(pageId)))).data.draft_sections || [];
+
+// ⚠ PARITY GUARD (backfilled 2026-07-28; page_to_build.mjs emits this for newly generated scripts).
+// A rebuild WIPES and recreates, so anything authored on the live page after this script was
+// generated — and never backported here — is DESTROYED. That has happened twice: 6 sections lost on
+// tsmo2/workzones_v2 (2026-07-15/16), and a graph's yAxis.tickSpacing silently reverted on
+// tsmo2/incidents_v2 (2026-07-27) at an IDENTICAL section count. So this count check is necessary but
+// NOT sufficient — before re-running after any live authoring, also prove CONTENT parity:
+//   node src/themes/transportny/qa_skills/tools/builds/fidelity_static.mjs src/themes/transportny/qa_skills/tools/builds/build_tsmo2_corridor_view.mjs 2182912
+// If this fires, do NOT edit the count — regenerate:
+//   node src/themes/transportny/qa_skills/tools/page_to_build.mjs --pattern tsmo2 --slug corridor_view
+if (existing.length && existing.length !== SECTIONS.length) {
+  throw new Error(`REFUSING TO WIPE ${SLUG}: the live draft has ${existing.length} sections but this builder carries ${SECTIONS.length} — it has drifted, and wiping would drop authored sections it cannot recreate. Regenerate with page_to_build.mjs instead of running this.`);
+}
 for (const e of existing) {
   try { cli("section", "delete", String(e.id), "--page", String(pageId)); }
   catch (err) { console.log("  DELETE FAILED for", e.id, String(err).slice(0, 120)); }
