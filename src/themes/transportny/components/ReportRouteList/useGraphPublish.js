@@ -168,7 +168,12 @@ function findSelfBoundGraphs(sectionList) {
 // `persistRoutes` is passed in from `useReportRow` rather than owned here — this hook
 // only decides WHAT the cleaned routes should look like, the row-storage hook still
 // owns how a write actually happens.
-export function useGraphPublish({ item, isEdit, apiUpdate, routes, reportRow, persistRoutes, pageState, setActionParam, clearActionParam }) {
+// `isEdit` here means only "is the page open at /edit/..." (drives `sectionsKey` — which
+// sections array sibling graphs actually render from right now). `canMutate` is the
+// narrower "AND this section's own edit pencil is open" gate (see ReportRouteList.jsx) —
+// used only for the orphan-cleanup effect's write, since discovering/publishing to sibling
+// graphs must keep working regardless of whether RRL's own pencil has been clicked.
+export function useGraphPublish({ item, isEdit, canMutate, apiUpdate, routes, reportRow, persistRoutes, pageState, setActionParam, clearActionParam }) {
   const sectionsKey = isEdit ? 'draft_sections' : 'sections';
   const sectionList = item?.[sectionsKey] || EMPTY_SECTIONS;
   const graphs = useMemo(() => findSelfBoundGraphs(sectionList), [sectionList]);
@@ -220,12 +225,12 @@ export function useGraphPublish({ item, isEdit, apiUpdate, routes, reportRow, pe
   // every report page always has at least this panel's own section, so an empty
   // list means "not loaded yet," not "everything was removed."
   useEffect(() => {
-    // isEdit guard is redundant with persistRoutes' own guard (defense in depth) —
-    // kept here too so this effect never even computes/attempts a cleanup write
-    // while the page is merely being viewed, where knownSectionIds reflects the
-    // published sections (a different id set than whatever graphIds were captured
-    // against during editing).
-    if (!isEdit || !apiUpdate || !item?.id || !sectionList.length || !reportRow) return;
+    // canMutate guard (this section's own edit pencil must be open, not just the page
+    // being on /edit/...) is redundant with persistRoutes' own guard (defense in depth) —
+    // kept here too so this effect never even computes/attempts a cleanup write while
+    // the panel isn't in its own edit mode, where knownSectionIds could reflect a
+    // different id set than whatever graphIds were captured against during editing.
+    if (!canMutate || !apiUpdate || !item?.id || !sectionList.length || !reportRow) return;
     const needsCleanup = routes.some(r => (r.graphIds || []).some(id => !knownSectionIds.has(id)));
     if (!needsCleanup) return;
     const cleaned = routes.map(r => {
@@ -234,7 +239,7 @@ export function useGraphPublish({ item, isEdit, apiUpdate, routes, reportRow, pe
       return filtered.length === r.graphIds.length ? r : { ...r, graphIds: filtered };
     });
     persistRoutes(cleaned);
-  }, [isEdit, routes, knownSectionIds, sectionList.length, reportRow]);
+  }, [canMutate, routes, knownSectionIds, sectionList.length, reportRow]);
 
   return { graphs };
 }

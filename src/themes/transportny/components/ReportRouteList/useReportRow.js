@@ -218,12 +218,14 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // mutation after. This is a genuine DMS data row (split-table, schema-free), not a
   // page attribute and not this section's own `element-data`.
   const persistRoutes = async (nextRoutes) => {
-    // Page-level edit-mode gate: mirrors the convention every other dataWrapper
-    // component follows (mutations only happen while the page is open on /edit/...).
-    // This is a single choke point — every mutating handler and the orphan-cleanup
-    // effect (see useGraphPublish) both funnel through here, so gating here is
-    // sufficient on its own to guarantee no write ever fires while a report is merely
-    // being viewed.
+    // `isEdit` here is ReportRouteList.jsx's `canMutate` — page open at /edit/... AND
+    // this section's own edit pencil open (dataWrapper's per-section isEdit) — mirroring
+    // the convention every other dataWrapper component follows via SectionEdit vs
+    // SectionView (mutations only happen once a section is individually put into its
+    // own edit mode, not merely because the page is open on /edit/...). This is a single
+    // choke point — every mutating handler and the orphan-cleanup effect (see
+    // useGraphPublish) both funnel through here, so gating here is sufficient on its own
+    // to guarantee no write ever fires while the panel isn't in its own edit mode.
     if (!isEdit || !apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
     const currentId = reportRowIdRef.current;
     const payload = { report_id: String(item.id), routes: JSON.stringify(nextRoutes) };

@@ -12,18 +12,32 @@ import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
 
-export default function ReportRouteList() {
+export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   const { apiLoad, apiUpdate, updateAttribute, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
   const { state: { join, externalSource } } = useContext(ComponentContext) || {};
-  // NOT `props.isEdit` — that's dataWrapper's per-section "is THIS component's own
-  // settings editor open" flag (almost always false in normal interactive use, since
-  // this panel renders via SectionView even on an /edit/... page). `editPageMode`
-  // (from PageContext, set only on the /edit/... route) is whichever sections array
-  // (`draft_sections` vs `sections`) sibling components are ACTUALLY rendering from
-  // right now — that's what useGraphPublish's sectionsKey tracks, since graphIds
-  // stored on a route only mean anything if they reference the ids of the sections
-  // actually on screen.
+  // Two independent flags, not one — conflating them is what let every RRL mutation
+  // fire the instant the PAGE opened at /edit/..., without this section ever being
+  // individually put into its own edit mode (see planning/tasks/current/reportroutelist.md,
+  // "Section edit-mode gating").
+  // `editPageMode` (from PageContext) is whichever sections array (`draft_sections` vs
+  // `sections`) sibling components are ACTUALLY rendering from right now — that's what
+  // useGraphPublish's sectionsKey tracks, and what decides whether an author sees raw
+  // Dynamic Report slot placeholders vs a viewer's resolved routes. It says nothing
+  // about whether THIS section has been opened for editing.
+  // `props.isEdit` (destructured above as `sectionEditorOpen`) IS that per-section signal
+  // — dataWrapper's Edit path (mounted only for the one section a user clicked the
+  // section's own "Edit" pencil on, sectionArray.jsx's `edit.index === i`) always sets it
+  // true; the View path (every other section, even on an /edit/... page) always sets it
+  // false. See dataWrapper/index.jsx lines 197/457.
   const isEdit = Boolean(editPageMode);
+  // Gates every actual mutation (route add/remove/reorder/rename/date-edit,
+  // graph-chip toggling, the Dynamic Report switch, +Add Route/Route Slot/Graph) —
+  // requires BOTH being on the page's /edit/... route AND having this section's own
+  // pencil open, matching how Card/Spreadsheet gate row CRUD via SectionEdit vs
+  // SectionView. `isEdit &&` is redundant given dataWrapper's own invariant (the Edit
+  // path only exists inside the page's edit route to begin with) but kept explicit —
+  // see useReportRow.js's persistRoutes for why a single, obvious choke point matters.
+  const canMutate = isEdit && Boolean(sectionEditorOpen);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
@@ -80,7 +94,7 @@ export default function ReportRouteList() {
     updateRoute,
     toggleRouteGraph,
     assignRoutesToGraph,
-  } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit });
+  } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit: canMutate });
 
   // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/graphIds/
   // color assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
@@ -99,11 +113,12 @@ export default function ReportRouteList() {
   // (non-dynamic) report.
   const effectiveRoutes = (isDynamicReport && !isEdit) ? resolvedRoutes : routes;
 
-  const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit });
+  const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate });
 
   const { graphs } = useGraphPublish({
     item,
     isEdit,
+    canMutate,
     apiUpdate,
     routes: effectiveRoutes,
     reportRow,
@@ -118,7 +133,7 @@ export default function ReportRouteList() {
   // draft_sections. Does NOT retroactively convert any already-added concrete routes into slots —
   // build a Dynamic Report starting from a blank routes list.
   const toggleDynamicReport = async (enabled) => {
-    if (!apiUpdate || !item?.id) return;
+    if (!canMutate || !apiUpdate || !item?.id) return;
     const withoutRouteSlots = (item.filters || []).filter(f => f.type !== 'routeSlots');
     const nextFilters = enabled
       ? [...withoutRouteSlots, { id: 'dyn-report-routes', searchKey: 'routes', useSearchParams: true, values: '', type: 'routeSlots' }]
@@ -203,7 +218,7 @@ export default function ReportRouteList() {
       </div>
       {isRoutesExpanded && (
         <>
-          {isEdit && (
+          {canMutate && (
             <div className={t.dynamicToggleWrapper}>
               <Switch enabled={isDynamicReport} setEnabled={toggleDynamicReport} label="Dynamic Report" size="small" />
               <span className={t.dynamicToggleLabel}>
@@ -211,7 +226,7 @@ export default function ReportRouteList() {
               </span>
             </div>
           )}
-          {isEdit && (
+          {canMutate && (
             <div className={t.addRouteWrapper}>
               {isDynamicReport ? (
                 <Button themeOptions={{ size: 'sm', color: 'transparent' }} onClick={handleAddRouteSlot}>
@@ -275,7 +290,7 @@ export default function ReportRouteList() {
                 Icon={Icon}
                 ColorPicker={ColorPicker}
                 onChangeColor={(c) => updateRoute({ index: i, updates: { color: c } })}
-                isEdit={isEdit}
+                isEdit={canMutate}
                 saving={saving}
                 isExpanded={!!expandedRoutes[i]}
                 onToggleExpand={() => toggleRoute(i)}
