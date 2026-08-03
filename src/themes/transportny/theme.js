@@ -14,10 +14,10 @@ const theme = {
     ReportRouteList
   },
   sectionMenuExtensions: {
-    "AVL Graph": [npmrdsMeasureMenu]
+    "Graph": [npmrdsMeasureMenu]
   },
   sectionHeaderExtensions: {
-    "AVL Graph": [npmrdsQuickControls]
+    "Graph": [npmrdsQuickControls]
   },
   mapPlugins: {
     routecreation: RoutecreationPlugin,

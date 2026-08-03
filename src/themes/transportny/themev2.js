@@ -2479,7 +2479,7 @@ const pageComponents = {
 // sectionMenu.jsx in the dms submodule for the generic extension point.
 // ─────────────────────────────────────────────────────────────────────────────
 const sectionMenuExtensions = {
-  "AVL Graph": [npmrdsMeasureMenu],
+  "Graph": [npmrdsMeasureMenu],
   "Card": [calloutStatMenu],
 };
 
@@ -2493,7 +2493,7 @@ const sectionMenuExtensions = {
 // components/QuickControls and components/MeasurePicker's applyMeasurePick.
 // ─────────────────────────────────────────────────────────────────────────────
 const sectionHeaderExtensions = {
-  "AVL Graph": [npmrdsQuickControls],
+  "Graph": [npmrdsQuickControls],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
