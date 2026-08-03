@@ -112,7 +112,14 @@ function findSelfBoundGraphs(sectionList) {
   const counts = {};
   return (sectionList || [])
     .map((section) => {
-      if (section?.id == null) return null;
+      // NOT `section?.id == null` — a section optimistically pushed into `draft_sections`
+      // (Add-Graph modal, useAddGraphSection.js) carries a real `trackingId` immediately but no
+      // `id` until the create round-trip's later revalidate lands; gating discovery on `id`
+      // makes a freshly-created graph briefly invisible here, which then races with
+      // `knownSectionIds` below into a spurious "orphan" strip of the routes just assigned to it.
+      // trackingId (this component's own stable identity, always minted client-side at creation —
+      // see sectionArray.jsx's save()) is sufficient on its own.
+      if (section?.trackingId == null && section?.id == null) return null;
       const elementData = section?.element?.['element-data'];
       if (typeof elementData !== 'string') return null;
       let parsed;
@@ -154,8 +161,10 @@ export function useGraphPublish({ item, isEdit, apiUpdate, routes, reportRow, pe
   // graphIds are stored using that same value (see toggleRouteGraph in useReportRow),
   // so comparing against plain DB ids here would treat every trackingId-identified
   // graph as unknown and immediately strip it right back out (this is what caused the
-  // toggle-then-revert bug found live 2026-07-06).
-  const knownSectionIds = useMemo(() => new Set(sectionList.map((s) => s?.id != null ? String(s.trackingId || s.id) : null).filter(Boolean)), [sectionList]);
+  // toggle-then-revert bug found live 2026-07-06). Same `trackingId ?? id` gate as
+  // findSelfBoundGraphs above (not `id != null` alone) — see that function's comment for why a
+  // freshly-created, not-yet-real-id section must still count as known.
+  const knownSectionIds = useMemo(() => new Set(sectionList.map((s) => (s?.trackingId != null || s?.id != null) ? String(s.trackingId || s.id) : null).filter(Boolean)), [sectionList]);
 
   // Publish each discovered graph's filtered route subset to its own self-derived
   // key (see findSelfBoundGraphs/selfParamKey). Each graph's `comparison_series`

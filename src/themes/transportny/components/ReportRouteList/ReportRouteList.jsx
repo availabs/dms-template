@@ -4,11 +4,13 @@ import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/sr
 import { reportRouteListTheme } from './ReportRouteList.theme';
 import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
+import { useAddGraphSection } from './useAddGraphSection';
 import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
+import AddGraphModal from '../AddGraphModal/AddGraphModal';
 
 export default function ReportRouteList() {
-  const { apiLoad, apiUpdate, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
+  const { apiLoad, apiUpdate, updateAttribute, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
   const { state: { join, externalSource } } = useContext(ComponentContext) || {};
   // NOT `props.isEdit` — that's dataWrapper's per-section "is THIS component's own
   // settings editor open" flag (almost always false in normal interactive use, since
@@ -34,6 +36,7 @@ export default function ReportRouteList() {
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddGraphModalOpen, setIsAddGraphModalOpen] = useState(false);
 
   // The route CATALOG binding — read-only, backs the "Add Route" tag-browser modal
   // (see `RouteTagBrowserModal`). Bound via the sectionMenu's "Add Join Source" slot rather
@@ -60,7 +63,10 @@ export default function ReportRouteList() {
     reorderRoutes,
     updateRoute,
     toggleRouteGraph,
+    assignRoutesToGraph,
   } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit });
+
+  const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit });
 
   const { graphs } = useGraphPublish({
     item,
@@ -108,6 +114,15 @@ export default function ReportRouteList() {
     }
   };
 
+  const handleConfirmAddGraph = async ({ pick, selectedRouteIds }) => {
+    const trackingId = await addGraphSection(pick);
+    if (!trackingId || !selectedRouteIds?.length) return;
+    const indexes = routes
+      .map((r, i) => (selectedRouteIds.includes(r.route_comp_id) ? i : -1))
+      .filter((i) => i !== -1);
+    await assignRoutesToGraph(indexes, trackingId);
+  };
+
   return (
     <div className={t.wrapper}>
       <div className={t.title}>{item?.title}</div>
@@ -132,6 +147,15 @@ export default function ReportRouteList() {
                 selectionMode="any"
                 excludeRouteIds={excludeRouteIds}
                 onConfirm={handleConfirmAddRoutes}
+              />
+              <Button themeOptions={{ size: 'sm', color: 'transparent' }} onClick={() => setIsAddGraphModalOpen(true)}>
+                <Icon icon="Plus" className={t.addRouteSearchIcon} /> Add Graph
+              </Button>
+              <AddGraphModal
+                open={isAddGraphModalOpen}
+                setOpen={setIsAddGraphModalOpen}
+                routes={routes}
+                onConfirm={handleConfirmAddGraph}
               />
             </div>
           )}

@@ -1,6 +1,6 @@
 # Dynamic Reports, Route Tags & Add-Route Flow — next-phase scoping
 
-## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. Remaining opens are sequencing + a few scheduling/verification items, see "Open questions" at the bottom.
+## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. **Add-Graph modal (item 1's sub-item) is DONE and live-verified, 2026-08-03** — see item 1's "Implementation plan, 2026-08-03" section, including a real platform bug (`useGraphPublish.js` orphan-cleanup race) found and fixed along the way. TMC-linear auto-generation and Dynamic Reports (item 3) remain unstarted — next threads to pick up, priority order between them not yet decided.
 
 **Priority directive (2026-07-31):** this arc (all items below) takes priority over every other
 currently-tracked gap/bug in the reports/routes space — `report-route-ui-parity-gaps.md`,
@@ -148,6 +148,233 @@ opportunistically.
 **Verify URL:** `http://npmrds.localhost:5173/edit/converted_reports/claude_scratch_tag_browser` —
 click "+ Add Route", expect the tag-browser modal (search + County/Region/Agency/Auto-generated/
 Other tags tiles); County → Albany should show "Claude Tags Test Route 2 (county browse)".
+
+**Add-Graph modal — scoping findings, 2026-07-31.** Ryan's prompt: "a long while ago we used to add
+graphs via the RRL, but switched for several reasons" — check whether `old-reports-conversion.md`
+has the pertinent history before designing this modal.
+
+**`old-reports-conversion.md` checked, not the relevant source.** Its `graph_comps` references
+(~lines 775-784) are the *legacy* `admin2.reports` schema field from the pre-2017
+`npmrds.devtny.org` tool — an unrelated concept that happens to share a name with the thing below.
+
+**The actual prior art: `ReportRouteList`'s own rejected design iteration**, documented in its
+README's "Design iterations during development" + git log `cf6d81a`/`62fdf05`/`381a3ae`
+(2026-06-25) → `9208c14`/`33e445f` (2026-07-06). An early iteration of this same component modeled
+a report as a separate `reports_snap_2` row carrying both `routes` **and a `graph_comps` array of
+section-shaped graph objects**, injected into the live page via a bespoke `setItem` escape hatch
+added to `view.jsx`/`edit/index.jsx` specifically for this. **Why it was abandoned:** the injected
+graph objects lived only in transient in-memory page state, invisible to DMS's real section-CRUD
+path — so any *unrelated* generic section operation (e.g. drag-reorder) would serialize them as if
+real, double-storing them (leaked dev-DB rows `2186931`/`2186932` from that iteration). The fix,
+landed 2026-07-06, made graphs **ordinary page sections** discovered via a `$self`-bound
+`comparison_series` subscriber, with a hard rule still in force today: **RRL never writes into a
+graph section's row — only reads siblings, one-way** (README: "a cross-section write was considered
+and rejected — the same class of coupling that caused the original `graph_comps` leak"). This rule
+is why the shared route-picker modal above, and every other RRL mutation, only ever touches RRL's
+own `reports_snap_2` row.
+
+**This doesn't block the proposed Add-Graph modal — it only constrains *how* the new section gets
+created.** The generic, already-in-production mechanism for creating a real section (confirmed
+2026-07-31 by reading `sectionArray.jsx`'s `save()` → `sectionGroup.jsx`'s `updateSections()` →
+`apiUpdate` → `api/updateDMSAttrs.js`): splice a plain inline object with no numeric `id` into the
+page's `draft_sections` array and call `apiUpdate({data: {id: pageId, draft_sections: [...],
+has_changes: true}})`. `updateDMSAttrs` sees the missing `id` and calls `falcor.call(['dms','data',
+'create'], ...)` synchronously — a *real*, immediately-persisted row, not a transient injected one.
+This is the same primitive the normal "+ Add Component" button and `editFunctions.jsx`'s `newPage()`
+(template section cloning) already use — no new `setItem`-style hatch — and critically, **the
+object pushed in can carry fully pre-populated `element-data`** (`columns`/`join`/`comparisonSeries`/
+`display`), not just a blank default. `dms section create` (CLI) converges on the same underlying
+`dms.data.create` call via separate orchestration code.
+
+**Config composition needs zero new code — reuse `composeMeasureConfig` wholesale.**
+`MeasurePicker/composeMeasureConfig.js` already builds a *complete*, from-scratch `columns`/`join`/
+`comparisonSeriesCombine`/`displayPatch` object from a `{graphType, measureKey, resolutionKey,
+comparisonModeKey, anchorInvert}` pick — built exactly for the "no base template to clone from"
+case, i.e. this modal's exact scenario. `MeasurePicker/index.js`'s `REPORT_SUBSCRIBER_ARGS`/
+`selfParamKey`/`BASE_SOURCE` supply the `$self`-bound subscriber shape and the default Dataset
+(`BASE_SOURCE.sourceInfo`) — the same defaulting Measure Picker already does the first time an
+author applies a pick to a blank section. `GRAPH_TYPE_OPTIONS`/`MEASURE_OPTIONS`/
+`RESOLUTION_OPTIONS`/`COMPARISON_MODE_OPTIONS` are already exported and directly reusable as the
+modal's picker vocabulary. So: the modal collapses today's two-step author flow (+Add Component →
+blank "AVL Graph" → open sectionMenu → Measure Picker → configure) into one guided action — gather
+the same 4 picks, call `composeMeasureConfig` to get the full state *before* creating anything, push
+one fully-configured inline section object into `draft_sections`. The new graph is "as report-ready
+as the Report Page template's own pre-wired starter graph" (Measure Picker's own stated goal) from
+the moment it's created, with zero duplicated composition logic.
+
+**Auto-assigning routes needs no new mechanism either — it rides the existing one-way publish,
+doesn't reintroduce cross-section writes.** Once the new section exists with its `$self` subscriber
+enabled, RRL's own `useGraphPublish.js` (`findSelfBoundGraphs` + the publish effect) discovers it
+automatically on next render, same as any sibling AVL Graph section. "Auto-assign" is just: after
+creating the section, set `graphIds` (to include the new graph's identity) on whichever routes
+should be assigned — a write to RRL's *own* `reports_snap_2` row, the one row it already legitimately
+owns, never a write into the new graph's row. The existing publish effect then does the normal
+`setActionParam` publish. The graph section's row gets written exactly once — at creation, by the
+modal, an author-initiated action no different in kind from today's "+ Add Component" — never again
+from RRL afterward. Rule intact.
+
+**`avl_graph_template` rows are a red herring — confirmed 2026-07-31 not a live UI mechanism.**
+These are 3 hand-built rows `convert_old_reports.py` (the batch Python converter) clones/
+drift-checks against; no live JS reads them (`report-graph-vocabulary-picker.md`'s own record: "a
+from-scratch picker has no base template to clone from" — Measure Picker was deliberately built to
+*not* depend on them). Don't couple the new modal to this concept.
+
+**Open design questions this scoping surfaced — resolved by Ryan, 2026-08-03:**
+- Section placement: **appended to the main content group after existing AVL Graph sections.**
+- Auto-assign scope: **only routes selected in the same modal interaction** (not every route
+  currently on the report) — so the modal needs its own route-selection step, not just a
+  vocabulary picker.
+- Live preview: **static illustrative preview per Graph Type/Measure combo** (no live `/graph`
+  fetch).
+- Vocabulary scope: **full cartesian** (every Graph Type × Measure × Resolution × Comparison Mode
+  Measure Picker itself already offers), matching the author-empowerment stance over a curated
+  preset list.
+
+**Implementation plan, 2026-08-03 (not yet built).** New component
+`src/themes/transportny/components/AddGraphModal/` (`AddGraphModal.jsx` + `.theme.js`), same
+file-layout convention as `RouteTagBrowserModal/`. Trigger: a new "+ Add Graph" button in
+`ReportRouteList.jsx`, next to "+ Add Route" (same `isEdit`-gated wrapper, ~line 122-137 of that
+file today).
+
+1. **Workstream 0 — extract two pieces of Measure Picker's mutation logic into pure,
+   draft-or-plain-object functions (prep, no behavior change).** `applyMeasurePick`
+   (`MeasurePicker/index.js` lines ~94-195) and `reconcileComparisonSeriesColumn`
+   (`useDataWrapperAPI.js` lines ~132-172ish) both currently only run against an immer `draft`
+   reached via `dwAPI.setState`. The Add-Graph modal has no mounted dataWrapper/`dwAPI` for a
+   section that doesn't exist yet — it needs byte-identical merge logic to run against a plain
+   in-memory object instead, before that object is ever persisted. Both bodies already only use
+   plain mutation syntax (`draft.columns = ...`, `draft.columns.push(...)`) — no immer-specific API
+   is used inside either, so the exact same function body works unmodified against a plain mutable
+   object. Extract:
+   - `applyMeasurePickToState(state, pick, { externalSourceColumns, defaultColors })` — the body
+     currently inside `dwAPI.setState(draft => {...})` in `applyMeasurePick`. `applyMeasurePick`
+     becomes a thin wrapper: resolve `nextPick`/`composed`, then
+     `dwAPI.setState(draft => applyMeasurePickToState(draft, nextPick, {...}))`.
+   - `reconcileComparisonSeriesColumnOnState(state)` — the body currently inside
+     `setState(draft => {...})` in `reconcileComparisonSeriesColumn`. That function becomes
+     `() => setState(draft => reconcileComparisonSeriesColumnOnState(draft))`.
+   This is the "real abstraction, not a 1-2 line wrapper" case (root CLAUDE.md's no-wrapper rule) —
+   non-trivial merge logic, two genuinely independent call sites that need to produce byte-identical
+   section shape (a graph edited live via the picker vs. a graph composed from scratch by this
+   modal) — drift between them would silently produce a differently-shaped section depending on
+   which path created it.
+2. **Workstream 1 — route-selection step.** Not a reuse of `RouteTagBrowserModal` — that modal
+   browses the full route *catalog*; this step only ever lists routes **already on this report**
+   (`ReportRouteList`'s own `routes` array, passed down as a prop), since auto-assign is scoped to
+   routes selected in this same modal. A plain checklist (checkbox + name + existing color swatch
+   per row) is enough — no tag/category browsing needed at report-route volumes.
+3. **Workstream 2 — vocabulary picker + static preview.** Reuse `GRAPH_TYPE_OPTIONS`/
+   `MEASURE_OPTIONS`/`RESOLUTION_OPTIONS`/`COMPARISON_MODE_OPTIONS`/`DEFAULT_PICK` from
+   `composeMeasureConfig.js` directly (the same four controls `npmrdsMeasureMenu` already renders,
+   laid out as modal form controls instead of a sectionMenu item-group). Anchor-route control only
+   appears once exactly 2 routes are checked in Workstream 1 AND `comparisonMode === 'difference'`
+   (mirrors `getAnchorRouteOptions`'s own two-arm-only constraint, keyed off the modal's in-progress
+   selection rather than a live page-state read, since nothing is published yet). Static preview: a
+   small local `GRAPH_TYPE_GLYPHS` (3 canned icons/SVGs — Bar/Line/Grid) + a new local
+   `MEASURE_DESCRIPTIONS` copy map (one sentence per measure key — guidance-layer prose that
+   belongs in this component, not `vocabulary.json`, since that file is a cross-language SQL/
+   composition contract the Python converter also reads, not a UI-copy store). Resolution/
+   Comparison Mode render as a plain summary sentence, not a separate illustration per combo (keeps
+   the static-asset count to 3 × ~9 measures, not 3 × 9 × 6 × 2 full combos).
+4. **Workstream 3 — on-confirm section creation.**
+   1. Read one real "AVL Graph" section row (`dms raw get`) to confirm the exact top-level wrapper
+      keys a pushed section object needs beyond `element`/`trackingId`/`group`/`is_draft`/`parent`
+      (`sectionArray.jsx`'s `save()`, ~line 184-212, already shows these five — need to confirm
+      `title`/span-type keys too).
+   2. Build `state = cloneDeep(RegisteredComponents['AVL Graph'].defaultState)` — confirmed shape
+      `{ filters, columns: [], data: [], display: graphOptions, externalSource: { columns: [] } }`
+      (`graph_new/config.jsx` lines ~146-152) — then unconditionally set
+      `state.externalSource = { ...BASE_SOURCE.sourceInfo }` (a brand-new section never has an
+      existing Dataset to preserve, unlike `applyMeasurePickToState`'s
+      `if (!draft.externalSource?.source_id)` guard, which exists only for the already-configured-
+      graph case).
+   3. `applyMeasurePickToState(state, pick, { externalSourceColumns: BASE_SOURCE.sourceInfo.columns,
+      defaultColors: graphOptions.colors })`, then `reconcileComparisonSeriesColumnOnState(state)` —
+      the same two calls the picker's own apply path makes, now against a plain object.
+   4. Push `{ trackingId: crypto.randomUUID(), group: <the AVL-Graph sections' own group name>,
+      is_draft: true, parent: JSON.stringify({id: item.id, ref: `${item.app}+${item.type}`}),
+      element: { 'element-type': 'AVL Graph', 'element-data': JSON.stringify(state) },
+      ...<title/other wrapper keys from step 4.1> }` into a clone of `item.draft_sections`,
+      positioned after the last existing section whose `element['element-type'] === 'AVL Graph'`
+      (or at the end of that group if none exist yet). Exact splice-index mechanics need tracing
+      `sectionArray.jsx`'s group-filtering logic during implementation — `sectionGroup.jsx` passes
+      every `SectionArray` instance the FULL flat `draft_sections` array (not pre-filtered by
+      group), so a naive last-AVL-Graph-index over the raw array may not be correct; not yet
+      confirmed.
+   5. `apiUpdate({ data: { id: item.id, draft_sections: <spliced array>, has_changes: true } })` —
+      the same generic primitive "+ Add Component" already uses (`updateDMSAttrs.js` →
+      `dms.data.create` for the id-less new entry).
+   6. If routes were checked in Workstream 1: a new batched `assignRoutesToGraph(routeIndexes,
+      newSectionTrackingId)` in `useReportRow.js` (mirrors `addRoutes`' one-`persistRoutes`-call-
+      for-the-whole-batch pattern, rather than looping `toggleRouteGraph` per route — which would
+      race against a stale `routes` closure the same way a looped single-item add would have) — sets
+      `graphIds` to include the new section's `trackingId` on each selected route in one write.
+
+**Risks/unknowns flagged for implementation, not blocking this plan:** exact section-wrapper keys
+beyond the five `sectionArray.jsx` already shows; exact splice-index computation given
+`sectionGroup.jsx`'s full-flat-array-per-group passing; `assignRoutesToGraph` is genuinely new code
+in `useReportRow.js`, not a reuse of `toggleRouteGraph`.
+
+**Built + live-verified, 2026-08-03.** All of Workstreams 0-3 above shipped as planned, with two
+findings from implementation/live-testing worth recording:
+
+- **Section-wrapper keys resolved empirically, simpler than expected.** A live `dms raw get` on a
+  real persisted "AVL Graph" section row showed the stored `data` shape includes `title`/`level`/
+  `type` fields beyond the five `sectionArray.jsx`'s `save()` sets client-side — but these turned
+  out to be **server-side defaults** (`updateDMSAttrs`/`dms.data.create` normalization for every
+  "component" row), not something the client must supply. Confirmed by grep: `sectionArray.jsx`'s
+  own `edit.value` for a brand-new section starts as `{}` and is never given `title`/`level`/`type`
+  before `save()` pushes it. So `useAddGraphSection.js`'s pushed object needing only `trackingId`/
+  `group`/`is_draft`/`parent`/`element` (per the plan) was exactly right — no additional keys
+  needed.
+- **Splice-index question resolved: no index math needed at all.** Traced `sectionArray.jsx`'s
+  render path (~line 423): every `SectionArray` instance renders `value.filter(v => v.group ===
+  group.name || (!v.group && group.name === 'default'))` in **array order** — `sectionGroup.jsx`
+  passes the full flat `draft_sections` array to every group's instance, and each instance filters
+  it down client-side. Appending the new section to the **end** of the full array is therefore
+  sufficient to render it last within whichever group it's tagged with (no later array entry can
+  belong to the same group once it's the final element) — confirmed live, new graphs render
+  directly below the existing AVL Graph section(s), never needing a computed splice position.
+- **Real bug found and fixed: `useGraphPublish.js`'s orphan-cleanup effect raced against a
+  freshly-created section and silently stripped the very route assignment this modal had just
+  made.** Live-tested by watching a route's `graphIds` in the actual DB (`dms dataset query`)
+  immediately after confirming the modal: the write landed correctly, then within ~2 seconds
+  reverted to empty. Root cause: `findSelfBoundGraphs`'s discovery gate and `knownSectionIds`'s
+  build (both in `useGraphPublish.js`) required `section?.id != null` before counting a section as
+  real — but a section pushed via `updateAttribute`'s optimistic patch (see `useAddGraphSection.js`)
+  carries a real `trackingId` immediately, and gets a real numeric `id` only later, once
+  `apiUpdate`'s `revalidate()` round-trip lands (`wrapper.jsx` — the earlier `dataSnapshot`+`merge`
+  restore only restores the pre-persist rich shape, still id-less; the real id arrives on a
+  separate, later refetch). In the window between those two, `knownSectionIds` didn't contain the
+  new graph's trackingId at all, so the orphan-cleanup effect (correctly, by its own logic) treated
+  the just-assigned `graphIds` entry as pointing at a since-removed graph and stripped it. Fixed by
+  changing both gates from `id != null` to `trackingId != null || id != null` (`useGraphPublish.js`)
+  — trackingId alone is sufficient identity (it's *why* trackingId exists, per this component's own
+  README: "assigned once at creation, survives publish"); existing sections are unaffected (they
+  always have an `id`), only a same-render-cycle create-then-assign flow (previously unreachable
+  before this modal) benefits. This is a real, previously-latent platform bug in NPMRDS-specific
+  code (not core `@availabs/dms`), exposed because this modal is the first feature to create a
+  section and assign routes to it in the same user action.
+- **Verification (2026-08-03):** live-tested against `converted_reports/claude_scratch_tag_browser`
+  (same scratch report used for item 1/2's shared-modal verification). Opened "+ Add Graph",
+  confirmed the route checklist (report's own routes, not the catalog), the vocabulary picker
+  (Graph Type/Measure/Resolution/Comparison Mode reusing Measure Picker's own option lists
+  verbatim), the Anchor Route control appearing only once exactly 2 routes are checked AND
+  Comparison Mode is Difference, and the static preview (glyph + measure/graph-type prose + a
+  resolution/mode summary sentence) updating live per pick. Confirmed via `dms raw get` on the
+  newly-created section row that composed state was byte-correct (columns/join/comparisonSeries/
+  `_measurePick` all matching the modal's picks) for both a Plain Bar-Graph/Speed pick and a
+  Difference Bar-Graph/Speed pick (comparisonSeriesCombine.mode=difference, anchorInvert=false).
+  Confirmed via `dms dataset query` against the report's `reports_snap_2` row that
+  `assignRoutesToGraph` persists the correct route→graphId mapping and — after the orphan-cleanup
+  fix — that it **stays** persisted 6+ seconds later (past the race window). Four extra scratch AVL
+  Graph sections now exist on this scratch report from repeated test runs — harmless disposable dev
+  data, same convention as the scratch routes already left on this report, safe to delete
+  opportunistically.
+- **Verify URL:** `http://npmrds.localhost:5173/edit/converted_reports/claude_scratch_tag_browser`
+  — click "+ Add Graph" next to "+ Add Route", pick routes + a Graph Type/Measure/Resolution/
+  Comparison Mode combo, confirm a new graph section appears below the existing ones and the picked
+  routes show as assigned (expand a route row to see its "Graph N" chips).
 
 ---
 
@@ -477,10 +704,9 @@ Dynamic Reports just needs to end up linkable-into from wherever that lands.
 
 Still open:
 
-1. Priority order across the three items (and the Add-Graph sub-item under #1) — sequential or
-   parallel? (Item 2's Phase 1 + the shared modal are now both built; the rest of the ordering
-   isn't decided — Add-Graph sub-item, TMC-linear auto-generation, and Dynamic Reports itself are
-   all still unstarted.)
+1. ~~Priority order across the three items~~ — Ryan picked the Add-Graph modal as the next thread
+   to build, 2026-08-03. TMC-linear auto-generation and Dynamic Reports remain unstarted, in that
+   order relative to each other TBD.
 2. ~~The proposed tag taxonomy~~ — confirmed by Ryan 2026-07-31, proceed as proposed. See item 2's
    "Proposed starting tag categories" section.
 3. Since Dynamic Report template pages are shared/reused (not per-instance), does editing a
@@ -490,6 +716,10 @@ Still open:
 4. How many of the old tool's 216 templates actually get ported as real Dynamic Report pages — all
    216, or a curated subset following panel-frequency concentration (see item 3's architecture
    note)?
+5. ~~Add-Graph modal~~ — design questions resolved by Ryan 2026-08-03 (placement, auto-assign
+   scope, preview mechanism, vocabulary scope); built and live-verified the same day, including a
+   platform bug fix (`useGraphPublish.js` orphan-cleanup race). See item 1's "Implementation plan,
+   2026-08-03" section.
 
 Resolved 2026-07-31 (same-day, across two follow-up rounds):
 
@@ -523,6 +753,17 @@ Resolved 2026-07-31 (same-day, across two follow-up rounds):
 - `planning/tasks/current/route-creation-tool.md` — route creation tool current status; folder
   field explicitly deferred 2026-07-23
 - `planning/tasks/current/reportroutelist.md` — RRL add-flow history (3 rounds so far)
+- `src/themes/transportny/components/ReportRouteList/README.md` ("Design iterations during
+  development") + git log `cf6d81a`/`62fdf05`/`381a3ae` → `9208c14`/`33e445f` — the real prior-art
+  for "we used to add graphs via the RRL": the rejected `graph_comps`/`setItem` injection approach
+  and why it was replaced by self-binding. See item 1's "Add-Graph modal — scoping findings"
+  section.
+- `src/themes/transportny/components/MeasurePicker/composeMeasureConfig.js` + `index.js` — the
+  from-scratch graph-config composer the Add-Graph modal should reuse wholesale, not reimplement
+- `src/dms/packages/dms/src/patterns/page/components/sections/sectionArray.jsx`,
+  `sectionGroup.jsx`, `src/dms/packages/dms/src/api/updateDMSAttrs.js` — the real, generic
+  section-creation primitive (`draft_sections` push → `apiUpdate` → `dms.data.create`) the
+  Add-Graph modal should create its new section through
 - `research/npmrds-reports/cold-open-ux-findings.md` — first-60-seconds friction findings,
   motivates item 1
 - `research/npmrds-reports/guidance-layer-findings.md` — "does the tool tell the user anything"
@@ -552,3 +793,18 @@ Resolved 2026-07-31 (same-day, across two follow-up rounds):
   itself (`RouteTagBrowserModal.jsx`, `useTagBrowser.js`, `tagCategories.js`), built 2026-07-31; see
   item 1's "Shared modal — implementation" section for the two platform findings hit while building
   it (no live tag-discovery query; join-source snapshot staleness)
+- `src/themes/transportny/components/AddGraphModal/` — the Add-Graph modal itself
+  (`AddGraphModal.jsx`, `graphGuidanceCopy.js`), built 2026-08-03; reuses Measure Picker's
+  vocabulary and `composeMeasureConfig` wholesale, no duplicated composition logic
+- `src/themes/transportny/components/ReportRouteList/useAddGraphSection.js` — composes a
+  from-scratch "AVL Graph" section state and pushes it into `draft_sections`, the Add-Graph modal's
+  section-creation primitive (built 2026-08-03)
+- `MeasurePicker/index.js`'s `applyMeasurePickToState` and
+  `dataWrapper/useDataWrapperAPI.js`'s `reconcileComparisonSeriesColumnOnState` — pure
+  draft-or-plain-object mutation functions extracted 2026-08-03 so the Add-Graph modal can compose
+  a section's config before any dwAPI/dataWrapper exists for it, byte-identical to the live-editing
+  path
+- `src/themes/transportny/components/ReportRouteList/useGraphPublish.js` — `findSelfBoundGraphs`/
+  `knownSectionIds`'s discovery gate fixed 2026-08-03 (trackingId-or-id, not id-only) after a real
+  orphan-cleanup race was found live-testing the Add-Graph modal; see item 1's implementation
+  record for the full root-cause writeup

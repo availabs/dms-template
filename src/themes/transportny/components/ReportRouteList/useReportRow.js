@@ -377,6 +377,32 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     }
   };
 
+  // Batched version of toggleRouteGraph for the Add-Graph modal's "auto-assign" step (Ryan's
+  // decision, 2026-08-03: only routes selected in that same modal, added to a graph that's just
+  // been created). One `persistRoutes` call for every selected route, same reasoning as
+  // `addRoutes`: looping `toggleRouteGraph` per route would race against a stale `routes` closure,
+  // each call persisting `[...staleRoutes, oneMoreAssignment]` and silently dropping all but the
+  // last.
+  const assignRoutesToGraph = async (routeIndexes, sectionId) => {
+    if (!apiUpdate || !item?.id || saving || !reportRow || !routeIndexes?.length) return;
+    setSaving(true);
+    setError('');
+    try {
+      const newRoutes = cloneDeep(routes);
+      routeIndexes.forEach((i) => {
+        const current = new Set(newRoutes[i]?.graphIds || []);
+        current.add(sectionId);
+        if (newRoutes[i]) newRoutes[i].graphIds = Array.from(current);
+      });
+      await persistRoutes(newRoutes);
+    } catch (e) {
+      console.error('<ReportRouteList:assignRoutesToGraph>', e);
+      setError('Could not assign routes to the new graph.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return {
     reportRow,
     routes,
@@ -389,5 +415,6 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     reorderRoutes,
     updateRoute,
     toggleRouteGraph,
+    assignRoutesToGraph,
   };
 }
