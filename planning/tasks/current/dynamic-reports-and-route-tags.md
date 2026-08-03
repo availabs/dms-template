@@ -556,6 +556,21 @@ corridors at the cost of changing the naming/count shape from what's now the est
 Not scheduled; just don't let this get silently forgotten if `route_gen_corridors.py` gets reused
 for another year without revisiting it.
 
+**Real bug found and fixed, 2026-08-03: county tag casing.** First live run tagged routes
+`county:albany` (lowercase, derived from the source data's `county_name` column) — but
+`tagCategories.js`'s `NY_COUNTIES` list (the UI's hardcoded county-folder taxonomy) is Title Case
+(`county:Albany`), and the `array_contains` tag-match is case-sensitive with no normalization
+anywhere in the path (confirmed by tracing `useTagBrowser.js` → `buildUdaConfig.js` →
+`dms-server/src/routes/uda/utils.js`/`query_sets/helpers.js`) — so every county folder silently
+matched zero of the new routes even though the tag was technically present. Caught live: Ryan
+browsed County → Albany and saw only an old leftover test route. 813 routes had already been
+created with the bad casing before the batch was killed; all 813 deleted (0 failures) and
+regenerated. Fix: `route_gen_corridors.py` now maps the source `county_name` onto the exact
+`NY_COUNTIES` list (case/punctuation-normalized comparison, e.g. "ST LAWRENCE" → "St. Lawrence"),
+verified against all 62 real county values in the 2024 data with zero unmapped. **Lesson for reuse:
+any future write path into `tags` must match `tagCategories.js`'s exact casing — there's no
+tolerant matching to fall back on.**
+
 **Naming: year embedded in the name, not just the description.** Since each (corridor, year) is a
 separate row by design, `route_gen_corridors.py` names routes `"{road} {county_code} {direction}
 ({year})"` (e.g. `"I-87 36001 NORTHBOUND (2024)"`) — otherwise every year's regeneration of the same
@@ -1078,10 +1093,49 @@ Loop 2") → confirms to `?routes=2198772`, 17/19 panels render real data across
 rows all bound to the one picked route. Edit at `.../edit/converted_reports/year_over_year_beginner_0`
 to see the raw 11 slot placeholders and the "Dynamic Report" toggle.
 
-**Not yet done:** the other 27 candidates (this pass built only 244, per Ryan's steer); Route Map /
-Route Difference Graph support for template conversion; any generalization of the one-off
-`ensure_route_in_catalog()` verification step into the mechanism itself (deliberately not needed —
-real viewers already have real catalog routes to pick from via the normal picker).
+**Not yet done:** the other 27 candidates (this pass built only 244, per Ryan's steer); any
+generalization of the one-off `ensure_route_in_catalog()` verification step into the mechanism
+itself (deliberately not needed — real viewers already have real catalog routes to pick from via the
+normal picker).
+
+**Route Map + Route Difference Graph support added, 2026-08-03 (same day, Ryan's follow-up ask).**
+Both turned out cheaper than the original deferral assumed — re-reading the relevant functions
+found the real data dependency was narrower than first thought in each case:
+
+- **Route Map.** `ensure_route_map_speed_template()`'s own docstring says the shared per-year
+  template it mints already carries a real, working **placeholder** color range (a generic quantile
+  scale over typical values) precisely so a fresh conversion has something correct before its own
+  per-report bake (`bake_route_map_choropleth_paint`/`bake_route_map_delay_paint`) customizes it.
+  Skipping that bake (`route_map_value_ctx=None`) isn't a degraded fallback for a Dynamic Report —
+  it's the *actually correct* behavior, since there's no single "this report's routes" to bake
+  against when a different real route can fill the slot on every view. `convert_template()` now
+  runs the same year-resolution + `ensure_route_map_*_template` minting loop `convert_report()` uses,
+  unchanged, then builds the section with the bake intentionally skipped. **Live-verified**: rebuilt
+  244 (`--replace`, new page id `2199131`, 22 sections, 0 skipped — both Route Map instances now
+  convert) and loaded `?routes=2198772` in a real browser. The Map section rendered a real,
+  interactive base map (after the known map-in-automation "needs a repaint" quirk — zooming once
+  fixed it, not a real bug) with a **live-computed legend value** ("0.36 - 0.36" travel time) for the
+  picked route — confirming the live CH tile-join pipeline computes its own value scale at view time
+  regardless of any server-side bake, exactly as the "skip the bake" design assumed. Zero console
+  errors.
+- **Route Difference Graph / TMC Difference Grid.** `resolve_difference_pair()`'s own `is_partner()`
+  check has two paths: same `routeId` string (needs zero real data) or, only as a fallback, matching
+  real `tmc_array`s across two *different* routeIds (the case that genuinely needs data this mode
+  doesn't fetch — two differently-`routeId`'d rows that happen to be the same physical route).
+  `convert_template()` now runs the same pair-resolution pre-pass `convert_report()` uses, with
+  `old_routes={}` instead of a real fetched dict — the common "before/after one route" pattern
+  matches via the same-routeId path, needing nothing new. **Not exercised by any of the 28
+  candidates** (none use this graph type), so verified instead with a standalone synthetic test
+  (two comps sharing one routeId, different date settings — the exact before/after shape): confirmed
+  auto-pick (no explicit `activeRouteComponents`) correctly resolves Main/Compare via the same-routeId
+  path, explicit `activeRouteComponents` ordering is honored, and a single-comp case correctly
+  reports "no partner" rather than crashing. No live page exercises this yet — flagged for whichever
+  future candidate does use this graph type.
+
+Both fixes are in the same `convert_template()` function (Route Map's minting loop, the
+difference-pair pre-pass, and the `convertible` classification all restored to mirror
+`convert_report()` almost exactly, minus the real-route-fetching steps) — see the function's
+updated docstring for the full reasoning trail.
 
 **Implementation plan, 2026-08-03 (mechanism only — Ryan's steer: old-template porting is a
 separate task, not this pass).** Full plan-mode design session; grounding and rationale below,

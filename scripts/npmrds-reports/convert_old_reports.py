@@ -5339,16 +5339,34 @@ def convert_template(old_id, dry_run=False, replace=False):
     that function for a one-time port of a curated ~28-candidate set. Some
     drift between the two is an accepted, deliberate cost of that choice.
 
-    Route Map sections are SKIPPED for now (gap-logged, not converted) —
-    their per-report choropleth color-break baking
-    (bake_route_map_choropleth_paint/bake_route_map_delay_paint) needs real
-    per-TMC values pooled across the report's actual routes, which doesn't
-    exist for an unfilled slot. Route Difference Graph / TMC Difference Grid
-    are also skipped — their Main/Compare pair resolution
-    (resolve_difference_pair) needs real route facts (tmc_key equality) this
-    mode never fetches. Neither of the 28 candidates surveyed 2026-08-03
-    needs either gap closed to convert; both are flagged for whichever
-    future candidate does."""
+    Route Map sections ARE converted (2026-08-03, added after the initial
+    244-only pass) — but deliberately WITHOUT the per-report choropleth
+    color-break bake (`route_map_value_ctx=None` below): that bake
+    (bake_route_map_choropleth_paint/bake_route_map_delay_paint) computes
+    quantile breaks over the report's actual routes' real values, which
+    can't exist for an unfilled slot. Read `ensure_route_map_speed_template`'s
+    own docstring: the shared per-year template it mints already carries a
+    real, working PLACEHOLDER color range (a generic quantile scale over
+    typical speed/delay values) precisely so every real conversion has
+    something correct to render before its own per-report bake customizes
+    it — skipping the bake for a Dynamic Report isn't a degraded fallback,
+    it's the actually-correct behavior: there's no single "this report's
+    routes" to bake against when a different real route may fill the slot
+    on every view.
+
+    Route Difference Graph / TMC Difference Grid ARE also converted
+    (2026-08-03) — `resolve_difference_pair` is called with `old_routes={}`
+    instead of a real fetched dict. Read `is_partner()` inside that function:
+    its PRIMARY match path is `str(cand.get("routeId")) ==
+    str(base.get("routeId"))` — plain string equality on the same field
+    `route_slot_group` already keys on, needing no real data at all. The
+    real-route-fetch-dependent path is only a narrow fallback (two DIFFERENT
+    routeIds that happen to reference the same physical route via duplicated
+    rows) — an accepted, documented-in-the-function-itself gap for template
+    conversion, not a new one introduced here. A difference pair's two
+    resolved comps always share one `route_slot_group` (same routeId, by
+    construction of the "before/after one route" pattern) — composes cleanly
+    with the slot-grouping mechanism with no special-casing."""
     gaps = []
     old = fetch_old_template(old_id)
     print(f"\n=== old template {old_id}: '{old['name']}' ===")
@@ -5388,23 +5406,42 @@ def convert_template(old_id, dry_run=False, replace=False):
     analyzed = [(g, analyze_graph(g, comps_by_id, gaps))
                 for g in old.get("graph_comps") or []]
 
-    # Route Difference Graph / TMC Difference Grid: pair resolution needs a
-    # same-physical-route check keyed off real route facts (tmc_key) this
-    # mode deliberately never fetches. Skipped, gap-logged — see docstring.
+    # Route Difference Graph / TMC Difference Grid (mirrors convert_report()'s
+    # own pre-pass exactly, `old_routes={}` in place of a real fetched dict —
+    # see docstring for why the primary same-routeId match path needs none).
+    route_diff_invert = {}
+    route_diff_gap_logged = set()
+    comp_order = [rc.get("compId") for rc in route_comps]
     for g, info in analyzed:
-        if info["type"] in DIFFERENCE_GRAPH_TYPES:
-            gaps.append({"kind": "route_difference_unsupported_in_template_mode",
-                         "graph": g.get("id"),
-                         "detail": "Difference-graph pair resolution needs real "
-                                   "route facts this conversion mode doesn't "
-                                   "fetch — not designed yet, see "
-                                   "convert_template()'s docstring"})
+        if info["type"] not in DIFFERENCE_GRAPH_TYPES:
+            continue
+        gid = g.get("id")
+        pair, why = resolve_difference_pair(g.get("state") or {}, route_comps, {})
+        if not pair:
+            gaps.append({"kind": "route_difference_no_pair", "graph": gid,
+                         "detail": why})
+            route_diff_gap_logged.add(gid)
+            continue
+        main_rc, compare_rc = pair
+        info["assigned"] = [main_rc["compId"], compare_rc["compId"]]
+        state_res = (g.get("state") or {}).get("resolution")
+        info["resolution"] = (state_res if isinstance(state_res, str) and state_res
+                              else (main_rc.get("settings") or {}).get("resolution")
+                              or "5-minutes")
+        pair_cols = {(rc.get("settings") or {}).get("dataColumn")
+                     for rc in (main_rc, compare_rc)}
+        if len(pair_cols) == 1:
+            info["data_column"] = next(iter(pair_cols))
+        else:
+            info["data_column"] = None
+            gaps.append({"kind": "route_difference_mixed_data_columns",
+                         "graph": gid, "detail": sorted(map(str, pair_cols))})
+        route_diff_invert[gid] = (comp_order.index(main_rc["compId"])
+                                  > comp_order.index(compare_rc["compId"]))
 
     needed = {GRAPH_TEMPLATE_MAP.get((i["type"], i["measure"], i["resolution"],
                                       i["data_column"]))
-              for _, i in analyzed
-              if i["type"] not in INFO_BOX_GRAIN
-              and i["type"] not in DIFFERENCE_GRAPH_TYPES} - {None}
+              for _, i in analyzed if i["type"] not in INFO_BOX_GRAIN} - {None}
     graph_templates = ensure_graph_templates(needed, graph_templates, dry_run)
 
     info_box_tmpl_name = {}
@@ -5491,33 +5528,67 @@ def convert_template(old_id, dry_run=False, replace=False):
         graph_templates = ensure_route_compare_template(info["measure"], graph_templates, dry_run)
         route_compare_tmpl_name[gid] = f"route_compare_{info['measure']}"
 
-    # Route Map: DEFERRED, not converted (see function docstring) — every
-    # instance is gap-logged and excluded from `convertible` below.
+    # Route Map (mirrors convert_report()'s own loop exactly — year
+    # resolution is comp-SETTINGS-driven (graph_max_year), no real route
+    # data needed; see docstring for why skipping the per-report bake below
+    # is correct, not a shortfall).
+    route_map_tmpl_name = {}
     route_map_gap_logged = set()
     for g, info in analyzed:
-        if info["type"] == "Route Map":
-            gaps.append({"kind": "route_map_deferred_needs_real_route_data",
-                         "graph": g.get("id"),
-                         "detail": "Route Map's per-report choropleth color-break "
-                                   "baking needs real per-TMC values pooled across "
-                                   "this report's actual routes — none exist yet "
-                                   "for an unfilled slot; not built this pass, see "
-                                   "convert_template()'s docstring"})
-            route_map_gap_logged.add(g.get("id"))
+        if info["type"] != "Route Map" or info["measure"] not in (
+                "none", "speed", "travelTime", "hoursOfDelay", "avgHoursOfDelay"):
+            continue
+        gid = g.get("id")
+        if (info["measure"] == "avgHoursOfDelay"
+                and info["resolution"] not in ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION):
+            gaps.append({"kind": "route_map_avghoursofdelay_unsupported_resolution",
+                         "graph": gid,
+                         "detail": f"resolution {info['resolution']!r} not built"})
+            route_map_gap_logged.add(gid)
+            continue
+        year = graph_max_year(info, comps_by_id)
+        if year is not None:
+            year = min(max(year, min(GEOMETRY_TILE_VIEWS)), max(GEOMETRY_TILE_VIEWS))
+        if year is None:
+            gaps.append({"kind": "route_map_no_year", "graph": gid,
+                         "detail": "no parseable comp dates to pick a geometry "
+                                   "network year"})
+            route_map_gap_logged.add(gid)
+            continue
+        if info["measure"] == "none":
+            graph_templates = ensure_route_map_none_template(year, graph_templates, dry_run)
+            route_map_tmpl_name[gid] = f"route_map_none_{year}"
+        elif info["measure"] == "speed":
+            graph_templates = ensure_route_map_speed_template(year, graph_templates, dry_run)
+            route_map_tmpl_name[gid] = f"route_map_speed_{year}"
+        elif info["measure"] == "travelTime":
+            graph_templates = ensure_route_map_traveltime_template(year, graph_templates, dry_run)
+            route_map_tmpl_name[gid] = f"route_map_travelTime_{year}"
+        elif info["measure"] == "hoursOfDelay":
+            graph_templates = ensure_route_map_hoursofdelay_template(year, graph_templates, dry_run)
+            route_map_tmpl_name[gid] = f"route_map_hoursOfDelay_{year}"
+        else:
+            avgdelay_resolution = info["resolution"]
+            graph_templates = ensure_route_map_avghoursofdelay_template(
+                year, avgdelay_resolution, graph_templates, dry_run)
+            avgdelay_slug = ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG[avgdelay_resolution]
+            route_map_tmpl_name[gid] = f"route_map_avgHoursOfDelay_{avgdelay_slug}_{year}"
 
     convertible, skipped = [], []
     for g, info in analyzed:
         gid = g.get("id")
         is_info_box = info["type"] in INFO_BOX_GRAIN
         is_route_compare = info["type"] == "Route Compare Component"
+        is_route_map = info["type"] == "Route Map"
         is_bar_summary_pm3 = (info["type"] == "Bar Graph Summary"
                              and (info["measure"], info["data_column"]) == BAR_SUMMARY_PM3_BUCKET)
         key = (info["type"], info["measure"], info["resolution"], info["data_column"])
-        if gid in route_map_gap_logged or info["type"] in DIFFERENCE_GRAPH_TYPES:
+        if gid in route_diff_gap_logged:
             skipped.append(g)
             continue
         tmpl_name = (info_box_tmpl_name.get(gid) if is_info_box
                     else route_compare_tmpl_name.get(gid) if is_route_compare
+                    else route_map_tmpl_name.get(gid) if is_route_map
                     else bar_summary_pm3_tmpl_name.get(gid) if is_bar_summary_pm3
                     else GRAPH_TEMPLATE_MAP.get(key))
         if tmpl_name and tmpl_name in graph_templates:
@@ -5525,7 +5596,7 @@ def convert_template(old_id, dry_run=False, replace=False):
             continue
         skipped.append(g)
         if (gid in info_box_gap_logged or gid in route_compare_gap_logged
-                or gid in bar_summary_pm3_gap_logged):
+                or gid in route_map_gap_logged or gid in bar_summary_pm3_gap_logged):
             continue
         gaps.append({"kind": "unmapped_graph", "detail": {
             "graph": gid, "graph_type": info["type"],
@@ -5593,8 +5664,16 @@ def convert_template(old_id, dry_run=False, replace=False):
             build_graph_section_data(page_id, tmpl, tid, info, gaps, g,
                                      color_range=old.get("color_range"),
                                      aadt_override=None,
+                                     # Deliberately None, not a gap: this graph
+                                     # type's per-report choropleth bake needs
+                                     # real per-route data that doesn't exist
+                                     # for an unfilled slot — the shared
+                                     # per-year template's own built-in
+                                     # placeholder color range is the correct
+                                     # render, not a degraded one. See
+                                     # convert_template()'s docstring.
                                      route_map_value_ctx=None,
-                                     diff_invert=False))
+                                     diff_invert=route_diff_invert.get(g.get("id"), False)))
 
     draft_ids = []
     for sd in section_datas:
