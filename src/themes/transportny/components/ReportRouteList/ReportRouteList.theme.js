@@ -56,5 +56,7 @@ export const reportRouteListTheme = {
   graphChipActive: 'px-1.5 py-0.5 rounded text-[11px] border bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200',
   colorDot: 'w-2.5 h-2.5 rounded-full flex-shrink-0 border border-slate-300',
   colorSection: 'space-y-1 pt-2 mt-2 border-t border-slate-100',
-  colorSectionLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider'
+  colorSectionLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider',
+  dynamicToggleWrapper: 'flex items-center gap-2 mb-3 pb-3 border-b border-slate-200',
+  dynamicToggleLabel: 'text-[11px] text-slate-500'
 };

@@ -1,6 +1,6 @@
 # Dynamic Reports, Route Tags & Add-Route Flow — next-phase scoping
 
-## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. **Add-Graph modal (item 1's sub-item) is DONE and live-verified, 2026-08-03** — see item 1's "Implementation plan, 2026-08-03" section, including a real platform bug (`useGraphPublish.js` orphan-cleanup race) found and fixed along the way. TMC-linear auto-generation and Dynamic Reports (item 3) remain unstarted — next threads to pick up, priority order between them not yet decided.
+## Status: IN PROGRESS — core architecture decided for all 3 items (2026-07-31, across three rounds of same-day follow-up). Item 2 (Route Tags) Phase 1 — manual tag storage + editing UI — is DONE and live-verified (2026-07-31, see item 2's "Implementation Plan" section). The shared tag-folder-browsing modal (items 1+2, "RouteTagBrowserModal") is DONE and live-verified (2026-07-31, see item 1's new "Shared modal — implementation" section) — wired into RRL's add-route flow now; Dynamic Reports' consumption of it (item 3) waits on that system existing at all. **Add-Graph modal (item 1's sub-item) is DONE and live-verified, 2026-08-03** — see item 1's "Implementation plan, 2026-08-03" section, including a real platform bug (`useGraphPublish.js` orphan-cleanup race) found and fixed along the way. **Dynamic Reports (item 3) — Ryan picked this as the next thread, 2026-08-03, with old-template porting explicitly carved out as a separate task. Core mechanism DONE + live-verified, 2026-08-03** — route slots filled via URL param, a "Dynamic Report" toggle in RRL, view-time resolution against the route catalog, all built and proven end-to-end (two different real routes rendering on the same shared page via different `?routes=` values). See item 3's "Implementation plan, 2026-08-03" section, including a pre-existing/unrelated platform finding (one LineGraph section that never renders a line, isolated away from Dynamic Reports and left for separate investigation) and old-template porting still deliberately out of scope. TMC-linear auto-generation remains unstarted.
 
 **Priority directive (2026-07-31):** this arc (all items below) takes priority over every other
 currently-tracked gap/bug in the reports/routes space — `report-route-ui-parity-gaps.md`,
@@ -698,28 +698,237 @@ not scoped further here.
 **Out of scope here:** the landing page itself — that's the coworker's design work, applied later.
 Dynamic Reports just needs to end up linkable-into from wherever that lands.
 
+**Implementation plan, 2026-08-03 (mechanism only — Ryan's steer: old-template porting is a
+separate task, not this pass).** Full plan-mode design session; grounding and rationale below,
+condensed from the approved plan file. Not yet built.
+
+**Core problem.** A report is a page whose `ReportRouteList` (RRL) panel owns one persisted row
+(`reports_snap_2`, keyed by `report_id = page.id`) holding concrete routes, published per-graph via
+`useGraphPublish.js`. A Dynamic Report is **one page, reused by everyone** — that per-page storage
+row can't hold concrete per-viewer routes (every visitor would collide on the same row). Routes
+instead come from the URL, resolved against the route catalog at render time, never persisted back.
+
+**Grounding confirmed before designing:**
+- `RouteRow.jsx` already renders a route with no `tmc_array`/dates gracefully (empty TMC section,
+  blank dates, graph-chip section works off `graphIds` alone) — a "slot" placeholder needs zero
+  changes there.
+- `useGraphPublish.js` is provenance-agnostic — it just filters/transforms whatever `routes` array
+  it's handed. Feeding it a resolved array instead of `useReportRow`'s persisted one needs no
+  changes to that file either.
+- The page-variable system already has precedent for tagging a `page.filters` entry with a role
+  marker beyond `searchKey`/`useSearchParams`/`values`: `type: 'action'` (`view.jsx:108`,
+  `edit/index.jsx:157`, read by `useGraphPublish.js`) and `type: 'map_share'`
+  (`_utils/index.js:492/504`) both exist today; `derived-page-variable.md` confirms unknown keys on
+  a filter row round-trip unchanged. So `type: 'routeSlots'` on a registered, URL-bound
+  (`useSearchParams: true`) entry follows an established pattern.
+- `updatePageStateFiltersOnSearchParamChange` (`_utils/index.js:571`) writes the live URL value
+  onto `pageState.filters[i].values` for any `useSearchParams: true` entry — same place
+  `useGraphPublish.js` already reads a resolved action-param value from.
+- Multi-value URL params use `|||` as the delimiter (`convertToUrlParams`, `_utils/index.js:8`) —
+  reused as-is for `?routes=2107650|||2107812`.
+- `RouteTagBrowserModal` already supports `selectionMode="exact"` + `requiredCount` (built
+  2026-07-31 for exactly this future consumer) and its `onConfirm` already hands back full resolved
+  route rows, not bare ids.
+- The shared `Modal` UI (`ui/components/Modal.jsx`) renders via `createPortal(..., document.body)`
+  with `fixed inset-0` — a true full-viewport overlay regardless of mount position; passing a no-op
+  `setOpen` makes it a blocking gate (no dismiss path other than confirming a selection).
+- Old-tool ground truth (`client-request-to-report-skill-archive.md`, "INVESTIGATED 2026-07-27"):
+  `admin2.templates.routes` is literally a **slot count (1–9, mode 1)**, and
+  `graph_comps[].state.activeRouteComponents` reference **`comp-N` placeholders** — the exact same
+  `comp-N` convention RRL's own `route_comp_id` already uses. A "slot" as a placeholder route
+  object (`route_comp_id: 'comp-N'`, no concrete data yet) mirrors the old tool's real mechanism.
+- **Page Templates system needs no changes.** "One shared page per template" means an admin
+  hand-configures the one Dynamic Report page (can start from the existing "Report Page" template
+  for its base layout, same as any normal report), then flips it into dynamic mode. No new entry in
+  the template picker for this pass.
+- **Checked whether the generic Settings-pane Filters editor (`settingsPane.jsx`'s
+  `FilterSettings`) could register the `routeSlots` entry — it can't**: its `FieldSet`s only expose
+  `searchKey`/`values`/`useSearchParams` (+ `Derived From`/`Derive` on existing rows), no `type`
+  field anywhere. Adding one would be a core `@availabs/dms` change for an NPMRDS-specific concept,
+  against this repo's own "NPMRDS-specific code lives in `src/themes/transportny`" convention. So
+  the toggle (see below) lives in `ReportRouteList.jsx` itself, not core Settings.
+
+**Design.**
+1. **"Dynamic Report" toggle, in RRL itself (edit-mode only).** A `Switch` + one-line explanation.
+   Toggling calls a handler reusing the exact optimistic-patch-then-persist pattern
+   `useAddGraphSection.js` already uses for `draft_sections`:
+   ```js
+   const toggleDynamicReport = async (enabled) => {
+     const withoutRouteSlots = (item.filters || []).filter(f => f.type !== 'routeSlots');
+     const nextFilters = enabled
+       ? [...withoutRouteSlots, { id: 'dyn-report-routes', searchKey: 'routes',
+                                   useSearchParams: true, values: '', type: 'routeSlots' }]
+       : withoutRouteSlots;
+     updateAttribute?.('', '', { filters: nextFilters });
+     await apiUpdate({ data: { id: item.id, filters: nextFilters }, skipNavigate: true });
+   };
+   ```
+   `updateAttribute`/`apiUpdate` are already destructured from `PageContext` in
+   `ReportRouteList.jsx` today. Slot **add** is new (below); slot **remove** already works via the
+   existing per-route "Remove Route from Report" button, no change needed. Caveat, not engineered
+   around: toggling ON doesn't retroactively convert existing concrete routes into slots — build a
+   Dynamic Report starting from a blank routes list.
+2. **Detect dynamic mode:** `const routeSlotFilter = pageState?.filters?.find(f => f.type ===
+   'routeSlots'); const isDynamicReport = !!routeSlotFilter;` `routeIds` from
+   `routeSlotFilter.values` (array-normalized). `routes` (from `useReportRow`, unchanged) stays the
+   persisted slot placeholders in dynamic mode — never concrete data.
+3. **New hook `useDynamicReportRoutes.js`** (`ReportRouteList/`):
+   `useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeIds, enabled }) →
+   { resolvedRoutes, isResolving }`. `enabled = isDynamicReport && !isEdit && routeIds.length > 0`.
+   Fetches catalog rows for `routeIds` via the shared `fetchCatalogRows` helper (extracted below),
+   filtering `{ col: 'id', op: 'filter', value: routeIds }`. Merges **positionally**:
+   `resolvedRoutes[i] = { ...slots[i], ...catalogRow[i], route_comp_id: slots[i].route_comp_id,
+   graphIds: slots[i].graphIds, color: slots[i].color }` — concrete fields (name/tmc_array/dates)
+   from the catalog row, identity/authoring fields stay from the slot. Never persists.
+4. **Extract `fetchCatalogRows`** out of `RouteTagBrowserModal/useTagBrowser.js` (currently
+   private) into `RouteTagBrowserModal/fetchCatalogRows.js`, exported, imported by both
+   `useTagBrowser.js` and the new hook — one canonical catalog-fetch instead of a third
+   near-duplicate. **Risk flagged, not blocking:** confirm `{ col: 'id', op: 'filter', value: [...] }`
+   actually resolves against the systemCol `id` (existing code only shows `id` used as a systemCol
+   **SELECT** column, never a filter target) — fall back to adding `{ name: 'id', systemCol: true,
+   show: true }` to the fetch's `columns` list (mirrors `useReportRow.js`'s own row-by-id read) if
+   not.
+5. **Effective routes for render + publish:** `const effectiveRoutes = (isDynamicReport && !isEdit)
+   ? resolvedRoutes : routes;` — used both for the RRL list render and as `useGraphPublish`'s
+   `routes` input (unchanged hook). Edit mode always shows raw placeholders.
+6. **Edit-mode slot authoring — one new button, zero new persistence code.** Replace "+ Add Route"
+   with "+ Add Route Slot" only when `isDynamicReport && isEdit`:
+   `onClick={() => addRoutes([{ name: \`Route Slot ${routes.length + 1}\` }])}` — reuses
+   `useReportRow.js`'s existing `addRoutes` verbatim (already assigns `route_comp_id`/color/deduped
+   name to an arbitrary object). No modal, no catalog lookup.
+7. **No-URL-param entry gate.** When `isDynamicReport && !isEdit && routeIds.length === 0` (or
+   mismatched count), render `RouteTagBrowserModal` open with a no-op `setOpen` (blocking — no
+   dismiss path), `selectionMode="exact"`, `requiredCount={routes.length}`, `onConfirm` navigates
+   (via `useNavigate`/`useLocation` from `react-router` — never `window.location`) to
+   `${pathname}?${convertToUrlParams({ [routeSlotFilter.searchKey]: selectedRoutes.map(r => r.id) })}`.
+   Deliberately re-resolves via the URL round-trip rather than short-circuiting with the modal's
+   already-resolved rows, keeping exactly one resolution path (mirrors why the Add-Graph modal work
+   extracted `applyMeasurePickToState` instead of duplicating merge logic at a second call site).
+   **Flagged, not blocking:** selection order becomes slot order, no per-slot labeled picking UI —
+   moot for the single-slot demo below; revisit once a real multi-slot template needs it (e.g. an
+   anchor/primary vs. comparison route where identity matters).
+
+**Scope boundaries for this pass:** old-template porting untouched (separate task, per Ryan);
+slot *count* stays implicit (# of persisted placeholder routes, no separate numeric setting); no
+changes to the Page Templates system; no sequential per-slot picker UX (one N-way "pick exactly N"
+selection, order = slot order).
+
+**Workstreams:** (1) extract `fetchCatalogRows`; (2) build `useDynamicReportRoutes.js`, confirm the
+id-filter mechanics empirically; (3) wire the toggle + detection + `effectiveRoutes` + slot button
++ entry gate into `ReportRouteList.jsx`, all gated on `isDynamicReport` so normal reports are
+untouched; (4) build one hand-built single-route-slot demo page (e.g. "Route Year by Year," one or
+two AVL Graph sections) proving the mechanism end-to-end; (5) live-verify + update this doc.
+
+**Verification plan:** no-param → blocking picker, `requiredCount` matches slot count; confirm
+selection → URL gets `?routes=<id>`, panel shows the real route name, graph(s) render real data;
+reload with the same param → same state, no modal (URL is durable/shareable); different `?routes=`
+value → same page, different route's data (the core "one shared page, many uses" point); `/edit/...`
+shows the raw placeholder + "+ Add Route Slot" + working graph-chip assignment; a normal
+(non-dynamic) report regression-checked unaffected; `dms raw get`/`dms dataset query` confirms
+nothing persists to `reports_snap_2` from a viewer's selection.
+
+**Built + live-verified, 2026-08-03.** All 5 workstreams shipped as planned. New files:
+`RouteTagBrowserModal/fetchCatalogRows.js` (extracted, exported), `ReportRouteList/useDynamicReportRoutes.js`.
+Modified: `useTagBrowser.js` (imports the extracted helper), `ReportRouteList.jsx` (toggle, detection,
+`effectiveRoutes`, slot button, entry gate), `ReportRouteList.theme.js` (two new theme keys).
+
+- **`id`-filter risk (Design §4) resolved clean, no fallback needed.** `fetchCatalogRows`'s
+  `columns` list already declares `{name:'id', systemCol:true}` unconditionally, so
+  `buildUdaConfig.js`'s `sourceColumnsByName`/`getFilterColumn` resolves a `{col:'id', op:'filter'}`
+  leaf against it directly, and `attributeAccessorStr` returns the bare column (not a `data->>`
+  accessor) for a systemCol — `WHERE id = ANY(...)` works exactly like any other filter, first try.
+- **Toggle mechanism verified live**: flipping "Dynamic Report" on `converted_reports/claude_scratch_tag_browser`
+  (a normal report) correctly swapped "+ Add Route" → "+ Add Route Slot" and back, with zero
+  persisted side effects after toggling off again (regression-safe).
+- **Demo page built**: `converted_reports/claude_scratch_dynamic_report_demo` (page id `2198224`),
+  scaffolded via `report_build.mjs` with one real route (id `2195805`, "NY-9D Northbound...", real
+  Jan–Feb 2025 data) then converted in the UI — toggled Dynamic Report on, added one Route Slot,
+  assigned it to the graph via the existing chip UI, removed the scaffold route, renamed the slot
+  to "Primary Route", set its date window (01/01/2025–02/28/2025, an authored/persisted slot field
+  that survives regardless of which real route fills the slot later).
+- **Full mechanism live-verified**: no `?routes=` param → blocking `RouteTagBrowserModal` gate
+  (`selectionMode="exact"`, `requiredCount=1`, no dismiss path); confirming a route writes
+  `?routes=<id>` via `convertToUrlParams` and closes the gate; the panel and graph immediately show
+  the *real* resolved route (name, real data) — not the slot's placeholder label; reloading the same
+  URL directly re-resolves with no gate (proves the URL is the durable/shareable state, not a
+  one-time redirect); navigating to a **different** `?routes=<otherId>` on the same page rendered a
+  **different** route's real data (the core "one shared page, many uses" point) — confirmed with
+  two distinct real catalog routes (`2195805` NB, `2195804` SB), each producing visibly different
+  speed profiles on the same Bar Graph section. `dms dataset query`/`dms raw get` after both
+  navigations confirmed `reports_snap_2` still holds only the one authored slot placeholder — zero
+  persistence from either viewer session.
+- **Real bug found and fixed during resolution debugging: `RouteRow.jsx` and `useReportRow.js`
+  needed no changes** — confirmed empirically, not just by reading: a slot placeholder (no
+  `tmc_array`/dates) renders and round-trips through rename/reorder/remove/date-edit/color-edit
+  exactly like a concrete route, no special-casing anywhere in that file.
+- **Non-bug, a self-inflicted test-sequencing trap worth recording:** mid-verification, toggling
+  "Dynamic Report" OFF (to A/B-test a concrete route added via the normal catalog flow against the
+  same graph) removes the `routeSlots` page-filter entry — obvious in hindsight, but forgetting to
+  toggle it back ON before re-testing the view-time URL flow produced a confusing symptom (`console`
+  showed `useGraphPublish.js`'s own pre-existing `"Failed to parse tmc_array for route undefined"`
+  warning, and the graph rendered an unconstrained network-wide aggregate instead of the one
+  route's real data) that looked exactly like a resolution bug but was just the toggle being off.
+  Cost real debugging time before a `console.log` dump of `{isDynamicReport, isEdit, routeIds,
+  effectiveRoutes}` in `ReportRouteList.jsx` showed `isDynamicReport:false` and made it obvious.
+- **Real, pre-existing, platform bug found AND FIXED, 2026-08-03: the demo's original "Travel Time
+  by Day" section (LineGraph, `day` resolution) never rendered a visible line, for ANY route,
+  Dynamic Reports or not.** Root-caused down to `avl-graph/LineGraph.jsx`'s line/area generators
+  gating `.defined()` on `!strictNaN(d.x)` — `strictNaN` coerces through `isNaN()`, so a
+  categorical/date x value (`day`/`weekday`/`month` resolution's `"2025-01-01"`-style string) is
+  "NaN" by that check, so `.defined()` silently excluded every point in the series (axis rendered
+  fine from the same domain; only the line path came out empty). Confirmed via `report_probe.mjs`
+  the server-side query was always 100% correct; confirmed via live instrumentation that
+  `XScale(d.x)`/`YScale(d.y)` resolved to valid pixel positions for every point — only the d3 line
+  generator's own `.defined()` predicate was wrong. Reproduced on a **plain, un-scripted page**
+  (`+ Add Page → Your Templates → Report Page`, a normal UI-added route, the stock Measure Picker) —
+  proving it was never about Dynamic Reports, `report_build.mjs`, or this arc's own code at all.
+  Fixed by replacing the three `.defined(d => !strictNaN(d.x))` call sites with a presence-only
+  check (`d.x !== null && d.x !== undefined && d.x !== ""`); `strictNaN` itself untouched (its other
+  call sites correctly pre-coerce with `+value` first). Live-verified across all six resolutions
+  (5-minutes/15-minutes/hour/day/weekday/month) × two measures on the reproduction page; Bar Graph
+  was never affected (different code path, no `.defined()` gate). Full write-up:
+  `src/dms/planning/tasks/completed/linegraph-day-resolution-invisible-line.md`. The demo's own
+  "Travel Time by Day" section now works too — re-verified live on the actual demo page (not just
+  the isolated `page_13` reproduction): both sections (LineGraph/Day and Bar Graph/Speed) render
+  real data for the resolved route, same page, same navigation.
+- **Verify URL:** `http://npmrds.localhost:5173/converted_reports/claude_scratch_dynamic_report_demo`
+  (no param) → blocking route picker, exactly 1 selection required; pick any route → both the
+  "Travel Time by Day" line graph and the "Speed (mph)" bar graph show that route's real data; try
+  `?routes=2195805` vs `?routes=2195804` directly to see two different real NY-9D routes render on
+  the same page. Edit at `.../edit/converted_reports/claude_scratch_dynamic_report_demo` to see the
+  raw "Primary Route" slot, the "Dynamic Report" toggle, and "+ Add Route Slot".
+
 ---
 
 ## Open questions for triage
 
 Still open:
 
-1. ~~Priority order across the three items~~ — Ryan picked the Add-Graph modal as the next thread
-   to build, 2026-08-03. TMC-linear auto-generation and Dynamic Reports remain unstarted, in that
-   order relative to each other TBD.
+1. ~~Priority order across the three items~~ — Ryan picked the Add-Graph modal, then Dynamic
+   Reports (core mechanism, old-template porting carved out separately), as the next threads to
+   build, 2026-08-03. TMC-linear auto-generation remains unstarted.
 2. ~~The proposed tag taxonomy~~ — confirmed by Ryan 2026-07-31, proceed as proposed. See item 2's
    "Proposed starting tag categories" section.
 3. Since Dynamic Report template pages are shared/reused (not per-instance), does editing a
    template's structure need any special draft/publish handling beyond what DMS pages already do,
    to avoid disrupting a concurrent viewer? Probably already covered by the existing
-   draft-vs-published model — not confirmed.
+   draft-vs-published model — not confirmed. (Note: the `routeSlots` page-filter registration
+   itself is NOT part of the draft/publish content model at all — `apiUpdate({data:{filters:...}}})`
+   writes immediately, no separate publish step, confirmed live 2026-08-03 toggling the new
+   "Dynamic Report" switch.)
 4. How many of the old tool's 216 templates actually get ported as real Dynamic Report pages — all
    216, or a curated subset following panel-frequency concentration (see item 3's architecture
-   note)?
+   note)? Still deferred — a separate task per Ryan's 2026-08-03 steer, not part of the mechanism
+   build.
 5. ~~Add-Graph modal~~ — design questions resolved by Ryan 2026-08-03 (placement, auto-assign
    scope, preview mechanism, vocabulary scope); built and live-verified the same day, including a
    platform bug fix (`useGraphPublish.js` orphan-cleanup race). See item 1's "Implementation plan,
    2026-08-03" section.
+6. ~~Dynamic Reports core mechanism~~ — designed, approved, built, and live-verified 2026-08-03. See
+   item 3's "Implementation plan, 2026-08-03" section, including a real pre-existing/unrelated
+   platform finding (one LineGraph section that never renders) isolated and left for separate
+   investigation, and a multi-slot picker UX nuance (selection order = slot order, no per-slot
+   labeled picking) flagged as a follow-up once a real multi-slot template needs it.
 
 Resolved 2026-07-31 (same-day, across two follow-up rounds):
 
@@ -804,6 +1013,17 @@ Resolved 2026-07-31 (same-day, across two follow-up rounds):
   draft-or-plain-object mutation functions extracted 2026-08-03 so the Add-Graph modal can compose
   a section's config before any dwAPI/dataWrapper exists for it, byte-identical to the live-editing
   path
+- `src/themes/transportny/components/RouteTagBrowserModal/fetchCatalogRows.js` — the routes-catalog
+  fetch, extracted 2026-08-03 from `useTagBrowser.js` (now imports it) so
+  `useDynamicReportRoutes.js` can reuse the identical implementation rather than a third
+  near-duplicate
+- `src/themes/transportny/components/ReportRouteList/useDynamicReportRoutes.js` — Dynamic Reports'
+  view-time route resolution (URL ids → catalog fetch → merge over the persisted slot
+  placeholders), built 2026-08-03; never persists, pure in-memory overlay
+- `converted_reports/claude_scratch_dynamic_report_demo` (page id `2198224`) — the live single-slot
+  Dynamic Report proof built 2026-08-03; see item 3's "Built + live-verified" section for the full
+  verification record and a real pre-existing/unrelated LineGraph rendering finding surfaced while
+  debugging it
 - `src/themes/transportny/components/ReportRouteList/useGraphPublish.js` — `findSelfBoundGraphs`/
   `knownSectionIds`'s discovery gate fixed 2026-08-03 (trackingId-or-id, not id-only) after a real
   orphan-cleanup race was found live-testing the Add-Graph modal; see item 1's implementation

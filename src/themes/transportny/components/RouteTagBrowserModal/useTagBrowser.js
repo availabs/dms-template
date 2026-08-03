@@ -1,67 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { buildUdaConfig } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
+import { fetchCatalogRows } from './fetchCatalogRows';
 
 const RECENT_LIMIT = 8;
 const SEARCH_LIMIT = 20;
 const TAG_BROWSE_LIMIT = 200;
 const SEARCH_MIN_CHARS = 2;
 const DEBOUNCE_MS = 250;
-
-// Same shape as ReportRouteList/useRouteSearch.js's fetchCatalogRows (explicit `attributes` +
-// `columnsToFetch`-keyed unwrap, so a row's real `id` comes back) — generalized to accept
-// arbitrary AND-composed filterGroups, since this hook serves four views (recent, name search,
-// browse-by-tag, name-search-within-tag) instead of just two.
-async function fetchCatalogRows({ apiLoad, routeSourceInfo, filterGroups, sort, limit }) {
-  const columns = [
-    // The routes catalog join-source binding (`routeSourceInfo`, see ReportRouteList.jsx's
-    // comment on it) snapshots its column list at author-configure time and never refreshes —
-    // the Report Page template (and every report already created from it) was last configured
-    // before the `tags` column existed on the source, so `routeSourceInfo.columns` doesn't
-    // include it even though the live source does (confirmed live: a stale 11-column snapshot
-    // vs. the source's real 12). Force the correct definition in explicitly rather than trusting
-    // the snapshot, so tag filtering works on every report regardless of when its join was last
-    // configured — dropping any stale/absent `tags` entry from the snapshot first.
-    ...routeSourceInfo.columns
-      .filter((c) => c.name !== 'tags')
-      .map((c) => (sort && c.name === sort.col ? { ...c, show: true, sort: sort.dir } : { ...c, show: true })),
-    { name: 'tags', type: 'multiselect', options: null, show: true },
-    { name: 'id', systemCol: true, show: true },
-  ];
-
-  const udaConfig = buildUdaConfig({
-    externalSource: routeSourceInfo,
-    columns,
-    filters: { op: 'AND', groups: filterGroups },
-  });
-
-  const config = {
-    format: { ...routeSourceInfo },
-    children: [
-      {
-        action: 'uda',
-        path: '/',
-        filter: {
-          fromIndex: 0,
-          toIndex: Math.max(0, limit - 1),
-          options: JSON.stringify(udaConfig.options),
-          attributes: udaConfig.attributes,
-        },
-        params: {},
-      },
-    ],
-  };
-
-  const data = await apiLoad(config, '/');
-  return (data || [])
-    .map((rawRow) =>
-      udaConfig.columnsToFetch.reduce((acc, col) => {
-        const v = rawRow[col.reqName];
-        acc[col.name] = v && typeof v === 'object' && '$type' in v ? v.value : v;
-        return acc;
-      }, {})
-    )
-    .filter((row) => row.id != null);
-}
 
 // Debounced fetcher backing the tag-browser modal's route list, across its four views:
 //   - root, no search term: most-recently-created routes (mirrors the old inline "Add a route" box)

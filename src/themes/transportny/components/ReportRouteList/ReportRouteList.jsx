@@ -1,10 +1,13 @@
 import { useContext, useMemo, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router';
 import { ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
+import { convertToUrlParams } from "../../../../dms/packages/dms/src/patterns/page/pages/_utils";
 import { reportRouteListTheme } from './ReportRouteList.theme';
 import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
+import { useDynamicReportRoutes } from './useDynamicReportRoutes';
 import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
@@ -21,8 +24,10 @@ export default function ReportRouteList() {
   // stored on a route only mean anything if they reference the ids of the sections
   // actually on screen.
   const isEdit = Boolean(editPageMode);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
-  const { Button, Input, Icon, ColorPicker } = UI || {};
+  const { Button, Input, Icon, ColorPicker, Switch } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
   const [expandedRoutes, setExpandedRoutes] = useState({});
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
@@ -51,6 +56,17 @@ export default function ReportRouteList() {
   // up assigned.
   const routeSourceInfo = Object.values(join?.sources || {})[0]?.sourceInfo;
 
+  // Dynamic Reports: a `page.filters` entry tagged `type: 'routeSlots'` marks this page as a
+  // shared, reused report — routes are filled at view time from its URL param, never persisted
+  // per-viewer. Absence means a normal report; every dynamic-only branch below gates on
+  // `isDynamicReport` so a normal report is completely unaffected. See
+  // dynamic-reports-and-route-tags.md item 3.
+  const routeSlotFilter = pageState?.filters?.find(f => f.type === 'routeSlots');
+  const isDynamicReport = !!routeSlotFilter;
+  const routeIds = isDynamicReport
+    ? (Array.isArray(routeSlotFilter.values) ? routeSlotFilter.values : [routeSlotFilter.values]).filter(Boolean)
+    : [];
+
   const {
     reportRow,
     routes,
@@ -66,13 +82,30 @@ export default function ReportRouteList() {
     assignRoutesToGraph,
   } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit });
 
+  // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/graphIds/
+  // color assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
+  // the real route ids the viewer's URL supplies. Never persisted; a pure in-memory overlay.
+  const { resolvedRoutes } = useDynamicReportRoutes({
+    apiLoad,
+    routeSourceInfo,
+    slots: routes,
+    routeIds,
+    enabled: isDynamicReport && !isEdit && routeIds.length > 0,
+  });
+  const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routes.length;
+
+  // A viewer sees the resolved real routes (both in this panel and in every self-bound graph);
+  // an author always authors against the raw placeholders. Identical to `routes` for every normal
+  // (non-dynamic) report.
+  const effectiveRoutes = (isDynamicReport && !isEdit) ? resolvedRoutes : routes;
+
   const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit });
 
   const { graphs } = useGraphPublish({
     item,
     isEdit,
     apiUpdate,
-    routes,
+    routes: effectiveRoutes,
     reportRow,
     persistRoutes,
     pageState,
@@ -80,19 +113,40 @@ export default function ReportRouteList() {
     clearActionParam,
   });
 
+  // Toggling Dynamic Report mode adds/removes the `routeSlots`-typed page-filter registration —
+  // the same optimistic-patch-then-persist pattern useAddGraphSection.js already uses for
+  // draft_sections. Does NOT retroactively convert any already-added concrete routes into slots —
+  // build a Dynamic Report starting from a blank routes list.
+  const toggleDynamicReport = async (enabled) => {
+    if (!apiUpdate || !item?.id) return;
+    const withoutRouteSlots = (item.filters || []).filter(f => f.type !== 'routeSlots');
+    const nextFilters = enabled
+      ? [...withoutRouteSlots, { id: 'dyn-report-routes', searchKey: 'routes', useSearchParams: true, values: '', type: 'routeSlots' }]
+      : withoutRouteSlots;
+    updateAttribute?.('', '', { filters: nextFilters });
+    await apiUpdate({ data: { id: item.id, filters: nextFilters }, skipNavigate: true });
+  };
+
+  // "+ Add Route Slot" reuses addRoutes verbatim (already assigns route_comp_id/color/deduped
+  // name to an arbitrary object) — a slot isn't a specific route, so there's no catalog to browse.
+  const handleAddRouteSlot = () => addRoutes([{ name: `Route Slot ${routes.length + 1}` }]);
+
   const toggleRoute = (index) => {
     setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
-  // Pairs each visible route with its real index in the full `routes` array —
-  // every mutation handler (reorder/rename/remove/toggle-graph) keys off that real
-  // index, not the filtered list's position, so filtering never disturbs them.
+  // Pairs each visible route with its real index in `effectiveRoutes` — every mutation handler
+  // (reorder/rename/remove/toggle-graph) keys off that real index, not the filtered list's
+  // position, so filtering never disturbs them. `effectiveRoutes === routes` for every normal
+  // report and for a Dynamic Report in edit mode; mutation controls are inert in view mode
+  // anyway (RouteRow gates every one of them on `isEdit`), so a Dynamic Report viewer rendering
+  // off the resolved array is safe even though its indices don't correspond to the persisted one.
   const filteredEntries = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return routes
+    return effectiveRoutes
       .map((r, i) => ({ r, i }))
       .filter(({ r }) => !q || (r.name || '').toLowerCase().includes(q));
-  }, [routes, searchQuery]);
+  }, [effectiveRoutes, searchQuery]);
 
   // `id` (the row's own DMS id) is the universal identity — every catalog row has one
   // regardless of provenance. `route_id` only ever existed on legacy-imported rows, kept as a
@@ -125,9 +179,23 @@ export default function ReportRouteList() {
 
   return (
     <div className={t.wrapper}>
+      {reportRow && needsRouteSelection && (
+        <RouteTagBrowserModal
+          open={true}
+          setOpen={() => {}}
+          apiLoad={apiLoad}
+          routeSourceInfo={routeSourceInfo}
+          selectionMode="exact"
+          requiredCount={routes.length}
+          onConfirm={(selectedRoutes) => {
+            const params = convertToUrlParams({ [routeSlotFilter.searchKey]: selectedRoutes.map(r => r.id) });
+            navigate(`${pathname}?${params}`);
+          }}
+        />
+      )}
       <div className={t.title}>{item?.title}</div>
       <div className={t.titleWrapper}>
-        <div>Routes{reportRow ? <span className={t.routeCount}>({routes.length})</span> : null}</div>
+        <div>Routes{reportRow ? <span className={t.routeCount}>({effectiveRoutes.length})</span> : null}</div>
         <Button themeOptions={{ size: "xs", color: "transparent" }} onClick={() => setIsRoutesExpanded(!isRoutesExpanded)}>
           {isRoutesExpanded ? <Icon icon="ChevronUp" /> : <Icon icon="ChevronDown" />}
         </Button>
@@ -135,19 +203,35 @@ export default function ReportRouteList() {
       {isRoutesExpanded && (
         <>
           {isEdit && (
+            <div className={t.dynamicToggleWrapper}>
+              <Switch enabled={isDynamicReport} setEnabled={toggleDynamicReport} label="Dynamic Report" size="small" />
+              <span className={t.dynamicToggleLabel}>
+                Dynamic Report — routes are filled at view time from the URL, not stored on this page.
+              </span>
+            </div>
+          )}
+          {isEdit && (
             <div className={t.addRouteWrapper}>
-              <Button themeOptions={{ size: 'sm', color: 'transparent' }} onClick={() => setIsAddModalOpen(true)}>
-                <Icon icon="Plus" className={t.addRouteSearchIcon} /> Add Route
-              </Button>
-              <RouteTagBrowserModal
-                open={isAddModalOpen}
-                setOpen={setIsAddModalOpen}
-                apiLoad={apiLoad}
-                routeSourceInfo={routeSourceInfo}
-                selectionMode="any"
-                excludeRouteIds={excludeRouteIds}
-                onConfirm={handleConfirmAddRoutes}
-              />
+              {isDynamicReport ? (
+                <Button themeOptions={{ size: 'sm', color: 'transparent' }} onClick={handleAddRouteSlot}>
+                  <Icon icon="Plus" className={t.addRouteSearchIcon} /> Add Route Slot
+                </Button>
+              ) : (
+                <>
+                  <Button themeOptions={{ size: 'sm', color: 'transparent' }} onClick={() => setIsAddModalOpen(true)}>
+                    <Icon icon="Plus" className={t.addRouteSearchIcon} /> Add Route
+                  </Button>
+                  <RouteTagBrowserModal
+                    open={isAddModalOpen}
+                    setOpen={setIsAddModalOpen}
+                    apiLoad={apiLoad}
+                    routeSourceInfo={routeSourceInfo}
+                    selectionMode="any"
+                    excludeRouteIds={excludeRouteIds}
+                    onConfirm={handleConfirmAddRoutes}
+                  />
+                </>
+              )}
               <Button themeOptions={{ size: 'sm', color: 'transparent' }} onClick={() => setIsAddGraphModalOpen(true)}>
                 <Icon icon="Plus" className={t.addRouteSearchIcon} /> Add Graph
               </Button>
@@ -165,7 +249,7 @@ export default function ReportRouteList() {
               <div className={t.skeletonRow} />
             </div>
           ) : null}
-          {reportRow && routes.length > 0 && (
+          {reportRow && effectiveRoutes.length > 0 && (
             <div className={t.searchWrapper}>
               <Input
                 placeholder="Search routes…"
@@ -241,16 +325,18 @@ export default function ReportRouteList() {
                 graphs={graphs}
                 onToggleGraph={(sectionId) => toggleRouteGraph(i, sectionId)}
                 canMoveUp={i > 0}
-                canMoveDown={i < routes.length - 1}
+                canMoveDown={i < effectiveRoutes.length - 1}
                 onReorderUp={() => reorderRoutes(i, 'up')}
                 onReorderDown={() => reorderRoutes(i, 'down')}
                 onRemove={() => removeRoute(i)}
               />
             ))}
-            {reportRow && routes.length === 0 ? (
-              <div className={t.empty}>No routes added — add one above.</div>
+            {reportRow && effectiveRoutes.length === 0 ? (
+              <div className={t.empty}>
+                {isDynamicReport && !isEdit ? 'Select routes to view this report.' : 'No routes added — add one above.'}
+              </div>
             ) : null}
-            {reportRow && routes.length > 0 && filteredEntries.length === 0 ? (
+            {reportRow && effectiveRoutes.length > 0 && filteredEntries.length === 0 ? (
               <div className={t.empty}>No routes match “{searchQuery}”.</div>
             ) : null}
           </div>
