@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 export const SaveRouteModal = ({
   modalState,
@@ -38,13 +38,21 @@ export const SaveRouteModal = ({
             type="text"
           />
         </div>
-        <div className="flex gap-4 border-b-2 py-4 mb-4">
+        <div className="flex gap-4">
           <ModalInputField
             label="Description"
             value={modalState.description}
             path={"description"}
             onChange={setRouteMeta}
             type="textarea"
+          />
+        </div>
+        <div className="flex gap-4 border-b-2 py-4 mb-4">
+          <TagsInputField
+            label="Tags"
+            value={modalState.tags}
+            path={"tags"}
+            onChange={setRouteMeta}
           />
         </div>
         <div className="absolute" style={{ bottom: "20px", right: "20px" }}>
@@ -64,6 +72,63 @@ export const SaveRouteModal = ({
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Free-form chip input - no fixed tag vocabulary exists yet (old-tool folder taxonomy
+// inspection is a separate, not-yet-done task), so entry is type-and-commit rather than
+// select-from-list.
+const TagsInputField = ({ label, path, value, onChange }) => {
+  const tags = value || [];
+  const [draft, setDraft] = useState("");
+
+  const commitDraft = () => {
+    const tag = draft.trim();
+    setDraft("");
+    if (tag && !tags.includes(tag)) {
+      onChange({ [path]: [...tags, tag] });
+    }
+  };
+
+  const removeTag = (tag) => {
+    onChange({ [path]: tags.filter((t) => t !== tag) });
+  };
+
+  return (
+    <div className="w-full">
+      <div className="font-bold">{label}</div>
+      <div className="flex flex-wrap items-center gap-2 w-full p-2 bg-white rounded">
+        {tags.map((tag) => (
+          <span
+            key={tag}
+            className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-sm text-blue-800"
+          >
+            {tag}
+            <i
+              className="fad fa-times cursor-pointer"
+              aria-hidden="true"
+              onClick={() => removeTag(tag)}
+            />
+          </span>
+        ))}
+        <input
+          type="text"
+          className="flex-1 min-w-[8rem] p-1 outline-none"
+          placeholder="Add a tag..."
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              commitDraft();
+            } else if (e.key === "Backspace" && !draft && tags.length) {
+              removeTag(tags[tags.length - 1]);
+            }
+          }}
+          onBlur={commitDraft}
+        />
       </div>
     </div>
   );

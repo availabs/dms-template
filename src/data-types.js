@@ -8,6 +8,7 @@ import pm3 from '../data-types/pm3/pages/index.jsx';
 import nowPlaying from '../data-types/now_playing/pages/index.jsx';
 import actions_location from "../data-types/mny/actions_location/pages/index.js"
 import TMASvolume from "../data-types/traffic_counts/TMAS/pages/index.js"
+import osm from '../data-types/osm/pages/index.jsx';
 
 const dataTypesByApp = {
   'mitigat-ny-prod' : {
@@ -26,6 +27,7 @@ const dataTypesByApp = {
     transcom_congestion: { defaultPages: ['table'] },
     excessive_delay: excessiveDelay,
     pm3,
+    OSM: osm,
   },
   'wcdb': {
     now_playing_stream: nowPlaying,

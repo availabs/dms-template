@@ -37,6 +37,7 @@ import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
 import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
 
@@ -2485,7 +2486,8 @@ const pageComponents = {
 // sectionMenu.jsx in the dms submodule for the generic extension point.
 // ─────────────────────────────────────────────────────────────────────────────
 const sectionMenuExtensions = {
-  "AVL Graph": [npmrdsMeasureMenu],
+  "Graph": [npmrdsMeasureMenu],
+  "Card": [calloutStatMenu],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2498,7 +2500,7 @@ const sectionMenuExtensions = {
 // components/QuickControls and components/MeasurePicker's applyMeasurePick.
 // ─────────────────────────────────────────────────────────────────────────────
 const sectionHeaderExtensions = {
-  "AVL Graph": [npmrdsQuickControls],
+  "Graph": [npmrdsQuickControls],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

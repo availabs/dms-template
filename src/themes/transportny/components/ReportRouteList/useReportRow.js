@@ -218,12 +218,14 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // mutation after. This is a genuine DMS data row (split-table, schema-free), not a
   // page attribute and not this section's own `element-data`.
   const persistRoutes = async (nextRoutes) => {
-    // Page-level edit-mode gate: mirrors the convention every other dataWrapper
-    // component follows (mutations only happen while the page is open on /edit/...).
-    // This is a single choke point — every mutating handler and the orphan-cleanup
-    // effect (see useGraphPublish) both funnel through here, so gating here is
-    // sufficient on its own to guarantee no write ever fires while a report is merely
-    // being viewed.
+    // `isEdit` here is ReportRouteList.jsx's `canMutate` — page open at /edit/... AND
+    // this section's own edit pencil open (dataWrapper's per-section isEdit) — mirroring
+    // the convention every other dataWrapper component follows via SectionEdit vs
+    // SectionView (mutations only happen once a section is individually put into its
+    // own edit mode, not merely because the page is open on /edit/...). This is a single
+    // choke point — every mutating handler and the orphan-cleanup effect (see
+    // useGraphPublish) both funnel through here, so gating here is sufficient on its own
+    // to guarantee no write ever fires while the panel isn't in its own edit mode.
     if (!isEdit || !apiUpdate || !item?.id || !reportRow || !storageDataFormat) return;
     const currentId = reportRowIdRef.current;
     const payload = { report_id: String(item.id), routes: JSON.stringify(nextRoutes) };
@@ -244,19 +246,16 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
   // (catalog names aren't something the user typed, so there's nothing to
   // "reject"); on RENAME (ReportRouteList.jsx's onSaveEditName) a collision is
   // blocked instead, since there the user explicitly chose the new name.
-  const dedupeRouteName = (name) => {
-    const existing = new Set(routes.map(r => r.name));
-    if (!name || !existing.has(name)) return name;
-    let n = 2;
-    while (existing.has(`${name} (${n})`)) n++;
-    return `${name} (${n})`;
-  };
-
-  // `newRouteData` is the route object resolved by the add-flow's own catalog
-  // lookup — this hook only owns assigning it a local `route_comp_id` and
-  // persisting it, not resolving/fetching it.
-  const addRoute = async (newRouteData) => {
-    if (!apiUpdate || !item?.id || !newRouteData || saving || !reportRow) return;
+  //
+  // `newRoutesData` are the route objects resolved by the tag-browser modal's own catalog
+  // lookup — this hook only owns assigning each a local `route_comp_id`/color/deduped name and
+  // persisting the batch, not resolving/fetching it. Always takes an array (even a single
+  // selection) and does one `persistRoutes` call for the whole batch: looping a single-item add
+  // would race, since each call would close over `routes` at the render it was created, and
+  // several calls fired before a re-render lands would each persist `[...staleRoutes, oneNewRoute]`,
+  // silently dropping all but the last.
+  const addRoutes = async (newRoutesData) => {
+    if (!apiUpdate || !item?.id || !newRoutesData?.length || saving || !reportRow) return;
     setSaving(true);
     setError('');
     try {
@@ -270,20 +269,29 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
         }
       });
 
-      // Auto-assign an identity color from the shared palette, cycling by the route's
-      // position — mirrors the old tool's `getRouteColor()`. `routes.length` (the count
-      // BEFORE this route is appended) is the right index: first route gets palette[0], etc.
-      const newRoute = {
-        color: ROUTE_COLOR_PALETTE[routes.length % ROUTE_COLOR_PALETTE.length],
-        ...newRouteData,
-        name: dedupeRouteName(newRouteData.name),
-        route_comp_id: `comp-${maxId + 1}`
+      const existingNames = new Set(routes.map(r => r.name));
+      const dedupeAgainst = (name) => {
+        if (!name || !existingNames.has(name)) return name;
+        let n = 2;
+        while (existingNames.has(`${name} (${n})`)) n++;
+        return `${name} (${n})`;
       };
 
-      await persistRoutes([...routes, newRoute]);
+      const newRoutes = newRoutesData.map((newRouteData, i) => {
+        const name = dedupeAgainst(newRouteData.name);
+        existingNames.add(name);
+        return {
+          color: ROUTE_COLOR_PALETTE[(routes.length + i) % ROUTE_COLOR_PALETTE.length],
+          ...newRouteData,
+          name,
+          route_comp_id: `comp-${maxId + 1 + i}`,
+        };
+      });
+
+      await persistRoutes([...routes, ...newRoutes]);
     } catch (e) {
-      console.error('<ReportRouteList:add>', e);
-      setError('Could not add route.');
+      console.error('<ReportRouteList:addRoutes>', e);
+      setError('Could not add routes.');
       throw e;
     } finally {
       setSaving(false);
@@ -371,6 +379,32 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     }
   };
 
+  // Batched version of toggleRouteGraph for the Add-Graph modal's "auto-assign" step (Ryan's
+  // decision, 2026-08-03: only routes selected in that same modal, added to a graph that's just
+  // been created). One `persistRoutes` call for every selected route, same reasoning as
+  // `addRoutes`: looping `toggleRouteGraph` per route would race against a stale `routes` closure,
+  // each call persisting `[...staleRoutes, oneMoreAssignment]` and silently dropping all but the
+  // last.
+  const assignRoutesToGraph = async (routeIndexes, sectionId) => {
+    if (!apiUpdate || !item?.id || saving || !reportRow || !routeIndexes?.length) return;
+    setSaving(true);
+    setError('');
+    try {
+      const newRoutes = cloneDeep(routes);
+      routeIndexes.forEach((i) => {
+        const current = new Set(newRoutes[i]?.graphIds || []);
+        current.add(sectionId);
+        if (newRoutes[i]) newRoutes[i].graphIds = Array.from(current);
+      });
+      await persistRoutes(newRoutes);
+    } catch (e) {
+      console.error('<ReportRouteList:assignRoutesToGraph>', e);
+      setError('Could not assign routes to the new graph.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return {
     reportRow,
     routes,
@@ -378,10 +412,11 @@ export function useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit 
     error,
     setError,
     persistRoutes,
-    addRoute,
+    addRoutes,
     removeRoute,
     reorderRoutes,
     updateRoute,
     toggleRouteGraph,
+    assignRoutesToGraph,
   };
 }
