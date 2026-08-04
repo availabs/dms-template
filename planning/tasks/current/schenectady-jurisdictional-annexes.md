@@ -96,7 +96,15 @@ specific source; left empty), and all `*_additional` columns. Invent nothing.
 - [x] Write to dataset rows + read-back verify: **7 rows, 38 columns written, 38 verified**
       (`write_annexes.mjs` → write_results.json). Draft data; nothing published.
 - [x] Create reusable skill → `references/mny-transcribe/loading-annexes-into-jurisdictions-dataset.md`
-- [ ] County (`1679778`) + City of Schenectady (`1348106`): **no source annex** — left empty, flagged
+- [x] **City of Schenectady recovered + loaded (2026-07-30).** Diagnosed: original scrape skipped the
+      malformed `Schenectady city ( City)` dropdown token (older toolchain; the `( City)` bug the
+      `mny_*` toolchain later fixed). Wrote `mny-1.0-scraper/scrape_city.js` (single-jurisdiction full
+      annex scraper) → `schenectady-lhmp-v1-annex-schenectady-city.md` (Risk 7 boxes, Strategies 3,
+      4 hazards). Loaded row `1348106`: **6 columns** (buildings/critical_infra/growth/prev_actions/
+      capacity/nfip), read-back verified via the CLI UDA path. Scraper README + skill + memory updated.
+- [x] Re-added `dms dataset update` (owner's CLI refactor had dropped it while adding the UDA read path)
+- **Now 8 of 9 jurisdictions filled (44 columns).** County (`1679778`) intentionally empty (county
+  context lives in the main plan / content pages, not a per-municipality annex box).
 - [ ] Owner: visually verify render on annex page per jurisdiction; decide on unmapped sections/hazards
 
 ## Library escalation

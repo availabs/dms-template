@@ -24,30 +24,33 @@ no build step), that a reviewer can open in a browser. All figures/rows/coordina
 New admin pages (ink **`app`** layout — dark `#16232C` SideNav, staff console):
 - [x] `admin-dashboard.html` — DONE, screenshot-verified. Portfolio ops dashboard (re-theme of Fable `dashboard.html`):
       page header + freshness strip · scope/filter band (visual only; "all charts + the table
-      share this slice") · KPI row · Acquisitions vs Sales by year · Held-by-class donut ·
+      share this slice") · KPI row · Acquisitions vs Sales by year · Held-by-status donut ·
       Portfolio map (real held coords, colored by status) · Held-by-neighborhood bars ·
       Disposition pipeline stacked bar · inventory table (real rows, status pills, row → view/edit
       icons) · footer. "Add parcel" → `admin-new-property.html`.
-- [ ] `admin-table.html` — **spreadsheet/table edit mode**: wide ledger of real rows with
-      inline-edit affordances; a "key data categories to keep current" context panel/callouts;
-      per-row **view (eye) + edit (pencil)** icon links → `property-view.html` / `property-edit.html`;
-      "Add property" → `admin-new-property.html`; column-group headers.
-- [ ] `admin-new-property.html` — new-property flow: prominent **address prompt** (address input +
-      geocode affordance), then an **open modal edit form** populated with dataset‑3 columns,
-      organized into designed field groups (Identification · Location · Status & Program ·
-      Acquisition · Disposition/Sale · Parcel geometry · Structure · Assessment · Tags/flags).
-- [ ] `property-view.html` — **single-property view card** for a real parcel
-      (e.g. 110 Alexander Street · SBL 76.64‑2‑6 · For Sale): header w/ address+SBL+status pill;
-      parcel‑plate thumbnail (`lb-plate`/`lb-lot` at real 25×50 dims); key‑facts grid; mini map;
-      acquisition→disposition timeline; **Edit** → `property-edit.html`. Linked from the admin
-      table, dashboard, and the public `properties.html`.
-- [ ] `property-edit.html` — the edit form pre-filled for an existing parcel (same field groups as
-      the new-property modal); reached from the table pencil icon + the view card's Edit button.
+- [x] `admin-table.html` — DONE, screenshot-verified. **Spreadsheet/table edit mode**: wide ledger of
+      real rows with inline-edit affordances (select-pills, toggles, a focused editing cell, sticky
+      first/last columns); a **"Keep these categories current"** context panel (4 category cards naming
+      the real columns); per-row **view (eye) + edit (pencil)** icon links → `property-view.html` /
+      `property-edit.html`; inline add-new row + "Add property" → `admin-new-property.html`.
+- [x] `admin-new-property.html` — DONE, screenshot-verified. Address prompt (input + geocode-match
+      chip) with an **open modal edit form** pre-populated with dataset‑3 columns in designed field
+      groups (Identification · Location · Status & disposition · Parcel & zoning · Acquisition &
+      pricing · Potential use & tags). Create → `property-view.html`.
+- [x] `property-view.html` — DONE, screenshot-verified. Single-property view card (110 Alexander St ·
+      SBL 76.64‑2‑6 · For Sale): status pill + SBL header; parcel‑plate at real 25×50 dims; record
+      summary grid; full-record groups; mini map w/ pin; disposition timeline; steward card;
+      **Edit** → `property-edit.html`. Linked from admin table/dashboard + public properties.
+- [x] `property-edit.html` — DONE, screenshot-verified. Full edit form pre-filled for the existing
+      parcel (grouped fieldsets, tag chips), sticky save rail (record card + pending-changes +
+      Save/Cancel) and a Danger zone (Unlist/Delete). Reached from the table pencil + view card Edit.
 
-Updates to existing public pages (`default` layout):
-- [ ] `home.html`, `about.html`, `properties.html` — add a **user menu** in the topnav that links
-      into the admin panel (`admin-dashboard.html`), and make `properties.html` listings link to
-      `property-view.html`. Add the new admin pages to each page's floating DS nav widget.
+Updates to existing public pages (`default` layout) — DONE:
+- [x] `home.html`, `about.html`, `properties.html` — added a **Staff user menu** to each topnav
+      (dropdown → Admin dashboard / Inventory table / Add property / Sign in) and extended each
+      floating DS widget with an **Admin panel** section (all 5 pages).
+- [x] `properties.html` — the 3 featured listing cards now carry a **View →** link and **every
+      ledger row is click-through** to `property-view.html`.
 
 ## Design system it must match (source of truth)
 
@@ -109,12 +112,23 @@ Captured in `scratchpad/…/lb-data.json`. Key figures:
 
 ## Testing checklist
 
-- [ ] Each new page opens standalone in a browser (Tailwind CDN + `_shared.css`), no console errors.
-- [ ] Type/scale/color/surface match the existing pages (side-by-side).
-- [ ] All figures/rows/coords trace to `lb-data.json` (real data).
-- [ ] Cross-links resolve: dashboard/table → view/edit; view ↔ edit; public → admin via user menu;
-      properties listing → view card; DS nav widget lists all pages.
-- [ ] Playwright screenshot pass (msedge channel; memory recipe) at 1440px + mobile.
+- [x] Each new page opens standalone in a browser (Tailwind CDN + `_shared.css`) — all 5 + 2 public
+      pages screenshot-verified at 1440px, no layout errors.
+- [x] Type/scale/color/surface match the existing pages (font-role classes, `lb-*` surfaces, 7-status
+      pills, one radius) — verified against the shared cheat-sheet.
+- [x] All figures/rows/coords trace to `lb-data.json` (real data): 199 held · 60/57/17/16/11 status
+      split · $13.25M · real SBLs/addresses/parcel dims · real held coords projected onto the maps.
+- [x] Cross-links resolve: dashboard/table → view/edit; view ↔ edit; public → admin via Staff user
+      menu; properties featured cards + ledger rows → view card; DS widget lists all pages on every page.
+- [~] Mobile (≤lg) pass: admin sidenav is `max-lg:hidden` and the topbar carries a menu button, but a
+      mobile drawer is not wired (design mockup) — note for Phase 2.
+
+## Phase-1 status: COMPLETE (2026-07-31)
+
+7 files delivered in `src/themes/landbank/design_system/pages/`: 5 new admin mockups
+(`admin-dashboard`, `admin-table`, `admin-new-property`, `property-view`, `property-edit`) +
+3 updated public pages (`home`, `about`, `properties`). Screenshots in the session scratchpad
+(`shot-*.png`). Ready for design review; Phase 2 (live DMS wiring) remains per the section below.
 
 ## Phase 2 (deferred, not this task)
 
