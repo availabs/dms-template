@@ -82,7 +82,7 @@
       margin-bottom: 16px;
     }
 
-    /* ── source tabs (Theme templates / Your templates) ── */
+    /* ── source tabs (Default templates / Custom templates) ── */
     .src-tabs { display: flex; gap: 2px; background: #F3F8F9; border: 1px solid #C5D7E0;
                 border-radius: 20px; padding: 2px; margin-bottom: 18px; width: fit-content; }
     .src-tab { border: none; background: none; border-radius: 18px; padding: 4px 16px;
@@ -164,7 +164,7 @@
     .btn-gold:hover { background: #D99A2E; }
     .btn-gold:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* ── user template list (Your templates tab) ── */
+    /* ── user template list (Custom templates tab) ── */
     .utmpl-empty {
       text-align: center; padding: 32px 24px; color: #9BB5C2;
       font-family: 'Source Sans 3', sans-serif; font-size: 13px;
@@ -294,8 +294,8 @@
             <div class="tpicker-body">
               <!-- source tabs -->
               <div class="src-tabs">
-                <button class="src-tab active">Theme templates</button>
-                <button class="src-tab">Your templates <span style="font-family:'Source Sans 3',sans-serif;font-size:10px;background:#E0EBF0;color:#37576B;border-radius:9999px;padding:0 6px;font-weight:700;margin-left:4px;">3</span></button>
+                <button class="src-tab active">Default templates</button>
+                <button class="src-tab">Custom templates <span style="font-family:'Source Sans 3',sans-serif;font-size:10px;background:#E0EBF0;color:#37576B;border-radius:9999px;padding:0 6px;font-weight:700;margin-left:4px;">3</span></button>
               </div>
 
               <!-- template grid — "Article" selected -->
@@ -461,7 +461,7 @@
            SECTION 2 — "YOUR TEMPLATES" TAB (empty state + populated state)
            ================================================================ -->
       <section>
-        <div class="ds-label">1.1 — Template Picker: "Your Templates" tab</div>
+        <div class="ds-label">1.1 — Template Picker: "Custom templates" tab</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
 
           <!-- empty state -->
@@ -475,8 +475,8 @@
               </div>
               <div class="tpicker-body" style="padding-bottom:24px;">
                 <div class="src-tabs">
-                  <button class="src-tab">Theme templates</button>
-                  <button class="src-tab active">Your templates <span style="font-family:'Source Sans 3',sans-serif;font-size:10px;background:#E0EBF0;color:#9BB5C2;border-radius:9999px;padding:0 6px;font-weight:700;margin-left:4px;">0</span></button>
+                  <button class="src-tab">Default templates</button>
+                  <button class="src-tab active">Custom templates <span style="font-family:'Source Sans 3',sans-serif;font-size:10px;background:#E0EBF0;color:#9BB5C2;border-radius:9999px;padding:0 6px;font-weight:700;margin-left:4px;">0</span></button>
                 </div>
                 <div class="utmpl-empty">
                   <div class="empty-icon">
@@ -504,8 +504,8 @@
               </div>
               <div class="tpicker-body">
                 <div class="src-tabs">
-                  <button class="src-tab">Theme templates</button>
-                  <button class="src-tab active">Your templates <span style="font-family:'Source Sans 3',sans-serif;font-size:10px;background:#E0EBF0;color:#37576B;border-radius:9999px;padding:0 6px;font-weight:700;margin-left:4px;">3</span></button>
+                  <button class="src-tab">Default templates</button>
+                  <button class="src-tab active">Custom templates <span style="font-family:'Source Sans 3',sans-serif;font-size:10px;background:#E0EBF0;color:#37576B;border-radius:9999px;padding:0 6px;font-weight:700;margin-left:4px;">3</span></button>
                 </div>
                 <!-- 3-col grid of user templates -->
                 <div class="tmpl-grid">
@@ -610,7 +610,12 @@
                 <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:500;text-transform:uppercase;color:#2D3E4C;letter-spacing:.04em;margin-bottom:2px;">Page Templates</div>
                 <div style="font-family:'Source Sans 3',sans-serif;font-size:12px;color:#6D96AE;">Reusable page layouts saved by your team. Choose one when adding a new page.</div>
               </div>
+              <button class="btn-ghost" style="font-size:11px;padding:6px 16px;border-radius:16px;display:flex;align-items:center;gap:6px;">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Paste Template
+              </button>
             </div>
+            <div style="font-family:'Source Sans 3',sans-serif;font-size:11px;color:#9BB5C2;margin:-10px 0 12px;">Copy a template from another pattern, then paste it here.</div>
 
             <!-- template list table -->
             <div class="card" style="overflow:hidden;">
@@ -635,6 +640,7 @@
                     <td>
                       <div class="mgr-actions">
                         <button class="act-btn act-btn-gold">Use →</button>
+                        <button class="act-btn">Copy</button>
                         <button class="act-btn act-btn-danger">Delete</button>
                       </div>
                     </td>
@@ -647,6 +653,7 @@
                     <td>
                       <div class="mgr-actions">
                         <button class="act-btn act-btn-gold">Use →</button>
+                        <button class="act-btn">Copied ✓</button>
                         <button class="act-btn act-btn-danger">Delete</button>
                       </div>
                     </td>
@@ -668,6 +675,13 @@
                 </tbody>
               </table>
             </div>
+
+            <ul style="font-family:'Source Sans 3',sans-serif;font-size:12px;color:#6D96AE;line-height:1.7;list-style:disc;padding-left:18px;margin-top:14px;">
+              <li><strong>Copy</strong> writes the template's layout (sections, groups, sidebar) to the system clipboard — no server call. Button label flips to "Copied ✓" for ~1.5s.</li>
+              <li><strong>Paste Template</strong> reads the clipboard, validates it's a copied page template (not arbitrary text), and creates it as a new row scoped to <em>this</em> pattern. Works across patterns and across sites/apps — the pasted data is self-contained.</li>
+              <li>Name collisions are auto-resolved by appending "(Copy)", "(Copy 2)", etc. — no overwrite prompt on paste.</li>
+              <li>Errors (empty/invalid clipboard, clipboard permission denied) show inline in the same red-text style as other manager errors.</li>
+            </ul>
 
           </div><!-- /pe-body -->
         </div><!-- /pe-shell -->
