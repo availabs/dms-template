@@ -7,7 +7,8 @@ import { reportRouteListTheme } from './ReportRouteList.theme';
 import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
-import { useDynamicReportRoutes } from './useDynamicReportRoutes';
+import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
+import { resolveRouteDates } from './relativeDateResolution';
 import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
@@ -99,19 +100,34 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/graphIds/
   // color assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
   // the real route ids the viewer's URL supplies. Never persisted; a pure in-memory overlay.
-  const { resolvedRoutes } = useDynamicReportRoutes({
+  const { resolvedRoutes, resolvedGroupRoutes } = useDynamicReportRoutes({
     apiLoad,
     routeSourceInfo,
     slots: routes,
     routeIds,
     enabled: isDynamicReport && !isEdit && routeIds.length > 0,
   });
-  const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routes.length;
+  // Grouped, not raw route count (2026-08-03): several slot rows can share one `route_slot_group`
+  // when they're different date/settings VIEWS of the same one real route a viewer picks once (see
+  // useDynamicReportRoutes.js) — the required/expected URL id count is the number of DISTINCT
+  // groups, not the number of persisted route rows. Falls back to one group per row (identical to
+  // `routes.length`) for every Dynamic Report authored before this field existed.
+  const routeSlotGroups = distinctRouteSlotGroups(routes);
+  const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routeSlotGroups.length;
 
   // A viewer sees the resolved real routes (both in this panel and in every self-bound graph);
   // an author always authors against the raw placeholders. Identical to `routes` for every normal
   // (non-dynamic) report.
-  const effectiveRoutes = (isDynamicReport && !isEdit) ? resolvedRoutes : routes;
+  //
+  // Wrapped through resolveRouteDates (Mechanism B — relativeDate/isRelativeDateBase, see
+  // dynamic-reports-and-route-tags.md item 3): a route/slot converted from an old relativeDate
+  // comp carries a `dateFormula`/`derivedFromRoute` pair instead of (or alongside, as a frozen
+  // conversion-time fallback) a plain literal date — this recomputes it live against whichever
+  // sibling entry currently holds that `route_comp_id`, so editing a base route's date (in edit
+  // mode, via RouteRow's normal date editor) recomputes every derived row immediately, same
+  // "never persist a stale value" architecture as applyDerivedPageVariables. A no-op, identity-
+  // stable pass-through for every route/slot without a formula.
+  const effectiveRoutes = resolveRouteDates((isDynamicReport && !isEdit) ? resolvedRoutes : routes);
 
   const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate });
 
@@ -144,7 +160,10 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
 
   // "+ Add Route Slot" reuses addRoutes verbatim (already assigns route_comp_id/color/deduped
   // name to an arbitrary object) — a slot isn't a specific route, so there's no catalog to browse.
-  const handleAddRouteSlot = () => addRoutes([{ name: `Route Slot ${routes.length + 1}` }]);
+  // `isPlaceholderName: true` marks this generated name as meaningless (see
+  // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
+  // name with nothing real behind it yet; cleared the moment a human renames it (onSaveEditName).
+  const handleAddRouteSlot = () => addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
 
   const toggleRoute = (index) => {
     setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
@@ -202,9 +221,18 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
           apiLoad={apiLoad}
           routeSourceInfo={routeSourceInfo}
           selectionMode="exact"
-          requiredCount={routes.length}
+          requiredCount={routeSlotGroups.length}
+          initialSelectedRoutes={resolvedGroupRoutes}
           onConfirm={(selectedRoutes) => {
-            const params = convertToUrlParams({ [routeSlotFilter.searchKey]: selectedRoutes.map(r => r.id) });
+            // Rebuild by GROUP POSITION rather than trusting the modal's Map insertion order —
+            // `selectedRoutes` mixes routes pre-populated from the URL (already resolved) with
+            // newly-picked ones for whichever group(s) were still missing, and a missing group
+            // isn't always the last one. Keep every already-resolved id in its original slot,
+            // fill the gaps with the newly-picked ids in the order they were selected.
+            const stillNeededIds = selectedRoutes.map((r) => r.id).filter((id) => !routeIds.includes(id));
+            let cursor = 0;
+            const fullIds = routeSlotGroups.map((_, j) => routeIds[j] ?? stillNeededIds[cursor++]);
+            const params = convertToUrlParams({ [routeSlotFilter.searchKey]: fullIds });
             navigate(`${pathname}?${params}`);
           }}
         />
@@ -308,10 +336,14 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                     setError(`A route named "${editNameValue}" already exists.`);
                     return;
                   }
-                  updateRoute({ index: i, updates: { name: editNameValue } });
+                  // A deliberate rename — even to something generic — is a real editorial
+                  // decision from here on; clears isPlaceholderName so a future Dynamic Report
+                  // resolution never overwrites it with the resolved route's own name again.
+                  updateRoute({ index: i, updates: { name: editNameValue, isPlaceholderName: false } });
                   setEditingRouteNameIndex(null);
                 }}
                 onCancelEditName={() => setEditingRouteNameIndex(null)}
+                derivedFromRouteName={r.dateFormula ? effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name : null}
                 isEditingDates={editingRouteDatesIndex === i}
                 editStartDateValue={editStartDateValue}
                 editEndDateValue={editEndDateValue}

@@ -7,10 +7,10 @@ import { parseTmcArray } from '../ReportRouteList/utils';
 
 // Shared route-picker modal — mirrors the old tool's folder-browser *organizing effect* (drill
 // into a category, see routes, select) without real folders in the data model; tags stand in for
-// folders. Used today by ReportRouteList's add-route flow (`selectionMode: 'any'`); designed to
-// also serve a future Dynamic Reports route-slot picker (`selectionMode: 'exact'` +
-// `requiredCount`) with no changes to this file — see
-// planning/tasks/current/dynamic-reports-and-route-tags.md.
+// folders. Used by ReportRouteList's add-route flow (`selectionMode: 'any'`) and Dynamic Reports'
+// route-slot entry gate (`selectionMode: 'exact'` + `requiredCount` + `initialSelectedRoutes`,
+// the last added so a slot/URL-count mismatch pre-populates already-resolved groups instead of
+// discarding them) — see planning/tasks/current/dynamic-reports-and-route-tags.md.
 export default function RouteTagBrowserModal({
   open,
   setOpen,
@@ -19,6 +19,11 @@ export default function RouteTagBrowserModal({
   selectionMode = 'any', // 'any' | 'exact'
   requiredCount = 0,
   excludeRouteIds,
+  // Pre-seeds `selected` at open — used by Dynamic Reports' entry gate so a slot/URL-count
+  // mismatch (some groups already resolved from the URL, one or more still missing) doesn't
+  // discard what already resolved; the author only has to pick the still-missing slot(s). Empty/
+  // omitted reproduces the plain "start from nothing" behavior every other caller already gets.
+  initialSelectedRoutes,
   onConfirm,
   // False for a blocking entry gate (Dynamic Reports' no-route-selected-yet case, see
   // ReportRouteList.jsx) where `setOpen` is a deliberate no-op and there's nothing to cancel
@@ -41,7 +46,10 @@ export default function RouteTagBrowserModal({
   const [selected, setSelected] = useState(new Map()); // id -> route row
 
   // Reset all transient state on open — a stale drill-down/selection from a previous open would
-  // otherwise persist across unrelated add-route sessions.
+  // otherwise persist across unrelated add-route sessions. `selected` seeds from
+  // `initialSelectedRoutes` (read at the open transition, not tracked as its own dep — a parent
+  // re-render producing a new-by-reference-but-same-content array must not wipe an in-progress
+  // selection while this stays open).
   useEffect(() => {
     if (!open) return;
     setView('root');
@@ -51,7 +59,7 @@ export default function RouteTagBrowserModal({
     setRootSearchTerm('');
     setWithinSearchTerm('');
     setOtherTagTerm('');
-    setSelected(new Map());
+    setSelected(new Map((initialSelectedRoutes || []).filter((r) => r?.id != null).map((r) => [r.id, r])));
   }, [open]);
 
   const activeCategory = TAG_CATEGORIES.find((c) => c.key === activeCategoryKey) || null;
@@ -185,6 +193,19 @@ export default function RouteTagBrowserModal({
       <div className={t.wrapper}>
         <div className={t.header}>Add Routes</div>
         {breadcrumb}
+
+        {selected.size > 0 ? (
+          <div className={t.selectedChips}>
+            {Array.from(selected.values()).map((r) => (
+              <span key={r.id} className={t.selectedChip}>
+                <span className={t.selectedChipLabel}>{r.name}</span>
+                <button type="button" className={t.selectedChipRemove} onClick={() => toggleSelect(r)}>
+                  <Icon icon="XMark" />
+                </button>
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         {view === 'root' ? (
           <div className={t.searchWrapper}>

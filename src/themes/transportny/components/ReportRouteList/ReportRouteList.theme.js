@@ -27,6 +27,7 @@ export const reportRouteListTheme = {
   peakPresetPill: 'px-1.5 py-0.5 rounded text-[11px] border bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-100',
   dowWrapper: 'flex flex-wrap items-center gap-1',
   dowSummary: 'text-[11px] text-slate-500 italic',
+  derivedDateNote: 'text-[11px] text-slate-500 italic',
   dowDayPill: 'w-6 text-center px-1 py-0.5 rounded text-[11px] border',
   dowDayPillActive: 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200',
   dowDayPillIdle: 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200',
