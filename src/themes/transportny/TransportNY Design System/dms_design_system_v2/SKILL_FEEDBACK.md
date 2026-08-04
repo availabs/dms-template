@@ -657,6 +657,47 @@ map sections it includes.
 
 ---
 
+## 17. The nav widget: skill said inline-per-page, v2 shipped shared + sectioned
+
+**Problem.** §7.0.2 specified the floating nav widget as a block of
+inline HTML pasted before `</body>` on every page, listing every page
+in the deliverable flat. That spec doesn't survive contact with a
+40-page deliverable:
+
+- **Per-page markup means per-page drift.** Adding a page is an
+  N-file edit, so it never actually happens on all N — pages end up
+  advertising different subsets of the deliverable.
+- **A flat list stops scaling.** At 44 pages the panel is a wall of
+  links that says nothing about where you are.
+
+**What v2 actually built** (`ds-nav.js`, undocumented until now):
+one shared script at the deliverable root, included as a one-liner
+by every page. It detects the current page's **section** from
+`location.pathname` and renders that section's pages (current one
+highlighted) plus one `jump to section` link per other section,
+pointing at its landing page. ~10 links instead of 44, and every
+page is at most two hops away. Adding a page = one line in the
+`SECTIONS` table.
+
+The deeper reason this is the right shape: it navigates the way a
+real DMS site navigates — section context, then pages within it —
+so reviewing the mockups rehearses using the product.
+
+**Status: fixed.** §7.0.2 has been rewritten around shared
+`ds-nav.js` + sections, §7.0.3 now scopes the footer index to the
+current section, §8.0.5 ties it to the same "one canonical source"
+lesson as `_shared.css`, and done-criterion #12 requires it be
+verified (every href resolves; exactly one link active).
+
+**One limitation in this build, worth knowing if you copy it:** the
+v2 `href()` assumes `pages/` and `design-system/` are siblings one
+level below the root, so a nested page folder computes wrong paths.
+The mny implementation (`src/themes/mny/design/ds-nav.js`) derives
+depth from the section table instead and handles nested dirs
+(`pages/county-actions`); prefer that version as the starting point.
+
+---
+
 ## Out of scope / things that were fine
 
 These are not skill bugs — they're tradeoffs the skill called out
