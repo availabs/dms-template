@@ -5,7 +5,7 @@ The declarative input to `scripts/npmrds-reports/report_build.mjs`: one JSON fil
 DMS page plus a `reports_snap_2` route-snapshot row.
 
 Companion docs: `npmrds-report-data-shapes.md` (how the resulting rows are shaped, and the
-inspection gotchas), `../../planning/tasks/current/report-spec-and-build-script.md` (the design
+inspection gotchas), `../../planning/transportny/tasks/current/report-spec-and-build-script.md` (the design
 record and progress log).
 
 ---
@@ -262,7 +262,7 @@ route.
 
 **FIXED 2026-07-30** (was: the default difference palette mapped green→lowest and red→highest, so
 for `before − after` on travel time a *positive* bar — the improvement — rendered red). Root cause
-and fix are in `planning/tasks/current/report-spec-and-build-script.md`'s "Finding: difference-graph
+and fix are in `planning/transportny/tasks/current/report-spec-and-build-script.md`'s "Finding: difference-graph
 color scale reads backwards" — `composeMeasureConfig.js`'s `buildDiffColors` was reusing the raw-value
 `reverseColors` flag verbatim for difference mode, but the polarity provably inverts between coloring
 a raw value and coloring a before-minus-after delta. No new vocabulary field needed, just negating
@@ -279,7 +279,7 @@ everything here is dev-environment build work).
 a choropleth Map section — TMC segments colored by the measure's value, live dms-server
 ClickHouse tile-join, the same shape as the old tool's "Route Map" panel (the single most
 consistent panel across the old corpus — see
-`planning/tasks/current/client-request-to-report-skill.md`'s composition-rules analysis).
+`planning/transportny/tasks/current/client-request-to-report-skill.md`'s composition-rules analysis).
 
 **This is not composed by `applyMeasurePick`.** `report_build.mjs` has no Map-section code of its
 own; it shells out to `convert_old_reports.py --route-map-section` (new
@@ -308,7 +308,7 @@ console/page errors.
 single most consistent panel across the old corpus after Route Map (Route Info Box appears in 100%
 of `before_after` reports at two measures, 86% of `reliability`/`speed_study`, 56% of
 `route_comparison` — see the composition-rules analysis in
-`planning/tasks/current/client-request-to-report-skill.md`).
+`planning/transportny/tasks/current/client-request-to-report-skill.md`).
 
 **This is not an AVL Graph.** Its element-type is `Spreadsheet`, not `AVL Graph`, and like Route Map
 it's composed by shelling out to `convert_old_reports.py --route-info-box-section` (new

@@ -43,7 +43,7 @@
  * built yet — see the task file's deferred `--expect` note for the trigger.
  *
  * See research/npmrds-reports/report-spec.md for the spec format, and
- * planning/tasks/current/report-spec-and-build-script.md for the design record.
+ * planning/transportny/tasks/current/report-spec-and-build-script.md for the design record.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -759,7 +759,7 @@ try {
 // choropleth machinery that exists (template-minting + per-report CH
 // quantile-break baking, built for old-report conversion rounds 47-50) —
 // reusing it exactly rather than reimplementing it a second time in JS. See
-// planning/tasks/current/client-request-to-report-skill.md's 2026-07-27
+// planning/transportny/tasks/current/client-request-to-report-skill.md's 2026-07-27
 // correction for why this wiring, not a from-scratch Map builder, was the
 // actual gap. `opts.tmcs`/`startDate`/`endDate` are omitted for a --dry-run
 // preview (year/shape only, placeholder paint); a real build calls this again

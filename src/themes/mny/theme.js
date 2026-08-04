@@ -656,7 +656,7 @@ const theme = {
   // verbatim so any existing mny pill renders exactly as before (backward-compatible);
   // the mny-branded `status_*` and `tier_*` variants are appended for the Action
   // Prioritize worklist (implementation status + county priority). See task
-  // planning/tasks/current/mny-action-prioritize-v2-live-build.md (Phase 2).
+  // planning/mitigateny/tasks/current/mny-action-prioritize-v2-live-build.md (Phase 2).
   pill: {
     options: { activeStyle: 0 },
     styles: [

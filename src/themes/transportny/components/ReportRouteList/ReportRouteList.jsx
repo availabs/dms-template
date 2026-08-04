@@ -18,7 +18,7 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   const { state: { join, externalSource } } = useContext(ComponentContext) || {};
   // Two independent flags, not one — conflating them is what let every RRL mutation
   // fire the instant the PAGE opened at /edit/..., without this section ever being
-  // individually put into its own edit mode (see planning/tasks/current/reportroutelist.md,
+  // individually put into its own edit mode (see planning/transportny/tasks/current/reportroutelist.md,
   // "Section edit-mode gating").
   // `editPageMode` (from PageContext) is whichever sections array (`draft_sections` vs
   // `sections`) sibling components are ACTUALLY rendering from right now — that's what

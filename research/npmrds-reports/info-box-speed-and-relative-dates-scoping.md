@@ -1,7 +1,7 @@
 # Route Info Box "speed" measure bucket + Relative date support — scoping (2026-08-04)
 
 Scoping pass requested by Ryan against two items flagged (not started) in
-`planning/tasks/current/dynamic-reports-and-route-tags.md`'s old-template-porting thread: the
+`planning/transportny/tasks/current/dynamic-reports-and-route-tags.md`'s old-template-porting thread: the
 Route Info Box "speed" measure gap (14/23 candidates in the original coverage cross-check) and
 relative-date (`{recent-N}`) support (deferred 2026-08-03, "eventually, not right now"). Both
 block a majority of the 22 old-template-porting candidates not yet converted. Read-only
@@ -386,7 +386,7 @@ survive past this session).
 
 ## Cross-references
 
-- `planning/tasks/current/dynamic-reports-and-route-tags.md` — item 3, old-template-porting thread;
+- `planning/transportny/tasks/current/dynamic-reports-and-route-tags.md` — item 3, old-template-porting thread;
   this doc resolves its "worth its own scoping pass" flag on the Info Box gap and its deferred
   relative-date item.
 - `src/dms/planning/tasks/current/old-reports-conversion-archive.md` rounds 13/14/15/17/18/21/40 —
