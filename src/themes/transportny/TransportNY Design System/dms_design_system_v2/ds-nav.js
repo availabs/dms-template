@@ -23,15 +23,20 @@
       { f: 'landing.html', t: 'landing' }, { f: 'login.html', t: 'login' },
       { f: 'getting-started.html', t: 'getting-started' }, { f: 'docs-overview.html', t: 'docs-overview' },
     ]},
-    { key: 'map21', label: 'MAP-21', landing: 'map-21.html', dir: 'pages', pages: [
-      { f: 'map-21.html', t: 'overview' }, { f: 'map-21-system-performance.html', t: 'system performance' },
-      { f: 'map-21-trend.html', t: 'trend' },
+    // NPMRDS · the six-page category. Absorbed the old standalone `map21` section and pulled
+    // route-comparison out of `explorers` — one home per page. map-21-lottr.html existed on
+    // disk but was never registered here; it is now.
+    { key: 'npmrds', label: 'NPMRDS', landing: 'npmrds-home.html', dir: 'pages', pages: [
+      { f: 'npmrds-home.html', t: 'home' }, { f: 'npmrds-macro.html', t: 'macro view' },
+      { f: 'npmrds-reports.html', t: 'reports' }, { f: 'npmrds-report.html', t: 'report' },
+      { f: 'route-comparison.html', t: 'route comparison' },
+      { f: 'map-21.html', t: 'map-21 · per-year' }, { f: 'map-21-system-performance.html', t: 'map-21 · system performance' },
+      { f: 'map-21-lottr.html', t: 'map-21 · lottr' }, { f: 'map-21-trend.html', t: 'map-21 · trend' },
     ]},
     { key: 'explorers', label: 'Explorers', landing: 'congestion.html', dir: 'pages', pages: [
       { f: 'congestion.html', t: 'congestion' }, { f: 'work-zones.html', t: 'work-zones' },
       { f: 'floating-car.html', t: 'floating-car' }, { f: 'employment-estimates.html', t: 'employment-estimates' },
       { f: 'employment-estimates-mpo.html', t: 'employment · mpo' }, { f: 'lehd-od.html', t: 'lehd-od' },
-      { f: 'route-comparison.html', t: 'route comparison' },
     ]},
     { key: 'fa', label: 'Freight Atlas', landing: 'freight-atlas-home.html', dir: 'pages', pages: [
       { f: 'freight-atlas-home.html', t: 'home' }, { f: 'freight-atlas-map.html', t: 'map' },

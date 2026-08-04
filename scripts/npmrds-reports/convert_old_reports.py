@@ -47,11 +47,17 @@ import dbq  # noqa: E402 — sibling scripts/npmrds-reports/ module, read-only C
 # Shared vocabulary artifact (report-graph-vocabulary-picker.md, Workstream 1):
 # the generative core of TEMPLATE_SPECS below (measure expressions, join defs,
 # resolution/axis expressions, comparison-mode color rule) lives in this JSON
-# so this script and the planned NPMRDS "Measure" picker (src/themes/
-# transportny/) consume the exact same formulas instead of two hand-synced
-# copies. See data-types/npmrds_graph_vocabulary/README.md for the full field
-# reference and the regeneration/verification procedure.
-VOCAB_PATH = os.path.join(REPO, "data-types/npmrds_graph_vocabulary/vocabulary.json")
+# so this script and the NPMRDS "Measure" picker consume the exact same formulas
+# instead of two hand-synced copies. See the sibling README.md next to the JSON
+# for the full field reference and the regeneration/verification procedure.
+#
+# It lives beside its JS consumer, inside the theme folder, because that folder is
+# the unit synced into transportNY — a path outside it cannot be resolved
+# downstream (see planning/skills/sync-transportnyv2-theme). Moved there
+# 2026-07-29 from data-types/npmrds_graph_vocabulary/.
+VOCAB_PATH = os.path.join(
+    REPO, "src/themes/transportny/components/MeasurePicker/vocabulary.json"
+)
 with open(VOCAB_PATH) as _f:
     GRAPH_VOCAB = json.load(_f)
 

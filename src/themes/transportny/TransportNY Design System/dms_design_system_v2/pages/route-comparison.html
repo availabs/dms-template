@@ -51,45 +51,73 @@
 
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
-    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
-      <div class="flex flex-1 items-start">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
 
         <!-- ════════ SIDENAV · NPMRDS (Route Comparison active) ════════ -->
-        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
-          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
-            <a href="getting-started.html" class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
-              <div class="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
-              <div class="flex-1 ml-3 min-w-0"><span class="font-display uppercase text-white text-[15px] tracking-wide truncate">NPMRDS</span><div class="font-mono text-slate-400 text-[9px] uppercase tracking-[0.18em]">NYSDOT · Probe speeds</div></div>
-            </a>
-            <div class="flex-1 py-1 overflow-y-auto">
-              <div class="px-4 pt-3 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Analysis</div>
-              <a href="map-21-system-performance.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg><span class="flex-1">MAP-21 PM3</span></a>
-              <a href="floating-car.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg><span class="flex-1">Floating Car</span></a>
-              <a href="congestion.html" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span class="flex-1">Congestion</span></a>
-              <a class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15]"><svg class="size-[18px] mr-3 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="4" width="17" height="4" rx="1"/><rect x="3.5" y="10" width="17" height="4" rx="1"/><rect x="3.5" y="16" width="17" height="4" rx="1"/></svg><span class="flex-1">Route Comparison</span></a>
-              <div class="px-4 pt-4 pb-1 font-mono text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">Manage</div>
-              <a href="#" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6 20 6M9 12 20 12M9 18 20 18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span class="flex-1">Routes</span></a>
-              <a href="#" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 5a2 2 0 0 1 2-2h3l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/></svg><span class="flex-1">Folders</span></a>
-              <a href="#" class="font-proxima text-[13.5px] flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent"><svg class="size-[18px] mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/></svg><span class="flex-1">Saved Reports</span></a>
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <!-- ══ topMenu: LogoNav ══ the real component is a PRODUCT SWITCHER: logo tile
+                 (links home) + title + CaretDown that opens a "// switch product" dropdown
+                 listing NPMRDS / Freight Atlas / TSMO / Sandbox and a "Platform home →" foot.
+                 Closed state here; the open dropdown is documented in components.html. -->
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="landing.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <!-- ══ the product nav ══ FLAT (no sub-items), in the same order as the home page's
+                 sections. Docs is NOT here — it is a QuickLink, below. -->
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: ScatterMatrix --><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
             </div>
-            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></div>
-              <div class="flex-1 min-w-0"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">a.muro</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">signed in</div></div>
-              <a href="login.html" class="font-mono text-[9.5px] uppercase tracking-wider text-[#FACC15] hover:text-[#EAAD43]">Account</a>
+
+            <!-- ══ bottomMenu 1: QuickLinks ══ the real component renders nav-styled links,
+                 not a search box: Data Sources · Docs · (authed only) a divider + Report an
+                 issue. This is where Docs belongs. -->
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 2: UserMenu ══ avatar (User icon) + email + first group, plus the
+                 EditControl page edit/view toggle for users with edit-page permission. -->
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
             </div>
           </div>
         </aside>
 
-        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMBS · LayoutGroup `breadcrumbs` (deep page) ═════════
+               Contract item 3 · the dedicated `breadcrumbs` group (the datasets-source
+               model), NOT a <nav> inlined into page-header. Both look alike but they are
+               different DMS structures and translate differently. -->
+          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
+                <a href="npmrds-home.html" class="text-slate-500 hover:text-[#0f1722]">NPMRDS</a><span class="text-slate-300 px-1">/</span><a href="npmrds-reports.html" class="text-slate-500 hover:text-[#0f1722]">Reports</a><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Route Comparison</span>
+              </nav>
+            </div>
+          </div>
 
           <!-- ═════════ HEADER ═════════ -->
           <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
-            <div class="mr-auto w-full max-w-[1600px] pl-12 pr-8 py-8 flex items-end justify-between gap-8" data-dms-section="page-header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-8 flex items-end justify-between gap-8" data-dms-section="page-header">
               <div>
-                <nav class="flex items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.16em] mb-3"><a href="getting-started.html" class="text-slate-500 hover:text-[#0f1722]">NPMRDS</a><span class="text-slate-300 px-1">/</span><span class="text-slate-500">Analysis</span><span class="text-slate-300 px-1">/</span><span class="text-[#0f1722]">Route Comparison</span></nav>
                 <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// mass route × period comparison</span>
                 <h1 class="mt-2 font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Route Comparison<span class="text-[#CA8A04]">.</span></h1>
-                <div class="mt-3 flex items-center gap-2.5 flex-wrap font-proxima text-[13.5px] text-slate-600">
+                <div class="mt-3 flex items-center gap-2.5 flex-wrap font-proxima text-[14.5px] text-slate-600">
                   <span class="font-display font-medium text-[15px] text-[#0F1722]">Statewide reliability scan</span>
                   <span class="text-slate-300">·</span>
                   <span class="font-mono tabular-nums text-[12.5px] text-slate-700">6 routes</span>
@@ -101,10 +129,17 @@
               </div>
               <div class="flex flex-col items-end gap-2.5">
                 <div class="flex items-center gap-2">
-                  <div class="h-9 inline-flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-50 px-3"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span><span class="font-mono text-[10.5px] uppercase tracking-wider text-emerald-800">npmrds as of 2026-05-24</span></div>
-                  <button class="h-9 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 text-[12.5px] hover:bg-slate-50"><svg class="size-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6 12 2 8 6"/><path d="M12 2v14"/></svg>Share link</button>
-                  <button class="h-9 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 text-[12.5px] hover:bg-slate-50"><svg class="size-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 11.5S13.19 16 12 16s-4.5-4.5-4.5-4.5M12 15V3"/><path d="M5 21h14"/></svg>Export CSV</button>
+                  <!-- Contract item 7 · download affordance, same treatment as pages 2/3/6 -->
+                  <button class="h-9 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 text-[12.5px] hover:bg-slate-50"><!-- icon: Download --><svg class="size-3.5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>Data</button>
+                  <button class="h-9 inline-flex items-center gap-1.5 px-3 rounded-[6px] border border-zinc-950/15 bg-white text-slate-700 text-[12.5px] hover:bg-slate-50"><!-- icon: Export --><svg class="size-3.5 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>Share</button>
                   <button class="tny-press h-9 px-4 bg-[#1F3F8F] hover:bg-[#16307A] border-b-4 border-[#0F2D4D] text-white font-display uppercase text-[12.5px] tracking-wide rounded-[6px]">Save report</button>
+                </div>
+                <!-- Contract item 4 · the freshness line, identical on all six pages -->
+                <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1 justify-end">
+                  <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
+                  <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
+                  <span class="text-slate-300">·</span><span>jul 2026 partial</span>
+                  <span class="text-slate-300">·</span><span>since jan 2017</span>
                 </div>
                 <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">results update live as you select</div>
               </div>
@@ -113,23 +148,26 @@
 
           <!-- ═════════ CONTENT · builder rail + cross-tab ═════════ -->
           <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
-            <div class="mr-auto w-full max-w-[1600px] pl-12 pr-8 grid grid-cols-12 gap-6 items-start">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6 items-start">
 
               <!-- ══════ BUILDER RAIL (the custom control component) ══════ -->
               <div class="col-span-12 lg:col-span-3" data-dms-section="builder">
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm">
 
-                  <div class="px-4 pt-4 pb-3 border-b border-zinc-950/10 flex items-center gap-2">
-                    <svg class="size-4 text-[#1F3F8F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
-                    <span class="font-display font-medium text-[15px] text-[#0F1722] flex-1">Build comparison</span>
-                    <button class="font-mono text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-700">Reset</button>
+                  <!-- Rail header · the same dark bar npmrds-report.html's route rail uses.
+                       Both surfaces are route-selection rails, so they read as one family
+                       (Phase-6 brief; Phase 8 Coherence 8). -->
+                  <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/08 bg-[#12181F] rounded-t-[8px]">
+                    <svg class="size-4 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+                    <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Build comparison</span>
+                    <button class="font-mono text-[10px] uppercase tracking-wider text-slate-400 hover:text-white">Reset</button>
                   </div>
 
                   <!-- ── SCOPE · global filters (apply to every cell) ── -->
                   <div class="px-4 py-4 border-b border-zinc-950/10">
                     <div class="flex items-center gap-2 mb-2.5">
                       <svg class="size-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-                      <span class="font-display font-medium text-[13.5px] uppercase tracking-wide text-[#0F1722] flex-1">Scope</span>
+                      <span class="font-display font-medium text-[13px] uppercase tracking-wide text-[#0F1722] flex-1">Scope</span>
                       <span class="font-mono text-[10px] text-slate-400">every cell</span>
                     </div>
                     <div class="grid gap-1.5">
@@ -155,8 +193,8 @@
                   <!-- ── STEP 1 · Routes (the rows) ── -->
                   <div class="px-4 py-4 border-b border-zinc-950/10">
                     <div class="flex items-center gap-2 mb-2.5">
-                      <span class="flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[11px] font-semibold">1</span>
-                      <span class="font-display font-medium text-[13.5px] uppercase tracking-wide text-[#0F1722] flex-1">Routes</span>
+                      <span class="flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[12px] font-semibold">1</span>
+                      <span class="font-display font-medium text-[13px] uppercase tracking-wide text-[#0F1722] flex-1">Routes</span>
                       <span class="font-mono text-[10px] text-slate-400">the rows</span>
                     </div>
                     <div class="relative">
@@ -169,33 +207,33 @@
                     <div class="mt-2 grid gap-1.5">
                       <!-- selected route chip -->
                       <div class="group flex items-center gap-2 h-9 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-white">
-                        <span class="size-2 rounded-full bg-[#1F3F8F] shrink-0"></span>
-                        <div class="flex-1 min-w-0"><div class="text-[12.5px] text-[#0F1722] truncate leading-tight">I-87 Northway · Albany → Clifton Park NB</div><div class="font-mono text-[9.5px] text-slate-400 leading-tight">11 TMCs · 14.2 mi</div></div>
+                        <span class="size-3 rounded-full bg-[#1F3F8F] shrink-0"></span>
+                        <div class="flex-1 min-w-0"><div class="font-proxima text-[13px] font-semibold text-slate-700 truncate leading-tight" title="I-87 Northway · Albany → Clifton Park NB">I-87 Northway · Albany → Clifton Park NB</div><div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums leading-tight">11 TMC · 14.2 mi</div></div>
                         <button class="size-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
                       </div>
                       <div class="group flex items-center gap-2 h-9 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-white">
-                        <span class="size-2 rounded-full bg-[#37576B] shrink-0"></span>
-                        <div class="flex-1 min-w-0"><div class="text-[12.5px] text-[#0F1722] truncate leading-tight">I-90 Thruway · Buffalo → Batavia EB</div><div class="font-mono text-[9.5px] text-slate-400 leading-tight">22 TMCs · 38.6 mi</div></div>
+                        <span class="size-3 rounded-full bg-[#37576B] shrink-0"></span>
+                        <div class="flex-1 min-w-0"><div class="font-proxima text-[13px] font-semibold text-slate-700 truncate leading-tight" title="I-90 Thruway · Buffalo → Batavia EB">I-90 Thruway · Buffalo → Batavia EB</div><div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums leading-tight">22 TMC · 38.6 mi</div></div>
                         <button class="size-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
                       </div>
                       <div class="group flex items-center gap-2 h-9 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-white">
-                        <span class="size-2 rounded-full bg-[#E5A646] shrink-0"></span>
-                        <div class="flex-1 min-w-0"><div class="text-[12.5px] text-[#0F1722] truncate leading-tight">I-495 LIE · Queens → Suffolk EB</div><div class="font-mono text-[9.5px] text-slate-400 leading-tight">14 TMCs · 22.4 mi</div></div>
+                        <span class="size-3 rounded-full bg-[#E5A646] shrink-0"></span>
+                        <div class="flex-1 min-w-0"><div class="font-proxima text-[13px] font-semibold text-slate-700 truncate leading-tight" title="I-495 LIE · Queens → Suffolk EB">I-495 LIE · Queens → Suffolk EB</div><div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums leading-tight">14 TMC · 22.4 mi</div></div>
                         <button class="size-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
                       </div>
                       <div class="group flex items-center gap-2 h-9 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-white">
-                        <span class="size-2 rounded-full bg-[#8B5CF6] shrink-0"></span>
-                        <div class="flex-1 min-w-0"><div class="text-[12.5px] text-[#0F1722] truncate leading-tight">I-81 · Syracuse Downtown</div><div class="font-mono text-[9.5px] text-slate-400 leading-tight">9 TMCs · 6.8 mi</div></div>
+                        <span class="size-3 rounded-full bg-[#8B5CF6] shrink-0"></span>
+                        <div class="flex-1 min-w-0"><div class="font-proxima text-[13px] font-semibold text-slate-700 truncate leading-tight" title="I-81 · Syracuse Downtown">I-81 · Syracuse Downtown</div><div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums leading-tight">9 TMC · 6.8 mi</div></div>
                         <button class="size-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
                       </div>
                       <div class="group flex items-center gap-2 h-9 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-white">
-                        <span class="size-2 rounded-full bg-[#0EA5A0] shrink-0"></span>
-                        <div class="flex-1 min-w-0"><div class="text-[12.5px] text-[#0F1722] truncate leading-tight">I-787 · Albany Downtown NB</div><div class="font-mono text-[9.5px] text-slate-400 leading-tight">7 TMCs · 5.1 mi</div></div>
+                        <span class="size-3 rounded-full bg-[#0EA5A0] shrink-0"></span>
+                        <div class="flex-1 min-w-0"><div class="font-proxima text-[13px] font-semibold text-slate-700 truncate leading-tight" title="I-787 · Albany Downtown NB">I-787 · Albany Downtown NB</div><div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums leading-tight">7 TMC · 5.1 mi</div></div>
                         <button class="size-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
                       </div>
                       <div class="group flex items-center gap-2 h-9 pl-2.5 pr-1.5 rounded-[6px] border border-zinc-950/10 bg-slate-50 hover:bg-white">
-                        <span class="size-2 rounded-full bg-[#D6453B] shrink-0"></span>
-                        <div class="flex-1 min-w-0"><div class="text-[12.5px] text-[#0F1722] truncate leading-tight">I-190 · Niagara Buffalo → LaSalle NB</div><div class="font-mono text-[9.5px] text-slate-400 leading-tight">8 TMCs · 9.3 mi</div></div>
+                        <span class="size-3 rounded-full bg-[#D6453B] shrink-0"></span>
+                        <div class="flex-1 min-w-0"><div class="font-proxima text-[13px] font-semibold text-slate-700 truncate leading-tight" title="I-190 · Niagara Buffalo → LaSalle NB">I-190 · Niagara Buffalo → LaSalle NB</div><div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums leading-tight">8 TMC · 9.3 mi</div></div>
                         <button class="size-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
                       </div>
                     </div>
@@ -205,8 +243,8 @@
                   <!-- ── STEP 2 · Periods (the column groups) ── -->
                   <div class="px-4 py-4 border-b border-zinc-950/10">
                     <div class="flex items-center gap-2 mb-2.5">
-                      <span class="flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[11px] font-semibold">2</span>
-                      <span class="font-display font-medium text-[13.5px] uppercase tracking-wide text-[#0F1722] flex-1">Periods</span>
+                      <span class="flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[12px] font-semibold">2</span>
+                      <span class="font-display font-medium text-[13px] uppercase tracking-wide text-[#0F1722] flex-1">Periods</span>
                       <span class="font-mono text-[10px] text-slate-400">the columns</span>
                     </div>
                     <div class="grid gap-1.5">
@@ -247,8 +285,8 @@
                   <!-- ── STEP 3 · Metrics (the leaves) ── -->
                   <div class="px-4 py-4">
                     <div class="flex items-center gap-2 mb-2.5">
-                      <span class="flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[11px] font-semibold">3</span>
-                      <span class="font-display font-medium text-[13.5px] uppercase tracking-wide text-[#0F1722] flex-1">Metrics</span>
+                      <span class="flex size-5 items-center justify-center rounded-full bg-[#1F3F8F] text-white font-mono text-[12px] font-semibold">3</span>
+                      <span class="font-display font-medium text-[13px] uppercase tracking-wide text-[#0F1722] flex-1">Metrics</span>
                       <span class="font-mono text-[10px] text-slate-400">per cell</span>
                     </div>
                     <div class="grid gap-1">
@@ -296,7 +334,7 @@
                   <div class="px-4 py-3 border-b border-zinc-950/10 bg-slate-50/60 flex items-center gap-3 flex-wrap">
                     <div class="flex-1 min-w-0">
                       <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#CA8A04]">// routes × periods × metrics</div>
-                      <div class="font-display font-medium text-[17px] text-[#0F1722] leading-tight">Comparison matrix</div>
+                      <div class="font-display font-medium text-[18px] text-[#0F1722] leading-tight">Comparison matrix</div>
                     </div>
                     <div class="flex items-center gap-3 font-mono text-[10px] text-slate-500">
                       <span class="inline-flex items-center gap-1.5"><span class="d-good">▲</span> improved vs Base</span>
@@ -315,7 +353,7 @@
                       <thead>
                         <!-- group row -->
                         <tr class="border-b border-zinc-950/10">
-                          <th rowspan="2" class="stick text-left align-bottom px-3 py-2 font-display uppercase text-[11px] tracking-wide text-slate-600 border-b border-zinc-950/10">Route</th>
+                          <th rowspan="2" class="stick text-left align-bottom px-3 py-2 font-display uppercase text-[11.5px] tracking-wide text-slate-600 border-b border-zinc-950/10">Route</th>
                           <th colspan="3" class="grp-base grp-div px-3 pt-2 pb-1 text-center">
                             <span class="inline-flex items-center gap-1 font-mono text-[9px] font-bold uppercase tracking-wider text-amber-700"><span class="inline-flex items-center h-3.5 px-1 rounded-[3px] bg-[#FACC15] text-[#0F1722]">Base</span> 2024</span>
                             <div class="font-mono text-[9px] tabular-nums text-slate-500 font-normal normal-case tracking-normal">Jan 1 – Dec 31, 2024 · fixed</div>
@@ -328,7 +366,7 @@
                             <span class="font-display uppercase text-[12px] tracking-wide text-[#0F1722]">2019 · pre-pandemic</span>
                             <div class="font-mono text-[9px] tabular-nums text-slate-500 font-normal normal-case tracking-normal">Jan 1 – Dec 31, 2019 · Δ vs Base</div>
                           </th>
-                          <th rowspan="2" class="grp-div align-bottom px-3 py-2 text-center font-display uppercase text-[11px] tracking-wide text-slate-600 border-b border-zinc-950/10">Speed trend</th>
+                          <th rowspan="2" class="grp-div align-bottom px-3 py-2 text-center font-display uppercase text-[11.5px] tracking-wide text-slate-600 border-b border-zinc-950/10">Speed trend</th>
                         </tr>
                         <!-- metric leaf row -->
                         <tr class="border-b border-zinc-950/10 bg-slate-50/70">
@@ -429,7 +467,7 @@
                           <td class="grp-div px-3 py-2.5 text-right font-mono tabular-nums">55.0 <span class="d-flat">▼0.4%</span></td>
                           <td class="px-3 py-2.5 text-right font-mono tabular-nums">10.1 <span class="d-flat">0.0%</span></td>
                           <td class="px-3 py-2.5 text-right font-mono tabular-nums">138 <span class="d-bad">▲4.5%</span></td>
-                          <td class="grp-div px-3 py-2.5 text-center text-slate-300 font-mono text-[11px] italic" colspan="3">no data · 2019 coverage gap</td>
+                          <td class="grp-div px-3 py-2.5 text-center text-slate-300 font-mono text-[12px] italic" colspan="3">no data · 2019 coverage gap</td>
                           <td class="grp-div px-3 py-2.5"><svg viewBox="0 0 60 22" class="w-[60px] h-[22px]" preserveAspectRatio="none"><polyline points="30,7 58,7" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="2 2"/><circle cx="58" cy="7" r="2" fill="#94a3b8"/></svg></td>
                         </tr>
 
@@ -451,7 +489,7 @@
                 <!-- optional secondary chart (routes-as-series, converted-reports $self idiom) -->
                 <div class="mt-6 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" data-dms-section="trend-chart">
                   <div class="h-11 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
-                    <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Average speed by period · all routes</span>
+                    <span class="font-display font-medium text-[15px] text-[#2D3E4C] flex-1">Average speed by period · all routes</span>
                     <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">mph · one series per route · secondary view</span>
                   </div>
                   <div class="p-4">
@@ -491,14 +529,19 @@
           </div>
 
           <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
-            <div class="mr-auto w-full max-w-[1600px] pl-12 pr-8 py-4 flex items-center justify-between">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
               <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
-                <a href="floating-car.html" class="hover:text-slate-900">floating-car</a>
-                <a href="congestion.html" class="hover:text-slate-900">congestion</a>
-                <a href="map-21-system-performance.html" class="hover:text-slate-900">map-21</a>
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="npmrds-report.html" class="hover:text-slate-900">report</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
                 <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              
+              
               </div>
-              <span class="font-mono text-[11px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
             </div>
           </footer>
 

@@ -20,6 +20,9 @@ The defining surface texture is a topographic line-art background (topolines.png
 ```
 mny/design/
 ├── README.md                         ← this file
+├── ds-nav.js                         ← the floating nav widget, shared by every page
+│                                       section-contextual: lists the current section's
+│                                       pages + one jump link per other section
 ├── theme/
 │   └── index.css.additions           ← @font-face aliases + brand surface utilities
 │                                       canonical source; linked by all mockup pages
@@ -67,6 +70,44 @@ mny/design/
 > links) must be viewed over a local server (`python3 -m http.server` in `design/`), not `file://`.
 > The same applies to `pages/county-actions/dashboard.html`, which fetches
 > `assets/mny/data/sullivan_boundaries.geojson` and `sullivan_actions.geojson`.
+
+---
+
+## `ds-nav.js` — the nav widget
+
+Every page in `design-system/`, `pages/` and `reports/` ends with one line:
+
+```html
+<script src="../ds-nav.js"></script>       <!-- ../../ from pages/county-actions/ -->
+```
+
+The widget is **section-contextual**, mirroring how a real DMS site navigates. It reads
+`location.pathname`, finds which of the seven sections owns the current page, and renders:
+
+1. **the current section, expanded** — its pages numbered in flow order, the current one
+   highlighted in `yellow-700` on a `yellow-50` row;
+2. **`jump to section`** — one link per *other* section, pointing at that section's landing
+   page with its page count.
+
+So the panel is 9–11 links instead of the 22-link flat dump the old inline widget carried, and
+any page is at most two hops from any other. The sections are the site's real IA:
+
+| Section | Folder | Landing |
+|---|---|---|
+| Design System | `design-system/` | `theme.html` |
+| Public Site | `pages/` | `home.html` |
+| Actions (Statewide) | `pages/` | `actions-dashboard.html` |
+| County Actions Workflow | `pages/county-actions/` | `dashboard.html` |
+| Site Management | `pages/` | `site-management-v2.html` |
+| Authoring Reference | `pages/` | `page-templates.html` |
+| Reports | `reports/` | `actions-qa.html` |
+
+**Adding a page: add one line to that section's `pages` array in `ds-nav.js`, and the script tag
+to the page.** Nothing else. A section's `dir` may be nested (`pages/county-actions`) — hrefs are
+recomputed from the current page's depth, so no section needs to know where another one lives, and
+the relative paths hold whether you serve `design/` as the root or open a file directly.
+
+Widget styling stays out of `theme.js` — it is review scaffolding and never ships on a live site.
 
 ---
 

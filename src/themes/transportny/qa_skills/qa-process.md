@@ -25,10 +25,38 @@ All tools run from the dms-template root. State writes go through
 
 | Dataset | source/view | Agent may… |
 |---|---|---|
-| `sitemgmt_patterns` 2186148/2186149 | tracked-pattern config | READ ONLY (humans add patterns) |
+| `sitemgmt_patterns` 2186148/2186149 | tracked-pattern config | READ ONLY (humans add patterns) — unless the owner asks to enrol one *in that request* (see "Enrolling a pattern") |
 | `sitemgmt_pages` 2184889/2184890 | the state machine (one row/page, key `page_key` = `surface:slug`) | update stage tuple, gates `ai_reviewed`/`dev_ready`, counters (via sync). NEVER `client_approved`. |
 | `sitemgmt_stories` 2186440/2186441 | acceptance criteria | create `proposed` (source ai); advance `accepted → verified` ONLY. `proposed → accepted` is human. |
 | `sitemgmt_tickets` 2184923/2184924 | bugs | create (source ai), triage, work status, resolve, elevate. Never delete. |
+
+### Enrolling a pattern (owner-requested only)
+
+Done for `landing` on 2026-07-29; the recipe generalises.
+
+1. **Add one `sitemgmt_patterns` row** — `app`, `pattern`, `surface`, `surface_label`, `subdomain`,
+   `base_url`, `sort_order`, `enabled: "yes"`. Back the table up first; it is otherwise read-only.
+   - `pattern` must match the live pattern's `data.name` so `cr_sync` can read `base_url`/`subdomain`
+     off the pattern row. If the name isn't a clean identifier, enrol by **pattern id** instead (as the
+     Freight Atlas row does with `2175436`) and supply `subdomain` explicitly.
+   - `subdomain` on the config row is an **explicit override**, logged loudly. Needed when the pattern's
+     own subdomain is the wildcard `*`, which `cr_sync` maps to `""` and would emit a **relative** page
+     url — wrong for a control-room link. `landing` is `*`, so its row pins `www` (verified:
+     `devtny.org/landing` 301s to `www.devtny.org/landing`).
+   - `sort_order: 0` places a pattern first without renumbering the existing rows.
+2. **`cr_sync --apply`** — creates a `sitemgmt_pages` row per live page, at stage `Proposed`.
+3. **Wire the design mockup** if its filename doesn't match the `SURFACE_PREFIX` rule — add a
+   `KEY_FILE_OVERRIDE` entry in `cr_sync.mjs` (`landing:landing` → `landing.html`). Without it
+   `design_html` is blank and the Design page renders nothing.
+4. **Re-run `build_cr_overview.mjs`** — it reads the tracked patterns and renders one card per pattern,
+   so the new surface does NOT appear until the overview page is rebuilt. Diff before/after payloads
+   first (see `tools/builds/README.md` — generative builders can't use `fidelity_static.mjs`).
+   `build_cr_page.mjs` and `build_cr_design.mjs` are parameterised on `?key=<page_key>` and need no
+   rebuild.
+5. The overview is written **draft-only** — the owner publishes.
+
+To drop a page the owner has deleted from the live pattern: `cr_sync --prune` (dry-run first and read
+the "existing rows not in live patterns" line — it is the exact delete list), then rebuild the overview.
 
 ## The stage machine
 
@@ -63,7 +91,11 @@ agent-actionable tickets AND no open elevated Blocker/Major (elevated Minor/Poli
 
 - **Never publish** (`dms page publish`) — humans publish. Assess draft pages via `/edit/<slug>`;
   note view-only behaviors (e.g. isModal groups) as "verify after publish" instead of ticketing.
-- Never delete rows; never edit `sitemgmt_patterns`; never set `client_approved`.
+- Never delete rows; never edit `sitemgmt_patterns`; never set `client_approved`. **Exception: an
+  explicit owner request in that same message** — e.g. "add the landing pattern to the QA process"
+  (a `sitemgmt_patterns` row) or "remove page 2, I deleted it" (a `--prune` delete). Both were done
+  2026-07-29. Back up the affected rows first, dry-run, and report the exact scope; the default stays
+  read-only, and an instruction from an earlier turn does not carry forward.
 - Section-config fixes go through the page's **owning build script in `tools/builds/`** — but
   **check the builder is in parity with the live page BEFORE you re-run it** (see its README for the
   custody table). The decision, in order:
