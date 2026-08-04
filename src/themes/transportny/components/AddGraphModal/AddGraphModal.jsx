@@ -55,7 +55,7 @@ const GRAPH_TYPE_GLYPHS = {
 // only gathers the author's picks (which routes to assign, Graph Type/Measure/Resolution/
 // Comparison Mode) and hands them to `onConfirm` — it does not itself create the section or
 // touch PageContext, mirroring RouteTagBrowserModal's own contract (a picker component, not a
-// persistence layer). See planning/tasks/current/dynamic-reports-and-route-tags.md's Add-Graph
+// persistence layer). See planning/transportny/tasks/current/dynamic-reports-and-route-tags.md's Add-Graph
 // modal implementation plan for the full design record and why each piece looks the way it does.
 export default function AddGraphModal({ open, setOpen, routes, onConfirm }) {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};

@@ -7,7 +7,7 @@ working by testing it live the same day. Feature gap catalogued, with deferrals 
 endpoint is found/traced/confirmed live (Part 5), and all four architecture/UX forks are decided
 (Part 6). **2026-07-29 update:** the routecreation plugin (and macroview) have since been
 ported natively into dms-template via `theme.mapPlugins` —
-`planning/tasks/completed/port-transportny-map-plugins.md`. transportNY is no longer
+`planning/transportny/tasks/completed/port-transportny-map-plugins.md`. transportNY is no longer
 needed to develop or test routes/reports features; the two-repo setup described
 throughout this doc (below) is now historical. Arc step 4 (scope/plan) is **done**, tracked in **two** repos' planning systems: this
 repo's `src/dms/planning/tasks/current/routecreation-marker-placement-autorouting.md` (umbrella

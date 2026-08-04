@@ -6,7 +6,7 @@ captures research so the next session doesn't re-derive it.
 **2026-07-29 note:** several entries below describe testing done against transportNY's
 dev server because that was the only place the route-creation plugin ran. As of
 2026-07-29 that plugin (and macroview) run natively in dms-template
-(`planning/tasks/completed/port-transportny-map-plugins.md`) — transportNY is no longer
+(`planning/transportny/tasks/completed/port-transportny-map-plugins.md`) — transportNY is no longer
 needed for any routes/reports testing. Left as-is below since it's an accurate record of
 what was true at the time.
 
@@ -160,7 +160,7 @@ There is no dedicated "design" agent in this environment (checked the available 
 ## Current status
 
 All three gaps below now have a status — see
-[`planning/tasks/current/report-page-redesign.md`](../../planning/tasks/current/report-page-redesign.md)
+[`planning/transportny/tasks/current/report-page-redesign.md`](../../planning/transportny/tasks/current/report-page-redesign.md)
 for the current, maintained status of all three (this section used to duplicate that tracking
 in-place and the two drifted out of sync; that file is now the only place status is tracked, this
 research doc stays focused on the original audit/ground-truth/methodology above). Full

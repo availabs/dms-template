@@ -10,7 +10,7 @@ import { parseTmcArray } from '../ReportRouteList/utils';
 // folders. Used by ReportRouteList's add-route flow (`selectionMode: 'any'`) and Dynamic Reports'
 // route-slot entry gate (`selectionMode: 'exact'` + `requiredCount` + `initialSelectedRoutes`,
 // the last added so a slot/URL-count mismatch pre-populates already-resolved groups instead of
-// discarding them) — see planning/tasks/current/dynamic-reports-and-route-tags.md.
+// discarding them) — see planning/transportny/tasks/current/dynamic-reports-and-route-tags.md.
 export default function RouteTagBrowserModal({
   open,
   setOpen,

@@ -85,7 +85,7 @@ export function isReportPage(siblingSections = []) {
 // Pure mutation body shared by `applyMeasurePick` (below, runs against a live section's immer
 // draft via dwAPI) and NPMRDS's Add-Graph modal (composes a brand-new section's state before any
 // dataWrapper/dwAPI exists for it — see
-// planning/tasks/current/dynamic-reports-and-route-tags.md's "Workstream 0"). No immer-specific
+// planning/transportny/tasks/current/dynamic-reports-and-route-tags.md's "Workstream 0"). No immer-specific
 // API is used here, only plain mutation syntax, so the identical body works against a plain
 // mutable object just as well as an immer draft — this is what lets a from-scratch composed
 // section and a live-edited one produce byte-identical shape. `pick` is the FULL resolved pick
