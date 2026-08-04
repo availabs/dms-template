@@ -143,6 +143,11 @@ GRAPH_TEMPLATE_MAP = {
     ("TMC Difference Grid", "speed", "15-minutes", "travel_time_all"):
         "tmc_diff_grid_speed_15min",
     ("Route Line Graph", "speed", "5-minutes", "travel_time_all"): "tmc_speed_line_graph",
+    # Template 90 (COVID Comparison): same LineGraph/epoch shape as
+    # tmc_speed_line_graph, truck-column swap already proven for this exact
+    # measure by route_diff_speed_5min_truck (SPEED_EXPR_TRUCK) — no new
+    # formula, just the existing truck expression on the un-diffed graph type.
+    ("Route Line Graph", "speed", "5-minutes", "travel_time_truck"): "tmc_speed_line_graph_truck",
     ("Route Line Graph", "travelTime", "5-minutes", "travel_time_all"): "tmc_travel_time_line_graph",
     ("TMC Grid Graph", "speed", "5-minutes", "travel_time_all"): "tmc_speed_grid_graph_tmc",
     ("Route Bar Graph", "speed", "day", "travel_time_all"): "tmc_speed_bar_graph_day",
@@ -957,6 +962,11 @@ TEMPLATE_SPECS = {
         "yAxis": {"type": "calculated", "show": True, "name": TRAVEL_TIME_EXPR,
                   "target": "yAxis", "fn": "exempt",
                   "customName": "Travel Time (min)"},
+    },
+    "tmc_speed_line_graph_truck": {
+        "graphType": "LineGraph", "xAxis": "epoch",
+        "yAxis": {"type": "calculated", "show": True, "name": SPEED_EXPR_TRUCK,
+                  "target": "yAxis", "fn": "exempt", "customName": "Truck Speed (mph)"},
     },
     "tmc_speed_grid_graph": {
         "graphType": "GridGraph", "xAxis": "epoch",

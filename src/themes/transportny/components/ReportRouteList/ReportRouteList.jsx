@@ -99,7 +99,7 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/graphIds/
   // color assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
   // the real route ids the viewer's URL supplies. Never persisted; a pure in-memory overlay.
-  const { resolvedRoutes } = useDynamicReportRoutes({
+  const { resolvedRoutes, resolvedGroupRoutes } = useDynamicReportRoutes({
     apiLoad,
     routeSourceInfo,
     slots: routes,
@@ -209,8 +209,17 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
           routeSourceInfo={routeSourceInfo}
           selectionMode="exact"
           requiredCount={routeSlotGroups.length}
+          initialSelectedRoutes={resolvedGroupRoutes}
           onConfirm={(selectedRoutes) => {
-            const params = convertToUrlParams({ [routeSlotFilter.searchKey]: selectedRoutes.map(r => r.id) });
+            // Rebuild by GROUP POSITION rather than trusting the modal's Map insertion order —
+            // `selectedRoutes` mixes routes pre-populated from the URL (already resolved) with
+            // newly-picked ones for whichever group(s) were still missing, and a missing group
+            // isn't always the last one. Keep every already-resolved id in its original slot,
+            // fill the gaps with the newly-picked ids in the order they were selected.
+            const stillNeededIds = selectedRoutes.map((r) => r.id).filter((id) => !routeIds.includes(id));
+            let cursor = 0;
+            const fullIds = routeSlotGroups.map((_, j) => routeIds[j] ?? stillNeededIds[cursor++]);
+            const params = convertToUrlParams({ [routeSlotFilter.searchKey]: fullIds });
             navigate(`${pathname}?${params}`);
           }}
         />

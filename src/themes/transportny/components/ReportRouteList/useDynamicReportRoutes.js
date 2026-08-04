@@ -90,5 +90,17 @@ export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeI
     })
     .filter(Boolean);
 
-  return { resolvedRoutes, isResolving };
+  // One catalog row per DISTINCT group that already has a resolved URL id, in group order —
+  // deliberately not deduped from `resolvedRoutes` above (which repeats a group's row once per
+  // slot sharing it). Used to pre-populate the entry-gate picker when the URL supplies fewer ids
+  // than groups require, so the author only picks the still-missing slot(s) instead of the gate
+  // discarding what already resolved (dynamic-reports-and-route-tags.md item 3, open question 2b).
+  const resolvedGroupRoutes = !enabled ? [] : groups
+    .map((_, groupIndex) => {
+      const id = routeIds?.[groupIndex];
+      return id != null ? catalogRowsById.get(String(id)) : null;
+    })
+    .filter(Boolean);
+
+  return { resolvedRoutes, isResolving, resolvedGroupRoutes };
 }
