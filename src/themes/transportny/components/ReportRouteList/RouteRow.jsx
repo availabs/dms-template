@@ -83,6 +83,7 @@ export default function RouteRow({
   onStartEditName,
   onSaveEditName,
   onCancelEditName,
+  derivedFromRouteName,
   isEditingDates,
   editStartDateValue,
   editEndDateValue,
@@ -135,6 +136,11 @@ export default function RouteRow({
   };
 
   const r = route;
+  // Mechanism B (relativeDate/isRelativeDateBase, see relativeDateResolution.js) — a row's
+  // startDate/endDate is LIVE-COMPUTED from another route's own date, not an independent literal;
+  // editing it here would just get silently overwritten on the next render, so the date section
+  // renders read-only with a note instead of the usual pencil.
+  const isDerivedDate = !!r.dateFormula;
   const tmcArray = parseTmcArray(r.tmc_array);
   const isUnassigned = graphs.length > 0 && !(r.graphIds || []).length;
   const visibleTmcs = showAllTmcs ? tmcArray : tmcArray.slice(0, TMC_PREVIEW_COUNT);
@@ -203,7 +209,7 @@ export default function RouteRow({
             <div className={t.dateInputsContainer}>
               <div className={t.rowHeaderWrapper}>
                 <div className={t.dateRangeLabel}>Date Range</div>
-                {isEditingDates ? (
+                {isDerivedDate ? null : isEditingDates ? (
                   <div className={t.editContainer}>
                     <Button themeOptions={{ size: "xs" }} title="save" onClick={onSaveEditDates}>
                       <Icon icon={"FloppyDisk"} />
@@ -218,18 +224,23 @@ export default function RouteRow({
                   </Button>
                 ) : null}
               </div>
+              {isDerivedDate && isEdit && (
+                <div className={t.derivedDateNote}>
+                  Derived from {derivedFromRouteName || 'another route'} — edit that route's dates instead.
+                </div>
+              )}
               <div className={t.dateInputWrapper}>
                 <label className={t.dateLabel}>Start Date:</label>
                 <div className={t.dateInputFlex}>
-                  <Input type="date" value={getDateValue(isEditingDates ? editStartDateValue : r.startDate)} disabled={!isEditingDates} onChange={(e) => onDateChange(e, isEditingDates ? editStartDateValue : r.startDate || '', onEditStartDateValueChange)} />
-                  <Input type="time" value={getTimeValue(isEditingDates ? editStartDateValue : r.startDate)} disabled={!isEditingDates} onChange={(e) => onTimeChange(e, isEditingDates ? editStartDateValue : r.startDate || '', onEditStartDateValueChange)} />
+                  <Input type="date" value={getDateValue(isEditingDates ? editStartDateValue : r.startDate)} disabled={isDerivedDate || !isEditingDates} onChange={(e) => onDateChange(e, isEditingDates ? editStartDateValue : r.startDate || '', onEditStartDateValueChange)} />
+                  <Input type="time" value={getTimeValue(isEditingDates ? editStartDateValue : r.startDate)} disabled={isDerivedDate || !isEditingDates} onChange={(e) => onTimeChange(e, isEditingDates ? editStartDateValue : r.startDate || '', onEditStartDateValueChange)} />
                 </div>
               </div>
               <div className={t.dateInputWrapper}>
                 <label className={t.dateLabel}>End Date:</label>
                 <div className={t.dateInputFlex}>
-                  <Input type="date" value={getDateValue(isEditingDates ? editEndDateValue : r.endDate)} disabled={!isEditingDates} onChange={(e) => onDateChange(e, isEditingDates ? editEndDateValue : r.endDate || '', onEditEndDateValueChange)} />
-                  <Input type="time" value={getTimeValue(isEditingDates ? editEndDateValue : r.endDate)} disabled={!isEditingDates} onChange={(e) => onTimeChange(e, isEditingDates ? editEndDateValue : r.endDate || '', onEditEndDateValueChange)} />
+                  <Input type="date" value={getDateValue(isEditingDates ? editEndDateValue : r.endDate)} disabled={isDerivedDate || !isEditingDates} onChange={(e) => onDateChange(e, isEditingDates ? editEndDateValue : r.endDate || '', onEditEndDateValueChange)} />
+                  <Input type="time" value={getTimeValue(isEditingDates ? editEndDateValue : r.endDate)} disabled={isDerivedDate || !isEditingDates} onChange={(e) => onTimeChange(e, isEditingDates ? editEndDateValue : r.endDate || '', onEditEndDateValueChange)} />
                 </div>
               </div>
               {!isEditingDates && summarizeWeekdays(r.weekdays) && (

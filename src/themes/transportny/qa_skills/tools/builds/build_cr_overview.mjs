@@ -135,11 +135,14 @@ for (const t of tracked) {
   const g = randomUUID();
   groups.push({ name: g, index: groups.length, theme: "content", position: "content", displayName: t.surface_label });
   const surfFilter = { col: "surface", op: "filter", value: [t.surface] };
-  // slice 1 — identity: static title + live "pattern · N pages" meta line
+  // slice 1 — identity: static title + live "surface · N pages" meta line.
+  // Keyed on SURFACE, not `t.pattern`: a sitemgmt_patterns row may enrol a pattern by ID when its
+  // name isn't a clean identifier (the Freight Atlas row is `2175436`), and the raw id in a
+  // client-facing card read "2175436 · 6 pages". Surface is the stable display key.
   sec(g, "12", "Card", dw(PAGES_SRC, {
     columns: [
       statCol("ttl", t.surface_label, { valueFontStyle: "displaySM" }),
-      calcCol(`('${t.pattern} · ' || count(*) || ' page' || (case when count(*) = 1 then '' else 's' end)) as meta`, "meta", { valueFontStyle: "metaXS" }),
+      calcCol(`('${t.surface} · ' || count(*) || ' page' || (case when count(*) = 1 then '' else 's' end)) as meta`, "meta", { valueFontStyle: "metaXS" }),
     ],
     filters: [surfFilter],
     display: AGG,

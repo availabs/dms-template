@@ -1,5 +1,12 @@
 # npmrds_graph_vocabulary
 
+> **Location note (moved 2026-07-29).** This lived in `data-types/npmrds_graph_vocabulary/` until the
+> theme folder was synced into transportNY and the build failed: `composeMeasureConfig.js` reached five
+> levels up and out of `src/` for the JSON, which no downstream project can resolve. The theme folder
+> is the unit that gets synced (`planning/skills/sync-transportnyv2-theme`), so the vocabulary now
+> lives inside it, beside its JS consumer. **Do not move it back out of the synced tree.** The Python
+> consumer points here too.
+
 Shared, plain-data vocabulary for NPMRDS AVL Graph section generation. Not a DMS dataType plugin
 (no server routes/worker, not registered in `register-datatypes.js`) — just a JSON file two
 independent consumers read:
@@ -128,7 +135,7 @@ patch old `_diff_colors(bar, reverse)` builds:
 
 ```
 {"colors": {"type": "palette",
-            "value": reverseColors ? reverse(defaultColorRange) : defaultColorRange,
+            "value": reverseColors ? defaultColorRange : reverse(defaultColorRange),
             "byValueSymmetric": true,
             ...(graphType === "BarGraph" ? {"byValue": true} : {})}}
 ```
@@ -136,6 +143,15 @@ patch old `_diff_colors(bar, reverse)` builds:
 where `reverseColors` comes from the selected measure's own `reverseColors` flag (not from the
 comparison mode) and the `byValue` key is only added for `BarGraph` (GridGraph is inherently
 colored by value already; no difference-mode Line/other graph type exists in the corpus).
+
+**Note the polarity is inverted relative to `reverseColors`'s raw-value meaning, not passed through
+verbatim.** `reverseColors` is validated correct for coloring a measure's *raw value* (lower
+travelTime is good → green at the low end). A difference graph colors a before-minus-after *delta*,
+not a raw value, and going from "which raw value is good" to "which delta sign is good" inverts the
+polarity for every measure — a positive travelTime delta means time *fell* (good), the opposite end
+of the domain from where a low raw travelTime value (also good) sits. So diff-mode reversal is the
+negation of the raw flag. See "Finding: difference-graph color scale reads backwards" in
+`planning/tasks/current/report-spec-and-build-script.md` for the full derivation and live evidence.
 
 ## Explicitly NOT in this file (composition-layer or out-of-scope, not omitted by oversight)
 

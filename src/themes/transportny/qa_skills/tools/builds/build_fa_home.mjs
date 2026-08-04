@@ -39,9 +39,11 @@ const GOLD = "color:#CA8A04", MUTE = "font-size:0.5em;color:#64748b";
 const B = { hero: randomUUID(), explore: randomUUID(), numbers: randomUUID(), whatsin: randomUUID() };
 const groups = [
   { name: B.hero,    index: 0, theme: "hero",         position: "content", displayName: "Hero" },
-  { name: B.explore, index: 1, theme: "content",      position: "content", displayName: "Explore the Atlas" },
+  // Band labels track the on-page headings (#196: the product is the "Freight Atlas", never "Atlas").
+  // Admin-facing only — displayName is read by the edit pane's sectionGroupsPane, never rendered client-side.
+  { name: B.explore, index: 1, theme: "content",      position: "content", displayName: "Explore the Freight Atlas" },
   { name: B.numbers, index: 2, theme: "content_tint", position: "content", displayName: "By the numbers" },
-  { name: B.whatsin, index: 3, theme: "content",      position: "content", displayName: "What's in the Atlas" },
+  { name: B.whatsin, index: 3, theme: "content",      position: "content", displayName: "What's in the Freight Atlas" },
 ];
 
 // ── card content helpers (new stat tokens; no padding overrides) ───────────────
@@ -68,7 +70,8 @@ const surfaceCard = (eyebrow, title, desc, linkText, path) => lexical(
 const sections = [
   // ── HERO ──
   { group: B.hero, size: "12", data: lexical(
-    styled("kicker", text("// nysdot · 2024 state freight plan · public atlas")),
+    // #196 (row 2197828): never call it just "atlas" — "public atlas" → "public freight atlas".
+    styled("kicker", text("// nysdot · 2024 state freight plan · public freight atlas")),
     styled("displayHero", text("NYS Freight Atlas"), text(".", 0, GOLD)),
     // Copy edit (Alex 2026-07-16, ticket 2192553): "Start with the numbers below…" read as a
     // promise that the stat strip sits in the top banner (it lives further down the page).
@@ -81,10 +84,11 @@ const sections = [
     ]),
   )},
 
-  // ── §01 EXPLORE THE ATLAS ──
+  // ── §01 EXPLORE THE FREIGHT ATLAS ──
   { group: B.explore, size: "12", data: lexical(
     styled("kicker", text("// 01")),
-    head("h2", "Explore the Atlas."),
+    // #196 (row 2197828): "Explore the Atlas." → "Explore the Freight Atlas."
+    head("h2", "Explore the Freight Atlas."),
   )},
   { group: B.explore, size: "6", border: "full", data: surfaceCard("interactive map · 56 layers", "Freight Atlas", "The flagship map — every mode and overlay on one canvas, with the 2021↔2050 vintage toggle, feature popups, and per-layer download.", "open the map →", "/freight_atlas") },
   { group: B.explore, size: "6", border: "full", data: surfaceCard("data & downloads · 24 datasets", "Data & Downloads", "The catalog — every layer to download in CSV, GeoJSON, Shapefile, or GeoPackage, with data dictionaries, vintages, and a Falcor API. No login.", "browse the catalog →", "/freight_data?cat=Freight%20Atlas") },
@@ -126,15 +130,21 @@ const sections = [
   { group: B.numbers, size: "2", border: "full", data: statCard("37", "bottlenecks") },
   { group: B.numbers, size: "2", border: "full", data: statCard("$304M", "NHFP 24–28") },
 
-  // ── §03 WHAT'S IN THE ATLAS ──
+  // ── §03 WHAT'S IN THE FREIGHT ATLAS ──
   { group: B.whatsin, size: "12", data: lexical(
     styled("kicker", text("// 03   56 layers · 5 modes")),
-    head("h2", "What's in the Atlas."),
+    // #196 (row 2197828): "What's in the Atlas." → "What's in the Freight Atlas."
+    head("h2", "What's in the Freight Atlas."),
   )},
   { group: B.whatsin, size: "2", border: "full", data: modeCard("Road", "8", "layers", "FCHN · PHFS · CUFC/CRFC · 37 bottlenecks") },
-  { group: B.whatsin, size: "2", border: "full", data: modeCard("Rail", "5", "layers", "Class I/II/III · 78 facilities · crossings") },
+  // #200 item 2 (row 2197854, MAJOR): the live map's "Rail Network" tab has FOUR layers —
+  // 2024 Core Rail Freight Network, Core Rail Freight Network by Class, Rail Served Facilities,
+  // STRACNET. There is no rail-crossings layer, so "5" and the "crossings" footnote were both wrong.
+  { group: B.whatsin, size: "2", border: "full", data: modeCard("Rail", "4", "layers", "Class I/II/III · 78 facilities") },
   { group: B.whatsin, size: "2", border: "full", data: modeCard("Maritime", "8", "ports", "Core Maritime · marine highways · canal") },
-  { group: B.whatsin, size: "2", border: "full", data: modeCard("Air", "6", "airports", "Core Air Cargo · JFK facilities") },
+  // #200 item 3: an unqualified "6 airports" is wrong — smaller international/regional airports
+  // also handle air cargo. 6 is the Core Air Cargo count (map layer "Air Cargo Facilities").
+  { group: B.whatsin, size: "2", border: "full", data: modeCard("Air", "6", "core air-cargo airports", "Core Air Cargo · JFK facilities") },
   { group: B.whatsin, size: "2", border: "full", data: modeCard("Pipeline", "3", "layers", "Hazardous-liquid · natural-gas · terminals") },
   { group: B.whatsin, size: "2", border: "full", data: lexical(
     styled("cardTitleSM", text("+ all modes")),

@@ -70,7 +70,7 @@ The snap row also records `_built_from_spec` (the spec's path) automatically.
 fails loudly at compose time rather than producing a silently empty graph. Current measures:
 `travelTime`, `speed`, `speedTruck`, `hoursOfDelay`, `avgHoursOfDelay`, `co2Emissions_passenger`,
 `co2Emissions_truck`, `avgCo2Emissions_passenger`, `avgCo2Emissions_truck`. The authority is
-`data-types/npmrds_graph_vocabulary/vocabulary.json` (measures, resolutions) and
+`src/themes/transportny/components/MeasurePicker/vocabulary.json` (measures, resolutions) and
 `GRAPH_TYPE_OPTIONS` in `MeasurePicker/composeMeasureConfig.js`; if a build rejects a value, read
 those rather than this list.
 
@@ -260,11 +260,18 @@ all. Naming `anchor` explicitly lets the spec fix the sign without reordering:
 Omitting `anchor` on a difference graph is allowed but warns, and defaults to the first assigned
 route.
 
-**Known wart, not a spec-build defect:** the default difference palette maps green→lowest and
-red→highest, so for `before − after` on travel time a *positive* bar (travel time fell — the
-improvement) renders **red**. Spec-built and hand-built sections are byte-identical here, so this is
-a Measure Picker default, tracked in the task file. It needs a per-measure polarity hint in the
-vocabulary — the same mechanism `duration-value-format-mm-ss.md` needs.
+**FIXED 2026-07-30** (was: the default difference palette mapped green→lowest and red→highest, so
+for `before − after` on travel time a *positive* bar — the improvement — rendered red). Root cause
+and fix are in `planning/tasks/current/report-spec-and-build-script.md`'s "Finding: difference-graph
+color scale reads backwards" — `composeMeasureConfig.js`'s `buildDiffColors` was reusing the raw-value
+`reverseColors` flag verbatim for difference mode, but the polarity provably inverts between coloring
+a raw value and coloring a before-minus-after delta. No new vocabulary field needed, just negating
+the existing flag for the diff-mode case. Mirrored into `convert_old_reports.py`'s `_diff_colors()`
+and a second independent instance of the same bug in its custom-`color_range` wiring. **Only affects
+graphs composed from 2026-07-30 forward** — already-persisted difference sections still carry the
+old wrong colors until explicitly rebuilt; per explicit user direction, only
+`converted_reports/ny9d_beacon_spec_test` was rebuilt (nothing in this arc is live/production —
+everything here is dev-environment build work).
 
 ### Route Map graphs (added 2026-07-27)
 

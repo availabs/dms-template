@@ -1,6 +1,6 @@
 # NPMRDS route/report UI parity gaps (Phase C)
 
-**Status:** IN PROGRESS — 5 of 12 gaps fixed so far (#4 `route_id` overwrite labeling,
+**Status:** IN PROGRESS — 5 of 15 gaps fixed so far (#4 `route_id` overwrite labeling,
 #5 TMC Search-to-add, both live-verified 2026-07-27 in transportNY; #11 peak-hour filtering,
 both spec and UI halves, live-verified 2026-07-28 in dms-template AND ported + re-verified
 in transportNY the same day — see its entry below, including a correction to the "inert for
@@ -27,6 +27,11 @@ that could be fixed instead of routed around.
 fold into DMS native primitives later, per user direction 2026-07-27 (memory
 `project_reports_folders_discovery_permissions_out_of_scope`). Don't add them here even
 opportunistically.
+
+**Amended 2026-07-31:** route organization/tagging is back in scope — see
+`dynamic-reports-and-route-tags.md`. Report discovery/browsing and permissions are still out of
+scope here; this list stays about route-creation and report-building UI parity, not route
+organization.
 
 ## Gaps
 
@@ -230,6 +235,70 @@ opportunistically.
     on page `2195822`) but a live UI author still can. Needs investigation, not yet
     root-caused.
 
+### Cold-open gaps (found 2026-07-31)
+
+A different axis from the gaps above: not measure/graph-composition parity, but the
+first 60 seconds of using the tool cold, before a route or measure is ever touched.
+Found via a live fresh-eyes walkthrough, not spec-vs-UI comparison — full writeup and
+rationale in `research/npmrds-reports/cold-open-ux-findings.md`. Root cause for both is
+DMS's generic page/section-editing chrome, not NPMRDS-specific code, but both land
+directly in this workflow's first-run experience.
+
+13. **Creating a report page gives no feedback or redirect.** "+ Add Page" → "Your
+    Templates" → "Report Page" → "Create Page" creates the row and closes the dialog
+    with zero visible change — the author is left on whatever page they were already
+    on. The only way to find the new page is to already know to reopen the Pages tree
+    or query the DB directly (which `creating-reports.md` documents as the workaround,
+    not a bug). The new page also defaults to a generic, un-prompted title ("Page N").
+    **Live-confirmed twice** 2026-07-31: once by reproducing it directly (page id
+    `2197866`, slug `converted_reports/page_40`), once by Ryan hitting it independently
+    mid-session before it was reported. Fix: redirect straight into the new page's
+    `/edit/<slug>` on creation, ideally with an inline title prompt.
+14. **The section Settings gear shows a reduced menu (Type/Dataset/Layout/Delete only)
+    until an easy-to-miss pencil "Edit" icon is clicked** — only then do Measure,
+    Columns, Filters, Display, and the Quick Controls pill row appear, with no visual
+    cue beforehand that any of it exists. Already documented as expected behavior in
+    `creating-reports.md` ("Click the gear, then the pencil...") but never tracked as a
+    gap. Fix: either show the full menu by default in edit mode, or give the pencil an
+    obvious "more settings" affordance.
+
+### Graph display polish (found 2026-07-31)
+
+15. **Measure Picker never composes Title/Description, unlike every other field it
+    owns.** `composeMeasureConfig()` auto-sets `xAxis.label`/`format`/`epochMinutesPerUnit`,
+    `yAxis.label` (units baked into the text, e.g. `"Speed (mph)"`), the yAxis column's
+    `customName`, `fetchMode`, `join`, and all the ReportRouteList self-binding wiring on
+    every Graph Type/Measure/Resolution/Comparison Mode pick (`composeMeasureConfig.js:142-199`)
+    — but never touches `display.title.title` or `display.description`. An author who builds
+    a report entirely through the Measure Picker (the intended, no-CLI path) still ends up with
+    a chart that has no heading and no caption; title/description are the one part of "nicely
+    formatted by default" that stays fully manual. Found 2026-07-31, user's stated position:
+    for reports specifically, these should "automatically work nicely," not need a manual
+    polish pass after every pick.
+
+    **Not yet implemented** — no fix attempted this session, flagged for a future pass.
+    Proposed direction (not designed in detail): default `title.title` from `measure.label`
+    (reusing the same string already used for `yAxis.label`/`customName`), optionally folding
+    in Resolution/Comparison Mode when non-default, mirroring the auto-generated base/comparison
+    subtitle difference graphs already get on `display.description` (see memory
+    `project_diff_graph_axis_and_label_clarity_fixed`). The real design problem: every other
+    composed field is structured/derived data with exactly one correct value, so
+    `applyMeasurePick` safely blind-overwrites it on every re-pick — title text is different,
+    since an author is likely to have deliberately renamed it (e.g. to something route-specific),
+    so a blind overwrite would clobber real authoring. Needs either (a) only set a default while
+    the title is still empty, or (b) track "is this still the auto-generated title" the same way
+    `display._measurePick` already tracks the last pick, so re-composition can tell a stale
+    default apart from an intentional edit.
+
+    **Related, already fixed 2026-07-31 (narrower, separate issue, not a substitute for this
+    gap)**: the Report Page template's own baked-in starter graph — the static state a brand
+    new report starts from, before any Measure Picker interaction at all — shipped with no
+    axis labels, no units anywhere, and no title. Fixed directly on the DB template row
+    (`2187021`) and on the one live page already open at the time (`page_40`/section `2197864`),
+    by hand-setting `xAxis.label`/`yAxis.label`/`customName`/`title.title` to match the Measure
+    Picker's own conventions. That fix only corrects the one-time starting point; it does nothing
+    for the *ongoing* Measure Picker flow going forward, which is what this gap (#15) is about.
+
 ## Suggested priority order
 
 Ranked by (fix cost) × (how often it bites someone), not file order above. #4, #5,
@@ -256,6 +325,16 @@ rationale below still reads coherently) — pick up at #7 next.
    the report-building gaps.
 8. ~~#11 peak-hour filtering~~ — **DONE 2026-07-28** (both halves; see gap #11's entry
    above, including the "inert for Map/Info Box" correction).
+9. **#13 Add Page no-redirect** and **#14 Settings-gear discoverability** — not ranked
+   against #1-#12 above on the same (fix cost) × (frequency) basis; they're cold-open
+   friction, hit once per new page/section rather than repeatedly during authoring, but
+   both are cheap and high-visibility since they're the very first thing a fresh author
+   sees. See `research/npmrds-reports/cold-open-ux-findings.md` for why this is a
+   separate axis from the rest of this list.
+10. **#15 Measure Picker title/description auto-fill** — high visibility (every report
+    graph built through the UI shows it) but needs a real design decision first (the
+    don't-clobber-a-custom-title problem, see gap #15's entry above) before it's cheap to
+    build — not a same-session fix.
 
 ## Testing checklist
 
@@ -291,7 +370,7 @@ rationale below still reads coherently) — pick up at #7 next.
       reverting the pick correctly cleared `invert` entirely rather than leaving
       `false`. Not yet ported to transportNY (same divergence noted for gap #10).
 - [ ] Gap #2 investigated 2026-07-27 (could not reproduce, dropped) — remaining gaps
-      (#1, #3, #6, #7, #9, #12) not started. Pick one gap per session per
+      (#1, #3, #6, #7, #9, #12, #13, #14, #15) not started. Pick one gap per session per
       `feedback_isolate_shared_code_changes` if the fix touches shared theme/library
       code (most of these do: `ReportRouteList/`, `MeasurePicker/`, the routecreation
       map component).
@@ -440,3 +519,42 @@ rationale below still reads coherently) — pick up at #7 next.
   via `dms raw delete` afterward; left the orphaned `reports_snap_2` row alone
   rather than risk a wrong delete on a split-table row (matches this project's
   existing caution around `reports_snap_2` row deletes).
+
+- **2026-07-31** — Triggered by Ryan asking why the tool still "feels incomplete"
+  despite this list steadily shrinking. Investigation (docs review + a live fresh-eyes
+  walkthrough of the actual click-path, not the spec/script path) found a second,
+  orthogonal axis of gaps — first-60-seconds cold-open friction, not measure/graph
+  parity — added here as gaps #13/#14. Full writeup, live evidence, and the broader
+  diagnosis (the team's real workflow moved to the spec/script path, so the UI stopped
+  getting fresh-eyes dogfooding, which is *why* this category survived undetected) in
+  `research/npmrds-reports/cold-open-ux-findings.md`. Scratch page
+  `converted_reports/page_40` (id `2197866`) left live as a reproduction artifact.
+
+- **2026-07-31 (later session)** — Ryan reported `page_40`'s default graph had raw
+  epoch-index x-axis ticks (`20`, `63`...) instead of clock time. Traced to the
+  "Report Page" DB template (`2187021`)'s baked-in starter AVL Graph section never
+  having `xAxis.format: "epoch_time"` set — fixed directly on the template row and on
+  `page_40`'s own section (`2197864`). Follow-up from the same screenshot: neither
+  axis had a label, the graph had no title, and no units appeared anywhere. Traced to
+  the same starter graph never having `xAxis.label`/`yAxis.label`/the yAxis column's
+  `customName`/`title.title` set either — fixed the same way (template row +
+  `page_40`), values (`"Time of Day"` / `"Speed (mph)"`) confirmed against a real,
+  already-correct report (NY-9D Beacon, section `2197361`) rather than invented.
+  Per user instruction, no other already-existing live pages were bulk-patched — only
+  the template (so new pages inherit it) and the one page already open.
+
+  Prompted a broader question from Ryan: does this level of polish (axis
+  labels/units/epoch formatting) actually happen automatically for an author using the
+  real UI + Measure Picker, or is it CLI/expert-only? Traced the actual code path
+  (`MeasurePicker/index.js`'s `applyMeasurePick`/`npmrdsMeasureMenu`,
+  `composeMeasureConfig.js`) — confirmed it's genuine, live-verified UI functionality:
+  picking Graph Type/Measure/Resolution/Comparison Mode from the Settings-drawer
+  Measure item auto-composes `xAxis`/`yAxis` label+format+units, `fetchMode`, `join`,
+  and the ReportRouteList wiring, gated only on the page being a report (a
+  `ReportRouteList` sibling section). But it never composes `title.title` or
+  `description` — confirmed by reading `composeMeasureConfig.js` line-by-line, no
+  patch touches either field. Ryan's response: that's a real gap and reports should
+  auto-populate title/description too — added as gap #15 above (design not attempted
+  this session: the "don't clobber an author's custom title" problem needs a decision
+  before implementation, since title text isn't a single-correct-value field like the
+  others this picker composes).

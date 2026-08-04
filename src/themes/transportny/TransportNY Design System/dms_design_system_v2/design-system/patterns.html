@@ -165,12 +165,13 @@
                   <span class="h-px w-10 bg-[#CA8A04]/50"></span>
                   <h2 class="font-display font-semibold text-[28px] text-[#0F1722]">KPI strip · 4-up with compliance</h2>
                 </div>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4">The KPI figure is <span class="tny-mono">statXL</span> — Oswald 52/600 with <span class="tny-mono">tabular-nums</span> — matching <a href="../pages/map-21.html" class="tny-link">map-21.html</a> § compliance exactly. <strong>It is not mono.</strong> An earlier revision of this pattern drew the figure as <span class="tny-mono">font-mono text-[40px]</span>, which resolved to no declared token and matched neither of its two consumers; the stat ladder is Oswald. Compact strips use <span class="tny-mono">statLG</span> (28) instead — see <a href="../pages/npmrds-home.html" class="tny-link">npmrds-home.html</a> § map21-glance.</p>
                 <div class="grid grid-cols-4 gap-4">
                   <!-- compliance -->
                   <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
                     <span class="inline-flex items-center gap-1.5 text-[12px] text-emerald-700 self-start"><span class="size-1.5 rounded-full bg-emerald-500"></span>meets target</span>
                     <div class="font-display font-medium text-[15px] text-[#0F1722] leading-tight">Interstate reliable</div>
-                    <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">84.2%</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">84.2%</div>
                     <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">target <span class="font-proxima normal-case tracking-normal text-[#0F1722] font-medium">80%</span></div>
                     <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
                       <div class="absolute inset-y-0 left-0 bg-emerald-500" style="width:84.2%"></div>
@@ -186,7 +187,7 @@
                   <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
                     <span class="inline-flex items-center gap-1.5 text-[12px] text-rose-700 self-start"><span class="size-1.5 rounded-full bg-rose-500"></span>below target</span>
                     <div class="font-display font-medium text-[15px] text-[#0F1722] leading-tight">Non-Interstate NHS</div>
-                    <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">73.8%</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">73.8%</div>
                     <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">target <span class="font-proxima normal-case tracking-normal text-[#0F1722] font-medium">76%</span></div>
                     <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
                       <div class="absolute inset-y-0 left-0 bg-red-500" style="width:73.8%"></div>
@@ -202,7 +203,7 @@
                   <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
                     <span class="inline-flex items-center gap-1.5 text-[12px] text-emerald-700 self-start"><span class="size-1.5 rounded-full bg-emerald-500"></span>meets target</span>
                     <div class="font-display font-medium text-[15px] text-[#0F1722] leading-tight">Truck TT reliability</div>
-                    <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">1.42</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">1.42</div>
                     <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">target <span class="font-proxima normal-case tracking-normal text-[#0F1722] font-medium">≤ 1.55</span></div>
                     <div class="inline-flex items-center gap-1 font-mono text-[11.5px] font-medium text-emerald-700">↓ -0.13</div>
                     <div class="mt-auto pt-2 border-t border-zinc-950/05">
@@ -212,7 +213,7 @@
                   <!-- KPI compact -->
                   <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 flex flex-col gap-3">
                     <div class="font-display font-medium text-[15px] text-[#0F1722] leading-tight">Peak-hour excessive delay</div>
-                    <div class="font-mono text-[40px] font-medium tabular-nums text-[#0F1722]">4.42M</div>
+                    <div class="font-display font-semibold text-[52px] leading-[1.02] tracking-tight tabular-nums text-[#0F1722]">4.42M</div>
                     <div class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">hr / yr · vs 4.0M target</div>
                     <div class="inline-flex items-center gap-1 font-mono text-[11.5px] font-medium text-rose-700">↑ +10.6% YoY</div>
                     <div class="mt-auto pt-2 border-t border-zinc-950/05">
@@ -464,6 +465,277 @@
                 </div>
               </div>
 
+              <!-- ════════ 10 · Data-freshness strip ════════ -->
+              <div class="col-span-12 mt-6" id="freshness" data-dms-section="freshness">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">10</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] text-[#0F1722]">Data-freshness strip</h2>
+                </div>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4">The brand's consistent “as of” signal, and one of the patterns easiest to lose because it reads as per-page chrome. Two sizes, one vocabulary: a <strong>one-line strip</strong> in the page header on every working page, and a <strong>promoted section</strong> on a category landing page where currency is the headline. Both are <span class="tny-mono">metaSM</span> with a status dot; the current, complete value is inked, the qualifiers stay muted. Live on all six NPMRDS pages (<a href="../pages/npmrds-home.html" class="tny-link">npmrds-home.html</a> § 01) and on <a href="../pages/tsmo-home.html" class="tny-link">tsmo-home.html</a> § 03.</p>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 space-y-5">
+                  <div>
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">one-line · page header, right-aligned under the action pair</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
+                      <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
+                      <span class="text-slate-300">·</span><span>jul 2026 partial</span>
+                      <span class="text-slate-300">·</span><span>since jan 2017</span>
+                    </div>
+                  </div>
+                  <div class="border-t border-zinc-950/05 pt-4">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">collapsed data row · a category landing page's single statement of its data</div>
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm px-4 py-3 flex flex-wrap items-center gap-x-8 gap-y-3">
+                      <div class="flex items-center gap-3">
+                        <span class="size-2 rounded-full bg-emerald-500 dot-pulse shrink-0"></span>
+                        <div>
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">data available</div>
+                          <div class="font-display font-medium text-[18px] leading-[1.25] tabular-nums text-[#0F1722]">Jan 1, 2017 &ndash; Jul 19, 2026</div>
+                        </div>
+                      </div>
+                      <span class="h-8 w-px bg-zinc-950/10 hidden sm:block"></span>
+                      <div>
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">observations</div>
+                        <div class="font-display font-medium text-[18px] leading-[1.25] tabular-nums text-[#0F1722]">14.38<span class="text-[12.5px] text-slate-500 ml-0.5">billion</span></div>
+                      </div>
+                      <span class="h-8 w-px bg-zinc-950/10 hidden sm:block"></span>
+                      <div>
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">road segments · 2026 map</div>
+                        <div class="font-display font-medium text-[18px] leading-[1.25] tabular-nums text-[#0F1722]">52,473<span class="text-[12.5px] text-slate-500 ml-1">TMCs</span></div>
+                      </div>
+                    </div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-2"><strong>Three labelled facts</strong>, each a mono label over a <span class="tny-mono">displayXS</span> value, divided by hairlines: <strong>what data you have</strong> (a labelled date range, not a bare one — the label is what makes a reader understand it is the system's extent rather than decoration), <strong>how much of it</strong>, and <strong>what network it is on</strong>. The network vintage <strong>must track the latest data year</strong> — showing a 2025 map beside 2026 data is a silent staleness bug, and the count really does move (2024: 52,029 · 2025: 52,157 · 2026: 52,473). A page carrying this row does <em>not</em> also carry the one-line freshness strip above — saying it twice, six inches apart, is what this variant exists to stop. Live on <a href="../pages/npmrds-home.html" class="tny-link">npmrds-home.html</a>. Product counts (reports in the library, saved routes, region count) deliberately do <em>not</em> belong here — they are not data facts, and each belongs to the section that owns it. <strong>This variant is a data-driven Card, not authored text</strong> — extent, volume and vintage are calc columns on the data itself, so the row cannot go stale. On ClickHouse the whole row is one query in ~0.02s even against a 14-billion-row table: <span class="tny-mono">min(date)</span>/<span class="tny-mono">max(date)</span>/<span class="tny-mono">count()</span> are answered from part metadata when the date column feeds the partition key. Authoring these as static strings is the mistake this note exists to prevent.</p>
+                  </div>
+
+                  <div class="border-t border-zinc-950/05 pt-4">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">promoted · one card per feed + a data-spine strip</div>
+                    <div class="grid grid-cols-12 gap-4">
+                      <div class="col-span-12 sm:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                        <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>complete month</div>
+                        <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">June 2026</div>
+                        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-0.5">Inked value = the number a reader may quote.</p>
+                      </div>
+                      <div class="col-span-12 sm:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                        <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500"><span class="size-1.5 rounded-full bg-[#E5A646]"></span>in progress</div>
+                        <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">July 2026 · partial</div>
+                        <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden mt-2"><div class="absolute inset-y-0 left-0 bg-[#E5A646]" style="width:62%"></div></div>
+                      </div>
+                      <div class="col-span-12 sm:col-span-4 rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                        <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500"><span class="size-1.5 rounded-full bg-[#1F3F8F]"></span>continuous history</div>
+                        <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Jan 2017 → Jul 2026</div>
+                        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-0.5">Amber dot = the qualifier, never the headline.</p>
+                      </div>
+                      <div class="col-span-12 rounded-[8px] border border-zinc-950/10 bg-white p-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+                        <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">the data spine</span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-[#37576B]"></span><span class="font-mono tabular-nums font-medium">14.38B</span>&nbsp;observations</span>
+                        <!-- The year qualifier is load-bearing: 52,157 is the 2025 TMC map.
+                             The current network is 52,473 (2026), so a bare "52,157 TMC
+                             segments" goes stale and then wrong. Always carry the year. -->
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-[#1F3F8F]"></span><span class="font-mono tabular-nums font-medium">52,473</span>&nbsp;TMC segments · 2026 map</span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><span class="size-2 rounded-full bg-emerald-500"></span><span class="font-mono tabular-nums font-medium">11</span>&nbsp;NYSDOT regions</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ════════ 11 · Search-first index with facet chips ════════ -->
+              <div class="col-span-12 mt-6" id="search-index" data-dms-section="search-index">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">11</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] text-[#0F1722]">Search-first index with facet chips</h2>
+                </div>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4">What to build instead of a paginated everything-table once a collection passes a few hundred rows. Search is the page's primary control, not a column filter: a <span class="tny-mono">Filter</span> with <span class="tny-mono">operation:'like'</span> writing <span class="tny-mono">searchParamKey:'search'</span>, plus an <span class="tny-mono">OR</span> group of <span class="tny-mono">like</span> leaves — one per searchable column. Facets are URL-bound page-variable toggles; an empty leaf drops out of the query, so “no chip” means “no constraint”. Chips read their state back off the URL, which is what makes a result set shareable. Live on <a href="../pages/npmrds-reports.html" class="tny-link">npmrds-reports.html</a> (869 rows).</p>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4"><strong>Two placements, one control.</strong> <em>Inline</em> — the card below — when the collection <em>is</em> the page. <em>In a dialog</em> when the page's first job is something else (creating, say) and finding is the second: a slim trigger row in the <span class="tny-mono">header</span> group opens a modal section group (<span class="tny-mono">isModal: true</span> + <span class="tny-mono">modalParamKey</span> + <span class="tny-mono">modalSize:'4xl'</span>) holding this same Filter plus a result list — the trigger is a static Card cell with a <span class="tny-mono">click_publish</span> provider whose <span class="tny-mono">paramKey</span> equals the group's <span class="tny-mono">modalParamKey</span> (<span class="tny-mono">modal-section-group.md</span>). Three consequences to design for, not around: the open flag is an <strong>action param</strong> and never reaches the URL, so a shared link arrives with the query live and the dialog shut — <strong>the closed trigger must report the query and its facets, with one click to reopen</strong>; the dialog <strong>does not paginate</strong>, it shows the top matches, scrolls, and states in its foot how many it withheld; and a modal only <em>behaves</em> as a modal on a published page (in edit mode the group renders inline, which is how authors reach it). <strong>Live</strong> on <a href="../pages/npmrds-reports.html#search-states" class="tny-link">npmrds-reports.html</a> — § 04 there is a state-driver card that puts the real dialog into each state, which beats drawing four pictures that can drift from the component.</p>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
+                  <label class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 block mb-2">Find a report</label>
+                  <div class="h-11 flex items-center gap-3 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 px-3">
+                    <!-- icon: Search --><svg class="size-[18px] text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+                    <span class="font-proxima text-[15px] text-[#0f1722] flex-1">bridge</span>
+                    <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+                  </div>
+                  <div class="mt-4 pt-4 border-t border-zinc-950/05 flex flex-wrap items-center gap-2">
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mr-1">narrow by</span>
+                    <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-[#37576B] bg-[#37576B] text-white font-mono text-[10.5px] uppercase tracking-[0.16em]"><!-- icon: Check --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 12.75 6 6 9-13.5"/></svg>boolean · on</button>
+                    <button class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 font-mono text-[10.5px] uppercase tracking-[0.16em]">boolean · off</button>
+                    <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-[#37576B] bg-[#37576B]/10 text-[#1f3450] font-mono text-[10.5px] uppercase tracking-[0.16em]">valued <span class="tabular-nums normal-case tracking-normal font-medium">8</span><!-- icon: XMark --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+                    <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 font-mono text-[10.5px] uppercase tracking-[0.16em]">unset <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                    <a class="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B]">clear all</a>
+                  </div>
+                  <div class="mt-4 pt-4 border-t border-zinc-950/05 rounded-[8px] border border-zinc-950/10 overflow-hidden">
+                    <div class="px-4 py-3 hover:bg-slate-50 flex items-start gap-3">
+                      <span class="mt-1 size-2.5 rounded-full bg-[#1F3F8F] shrink-0"></span>
+                      <div class="min-w-0 flex-1">
+                        <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Result row · title, badge, snippet, entity chips</div>
+                        <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">A row, not a card: at three hundred results a card grid forces scrolling that a row list doesn't. Cards are for the curated subset.</p>
+                      </div>
+                      <div class="text-right hidden sm:block shrink-0"><div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">updated</div><div class="font-mono text-[12px] tabular-nums text-slate-600">2026-07-14</div></div>
+                    </div>
+                    <div class="px-4 py-3 border-t border-zinc-950/05 flex items-center justify-between">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">showing 1–4 of 4</span>
+                      <div class="flex items-center gap-1"><span class="size-7 rounded flex items-center justify-center font-mono text-[12px] tabular-nums bg-[#37576B] text-white">1</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ════════ 12 · Map workbench with measure-context panel ════════ -->
+              <div class="col-span-12 mt-6" id="map-workbench" data-dms-section="map-workbench">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">12</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] text-[#0F1722]">Map workbench · controls left, context right</h2>
+                </div>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4">A full-bleed <span class="tny-mono">Map</span> section in a <span class="tny-mono">workbench</span> LayoutGroup with <span class="tny-mono">group.full_width:'show'</span> — <strong>both halves are required</strong>, the variant alone still caps at the brand width. Everything else floats over the canvas: <strong>controls top-left</strong>, <strong>context top-right</strong> (what the measure means, its unit, its formula, the distribution of the values actually on screen, the legend breaks, and last a <strong>get-to-a-segment</strong> group — the search plus any jump-to lists), <strong>chrome bottom-left</strong>, <strong>download bottom-right</strong>. <strong>The split is filter vs. select:</strong> a control that changes what the map draws goes left; a search that picks one feature out of what is already drawn goes right, with the other affordances that end at a popup. Panel chrome is the shipped component's, not invented: <span class="tny-mono">w-80</span> · <span class="tny-mono">rounded-lg</span> · <span class="tny-mono">bg-white/95</span> · a <strong>light</strong> <span class="tny-mono">h-10</span> header (<span class="tny-mono">bg-zinc-50/80</span>, title <span class="tny-mono">text-sm font-medium text-zinc-700</span>) — see <span class="tny-mono">ComponentRegistry/map/map.theme.js</span>. Reference prose stays in ordinary <span class="tny-mono">content</span> bands below the fold, not in a panel.</p>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4"><strong>Ordering inside the controls panel:</strong> the always-on filters first, then <strong>the measure selector with its dependent controls in the same tinted band</strong>, placed <strong>last</strong> so the tint runs to the panel's bottom edge (<span class="tny-mono">border-t</span> only — a bottom border doubles the panel's own). <strong>The band is grey, not brand amber:</strong> <span class="tny-mono">bg-zinc-100</span> + <span class="tny-mono">border-zinc-950/15</span>, group label <span class="tny-mono">text-zinc-600</span> against the <span class="tny-mono">zinc-500</span> of ordinary control labels. Amber was tried here and is too loud inside a dense panel — and it competes with <span class="tny-mono">blue-600</span> for meaning. <strong>Keep a control panel to one colour, and spend it on selection.</strong> Grouping is then carried by surface, border and label weight, which is what those are for. Splitting the measure from its own controls to opposite ends of the panel — an earlier revision of this pattern — makes the dependency invisible and is what this replaces. Live on <a href="../pages/npmrds-macro.html" class="tny-link">npmrds-macro.html</a> and <a href="../pages/freight-atlas-map.html" class="tny-link">freight-atlas-map.html</a>.</p>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="relative h-[360px] tny-map">
+                    <!-- decorative --><svg viewBox="0 0 900 360" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                      <path d="M 80 150 L 300 142 L 520 152 L 700 132 L 840 200" stroke="#1a9850" stroke-width="4" fill="none"/>
+                      <path d="M 520 152 L 540 240" stroke="#fc8d59" stroke-width="3.5" fill="none"/>
+                      <path d="M 300 142 L 290 60" stroke="#fee08b" stroke-width="3" fill="none"/>
+                    </svg>
+                    <!-- controls · production chrome (light header) + the amber measure group.
+                         Always-on first, then the measure WITH its dependants in one tint. -->
+                    <div class="absolute top-3 left-3 w-56 rounded-lg border border-zinc-950/10 bg-white/95 shadow-lg overflow-hidden">
+                      <div class="h-8 px-2.5 flex items-center gap-2 border-b border-zinc-950/10 bg-zinc-50/80"><span class="text-[12px] font-medium text-zinc-700 flex-1">controls</span><span class="px-1.5 h-4 inline-flex items-center rounded-full bg-blue-600 text-white text-[9px] font-semibold tabular-nums">2025</span></div>
+                      <div class="p-2.5 border-b border-zinc-950/05"><div class="text-[9px] font-semibold uppercase tracking-wider text-zinc-500">always-on filters</div><div class="mt-1 grid grid-cols-2 gap-1"><div class="h-6 rounded border border-zinc-950/10 bg-white"></div><div class="h-6 rounded border border-zinc-950/10 bg-white"></div><div class="h-6 rounded border border-zinc-950/10 bg-white"></div><div class="h-6 rounded border border-zinc-950/10 bg-white"></div></div></div>
+                      <!-- last block, so the tint runs to the panel's bottom edge: border-t only -->
+                      <div class="p-2.5 bg-zinc-100 border-t border-zinc-950/15">
+                        <div class="text-[9px] font-semibold uppercase tracking-wider text-zinc-600 mb-1">measure</div>
+                        <div class="h-7 px-2 flex items-center rounded-md border border-zinc-950/20 bg-white text-[11.5px] font-medium text-zinc-800">the measure</div>
+                        <div class="mt-2 pt-2 border-t border-zinc-950/10"><div class="flex items-center gap-2"><span class="text-[9px] font-semibold uppercase tracking-wider text-zinc-600">for it</span><span class="h-px flex-1 bg-zinc-950/10"></span></div><div class="mt-1 flex gap-1"><span class="h-5 px-1.5 rounded bg-blue-600 text-white text-[9px] font-medium uppercase inline-flex items-center">a</span><span class="h-5 px-1.5 rounded border border-zinc-950/10 bg-white text-zinc-600 text-[9px] uppercase inline-flex items-center">b</span></div></div>
+                      </div>
+                    </div>
+                    <div class="absolute top-3 right-3 w-56 rounded-lg border border-zinc-950/10 bg-white/95 shadow-lg overflow-hidden">
+                      <div class="h-8 px-2.5 flex items-center gap-2 border-b border-zinc-950/10 bg-zinc-50/80"><!-- icon: Info --><svg class="size-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg><span class="text-[12px] font-medium text-zinc-700 flex-1">context</span><button class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 text-[9px] uppercase tracking-wider text-zinc-600">data</button></div>
+                      <div class="p-2.5 border-b border-zinc-950/05"><p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600">Definition, unit and formula for the measure currently drawn.</p></div>
+                      <div class="p-2.5 border-b border-zinc-950/05"><div class="text-[9px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">value distribution</div><!-- decorative --><svg viewBox="0 0 200 40" class="w-full h-[40px] block"><rect x="4" y="16" width="20" height="24" fill="#1a9850"/><rect x="26" y="6" width="20" height="34" fill="#91cf60"/><rect x="48" y="12" width="20" height="28" fill="#91cf60"/><rect x="70" y="22" width="20" height="18" fill="#fee08b"/><rect x="92" y="28" width="20" height="12" fill="#fc8d59"/><rect x="114" y="33" width="20" height="7" fill="#d73027"/><line x1="86" y1="0" x2="86" y2="40" stroke="#0F1722" stroke-dasharray="3 2"/></svg></div>
+                      <div class="p-2.5 border-b border-zinc-950/05"><div class="text-[9px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">legend · server-side breaks</div><div class="flex items-center gap-0.5"><span class="block w-6 h-2 rounded-sm bg-[#1a9850]"></span><span class="block w-6 h-2 rounded-sm bg-[#91cf60]"></span><span class="block w-6 h-2 rounded-sm bg-[#fee08b]"></span><span class="block w-6 h-2 rounded-sm bg-[#fc8d59]"></span><span class="block w-6 h-2 rounded-sm bg-[#d73027]"></span></div></div>
+                      <div class="p-2.5 border-t border-zinc-950/05"><div class="text-[9px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">get to a segment</div><div class="h-6 px-2 flex items-center gap-1.5 rounded border border-zinc-950/10 bg-zinc-50"><!-- icon: Search --><svg class="size-3 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="text-[10px] text-zinc-400 truncate">search · selects, doesn't filter</span></div></div>
+                    </div>
+                    <div class="absolute bottom-3 left-3 h-8 px-3 rounded-[8px] border border-zinc-950/10 bg-white shadow-lg flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500"><span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>freshness strip</span><span class="text-slate-300">·</span><span>basemap</span><span class="text-slate-300">·</span><span>zoom-to</span></div>
+                    <div class="absolute bottom-3 right-3 h-8 px-3 rounded-[8px] border border-zinc-950/10 bg-[#12181F] shadow-lg flex items-center gap-2"><!-- icon: Download --><svg class="size-3.5 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-white text-[11px] tracking-wide">download</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ════════ 13 · Report canvas · route rail + graph-card grid ════════ -->
+              <div class="col-span-12 mt-6" id="report-canvas" data-dms-section="report-canvas">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">13</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] text-[#0F1722]">Report canvas · rail + graph-card grid</h2>
+                </div>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4">A page whose sections all bind to one selection held in a rail. The rail is a section in the <span class="tny-mono">sidebar</span> group and may host authored content beside the component; the rail↔canvas column split lives in the <strong>pages theme</strong> (<span class="tny-mono">pages.sectionGroup</span>), not in the shared <span class="tny-mono">layoutGroup</span>, and the wrapper must be <span class="tny-mono">items-stretch</span> — <strong>not</strong> <span class="tny-mono">items-start</span> — or the rail column collapses to content height and its inner <span class="tny-mono">sticky</span> has no room to pin (<span class="tny-mono">adding-an-in-page-nav-rail.md</span> is explicit; an earlier revision of this sentence had it backwards and the mockup's rail was measurably inert). Wrap <em>all</em> rail blocks in ONE sticky container — two siblings each pinned at the same <span class="tny-mono">top</span> overlap. <strong>The graph card:</strong> one-line header — title in <span class="tny-mono">cardTitleSM</span> (15/500, rendered sentence-case; sentence-case is a legal text-transform modifier, so no new token) · quick-control pills · kebab — no section title above it; legend <em>below</em> the plot, left-aligned, never in the right gutter; exactly one muted attribution line, truncated not wrapped. Live on <a href="../pages/npmrds-report.html" class="tny-link">npmrds-report.html</a>.</p>
+                <div class="grid grid-cols-12 gap-4 items-start">
+                  <div class="col-span-12 md:col-span-4">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="h-9 px-3 flex items-center gap-2 bg-[#12181F]"><span class="font-display uppercase text-white text-[12px] tracking-wide flex-1">selection rail</span><span class="px-1.5 h-4 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[9px] tabular-nums">4</span></div>
+                      <div class="divide-y divide-zinc-950/05">
+                        <div class="px-3 py-2">
+                          <div class="flex items-center gap-2 min-w-0"><span class="size-3 rounded-full bg-[#1F3F8F] shrink-0"></span><span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="A deliberately long descriptive route name that must truncate, not wrap">Long descriptive name · truncates</span></div>
+                          <div class="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums mt-0.5">9 units · 2.0 mi · date range</div>
+                          <div class="pl-5 mt-1.5 flex gap-1"><span class="h-5 px-1.5 inline-flex items-center rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 1</span><span class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider">graph 2</span></div>
+                        </div>
+                        <div class="px-3 py-2">
+                          <div class="flex items-center gap-2 min-w-0"><span class="size-3 rounded-full bg-[#E5A646] shrink-0"></span><span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0">Second selection</span><span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0">unused</span></div>
+                          <div class="pl-5 font-proxima text-[11px] text-slate-500 mt-1">Assigned to nothing yet — say so, don't hide it.</div>
+                        </div>
+                      </div>
+                      <div class="px-3 py-2 border-t border-zinc-950/05 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">view mode · read-only</div>
+                    </div>
+                  </div>
+                  <div class="col-span-12 md:col-span-8">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                      <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                        <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">The card header is the title</span>
+                        <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 1</span>
+                        <span class="flex-1"></span>
+                        <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white font-mono text-[10px] uppercase tracking-wider text-slate-600">measure <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white font-mono text-[10px] uppercase tracking-wider text-slate-600">mode <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                      </div>
+                      <div class="px-4 pt-4">
+                        <!-- decorative --><svg viewBox="0 0 560 130" class="w-full h-[130px] block">
+                          <line x1="34" y1="8" x2="34" y2="108" stroke="#e2e8f0"/><line x1="34" y1="108" x2="552" y2="108" stroke="#cbd5e1"/><line x1="34" y1="58" x2="552" y2="58" stroke="#f1f5f9"/>
+                          <path d="M 44 94 L 130 84 L 210 54 L 300 70 L 390 34 L 470 60 L 545 90" fill="none" stroke="#1F3F8F" stroke-width="2"/>
+                          <path d="M 44 98 L 130 90 L 210 68 L 300 78 L 390 54 L 470 74 L 545 96" fill="none" stroke="#E5A646" stroke-width="2"/>
+                        </svg>
+                      </div>
+                      <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#1F3F8F]"></span>legend sits below the plot</span>
+                        <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#E5A646]"></span>left-aligned, route-coloured</span>
+                      </div>
+                      <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">one attribution line · source · view · as-of · truncated, never wrapped</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ════════ 14 · Preview plate · the shape of a report ════════ -->
+              <div class="col-span-12 mt-6" id="preview-plate" data-dms-section="preview-plate">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">14</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] text-[#0F1722]">Preview plate · the shape of a report</h2>
+                </div>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4">A card that offers a report — a template to start from, or a finished example to read — carries a <strong>4:5 plate tile at 1/4 of the card width, on the left</strong>, with the text to its right. It answers “how much report is this, and what's in it” before a word is read. <strong>Size is the whole trick:</strong> the first cut ran the plate full-width above the text at 16:10 and it dominated the card, pushing the description below the fold and stretching the band to twice its necessary height — the legacy home page's 64px tile had the proportion right all along. The mono line under the title names the mix, truncated with a <span class="tny-mono">title</span> tooltip (the tile carries the same tooltip). <strong>Content, in preference order:</strong> a captured <span class="tny-mono">thumbnail</span> image cell when one exists at usable resolution → a <strong>layout-derived shape</strong> drawn from the report's own section grid → the “no preview” tile. The legacy NPMRDS thumbnails are real but are <strong>50 × 50 px</strong> base64 PNGs (measured), which is a 64px tile, not a plate — so the shape is today's default and a re-capture is an escalation, not an assumption. Row lists get no plate: a 56px chip beside a title you already know earns nothing.
+                  <strong>Grouping:</strong> past about six cards a flat shelf stops being scannable — split it into typed sub-sections, each a <span class="tny-mono">col-span-12</span> lexical head (numeral · name · rule · count, then one or two lines on when to reach for that type) followed by its cards as <em>siblings in the same band grid</em>. A full-width section forces the next row, so the groups separate themselves with no nesting (contract: a wrapper that contains sections is a band, not a section). The head's copy is also what lets each card's description stay about the template rather than about the family, and it retires the per-card category chip. Live on <a href="../pages/npmrds-reports.html#templates" class="tny-link">npmrds-reports.html</a> (16 plates).</p>
+                <div class="grid grid-cols-12 gap-4">
+                  <div class="col-span-12 md:col-span-4">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5">
+                      <div class="w-1/4 shrink-0">
+                        <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="2 map · 4 bar · 1 line · 3 grid · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="22.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="24.4" width="48.8" height="12.2" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="24.4" width="48.8" height="12.2" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="37.8" width="98.8" height="9.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="48.2" width="98.8" height="15.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="64.6" width="98.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="76.5" width="98.8" height="21.1" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="98.8" width="32.1" height="15.2" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="33.9" y="98.8" width="32.1" height="15.2" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="67.3" y="98.8" width="32.1" height="15.2" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="115.2" width="98.8" height="9.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/></svg></div>
+                      </div>
+                      <div class="flex-1 min-w-0 flex flex-col">
+                        <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-[#CA8A04]/30 bg-[#CA8A04]/8 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">category</span> <span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">difficulty</span></div>
+                        <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Plate · derived shape</div>
+                        <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="2 map · 4 bar · 1 line · 3 grid · 1 table">2 map · 4 bar · 1 line · 3 grid · 1 table</div>
+                        <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">Column spans are true to the stored layout; row heights are scaled so the whole report fits, which is what makes density comparable across cards.</p>
+                        <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                          <span class="tabular-nums">1 route · 11 graphs</span>
+                          <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-span-12 md:col-span-4">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5">
+                      <div class="w-1/4 shrink-0">
+                        <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1 flex items-center justify-center">
+                          <span class="text-slate-300"><!-- icon: Report --><svg class="size-5" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg></span>
+                        </div>
+                      </div>
+                      <div class="flex-1 min-w-0 flex flex-col">
+                        <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">no preview</span></div>
+                        <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Plate · empty</div>
+                        <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1">no layout recorded</div>
+                        <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-400 mt-1.5 flex-1">Neither a thumbnail nor a layout to derive from. The tile keeps its footprint so the row stays on rhythm, and says what is missing rather than showing a broken image.</p>
+                        <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                          <span class="tabular-nums">— · —</span>
+                          <span class="ml-auto shrink-0 text-[#1F3F8F]">open →</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-span-12 md:col-span-4">
+                    <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full p-5">
+                      <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">family fills · large areas only</div>
+                      <div class="flex flex-col gap-2 mb-4">
+                        <span class="inline-flex items-center gap-2 font-proxima text-[12.5px] text-slate-700"><span class="size-3 rounded-sm border border-zinc-950/10 bg-[#37576B]/55"></span>map · steel .45</span>
+                        <span class="inline-flex items-center gap-2 font-proxima text-[12.5px] text-slate-700"><span class="size-3 rounded-sm border border-zinc-950/10 bg-[#E5A646]/55"></span>bar · cat-2 .38</span>
+                        <span class="inline-flex items-center gap-2 font-proxima text-[12.5px] text-slate-700"><span class="size-3 rounded-sm border border-zinc-950/10 bg-[#94C24E]/55"></span>line · cat-3 .38</span>
+                        <span class="inline-flex items-center gap-2 font-proxima text-[12.5px] text-slate-700"><span class="size-3 rounded-sm border border-zinc-950/10 bg-[#6F6F6F]/55"></span>grid · cat-1 .30</span>
+                        <span class="inline-flex items-center gap-2 font-proxima text-[12.5px] text-slate-700"><span class="size-3 rounded-sm border border-zinc-950/10 bg-[#94a3b8]/55"></span>table · compare · slate .32</span>
+                      </div>
+                      <p class="font-proxima text-[12.5px] text-slate-600 leading-[1.55]">The categorical set is specified for series <em>marks</em>. As a large-area fill it must be dropped to .30–.45 or a wall of plates reads as confetti — cat-4 magenta is dropped entirely and comparison boxes join the table family. Legend swatches invert the rule: at 10px they need <strong>.55 and a hairline border</strong> to be visible at all. Same hues, two saturations, stated on purpose.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               </div><!-- /min-w-0 inner content grid -->
 
               <!-- TOC aside · sticky right rail -->
@@ -479,6 +751,11 @@
                   <a href="#archetypes" class="tny-toc-item">Page archetypes</a>
                   <a href="#dataset-catalog" class="tny-toc-item">Dataset catalog</a>
                   <a href="#source-page" class="tny-toc-item">Source page</a>
+                  <a href="#freshness" class="tny-toc-item">Data freshness</a>
+                  <a href="#search-index" class="tny-toc-item">Search-first index</a>
+                  <a href="#map-workbench" class="tny-toc-item">Map workbench</a>
+                  <a href="#report-canvas" class="tny-toc-item">Report canvas</a>
+                  <a href="#preview-plate" class="tny-toc-item">Preview plate</a>
                 </div>
               </aside>
 

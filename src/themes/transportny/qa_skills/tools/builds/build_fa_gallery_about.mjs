@@ -93,7 +93,8 @@ function build(PAGE, SLUG, groups, sections) {
     // live status chips (aggregate over the whole dataset)
     { group: G.header, size: "12", et: "Card", data: dwG({
       columns: [
-        chip(`((count(*) filter (where (data->>'status') in ('available','partial')))::text || ' live in the atlas') as chip_live`, "chip_live"),
+        // #196 (2026-07-31): always "Freight Atlas", never bare "Atlas" — client-reported
+        chip(`((count(*) filter (where (data->>'status') in ('available','partial')))::text || ' live in the Freight Atlas') as chip_live`, "chip_live"),
         // NB: the copy "more as their data lands" contains " as " — the column-name parser
         // splits on the FIRST ' as ' (splitColNameOnAS), so the literal is assembled via
         // chr(32) to keep 'as' un-spaced in the raw SQL string
@@ -135,8 +136,8 @@ function build(PAGE, SLUG, groups, sections) {
     ]),
     { group: G.content, size: "12", border: "full", data: lexical(
       styled("displaySM", text("Don't see your view? Build it.")),
-      styled("proseSM", text("Open the full Atlas, toggle any of the 39 layers across all five modes, set your filters, then copy the share link to save your own preset.")),
-      para(button("Open full Atlas →", "/freight_atlas", "default")),
+      styled("proseSM", text("Open the full Freight Atlas, toggle any of the 39 layers across all five modes, set your filters, then copy the share link to save your own preset.")),
+      para(button("Open full Freight Atlas →", "/freight_atlas", "default")),   // #196: linkText only, path untouched
     )},
   ];
   build("2174664", "maps_gallery", groups, sections);
@@ -167,21 +168,24 @@ function build(PAGE, SLUG, groups, sections) {
     { group: A.header, size: "12", data: lexical(
       styled("metaSM", text("Freight Atlas  /  About & The Plan")),
       styled("kicker", text("// the living version of the plan")),
-      styled("displayXL", text("About & The Plan"), text(".", 0, GOLD)),
-      styled("prose", text("The Atlas is the interactive companion to the 2024 New York State Freight Plan. Here's the plan itself — six goals, twenty strategies — the full report library, what changed since 2019, and how to get involved.")),
+      // #196 (2026-07-31, client): H1 is the client's exact wording. The SIDENAV item
+      // (fa_nav_about in pattern 2175436) and the breadcrumb above stay short — the rail is
+      // narrow and the long form does not fit. Flagged for the owner to overrule.
+      styled("displayXL", text("Freight Atlas and NYS Freight Plan"), text(".", 0, GOLD)),
+      styled("prose", text("The Freight Atlas is the interactive companion to the 2024 New York State Freight Plan. Here's the plan itself — six goals, twenty strategies — the full report library, what changed since 2019, and how to get involved.")),
     )},
     // §01 Six goals
     { group: A.content, size: "12", navLabel: "Six goals", data: lexical(styled("kicker", text("// 01")), head("h2", "Six goals")) },
     ...goals.map(([c, n, d]) => ({ group: A.content, size: "4", border: "full", data: goalCard(c, n, d) })),
     { group: A.content, size: "12", data: lexical(
-      styled("proseSM", text("20 strategies across 5 focus areas — Planning & Information Sharing, Operations & Maintenance, Technology, System Investment, and Engagement & Collaboration — implement the goals, each mapped to the six in a matrix. The Atlas itself is Strategy 3 (centralized data platform) and Strategy 18 (public education).")),
+      styled("proseSM", text("20 strategies across 5 focus areas — Planning & Information Sharing, Operations & Maintenance, Technology, System Investment, and Engagement & Collaboration — implement the goals, each mapped to the six in a matrix. The Freight Atlas itself is Strategy 3 (centralized data platform) and Strategy 18 (public education).")),
     )},
     // §02 Report library
     { group: A.content, size: "12", navLabel: "The report library", data: lexical(styled("kicker", text("// 02")), head("h2", "The report library")) },
     { group: A.content, size: "12", border: "full", data: lexical(
       libRow("2024 NYS Freight Plan — main report", "PDF · 130 pp · Aug 2024 · CPCS", "download"),
       libRow("Executive Summary", "PDF · 20 pp", "download"),
-      libRow("Appendix C–F · Asset inventory · FCHN · Truck Parking · Investment", "PDF · 4 appendices · the Atlas catalog backbone", "download"),
+      libRow("Appendix C–F · Asset inventory · FCHN · Truck Parking · Investment", "PDF · 4 appendices · the Freight Atlas catalog backbone", "download"),
       libRow("Freight Working Group — 4 meeting decks", "PDF · Oct 2023 – Feb 2024", "download"),
       libRow("2019 NYS Freight Plan — archive", "PDF · superseded · + Tech White Paper", "archive"),
       hr(),
@@ -194,12 +198,12 @@ function build(PAGE, SLUG, groups, sections) {
       changedRow("Networks", "FCHN/FCRN created", "FCHN +4,497 mi · Core Maritime/Air"),
       changedRow("Truck parking", "Named as an issue", "Full study (216+47 · ATRI clusters)"),
       changedRow("Equity / climate", "GHG goals", "CLCPA + ETC index overlays"),
-      changedRow("The Atlas", "“Web portal” aspiration", "AVAIL build mandate (this site)"),
+      changedRow("The Freight Atlas", "“Web portal” aspiration", "AVAIL build mandate (this site)"),
     )},
     // §04 About
     { group: A.content, size: "12", navLabel: "About", data: lexical(styled("kicker", text("// 04")), head("h2", "About")) },
     { group: A.content, size: "8", border: "full", data: lexical(
-      styled("prose", text("The NYS Freight Atlas is produced by the New York State Department of Transportation in partnership with the University at Albany's Albany Visualization and Informatics Lab (AVAIL), which the 2024 plan names as the team modernizing the Freight Web Atlas. The Atlas turns the plan's analysis into an interactive, downloadable, metadata-rich public platform for the state's MPOs, researchers, and residents.")),
+      styled("prose", text("The NYS Freight Atlas is produced by the New York State Department of Transportation in partnership with the University at Albany's Albany Visualization and Informatics Lab (AVAIL), which the 2024 plan names as the team modernizing the Freight Web Atlas. The Freight Atlas turns the plan's analysis into an interactive, downloadable, metadata-rich public platform for the state's MPOs, researchers, and residents.")),
     )},
     // Get involved — buttons removed (Alex 2026-07-16, closes ticket #134): the public-comment
     // map and dataset-request surfaces don't exist; dead '#' buttons only reset scroll. Route

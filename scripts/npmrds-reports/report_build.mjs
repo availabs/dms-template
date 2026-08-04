@@ -731,7 +731,23 @@ try {
     // GraphTitle) — already wired on the render side (and already written, to
     // a dead end, by convert_old_reports.py's old-caption handling); this is
     // the missing write path from a fresh spec-built graph.
-    if (g.caption) state.display.description = g.caption;
+    if (g.caption) {
+      state.display.description = g.caption;
+    }
+    else if (g.comparisonMode === 'difference') {
+      // A difference chart's title alone ("Northbound Travel Time Difference")
+      // doesn't say which route is the base and which is the comparison —
+      // the single plotted series is a delta, and neither raw value survives
+      // to the client (see clickhouse.js's diff-mode join), so nothing else on
+      // the page states it either. Auto-fill the same base-vs-comparison
+      // wording the query itself computes (anchor − compare, or the reverse
+      // under `_invert`) so a spec that skips `caption` still gets a
+      // self-explanatory subtitle instead of none.
+      const anchorRoute = g._invert ? g._assigned[1] : g._assigned[0];
+      const compareRoutes = g._invert ? [g._assigned[0]] : g._assigned.slice(1);
+      state.display.description =
+        `Base: ${anchorRoute.name} · Comparison: ${compareRoutes.map(r => r.name).join(', ')}`;
+    }
     return state;
   });
 } finally {

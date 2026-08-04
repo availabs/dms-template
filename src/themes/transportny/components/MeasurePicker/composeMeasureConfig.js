@@ -1,9 +1,9 @@
 /**
  * NPMRDS "Measure" picker — composition layer.
  *
- * Reads the shared, plain-data vocabulary (data-types/npmrds_graph_vocabulary/
- * vocabulary.json — see that directory's README for the field reference and
- * the Python-side consumer) and composes a live Graph/AVL Graph section's
+ * Reads the shared, plain-data vocabulary (./vocabulary.json — see the sibling
+ * README.md for the field reference and the Python-side consumer) and composes
+ * a live Graph/AVL Graph section's
  * `columns`/`join`/`comparisonSeries.combine`/`display` color config from an
  * author's Graph Type + Measure + Resolution + Comparison Mode picks.
  *
@@ -15,7 +15,12 @@
  * (Workstream 2) for the full design record.
  */
 
-import vocab from '../../../../../data-types/npmrds_graph_vocabulary/vocabulary.json';
+// Lives HERE, inside the theme folder, deliberately: the theme folder is the unit that gets synced
+// into transportNY (see planning/skills/sync-transportnyv2-theme). While this sat in
+// dms-template/data-types/npmrds_graph_vocabulary/ the reference climbed five levels out of src/,
+// which no downstream project can resolve — it broke transportNY's build on first sync. Keep it a
+// sibling; do not move it back out of the synced tree.
+import vocab from './vocabulary.json';
 
 export const GRAPH_VOCAB = vocab;
 
@@ -116,7 +121,15 @@ function buildJoin(measure) {
 
 function buildDiffColors(measure, graphType) {
     const { defaultColorRange } = vocab.comparisonModes.difference;
-    const value = measure.reverseColors ? [...defaultColorRange].reverse() : [...defaultColorRange];
+    // measure.reverseColors is validated correct for RAW-VALUE coloring (e.g. GridGraph
+    // cells by absolute travel time — round 51's fix, old dataTypes.js) but a difference
+    // graph colors a before-minus-after DELTA, not a raw value. Going from "which raw
+    // value is good" to "which delta sign is good" inverts the polarity for every measure
+    // (e.g. travelTime: lower raw value is good, but a POSITIVE delta means time FELL —
+    // also good — so the delta's good end is the opposite of the raw value's good end).
+    // So diff-mode reversal is the negation of the raw flag, not the flag itself. See
+    // "Finding: difference-graph color scale reads backwards" in report-spec-and-build-script.md.
+    const value = measure.reverseColors ? [...defaultColorRange] : [...defaultColorRange].reverse();
     const colors = { type: 'palette', value, byValueSymmetric: true };
     // GridGraph is inherently colored by value already; only BarGraph needs
     // the explicit byValue flag (see vocabulary README's comparisonModes

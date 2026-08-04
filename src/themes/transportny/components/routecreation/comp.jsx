@@ -31,6 +31,7 @@ const INITIAL_MODAL_STATE = {
   open: false,
   name: "",
   description: "",
+  tags: [],
   id: null,
 };
 
@@ -165,6 +166,7 @@ const Comp = ({ state, setState, map }) => {
       // this always writes "{}", matching route_build.py's CLI equivalent exactly.
       metadata: JSON.stringify({}),
       tmc_array: JSON.stringify(tmc_array || []),
+      tags: JSON.stringify(modalState.tags || []),
       updated_at: formattedTimestamp,
       ...(!modalState.id && { created_at: formattedTimestamp }),
     };
@@ -208,6 +210,7 @@ const Comp = ({ state, setState, map }) => {
       const NAME_COL = "data->>'name' as name";
       const DESC_COL = "data->>'description' as description";
       const TMC_COL = "data->>'tmc_array' as tmc_array";
+      const TAGS_COL = "data->>'tags' as tags";
       const loadRouteDataPath = [
         "uda",
         `${app}+${INTERNAL_ROUTES_TYPE}`,
@@ -215,7 +218,7 @@ const Comp = ({ state, setState, map }) => {
         INTERNAL_ROUTES_VIEW_ID,
         "dataById",
         [routeIdFilterValue],
-        [NAME_COL, DESC_COL, TMC_COL],
+        [NAME_COL, DESC_COL, TMC_COL, TAGS_COL],
       ];
 
       falcor.get(loadRouteDataPath).then((res) => {
@@ -228,6 +231,7 @@ const Comp = ({ state, setState, map }) => {
           ...prev,
           name: curRouteFromApi[NAME_COL],
           description: curRouteFromApi[DESC_COL],
+          tags: curRouteFromApi[TAGS_COL] ? JSON.parse(curRouteFromApi[TAGS_COL]) : [],
           id: routeIdFilterValue,
         }));
         const geographyFilter = [{ display_name: "tmc", column_name: "tmc", values: curRouteTmcArray, zoomToFilterBounds: true }];
