@@ -179,10 +179,17 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     const epochMinutesPerUnit = resolution?.xAxis?.epochMinutesPerUnit;
     if (epochMinutesPerUnit) {
         displayPatch.xAxis = { format: 'epoch_time', epochMinutesPerUnit, label: 'Time of Day' };
+    } else if (resolutionKey === 'weekday') {
+        // "weekday" groups by a raw ISO 1-7 day-of-week integer (see
+        // convert_old_reports.py's WEEKDAY_EXPR) — same "ticks render as a raw
+        // integer without a named formatFn" gap epoch_time exists to fix above,
+        // just for the day-bucket axis instead of the time-of-day one (live-reported
+        // bug 2026-08-04: ticks showed "0 1 2" instead of day names).
+        displayPatch.xAxis = { format: 'day_of_week', epochMinutesPerUnit: null, label: 'Day of Week' };
     } else {
-        // Explicitly clear a stale epoch format when switching to a date-based
-        // resolution — applyMeasurePick MERGES display.xAxis, so without this a
-        // previously-picked 'epoch_time' would survive onto a day/month graph
+        // Explicitly clear a stale epoch format when switching to a plain
+        // date-based resolution — applyMeasurePick MERGES display.xAxis, so without
+        // this a previously-picked 'epoch_time' would survive onto a day/month graph
         // and label date buckets as clock times.
         displayPatch.xAxis = { format: null, epochMinutesPerUnit: null };
     }

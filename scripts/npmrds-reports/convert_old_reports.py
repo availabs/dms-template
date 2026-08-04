@@ -2226,6 +2226,15 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         existing_xaxis_label = (existing_display.get("xAxis") or {}).get("label")
         epoch_label_drift = (spec["xAxis"] == "epoch" and
                              existing_xaxis_label != "Time of Day")
+        # Same lazy-drift idiom as epoch_format_drift/epoch_label_drift, for the
+        # "weekday" resolution's raw ISO 1-7 xAxis (live-reported bug 2026-08-04:
+        # ticks show "0 1 2" instead of day names).
+        is_weekday_xaxis = (isinstance(spec["xAxis"], dict) and
+                            spec["xAxis"].get("name") == WEEKDAY_EXPR)
+        weekday_format_drift = (is_weekday_xaxis and
+                                existing_xaxis_format != "day_of_week")
+        weekday_label_drift = (is_weekday_xaxis and
+                               existing_xaxis_label != "Day of Week")
         expected_yaxis_label = (spec["yAxis"].get("customName")
                                 if spec["yAxis"].get("target", "yAxis") == "yAxis" else None)
         existing_yaxis_label = (existing_display.get("yAxis") or {}).get("label")
@@ -2234,7 +2243,8 @@ def ensure_graph_templates(needed_names, templates, dry_run):
             continue  # no yAxis-target column to compare against at all
         yaxis_drift = cols[y_idx] != dict(spec["yAxis"])
         if not (yaxis_drift or display_drift or combine_drift or join_drift
-                or epoch_format_drift or epoch_label_drift or yaxis_label_drift):
+                or epoch_format_drift or epoch_label_drift or yaxis_label_drift
+                or weekday_format_drift or weekday_label_drift):
             continue  # no drift
         cols[y_idx] = dict(spec["yAxis"])
         for k, v in display_patch.items():
@@ -2250,6 +2260,12 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         if epoch_label_drift:
             existing_state.setdefault("display", {}) \
                 .setdefault("xAxis", {})["label"] = "Time of Day"
+        if weekday_format_drift:
+            existing_state.setdefault("display", {}) \
+                .setdefault("xAxis", {})["format"] = "day_of_week"
+        if weekday_label_drift:
+            existing_state.setdefault("display", {}) \
+                .setdefault("xAxis", {})["label"] = "Day of Week"
         if yaxis_label_drift:
             existing_state.setdefault("display", {}) \
                 .setdefault("yAxis", {})["label"] = expected_yaxis_label
@@ -2259,6 +2275,8 @@ def ensure_graph_templates(needed_names, templates, dry_run):
             ("yAxis expr", yaxis_drift), ("display", display_drift),
             ("comparisonSeries.combine", combine_drift), ("join", join_drift),
             ("xAxis format", epoch_format_drift), ("xAxis label", epoch_label_drift),
+            ("weekday xAxis format", weekday_format_drift),
+            ("weekday xAxis label", weekday_label_drift),
             ("yAxis label", yaxis_label_drift),
         ) if fired)
         if dry_run:
@@ -2331,6 +2349,13 @@ def ensure_graph_templates(needed_names, templates, dry_run):
         if spec["xAxis"] == "epoch":
             state["display"].setdefault("xAxis", {})["format"] = "epoch_time"
             state["display"]["xAxis"]["label"] = "Time of Day"
+        # "weekday" resolution's xAxis is WEEKDAY_EXPR (a raw ISO 1-7 day-of-week
+        # integer, see WEEKDAY_EXPR's comment) — same "ticks render as a raw
+        # integer without a named formatFn" issue as epoch above, fixed the same
+        # way (live-reported bug 2026-08-04: "0 1 2" instead of day names).
+        elif isinstance(spec["xAxis"], dict) and spec["xAxis"].get("name") == WEEKDAY_EXPR:
+            state["display"].setdefault("xAxis", {})["format"] = "day_of_week"
+            state["display"]["xAxis"]["label"] = "Day of Week"
         # Round 62: y-axis caption (user-reported 2026-07-13, "no axis label on
         # any report" — distinct from tick labels, which already render fine;
         # this is the axis TITLE describing what's plotted, e.g. "Hours of
