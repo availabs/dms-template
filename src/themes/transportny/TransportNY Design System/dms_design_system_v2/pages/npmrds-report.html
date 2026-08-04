@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NY-9D Beacon Signal Study · Report · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  NPMRDS CATEGORY · PAGE 6 of 6 — the individual report
+  ════════════════════════════════════════════════════════════════════
+  A report IS a page (npmrds_sub Report Page template, row 2187021). The left rail is the
+  ReportRouteList component; every chart is an ordinary page section that self-binds to the
+  routes assigned to it via a comparison_series subscriber carrying paramKey:'$self'.
+  See src/themes/transportny/components/ReportRouteList/README.md before changing anything —
+  the behaviour is fixed; this page designs its APPEARANCE.
+
+  TRANSCRIBED FROM three live pages (npmrds_sub, parent 2188366):
+    2195810 page_13_13  "NY-9D Beacon Signal Study"  ·  5 sections — the page drawn here
+    2194949 Tappan Zee Cashless Toll v2              · 10 sections, the full component mix
+    2192364 Year Over Year (Beginner)                · 21 sections, the density stress case
+  Component vocabulary observed: ReportRouteList (group `sidebar`) · Map ("Route Map, Speed")
+  · AVL Graph as BarGraph / LineGraph / GridGraph ("Route Bar Graph", "Route Difference
+  Graph", "Route Line Graph", "TMC Difference Grid") · Spreadsheet ("Route Info Box",
+  "TMC Info Box, AADT") · a placeholder Spreadsheet titled "Add a Route to Your Report".
+
+  WHAT THIS PAGE DESIGNS — the one open gap from research/report-page-redesign/findings.md
+  (gap 3: visual and density polish of the graph cards). Gaps 1 and 2 already shipped and are
+  drawn as-is, not redesigned:
+    · inline quick controls (Measure + Comparison Mode pills) ship via sectionHeaderExtensions
+    · per-route colour assignment ships in ReportRouteList
+  THE GRAPH-CARD CONTRACT decided here and repeated on every card:
+    1. Header h-10, one line: title · measure chip · quick-control pills right · kebab last.
+       No separate section title above the card — the header IS the title
+       (feedback_deprecate_section_title). The title token is **cardTitleSM (15px/500)**
+       rendered sentence-case: sentence-case is a legal text-transform modifier at the call
+       site, so this needs no new token. (An earlier draft of this comment said displayXS/18px;
+       every card drawn here, and patterns §13's own demo, are 15px. The drawing was right and
+       the comment was wrong.)
+    2. Legend BELOW the plot, left-aligned, route-coloured chips. Never floating over the plot
+       and never in the right gutter: at size 4 a right-gutter legend eats a third of the plot.
+    3. Attribution is ONE muted metaXS line in the card footer — source, view, as-of. The
+       legacy treatment wrapped to three lines and dominated small cards.
+    4. Plot padding is the card's, not the section's. Section padding is the grid gutter.
+    5. At size 4 the y-axis drops to 3 ticks and the legend collapses to dots + count.
+
+  DENSITY RULE (for the 21-section case): bands hold at most 12 columns of chart per row and
+  break on question, not on count — one band per question, a fused lexical head naming it.
+  Anything past four bands gets an in-page nav rail. The floor is size 4, and band 2 now
+  DRAWS a size-4 card (graph-7-small) with three y-ticks and a collapsed dot legend, so
+  contract clause 5 is a spec instead of an assertion.
+
+  COMPOUND CARDS ARE NOT DEMONSTRATED HERE, AND CANNOT BE (Phase 8 correction). A compound card
+  is two or more STACKED sections sharing an edge whose padding is zeroed (skill §7.4). On this
+  catalogue's `grid gap-6` the 24px gutter is owned by the GRID, and no amount of section-padding
+  zeroing closes it — so a side-by-side "fused" pair renders as two cards with missing borders
+  plus an orphan strip, which is exactly what the earlier draft did. The map + summary pair in
+  band 1 is now an honest side-by-side pair, each card closing itself with its own attribution.
+  Real compound cards arrive with the gap-0 conversion (contract item 9).
+
+  SECTION NESTING: no `data-dms-section` wraps another section. `report-summary` is a SIBLING
+  of `page-header`, not a child; band heads are their own lexical sections. DMS has no
+  container-section concept, so a wrapper that contains sections is a band.
+
+  CONTRACT: SideNav · header shape · breadcrumbs (deep page) · freshness line · route rows ·
+  download affordance — all per npmrds-home.html's header note.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- ═════════ SIDENAV ═════════ -->
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <!-- ══ topMenu: LogoNav ══ the real component is a PRODUCT SWITCHER: logo tile
+                 (links home) + title + CaretDown that opens a "// switch product" dropdown
+                 listing NPMRDS / Freight Atlas / TSMO / Sandbox and a "Platform home →" foot.
+                 Closed state here; the open dropdown is documented in components.html. -->
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="npmrds-home.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <!-- ══ the product nav ══ FLAT (no sub-items), in the same order as the home page's
+                 sections. Docs is NOT here — it is a QuickLink, below. -->
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 1: QuickLinks ══ the real component renders nav-styled links,
+                 not a search box: Data Sources · Docs · (authed only) a divider + Report an
+                 issue. This is where Docs belongs. -->
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <!-- ══ bottomMenu 2: UserMenu ══ avatar (User icon) + email + first group, plus the
+                 EditControl page edit/view toggle for users with edit-page permission. -->
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMBS · LayoutGroup `breadcrumbs` (deep page) ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
+                <a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a href="npmrds-reports.html" class="hover:text-[#0f1722]">Reports</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">NY-9D Beacon Signal Study</span>
+              </nav>
+            </div>
+          </div>
+
+          <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-8 grid grid-cols-12 gap-6">
+              <!-- ── SECTION · page header (size 12) ── report-summary is a SIBLING section
+                   below, not nested inside this one: DMS has no container-section concept. -->
+              <div class="col-span-12" data-dms-section="page-header">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// before &amp; after</span>
+                <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">region 8 · dutchess county · signal retiming</span>
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]"><span class="size-1.5 rounded-full bg-[#10B981]"></span>published</span>
+              </div>
+              <div class="flex items-end justify-between gap-8 max-lg:flex-wrap">
+                <div class="flex-1 min-w-0 max-w-[780px]">
+                  <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">NY-9D Beacon Signal Study<span class="text-[#CA8A04]">.</span></h1>
+                  <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3">Travel-time comparison on NY-9D through the City of Beacon, before and after the January 2026 signal retiming. Both directions, weekday AM and PM peaks, hourly bins.</p>
+                </div>
+                <div class="flex flex-col items-start lg:items-end gap-3 shrink-0">
+                  <div class="flex items-center gap-2">
+                    <!-- Contract item 7 · download -->
+                    <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Download --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Data</span></button>
+                    <button class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: Export --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Share</span></button>
+                    <!-- Open question 4 · these reports are client deliverables, so the header
+                         acknowledges the document. The print-shaped state is drawn in § 03. -->
+                    <a href="#print-state" class="h-9 px-3 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 text-[#0f1722] hover:border-[#37576B]"><!-- icon: FileText --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Print</span></a>
+                    <a href="#edit-mode" class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e]"><!-- icon: PencilEdit --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Edit</span></a>
+                  </div>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
+                    <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
+                    <span class="text-slate-300">·</span><span>jul 2026 partial</span>
+                    <span class="text-slate-300">·</span><span>since jan 2017</span>
+                  </div>
+                </div>
+              </div>
+              </div>
+
+              <!-- ── SECTION · report summary strip (size 12) ── what this report is made of,
+                   at a glance. A sibling of page-header, not nested inside it. -->
+              <div class="col-span-12 rounded-[8px] border border-zinc-950/10 bg-slate-50 p-3 flex flex-wrap items-center gap-x-6 gap-y-2" data-dms-section="report-summary">
+                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">this report</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: Road --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg><span class="font-mono tabular-nums font-medium">4</span>&nbsp;routes · <span class="font-mono tabular-nums font-medium">36</span>&nbsp;TMC · <span class="font-mono tabular-nums font-medium">7.8</span>&nbsp;mi</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: History --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>Jan–Feb 2025 vs Jan–Feb 2026 · hourly</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700"><!-- icon: ChartLine --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg><span class="font-mono tabular-nums font-medium">6</span>&nbsp;graphs · travel time, speed</span>
+                <span class="inline-flex items-center gap-1.5 font-proxima text-[12.5px] text-slate-700 ml-auto"><!-- icon: User --><svg class="size-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>Alex Muro · updated <span class="font-mono tabular-nums">2026-07-27</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ REPORT CANVAS · LayoutGroup `content` ═════════
+               The rail↔canvas column split lives in the PAGES theme (pages.sectionGroup), not
+               in the shared layoutGroup — see adding-an-in-page-nav-rail.md.
+               STICKY, CORRECTED (Phase 8): the row must be `items-stretch`, NOT `items-start`.
+               The skill is explicit — "must be items-stretch so the rail column is full band
+               height and its inner sticky has room to pin (items-start collapses the column and
+               kills sticky)". This page previously asserted the opposite and its rail was
+               measurably inert (entirely off-screen by scrollY ≈ 1400). Both rail blocks now
+               share ONE sticky wrapper; two siblings each pinned at top-6 would overlap. -->
+          <div class="w-full bg-[#ECEEF2] py-8" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8">
+              <div class="grid grid-cols-12 gap-6 items-stretch">
+
+                <!-- ── RAIL · section group `sidebar` · the ReportRouteList component ──
+                     VIEW MODE: read-only. Every mutation and every mutating control is gated
+                     on PageContext.editPageMode — outside edit mode merely viewing must not be
+                     able to strip a route's graph assignments. -->
+                <div class="col-span-12 lg:col-span-3" data-dms-group="sidebar">
+                  <!-- ONE sticky wrapper around the whole rail stack — this is the
+                       sideNavContainer the pages theme owns. -->
+                  <div class="lg:sticky lg:top-6">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden" data-dms-section="route-list">
+                    <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/08 bg-[#12181F]">
+                      <!-- icon: Road --><svg class="size-4 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg>
+                      <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Routes</span>
+                      <span class="px-1.5 h-5 inline-flex items-center rounded-full bg-white/10 text-white font-mono text-[10px] tabular-nums">4</span>
+                    </div>
+
+                    <!-- Contract item 6 · the route row: colour dot · name (truncate + title
+                         attribute) · TMC count · length · date range. Truncation is load-bearing:
+                         route names are meant to be long and descriptive. -->
+                    <div class="divide-y divide-zinc-950/05">
+                      <div class="px-3 py-2.5">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="size-3 rounded-full bg-[#1F3F8F] shrink-0"></span>
+                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2025">NY-9D NB · before</span>
+                        </div>
+                        <div class="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums mt-0.5">9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28</div>
+                        <div class="pl-5 mt-1.5 flex flex-wrap gap-1">
+                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 1</span>
+                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 2</span>
+                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 4</span>
+                        </div>
+                      </div>
+                      <div class="px-3 py-2.5">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="size-3 rounded-full bg-[#E5A646] shrink-0"></span>
+                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2026">NY-9D NB · after</span>
+                        </div>
+                        <div class="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums mt-0.5">9 TMC · 2.0 mi · 2026-01-05 → 2026-02-27</div>
+                        <div class="pl-5 mt-1.5 flex flex-wrap gap-1">
+                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 1</span>
+                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 2</span>
+                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 4</span>
+                        </div>
+                      </div>
+                      <div class="px-3 py-2.5">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="size-3 rounded-full bg-[#10B981] shrink-0"></span>
+                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2025">NY-9D SB · before</span>
+                        </div>
+                        <div class="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums mt-0.5">9 TMC · 1.9 mi · 2025-01-06 → 2025-02-28</div>
+                        <div class="pl-5 mt-1.5 flex flex-wrap gap-1">
+                          <span class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider">graph 3</span>
+                        </div>
+                      </div>
+                      <div class="px-3 py-2.5">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="size-3 rounded-full bg-[#8B5CF6] shrink-0"></span>
+                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Southbound (Main St/Beekman to I-84, via Verplanck) — Jan–Feb 2026">NY-9D SB · after</span>
+                          <!-- unassigned badge · shrink-0 so the name truncates instead of the badge -->
+                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9.5px] uppercase tracking-wider shrink-0">unused</span>
+                        </div>
+                        <div class="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums mt-0.5">9 TMC · 1.9 mi · 2026-01-05 → 2026-02-27</div>
+                        <div class="pl-5 mt-1.5 font-proxima text-[11.5px] text-slate-500">Not on any graph yet.</div>
+                      </div>
+                    </div>
+
+                    <div class="px-3 py-2.5 border-t border-zinc-950/05 bg-slate-50">
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">view mode · read-only</div>
+                      <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-1">Open <span class="font-medium text-slate-600">Edit</span> to add, reorder, recolour or assign routes.</p>
+                    </div>
+                  </div>
+
+                  <!-- Authored rail content · the `sidebar` group can host more than the
+                       component. Here: the finding, so a reader gets the answer without
+                       interpreting six charts. -->
+                  <div class="mt-6 rounded-[8px] border border-[#1F3F8F]/25 bg-[#1F3F8F]/5 p-4" data-dms-section="finding">
+                    <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#1F3F8F]">// the finding</div>
+                    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-1.5">Northbound PM-peak travel time fell <span class="font-mono tabular-nums font-semibold text-[#0f1722]">42 s</span> (−11.4%) after retiming. Southbound is unchanged within noise. The gain concentrates on the two segments north of Main St.</p>
+                  </div>
+                  </div>
+                </div>
+
+                <!-- ── CANVAS · the graph sections ── -->
+                <div class="col-span-12 lg:col-span-9">
+                  <div class="grid grid-cols-12 gap-6">
+
+                    <!-- BAND 1 · the question: did travel time change?
+                         Fused lexical head, not a section title (feedback_deprecate_section_title) -->
+                    <div class="col-span-12" data-dms-section="band-1-head">
+                      <div class="flex items-end justify-between gap-4 flex-wrap">
+                        <div>
+                          <div class="flex items-center gap-2 mb-1">
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                            <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">northbound · both periods · hourly bins</span>
+                          </div>
+                          <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Did travel time change?</h2>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- CARD · Route Line Graph, Travel Time · size 12 · the overview chart -->
+                    <div class="col-span-12" data-dms-section="graph-1-line">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <!-- graph-card contract 1 · header h-10, one line -->
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Travel time by hour of day</span>
+                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 1</span>
+                          <span class="flex-1"></span>
+                          <!-- inline quick controls · sectionHeaderExtensions (already shipped) -->
+                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">travel time <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">overlay <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <!-- plot · contract 4 · padding is the card's -->
+                        <div class="px-4 pt-4">
+                          <!-- decorative --><svg viewBox="0 0 900 220" class="w-full h-[220px] block">
+                            <line x1="46" y1="10" x2="46" y2="190" stroke="#e2e8f0" stroke-width="1"/>
+                            <line x1="46" y1="190" x2="890" y2="190" stroke="#cbd5e1" stroke-width="1"/>
+                            <line x1="46" y1="145" x2="890" y2="145" stroke="#f1f5f9" stroke-width="1"/>
+                            <line x1="46" y1="100" x2="890" y2="100" stroke="#f1f5f9" stroke-width="1"/>
+                            <line x1="46" y1="55"  x2="890" y2="55"  stroke="#f1f5f9" stroke-width="1"/>
+                            <text x="40" y="193" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">3:00</text>
+                            <text x="40" y="148" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">4:00</text>
+                            <text x="40" y="103" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">5:00</text>
+                            <text x="40" y="58"  text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">6:00</text>
+                            <!-- peak shading -->
+                            <rect x="250" y="10" width="105" height="180" fill="#0F1722" opacity="0.03"/>
+                            <rect x="600" y="10" width="140" height="180" fill="#0F1722" opacity="0.03"/>
+                            <text x="302" y="24" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">AM PEAK</text>
+                            <text x="670" y="24" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">PM PEAK</text>
+                            <!-- before · #1F3F8F -->
+                            <path d="M 60 168 L 130 165 L 200 152 L 270 108 L 320 82 L 390 128 L 460 132 L 530 122 L 600 78 L 670 52 L 740 96 L 810 140 L 880 158" fill="none" stroke="#1F3F8F" stroke-width="2"/>
+                            <!-- after · #E5A646 -->
+                            <path d="M 60 170 L 130 167 L 200 158 L 270 122 L 320 100 L 390 136 L 460 138 L 530 130 L 600 100 L 670 86 L 740 118 L 810 148 L 880 162" fill="none" stroke="#E5A646" stroke-width="2"/>
+                            <!-- axis labels -->
+                            <text x="60"  y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">00</text>
+                            <text x="200" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">04</text>
+                            <text x="320" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">08</text>
+                            <text x="460" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">12</text>
+                            <text x="600" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">16</text>
+                            <text x="740" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">20</text>
+                            <text x="880" y="207" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#94a3b8">23</text>
+                          </svg>
+                        </div>
+                        <!-- graph-card contract 2 · legend BELOW the plot, left-aligned -->
+                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#1F3F8F]"></span>NY-9D NB · before</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#E5A646]"></span>NY-9D NB · after</span>
+                        </div>
+                        <!-- graph-card contract 3 · ONE muted attribution line -->
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · source 583 / view 982 · travel_time_all_vehicles · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- SIDE-BY-SIDE PAIR · map + the numbers for the same routes.
+                         NOT a compound card. A compound card is STACKED sections sharing a
+                         zeroed edge (skill §7.4, patterns §13) — that recipe cannot work
+                         side-by-side on this catalogue's `gap-6` grid, because the 24px gap is
+                         owned by the grid and no amount of section-padding zeroing closes it.
+                         The earlier draft drew these two with `border-b-0` plus a shared
+                         attribution strip below, which rendered as two cards with missing
+                         bottom borders and a floating orphan strip. Each card now closes
+                         itself and carries its own one-line attribution.
+                         Real compound cards arrive with the gap-0 conversion (contract item 9). -->
+                    <div class="col-span-12 lg:col-span-5" data-dms-section="graph-2-map">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Route map</span>
+                          <span class="flex-1"></span>
+                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">speed <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="relative h-[224px] tny-map">
+                          <!-- decorative --><svg viewBox="0 0 420 224" preserveAspectRatio="xMidYMid slice" class="absolute inset-0 w-full h-full">
+                            <path d="M 90 210 L 120 160 L 150 120 L 175 80 L 205 40 L 240 14" stroke="#1a9850" stroke-width="5" fill="none"/>
+                            <path d="M 150 120 L 210 130 L 275 128" stroke="#fee08b" stroke-width="3" fill="none"/>
+                            <path d="M 175 80 L 240 92" stroke="#91cf60" stroke-width="3" fill="none"/>
+                            <circle cx="150" cy="120" r="4" fill="#0F1722"/>
+                            <circle cx="175" cy="80" r="4" fill="#0F1722"/>
+                          </svg>
+                          <div class="absolute left-3 top-3 font-mono text-[10px] uppercase tracking-wider text-slate-700">Beacon</div>
+                          <div class="absolute left-[34%] top-[52%] font-mono text-[9.5px] uppercase tracking-wider text-slate-600 bg-white/80 px-1 rounded">Main St</div>
+                          <div class="absolute left-[41%] top-[33%] font-mono text-[9.5px] uppercase tracking-wider text-slate-600 bg-white/80 px-1 rounded">Verplanck</div>
+                          <div class="absolute bottom-3 left-3 rounded-[6px] border border-zinc-950/10 bg-white/95 px-2 py-1.5">
+                            <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">speed · mph</div>
+                            <div class="flex items-center gap-1">
+                              <span class="block w-5 h-1.5 rounded-sm bg-[#d73027]"></span><span class="block w-5 h-1.5 rounded-sm bg-[#fc8d59]"></span><span class="block w-5 h-1.5 rounded-sm bg-[#fee08b]"></span><span class="block w-5 h-1.5 rounded-sm bg-[#91cf60]"></span><span class="block w-5 h-1.5 rounded-sm bg-[#1a9850]"></span>
+                            </div>
+                            <div class="flex items-center justify-between font-mono text-[9px] tabular-nums text-slate-400 mt-0.5"><span>18</span><span>44</span></div>
+                          </div>
+                        </div>
+                        <!-- graph-card contract 3 · ONE muted metaXS attribution line per card -->
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · source 583 / view 982 ⋈ tmc geometry 582 / view 1312 (2025) · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <div class="col-span-12 lg:col-span-7" data-dms-section="graph-3-info">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Route summary · peak periods</span>
+                          <span class="flex-1"></span>
+                          <button class="h-6 px-2 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600"><!-- icon: Download --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>csv</button>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="overflow-x-auto">
+                          <table class="w-full min-w-[400px]">
+                            <thead>
+                              <tr class="bg-slate-50 border-b border-zinc-950/08">
+                                <th class="text-left px-4 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">route</th>
+                                <th class="text-right px-3 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">am tt</th>
+                                <th class="text-right px-3 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">pm tt</th>
+                                <th class="text-right px-3 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">Δ pm</th>
+                                <th class="text-right px-4 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">avg speed</th>
+                              </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-950/05">
+                              <tr>
+                                <td class="px-4 py-2"><span class="inline-flex items-center gap-2 min-w-0"><span class="size-2.5 rounded-full bg-[#1F3F8F] shrink-0"></span><span class="font-proxima text-[12.5px] text-slate-700 truncate" title="NY-9D Northbound — Jan–Feb 2025">NB · before</span></span></td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">4:38</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">6:09</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-400">—</td>
+                                <td class="px-4 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">24.1</td>
+                              </tr>
+                              <tr>
+                                <td class="px-4 py-2"><span class="inline-flex items-center gap-2 min-w-0"><span class="size-2.5 rounded-full bg-[#E5A646] shrink-0"></span><span class="font-proxima text-[12.5px] text-slate-700 truncate" title="NY-9D Northbound — Jan–Feb 2026">NB · after</span></span></td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">4:31</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">5:27</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums font-medium text-emerald-700">−42 s</td>
+                                <td class="px-4 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">26.8</td>
+                              </tr>
+                              <tr>
+                                <td class="px-4 py-2"><span class="inline-flex items-center gap-2 min-w-0"><span class="size-2.5 rounded-full bg-[#10B981] shrink-0"></span><span class="font-proxima text-[12.5px] text-slate-700 truncate" title="NY-9D Southbound — Jan–Feb 2025">SB · before</span></span></td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">5:52</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">5:11</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-400">—</td>
+                                <td class="px-4 py-2 text-right font-mono text-[12px] tabular-nums text-slate-700">25.4</td>
+                              </tr>
+                              <tr class="bg-slate-50/60">
+                                <td class="px-4 py-2"><span class="inline-flex items-center gap-2 min-w-0"><span class="size-2.5 rounded-full bg-[#8B5CF6] shrink-0"></span><span class="font-proxima text-[12.5px] text-slate-500 truncate" title="NY-9D Southbound — Jan–Feb 2026 (not assigned to a graph)">SB · after</span><span class="h-4 px-1 inline-flex items-center rounded bg-[#E5A646]/20 text-[#8a5f03] font-mono text-[9px] uppercase tracking-wider shrink-0">unused</span></span></td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-500">5:48</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-500">5:08</td>
+                                <td class="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-slate-500">−3 s</td>
+                                <td class="px-4 py-2 text-right font-mono text-[12px] tabular-nums text-slate-500">25.6</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!-- graph-card contract 3 · ONE muted metaXS attribution line per card.
+                             Δ pm sits before avg speed so the payoff number (−42 s, the report's
+                             whole finding) is never the column that scrolls out of view. -->
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · source 583 / view 982 · weekdays only · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- BAND 2 · the question: where on the corridor? -->
+                    <div class="col-span-12 mt-2" data-dms-section="band-2-head">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                        <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">per-segment · pm peak · after − before</span>
+                      </div>
+                      <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Where on the corridor did it change?</h2>
+                      <!-- Authored reading lives in the band head (Lexical), where authored copy
+                           belongs — not inside graph chrome. -->
+                      <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 max-w-[720px]">S3 and S4, north of Main St, carry the gain; the rest of the corridor is flat within noise.</p>
+                    </div>
+
+                    <!-- CARD · Route Bar Graph · size 6 · demonstrates the size-6 legend rule -->
+                    <div class="col-span-12 lg:col-span-6" data-dms-section="graph-4-bar">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Travel time by segment</span>
+                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 2</span>
+                          <span class="flex-1"></span>
+                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">travel time <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="px-4 pt-4">
+                          <!-- decorative --><svg viewBox="0 0 420 180" class="w-full h-[180px] block">
+                            <line x1="34" y1="8" x2="34" y2="152" stroke="#e2e8f0" stroke-width="1"/>
+                            <line x1="34" y1="152" x2="412" y2="152" stroke="#cbd5e1" stroke-width="1"/>
+                            <line x1="34" y1="104" x2="412" y2="104" stroke="#f1f5f9" stroke-width="1"/>
+                            <line x1="34" y1="56" x2="412" y2="56" stroke="#f1f5f9" stroke-width="1"/>
+                            <text x="28" y="155" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">0</text>
+                            <text x="28" y="107" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">40</text>
+                            <text x="28" y="59"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">80</text>
+                            <g>
+                              <rect x="46"  y="88"  width="17" height="64" fill="#1F3F8F"/><rect x="64"  y="96"  width="17" height="56" fill="#E5A646"/>
+                              <rect x="88"  y="70"  width="17" height="82" fill="#1F3F8F"/><rect x="106" y="86"  width="17" height="66" fill="#E5A646"/>
+                              <rect x="130" y="34"  width="17" height="118" fill="#1F3F8F"/><rect x="148" y="62"  width="17" height="90" fill="#E5A646"/>
+                              <rect x="172" y="52"  width="17" height="100" fill="#1F3F8F"/><rect x="190" y="74"  width="17" height="78" fill="#E5A646"/>
+                              <rect x="214" y="100" width="17" height="52" fill="#1F3F8F"/><rect x="232" y="104" width="17" height="48" fill="#E5A646"/>
+                              <rect x="256" y="112" width="17" height="40" fill="#1F3F8F"/><rect x="274" y="114" width="17" height="38" fill="#E5A646"/>
+                              <rect x="298" y="120" width="17" height="32" fill="#1F3F8F"/><rect x="316" y="122" width="17" height="30" fill="#E5A646"/>
+                              <rect x="340" y="126" width="17" height="26" fill="#1F3F8F"/><rect x="358" y="128" width="17" height="24" fill="#E5A646"/>
+                            </g>
+                            <text x="64"  y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S1</text>
+                            <text x="106" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S2</text>
+                            <text x="148" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S3</text>
+                            <text x="190" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S4</text>
+                            <text x="232" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S5</text>
+                            <text x="274" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S6</text>
+                            <text x="316" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S7</text>
+                            <text x="358" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S8</text>
+                          </svg>
+                        </div>
+                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="size-2.5 rounded-sm bg-[#1F3F8F]"></span>before</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="size-2.5 rounded-sm bg-[#E5A646]"></span>after</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 ml-auto">seconds · pm peak</span>
+                        </div>
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · pm peak weekdays · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- CARD · Route Difference Graph · size 6 · diverging bars, zero-centred -->
+                    <div class="col-span-12 lg:col-span-6" data-dms-section="graph-5-diff">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Difference · after − before</span>
+                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 3</span>
+                          <span class="flex-1"></span>
+                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-[#37576B] bg-[#37576B]/8 font-mono text-[10px] uppercase tracking-wider text-[#1f3450]">difference <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="px-4 pt-4">
+                          <!-- decorative --><svg viewBox="0 0 420 180" class="w-full h-[180px] block">
+                            <line x1="34" y1="80" x2="412" y2="80" stroke="#0F1722" stroke-width="1"/>
+                            <line x1="34" y1="8" x2="34" y2="152" stroke="#e2e8f0" stroke-width="1"/>
+                            <line x1="34" y1="30" x2="412" y2="30" stroke="#f1f5f9" stroke-width="1"/>
+                            <line x1="34" y1="130" x2="412" y2="130" stroke="#f1f5f9" stroke-width="1"/>
+                            <text x="28" y="33"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">+20</text>
+                            <text x="28" y="83"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">0</text>
+                            <text x="28" y="133" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">−20</text>
+                            <rect x="50"  y="80" width="30" height="20" fill="#1a9850"/>
+                            <rect x="94"  y="80" width="30" height="40" fill="#1a9850"/>
+                            <rect x="138" y="80" width="30" height="70" fill="#1a9850"/>
+                            <rect x="182" y="80" width="30" height="55" fill="#1a9850"/>
+                            <rect x="226" y="80" width="30" height="10" fill="#1a9850"/>
+                            <rect x="270" y="75" width="30" height="5"  fill="#d73027"/>
+                            <rect x="314" y="80" width="30" height="5"  fill="#1a9850"/>
+                            <rect x="358" y="80" width="30" height="5"  fill="#1a9850"/>
+                            <text x="65"  y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S1</text>
+                            <text x="109" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S2</text>
+                            <text x="153" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S3</text>
+                            <text x="197" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S4</text>
+                            <text x="241" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S5</text>
+                            <text x="285" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S6</text>
+                            <text x="329" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S7</text>
+                            <text x="373" y="168" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="#94a3b8">S8</text>
+                          </svg>
+                        </div>
+                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="size-2.5 rounded-sm bg-[#1a9850]"></span>faster after</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="size-2.5 rounded-sm bg-[#d73027]"></span>slower after</span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 ml-auto">main → NB · zero-centred</span>
+                        </div>
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · comparison_series difference mode · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- CARD · TMC Difference Grid · size 12 · segment × hour heat grid -->
+                    <div class="col-span-12" data-dms-section="graph-6-grid">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Segment × hour · speed difference</span>
+                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 4</span>
+                          <span class="flex-1"></span>
+                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white hover:border-[#37576B] font-mono text-[10px] uppercase tracking-wider text-slate-600">speed <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="px-4 pt-4 overflow-x-auto">
+                          <!-- decorative --><svg viewBox="0 0 900 200" class="w-full min-w-[720px] h-[200px] block">
+                            <g font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">
+                              <text x="46" y="26"  text-anchor="end">S1</text><text x="46" y="48"  text-anchor="end">S2</text>
+                              <text x="46" y="70"  text-anchor="end">S3</text><text x="46" y="92"  text-anchor="end">S4</text>
+                              <text x="46" y="114" text-anchor="end">S5</text><text x="46" y="136" text-anchor="end">S6</text>
+                              <text x="46" y="158" text-anchor="end">S7</text><text x="46" y="180" text-anchor="end">S8</text>
+                            </g>
+                            <g>
+                              <rect x="54" y="12" width="33" height="18" fill="#f0f5f2"/><rect x="89" y="12" width="33" height="18" fill="#e3efe8"/><rect x="124" y="12" width="33" height="18" fill="#cbe5d6"/><rect x="159" y="12" width="33" height="18" fill="#a8d5bd"/><rect x="194" y="12" width="33" height="18" fill="#8bc9ab"/><rect x="229" y="12" width="33" height="18" fill="#cbe5d6"/><rect x="264" y="12" width="33" height="18" fill="#e3efe8"/><rect x="299" y="12" width="33" height="18" fill="#f0f5f2"/><rect x="334" y="12" width="33" height="18" fill="#f7f2ea"/><rect x="369" y="12" width="33" height="18" fill="#a8d5bd"/><rect x="404" y="12" width="33" height="18" fill="#8bc9ab"/><rect x="439" y="12" width="33" height="18" fill="#6dbb96"/><rect x="474" y="12" width="33" height="18" fill="#8bc9ab"/><rect x="509" y="12" width="33" height="18" fill="#cbe5d6"/><rect x="544" y="12" width="33" height="18" fill="#e3efe8"/><rect x="579" y="12" width="33" height="18" fill="#f0f5f2"/>
+                              <rect x="54" y="34" width="33" height="18" fill="#e3efe8"/><rect x="89" y="34" width="33" height="18" fill="#cbe5d6"/><rect x="124" y="34" width="33" height="18" fill="#a8d5bd"/><rect x="159" y="34" width="33" height="18" fill="#6dbb96"/><rect x="194" y="34" width="33" height="18" fill="#4faa80"/><rect x="229" y="34" width="33" height="18" fill="#8bc9ab"/><rect x="264" y="34" width="33" height="18" fill="#cbe5d6"/><rect x="299" y="34" width="33" height="18" fill="#e3efe8"/><rect x="334" y="34" width="33" height="18" fill="#e3efe8"/><rect x="369" y="34" width="33" height="18" fill="#6dbb96"/><rect x="404" y="34" width="33" height="18" fill="#4faa80"/><rect x="439" y="34" width="33" height="18" fill="#2e9464"/><rect x="474" y="34" width="33" height="18" fill="#4faa80"/><rect x="509" y="34" width="33" height="18" fill="#a8d5bd"/><rect x="544" y="34" width="33" height="18" fill="#cbe5d6"/><rect x="579" y="34" width="33" height="18" fill="#e3efe8"/>
+                              <rect x="54" y="56" width="33" height="18" fill="#cbe5d6"/><rect x="89" y="56" width="33" height="18" fill="#a8d5bd"/><rect x="124" y="56" width="33" height="18" fill="#6dbb96"/><rect x="159" y="56" width="33" height="18" fill="#2e9464"/><rect x="194" y="56" width="33" height="18" fill="#1a7f52"/><rect x="229" y="56" width="33" height="18" fill="#4faa80"/><rect x="264" y="56" width="33" height="18" fill="#a8d5bd"/><rect x="299" y="56" width="33" height="18" fill="#cbe5d6"/><rect x="334" y="56" width="33" height="18" fill="#cbe5d6"/><rect x="369" y="56" width="33" height="18" fill="#2e9464"/><rect x="404" y="56" width="33" height="18" fill="#1a7f52"/><rect x="439" y="56" width="33" height="18" fill="#0f6b42"/><rect x="474" y="56" width="33" height="18" fill="#1a7f52"/><rect x="509" y="56" width="33" height="18" fill="#6dbb96"/><rect x="544" y="56" width="33" height="18" fill="#a8d5bd"/><rect x="579" y="56" width="33" height="18" fill="#cbe5d6"/>
+                              <rect x="54" y="78" width="33" height="18" fill="#e3efe8"/><rect x="89" y="78" width="33" height="18" fill="#cbe5d6"/><rect x="124" y="78" width="33" height="18" fill="#8bc9ab"/><rect x="159" y="78" width="33" height="18" fill="#4faa80"/><rect x="194" y="78" width="33" height="18" fill="#2e9464"/><rect x="229" y="78" width="33" height="18" fill="#6dbb96"/><rect x="264" y="78" width="33" height="18" fill="#a8d5bd"/><rect x="299" y="78" width="33" height="18" fill="#e3efe8"/><rect x="334" y="78" width="33" height="18" fill="#f0f5f2"/><rect x="369" y="78" width="33" height="18" fill="#4faa80"/><rect x="404" y="78" width="33" height="18" fill="#2e9464"/><rect x="439" y="78" width="33" height="18" fill="#1a7f52"/><rect x="474" y="78" width="33" height="18" fill="#2e9464"/><rect x="509" y="78" width="33" height="18" fill="#8bc9ab"/><rect x="544" y="78" width="33" height="18" fill="#cbe5d6"/><rect x="579" y="78" width="33" height="18" fill="#e3efe8"/>
+                              <rect x="54" y="100" width="33" height="18" fill="#f0f5f2"/><rect x="89" y="100" width="33" height="18" fill="#f0f5f2"/><rect x="124" y="100" width="33" height="18" fill="#e3efe8"/><rect x="159" y="100" width="33" height="18" fill="#cbe5d6"/><rect x="194" y="100" width="33" height="18" fill="#a8d5bd"/><rect x="229" y="100" width="33" height="18" fill="#cbe5d6"/><rect x="264" y="100" width="33" height="18" fill="#e3efe8"/><rect x="299" y="100" width="33" height="18" fill="#f0f5f2"/><rect x="334" y="100" width="33" height="18" fill="#f7f2ea"/><rect x="369" y="100" width="33" height="18" fill="#cbe5d6"/><rect x="404" y="100" width="33" height="18" fill="#a8d5bd"/><rect x="439" y="100" width="33" height="18" fill="#8bc9ab"/><rect x="474" y="100" width="33" height="18" fill="#a8d5bd"/><rect x="509" y="100" width="33" height="18" fill="#e3efe8"/><rect x="544" y="100" width="33" height="18" fill="#f0f5f2"/><rect x="579" y="100" width="33" height="18" fill="#f0f5f2"/>
+                              <rect x="54" y="122" width="33" height="18" fill="#f7f2ea"/><rect x="89" y="122" width="33" height="18" fill="#f7e9d9"/><rect x="124" y="122" width="33" height="18" fill="#f0dcc3"/><rect x="159" y="122" width="33" height="18" fill="#f7e9d9"/><rect x="194" y="122" width="33" height="18" fill="#f7f2ea"/><rect x="229" y="122" width="33" height="18" fill="#f0f5f2"/><rect x="264" y="122" width="33" height="18" fill="#f0f5f2"/><rect x="299" y="122" width="33" height="18" fill="#f7f2ea"/><rect x="334" y="122" width="33" height="18" fill="#f7e9d9"/><rect x="369" y="122" width="33" height="18" fill="#f0dcc3"/><rect x="404" y="122" width="33" height="18" fill="#e8cba4"/><rect x="439" y="122" width="33" height="18" fill="#f0dcc3"/><rect x="474" y="122" width="33" height="18" fill="#f7e9d9"/><rect x="509" y="122" width="33" height="18" fill="#f7f2ea"/><rect x="544" y="122" width="33" height="18" fill="#f0f5f2"/><rect x="579" y="122" width="33" height="18" fill="#f0f5f2"/>
+                              <rect x="54" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="89" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="124" y="144" width="33" height="18" fill="#e3efe8"/><rect x="159" y="144" width="33" height="18" fill="#e3efe8"/><rect x="194" y="144" width="33" height="18" fill="#cbe5d6"/><rect x="229" y="144" width="33" height="18" fill="#e3efe8"/><rect x="264" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="299" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="334" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="369" y="144" width="33" height="18" fill="#e3efe8"/><rect x="404" y="144" width="33" height="18" fill="#cbe5d6"/><rect x="439" y="144" width="33" height="18" fill="#a8d5bd"/><rect x="474" y="144" width="33" height="18" fill="#cbe5d6"/><rect x="509" y="144" width="33" height="18" fill="#e3efe8"/><rect x="544" y="144" width="33" height="18" fill="#f0f5f2"/><rect x="579" y="144" width="33" height="18" fill="#f0f5f2"/>
+                              <rect x="54" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="89" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="124" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="159" y="166" width="33" height="18" fill="#e3efe8"/><rect x="194" y="166" width="33" height="18" fill="#e3efe8"/><rect x="229" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="264" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="299" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="334" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="369" y="166" width="33" height="18" fill="#e3efe8"/><rect x="404" y="166" width="33" height="18" fill="#e3efe8"/><rect x="439" y="166" width="33" height="18" fill="#cbe5d6"/><rect x="474" y="166" width="33" height="18" fill="#e3efe8"/><rect x="509" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="544" y="166" width="33" height="18" fill="#f0f5f2"/><rect x="579" y="166" width="33" height="18" fill="#f0f5f2"/>
+                            </g>
+                            <g font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">
+                              <text x="70"  y="196" text-anchor="middle">06</text><text x="175" y="196" text-anchor="middle">09</text>
+                              <text x="280" y="196" text-anchor="middle">12</text><text x="385" y="196" text-anchor="middle">15</text>
+                              <text x="490" y="196" text-anchor="middle">18</text><text x="595" y="196" text-anchor="middle">21</text>
+                            </g>
+                          </svg>
+                        </div>
+                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">mph faster after</span>
+                          <span class="inline-flex items-center gap-0.5"><span class="block w-5 h-2 rounded-sm bg-[#e8cba4]"></span><span class="block w-5 h-2 rounded-sm bg-[#f7f2ea]"></span><span class="block w-5 h-2 rounded-sm bg-[#cbe5d6]"></span><span class="block w-5 h-2 rounded-sm bg-[#8bc9ab]"></span><span class="block w-5 h-2 rounded-sm bg-[#2e9464]"></span><span class="block w-5 h-2 rounded-sm bg-[#0f6b42]"></span></span>
+                          <span class="font-mono text-[10px] tabular-nums text-slate-500">−3 · 0 · +8</span>
+                          <!-- The authored reading of this grid ("S3 & S4 north of Main St carry
+                               the gain") moved to the band head: an avlGraph legend renders from
+                               the series, so it cannot carry authored copy. -->
+                        </div>
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · tmc × epoch, difference mode · weekdays · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- CARD · size 4 · THE SMALLEST ALLOWED CARD, drawn so graph-card contract
+                         clause 5 and density rule 03 are a spec rather than an assertion:
+                         at size 4 the y-axis drops to THREE ticks and the legend collapses to
+                         dots + a count. 21-section pages live or die on this rule, so the set
+                         has to contain one. -->
+                    <div class="col-span-12 sm:col-span-6 lg:col-span-4" data-dms-section="graph-7-small">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">AM peak · by segment</span>
+                          <span class="h-5 px-1.5 inline-flex items-center rounded bg-slate-100 font-mono text-[9.5px] uppercase tracking-wider text-slate-500 shrink-0">graph 5</span>
+                          <span class="flex-1"></span>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: More --><svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                        </div>
+                        <div class="px-4 pt-4">
+                          <!-- decorative · 3 y-ticks only (clause 5), no gridline crowding -->
+                          <svg viewBox="0 0 300 150" class="w-full h-[150px] block">
+                            <line x1="30" y1="8" x2="30" y2="126" stroke="#e2e8f0" stroke-width="1"/>
+                            <line x1="30" y1="126" x2="292" y2="126" stroke="#cbd5e1" stroke-width="1"/>
+                            <line x1="30" y1="67" x2="292" y2="67" stroke="#f1f5f9" stroke-width="1"/>
+                            <text x="25" y="129" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">0</text>
+                            <text x="25" y="70"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">3</text>
+                            <text x="25" y="14"  text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">6</text>
+                            <rect x="42"  y="72"  width="12" height="54" fill="#1F3F8F"/><rect x="56"  y="80"  width="12" height="46" fill="#E5A646"/>
+                            <rect x="80"  y="60"  width="12" height="66" fill="#1F3F8F"/><rect x="94"  y="70"  width="12" height="56" fill="#E5A646"/>
+                            <rect x="118" y="44"  width="12" height="82" fill="#1F3F8F"/><rect x="132" y="58"  width="12" height="68" fill="#E5A646"/>
+                            <rect x="156" y="38"  width="12" height="88" fill="#1F3F8F"/><rect x="170" y="54"  width="12" height="72" fill="#E5A646"/>
+                            <rect x="194" y="66"  width="12" height="60" fill="#1F3F8F"/><rect x="208" y="74"  width="12" height="52" fill="#E5A646"/>
+                            <rect x="232" y="86"  width="12" height="40" fill="#1F3F8F"/><rect x="246" y="92"  width="12" height="34" fill="#E5A646"/>
+                            <g font-family="ui-monospace,monospace" font-size="9" fill="#94a3b8">
+                              <text x="55" y="141" text-anchor="middle">S1</text><text x="93" y="141" text-anchor="middle">S2</text>
+                              <text x="131" y="141" text-anchor="middle">S3</text><text x="169" y="141" text-anchor="middle">S4</text>
+                              <text x="207" y="141" text-anchor="middle">S5</text><text x="245" y="141" text-anchor="middle">S6</text>
+                            </g>
+                          </svg>
+                        </div>
+                        <!-- clause 5 · legend collapsed to dots + count, not named chips -->
+                        <div class="px-4 pb-3 flex items-center gap-2">
+                          <span class="inline-flex items-center gap-1">
+                            <span class="size-2 rounded-full bg-[#1F3F8F]"></span><span class="size-2 rounded-full bg-[#E5A646]"></span>
+                          </span>
+                          <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 tabular-nums">2 routes</span>
+                          <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 ml-auto">size 4 · 3 ticks · dot legend</span>
+                        </div>
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · am peak · as of 2026-07-29</div>
+                      </div>
+                    </div>
+
+                    <!-- EMPTY STATE · the real pages carry a placeholder section titled
+                         "Add a Route to Your Report". Designed, not left as a bare Spreadsheet. -->
+                    <div class="col-span-12 lg:col-span-8" data-dms-section="add-graph-empty">
+                      <div class="rounded-[8px] border border-dashed border-zinc-950/15 bg-white/60 p-6 flex flex-col sm:flex-row items-center gap-4">
+                        <span class="size-10 rounded-[6px] bg-slate-100 flex items-center justify-center text-slate-400 shrink-0"><!-- icon: ChartLine --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></span>
+                        <div class="min-w-0 flex-1 text-center sm:text-left">
+                          <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Add another graph</div>
+                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">Pick a graph type and a measure; then assign routes to it from the rail. <span class="font-medium text-slate-700">NY-9D SB · after</span> is not on any graph yet.</p>
+                        </div>
+                        <a href="#edit-mode" class="tny-press h-9 px-4 inline-flex items-center gap-2 rounded-[6px] bg-[#1F3F8F] text-white border-b-4 border-[#16306e] shrink-0"><!-- icon: Plus --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4.5v15m7.5-7.5h-15"/></svg><span class="font-display uppercase text-[12.5px] tracking-wide">Add graph</span></a>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ EDIT MODE · LayoutGroup `content_tint` ═════════
+               The same page with editPageMode on. Two things change: the rail gains its
+               mutating controls, and each section gains the toolbar + the Measure Picker. -->
+          <div class="w-full bg-[#E4E8EE] border-y border-zinc-950/05 py-12" data-dms-group="content_tint" id="edit-mode">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+              <!-- ── SECTION · band head · lexical (size 12) ── -->
+              <div class="col-span-12" data-dms-section="edit-mode-head">
+              <div class="flex items-end justify-between gap-6 flex-wrap">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// edit mode</span>
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">PageContext.editPageMode · mutations gated here, not on props.isEdit</span>
+                  </div>
+                  <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Same page, editing.</h2>
+                </div>
+              </div>
+
+              </div>
+
+                <!-- RAIL · edit mode -->
+                <div class="col-span-12 lg:col-span-3" data-dms-section="route-list-edit">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                    <div class="h-10 px-3 flex items-center gap-2 border-b border-zinc-950/08 bg-[#12181F]">
+                      <!-- icon: Road --><svg class="size-4 text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg>
+                      <span class="font-display uppercase text-white text-[12.5px] tracking-wide flex-1">Routes</span>
+                      <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] bg-[#FACC15] text-[#0F1722] font-mono text-[10px] uppercase tracking-wider font-semibold"><!-- icon: Plus --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>add</button>
+                    </div>
+                    <div class="divide-y divide-zinc-950/05">
+                      <div class="px-2 py-2.5">
+                        <div class="flex items-center gap-1 min-w-0 h-8">
+                          <span class="flex flex-col shrink-0">
+                            <button class="size-4 flex items-center justify-center text-slate-300 hover:text-slate-600"><!-- icon: CaretUp --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                            <button class="size-4 flex items-center justify-center text-slate-400 hover:text-slate-600"><!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          </span>
+                          <button class="size-4 rounded-full bg-[#1F3F8F] ring-2 ring-white ring-offset-1 ring-offset-[#1F3F8F]/30 shrink-0" title="Change colour"></button>
+                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2025">NY-9D NB · before</span>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0" title="Rename"><!-- icon: PencilEdit --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></button>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-rose-600 shrink-0" title="Remove"><!-- icon: Trash --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+                        </div>
+                        <div class="pl-6 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums">9 TMC · 2.0 mi · 2025-01-06 → 2025-02-28</div>
+                        <!-- graph-assignment chips · one per discovered $self-bound graph, toggled on click -->
+                        <div class="pl-6 mt-1.5 flex flex-wrap gap-1">
+                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 1</button>
+                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 2</button>
+                          <button class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider">graph 3</button>
+                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 4</button>
+                        </div>
+                      </div>
+                      <div class="px-2 py-2.5">
+                        <div class="flex items-center gap-1 min-w-0 h-8">
+                          <span class="flex flex-col shrink-0">
+                            <button class="size-4 flex items-center justify-center text-slate-400 hover:text-slate-600"><!-- icon: CaretUp --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                            <button class="size-4 flex items-center justify-center text-slate-400 hover:text-slate-600"><!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                          </span>
+                          <button class="size-4 rounded-full bg-[#E5A646] shrink-0" title="Change colour"></button>
+                          <span class="font-proxima text-[13px] font-semibold text-slate-700 truncate flex-1 min-w-0" title="NY-9D Northbound (I-84 to Main St/Beekman, via Verplanck) — Jan–Feb 2026">NY-9D NB · after</span>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 shrink-0"><!-- icon: PencilEdit --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></button>
+                          <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-rose-600 shrink-0"><!-- icon: Trash --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+                        </div>
+                        <div class="pl-6 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 tabular-nums">9 TMC · 2.0 mi · 2026-01-05 → 2026-02-27</div>
+                        <div class="pl-6 mt-1.5 flex flex-wrap gap-1">
+                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 1</button>
+                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 2</button>
+                          <button class="h-5 px-1.5 inline-flex items-center rounded border border-zinc-950/15 bg-white text-slate-500 font-mono text-[9.5px] uppercase tracking-wider">graph 3</button>
+                          <button class="h-5 px-1.5 inline-flex items-center gap-1 rounded bg-[#37576B] text-white font-mono text-[9.5px] uppercase tracking-wider"><!-- icon: Check --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4.5 12.75 6 6 9-13.5"/></svg>graph 4</button>
+                        </div>
+                      </div>
+                      <!-- colour picker · open state -->
+                      <div class="px-2 py-2.5 bg-slate-50">
+                        <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">route colour</div>
+                        <div class="flex items-start gap-2">
+                          <div class="w-24 h-16 rounded-[4px] border border-zinc-950/10" style="background:linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), #1F3F8F"></div>
+                          <div class="w-3 h-16 rounded-[4px] border border-zinc-950/10" style="background:linear-gradient(to bottom,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"></div>
+                          <div class="flex-1 min-w-0">
+                            <div class="font-mono text-[12px] tabular-nums text-slate-600">#1F3F8F</div>
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                              <span class="size-4 rounded-full bg-[#1F3F8F] ring-1 ring-[#0f1722]/30"></span><span class="size-4 rounded-full bg-[#E5A646]"></span><span class="size-4 rounded-full bg-[#10B981]"></span><span class="size-4 rounded-full bg-[#8B5CF6]"></span><span class="size-4 rounded-full bg-[#EF4444]"></span><span class="size-4 rounded-full bg-[#37576B]"></span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="px-3 py-2 border-t border-zinc-950/05 bg-[#FACC15]/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">edit mode · changes save to the draft</div>
+                  </div>
+                </div>
+
+                <!-- CANVAS · one card in edit mode, with the toolbar and the Measure Picker -->
+                <div class="col-span-12 lg:col-span-9">
+                  <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-12 lg:col-span-7" data-dms-section="graph-edit">
+                      <!-- section toolbar · patterns.html §section-toolbar, above the card -->
+                      <div class="h-8 px-2 flex items-center gap-1.5 rounded-t-[8px] border border-b-0 border-[#FACC15] bg-[#FACC15]/15">
+                        <!-- drag handle --><svg class="size-3.5 text-[#8a5f03] cursor-grab" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+                        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03] flex-1">AVL Graph · size 7 · graph 1</span>
+                        <button class="h-5 px-1.5 inline-flex items-center rounded bg-white border border-[#E5A646]/40 font-mono text-[9.5px] uppercase tracking-wider text-[#8a5f03]">settings</button>
+                        <button class="h-5 px-1.5 inline-flex items-center rounded bg-white border border-[#E5A646]/40 font-mono text-[9.5px] uppercase tracking-wider text-[#8a5f03]">duplicate</button>
+                        <button class="size-5 rounded flex items-center justify-center text-[#8a5f03] hover:bg-white/60"><!-- icon: More --><svg class="size-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+                      </div>
+                      <div class="rounded-b-[8px] border border-[#FACC15] bg-white shadow-sm overflow-hidden">
+                        <div class="h-10 px-4 flex items-center gap-2 border-b border-zinc-950/08">
+                          <span class="font-display font-medium text-[15px] text-[#0f1722] truncate">Travel time by hour of day</span>
+                          <span class="flex-1"></span>
+                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-[#37576B] bg-[#37576B]/8 font-mono text-[10px] uppercase tracking-wider text-[#1f3450]">travel time <!-- icon: CaretUp --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg></button>
+                          <button class="h-6 px-2 inline-flex items-center gap-1 rounded-[4px] border border-zinc-950/12 bg-white font-mono text-[10px] uppercase tracking-wider text-slate-600">overlay <!-- icon: CaretDown --><svg class="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                        </div>
+                        <!-- Measure Picker · the four nested selects, open -->
+                        <div class="px-4 py-3 bg-slate-50 border-b border-zinc-950/05">
+                          <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500 mb-2">measure picker</div>
+                          <div class="grid grid-cols-2 gap-2">
+                            <div>
+                              <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">graph type</div>
+                              <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/10 bg-white"><span class="font-proxima text-[12px] text-[#0f1722]">Route Line Graph</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                            </div>
+                            <div>
+                              <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">measure</div>
+                              <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-[#37576B] bg-white ring-2 ring-[#37576B]/15"><span class="font-proxima text-[12px] text-[#0f1722] font-medium">Travel Time</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                            </div>
+                            <div>
+                              <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">resolution</div>
+                              <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/10 bg-white"><span class="font-proxima text-[12px] text-[#0f1722]">Hourly</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                            </div>
+                            <div>
+                              <div class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1">comparison mode</div>
+                              <button class="w-full h-8 px-2 inline-flex items-center justify-between rounded-[6px] border border-zinc-950/10 bg-white"><span class="font-proxima text-[12px] text-[#0f1722]">Overlay</span><!-- icon: CaretDown --><svg class="size-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+                            </div>
+                          </div>
+                          <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-2">Each pick composes <span class="tny-mono">columns</span>, <span class="tny-mono">join</span> and <span class="tny-mono">display</span> into this section's draft state — the same path a spec-built report takes, so both produce identical config.</p>
+                        </div>
+                        <div class="px-4 py-4">
+                          <!-- decorative --><svg viewBox="0 0 560 140" class="w-full h-[140px] block">
+                            <line x1="34" y1="8" x2="34" y2="116" stroke="#e2e8f0" stroke-width="1"/>
+                            <line x1="34" y1="116" x2="552" y2="116" stroke="#cbd5e1" stroke-width="1"/>
+                            <line x1="34" y1="62" x2="552" y2="62" stroke="#f1f5f9" stroke-width="1"/>
+                            <path d="M 44 100 L 120 92 L 190 62 L 260 78 L 330 80 L 400 40 L 470 66 L 545 96" fill="none" stroke="#1F3F8F" stroke-width="2"/>
+                            <path d="M 44 102 L 120 96 L 190 74 L 260 84 L 330 86 L 400 58 L 470 78 L 545 100" fill="none" stroke="#E5A646" stroke-width="2"/>
+                          </svg>
+                        </div>
+                        <div class="px-4 pb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#1F3F8F]"></span>NB · before</span>
+                          <span class="inline-flex items-center gap-1.5 font-proxima text-[12px] text-slate-700"><span class="w-3.5 h-[3px] rounded-full bg-[#E5A646]"></span>NB · after</span>
+                        </div>
+                        <div class="px-4 py-1.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 truncate">npmrds v6 · 583/982 · draft · unsaved changes</div>
+                      </div>
+                    </div>
+
+                    <!-- the density rule, stated -->
+                    <div class="col-span-12 lg:col-span-5" data-dms-section="density-rule">
+                      <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// the density rule</div>
+                        <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Twenty-one sections is a real page.</div>
+                        <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-2">“Year Over Year (Beginner)” carries two maps, thirteen bar graphs and four tables. The design has to survive that, not just the five-section case.</p>
+                        <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2">
+                          <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">Break on question, not on count.</span> One band per question, with a fused lexical head naming it. Four bands maximum before the page earns an in-page nav rail.</span></li>
+                          <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Same question, different resolution → fuse.</span> Zero the shared edge's padding and coordinate the corners; two sections read as one card.</span></li>
+                          <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">Never below size 4.</span> At size 4 the y-axis drops to three ticks and the legend collapses to dots plus a count. Below that a chart is decoration.</span></li>
+                          <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">One attribution line, always.</span> Truncate rather than wrap — three wrapped lines of provenance on a size-4 card outweigh the chart.</span></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+          </div>
+
+          <!-- ═════════ § 03 · PRINT STATE · LayoutGroup `content` ═════════
+               Open question 4's recorded default: ONE print-shaped state, not a full print
+               stylesheet. These reports are client deliverables — the real titles say so
+               ("US-44/NY-55 Westbound Road Diet Impact Assessment") — so the design has to
+               admit the document exists. What changes when printed: app chrome drops (SideNav,
+               ds-nav, quick-control pills, kebabs, Edit), the route rail becomes a static
+               legend block, the finding is promoted above the charts, and provenance +
+               pagination move to a page foot. Drawn on the brand's bone surface. -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content" id="print-state">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- ── SECTION · band head · lexical (size 12) ── -->
+              <div class="col-span-12" data-dms-section="print-state-head">
+                <div class="flex items-end justify-between gap-6 flex-wrap">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">the deliverable · letter portrait · chrome removed</span>
+                    </div>
+                    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Printed, this is a document.</h2>
+                  </div>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 max-w-[420px] text-right">one state, not a print stylesheet</span>
+                </div>
+              </div>
+
+              <!-- ── SECTION · the print sheet (size 7) ── -->
+              <div class="col-span-12 lg:col-span-7" data-dms-section="print-sheet">
+                <div class="rounded-[8px] border border-zinc-950/10 tny-card-bone shadow-sm overflow-hidden">
+                  <!-- letterhead · replaces the app header -->
+                  <div class="px-7 pt-7 pb-4 border-b-2 border-[#0F1722]">
+                    <div class="flex items-start justify-between gap-4">
+                      <div class="min-w-0">
+                        <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">New York State Department of Transportation · TransportNY</div>
+                        <h3 class="font-display font-semibold text-[22px] leading-[1.2] uppercase text-[#0F1722] mt-1">NY-9D Beacon Signal Study</h3>
+                        <div class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1">Travel-time comparison · Jan–Feb 2025 vs Jan–Feb 2026 · weekday AM and PM peaks</div>
+                      </div>
+                      <div class="w-9 h-9 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[13px] shrink-0">NY</div>
+                    </div>
+                  </div>
+                  <!-- the finding leads on paper · a reader with one page gets the answer -->
+                  <div class="px-7 py-4 border-b border-zinc-950/10">
+                    <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#1F3F8F]">Finding</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-1">Northbound PM-peak travel time fell <span class="font-mono tabular-nums font-semibold text-[#0f1722]">42 s</span> (−11.4%) after retiming. Southbound is unchanged within noise. The gain concentrates on the two segments north of Main St.</p>
+                  </div>
+                  <!-- the rail becomes a static legend -->
+                  <div class="px-7 py-3 border-b border-zinc-950/10 flex flex-wrap gap-x-5 gap-y-1.5">
+                    <span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] text-slate-600"><span class="size-2 rounded-full bg-[#1F3F8F]"></span>NY-9D NB · before</span>
+                    <span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] text-slate-600"><span class="size-2 rounded-full bg-[#E5A646]"></span>NY-9D NB · after</span>
+                    <span class="inline-flex items-center gap-1.5 font-proxima text-[11.5px] text-slate-600"><span class="size-2 rounded-full bg-[#10B981]"></span>NY-9D SB · before</span>
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 tabular-nums ml-auto">36 TMC · 7.8 mi</span>
+                  </div>
+                  <!-- charts keep their titles but lose every interactive affordance -->
+                  <div class="px-7 py-4">
+                    <div class="font-display font-medium text-[13px] text-[#0f1722]">Travel time by hour of day</div>
+                    <svg viewBox="0 0 560 130" class="w-full h-[130px] block mt-1">
+                      <line x1="34" y1="6" x2="34" y2="110" stroke="#c9c2b4" stroke-width="1"/>
+                      <line x1="34" y1="110" x2="552" y2="110" stroke="#a9a294" stroke-width="1"/>
+                      <line x1="34" y1="58" x2="552" y2="58" stroke="#e0dacd" stroke-width="1"/>
+                      <text x="29" y="113" text-anchor="end" font-family="ui-monospace,monospace" font-size="8" fill="#8a8272">3:00</text>
+                      <text x="29" y="61"  text-anchor="end" font-family="ui-monospace,monospace" font-size="8" fill="#8a8272">5:00</text>
+                      <text x="29" y="12"  text-anchor="end" font-family="ui-monospace,monospace" font-size="8" fill="#8a8272">7:00</text>
+                      <path d="M 44 96 L 100 93 L 156 84 L 212 58 L 254 40 L 310 70 L 366 74 L 422 66 L 468 36 L 512 24 L 552 62" fill="none" stroke="#1F3F8F" stroke-width="1.75"/>
+                      <path d="M 44 98 L 100 96 L 156 90 L 212 70 L 254 56 L 310 78 L 366 80 L 422 74 L 468 56 L 512 48 L 552 70" fill="none" stroke="#E5A646" stroke-width="1.75"/>
+                    </svg>
+                  </div>
+                  <!-- page foot · provenance + pagination, the print-only chrome -->
+                  <div class="px-7 py-2.5 border-t border-zinc-950/10 flex items-center justify-between gap-4">
+                    <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 truncate">npmrds v6 · source 583 / view 982 · as of 2026-07-29</span>
+                    <span class="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500 tabular-nums shrink-0">page 1 / 3</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── SECTION · what the print state changes (size 5) ── -->
+              <div class="col-span-12 lg:col-span-5" data-dms-section="print-rules">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5 h-full">
+                  <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04]">// what changes on paper</div>
+                  <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Chrome is not content.</div>
+                  <ul class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-3 space-y-2">
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">01</span><span><span class="font-medium text-slate-700">Drop every affordance.</span> SideNav, the ds-nav widget, quick-control pills, kebabs, Edit, Share — none of it survives a PDF, so none of it prints.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">02</span><span><span class="font-medium text-slate-700">Promote the finding.</span> On screen it sits in the rail; on paper it leads, because a printed report is read linearly and often only page one.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">03</span><span><span class="font-medium text-slate-700">The rail becomes a legend.</span> Route colours still key the charts, so the rows persist as a static colour key — without the mutation controls.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-[#CA8A04] mt-0.5">04</span><span><span class="font-medium text-slate-700">Provenance and pagination move to a page foot.</span> The per-card attribution lines collapse into one sheet-level line — the same facts, once.</span></li>
+                  </ul>
+                  <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-4">Scope note: this is one drawn state, per Open question 4's recorded default. A real print stylesheet — page breaks that never split a card, repeated headers, widow control — is its own task.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════ FOOTER ═════════ -->
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between gap-6 flex-wrap">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="route-comparison.html" class="hover:text-slate-900">route-comparison</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

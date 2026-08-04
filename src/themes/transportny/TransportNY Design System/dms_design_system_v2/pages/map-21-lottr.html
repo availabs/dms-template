@@ -59,43 +59,81 @@
 
 <div class="bg-[#ECEEF2]" data-dms-layout="app">
   <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
-    <div class="flex-1 flex flex-col items-stretch max-w-full min-h-screen lg:ml-60">
-      <div class="flex flex-1 items-start">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
 
         <!-- SIDENAV -->
-        <aside class="fixed inset-y-0 left-0 w-60 max-lg:hidden z-30">
-          <div class="flex flex-col w-60 h-full bg-[#12181F] border-r border-[#2a3545]">
-            <div class="relative h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center px-3">
-              <div class="w-10 h-10 flex items-center justify-center bg-[#1F3F8F] rounded text-white font-display font-bold text-[15px]">NY</div>
-              <span class="ml-3 font-display uppercase text-white text-[15px] tracking-wide flex-1">NPMRDS</span>
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <!-- ══ topMenu: LogoNav ══ the real component is a PRODUCT SWITCHER: logo tile
+                 (links home) + title + CaretDown that opens a "// switch product" dropdown
+                 listing NPMRDS / Freight Atlas / TSMO / Sandbox and a "Platform home →" foot.
+                 Closed state here; the open dropdown is documented in components.html. -->
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="landing.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <!-- ══ the product nav ══ FLAT (no sub-items), in the same order as the home page's
+                 sections. Docs is NOT here — it is a QuickLink, below. -->
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-macro.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: GeographicFlexibility --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M16,30.36 C8.216,30.36,1.64,23.784,1.64,16S8.216,1.64,16,1.64S30.36,8.216,30.36,16S23.784,30.36,16,30.36z M16.36,23.36v6.274 c1.867-0.051,3.655-0.499,5.28-1.262V24.31c-0.461-0.127-0.824-0.49-0.951-0.951L16.36,23.36L16.36,23.36z M9.36,27.854 c1.879,1.076,4.021,1.72,6.28,1.781V23.36H9.36V27.854z M22.36,24.312v3.697c2.036-1.105,3.781-2.716,5.051-4.648h-4.1 C23.185,23.821,22.821,24.185,22.36,24.312z M4.589,23.36c1.057,1.608,2.442,2.994,4.051,4.051V23.36H4.589z M22,22.36 c-0.353,0-0.64,0.287-0.64,0.64s0.287,0.64,0.64,0.64s0.64-0.287,0.64-0.64S22.353,22.36,22,22.36z M23.312,22.64h4.542 c1.076-1.879,1.72-4.021,1.781-6.28H22.36v5.329C22.821,21.815,23.185,22.179,23.312,22.64z M16.36,22.64h4.212l-4.212-2.268V22.64z M9.36,22.64h6.28v-2.655l-5.657-3.046c-0.168,0.176-0.382,0.307-0.624,0.373L9.36,22.64L9.36,22.64z M4.147,22.64H8.64v-5.328 c-0.461-0.127-0.825-0.491-0.952-0.952H2.365C2.427,18.618,3.07,20.761,4.147,22.64z M16.36,19.554l4.657,2.508 c0.168-0.176,0.383-0.307,0.623-0.373V16.36h-5.28C16.36,16.36,16.36,19.554,16.36,19.554z M10.428,16.36l5.212,2.806V16.36H10.428z M9,15.36c-0.353,0-0.64,0.287-0.64,0.64S8.647,16.64,9,16.64S9.64,16.353,9.64,16S9.353,15.36,9,15.36z M22.36,15.64h7.274 c-0.062-2.259-0.705-4.401-1.781-6.28h-4.542c-0.127,0.461-0.49,0.825-0.951,0.952V15.64z M16.36,15.64h5.28v-5.329 c-0.241-0.066-0.455-0.197-0.623-0.373l-4.657,2.507C16.36,12.445,16.36,15.64,16.36,15.64z M10.428,15.64h5.212v-2.807 L10.428,15.64z M2.365,15.64h5.324c0.126-0.461,0.491-0.825,0.952-0.952V9.36H4.147C3.07,11.239,2.427,13.381,2.365,15.64z M9.36,14.688c0.241,0.066,0.456,0.197,0.624,0.373l5.657-3.046V9.36H9.36V14.688z M16.36,9.36v2.268l4.211-2.268H16.36z M22,8.36 c-0.353,0-0.64,0.287-0.64,0.64S21.647,9.64,22,9.64S22.64,9.353,22.64,9S22.353,8.36,22,8.36z M23.312,8.64h4.1 c-1.27-1.934-3.015-3.544-5.051-4.649v3.698C22.821,7.815,23.185,8.179,23.312,8.64z M16.36,8.64h4.329 c0.127-0.461,0.49-0.825,0.951-0.952V3.627c-1.625-0.762-3.413-1.21-5.28-1.262V8.64z M9.36,8.64h6.28V2.365 c-2.259,0.062-4.401,0.706-6.28,1.782C9.36,4.147,9.36,8.64,9.36,8.64z M4.589,8.64H8.64V4.589C7.031,5.646,5.646,7.031,4.589,8.64z"/></svg><span class="flex-1">Macro View</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="route-comparison.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: ScatterMatrix --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M6.5,12.5c0,0.552-0.448,1-1,1s-1-0.448-1-1s0.448-1,1-1S6.5,11.948,6.5,12.5 M6.5,19.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S6.5,20.052,6.5,19.5 M6.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S6.5,27.052,6.5,26.5 M13.5,19.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,20.052,13.5,19.5 M13.5,26.5 c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1S13.5,27.052,13.5,26.5 M20.5,26.5c0-0.552-0.448-1-1-1s-1,0.448-1,1s0.448,1,1,1 S20.5,27.052,20.5,26.5 M30,30.36H2c-0.199,0-0.36-0.161-0.36-0.36V2c0-0.199,0.161-0.36,0.36-0.36h28c0.199,0,0.36,0.161,0.36,0.36 v28C30.36,30.199,30.199,30.36,30,30.36z M23.36,29.64h6.279v-6.28H23.36V29.64z M16.36,29.64h6.28v-6.28h-6.28V29.64z M9.36,29.64 h6.28v-6.28H9.36V29.64z M2.36,29.64h6.28v-6.28H2.36V29.64z M23.36,22.64h6.279v-6.28H23.36V22.64z M16.36,22.64h6.28v-6.28h-6.28 V22.64z M9.36,22.64h6.28v-6.28H9.36V22.64z M2.36,22.64h6.28v-6.28H2.36V22.64z M23.36,15.64h6.279V9.36H23.36V15.64z M16.36,15.64 h6.28V9.36h-6.28V15.64z M9.36,15.64h6.28V9.36H9.36V15.64z M2.36,15.64h6.28V9.36H2.36V15.64z M23.36,8.64h6.279V2.36H23.36V8.64z M16.36,8.64h6.28V2.36h-6.28V8.64z M9.36,8.64h6.28V2.36H9.36V8.64z M2.36,8.64h6.28V2.36H2.36V8.64z"/></svg><span class="flex-1">Route comparison</span></a>
+              <a href="map-21.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
             </div>
-            <div class="px-3 pt-3"><button class="w-full h-9 px-3 rounded-full bg-[#1a2029] border border-[#2a3545] flex items-center gap-2 text-slate-400"><!-- icon: Search --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg><span class="font-proxima text-[13px]">Search</span></button></div>
-            <div class="flex-1 py-2">
-              <a href="getting-started.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Pages --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25"/></svg><span class="text-[13px]">Getting started</span></a>
-              <a href="map-21-system-performance.html" class="px-4 py-2 flex items-center gap-3 text-white bg-[#1e2530] border-l-[3px] border-[#FACC15]"><!-- icon: Activity --><svg class="size-[18px] text-[#FACC15]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="text-[13px] flex-1">MAP-21 PM3</span></a>
-              <a href="congestion.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: Activity --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="text-[13px]">Congestion</span></a>
-              <a href="work-zones.html" class="px-4 py-2 flex items-center gap-3 text-slate-300 hover:bg-[#1e2530] border-l-[3px] border-transparent"><!-- icon: MapPin --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span class="text-[13px]">Work zones</span></a>
+
+            <!-- ══ bottomMenu 1: QuickLinks ══ the real component renders nav-styled links,
+                 not a search box: Data Sources · Docs · (authed only) a divider + Report an
+                 issue. This is where Docs belongs. -->
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
             </div>
-            <div class="border-t border-[#2a3545] py-2 px-4 flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#37576B] to-[#1f3450] flex items-center justify-center text-white text-[11px] font-medium ring-1 ring-[#FACC15]/20">AM</div>
-              <div class="flex-1"><div class="font-display uppercase text-white text-[12px] tracking-wide truncate">Alex Muro</div><div class="font-mono text-slate-400 text-[10px] uppercase tracking-[0.18em] truncate">Region 3</div></div>
+
+            <!-- ══ bottomMenu 2: UserMenu ══ avatar (User icon) + email + first group, plus the
+                 EditControl page edit/view toggle for users with edit-page permission. -->
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
             </div>
           </div>
         </aside>
 
-        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2]">
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMBS · LayoutGroup `breadcrumbs` (deep page) ═════════
+               Contract item 3 · the dedicated `breadcrumbs` group (the datasets-source
+               model), NOT a <nav> inlined into page-header. Both look alike but they are
+               different DMS structures and translate differently. -->
+          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
+                <a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                  <span class="text-slate-300 px-1">/</span>
+                  <a href="map-21-system-performance.html" class="hover:text-[#0f1722]">MAP-21 PM3</a>
+                  <span class="text-slate-300 px-1">/</span>
+                  <span class="text-[#0f1722]">Reliability</span>
+              </nav>
+            </div>
+
+            <!-- MAP-21 family nav · replaces the SideNav submenu the flat nav removed.
+                 Without it map-21.html is a dead end for its three siblings. -->
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 pb-2.5 flex flex-wrap items-center gap-2" data-dms-section="family-nav">
+              <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mr-1">map-21</span>
+              <a href="map-21.html" class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">Per-year</a><a href="map-21-system-performance.html" class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">System performance</a><span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#37576B] text-white font-mono text-[10.5px] uppercase tracking-[0.16em]">LOTTR</span><a href="map-21-trend.html" class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">Multi-year trend</a>
+            </div>
+          </div>
 
           <!-- ═════════ PAGE HEADER · LayoutGroup `header` ═════════ -->
           <div class="w-full bg-white border-b border-zinc-950/10" data-dms-group="header">
             <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-10" data-dms-section="page-header">
               <div class="flex items-center justify-between gap-4 mb-4">
-                <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1">
-                  <a href="getting-started.html" class="hover:text-[#0f1722]">NPMRDS</a>
-                  <span class="text-slate-300 px-1">/</span>
-                  <a href="map-21-system-performance.html" class="hover:text-[#0f1722]">MAP-21 PM3</a>
-                  <span class="text-slate-300 px-1">/</span>
-                  <span class="text-[#0f1722]">Reliability</span>
-                </nav>
                 <a href="map-21-system-performance.html" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1"><!-- icon: ChevronLeft --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>Full PM3 report</a>
               </div>
               <div class="flex items-center gap-3 mb-2">
@@ -108,17 +146,19 @@
                   <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">Level of travel time reliability<span class="text-[#CA8A04]">.</span></h1>
                   <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[680px]">Every NHS segment in New York, colored by its worst-period LOTTR for 2025 — the measure behind the two statewide reliability targets on the main report. The map shows <span class="text-[#0f1722] font-medium">where</span> travel is dependable; the statistics below show <span class="text-[#0f1722] font-medium">how much</span>, and what drives it.</p>
                 </div>
-                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                <div class="flex flex-col items-end gap-2 min-w-0">
                   <!-- YearScrubber: drives the map + every section on this page -->
                   <div class="h-8 inline-flex items-center gap-2 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 pl-2.5 pr-1.5">
                     <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">Year</span>
                     <span class="font-mono tabular-nums text-[12px] text-[#0F1722] font-medium">2025</span>
                     <span class="size-5 rounded flex items-center justify-center text-slate-400 ml-0.5"><!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span>
                   </div>
-                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-2">
-                    <span>last refresh</span><span class="text-[#0f1722]">2026-05-08 04:12 EST</span>
-                    <span class="text-slate-300">·</span>
-                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>data current</span>
+                  <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-1 justify-end">
+                    <span class="text-emerald-700 inline-flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-500 dot-pulse"></span>npmrds speeds</span>
+                    <span class="text-slate-300">·</span><span>complete through <span class="text-[#0f1722]">jun 2026</span></span>
+                    <span class="text-slate-300">·</span><span>jul 2026 partial</span>
+                    <span class="text-slate-300">·</span><span>since jan 2017</span>
+                    <span class="text-slate-300">·</span><span>pm3 year <span class="text-[#0f1722] tabular-nums">2025</span></span>
                   </div>
                 </div>
               </div>
@@ -212,7 +252,7 @@
                   <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// map</span>
                   <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">worst-period LOTTR · by TMC</span>
                 </div>
-                <div class="font-display font-medium text-[17px] leading-[1.25] text-[#0F1722]">Where travel is reliable — and where it isn't.</div>
+                <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Where travel is reliable — and where it isn't.</div>
                 <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-1.5">Each NHS segment takes the color of its <span class="text-[#0f1722] font-medium">worst</span> of the four federal reporting periods. One bad period makes a segment unreliable.</p>
                 <div class="mt-2.5 pt-2.5 border-t border-zinc-950/05 font-mono text-[9.5px] uppercase tracking-[0.14em] text-slate-400">source 2001 · 2025 view · npmrds2 tiles</div>
               </div>
@@ -236,12 +276,12 @@
                   <div class="flex items-center gap-2"><span class="h-1 w-5 rounded flex-shrink-0" style="background:#15803D"></span><span class="flex-1">&lt; 1.25</span><span class="tabular-nums text-slate-500">11,317 mi</span></div>
                   <div class="flex items-center gap-2"><span class="h-1 w-5 rounded flex-shrink-0" style="background:#4ADE80"></span><span class="flex-1">1.25–1.49</span><span class="tabular-nums text-slate-500">3,781 mi</span></div>
                   <div class="flex items-center gap-2 pt-1.5 mt-0.5 border-t border-dashed border-[#CA8A04]/60 relative">
-                    <span class="absolute -top-[7px] right-0 font-mono text-[8.5px] uppercase tracking-wider text-[#CA8A04] bg-white pl-1">1.50 · federal threshold</span>
+                    <span class="absolute -top-[7px] right-0 font-mono text-[9px] uppercase tracking-wider text-[#CA8A04] bg-white pl-1">1.50 · federal threshold</span>
                     <span class="h-1 w-5 rounded flex-shrink-0" style="background:#F59E0B"></span><span class="flex-1">1.50–1.99</span><span class="tabular-nums text-slate-500">1,019 mi</span>
                   </div>
                   <div class="flex items-center gap-2"><span class="h-1 w-5 rounded flex-shrink-0" style="background:#E11D48"></span><span class="flex-1">≥ 2.00</span><span class="tabular-nums text-slate-500">301 mi</span></div>
                 </div>
-                <div class="mt-2.5 pt-2 border-t border-zinc-950/05 font-proxima text-[11px] leading-[1.5] text-slate-500">Reliable = under 1.50 in <span class="text-[#0f1722] font-medium">all four</span> periods · directional miles</div>
+                <div class="mt-2.5 pt-2 border-t border-zinc-950/05 font-proxima text-[11.5px] leading-[1.5] text-slate-500">Reliable = under 1.50 in <span class="text-[#0f1722] font-medium">all four</span> periods · directional miles</div>
               </div>
 
               <!-- ── NYC-metro inset (bottom-right) — where unreliability concentrates ── -->
@@ -295,7 +335,7 @@
                   <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Both LOTTR targets met — with room to spare.</h2>
                 </div>
                 <div class="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">
-                  <span class="font-display font-semibold text-[20px] tabular-nums text-[#0F1722] normal-case tracking-normal">2/2</span>
+                  <span class="font-display font-semibold text-[22px] tabular-nums text-[#0F1722] normal-case tracking-normal">2/2</span>
                   <span>LOTTR measures met</span>
                 </div>
               </div>
@@ -380,7 +420,7 @@
                 <div class="col-span-12 lg:col-span-7" data-dms-section="lottr-bins">
                   <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
                     <div class="h-11 px-4 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
-                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">NHS by worst-period LOTTR bin</span>
+                      <span class="font-display font-medium text-[15px] text-[#2D3E4C] flex-1">NHS by worst-period LOTTR bin</span>
                       <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">share of person-miles</span>
                     </div>
                     <div class="p-5 space-y-4 flex-1 text-[12.5px] text-slate-700">
@@ -389,7 +429,7 @@
                       <div><div class="flex justify-between mb-1"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full flex-shrink-0" style="background:#F59E0B"></span>1.50–1.99</span><span class="font-mono tabular-nums text-[#0f1722]">10.8%<span class="text-slate-400"> · 1,019 mi</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r" style="width:10.8%;background:#F59E0B"></div></div></div>
                       <div><div class="flex justify-between mb-1"><span class="inline-flex items-center gap-1.5"><span class="size-2 rounded-full flex-shrink-0" style="background:#E11D48"></span>≥ 2.00</span><span class="font-mono tabular-nums text-[#0f1722]">7.3%<span class="text-slate-400"> · 301 mi</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r" style="width:7.3%;background:#E11D48"></div></div></div>
                       <div class="pt-3 border-t border-zinc-950/05 flex items-baseline gap-2">
-                        <span class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#0F1722]">81.8%</span>
+                        <span class="font-display font-semibold text-[38px] leading-none tabular-nums text-[#0F1722]">81.8%</span>
                         <span class="font-proxima text-[12px] text-slate-500">of person-miles ride reliable segments · 16,418 directional NHS miles total</span>
                       </div>
                       <p class="font-proxima text-[12px] text-slate-500 leading-[1.55]">The worst 301 miles (≥ 2.00) carry <span class="text-[#0f1722] font-medium">7.3% of all person-miles</span> — four times their share of mileage. Unreliability lives where the traffic is.</p>
@@ -401,14 +441,14 @@
                 <div class="col-span-12 lg:col-span-5" data-dms-section="period-breakdown">
                   <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden h-full flex flex-col">
                     <div class="h-11 px-4 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
-                      <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Unreliable person-miles by period</span>
+                      <span class="font-display font-medium text-[15px] text-[#2D3E4C] flex-1">Unreliable person-miles by period</span>
                       <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">LOTTR ≥ 1.50</span>
                     </div>
                     <div class="p-5 space-y-4 flex-1 text-[12.5px] text-slate-700">
-                      <div><div class="flex justify-between mb-1"><span class="font-display uppercase text-[11.5px] tracking-[0.06em] text-[#0f1722]">PM peak <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">4–8p wkdy</span></span><span class="font-mono tabular-nums text-[#0f1722]">10.9%<span class="text-slate-400"> · 16.4% of segs</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r bg-[#37576B]" style="width:54.5%"></div></div></div>
-                      <div><div class="flex justify-between mb-1"><span class="font-display uppercase text-[11.5px] tracking-[0.06em] text-[#0f1722]">Midday <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">10a–4p wkdy</span></span><span class="font-mono tabular-nums text-[#0f1722]">7.6%<span class="text-slate-400"> · 12.8% of segs</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r bg-[#37576B]" style="width:38%"></div></div></div>
-                      <div><div class="flex justify-between mb-1"><span class="font-display uppercase text-[11.5px] tracking-[0.06em] text-[#0f1722]">AM peak <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">6–10a wkdy</span></span><span class="font-mono tabular-nums text-[#0f1722]">7.5%<span class="text-slate-400"> · 13.5% of segs</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r bg-[#37576B]" style="width:37.5%"></div></div></div>
-                      <div><div class="flex justify-between mb-1"><span class="font-display uppercase text-[11.5px] tracking-[0.06em] text-[#0f1722]">Weekend <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11px]">6a–8p</span></span><span class="font-mono tabular-nums text-[#0f1722]">6.5%<span class="text-slate-400"> · 16.0% of segs</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r bg-[#37576B]" style="width:32.5%"></div></div></div>
+                      <div><div class="flex justify-between mb-1"><span class="font-display uppercase text-[11.5px] tracking-[0.06em] text-[#0f1722]">PM peak <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11.5px]">4–8p wkdy</span></span><span class="font-mono tabular-nums text-[#0f1722]">10.9%<span class="text-slate-400"> · 16.4% of segs</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r bg-[#37576B]" style="width:54.5%"></div></div></div>
+                      <div><div class="flex justify-between mb-1"><span class="font-display uppercase text-[11.5px] tracking-[0.06em] text-[#0f1722]">Midday <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11.5px]">10a–4p wkdy</span></span><span class="font-mono tabular-nums text-[#0f1722]">7.6%<span class="text-slate-400"> · 12.8% of segs</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r bg-[#37576B]" style="width:38%"></div></div></div>
+                      <div><div class="flex justify-between mb-1"><span class="font-display uppercase text-[11.5px] tracking-[0.06em] text-[#0f1722]">AM peak <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11.5px]">6–10a wkdy</span></span><span class="font-mono tabular-nums text-[#0f1722]">7.5%<span class="text-slate-400"> · 13.5% of segs</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r bg-[#37576B]" style="width:37.5%"></div></div></div>
+                      <div><div class="flex justify-between mb-1"><span class="font-display uppercase text-[11.5px] tracking-[0.06em] text-[#0f1722]">Weekend <span class="font-proxima normal-case tracking-normal text-slate-400 text-[11.5px]">6a–8p</span></span><span class="font-mono tabular-nums text-[#0f1722]">6.5%<span class="text-slate-400"> · 16.0% of segs</span></span></div><div class="h-2.5 rounded bg-slate-100 overflow-hidden"><div class="h-full rounded-r bg-[#37576B]" style="width:32.5%"></div></div></div>
                       <p class="pt-3 border-t border-zinc-950/05 font-proxima text-[12px] text-slate-500 leading-[1.55]"><span class="text-[#0f1722] font-medium">PM peak is the binding period</span> — it fails the most person-miles. Weekend unreliability touches 16% of segments but only 6.5% of person-miles: it lives on low-volume roads.</p>
                     </div>
                   </div>
@@ -424,7 +464,7 @@
               <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
                 <div class="h-11 px-4 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/60">
                   <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
-                  <span class="font-display font-medium text-[14px] text-[#2D3E4C] flex-1">Least-reliable segments · ranked by worst-period LOTTR · CY 2025</span>
+                  <span class="font-display font-medium text-[15px] text-[#2D3E4C] flex-1">Least-reliable segments · ranked by worst-period LOTTR · CY 2025</span>
                   <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 border border-zinc-950/10 rounded px-2 py-0.5 bg-white">dir AADT &gt; 30,000</span>
                 </div>
                 <table class="w-full text-left">
@@ -443,10 +483,10 @@
                   </thead>
                   <tbody class="font-proxima text-[13px] text-slate-700">
                     <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]">
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">01</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">01</td>
                       <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">Harlem River Dr</td>
                       <td class="px-4 py-2.5">New York</td>
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">120P05340</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">120P05340</td>
                       <td class="px-4 py-2.5"><span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-wider text-slate-600">PM</span></td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums font-medium text-rose-700">7.34</td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">10.43</td>
@@ -454,10 +494,10 @@
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">0.13</td>
                     </tr>
                     <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]">
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">02</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">02</td>
                       <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">I-81</td>
                       <td class="px-4 py-2.5">Onondaga</td>
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">104-04115</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">104-04115</td>
                       <td class="px-4 py-2.5"><span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-wider text-slate-600">Midday</span></td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums font-medium text-rose-700">7.19</td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">11.62</td>
@@ -465,10 +505,10 @@
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">0.32</td>
                     </tr>
                     <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]">
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">03</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">03</td>
                       <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">Bruckner Blvd</td>
                       <td class="px-4 py-2.5">Bronx</td>
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">120-50854</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">120-50854</td>
                       <td class="px-4 py-2.5"><span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-wider text-slate-600">AM</span></td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums font-medium text-rose-700">7.14</td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">9.44</td>
@@ -476,10 +516,10 @@
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">0.12</td>
                     </tr>
                     <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]">
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">04</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">04</td>
                       <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">I-295</td>
                       <td class="px-4 py-2.5">Bronx</td>
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">120-05142</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">120-05142</td>
                       <td class="px-4 py-2.5"><span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-wider text-slate-600">PM</span></td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums font-medium text-rose-700">6.27</td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">10.71</td>
@@ -487,10 +527,10 @@
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">0.34</td>
                     </tr>
                     <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]">
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">05</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">05</td>
                       <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">Belt Pky</td>
                       <td class="px-4 py-2.5">Queens</td>
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">120P05360</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">120P05360</td>
                       <td class="px-4 py-2.5"><span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-wider text-slate-600">Midday</span></td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums font-medium text-rose-700">5.76</td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">10.00</td>
@@ -498,10 +538,10 @@
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">0.27</td>
                     </tr>
                     <tr class="border-b border-zinc-950/05 hover:bg-[#FFFBEB]">
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">06</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">06</td>
                       <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">I-95</td>
                       <td class="px-4 py-2.5">Bronx</td>
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">120-04801</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">120-04801</td>
                       <td class="px-4 py-2.5"><span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-wider text-slate-600">PM</span></td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums font-medium text-rose-700">5.49</td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">7.53</td>
@@ -509,10 +549,10 @@
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">0.25</td>
                     </tr>
                     <tr class="hover:bg-[#FFFBEB]">
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">07</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">07</td>
                       <td class="px-4 py-2.5 font-display uppercase text-[12px] tracking-[0.06em] text-[#0f1722]">I-678</td>
                       <td class="px-4 py-2.5">Bronx</td>
-                      <td class="px-4 py-2.5 font-mono text-[11px] text-slate-400">120N05177</td>
+                      <td class="px-4 py-2.5 font-mono text-[12px] text-slate-400">120N05177</td>
                       <td class="px-4 py-2.5"><span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-wider text-slate-600">PM</span></td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums font-medium text-rose-700">5.35</td>
                       <td class="px-4 py-2.5 text-right font-mono tabular-nums">8.45</td>
@@ -522,7 +562,7 @@
                   </tbody>
                 </table>
                 <div class="flex items-center justify-between px-4 h-10 border-t border-zinc-950/05 bg-slate-50/40">
-                  <span class="font-mono text-[11px] uppercase tracking-wider text-slate-500">1–7 of 5,145 segments with any period ≥ 1.50 · TTTR = worst-period truck index, shown for context</span>
+                  <span class="font-mono text-[12px] uppercase tracking-wider text-slate-500">1–7 of 5,145 segments with any period ≥ 1.50 · TTTR = worst-period truck index, shown for context</span>
                   <div class="flex items-center gap-1">
                     <button class="h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-[#0F1722] bg-white border border-zinc-950/10 rounded font-medium">1</button>
                     <button class="h-7 min-w-7 px-2 inline-flex items-center justify-center text-[12px] text-slate-600 hover:bg-slate-100 rounded">2</button>
@@ -600,8 +640,23 @@
                     <a href="map-21-system-performance.html" class="text-[#37576B] hover:text-[#1f3450] inline-flex items-center gap-1">full PM3 report <!-- icon: ChevronRight --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></a>
                   </div>
                 </div>
-                <span class="font-mono text-[11px] text-slate-500 flex-shrink-0 self-end">© NYSDOT · TransportNY DMS v0.2</span>
+                <span class="font-mono text-[12px] text-slate-500 flex-shrink-0 self-end">© NYSDOT · TransportNY DMS v0.2</span>
               </div>
+            </div>
+          
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 pb-4 flex items-center justify-between gap-6 flex-wrap border-t border-zinc-950/05 pt-3">
+              <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="npmrds-home.html" class="hover:text-slate-900">home</a>
+                <a href="npmrds-macro.html" class="hover:text-slate-900">macro-view</a>
+                <a href="npmrds-reports.html" class="hover:text-slate-900">reports</a>
+                <a href="npmrds-report.html" class="hover:text-slate-900">report</a>
+                <a href="route-comparison.html" class="hover:text-slate-900">route-comparison</a>
+                <a href="map-21.html" class="hover:text-slate-900">map-21</a>
+                <a href="docs-overview.html" class="hover:text-slate-900">docs</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              
+              </div>
+              <span class="font-mono text-[12px] text-slate-500">© NYSDOT · TransportNY DMS v0.2</span>
             </div>
           </footer>
 

@@ -82,6 +82,101 @@ export function isReportPage(siblingSections = []) {
     return siblingSections.some(s => s?.element?.['element-type'] === 'ReportRouteList');
 }
 
+// Pure mutation body shared by `applyMeasurePick` (below, runs against a live section's immer
+// draft via dwAPI) and NPMRDS's Add-Graph modal (composes a brand-new section's state before any
+// dataWrapper/dwAPI exists for it — see
+// planning/tasks/current/dynamic-reports-and-route-tags.md's "Workstream 0"). No immer-specific
+// API is used here, only plain mutation syntax, so the identical body works against a plain
+// mutable object just as well as an immer draft — this is what lets a from-scratch composed
+// section and a live-edited one produce byte-identical shape. `pick` is the FULL resolved pick
+// (already merged with DEFAULT_PICK/any partial), not a partial. Returns whether composeMeasureConfig
+// actually produced something (an unknown measureKey composes nothing, and callers should skip
+// downstream bookkeeping — e.g. the reconcile call — in that case).
+export function applyMeasurePickToState(state, pick, { externalSourceColumns, defaultColors } = {}) {
+    const composed = composeMeasureConfig({
+        graphType: pick.graphType,
+        measureKey: pick.measure,
+        resolutionKey: pick.resolution,
+        comparisonModeKey: pick.comparisonMode,
+        anchorInvert: pick.anchorInvert,
+        externalSourceColumns,
+        defaultColors,
+    });
+    if (!composed) return false;
+
+    // Default the primary Dataset to the canonical NPMRDS source when
+    // none is set yet — the whole point of this picker is that an
+    // author shouldn't need to separately know to do this via the
+    // generic "Dataset" menu first (reported live 2026-07-20: a
+    // freshly-added AVL Graph section had routes assignable via
+    // ReportRouteList but rendered nothing, because no Dataset was
+    // ever picked). Never overwrites an author's own different pick
+    // (see vocabulary README's "baseSource" composition contract).
+    if (!state.externalSource?.source_id) {
+        state.externalSource = { ...BASE_SOURCE.sourceInfo };
+    }
+
+    // Replace any existing xAxis/yAxis/color column — never a
+    // categorize column (comparison-series or otherwise). join
+    // itself stays a full replace, same contract as
+    // ensure_graph_templates' own drift-fix branch (see vocabulary
+    // README's "joins" section) — a measure either owns a join or it
+    // doesn't, no partial merge.
+    state.columns = [
+        ...(state.columns || []).filter(c => !MANAGED_TARGETS.includes(c.target)),
+        ...composed.columns,
+    ];
+    if (composed.join) state.join = composed.join;
+    else delete state.join;
+
+    if (!state.display) state.display = {};
+    state.display.graphType = composed.displayPatch.graphType;
+    state.display.fetchMode = composed.displayPatch.fetchMode;
+    if (composed.displayPatch.xAxis) {
+        state.display.xAxis = { ...(state.display.xAxis || {}), ...composed.displayPatch.xAxis };
+    }
+    if (composed.displayPatch.yAxis) {
+        state.display.yAxis = { ...(state.display.yAxis || {}), ...composed.displayPatch.yAxis };
+    }
+    if (composed.displayPatch.colors) state.display.colors = composed.displayPatch.colors;
+
+    if (composed.comparisonSeriesCombine) {
+        state.comparisonSeries = { ...(state.comparisonSeries || {}), combine: composed.comparisonSeriesCombine };
+    } else if (state.comparisonSeries?.combine) {
+        delete state.comparisonSeries.combine;
+    }
+
+    // Report-page wiring: every caller is isReportPage-gated (see
+    // above), so every apply here should leave the graph immediately
+    // assignable via ReportRouteList — matching the Report Page
+    // template's own pre-wired starter graph, not a bare "generate
+    // columns" tool. Idempotent upsert: re-picking never duplicates
+    // the subscriber entry or clobbers an unrelated one (e.g.
+    // hover_highlight).
+    if (!state.comparisonSeries) state.comparisonSeries = {};
+    state.comparisonSeries.enabled = true;
+    state.comparisonSeries.seriesKey = state.comparisonSeries.seriesKey || '__series';
+    state.comparisonSeries.seriesLabel = state.comparisonSeries.seriesLabel || 'Routes';
+
+    if (!state.display._functions) state.display._functions = { providers: [], subscribers: [] };
+    if (!state.display._functions.subscribers) state.display._functions.subscribers = [];
+    const subscribers = state.display._functions.subscribers;
+    const existingSubscriber = subscribers.find(s => s.functionId === 'comparison_series');
+    if (existingSubscriber) {
+        existingSubscriber.enabled = true;
+        existingSubscriber.paramKey = '$self';
+        existingSubscriber.args = { ...existingSubscriber.args, ...REPORT_SUBSCRIBER_ARGS };
+    } else {
+        subscribers.push({ functionId: 'comparison_series', enabled: true, paramKey: '$self', args: { ...REPORT_SUBSCRIBER_ARGS } });
+    }
+
+    // Bookkeeping only (mirrors display._functions) — remembers the
+    // last pick so reopening the menu shows the right checkmarks/
+    // summary. Never read by the render/query pipeline.
+    state.display._measurePick = pick;
+    return true;
+}
+
 // The apply sequence shared by every entry point onto the Measure/Comparison
 // Mode picker (today: the Settings-drawer item-group below; soon: the new
 // header quick-controls pills) — composeMeasureConfig() -> dwAPI.setState()
@@ -95,94 +190,20 @@ export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
     const pick = { ...DEFAULT_PICK, ...(state?.display?._measurePick || {}) };
     const nextPick = { ...pick, ...partial };
     const hasDataset = !!state?.externalSource?.source_id;
-    const composed = composeMeasureConfig({
-        graphType: nextPick.graphType,
-        measureKey: nextPick.measure,
-        resolutionKey: nextPick.resolution,
-        comparisonModeKey: nextPick.comparisonMode,
-        anchorInvert: nextPick.anchorInvert,
-        // Fall back to the canonical NPMRDS base source's own column list
-        // when no Dataset is picked yet, so the plain-resolution xAxis
-        // column (epoch/date) composes as the real physical column, not
-        // the generic stub — see buildXAxisColumn. Safe because every
-        // caller is isReportPage-gated: a report graph's Dataset IS this
-        // source (see below), there's no other candidate it could be.
-        externalSourceColumns: hasDataset ? state.externalSource.columns : BASE_SOURCE.sourceInfo.columns,
-        defaultColors: currentComponent?.defaultState?.display?.colors,
-    });
-    if (!composed) return;
+    let applied = false;
     dwAPI.setState(draft => {
-        // Default the primary Dataset to the canonical NPMRDS source when
-        // none is set yet — the whole point of this picker is that an
-        // author shouldn't need to separately know to do this via the
-        // generic "Dataset" menu first (reported live 2026-07-20: a
-        // freshly-added AVL Graph section had routes assignable via
-        // ReportRouteList but rendered nothing, because no Dataset was
-        // ever picked). Never overwrites an author's own different pick
-        // (see vocabulary README's "baseSource" composition contract).
-        if (!draft.externalSource?.source_id) {
-            draft.externalSource = { ...BASE_SOURCE.sourceInfo };
-        }
-
-        // Replace any existing xAxis/yAxis/color column — never a
-        // categorize column (comparison-series or otherwise). join
-        // itself stays a full replace, same contract as
-        // ensure_graph_templates' own drift-fix branch (see vocabulary
-        // README's "joins" section) — a measure either owns a join or it
-        // doesn't, no partial merge.
-        draft.columns = [
-            ...(draft.columns || []).filter(c => !MANAGED_TARGETS.includes(c.target)),
-            ...composed.columns,
-        ];
-        if (composed.join) draft.join = composed.join;
-        else delete draft.join;
-
-        if (!draft.display) draft.display = {};
-        draft.display.graphType = composed.displayPatch.graphType;
-        draft.display.fetchMode = composed.displayPatch.fetchMode;
-        if (composed.displayPatch.xAxis) {
-            draft.display.xAxis = { ...(draft.display.xAxis || {}), ...composed.displayPatch.xAxis };
-        }
-        if (composed.displayPatch.yAxis) {
-            draft.display.yAxis = { ...(draft.display.yAxis || {}), ...composed.displayPatch.yAxis };
-        }
-        if (composed.displayPatch.colors) draft.display.colors = composed.displayPatch.colors;
-
-        if (composed.comparisonSeriesCombine) {
-            draft.comparisonSeries = { ...(draft.comparisonSeries || {}), combine: composed.comparisonSeriesCombine };
-        } else if (draft.comparisonSeries?.combine) {
-            delete draft.comparisonSeries.combine;
-        }
-
-        // Report-page wiring: every caller is isReportPage-gated (see
-        // above), so every apply here should leave the graph immediately
-        // assignable via ReportRouteList — matching the Report Page
-        // template's own pre-wired starter graph, not a bare "generate
-        // columns" tool. Idempotent upsert: re-picking never duplicates
-        // the subscriber entry or clobbers an unrelated one (e.g.
-        // hover_highlight).
-        if (!draft.comparisonSeries) draft.comparisonSeries = {};
-        draft.comparisonSeries.enabled = true;
-        draft.comparisonSeries.seriesKey = draft.comparisonSeries.seriesKey || '__series';
-        draft.comparisonSeries.seriesLabel = draft.comparisonSeries.seriesLabel || 'Routes';
-
-        if (!draft.display._functions) draft.display._functions = { providers: [], subscribers: [] };
-        if (!draft.display._functions.subscribers) draft.display._functions.subscribers = [];
-        const subscribers = draft.display._functions.subscribers;
-        const existingSubscriber = subscribers.find(s => s.functionId === 'comparison_series');
-        if (existingSubscriber) {
-            existingSubscriber.enabled = true;
-            existingSubscriber.paramKey = '$self';
-            existingSubscriber.args = { ...existingSubscriber.args, ...REPORT_SUBSCRIBER_ARGS };
-        } else {
-            subscribers.push({ functionId: 'comparison_series', enabled: true, paramKey: '$self', args: { ...REPORT_SUBSCRIBER_ARGS } });
-        }
-
-        // Bookkeeping only (mirrors display._functions) — remembers the
-        // last pick so reopening the menu shows the right checkmarks/
-        // summary. Never read by the render/query pipeline.
-        draft.display._measurePick = nextPick;
+        applied = applyMeasurePickToState(draft, nextPick, {
+            // Fall back to the canonical NPMRDS base source's own column list
+            // when no Dataset is picked yet, so the plain-resolution xAxis
+            // column (epoch/date) composes as the real physical column, not
+            // the generic stub — see buildXAxisColumn. Safe because every
+            // caller is isReportPage-gated: a report graph's Dataset IS this
+            // source (see below), there's no other candidate it could be.
+            externalSourceColumns: hasDataset ? state.externalSource.columns : BASE_SOURCE.sourceInfo.columns,
+            defaultColors: currentComponent?.defaultState?.display?.colors,
+        });
     });
+    if (!applied) return;
     // Separate imperative call, same two-call pattern the built-in
     // Comparison Series "Enabled" toggle already uses elsewhere in
     // sectionMenu.jsx — adds the synthetic `__series` categorize column

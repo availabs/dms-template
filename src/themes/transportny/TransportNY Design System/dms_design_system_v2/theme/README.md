@@ -119,3 +119,26 @@ sites that haven't migrated yet. If you're on v4, you can ignore
 3. If the change touches colors or fonts, also update
    `tailwind.additions.js` and `index.css.additions`.
 4. Mirror `index.css.additions` into `../design-system/_shared.css`.
+
+## Two icon primitives — `svg()` and `pictogram()`
+
+`theme/icons.js` exports icons built from **two** helpers, and a consumer that assumes one
+will render nothing:
+
+| Helper | Grid | Paint | For |
+|---|---|---|---|
+| `svg()` | 24×24 | `fill:none` + `stroke:currentColor` @ 1.5 | every UI icon in the set |
+| `pictogram()` | 32×32 | `fill:currentColor`, no stroke | IBM Carbon *pictograms* |
+
+Carbon pictograms are a different library from Carbon's UI icons (`@carbon/pictograms`, not
+`@carbon/icons`) and are drawn as filled shapes with negative-space interior lines on a 32 grid.
+Passing one through `svg()` yields an invisible, cropped glyph — `fill:none` on a fill-only path
+draws nothing, and the 24 viewBox clips a 32 drawing.
+
+Currently one pictogram is registered: **`GeographicFlexibility`** (Macro View) — from
+`@carbon/pictograms` 12.81.0, Apache-2.0. Pictograms are designed for 48px+; this one survives
+18px because its silhouette (a globe) carries the meaning even once the interior node network
+merges. Verify any future pictogram at its smallest real usage size before registering it.
+
+**When generating the live `icons.jsx`** (see `managing-design-system-icons.md`), carry the
+per-icon viewBox and paint attributes across — they are no longer uniform across the set.

@@ -1,9 +1,9 @@
 /**
  * NPMRDS "Measure" picker — composition layer.
  *
- * Reads the shared, plain-data vocabulary (data-types/npmrds_graph_vocabulary/
- * vocabulary.json — see that directory's README for the field reference and
- * the Python-side consumer) and composes a live Graph/AVL Graph section's
+ * Reads the shared, plain-data vocabulary (./vocabulary.json — see the sibling
+ * README.md for the field reference and the Python-side consumer) and composes
+ * a live Graph/AVL Graph section's
  * `columns`/`join`/`comparisonSeries.combine`/`display` color config from an
  * author's Graph Type + Measure + Resolution + Comparison Mode picks.
  *
@@ -15,7 +15,12 @@
  * (Workstream 2) for the full design record.
  */
 
-import vocab from '../../../../../data-types/npmrds_graph_vocabulary/vocabulary.json';
+// Lives HERE, inside the theme folder, deliberately: the theme folder is the unit that gets synced
+// into transportNY (see planning/skills/sync-transportnyv2-theme). While this sat in
+// dms-template/data-types/npmrds_graph_vocabulary/ the reference climbed five levels out of src/,
+// which no downstream project can resolve — it broke transportNY's build on first sync. Keep it a
+// sibling; do not move it back out of the synced tree.
+import vocab from './vocabulary.json';
 
 export const GRAPH_VOCAB = vocab;
 

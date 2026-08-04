@@ -37,6 +37,7 @@ import Header from "./components/Header";
 import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
 import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
 
@@ -1396,7 +1397,9 @@ const table = {
       headerLeftGutter:               "flex justify-between sticky left-0 z-[1]",
       headerWrapper:                  "flex justify-between",
       headerCellContainer:            "w-full px-3 py-2 content-center font-display uppercase text-[11px] tracking-wide",
-      headerCellContainerBg:          "bg-slate-50/80 text-slate-600 border-b border-zinc-950/10",
+      // Opaque on purpose: headerContainer is `sticky top-0`, so any alpha lets
+      // body rows scroll through and show under the column labels (ticket #199).
+      headerCellContainerBg:          "bg-slate-50 text-slate-600 border-b border-zinc-950/10",
       headerCellContainerBgSelected:  "bg-blue-100 text-[#0F1722]",
       colResizer:                     "z-5 -ml-2 w-[1px] hover:w-[2px] bg-zinc-950/5 hover:bg-zinc-950/15",
       headerCellLabel:                "truncate select-none",
@@ -1423,7 +1426,9 @@ const table = {
       totalCell:                      "hover:bg-slate-100 font-medium",
       stripedRow:                     "",
       gutterCellWrapper:              "flex items-center justify-center cursor-pointer sticky left-0 z-[1] font-mono text-[11px]",
-      gutterCellWrapperNotSelected:   "bg-slate-50/60 text-slate-400",
+      // Opaque for the same reason as the header: gutterCellWrapper is
+      // `sticky left-0`, so alpha lets cells scroll through it horizontally.
+      gutterCellWrapperNotSelected:   "bg-slate-50 text-slate-400",
       gutterCellWrapperSelected:      "bg-blue-100 text-[#0F1722]",
 
       pivotGroupHeader:               "bg-slate-100 text-slate-700 text-center border-b border-r border-zinc-950/5",
@@ -1462,7 +1467,8 @@ const table = {
       // information than the dashboard default.
       name: "report",
       headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
-      headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
+      // Opaque — sticky header, see the `default` style's note (ticket #199).
+      headerCellContainerBg:          "bg-slate-50 text-slate-500 border-b border-zinc-950/10",
       cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
       cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2.5 px-4 font-[400] text-[13px] leading-[18px] text-slate-700",
     },
@@ -1475,7 +1481,8 @@ const table = {
       name: "flush",
       tableContainer:                 "flex flex-col bg-white overflow-x-auto overflow-y-auto max-h-[calc(78vh_-_10px)]",
       headerCellContainer:            "w-full px-4 py-2.5 content-center font-mono text-[10px] font-normal uppercase tracking-[0.16em]",
-      headerCellContainerBg:          "bg-slate-50/60 text-slate-500 border-b border-zinc-950/10",
+      // Opaque — sticky header, see the `default` style's note (ticket #199).
+      headerCellContainerBg:          "bg-slate-50 text-slate-500 border-b border-zinc-950/10",
       cell:                           "relative flex items-center min-h-[42px] border-b border-zinc-950/5",
       cellInner:                      "w-full min-h-full flex flex-wrap items-center truncate py-2.5 px-4 font-[400] text-[13px] leading-[18px] text-slate-700",
     },
@@ -1646,7 +1653,8 @@ const map = {
     legend: {
       panel: "p-4",
       panelInner: "relative w-72 min-h-10 max-h-[calc(100vh_-_111px)] overflow-auto rounded-[8px] border border-zinc-950/10 bg-white shadow-lg pointer-events-auto scrollbar-sm",
-      header: "h-9 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50/80 sticky top-0 z-10",
+      // Opaque — the panel body scrolls under this sticky header (ticket #199 class).
+      header: "h-9 px-3 flex items-center gap-2 border-b border-zinc-950/10 bg-slate-50 sticky top-0 z-10",
       headerTitle: `${F_DISP} font-medium text-[13px] text-[#2D3E4C] flex-1`,
       headerMeta: `${F_MONO} text-[9.5px] uppercase tracking-wider text-slate-500`,
       section: "",
@@ -2478,7 +2486,8 @@ const pageComponents = {
 // sectionMenu.jsx in the dms submodule for the generic extension point.
 // ─────────────────────────────────────────────────────────────────────────────
 const sectionMenuExtensions = {
-  "AVL Graph": [npmrdsMeasureMenu],
+  "Graph": [npmrdsMeasureMenu],
+  "Card": [calloutStatMenu],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2491,7 +2500,7 @@ const sectionMenuExtensions = {
 // components/QuickControls and components/MeasurePicker's applyMeasurePick.
 // ─────────────────────────────────────────────────────────────────────────────
 const sectionHeaderExtensions = {
-  "AVL Graph": [npmrdsQuickControls],
+  "Graph": [npmrdsQuickControls],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

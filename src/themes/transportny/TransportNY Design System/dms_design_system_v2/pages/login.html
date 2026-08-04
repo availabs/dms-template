@@ -22,23 +22,21 @@
   <div class="relative isolate flex min-h-svh w-full">
 
     <!-- COMPACT SIDENAV · 64-px icon rail, signed-out variant -->
-    <aside class="fixed inset-y-0 left-0 w-16 z-30 max-lg:hidden">
-      <div class="flex flex-col w-16 h-full bg-[#12181F] border-r border-[#2a3545] items-center">
+    <aside class="fixed inset-y-0 left-0 w-16 max-lg:hidden z-20">
+      <div class="flex flex-col w-16 h-full z-20 bg-[#12181F] items-center overflow-visible">
         <!-- logo block -->
-        <div class="w-full h-16 bg-[#0A0E13] border-b border-[#2a3545] flex items-center justify-center">
-          <div class="w-9 h-9 bg-[#1F3F8F] rounded text-white font-display font-bold text-[12px] flex items-center justify-center">NY</div>
-        </div>
+        <div class="@container h-16 w-16 flex px-2 py-3 items-center justify-center bg-[#12181F]"><span class="flex-shrink-0"><img class="h-8 w-auto" src="../assets/nys_logo_white.svg" alt="TransportNY"/></span></div>
         <!-- icon nav (inactive — signed-out preview) -->
-        <div class="flex-1 w-full py-3 flex flex-col items-center gap-1.5">
-          <div class="size-9 rounded text-slate-400 flex items-center justify-center" title="Home"><!-- icon: Pages --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25"/></svg></div>
-          <div class="size-9 rounded text-slate-400 flex items-center justify-center" title="Routes"><!-- icon: MapLayers --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25m0-4.5 5.57 3 5.57-3m-11.14 0L2.25 7.5 12 2.25l9.75 5.25-4.18 2.25"/></svg></div>
-          <div class="size-9 rounded text-slate-400 flex items-center justify-center" title="PM3"><!-- icon: Activity --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
-          <div class="size-9 rounded text-slate-400 flex items-center justify-center" title="Batch report"><!-- icon: Database --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 12C20 13.657 16.418 15 12 15C7.582 15 4 13.657 4 12"/><path d="M20 5V19C20 20.657 16.418 22 12 22C7.582 22 4 20.657 4 19V5"/></svg></div>
+        <div class="flex-1 py-4 w-full overflow-visible">
+          <div class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all" title="Home"><!-- icon: Pages --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25"/></svg></div>
+          <div class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all" title="Routes"><!-- icon: MapLayers --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.43 9.75 2.25 12l4.18 2.25m0-4.5 5.57 3 5.57-3m-11.14 0L2.25 7.5 12 2.25l9.75 5.25-4.18 2.25"/></svg></div>
+          <div class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all" title="PM3"><!-- icon: Activity --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+          <div class="group relative flex items-center justify-center w-full py-3 hover:bg-[#1e2530] text-slate-400 border-l-[3px] border-transparent transition-all" title="Batch report"><!-- icon: Database --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 12C20 13.657 16.418 15 12 15C7.582 15 4 13.657 4 12"/><path d="M20 5V19C20 20.657 16.418 22 12 22C7.582 22 4 20.657 4 19V5"/></svg></div>
         </div>
         <!-- bottom: sign-in glyph (this is the page the user is on) -->
-        <div class="w-full border-t border-[#2a3545] py-3 flex items-center justify-center">
+        <div class="border-t border-[#2a3545] pt-2 w-full flex items-center justify-center py-2">
           <div class="size-9 rounded bg-[#1e2530] border border-[#2a3545] flex items-center justify-center text-slate-300 ring-1 ring-[#FACC15]/30" title="Sign in">
-            <!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18.5 20V17.97C18.5 16.73 17.94 15.51 16.81 14.99C15.43 14.37 13.78 14 12 14C10.22 14 8.57 14.37 7.19 14.99C6.06 15.51 5.5 16.73 5.5 17.97V20"/><circle cx="12" cy="7.5" r="3.5"/></svg>
+            <!-- icon: User --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18.5 20V17.97C18.5 16.73 17.94 15.51 16.81 14.99C15.43 14.37 13.78 14 12 14C10.22 14 8.57 14.37 7.19 14.99C6.06 15.51 5.5 16.73 5.5 17.97V20"/><circle cx="12" cy="7.5" r="3.5"/></svg>
           </div>
         </div>
       </div>

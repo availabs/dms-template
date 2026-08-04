@@ -70,7 +70,7 @@ The snap row also records `_built_from_spec` (the spec's path) automatically.
 fails loudly at compose time rather than producing a silently empty graph. Current measures:
 `travelTime`, `speed`, `speedTruck`, `hoursOfDelay`, `avgHoursOfDelay`, `co2Emissions_passenger`,
 `co2Emissions_truck`, `avgCo2Emissions_passenger`, `avgCo2Emissions_truck`. The authority is
-`data-types/npmrds_graph_vocabulary/vocabulary.json` (measures, resolutions) and
+`src/themes/transportny/components/MeasurePicker/vocabulary.json` (measures, resolutions) and
 `GRAPH_TYPE_OPTIONS` in `MeasurePicker/composeMeasureConfig.js`; if a build rejects a value, read
 those rather than this list.
 
