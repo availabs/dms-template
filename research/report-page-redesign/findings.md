@@ -3,6 +3,13 @@
 **Status:** exploratory — scope not yet decided. User is switching tools; this document
 captures research so the next session doesn't re-derive it.
 
+**2026-07-29 note:** several entries below describe testing done against transportNY's
+dev server because that was the only place the route-creation plugin ran. As of
+2026-07-29 that plugin (and macroview) run natively in dms-template
+(`planning/tasks/completed/port-transportny-map-plugins.md`) — transportNY is no longer
+needed for any routes/reports testing. Left as-is below since it's an accurate record of
+what was true at the time.
+
 ## Objective
 
 Compare the old npmrds report-builder tool (legacy React app, `npmrds.devtny.org/report/edit/*`)
@@ -150,47 +157,21 @@ There is no dedicated "design" agent in this environment (checked the available 
    brand-new theme/design system from a blank brief; this is page-pattern-level iteration inside
    an existing, already-built transportny theme. Wrong tool for this job.
 
-## Status update (2026-07-22 → 2026-07-23)
+## Current status
 
-Gaps 1 and 2 below are now **done**, closing the loop opened by the "Open scoping question"
-section. Only Gap 3 remains genuinely unscoped.
+All three gaps below now have a status — see
+[`planning/tasks/current/report-page-redesign.md`](../../planning/tasks/current/report-page-redesign.md)
+for the current, maintained status of all three (this section used to duplicate that tracking
+in-place and the two drifted out of sync; that file is now the only place status is tracked, this
+research doc stays focused on the original audit/ground-truth/methodology above). Full
+implementation history for all three gaps lives in that file's companion archive,
+`report-page-redesign-archive.md`.
 
-- **Gap 1 (inline quick controls)** — fully shipped and live-verified. Library primitive
-  (`sectionHeaderExtensions` registry) in `src/dms/planning/tasks/completed/section-header-extensions.md`;
-  theme consumer (Measure + Comparison Mode pills) in `planning/tasks/completed/avl-graph-quick-controls.md`.
-  See memory `project_report_page_visual_redesign`, `project_avl_graph_quick_controls`.
-- **Gap 2 (route/graph color assignment)** — implemented and live-verified end-to-end (real
-  ClickHouse-backed LineGraph, color picks persist and render correctly). Split across
-  `planning/tasks/current/report-route-color-assignment.md` (theme) and
-  `src/dms/planning/tasks/current/comparison-series-explicit-color.md` (library). Still sitting in
-  `tasks/current/` — not bookkeeping-complete — because several testing-checklist items remain:
-  auto-assigned color on `addRoute`, cross-graph color consistency for the same route,
-  Bar/Pie/Treemap rendering (LineGraph proven, same code path, untested), GridGraph/SunburstGraph
-  regression check. See memory `project_report_route_color_assignment_scoped`.
-- **Bonus fix found + shipped along the way**: two routes/variants with an identical name used to
-  collapse into one series/legend line (`comparisonSeries` used `label` as the sole discriminator).
-  Fixed at the authoring boundary (auto-suffix on add, block on rename) rather than threading a
-  stable key through the whole engine. See memory `project_comparisonseries_duplicate_label_collapse`.
-- **Bonus bug found, NOT fixed**: the BarGraph "Color by Value" + named Scheme bug documented in
-  "Follow-up Q&A" below now has its own task file,
-  `src/dms/planning/tasks/current/bargraph-byvalue-scheme-color-nan-bug.md` — small, fully
-  root-caused, one-line fix (`getColorRange` swatch count), just not yet applied.
-
-**What's actually next**: Gap 3 (visual/density polish of the graph cards — spacing, legend
-placement, attribution-line treatment) is the only item from the original ranked list still
-untouched. The "Open scoping question" below is superseded for (a)/(b); only (c) and (d) are live
-options now.
-
-## Open scoping question (unresolved — ask next session)
-
-Presented to the user as a multiple-choice before they switched tools; not yet answered. Re-ask
-before starting implementation:
-
-- (a) Inline per-graph quick controls (gap #1 above) — recommended starting point, most concrete.
-- (b) Route/graph color assignment (gap #2) — needs a confirm-it's-actually-missing step first.
-- (c) Visual/density polish of graph cards (gap #3).
-- (d) Whole-page holistic review — run the full transcription-skill atom inventory across all
-  four old-tool screenshots before prioritizing anything.
+Two things found along the way, while verifying Gap 2, are tracked separately rather than as part
+of this redesign: a duplicate-route-name series collapse bug (`comparisonseries-stable-series-key.md`
+in the `dms` submodule, now fixed) and a BarGraph "Color by Value" NaN bug (see "Follow-up Q&A"
+below, and `src/dms/planning/tasks/current/bargraph-byvalue-scheme-color-nan-bug.md` — root-caused,
+not yet applied).
 
 ## Follow-up Q&A: value-driven bar color (2026-07-22)
 

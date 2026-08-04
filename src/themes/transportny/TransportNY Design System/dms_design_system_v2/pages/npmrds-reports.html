@@ -24,14 +24,28 @@
        was § 03 below two search bands; it is now § 01, immediately under the header. Rationale:
        an analyst arriving at /reports is far more often starting work than auditing the archive,
        and the archive is one click away in the search dialog.
-    2. ONE CARD PER TEMPLATE. The 12 templates were five category list-cards of link rows; they
-       are now 12 individual cards, category carried as a chip on each card's preview plate.
+    2. ONE CARD PER TEMPLATE, GROUPED INTO FIVE TYPED SECTIONS. The 12 templates were five
+       category list-cards of link rows; they are now 12 individual cards under five sub-heads —
+       Before & after · Change over time · Behavioral · Floating car · Events — each head carrying
+       a numeral, the category name, a count, and two lines on when to reach for that type.
+       The sub-heads are SIBLING sections in the same band grid at col-span-12 (a col-span-12
+       section forces the next row, which is what separates the groups) — nothing nests, per
+       contract item 10. The per-card category chip is gone: the head states it now, and repeating
+       "CHANGE OVER TIME" on all four cards under a "Change over time" head was noise. Difficulty
+       chips (beginner / intermediate / advanced, from the stored template names) stay on the cards.
+       Card spacing and the tile are unchanged — Alex ruled on both.
     3. A PREVIEW PLATE ON EVERY TEMPLATE CARD, restoring the legacy home page's thumbnail
        affordance. See "THE PREVIEW PLATE" below — the plate is real, derived data, and the
        50×50 thumbnails already in the DB are NOT big enough to be it.
-    4. SEARCH MOVED INTO A MODAL. A slim trigger stays above the templates band (in the header
-       group); the search control, facet chips and result rows now live in a modal section group.
-       § 04 draws all four states. The A/B ruling this reverses is re-argued below.
+       PLACEMENT, revised twice: a full-width 16:10 plate ABOVE the text was too dominant (Alex:
+       "way too big") — the plate is now a **4:5 tile at 1/4 of the card width, on the left**, text
+       to its right, which is the legacy home page's own proportion and cut the band's height by
+       roughly a third.
+    4. SEARCH MOVED INTO A MODAL — and the dialog on this page WORKS. A slim trigger stays above
+       the templates band (in the header group); the search control, facet chips and result rows
+       live in a dialog that really opens, really filters 57 real rows, and really writes the query
+       to the URL. § 04 is a state-driver card, not four drawn snapshots. The A/B ruling this
+       reverses is re-argued below; the JS deviation is declared at § 04.
 
   ═══ SEARCH TREATMENT — MODAL, AND WHY THIS IS NOT THE REJECTED PALETTE ═══════════════════
   Phase 8 (2026-07-29) deleted a ⌘K-style COMMAND PALETTE from this page for four reasons. Three
@@ -45,15 +59,16 @@
     · "State evaporates." The QUERY does not: the Filter inside the modal is URL-bound exactly as
       before (`searchParamKey: 'search'` + an OR group of `like` leaves), so ?search=bridge&region=8
       still travels in a link. Only the OPEN flag is in-memory — action params are never URL params
-      (`component-actions.md`). § 04 state 1 draws the consequence honestly: arrive with a query in
-      the URL and the closed trigger reports it, with one click to reopen the results.
+      (`component-actions.md`). The page handles that consequence rather than hiding it: load
+      `?search=bridge` and the CLOSED trigger reports the query and its match count, one click from
+      the results. Try it — the behaviour is live, not drawn.
     · "Undocumented." patterns.html §11 is amended to cover the modal variant, and §14 documents
       the preview plate. Nothing on this page is smuggled.
     · "Duplicated the SideNav search pill." Still true, and now correct rather than redundant —
       the pill and this trigger open the same dialog.
   What the modal costs, stated plainly: PAGINATION. A finder shows the top matches and links out;
-  it does not walk 869 rows three at a time. The result list scrolls to ~8 rows and the foot says
-  what was withheld. If a paginated full-library list is ever wanted it is a separate page, not
+  it does not walk 869 rows three at a time. The result list renders 8 rows, scrolls, and its foot
+  states how many matches it withheld. If a paginated full-library list is ever wanted it is a separate page, not
   this one.
 
   ═══ THE PREVIEW PLATE — REAL DATA, AND A MEASURED FINDING ════════════════════════════════
@@ -69,7 +84,8 @@
   Fill = component family, from theme.html §02 categorical: map #37576B · bar #E5A646 ·
   line #94C24E · grid #6F6F6F · table #94a3b8 · compare #E160A4.
   Production binding, in preference order: a captured `thumbnail` when one exists at usable
-  resolution → this layout-derived shape → the "no preview" tile. The re-capture pipeline and the
+  resolution → this layout-derived shape → the "no preview" tile. At tile scale the shape is drawn
+  on a 4:5 viewBox (`0 0 100 125`) so the gaps stay even; the 16:10 generation is gone. The re-capture pipeline and the
   small column type that renders the shape are both logged in the task file's Escalations table.
   § 03's four plates come from the same generator, run over `admin2.reports.graph_comps` for the
   legacy ancestor of each converted page.
@@ -200,10 +216,10 @@
                    Nothing searches here; the control lives in the dialog (§ 04). -->
               <div class="col-span-12" data-dms-section="find-a-report">
                 <div class="flex items-center gap-3 max-lg:flex-wrap">
-                  <button class="flex-1 min-w-[280px] h-12 flex items-center gap-3 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] px-4 text-left transition-colors">
+                  <button type="button" id="findTrigger" class="flex-1 min-w-[280px] h-12 flex items-center gap-3 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] px-4 text-left transition-colors">
                     <!-- icon: Search --><svg class="size-[18px] text-[#37576B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
-                    <span class="font-proxima text-[15px] text-slate-500 flex-1 truncate">Find a report — search 869 by name, road, route or description…</span>
-                    <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 hidden 2xl:inline">mine · region · measure · year · folder</span>
+                    <span id="findTriggerText" class="font-proxima text-[15px] text-slate-500 flex-1 truncate">Find a report — search 869 by name, road, route or description…</span>
+                    <span id="findTriggerMeta" class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 hidden 2xl:inline">mine · region · measure · year · folder</span>
                   </button>
                   <div class="flex items-center gap-2">
                     <a href="#your-reports" class="h-12 px-3.5 inline-flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600"><!-- icon: User --><svg class="size-4 text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>your reports <span class="tabular-nums normal-case tracking-normal text-[#0f1722]">7</span></a>
@@ -255,257 +271,272 @@
                 </div>
               </div>
 
-              <!-- ── SECTION · template 221 · Before & After › Single Route (size 4) ── -->
+              <div class="col-span-12" data-dms-section="tpl-head-before-after">
+                <div class="flex items-center gap-3 mb-1.5">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">01</span>
+                  <h3 class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] shrink-0">Before &amp; after</h3>
+                  <span class="flex-1 h-px bg-zinc-950/10"></span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">1 template · 1 route · 11 graphs</span>
+                </div>
+                <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 max-w-[760px]">Did the project change anything? One route, two date ranges, and a difference graph on every measure, so the delta <em>is</em> the finding rather than something the reader has to compute. Reach for this after a signal retiming, a road diet, a lane closure or an opening.</p>
+              </div>
+
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-221">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="118.6" height="12.9" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="15.0" width="58.6" height="6.6" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="60.7" y="15.0" width="58.6" height="6.6" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="23.0" width="118.6" height="4.8" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="29.3" width="118.6" height="8.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="39.1" width="118.6" height="5.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="46.2" width="118.6" height="12.0" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="59.6" width="38.6" height="8.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="40.7" y="59.6" width="38.6" height="8.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="80.7" y="59.6" width="38.6" height="8.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="69.5" width="118.6" height="4.8" rx="0.8" fill="#E5A646" fill-opacity=".38"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">before &amp; after</span>
-                    <span class="absolute top-2.5 right-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 221 · 2 map · 4 bar · 1 line · 3 grid · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="22.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="24.4" width="48.8" height="12.2" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="24.4" width="48.8" height="12.2" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="37.8" width="98.8" height="9.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="48.2" width="98.8" height="15.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="64.6" width="98.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="76.5" width="98.8" height="21.1" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="98.8" width="32.1" height="15.2" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="33.9" y="98.8" width="32.1" height="15.2" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="67.3" y="98.8" width="32.1" height="15.2" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="115.2" width="98.8" height="9.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 221 · 2 map · 4 bar · 1 line · 3 grid · 1 table">tpl 221 · 2 map · 4 bar · 1 line · 3 grid · 1 table</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span></div>
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Single Route</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 221 · 2 map · 4 bar · 1 line · 3 grid · 1 table">tpl 221 · 2 map · 4 bar · 1 line · 3 grid · 1 table</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">This report compares a single route before and after a certain time frame. The report looks at average speeds and congestion.</p>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">1 route · 11 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">1 route · 11 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 244 · Change over time › Year Over Year (size 4) ── -->
+              <div class="col-span-12 mt-4" data-dms-section="tpl-head-change">
+                <div class="flex items-center gap-3 mb-1.5">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">02</span>
+                  <h3 class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] shrink-0">Change over time</h3>
+                  <span class="flex-1 h-px bg-zinc-950/10"></span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">4 templates · 1 route</span>
+                </div>
+                <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 max-w-[760px]">Nothing was built — you want the trend. These compare a route against itself across years or across the months of one year, which is what a monitoring memo needs: the same window, repeated, with the seasonality left in rather than averaged away.</p>
+              </div>
+
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-244">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="58.6" height="8.5" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="60.7" y="0.7" width="58.6" height="8.5" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="10.6" width="118.6" height="9.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="21.4" width="118.6" height="6.3" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="29.0" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="29.0" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="29.0" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="35.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="35.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="35.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="41.3" width="118.6" height="5.5" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="48.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="48.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="48.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="54.3" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="54.3" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="54.3" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="60.4" width="118.6" height="6.3" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="68.0" width="38.6" height="6.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="40.7" y="68.0" width="38.6" height="6.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="80.7" y="68.0" width="38.6" height="6.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">change over time</span>
-                    <span class="absolute top-2.5 right-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 244 · 2 map · 14 bar · 1 line · 3 table · 1 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="15.4" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="0.6" width="48.8" height="15.4" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="17.2" width="98.8" height="16.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="35.0" width="98.8" height="11.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="47.8" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="47.8" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="47.8" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="58.0" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="58.0" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="58.0" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="68.2" width="98.8" height="10.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="79.7" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="79.7" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="79.7" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="89.9" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="89.9" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="89.9" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="100.1" width="98.8" height="11.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="112.8" width="32.1" height="11.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="33.9" y="112.8" width="32.1" height="11.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="67.3" y="112.8" width="32.1" height="11.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 244 · 2 map · 14 bar · 1 line · 3 table · 1 compare">tpl 244 · 2 map · 14 bar · 1 line · 3 table · 1 compare</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span></div>
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Year Over Year</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 244 · 2 map · 14 bar · 1 line · 3 table · 1 compare">tpl 244 · 2 map · 14 bar · 1 line · 3 table · 1 compare</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">This report shows the travel time and average hours of delay for a single route across multiple years. The report is intended to give the analyst a year over year look at changes to average hours of delay and travel times.</p>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">1 route · 21 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">1 route · 21 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 239 · Change over time › 3-way rolling (size 4) ── -->
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-239">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="118.6" height="7.6" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="9.7" width="38.6" height="3.4" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="40.7" y="9.7" width="38.6" height="3.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="9.7" width="38.6" height="3.4" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="14.5" width="38.6" height="3.4" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="40.7" y="14.5" width="38.6" height="3.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="14.5" width="38.6" height="3.4" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="19.3" width="118.6" height="5.2" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="25.9" width="118.6" height="3.4" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="30.7" width="118.6" height="6.4" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="38.5" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="38.5" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="38.5" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="42.1" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="42.1" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="42.1" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="45.7" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="45.7" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="45.7" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="49.3" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="49.3" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="49.3" width="38.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="52.9" width="118.6" height="10.0" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="64.3" width="38.6" height="4.6" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="40.7" y="64.3" width="38.6" height="4.6" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="80.7" y="64.3" width="38.6" height="4.6" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="70.3" width="118.6" height="4.0" rx="0.8" fill="#94a3b8" fill-opacity=".32"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">change over time</span>
-                    <span class="absolute top-2.5 right-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">advanced</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 239 · 2 map · 14 bar · 6 line · 3 grid · 1 table · 1 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="13.8" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="15.6" width="32.1" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="33.9" y="15.6" width="32.1" height="6.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="15.6" width="32.1" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="23.6" width="32.1" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="33.9" y="23.6" width="32.1" height="6.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="23.6" width="32.1" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="31.6" width="98.8" height="9.8" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="42.6" width="98.8" height="6.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="50.6" width="98.8" height="11.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="63.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="63.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="63.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="69.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="69.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="69.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="75.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="75.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="75.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="81.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="81.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="81.6" width="32.1" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="87.6" width="98.8" height="17.8" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="106.6" width="32.1" height="8.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="33.9" y="106.6" width="32.1" height="8.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="67.3" y="106.6" width="32.1" height="8.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="116.6" width="98.8" height="7.8" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 239 · 2 map · 14 bar · 6 line · 3 grid · 1 table · 1 compare">tpl 239 · 2 map · 14 bar · 6 line · 3 grid · 1 table · 1 compare</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">advanced</span></div>
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">This Month vs. Last Month vs. Last Year</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 239 · 2 map · 14 bar · 6 line · 3 grid · 1 table · 1 compare">tpl 239 · 2 map · 14 bar · 6 line · 3 grid · 1 table · 1 compare</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">This report is for comparing a month's travel time, average hours of delay, and speed to the previous month and the same month the year prior. The report is intended to give the analyst a month vs month, and month by year over year look at changes.</p>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">1 route · 27 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">1 route · 27 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 207 · Change over time › Monthly Congestion (size 4) ── -->
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-207">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="78.6" height="11.7" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="80.7" y="0.7" width="38.6" height="11.7" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="13.8" width="118.6" height="16.0" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="31.2" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="31.2" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="31.2" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="39.1" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="39.1" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="39.1" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="46.9" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="46.9" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="46.9" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="54.8" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="54.8" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="54.8" width="38.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="62.6" width="118.6" height="11.7" rx="0.8" fill="#94C24E" fill-opacity=".38"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">change over time</span>
-                    <span class="absolute top-2.5 right-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 207 · 1 map · 12 bar · 2 line · 1 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="65.5" height="20.6" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="67.3" y="0.6" width="32.1" height="20.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="22.4" width="98.8" height="27.9" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="51.5" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="51.5" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="51.5" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="64.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="64.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="64.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="77.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="77.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="77.6" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="90.7" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="90.7" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="90.7" width="32.1" height="11.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="103.8" width="98.8" height="20.6" rx="0.7" fill="#94C24E" fill-opacity=".38"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 207 · 1 map · 12 bar · 2 line · 1 compare">tpl 207 · 1 map · 12 bar · 2 line · 1 compare</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">beginner</span></div>
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Monthly Congestion</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 207 · 1 map · 12 bar · 2 line · 1 compare">tpl 207 · 1 map · 12 bar · 2 line · 1 compare</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">This report is for analyzing congestion by comparing speed and travel time across all months of a single year. It is intended to give the analyst a monthly view of a particular route over a year.</p>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">1 route · 16 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">1 route · 16 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 77 · Change over time › Monthly Speed (size 4) ──
-                   Catalogue debt, drawn: the row is named "Single Route Default", its description
-                   carries an unresolved `{recent-0}` macro and a 2019 changelog line. Only the
-                   substantive sentences are shown; the stale metadata is flagged on the card. -->
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-77">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="58.6" height="11.1" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="60.7" y="0.7" width="58.6" height="11.1" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="13.2" width="118.6" height="9.8" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="24.4" width="58.6" height="8.6" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="24.4" width="58.6" height="8.6" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="34.5" width="58.6" height="8.6" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="34.5" width="58.6" height="8.6" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="44.5" width="58.6" height="8.6" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="44.5" width="58.6" height="8.6" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="54.5" width="58.6" height="8.6" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="60.7" y="54.5" width="58.6" height="8.6" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="64.5" width="58.6" height="9.8" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="64.5" width="58.6" height="9.8" rx="0.8" fill="#E5A646" fill-opacity=".38"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">change over time</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 77 · 1 map · 8 bar · 1 line · 1 grid · 1 table · 1 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="19.6" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="0.6" width="48.8" height="19.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="21.4" width="98.8" height="17.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="40.2" width="48.8" height="15.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="40.2" width="48.8" height="15.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="56.9" width="48.8" height="15.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="56.9" width="48.8" height="15.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="73.5" width="48.8" height="15.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="73.5" width="48.8" height="15.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="90.2" width="48.8" height="15.5" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="90.2" width="48.8" height="15.5" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="106.9" width="48.8" height="17.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="106.9" width="48.8" height="17.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 77 · 1 map · 8 bar · 1 line · 1 grid · 1 table · 1 compare">tpl 77 · 1 map · 8 bar · 1 line · 1 grid · 1 table · 1 compare</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Monthly Speed Comparisons</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 77 · 1 map · 8 bar · 1 line · 1 grid · 1 table · 1 compare">tpl 77 · 1 map · 8 bar · 1 line · 1 grid · 1 table · 1 compare</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">For route performance comparing the latest full year to all-time, and analyzing the performance by month for the latest year.</p>
                     <span class="mt-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">stored as “single route default” · needs a rename</span>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">1 route · 13 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">1 route · 13 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 246 · Behavioral › Snapshot (size 4) ── -->
+              <div class="col-span-12 mt-4" data-dms-section="tpl-head-behavioral">
+                <div class="flex items-center gap-3 mb-1.5">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">03</span>
+                  <h3 class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] shrink-0">Behavioral</h3>
+                  <span class="flex-1 h-px bg-zinc-950/10"></span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">4 templates · 1–3 routes</span>
+                </div>
+                <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 max-w-[760px]">How does the corridor behave when nothing unusual is happening? Average day against weekday, season against full year, peak against off-peak, one direction against the other. This is the family to read <em>before</em> concluding that an intervention did something.</p>
+              </div>
+
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-246">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="58.6" height="7.7" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="60.7" y="0.7" width="58.6" height="7.7" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="9.8" width="118.6" height="5.7" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="16.9" width="58.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="16.9" width="58.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="24.6" width="58.6" height="5.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="24.6" width="58.6" height="5.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="31.7" width="58.6" height="5.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="31.7" width="58.6" height="5.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="38.8" width="38.6" height="11.5" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="40.7" y="38.8" width="78.6" height="11.5" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="51.8" width="118.6" height="3.1" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="56.3" width="118.6" height="3.1" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="60.8" width="118.6" height="3.1" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="65.4" width="58.6" height="4.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="65.4" width="58.6" height="4.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="71.2" width="118.6" height="3.1" rx="0.8" fill="#94a3b8" fill-opacity=".32"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">behavioral</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 246 · 2 map · 8 bar · 1 line · 1 grid · 4 table · 1 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="13.9" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="0.6" width="48.8" height="13.9" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="15.7" width="98.8" height="10.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="27.5" width="48.8" height="11.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="27.5" width="48.8" height="11.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="40.5" width="48.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="40.5" width="48.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="52.3" width="48.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="52.3" width="48.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="64.2" width="32.1" height="20.4" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="33.9" y="64.2" width="65.5" height="20.4" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="85.7" width="98.8" height="6.3" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="93.3" width="98.8" height="6.3" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="100.8" width="98.8" height="6.3" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="108.4" width="48.8" height="8.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="108.4" width="48.8" height="8.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="118.1" width="98.8" height="6.3" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 246 · 2 map · 8 bar · 1 line · 1 grid · 4 table · 1 compare">tpl 246 · 2 map · 8 bar · 1 line · 1 grid · 4 table · 1 compare</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Snapshot</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 246 · 2 map · 8 bar · 1 line · 1 grid · 4 table · 1 compare">tpl 246 · 2 map · 8 bar · 1 line · 1 grid · 4 table · 1 compare</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak. The report looks at average speeds and congestion.</p>
                     <span class="mt-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">stored as “rochester inner loop” · a corridor name on a generic template</span>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">3 routes · 17 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">3 routes · 17 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 247 · Behavioral › Seasonality (size 4) ── -->
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-247">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="58.6" height="4.1" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="60.7" y="0.7" width="58.6" height="4.1" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="6.2" width="58.6" height="3.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="6.2" width="58.6" height="3.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="11.2" width="58.6" height="2.9" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="11.2" width="58.6" height="2.9" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="15.5" width="118.6" height="4.5" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="21.4" width="118.6" height="1.7" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="24.5" width="58.6" height="6.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="60.7" y="24.5" width="58.6" height="6.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="32.3" width="58.6" height="6.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="60.7" y="32.3" width="58.6" height="6.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="40.2" width="58.6" height="4.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="40.2" width="58.6" height="4.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="45.6" width="58.6" height="3.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="45.6" width="58.6" height="3.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="50.7" width="118.6" height="2.9" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="55.0" width="58.6" height="6.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="60.7" y="55.0" width="58.6" height="6.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="62.8" width="58.6" height="6.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="60.7" y="62.8" width="58.6" height="6.4" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="70.6" width="118.6" height="3.7" rx="0.8" fill="#94C24E" fill-opacity=".38"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">behavioral</span>
-                    <span class="absolute top-2.5 right-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">intermediate</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 247 · 3 map · 9 bar · 2 line · 8 grid"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="7.9" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="0.6" width="48.8" height="7.9" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="9.7" width="48.8" height="7.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="9.7" width="48.8" height="7.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="18.2" width="48.8" height="6.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="18.2" width="48.8" height="6.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="25.3" width="98.8" height="8.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="35.1" width="98.8" height="4.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="40.3" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="40.3" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="53.3" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="53.3" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="66.4" width="48.8" height="7.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="66.4" width="48.8" height="7.9" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="75.5" width="48.8" height="7.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="75.5" width="48.8" height="7.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="83.9" width="98.8" height="6.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="91.1" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="91.1" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="104.1" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="104.1" width="48.8" height="11.8" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="117.1" width="98.8" height="7.3" rx="0.7" fill="#94C24E" fill-opacity=".38"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 247 · 3 map · 9 bar · 2 line · 8 grid">tpl 247 · 3 map · 9 bar · 2 line · 8 grid</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">intermediate</span></div>
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Seasonality</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 247 · 3 map · 9 bar · 2 line · 8 grid">tpl 247 · 3 map · 9 bar · 2 line · 8 grid</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">This report analyzes seasonal behavior of a selected route. It compares data for a season against the full year. The report looks at average speeds and congestion.</p>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">1 route · 22 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">1 route · 22 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 228 · Behavioral › Bi-directional (size 4) ──
-                   The stored NOTE is a genuine input requirement, not description prose, so it
-                   renders as a requirement pill rather than a sentence. -->
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-228">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="118.6" height="5.3" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="7.4" width="58.6" height="4.8" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="60.7" y="7.4" width="58.6" height="4.8" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="13.5" width="58.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="13.5" width="58.6" height="2.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="17.1" width="118.6" height="5.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="23.8" width="118.6" height="5.8" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="31.0" width="58.6" height="2.2" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="60.7" y="31.0" width="58.6" height="2.2" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="34.6" width="118.6" height="2.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="38.7" width="118.6" height="3.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="43.9" width="58.6" height="2.2" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="60.7" y="43.9" width="58.6" height="2.2" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="47.4" width="118.6" height="2.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="51.6" width="118.6" height="4.3" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="57.2" width="58.6" height="2.7" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="60.7" y="57.2" width="58.6" height="2.7" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="61.3" width="58.6" height="3.7" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="60.7" y="61.3" width="58.6" height="3.7" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="66.5" width="58.6" height="3.7" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="60.7" y="66.5" width="58.6" height="3.7" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="71.6" width="58.6" height="2.7" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="60.7" y="71.6" width="58.6" height="2.7" rx="0.8" fill="#37576B" fill-opacity=".45"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">behavioral</span>
-                    <span class="absolute top-2.5 right-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">intermediate</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 228 · 5 map · 6 bar · 4 line · 6 table · 2 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="9.9" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="11.7" width="48.8" height="9.1" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="50.6" y="11.7" width="48.8" height="9.1" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="22.0" width="48.8" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="22.0" width="48.8" height="4.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="28.0" width="98.8" height="9.9" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="39.1" width="98.8" height="10.8" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="51.1" width="48.8" height="4.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="51.1" width="48.8" height="4.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="57.1" width="98.8" height="5.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="64.0" width="98.8" height="7.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="72.5" width="48.8" height="4.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="72.5" width="48.8" height="4.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="78.5" width="98.8" height="5.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="85.4" width="98.8" height="8.2" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="94.8" width="48.8" height="5.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="94.8" width="48.8" height="5.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="101.6" width="48.8" height="7.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="50.6" y="101.6" width="48.8" height="7.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="110.2" width="48.8" height="7.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="50.6" y="110.2" width="48.8" height="7.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="118.8" width="48.8" height="5.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="118.8" width="48.8" height="5.6" rx="0.7" fill="#37576B" fill-opacity=".45"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 228 · 5 map · 6 bar · 4 line · 6 table · 2 compare">tpl 228 · 5 map · 6 bar · 4 line · 6 table · 2 compare</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">intermediate</span></div>
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Bi-directional</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 228 · 5 map · 6 bar · 4 line · 6 table · 2 compare">tpl 228 · 5 map · 6 bar · 4 line · 6 table · 2 compare</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">This report is designed to look at the behavior of two directions of a bi-directional corridor. It is set up to show yearly averages for each year of the NPMRDS.</p>
                     <span class="mt-2 self-start inline-flex items-start gap-1.5 px-2 py-1 rounded-[4px] border border-[#E5A646]/40 bg-[#E5A646]/12 font-proxima text-[11.5px] leading-[1.4] text-[#8a5f03]"><!-- icon: AlertTriangle --><svg class="size-3.5 shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Needs two routes — the eastbound and westbound (or north and south) of one corridor, each starting where the other ends.</span>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">2 routes · 23 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">2 routes · 23 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 225 · Behavioral › Weekly Average (size 4) ──
-                   THE NO-DESCRIPTION STATE, and it is not hypothetical: the stored description on
-                   row 225 is "Testing ability to save changes." and the row is named "Snapshot".
-                   The card shows the shape, the counts and what is missing. -->
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-225">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="118.6" height="16.5" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="18.6" width="118.6" height="27.2" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="47.1" width="118.6" height="27.2" rx="0.8" fill="#E5A646" fill-opacity=".38"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">behavioral</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 225 · 1 bar · 1 line · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="28.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="30.4" width="98.8" height="46.4" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="78.0" width="98.8" height="46.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 225 · 1 bar · 1 line · 1 table">tpl 225 · 1 bar · 1 line · 1 table</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Weekly Average</div>
-                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-400 mt-1.5 flex-1">No description recorded. Three graphs — an average weekday profile with the weekend separated out — but nothing written down about when to reach for it.</p>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 225 · 1 bar · 1 line · 1 table">tpl 225 · 1 bar · 1 line · 1 table</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">No description recorded. Three graphs — an average weekday profile with the weekend separated out — but nothing written down about when to reach for it.</p>
                     <span class="mt-2 self-start inline-flex items-center gap-1.5 px-2 py-1 rounded-[4px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">needs description</span>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">2 routes · 3 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">2 routes · 3 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 276 · Floating car › One Week Study (size 4) ── -->
+              <div class="col-span-12 mt-4" data-dms-section="tpl-head-floating-car">
+                <div class="flex items-center gap-3 mb-1.5">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">04</span>
+                  <h3 class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] shrink-0">Floating car</h3>
+                  <span class="flex-1 h-px bg-zinc-950/10"></span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">2 templates · 1 route</span>
+                </div>
+                <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 max-w-[760px]">Percentile speeds along the corridor, stood up as a synthetic drive-through — the profile a floating-car run would have produced, without the run. One week keyed to a Monday, or a full year averaged into one representative day by five-minute epoch.</p>
+              </div>
+
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-276">
-                <a href="floating-car.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="58.6" height="13.6" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="60.7" y="0.7" width="58.6" height="13.6" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="15.7" width="58.6" height="13.6" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="60.7" y="15.7" width="58.6" height="13.6" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="30.7" width="118.6" height="11.9" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="44.0" width="118.6" height="11.9" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="57.4" width="58.6" height="16.9" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="60.7" y="57.4" width="58.6" height="16.9" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">floating car</span>
+                <a href="floating-car.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 276 · 2 map · 2 bar · 2 line · 1 grid · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="23.8" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="0.6" width="48.8" height="23.8" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="25.6" width="48.8" height="23.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="25.6" width="48.8" height="23.8" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="50.6" width="98.8" height="21.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="72.8" width="98.8" height="21.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="95.0" width="48.8" height="29.4" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="95.0" width="48.8" height="29.4" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 276 · 2 map · 2 bar · 2 line · 1 grid · 1 table">tpl 276 · 2 map · 2 bar · 2 line · 1 grid · 1 table</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">One Week Study</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 276 · 2 map · 2 bar · 2 line · 1 grid · 1 table">tpl 276 · 2 map · 2 bar · 2 line · 1 grid · 1 table</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">This template provides speed information for a route or corridor across a single week — the synthetic drive-through, at percentile speeds.</p>
                     <span class="mt-2 self-start inline-flex items-start gap-1.5 px-2 py-1 rounded-[4px] border border-[#E5A646]/40 bg-[#E5A646]/12 font-proxima text-[11.5px] leading-[1.4] text-[#8a5f03]"><!-- icon: AlertTriangle --><svg class="size-3.5 shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>The first route's date must be a Monday.</span>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">1 route · 8 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">1 route · 8 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 278 · Floating car › Annual Average (size 4) ── -->
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-278">
-                <a href="floating-car.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="118.6" height="8.9" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="11.0" width="58.6" height="11.5" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="60.7" y="11.0" width="58.6" height="11.5" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="24.0" width="118.6" height="8.9" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="34.3" width="118.6" height="8.9" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="44.7" width="118.6" height="8.9" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="55.0" width="118.6" height="8.9" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="65.4" width="58.6" height="8.9" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="60.7" y="65.4" width="58.6" height="8.9" rx="0.8" fill="#94a3b8" fill-opacity=".32"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">floating car</span>
+                <a href="floating-car.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 278 · 1 map · 4 bar · 1 line · 1 grid · 2 compare"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="16.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="17.8" width="48.8" height="20.4" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="17.8" width="48.8" height="20.4" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="39.4" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="56.6" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="73.9" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="91.1" width="98.8" height="16.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="108.4" width="48.8" height="16.0" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="50.6" y="108.4" width="48.8" height="16.0" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 278 · 1 map · 4 bar · 1 line · 1 grid · 2 compare">tpl 278 · 1 map · 4 bar · 1 line · 1 grid · 2 compare</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Annual Average Study</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 278 · 1 map · 4 bar · 1 line · 1 grid · 2 compare">tpl 278 · 1 map · 4 bar · 1 line · 1 grid · 2 compare</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">This template is based on the average day speeds for the latest year. It provides average speeds by five minute epoch, by peak period, by day of week, by month, and compares the latest year to the 3 preceding years.</p>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">1 route · 9 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">1 route · 9 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · template 291 · Events › Single Day (Advanced) (size 4) ── -->
+              <div class="col-span-12 mt-4" data-dms-section="tpl-head-events">
+                <div class="flex items-center gap-3 mb-1.5">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">05</span>
+                  <h3 class="font-display font-medium text-[18px] leading-[1.2] text-[#0F1722] shrink-0">Events</h3>
+                  <span class="flex-1 h-px bg-zinc-950/10"></span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 shrink-0">1 template · 1+ routes</span>
+                </div>
+                <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 max-w-[760px]">One day, one incident, five-minute bins. Queue growth and recovery per segment, with the following week and the same period a year earlier as the baselines — which is how the incident gets separated from the ordinary.</p>
+              </div>
+
               <div class="col-span-12 md:col-span-6 xl:col-span-4" data-dms-section="tpl-291">
-                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                  <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                    <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="38.6" height="20.9" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="40.7" y="0.7" width="78.6" height="20.9" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="23.0" width="118.6" height="12.8" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="37.2" width="38.6" height="20.9" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="40.7" y="37.2" width="38.6" height="20.9" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="80.7" y="37.2" width="38.6" height="20.9" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="59.5" width="118.6" height="14.8" rx="0.8" fill="#E5A646" fill-opacity=".38"/></svg>
-                    <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">events</span>
-                    <span class="absolute top-2.5 right-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">advanced</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-5 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="tpl 291 · 1 map · 1 bar · 1 line · 3 grid · 1 table"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="32.1" height="36.0" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="33.9" y="0.6" width="65.5" height="36.0" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="37.8" width="98.8" height="22.4" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="61.4" width="32.1" height="36.0" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="33.9" y="61.4" width="32.1" height="36.0" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="67.3" y="61.4" width="32.1" height="36.0" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="98.6" width="98.8" height="25.8" rx="0.7" fill="#E5A646" fill-opacity=".38"/></svg></div>
                   </div>
-                  <div class="p-5 flex flex-col flex-1">
-                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="tpl 291 · 1 map · 1 bar · 1 line · 3 grid · 1 table">tpl 291 · 1 map · 1 bar · 1 line · 3 grid · 1 table</div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">advanced</span></div>
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-1.5">Single Day (Advanced)</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="tpl 291 · 1 map · 1 bar · 1 line · 3 grid · 1 table">tpl 291 · 1 map · 1 bar · 1 line · 3 grid · 1 table</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 flex-1">Choose a route and enter the date of an incident. Compare against the next week and the year. Three per-segment grids carry the queue growth.</p>
-                    <div class="mt-4 pt-3 border-t border-zinc-950/05 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <span class="tabular-nums truncate">1 route · 7 graphs</span>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">1 route · 7 graphs</span>
                       <span class="ml-auto shrink-0 text-[#1F3F8F]">use template →</span>
                     </div>
                   </div>
                 </a>
               </div>
 
-              <!-- ── SECTION · build a route · the other create path (size 12) ──
-                   Full-width strip so the 12 template cards stay a clean 3 × 4 grid. Links out to
-                   the route-creation tool — the one and only reason to open transportNY. -->
               <div class="col-span-12" data-dms-section="routes" id="routes">
                 <div class="rounded-[8px] border border-[#1F3F8F]/25 bg-[#1F3F8F]/5 shadow-sm p-5 flex items-start gap-5 max-md:flex-col">
                   <span class="size-9 rounded-[6px] bg-[#1F3F8F]/12 flex items-center justify-center text-[#1F3F8F] shrink-0"><!-- icon: Road --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 8 4m12 16L16 4M12 5v2m0 4v2m0 4v2"/></svg></span>
@@ -582,7 +613,7 @@
                    instead of the three cards above. patterns.html §states composition. -->
                 <div class="col-span-12" data-dms-section="mine-empty">
                   <div class="rounded-[8px] border border-dashed border-zinc-950/15 bg-white/60 p-8 text-center">
-                    <span class="mx-auto size-10 rounded-[6px] bg-slate-100 flex items-center justify-center text-slate-400"><!-- icon: Pages --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12"/></svg></span>
+                    <span class="mx-auto size-10 rounded-[6px] bg-slate-100 flex items-center justify-center text-slate-400"><!-- icon: Pages --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg></span>
                     <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-3">You haven't built a report yet</div>
                     <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 max-w-[520px] mx-auto">Start from a template above — it comes pre-wired with the graphs that answer a specific question — or build a route first and add graphs yourself.</p>
                     <div class="mt-4 flex items-center justify-center gap-2">
@@ -618,84 +649,98 @@
               </div>
 
                 <div class="col-span-12 md:col-span-6 xl:col-span-3" data-dms-section="example-tappan-zee">
-                  <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                    <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                      <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="38.6" height="9.3" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="40.7" y="0.7" width="78.6" height="9.3" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="11.4" width="78.6" height="9.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="22.1" width="118.6" height="9.3" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="32.8" width="58.6" height="9.3" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="60.7" y="32.8" width="58.6" height="9.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="43.6" width="58.6" height="9.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="54.3" width="118.6" height="9.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="65.0" width="118.6" height="9.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/></svg>
-                      <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">tolling</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-4 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="page 2194949 · 10 sections"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="32.1" height="16.7" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="33.9" y="0.6" width="65.5" height="16.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="18.5" width="65.5" height="16.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="36.3" width="98.8" height="16.7" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="54.2" width="48.8" height="16.7" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="50.6" y="54.2" width="48.8" height="16.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="72.0" width="48.8" height="16.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="89.9" width="98.8" height="16.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="107.7" width="98.8" height="16.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-[#CA8A04]/30 bg-[#CA8A04]/8 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">tolling</span></div>
+                    <div class="font-display font-medium text-[15px] leading-tight uppercase text-[#0f1722] mt-1.5">Tappan Zee Cashless Toll</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="page 2194949 · 10 sections">page 2194949 · 10 sections</div>
+                    <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1.5 flex-1">Tappan Zee bridge month to month comparison, 6am–8pm. The fullest component mix in the corpus: map, bar, difference, line and a per-segment grid.</p>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">2 routes</span>
+                      <span class="ml-auto shrink-0 text-[#1F3F8F]">read →</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-1">
-                      <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="page 2194949 · 10 sections">page 2194949 · 10 sections</div>
-                      <div class="font-display font-medium text-[15px] leading-tight uppercase text-[#0f1722] mt-1">Tappan Zee Cashless Toll</div>
-                      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1.5 flex-1">Tappan Zee bridge month to month comparison, 6am–8pm. The fullest component mix in the corpus: map, bar, difference, line and a per-segment grid.</p>
-                      <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                        <span class="tabular-nums truncate">2 routes</span><span class="ml-auto shrink-0 text-[#1F3F8F]">read →</span>
-                      </div>
-                    </div>
-                  </a>
-                </div>
+                  </div>
+                </a>
+              </div>
 
                 <div class="col-span-12 md:col-span-6 xl:col-span-3" data-dms-section="example-year-over-year">
-                  <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                    <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                      <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="58.6" height="8.5" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="60.7" y="0.7" width="58.6" height="8.5" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="10.6" width="118.6" height="9.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="21.4" width="118.6" height="6.3" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="29.0" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="29.0" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="29.0" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="35.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="35.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="35.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="41.3" width="118.6" height="5.5" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="48.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="48.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="48.1" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="54.3" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="40.7" y="54.3" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="80.7" y="54.3" width="38.6" height="4.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="60.4" width="118.6" height="6.3" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="68.0" width="38.6" height="6.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="40.7" y="68.0" width="38.6" height="6.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="80.7" y="68.0" width="38.6" height="6.3" rx="0.8" fill="#94a3b8" fill-opacity=".32"/></svg>
-                      <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-500">density case</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-4 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="page 2192364 · 20 sections"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="15.4" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="50.6" y="0.6" width="48.8" height="15.4" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="17.2" width="98.8" height="16.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="35.0" width="98.8" height="11.6" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="47.8" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="47.8" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="47.8" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="58.0" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="58.0" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="58.0" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="68.2" width="98.8" height="10.3" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="79.7" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="79.7" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="79.7" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="89.9" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="33.9" y="89.9" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="67.3" y="89.9" width="32.1" height="9.0" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="100.1" width="98.8" height="11.6" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="112.8" width="32.1" height="11.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="33.9" y="112.8" width="32.1" height="11.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="67.3" y="112.8" width="32.1" height="11.6" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-[#CA8A04]/30 bg-[#CA8A04]/8 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">density case</span></div>
+                    <div class="font-display font-medium text-[15px] leading-tight uppercase text-[#0f1722] mt-1.5">Year Over Year (Beginner)</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="page 2192364 · 20 sections">page 2192364 · 20 sections</div>
+                    <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1.5 flex-1">Fourteen bar graphs, three tables and two maps on one page — what a dense report looks like when it earns the density, and the stress case the canvas is designed against.</p>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">2 routes</span>
+                      <span class="ml-auto shrink-0 text-[#1F3F8F]">read →</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-1">
-                      <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="page 2192364 · 20 sections">page 2192364 · 20 sections</div>
-                      <div class="font-display font-medium text-[15px] leading-tight uppercase text-[#0f1722] mt-1">Year Over Year (Beginner)</div>
-                      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1.5 flex-1">Fourteen bar graphs, three tables and two maps on one page — what a dense report looks like when it earns the density, and the stress case the canvas is designed against.</p>
-                      <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                        <span class="tabular-nums truncate">2 routes</span><span class="ml-auto shrink-0 text-[#1F3F8F]">read →</span>
-                      </div>
-                    </div>
-                  </a>
-                </div>
+                  </div>
+                </a>
+              </div>
 
                 <div class="col-span-12 md:col-span-6 xl:col-span-3" data-dms-section="example-rochester">
-                  <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                    <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                      <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="58.6" height="7.7" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="60.7" y="0.7" width="58.6" height="7.7" rx="0.8" fill="#94C24E" fill-opacity=".38"/><rect x="0.7" y="9.8" width="118.6" height="5.7" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="16.9" width="58.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="16.9" width="58.6" height="6.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="24.6" width="58.6" height="5.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="24.6" width="58.6" height="5.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="31.7" width="58.6" height="5.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="31.7" width="58.6" height="5.7" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="38.8" width="38.6" height="11.5" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="40.7" y="38.8" width="78.6" height="11.5" rx="0.8" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.7" y="51.8" width="118.6" height="3.1" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="56.3" width="118.6" height="3.1" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="60.8" width="118.6" height="3.1" rx="0.8" fill="#94a3b8" fill-opacity=".32"/><rect x="0.7" y="65.4" width="58.6" height="4.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="60.7" y="65.4" width="58.6" height="4.4" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="71.2" width="118.6" height="3.1" rx="0.8" fill="#94a3b8" fill-opacity=".32"/></svg>
-                      <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">urban corridor</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-4 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="page 2192451 · 16 sections"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="48.8" height="13.9" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="50.6" y="0.6" width="48.8" height="13.9" rx="0.7" fill="#94C24E" fill-opacity=".38"/><rect x="0.6" y="15.7" width="98.8" height="10.7" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="27.5" width="48.8" height="11.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="27.5" width="48.8" height="11.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="40.5" width="48.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="40.5" width="48.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="52.3" width="48.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="52.3" width="48.8" height="10.7" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="64.2" width="32.1" height="20.4" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="33.9" y="64.2" width="65.5" height="20.4" rx="0.7" fill="#6F6F6F" fill-opacity=".3"/><rect x="0.6" y="85.7" width="98.8" height="6.3" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="93.3" width="98.8" height="6.3" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="100.8" width="98.8" height="6.3" rx="0.7" fill="#94a3b8" fill-opacity=".32"/><rect x="0.6" y="108.4" width="48.8" height="8.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="50.6" y="108.4" width="48.8" height="8.5" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="118.1" width="98.8" height="6.3" rx="0.7" fill="#94a3b8" fill-opacity=".32"/></svg></div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-[#CA8A04]/30 bg-[#CA8A04]/8 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">urban corridor</span></div>
+                    <div class="font-display font-medium text-[15px] leading-tight uppercase text-[#0f1722] mt-1.5">Rochester Inner Loop</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="page 2192451 · 16 sections">page 2192451 · 16 sections</div>
+                    <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1.5 flex-1">Eleven routes around a single ring road, four TMC tables stacked at the foot. The example to read before you point a Snapshot at a network rather than a corridor.</p>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">11 routes</span>
+                      <span class="ml-auto shrink-0 text-[#1F3F8F]">read →</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-1">
-                      <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="page 2192451 · 16 sections">page 2192451 · 16 sections</div>
-                      <div class="font-display font-medium text-[15px] leading-tight uppercase text-[#0f1722] mt-1">Rochester Inner Loop</div>
-                      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1.5 flex-1">Eleven routes around a single ring road, four TMC tables stacked at the foot. The example to read before you point a Snapshot at a network rather than a corridor.</p>
-                      <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                        <span class="tabular-nums truncate">11 routes</span><span class="ml-auto shrink-0 text-[#1F3F8F]">read →</span>
-                      </div>
-                    </div>
-                  </a>
-                </div>
+                  </div>
+                </a>
+              </div>
 
                 <div class="col-span-12 md:col-span-6 xl:col-span-3" data-dms-section="example-skyway">
-                  <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex flex-col overflow-hidden hover:border-[#37576B] transition-colors">
-                    <div class="relative aspect-[16/10] bg-[#ECEEF2] border-b border-zinc-950/10 p-2">
-                      <svg viewBox="0 0 120 75" class="w-full h-full" preserveAspectRatio="none"><rect x="0.7" y="0.7" width="118.6" height="10.0" rx="0.8" fill="#37576B" fill-opacity=".45"/><rect x="0.7" y="12.1" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="16.6" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="21.2" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="25.7" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="30.2" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="34.8" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="39.3" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="43.9" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="48.4" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="53.0" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="57.5" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="62.1" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="66.6" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/><rect x="0.7" y="71.2" width="118.6" height="3.1" rx="0.8" fill="#E5A646" fill-opacity=".38"/></svg>
-                      <span class="absolute top-2.5 left-2.5 h-5 px-1.5 inline-flex items-center rounded-[3px] bg-white/90 border border-zinc-950/10 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">events</span>
+                <a href="npmrds-report.html" class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm h-full flex gap-4 p-4 hover:border-[#37576B] transition-colors">
+                  <div class="w-1/4 shrink-0">
+                    <div class="aspect-[4/5] rounded-[4px] border border-zinc-950/10 bg-[#ECEEF2] p-1" title="page 2191095 · 17 sections"><svg viewBox="0 0 100 125" class="w-full h-full" preserveAspectRatio="none"><rect x="0.6" y="0.6" width="98.8" height="17.7" rx="0.7" fill="#37576B" fill-opacity=".45"/><rect x="0.6" y="19.5" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="27.1" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="34.7" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="42.3" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="49.8" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="57.4" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="65.0" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="72.6" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="80.1" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="87.7" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="95.3" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="102.9" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="110.4" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/><rect x="0.6" y="118.0" width="98.8" height="6.4" rx="0.7" fill="#E5A646" fill-opacity=".38"/></svg></div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5 flex-wrap"><span class="inline-flex items-center h-5 px-1.5 rounded-[3px] border border-[#CA8A04]/30 bg-[#CA8A04]/8 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03]">events</span></div>
+                    <div class="font-display font-medium text-[15px] leading-tight uppercase text-[#0f1722] mt-1.5">Buffalo Skyway · 6–9pm hourly bins</div>
+                    <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate mt-1" title="page 2191095 · 17 sections">page 2191095 · 17 sections</div>
+                    <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1.5 flex-1">One map and fourteen identical bar graphs — one route per time bin. The plate is the argument: repetition at this rate is a job for one comparison series, not fourteen sections.</p>
+                    <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center gap-x-2 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      <span class="tabular-nums">14 routes</span>
+                      <span class="inline-flex items-center px-1.5 h-[18px] rounded-[3px] border border-zinc-950/15 bg-slate-50 text-[9.5px] tracking-[0.16em] text-slate-500">no description</span>
+                      <span class="ml-auto shrink-0 text-[#1F3F8F]">read →</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-1">
-                      <div class="font-mono text-[9px] tabular-nums text-slate-400 truncate" title="page 2191095 · 17 sections">page 2191095 · 17 sections</div>
-                      <div class="font-display font-medium text-[15px] leading-tight uppercase text-[#0f1722] mt-1">Buffalo Skyway · 6–9pm hourly bins</div>
-                      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-1.5 flex-1">One map and fourteen identical bar graphs — one route per time bin. The plate is the argument: repetition at this rate is a job for one comparison series, not fourteen sections.</p>
-                      <div class="mt-3 pt-2.5 border-t border-zinc-950/05 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                        <span class="tabular-nums">14 routes</span>
-                        <span class="inline-flex items-center px-1.5 h-[18px] rounded-[3px] border border-zinc-950/15 bg-slate-50 text-[9.5px] tracking-[0.16em] text-slate-500">no description</span>
-                        <span class="shrink-0 text-[#1F3F8F]">read →</span>
-                      </div>
-                    </div>
-                  </a>
-                </div>
+                  </div>
+                </a>
+              </div>
             </div>
           </div>
 
           <!-- ═════════ § 04 · THE SEARCH DIALOG · LayoutGroup `content_tint` ═════════
-               STATE SNAPSHOTS, drawn below the fold — the same mechanism npmrds-macro.html § 03
-               uses for its panel states. In production none of this band exists: it is one modal
-               section group (`isModal: true`, `modalParamKey: 'find'`, `modalSize: '4xl'`) holding
-               a Filter section and a result-list section, and it renders as a fixed overlay only
-               while the action param is set. Overlay click and ✕ call `clearActionParam('find')`.
-               Four states, each its own SIBLING section — nothing here nests. -->
+               THE DIALOG ON THIS PAGE IS LIVE, not a snapshot. Click the trigger in the header, or
+               any button in this band, and the real thing opens: typing filters, the chips filter,
+               the URL updates, esc/overlay/✕ close it. It runs on a 57-row sample of the real
+               library embedded at the foot of this file (see that script's comment for provenance).
+
+               ⚠ DEVIATION FROM THE DESIGN-SYSTEM RULES, ON PURPOSE. Skill §8 allows "no vanilla JS
+               beyond one optional open/closed-state toggle per page". This page ships more than
+               that — a filter + render loop — because Alex asked for a working dialog rather than
+               four drawn states. It is ~90 lines, self-contained at the foot of the file, and
+               throws nothing away: every state the snapshots used to draw is now reachable in the
+               real component via the buttons below. The DMS build does NOT inherit this JS — it
+               inherits a modal section group holding a Filter and a result list.
+
+               In DMS this band does not exist and the dialog is:
+                 draft_section_groups: { isModal: true, modalParamKey: 'find', modalSize: '4xl' }
+               opened by an action param published from a Card `click_publish` provider on the
+               header trigger's static cell; overlay/✕ call clearActionParam('find'). -->
           <div class="w-full bg-[#E4E8EE] border-y border-zinc-950/05 py-12" data-dms-group="content_tint" id="search-states">
             <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 grid grid-cols-12 gap-6">
 
@@ -705,268 +750,41 @@
                   <div class="max-w-[760px]">
                     <div class="flex items-center gap-2 mb-1">
                       <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
-                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">design states · not a band on the live page</span>
+                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">live component · not a band on the built page</span>
                     </div>
-                    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The search dialog, in four states.</h2>
-                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2">The query lives in the URL — <span class="tny-mono">?search=bridge&amp;region=8</span> — so a result set still travels in an email. Only the open flag is in-memory, which is what state 1 is about.</p>
+                    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The search dialog, working.</h2>
+                    <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2">The query lives in the URL — <span class="tny-mono">?search=bridge</span> — so a result set still travels in an email. Only the open flag is in-memory, which is what the fourth button below is about.</p>
                   </div>
                   <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 max-w-[300px] text-right">documented as patterns.html §11 · modal variant</span>
                 </div>
               </div>
 
-              <!-- ── SECTION · STATE 1 of 4 · closed, query in the URL (size 12) ── -->
-              <div class="col-span-12" data-dms-section="state-url-query">
-                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">state 1 · arrived on a shared link · dialog closed, query live</div>
+              <!-- ── SECTION · state drivers (size 12) ── each button puts the REAL dialog into
+                   the state the old snapshots drew, which is a better spec than a picture: the
+                   states cannot drift from the component because they are the component. -->
+              <div class="col-span-12" data-dms-section="state-drivers">
                 <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-5">
-                  <div class="flex items-center gap-3 max-lg:flex-wrap">
-                    <button class="flex-1 min-w-[280px] h-12 flex items-center gap-3 rounded-[6px] border border-[#37576B] bg-white px-4 text-left">
-                      <!-- icon: Search --><svg class="size-[18px] text-[#37576B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
-                      <span class="font-proxima text-[15px] text-[#0f1722] flex-1 truncate">bridge</span>
-                      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#37576B] bg-[#37576B]/10 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#1f3450]">region <span class="tabular-nums normal-case tracking-normal font-medium">8</span></span>
-                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#1F3F8F]">show results</span>
-                    </button>
-                    <a class="h-12 px-3.5 inline-flex items-center gap-2 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600"><!-- icon: XMark --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg>clear</a>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mr-1">reach a state</span>
+                    <button data-find-open="" class="h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">open · no query</button>
+                    <button data-find-open="bridge" class="h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">open · “bridge”</button>
+                    <button data-find-open="taconic bikeway" class="h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">open · no matches</button>
+                    <button data-find-url="bridge" class="h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">closed · query in the url</button>
+                    <button data-find-clear="1" class="h-8 px-3 inline-flex items-center gap-1.5 rounded-[6px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600"><!-- icon: XMark --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg>reset</button>
                   </div>
-                  <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-3">Action params never reach the URL, so the dialog cannot auto-open from a link — but the Filter's own params do, so the trigger reports the query and every facet riding with it, and one click reopens the results. This is the whole cost of the modal treatment, drawn rather than described.</p>
-                </div>
-              </div>
-
-              <!-- ── SECTION · STATE 2 of 4 · open with a query (size 12) ──
-                   The modal card at `modalSize: '4xl'` (896px). Results are REAL rows matching
-                   "bridge"; four of five are already rebuilt as DMS pages. -->
-              <div class="col-span-12" data-dms-section="state-modal-results">
-                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">state 2 · open · query typed · no facet applied · 72 of 869 match</div>
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden max-w-[896px]">
-                  <!-- modal head -->
-                  <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
-                    <div class="flex items-center justify-between gap-3 mb-3">
-                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">find a report</span>
-                      <button class="size-7 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+                  <div class="mt-4 pt-4 border-t border-zinc-950/05 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">what is wired</div>
+                      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600">The query (an <span class="tny-mono">OR</span> group of <span class="tny-mono">like</span> leaves over name + description) and three facets that are genuinely expressible as filter leaves: <strong>recent</strong> (the shipped <span class="tny-mono">op:'time'</span> “last N” preset), <strong>rebuilt</strong> (a plain <span class="tny-mono">filter</span> leaf) and <strong>described</strong> (the <span class="tny-mono">notempty</span> unary — the gap-filter idiom).</p>
                     </div>
-                    <div class="h-11 flex items-center gap-3 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 px-3">
-                      <!-- icon: Search --><svg class="size-[18px] text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
-                      <span class="font-proxima text-[15px] text-[#0f1722] flex-1">bridge</span>
-                      <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">what is drawn but inert</div>
+                      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600"><strong>mine</strong> — not expressible today; nothing injects the current user into a filter value (Escalations). <strong>region · measure · year · folder</strong> — the legacy table has no such columns, so they need the metadata the build task denormalizes. Both carry a <span class="tny-mono">title</span> saying so.</p>
                     </div>
-                    <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-2">Matches report names, descriptions, route names and road names — an <span class="tny-mono">OR</span> group of <span class="tny-mono">like</span> leaves, one per searchable column.</p>
-
-                    <!-- Facet chips · URL-bound page-variable toggles (empty chip drops out of the query)
-                         ═══ EXPRESSIBILITY, CHECKED AGAINST THE FILTER IMPLEMENTATION ═══
-                         Supported filter-leaf ops: filter (contains/IN) · exclude · like · gt/gte/
-                         lt/lte · is_null/is_not_null · empty/notempty (unary) · time (structured).
-                           · region / measure / year / folder — plain `filter` leaves. Fine.
-                           · shared·avail — a `filter` leaf on the owning group. Fine.
-                           · recent — EXPRESSIBLE, and not via the empty/notempty gap-filter idiom:
-                             there is a structured `op:'time'` leaf whose shipped preset list already
-                             contains "Last 30 days" (relative · unit day · count 30 · past), URL-bound
-                             as `last:30d` and compiled to (col >= now() - 30 * interval '1 day').
-                             Two caveats for the build task: it is POSTGRES-only (the CH path is not
-                             wired), and it must key off a date stored INSIDE `data` — the row's own
-                             updated_at is not a registered section column, so binding to it would
-                             compile to a phantom `data->>'updated_at'`.
-                           · mine — NOT EXPRESSIBLE TODAY. `created_by` passes through to the server
-                             fine, but nothing injects the current user's identity into a filter
-                             VALUE: page variables take literal strings, the derive registry has one
-                             entry (`yyyy`), and `$self` resolves to the SECTION's identity, never the
-                             user's. Logged in Escalations with the smallest enrichment (a
-                             `$currentUser` value sentinel, presence-gated like the existing unary
-                             ops). Drawn because "your reports" is a stated requirement — § 02 is the
-                             band that actually satisfies it; this chip is the wish.
-                         Also note the "sort" control below is NOT a shipped viewer primitive —
-                         `sort` is an author-time column property and the table header only renders
-                         the direction icon. It is drawn as author-fixed ordering; a
-                         viewer-changeable sort is a separate escalation. -->
-                    <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-wrap items-center gap-2">
-                      <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mr-1">narrow by</span>
-                      <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">mine</button>
-                      <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">recent</button>
-                      <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">shared · avail</button>
-                      <span class="h-4 w-px bg-zinc-950/10 mx-1"></span>
-                      <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">region <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                      <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">measure <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                      <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">year <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                      <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">folder <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
-                      <a class="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">clear all</a>
+                    <div>
+                      <div class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mb-1">what a build must know</div>
+                      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600">Action params never reach the URL, so a shared link arrives with the query live and the dialog shut — the closed trigger must report it. And a modal only <em>behaves</em> as a modal on a <strong>published</strong> page; in edit mode the group renders inline, which is how authors reach it.</p>
                     </div>
-                  </div>
-
-                  <!-- results head -->
-                  <div class="px-5 py-2.5 bg-[#FAFBFC] border-b border-zinc-950/05 flex items-center justify-between gap-4 flex-wrap">
-                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 tabular-nums">5 shown · 72 match “bridge” · 4 rebuilt</span>
-                    <div class="flex items-center gap-2">
-                      <span class="h-7 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 px-2.5">
-                        <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">sort</span>
-                        <span class="font-proxima text-[12.5px] text-[#0F1722]">Recently updated</span>
-                      </span>
-                      <button class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/15 text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]"><!-- icon: Download --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>export list</button>
-                    </div>
-                  </div>
-
-                  <!-- result rows · a row list, not a card grid (patterns §11) · scrolls in the dialog -->
-                  <div class="divide-y divide-zinc-950/05 max-h-[420px] overflow-y-auto">
-                    <a href="npmrds-report.html" class="block px-5 py-3.5 hover:bg-slate-50">
-                      <div class="flex items-start gap-3">
-                        <span class="mt-1.5 size-2.5 rounded-full bg-[#EF4444] shrink-0"></span>
-                        <div class="min-w-0 flex-1">
-                          <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Bridge Hits Impact — BIN 2075859 · 10/20/2019 10:00 PM</span>
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]">rebuilt</span>
-                          </div>
-                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">HRP SB South of Hutchinson River Parkway. Six routes across the closure and its detour, twenty-four graphs.</p>
-                        </div>
-                        <div class="text-right hidden sm:block shrink-0">
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">updated</div>
-                          <div class="font-mono text-[12px] tabular-nums text-slate-600">2024-05-15</div>
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mt-1">6 routes · 24 graphs</div>
-                        </div>
-                      </div>
-                    </a>
-                    <a href="npmrds-report.html" class="block px-5 py-3.5 hover:bg-slate-50">
-                      <div class="flex items-start gap-3">
-                        <span class="mt-1.5 size-2.5 rounded-full bg-[#E5A646] shrink-0"></span>
-                        <div class="min-w-0 flex-1">
-                          <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Bridge Hit I-90 WB at RT 33 Buffalo</span>
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]">rebuilt</span>
-                          </div>
-                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">October 31, 2018 bridge hit on I-90 for bridge carrying Rt 33. WB direction.</p>
-                        </div>
-                        <div class="text-right hidden sm:block shrink-0">
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">updated</div>
-                          <div class="font-mono text-[12px] tabular-nums text-slate-600">2019-08-02</div>
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mt-1">4 routes · 6 graphs</div>
-                        </div>
-                      </div>
-                    </a>
-                    <a href="npmrds-report.html" class="block px-5 py-3.5 hover:bg-slate-50">
-                      <div class="flex items-start gap-3">
-                        <span class="mt-1.5 size-2.5 rounded-full bg-[#37576B] shrink-0"></span>
-                        <div class="min-w-0 flex-1">
-                          <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">K-Bridge · 9-21-17</span>
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]">rebuilt</span>
-                          </div>
-                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">K-Bridge Eastbound Jan–Apr 2017 vs. May–July 2017.</p>
-                        </div>
-                        <div class="text-right hidden sm:block shrink-0">
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">updated</div>
-                          <div class="font-mono text-[12px] tabular-nums text-slate-600">2019-07-15</div>
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mt-1">2 routes · 7 graphs</div>
-                        </div>
-                      </div>
-                    </a>
-                    <a href="npmrds-report.html" class="block px-5 py-3.5 hover:bg-slate-50">
-                      <div class="flex items-start gap-3">
-                        <span class="mt-1.5 size-2.5 rounded-full bg-[#1F3F8F] shrink-0"></span>
-                        <div class="min-w-0 flex-1">
-                          <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Rexford Bridge Pre/Post Comparison</span>
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]">rebuilt</span>
-                            <span class="inline-flex items-center px-1.5 h-[18px] rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">no description</span>
-                          </div>
-                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-400 mt-1">Nothing was written down. Matched on the title alone — three routes, ten graphs.</p>
-                        </div>
-                        <div class="text-right hidden sm:block shrink-0">
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">updated</div>
-                          <div class="font-mono text-[12px] tabular-nums text-slate-600">2019-07-15</div>
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mt-1">3 routes · 10 graphs</div>
-                        </div>
-                      </div>
-                    </a>
-                    <a href="npmrds-report.html" class="block px-5 py-3.5 hover:bg-slate-50">
-                      <div class="flex items-start gap-3">
-                        <span class="mt-1.5 size-2.5 rounded-full bg-slate-400 shrink-0"></span>
-                        <div class="min-w-0 flex-1">
-                          <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">Seasonality Report — I-87 NB from I-90 to the Twin Bridges</span>
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/15 bg-slate-50 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">legacy</span>
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#EF4444]/25 bg-[#EF4444]/8 font-mono text-[10px] uppercase tracking-[0.16em] text-[#991B1B]">known bug</span>
-                          </div>
-                          <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">“Bug: 2021-2016 I-87 Northbound is set to date. Graph shows almost twice as much hours of delay for June 2017 as when you set the timebounds for the route to the month of June 2017.” — matched on its description, which is the argument for searching descriptions.</p>
-                        </div>
-                        <div class="text-right hidden sm:block shrink-0">
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">updated</div>
-                          <div class="font-mono text-[12px] tabular-nums text-slate-600">2022-08-25</div>
-                          <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mt-1">13 routes · 22 graphs</div>
-                        </div>
-                      </div>
-                    </a>
-                  </div>
-
-                  <!-- modal foot · no pagination: a finder shows the top matches and says what it withheld -->
-                  <div class="px-5 py-3 border-t border-zinc-950/05 bg-[#FAFBFC] flex items-center justify-between gap-4 flex-wrap">
-                    <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 tabular-nums">67 more match · narrow with a facet, or scroll</span>
-                    <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">esc or click outside to close · the query stays in the url</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- ── SECTION · STATE 3 of 4 · open, nothing typed (size 6) ── -->
-              <div class="col-span-12 lg:col-span-6" data-dms-section="state-modal-empty">
-                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">state 3 · open · no query yet</div>
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden h-full flex flex-col">
-                  <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
-                    <div class="flex items-center justify-between gap-3 mb-3">
-                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">find a report</span>
-                      <button class="size-7 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
-                    </div>
-                    <div class="h-11 flex items-center gap-3 rounded-[6px] bg-white border border-zinc-950/15 px-3">
-                      <!-- icon: Search --><svg class="size-[18px] text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
-                      <span class="font-proxima text-[15px] text-slate-400 flex-1">Search 869 reports by name, road or route…</span>
-                    </div>
-                  </div>
-                  <div class="px-5 pt-4 pb-1 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">recently opened · you</div>
-                  <div class="divide-y divide-zinc-950/05">
-                    <a href="npmrds-report.html" class="px-5 py-2.5 flex items-center gap-3 hover:bg-slate-50">
-                      <span class="size-2 rounded-full bg-[#E5A646] shrink-0"></span>
-                      <span class="font-proxima text-[13px] text-[#0f1722] flex-1 truncate" title="US-44/NY-55 Westbound Road Diet Impact Assessment">US-44/NY-55 Westbound Road Diet Impact Assessment</span>
-                      <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">draft</span>
-                    </a>
-                    <a href="npmrds-report.html" class="px-5 py-2.5 flex items-center gap-3 hover:bg-slate-50">
-                      <span class="size-2 rounded-full bg-[#10B981] shrink-0"></span>
-                      <span class="font-proxima text-[13px] text-[#0f1722] flex-1 truncate" title="NY-9D Beacon Signal Study — Travel Time Comparison">NY-9D Beacon Signal Study — Travel Time Comparison</span>
-                      <span class="font-mono text-[10px] tabular-nums text-slate-400">5d</span>
-                    </a>
-                    <a href="npmrds-report.html" class="px-5 py-2.5 flex items-center gap-3 hover:bg-slate-50">
-                      <span class="size-2 rounded-full bg-[#1F3F8F] shrink-0"></span>
-                      <span class="font-proxima text-[13px] text-[#0f1722] flex-1 truncate" title="Route 44 Incident Analysis · April 2026">Route 44 Incident Analysis · April 2026</span>
-                      <span class="font-mono text-[10px] tabular-nums text-slate-400">3w</span>
-                    </a>
-                  </div>
-                  <div class="px-5 pt-4 pb-1 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">or jump to a worked example</div>
-                  <div class="px-5 pb-4 pt-1 flex flex-wrap items-center gap-2 mt-auto">
-                    <a href="npmrds-report.html" class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">tappan zee cashless toll</a>
-                    <a href="npmrds-report.html" class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">year over year</a>
-                    <a href="npmrds-report.html" class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">rochester inner loop</a>
-                  </div>
-                </div>
-              </div>
-
-              <!-- ── SECTION · STATE 4 of 4 · open, nothing matches (size 6) ──
-                   The NHS-network-only microcopy — the best empty-state copy in the set. -->
-              <div class="col-span-12 lg:col-span-6" data-dms-section="state-modal-nomatch">
-                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">state 4 · open · no matches</div>
-                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden h-full flex flex-col">
-                  <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
-                    <div class="flex items-center justify-between gap-3 mb-3">
-                      <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">find a report</span>
-                      <button class="size-7 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
-                    </div>
-                    <div class="h-11 flex items-center gap-3 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 px-3">
-                      <!-- icon: Search --><svg class="size-[18px] text-[#37576B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
-                      <span class="font-proxima text-[15px] text-[#0f1722] flex-1">taconic bikeway</span>
-                      <button class="size-6 rounded flex items-center justify-center text-slate-400 hover:bg-slate-100"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
-                    </div>
-                  </div>
-                  <div class="px-6 py-10 text-center flex-1 flex flex-col justify-center">
-                    <span class="mx-auto size-10 rounded-[6px] bg-slate-100 flex items-center justify-center text-slate-400"><!-- icon: Search --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg></span>
-                    <div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-3">Nothing matches “taconic bikeway”</div>
-                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 max-w-[360px] mx-auto">NPMRDS covers the NHS road network only — no off-road facilities. Try a road name, a route number, or a TMC code.</p>
-                    <div class="mt-4 flex items-center justify-center gap-2 flex-wrap">
-                      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">taconic state pkwy</span>
-                      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">ny-9d</span>
-                    </div>
-                    <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-4 max-w-[360px] mx-auto">Or close this and start from a template — twelve of them are waiting behind the dialog.</p>
                   </div>
                 </div>
               </div>
@@ -995,6 +813,235 @@
     </div>
   </div>
 </div>
+
+<!-- ═════════ THE SEARCH DIALOG · the live component ═════════
+     In DMS this is a section group with `isModal: true` + `modalParamKey: 'find'` +
+     `modalSize: '4xl'`, holding a Filter section and a result-list section. Here it is plain
+     markup driven by the script below so the states can be exercised rather than described. -->
+<div id="findOverlay" class="hidden fixed inset-0 z-50 bg-black/50 overflow-y-auto p-4 sm:p-6">
+  <div id="findCard" role="dialog" aria-modal="true" aria-label="Find a report" class="mx-auto mt-[6vh] w-full max-w-[896px] rounded-[8px] border border-zinc-950/10 bg-white shadow-lg overflow-hidden">
+
+    <div class="px-5 pt-4 pb-3 border-b border-zinc-950/05">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">find a report</span>
+        <button type="button" data-find-close="1" aria-label="Close" class="size-7 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="h-11 flex items-center gap-3 rounded-[6px] bg-white border border-[#37576B] ring-2 ring-[#37576B]/15 px-3">
+        <!-- icon: Search --><svg class="size-[18px] text-[#37576B] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg>
+        <input id="findInput" type="text" autocomplete="off" placeholder="Search by name, road, route or description…" class="flex-1 min-w-0 bg-transparent border-0 outline-none font-proxima text-[15px] text-[#0f1722] placeholder:text-slate-400"/>
+        <button type="button" id="findClearQ" class="hidden size-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100" aria-label="Clear"><!-- icon: XMark --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-2">Matches names and descriptions — an <span class="tny-mono">OR</span> group of <span class="tny-mono">like</span> leaves, one per searchable column. <span class="text-slate-400">Running on a 57-row sample of the 869-report library.</span></p>
+
+      <div class="mt-3 pt-3 border-t border-zinc-950/05 flex flex-wrap items-center gap-2">
+        <span class="font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400 mr-1">narrow by</span>
+        <button type="button" data-facet="mine" aria-disabled="true" title="Not expressible today — nothing injects the current user into a filter value. See the task file's Escalations." class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-400 font-mono text-[10.5px] uppercase tracking-[0.16em] cursor-default">mine</button>
+        <button type="button" data-facet="recent" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">recent</button>
+        <button type="button" data-facet="rebuilt" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">rebuilt</button>
+        <button type="button" data-facet="described" class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]">described</button>
+        <span class="h-4 w-px bg-zinc-950/10 mx-1"></span>
+        <button type="button" aria-disabled="true" title="Needs region metadata denormalized onto the reports source — a build-task prerequisite." class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-400 font-mono text-[10.5px] uppercase tracking-[0.16em] cursor-default">region <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+        <button type="button" aria-disabled="true" title="Needs the measure each graph binds — a build-task prerequisite." class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-400 font-mono text-[10.5px] uppercase tracking-[0.16em] cursor-default">measure <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+        <button type="button" aria-disabled="true" title="Needs the report's date range denormalized — a build-task prerequisite." class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-400 font-mono text-[10.5px] uppercase tracking-[0.16em] cursor-default">year <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+        <button type="button" aria-disabled="true" title="Needs the folder tree — a build-task prerequisite." class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-400 font-mono text-[10.5px] uppercase tracking-[0.16em] cursor-default">folder <!-- icon: CaretDown --><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>
+        <button type="button" data-find-clear="1" class="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-[#37576B] hover:text-[#1f3450]">clear all</button>
+      </div>
+    </div>
+
+    <div class="px-5 py-2.5 bg-[#FAFBFC] border-b border-zinc-950/05 flex items-center justify-between gap-4 flex-wrap">
+      <span id="findCount" class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 tabular-nums"></span>
+      <div class="flex items-center gap-2">
+        <span class="h-7 inline-flex items-center gap-2 rounded-[6px] bg-white border border-zinc-950/15 px-2.5">
+          <span class="font-mono text-[10.5px] uppercase tracking-wider text-slate-500">sort</span>
+          <span class="font-proxima text-[12.5px] text-[#0F1722]">Recently updated</span>
+        </span>
+        <button type="button" aria-disabled="true" title="Author-fixed in this mockup; a viewer-changeable sort is a separate escalation." class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[6px] bg-white border border-zinc-950/15 text-slate-400 font-mono text-[10.5px] uppercase tracking-[0.16em] cursor-default"><!-- icon: Download --><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>export list</button>
+      </div>
+    </div>
+
+    <div id="findRows" class="divide-y divide-zinc-950/05 max-h-[46vh] overflow-y-auto"></div>
+    <div id="findFoot" class="px-5 py-3 border-t border-zinc-950/05 bg-[#FAFBFC] flex items-center justify-between gap-4 flex-wrap"></div>
+  </div>
+</div>
+
+<!-- ═════════ the sample library ═════════
+     REAL ROWS, measured 2026-07-31 from Postgres `admin2.reports` @ mercury:5533 (the legacy
+     library, 869 rows) joined by normalized name to the converted DMS pages under parent 2188366
+     (43 pages). 57 rows: every legacy report that has a rebuilt DMS counterpart (35), plus a
+     spread of legacy-only rows with and without descriptions so the "described" facet and the
+     no-description row state have real subjects. Fields: n name · d description · r route count ·
+     g graph count · u updated_at · p converted page id (0 = legacy only) · i legacy report id.
+     This is a MOCKUP fixture. The built page binds a source; it does not ship a JSON blob. -->
+<script id="findData" type="application/json">[{"n":"WB East-West Arterial Poughkeepsie","d":"","r":9,"g":13,"u":"2026-06-10","p":2191880,"i":1071},{"n":"Route 44 Incident Analysis April 2026","d":"","r":1,"g":1,"u":"2026-05-15","p":2189957,"i":1070},{"n":"787 interstate test","d":"","r":2,"g":3,"u":"2026-05-12","p":2192541,"i":1069},{"n":"Single Route Before and After (Beginner)","d":"This report compares a single route before and after a certain time frame. The report looks at average speeds and congestion. It is intended to give the analyst a view of a particular route before and after a certain time frame. The date ranges for each view (e.g., Before and After) can be changed by clicking on the routes listed under the \u201cRoutes\u201d section of the control panel which will open up the details pane for each. Make sure to update each route for the desired time period and click \u201cUpdate\u201d to ensure the changes are applied.","r":1,"g":11,"u":"2025-10-07","p":2192521,"i":1062},{"n":"Rochester Inner Loop","d":"The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak.\n\nThe report looks at average speeds and congestion. It is intended to give the analyst a snapshot of a particular route over the latest calendar year for which there is a full year of NPMRDS data. The date ranges for each view (e.g., AM or PM peak, Off-peak) can be changed by clicking on the routes listed under the \u201cRoutes\u201d section of the control panel which will open up the details pane for each. Make sure to update each route for the desired time period and click \u201cUpdate\u201d to ensure the changes are applied.","r":11,"g":17,"u":"2025-04-03","p":2192451,"i":1045},{"n":"Inc 8/28/2021 HRP @ Westchester Ave","d":"","r":4,"g":4,"u":"2024-05-30","p":2193832,"i":1039},{"n":"Inc 3/1/2023 NY33 EB @ Dodge St","d":"","r":2,"g":4,"u":"2024-05-30","p":2193818,"i":1037},{"n":"Bridge Hits Impact - BIN2075859 - 10/20/2019 10:00 PM","d":"HRP SB South of Hutchinson River Parkway","r":6,"g":24,"u":"2024-05-15","p":2194141,"i":1033},{"n":"303/304/59","d":"","r":12,"g":11,"u":"2023-08-15","p":2191745,"i":994},{"n":"Year Over Year (Beginner)","d":"This report shows the travel time and average hours of delay for a single route across multiple years. The report is intended to give the analyst a year over year look at changes to average hours of delay and travel times. The date ranges for each year can be changed by clicking on the routes listed under the \u201cRoutes\u201d section of the control panel which will open up the details pane for each. Make sure to click \u201cUpdate\u201d to ensure the changes are applied.","r":2,"g":21,"u":"2023-04-28","p":2192364,"i":987},{"n":"EG Route 4 Preliminary Analysis","d":"","r":14,"g":21,"u":"2022-12-19","p":2191643,"i":965},{"n":"Test Report from Documentation (87 NB) (Chris S)","d":"","r":9,"g":5,"u":"2022-10-25","p":2192349,"i":960},{"n":"I-87 NorthBound Report with BUG","d":"Bug: 2021-2016 I-87 Northbound is set to date. Graph shows almost twice as much hours of delay  for June 2017 as when you set the timebounds for the route to the month of June 2017","r":13,"g":21,"u":"2022-08-25","p":2192306,"i":914},{"n":"Bus Lane Feasibility Albany Broadway","d":"","r":2,"g":8,"u":"2022-03-08","p":2189435,"i":796},{"n":"R5 HELP Route Analysis","d":"R5 HELP route analysis","r":4,"g":6,"u":"2022-02-28","p":2194270,"i":787},{"n":"I-90 WB Incident Exit 26 Schen - Amsterdam","d":"","r":2,"g":4,"u":"2021-12-03","p":2194062,"i":775},{"n":"Van Wyck CO2 Test Single TMC","d":"","r":4,"g":13,"u":"2020-12-14","p":2194094,"i":751},{"n":"Madison Ave.  Vs Western Ave  -->>  Downtown","d":"This is an example of how we can compare two routes traffic conditions with each other.","r":2,"g":8,"u":"2020-10-06","p":2192292,"i":745},{"n":"Route 20 WB Skaneateles - Saturday Analysis","d":"Single route default template.","r":5,"g":10,"u":"2020-09-28","p":2191502,"i":740},{"n":"Buffalo Skyway 11/5/2019 6-9pm Hourly Bins","d":"","r":14,"g":15,"u":"2020-06-25","p":2191095,"i":641},{"n":"I-87 SB Near Yankee Stadium","d":"","r":10,"g":15,"u":"2020-06-23","p":2190053,"i":630},{"n":"I-190 NB COVID Comparison","d":"","r":4,"g":4,"u":"2020-04-13","p":2193032,"i":584},{"n":"Pok WB Arterial Weave","d":"Route 44/55 WB between Civic Center Plaza and Route 9 in Poughkeepsie","r":12,"g":1,"u":"2020-03-11","p":2194026,"i":549},{"n":"Bridge Hit I-90 WB at RT 33 Buffalo","d":"October 31, 2018 bridge hit on I-90 for bridge carrying Rt 33. WB direction","r":4,"g":6,"u":"2019-08-02","p":2193798,"i":354},{"n":"Cross Bronx Test","d":"","r":2,"g":5,"u":"2019-07-15","p":2194036,"i":181},{"n":"I-278 Between Interchanges 8 and 15","d":"","r":2,"g":4,"u":"2019-07-15","p":2194183,"i":179},{"n":"July 7, 2018 Suspected Bridge Hit Hutch SB at Westchester Ave","d":"","r":1,"g":4,"u":"2019-07-15","p":2190904,"i":315},{"n":"E Shore to Round Pond","d":"travel time, April 2017 vs July-August 2017, Saturday Peak (2:30-4:30)","r":2,"g":4,"u":"2019-07-15","p":2190017,"i":228},{"n":"north- south exit 20","d":"april vs july-aug 2017, saturday pm peak","r":2,"g":3,"u":"2019-07-15","p":2190031,"i":229},{"n":"Madison Ave Road Diet Eastbound - Created on 6-14-19","d":"","r":3,"g":10,"u":"2019-07-15","p":2194972,"i":316},{"n":"Tappan Zee Cashless Toll Version 2","d":"Tappan Zee bridge month to month comparison, 6am-8pm.","r":2,"g":10,"u":"2019-07-15","p":2194949,"i":33},{"n":"Rexford Bridge Pre/Post Comparison - Created on 6-14-19","d":"","r":3,"g":10,"u":"2019-07-15","p":2190874,"i":320},{"n":"Long island expressway","d":"speed","r":3,"g":3,"u":"2019-07-15","p":2190581,"i":191},{"n":"West Shore Highway Northbound 8 to 9 am","d":"","r":1,"g":1,"u":"2019-07-15","p":2189401,"i":11},{"n":"K-Bridge 9-21-17","d":"K-Bridge Eastbound Jan-Apr 2017 vs. May-July 2017","r":2,"g":7,"u":"2019-07-15","p":2191242,"i":168},{"n":"Beacon 9D Jan 25 vs 26","d":"Beacon 9D Jan 25 vs 26","r":4,"g":5,"u":"2026-07-14","p":0,"i":1072},{"n":"Floating_Car_Timestamp_N_Datestamp_Validation AVAIL Example","d":"This template provides speed information for a route/corridor. This template requires a user to input a Monday date for the first route.","r":9,"g":3,"u":"2025-09-16","p":0,"i":1051},{"n":"Floating_Car_Timestamp_N_Datestamp_Validation","d":"This template provides speed information for a route/corridor. This template requires a user to input a Monday date for the first route.","r":9,"g":2,"u":"2025-09-10","p":0,"i":1050},{"n":"TESTING SAVING","d":"TEST.","r":1,"g":1,"u":"2025-02-20","p":0,"i":1044},{"n":"Year Over Year (Beginner)  Inner Loop WB","d":"This report shows the travel time and average hours of delay for a single route across multiple years. The report is intended to give the analyst a year over year look at changes to average hours of delay and travel times. The date ranges for each year can be changed by clicking on the routes listed under the \u201cRoutes\u201d section of the control panel which will open up the details pane for each. Make sure to click \u201cUpdate\u201d to ensure the changes are applied.","r":9,"g":21,"u":"2025-02-12","p":0,"i":1042},{"n":"Eclipse Apr 8; I-87 SB Exit 36 to Exit 29","d":"Choose a route and enter the date of an incident. Compare against the next week and the year","r":8,"g":7,"u":"2024-08-06","p":0,"i":1040},{"n":"Testing and Acceptance - This Month vs. Last Month vs. Last Year (Advanced)","d":"This report is for comparing a month's travel time, average hours of delay, and speed to the previous month and the same month the year prior. The report is intended to give the analyst a month vs month, and month by year over year look at changes to average hours of delay, travel times, and speeds. The date ranges for each year can be changed by clicking on the routes listed under the \u201cRoutes\u201d section of the control panel which will open up the details pane for each. Make sure to click \u201cUpdate\u201d to ensure the changes are applied.","r":8,"g":27,"u":"2024-01-02","p":0,"i":1028},{"n":"Testing and Acceptance - Year Over Year (Beginner)","d":"This report shows the travel time and average hours of delay for a single route across multiple years. The report is intended to give the analyst a year over year look at changes to average hours of delay and travel times. The date ranges for each year can be changed by clicking on the routes listed under the \u201cRoutes\u201d section of the control panel which will open up the details pane for each. Make sure to click \u201cUpdate\u201d to ensure the changes are applied.","r":9,"g":21,"u":"2024-01-02","p":0,"i":1027},{"n":"Testing and Acceptance - Single Route Before and After (Beginner)","d":"This report compares a single route before and after a certain time frame. The report looks at average speeds and congestion. It is intended to give the analyst a view of a particular route before and after a certain time frame. The date ranges for each view (e.g., Before and After) can be changed by clicking on the routes listed under the \u201cRoutes\u201d section of the control panel which will open up the details pane for each. Make sure to update each route for the desired time period and click \u201cUpdate\u201d to ensure the changes are applied.","r":6,"g":11,"u":"2024-01-02","p":0,"i":1026},{"n":"Testing and Acceptance - Snapshot","d":"Testing ability to save changes.","r":2,"g":3,"u":"2024-01-02","p":0,"i":1025},{"n":"Testing and Acceptance - Seasonality Report (Intermediate)","d":"This report to analyzes seasonal behavior of a selected route. It compares data for a season against the full year. The report looks at average speeds and congestion. It is intended to give the analyst a seasonal view of a particular route over a year. The date ranges for each view (e.g., Winter or Spring) can be changed by clicking on the routes listed under the \u201cRoutes\u201d section of the control panel which will open up the details pane for each. Make sure to update each route for the desired time period (Avg Day and Weekday) and click \u201cUpdate\u201d to ensure the changes are applied.","r":10,"g":22,"u":"2024-01-02","p":0,"i":1023},{"n":"Testing and Acceptance  - Snapshot (Beginner)","d":"The Snapshot report compares an average day for a year against weekday and monthly averages as well as against AM or PM peak and Off-peak.\n\nThe report looks at average speeds and congestion. It is intended to give the analyst a snapshot of a particular route over the latest calendar year for which there is a full year of NPMRDS data. The date ranges for each view (e.g., AM or PM peak, Off-peak) can be changed by clicking on the routes listed under the \u201cRoutes\u201d section of the control panel which will open up the details pane for each. Make sure to update each route for the desired time period and click \u201cUpdate\u201d to ensure the changes are applied.","r":0,"g":0,"u":"2024-01-02","p":0,"i":1021},{"n":"Testing Report for Delete Function","d":"Test","r":1,"g":1,"u":"2023-10-16","p":0,"i":1010},{"n":"Single Day Incident (Advanced)_IIMS_#131","d":"This report compares an incident day against an average day without incident. It includes the monthly and yearly averages in which the incident occurred. Key graphs display the differences in speed and average hours of delay for the incident day against the yearly average day.\n\nNOTE: The user must set the incident date and relative month and year.","r":0,"g":0,"u":"2023-10-02","p":0,"i":1008},{"n":"787 NB 5-12-2026","d":"","r":2,"g":4,"u":"2026-05-12","p":0,"i":1066},{"n":"NYC Test","d":"","r":14,"g":6,"u":"2025-11-07","p":0,"i":1064},{"n":"Route 11 by Fort Drum","d":"","r":4,"g":7,"u":"2025-10-02","p":0,"i":1054},{"n":"NYC 10th Ave","d":"","r":2,"g":3,"u":"2025-09-18","p":0,"i":1052},{"n":"2025 Test","d":"","r":3,"g":2,"u":"2025-09-03","p":0,"i":1048},{"n":"2025 Data Bug","d":"","r":1,"g":1,"u":"2025-07-30","p":0,"i":1047},{"n":"Inner Loop Ramp Analysis 1","d":"","r":7,"g":14,"u":"2025-02-19","p":0,"i":1043},{"n":"New Report","d":"","r":18,"g":1,"u":"2024-05-29","p":0,"i":1038}]</script>
+<script>
+(function () {
+  var DATA = JSON.parse(document.getElementById('findData').textContent);
+  var overlay = document.getElementById('findOverlay');
+  var input = document.getElementById('findInput');
+  var rowsEl = document.getElementById('findRows');
+  var countEl = document.getElementById('findCount');
+  var footEl = document.getElementById('findFoot');
+  var clearQ = document.getElementById('findClearQ');
+  var trigger = document.getElementById('findTrigger');
+  var triggerText = document.getElementById('findTriggerText');
+  var triggerMeta = document.getElementById('findTriggerMeta');
+  var SHOWN = 8, RECENT_FROM = '2024-01-01';
+  var facets = { recent: false, rebuilt: false, described: false };
+
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function mark(t, q) {
+    if (!q) return esc(t);
+    var i = t.toLowerCase().indexOf(q.toLowerCase());
+    if (i < 0) return esc(t);
+    return esc(t.slice(0, i)) + '<mark class="bg-[#FACC15]/40 text-[#0F1722]">' + esc(t.slice(i, i + q.length)) + '</mark>' + esc(t.slice(i + q.length));
+  }
+  function hits(r, q) {
+    if (facets.recent && r.u < RECENT_FROM) return false;
+    if (facets.rebuilt && !r.p) return false;
+    if (facets.described && !r.d) return false;
+    if (!q) return true;
+    q = q.toLowerCase();
+    return r.n.toLowerCase().indexOf(q) > -1 || (r.d || '').toLowerCase().indexOf(q) > -1;
+  }
+  function row(r, q) {
+    var badge = r.p
+      ? '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-[#10B981]/30 bg-[#10B981]/10 font-mono text-[10px] uppercase tracking-[0.16em] text-[#065F46]">rebuilt</span>'
+      : '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-zinc-950/15 bg-slate-50 font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">legacy</span>';
+    var nodesc = r.d ? '' : '<span class="inline-flex items-center px-1.5 h-[18px] rounded-[3px] border border-zinc-950/15 bg-slate-50 font-mono text-[9.5px] uppercase tracking-[0.16em] text-slate-500">no description</span>';
+    var body = r.d
+      ? '<p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1">' + mark(r.d.slice(0, 190) + (r.d.length > 190 ? '…' : ''), q) + '</p>'
+      : '<p class="font-proxima text-[12.5px] leading-[1.55] text-slate-400 mt-1">Nothing was written down — matched on the title alone.</p>';
+    return '<a href="npmrds-report.html" class="block px-5 py-3.5 hover:bg-slate-50">'
+      + '<div class="flex items-start gap-3">'
+      + '<span class="mt-1.5 size-2.5 rounded-full ' + (r.p ? 'bg-[#1F3F8F]' : 'bg-slate-400') + ' shrink-0"></span>'
+      + '<div class="min-w-0 flex-1"><div class="flex items-center gap-2 flex-wrap">'
+      + '<span class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722]">' + mark(r.n, q) + '</span>'
+      + badge + nodesc + '</div>' + body + '</div>'
+      + '<div class="text-right hidden sm:block shrink-0">'
+      + '<div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">updated</div>'
+      + '<div class="font-mono text-[12px] tabular-nums text-slate-600">' + r.u + '</div>'
+      + '<div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mt-1">' + r.r + ' routes · ' + r.g + ' graphs</div>'
+      + '</div></div></a>';
+  }
+  function shortcut(label) {
+    return '<button type="button" data-find-q="' + esc(label) + '" class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-600">' + esc(label) + '</button>';
+  }
+  function render() {
+    var q = input.value.trim();
+    var any = q || facets.recent || facets.rebuilt || facets.described;
+    var m = DATA.filter(function (r) { return hits(r, q); });
+    clearQ.className = q ? 'size-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100' : 'hidden';
+
+    if (!any) {
+      var recents = DATA.slice(0, 3);
+      rowsEl.innerHTML = '<div class="px-5 pt-4 pb-1 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">most recently updated</div>'
+        + '<div class="divide-y divide-zinc-950/05">' + recents.map(function (r) {
+          return '<a href="npmrds-report.html" class="px-5 py-2.5 flex items-center gap-3 hover:bg-slate-50">'
+            + '<span class="size-2 rounded-full ' + (r.p ? 'bg-[#1F3F8F]' : 'bg-slate-400') + ' shrink-0"></span>'
+            + '<span class="font-proxima text-[13px] text-[#0f1722] flex-1 truncate" title="' + esc(r.n) + '">' + esc(r.n) + '</span>'
+            + '<span class="font-mono text-[10px] tabular-nums text-slate-400">' + r.u + '</span></a>';
+        }).join('') + '</div>'
+        + '<div class="px-5 pt-4 pb-1 font-mono text-[9.5px] uppercase tracking-[0.18em] text-slate-400">or try</div>'
+        + '<div class="px-5 pb-4 pt-1 flex flex-wrap items-center gap-2">' + ['bridge', 'road diet', 'skyway', 'incident'].map(shortcut).join('') + '</div>';
+      countEl.textContent = DATA.length + ' in the sample · nothing searched yet';
+      footEl.innerHTML = '<span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">type to search, or pick a facet</span>'
+        + '<span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">esc or click outside to close</span>';
+    } else if (!m.length) {
+      rowsEl.innerHTML = '<div class="px-6 py-10 text-center">'
+        + '<span class="mx-auto size-10 rounded-[6px] bg-slate-100 flex items-center justify-center text-slate-400"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 17.5L22 22"/><circle cx="11" cy="11" r="9"/></svg></span>'
+        + '<div class="font-display font-medium text-[18px] leading-[1.25] text-[#0F1722] mt-3">Nothing matches “' + esc(q) + '”</div>'
+        + '<p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600 mt-1.5 max-w-[380px] mx-auto">NPMRDS covers the NHS road network only — no off-road facilities. Try a road name, a route number, or a TMC code.</p>'
+        + '<div class="mt-4 flex items-center justify-center gap-2 flex-wrap">' + ['taconic', 'ny-9d', 'bridge'].map(shortcut).join('') + '</div>'
+        + '<p class="font-proxima text-[11.5px] leading-[1.5] text-slate-500 mt-4 max-w-[380px] mx-auto">Or close this and start from a template — twelve of them are waiting behind the dialog.</p>'
+        + '</div>';
+      countEl.textContent = '0 of ' + DATA.length + ' match';
+      footEl.innerHTML = '<span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500">no matches</span>'
+        + '<span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">the query stays in the url</span>';
+    } else {
+      var top = m.slice(0, SHOWN);
+      rowsEl.innerHTML = top.map(function (r) { return row(r, q); }).join('');
+      var rebuilt = m.filter(function (r) { return r.p; }).length;
+      countEl.textContent = top.length + ' shown · ' + m.length + ' of ' + DATA.length + ' match' + (q ? ' “' + q + '”' : '') + ' · ' + rebuilt + ' rebuilt';
+      footEl.innerHTML = '<span class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 tabular-nums">'
+        + (m.length > SHOWN ? (m.length - SHOWN) + ' more match · narrow with a facet, or scroll' : 'all matches shown')
+        + '</span><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">esc or click outside to close · the query stays in the url</span>';
+    }
+    syncUrl(q);
+    syncTrigger(q, m.length);
+    rowsEl.scrollTop = 0;
+  }
+  function syncUrl(q) {
+    var u = new URL(window.location.href);
+    if (q) { u.searchParams.set('search', q); } else { u.searchParams.delete('search'); }
+    Object.keys(facets).forEach(function (k) { if (facets[k]) { u.searchParams.set(k, '1'); } else { u.searchParams.delete(k); } });
+    history.replaceState(null, '', u.toString().replace(/\?$/, ''));
+  }
+  function syncTrigger(q, n) {
+    if (!triggerText) return;
+    if (q) {
+      triggerText.textContent = q;
+      triggerText.className = 'font-proxima text-[15px] text-[#0f1722] flex-1 truncate';
+      triggerMeta.textContent = n + (n === 1 ? ' match · show results' : ' matches · show results');
+      triggerMeta.className = 'font-mono text-[10px] uppercase tracking-[0.18em] text-[#1F3F8F] shrink-0';
+      trigger.className = trigger.className.replace('border-zinc-950/15', 'border-[#37576B]');
+    } else {
+      triggerText.textContent = 'Find a report — search 869 by name, road, route or description…';
+      triggerText.className = 'font-proxima text-[15px] text-slate-500 flex-1 truncate';
+      triggerMeta.textContent = 'mine · region · measure · year · folder';
+      triggerMeta.className = 'font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 hidden 2xl:inline';
+      trigger.className = trigger.className.replace('border-[#37576B]', 'border-zinc-950/15');
+    }
+  }
+  function paintChips() {
+    document.querySelectorAll('[data-facet]').forEach(function (b) {
+      var k = b.getAttribute('data-facet');
+      if (!(k in facets)) return;
+      b.className = facets[k]
+        ? 'h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-[#37576B] bg-[#37576B] text-white font-mono text-[10.5px] uppercase tracking-[0.16em]'
+        : 'h-7 px-2.5 inline-flex items-center gap-1.5 rounded-[4px] border border-zinc-950/15 bg-white text-slate-600 hover:border-[#37576B] font-mono text-[10.5px] uppercase tracking-[0.16em]';
+    });
+  }
+  function open(q) {
+    if (typeof q === 'string') { input.value = q; }
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    render();
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+  function close() {
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+    syncTrigger(input.value.trim(), DATA.filter(function (r) { return hits(r, input.value.trim()); }).length);
+  }
+
+  input.addEventListener('input', render);
+  clearQ.addEventListener('click', function () { input.value = ''; render(); input.focus(); });
+  overlay.addEventListener('mousedown', function (e) { if (e.target === overlay) { close(); } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !overlay.classList.contains('hidden')) { close(); } });
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-find-close],[data-find-open],[data-find-url],[data-find-clear],[data-find-q],[data-facet],#findTrigger');
+    if (!t) return;
+    if (t.id === 'findTrigger') { e.preventDefault(); open(); return; }
+    if (t.hasAttribute('data-find-close')) { close(); return; }
+    if (t.hasAttribute('data-find-open')) { open(t.getAttribute('data-find-open')); return; }
+    if (t.hasAttribute('data-find-q')) { open(t.getAttribute('data-find-q')); return; }
+    if (t.hasAttribute('data-find-url')) { input.value = t.getAttribute('data-find-url'); render(); close(); return; }
+    if (t.hasAttribute('data-find-clear')) {
+      input.value = ''; Object.keys(facets).forEach(function (k) { facets[k] = false; });
+      paintChips(); render(); return;
+    }
+    var k = t.getAttribute('data-facet');
+    if (k && k in facets) { facets[k] = !facets[k]; paintChips(); render(); }
+  });
+
+  var initial = new URL(window.location.href).searchParams;
+  Object.keys(facets).forEach(function (k) { facets[k] = initial.get(k) === '1'; });
+  input.value = initial.get('search') || '';
+  paintChips();
+  syncTrigger(input.value.trim(), DATA.filter(function (r) { return hits(r, input.value.trim()); }).length);
+})();
+</script>
 <script src="../ds-nav.js"></script>
 </body>
 </html>

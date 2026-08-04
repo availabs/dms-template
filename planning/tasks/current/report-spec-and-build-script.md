@@ -9,9 +9,11 @@ successor is deferred with an explicit trigger (see "The `--verify` decision" be
 `creating-reports.md` (spec-first) + `creating-routes.md`, with the old "Known UI gaps" list moved to
 `planning/tasks/current/report-route-ui-parity-gaps.md` (Phase C's tracking file).
 
-Remaining before this file can move to `completed/`: Phase C (the ranked UI-parity gaps) and the two
-follow-ons Phase B spawned — the `minutes_seconds` value format and the difference-graph color
-polarity, which share one mechanism — tracked separately and listed under "Follow-ons" below.
+Remaining before this file can move to `completed/`: Phase C (the ranked UI-parity gaps) and the
+`minutes_seconds` value format follow-on (`duration-value-format-mm-ss.md`, not started). The
+difference-graph color polarity follow-on is **FIXED 2026-07-30** — see "Finding: difference-graph
+color scale reads backwards" below for the fix and live verification; it turned out not to need a
+new vocabulary field after all, just correcting how the existing `reverseColors` flag was applied.
 
 Read this whole file before continuing; three prerequisite bugs were found and fixed along the way
 and their task files carry detail this one only summarizes.
@@ -60,18 +62,12 @@ that Phase B makes unnecessary.
 - Folders, report discovery/browsing, permissions — **permanently**, per user direction
   2026-07-27; these fold into DMS native primitives later. Do not list them as gaps.
   (Memory: `project_reports_folders_discovery_permissions_out_of_scope`.)
-- Route *creation* (the transportNY-only routecreation map tool). The spec references routes by
-  id; making them is a separate skill.
+- Route *creation* (the routecreation map tool). The spec references routes by id; making them is
+  a separate skill.
 - **Anything in transportNY.** All code here lives in dms-template — user direction 2026-07-27,
-  memory `feedback_all_code_in_dms_template`. transportNY is a test bed (the only place
-  routecreation-tool routes can be made), not a development target, and its older-pinned theme +
-  `@availabs/dms` copies get changes by the manual port procedure in
-  `research/npmrds-reports/reportroutelist-cross-repo-sync.md`. Do NOT treat "only exists in transportNY" as
-  a blocker.
-  Note the rule is **plugins**, not routecreation specifically: transportNY is a separately-deployed
-  *production* frontend and plugins (`src/pages/TransportNYDataTypes/plugins/*`) must live there.
-  Everything else is dms-template.
+  memory `feedback_all_code_in_dms_template`.
 
+<<<<<<< HEAD
   **Cross-repo state verified 2026-07-27 (after the user bumped transportNY's submodule twice):
   currently byte-aligned — but by MANUAL COPY ONLY, so this is a snapshot, not a guarantee.**
   Verified there is no auto-sync mechanism of any kind: `src/dms_themes/transportny` is a plain
@@ -86,6 +82,16 @@ that Phase B makes unnecessary.
   (`../../../../dms/` → `../../../../modules/dms/`). An earlier draft of this file warned that a
   spec-built report would render differently on transportNY — that is no longer true. Re-check
   with a `diff -rq` before repeating the claim either way.
+=======
+  **2026-07-29 update: transportNY is no longer needed for routes/reports work at all.** The
+  routecreation plugin (and macroview) have been ported natively into dms-template via
+  `theme.mapPlugins` (`planning/tasks/completed/port-transportny-map-plugins.md`) — the paragraphs
+  below describing the manual cross-repo sync dance, submodule-path rewrites, and "is transportNY
+  currently byte-aligned" checks are now historical. They're kept for context (and because
+  `RouteComparison` was last confirmed to still be transportNY-only — check
+  `research/npmrds-reports/reportroutelist-cross-repo-sync.md` before assuming that's changed too),
+  but nothing in this task requires touching transportNY anymore.
+>>>>>>> 6fa3ccc1699680e13bc8d51ff0ea2e8ec5452628
 - Any change to `composeMeasureConfig.js` / `applyMeasurePick` behavior. This task *consumes*
   them. If a gap forces a change there, it affects the live UI too — isolate it
   (`feedback_isolate_shared_code_changes`).
@@ -302,18 +308,18 @@ SVG census, series labels — far more signal than four assertions). **Trigger t
 more specs in `scratchpad/npmrds-sub/report-specs/`, or the first graph-engine change that needs
 re-checking against existing spec-built reports.
 
-## Follow-ons (both want one mechanism)
+## Follow-ons
 
-Not Phase B work, but spawned by it, and they should be done together because they need the same
-thing — a **per-measure hint in `vocabulary.json`, consumed by `composeMeasureConfig`** at the point
-it now sets `xAxis.epochMinutesPerUnit`:
+Not Phase B work, but spawned by it:
 
 1. `src/dms/planning/tasks/current/duration-value-format-mm-ss.md` — a `minutes_seconds` ValueFormat
    plus a `valueFormat` hint on the duration measures, so travel-time axes render `0:54` not `0.9`.
-2. The difference-graph color polarity below — needs a "lower is better" hint on the same measures.
-
-Both touch shared composition code that the live UI runs, so they need the isolation treatment
-(`feedback_isolate_shared_code_changes`) rather than riding along with anything else.
+   **NOT STARTED.** Needs a new per-measure hint in `vocabulary.json`, consumed by
+   `composeMeasureConfig` at the point it now sets `xAxis.epochMinutesPerUnit` — touches shared
+   composition code the live UI runs, so isolate (`feedback_isolate_shared_code_changes`) rather than
+   riding along with anything else.
+2. The difference-graph color polarity below — **FIXED 2026-07-30**, turned out not to need a new
+   hint at all; see the finding's resolution note.
 
 ## Finding: difference-graph color scale reads backwards (pre-existing, NOT a spec-build defect)
 
@@ -342,6 +348,51 @@ isolation treatment of `feedback_isolate_shared_code_changes`):
 
 Option 1 is the real fix but requires the vocabulary to know each measure's polarity — the same
 per-measure-hint mechanism the `minutes_seconds` ValueFormat work needs, so they pair naturally.
+
+### RESOLVED 2026-07-30 — no new vocabulary field needed after all
+
+Re-derived from first principles, then checked against the Python converter's own long-standing
+`REVERSE_COLORS_MEASURES`/`GOOD_DIRECTION_BY_MEASURE`/round-51 history (`convert_old_reports.py`
+lines ~380-490, ~3380-3410): `measure.reverseColors` is validated correct for coloring a measure's
+**raw value** (round 51: old dataTypes.js's flag, confirmed live — short/good travelTime renders
+green, long/bad renders red on a TMC Grid Graph). But a difference graph colors a **before-minus-after
+delta**, not a raw value, and going from "which raw value is good" to "which delta sign is good"
+provably inverts the polarity for every measure (e.g. travelTime: low raw value is good, but a
+*positive* delta — time fell — is also good, and positive sits at the opposite end of the
+byValueSymmetric domain from low). `buildDiffColors()` (and the Python `_diff_colors()` call sites
+before it) reused the raw flag unchanged for difference mode, so **every measure's difference-mode
+color was backwards** — confirmed via `dbq.py new`: 100% of persisted difference sections checked
+(including the dev-built `page_13_13`/NY-9D Beacon report — nothing in this arc is live/production,
+see `feedback_nothing_is_live_yet` memory) carried the inverted array.
+
+**Fix**: `buildDiffColors` in `composeMeasureConfig.js` now reverses the palette when
+`measure.reverseColors` is **false** (was: when true) — i.e. the diff-mode decision is the logical
+negation of the raw flag, not the flag itself. One-line change, no new vocabulary field. Also
+corrected the (wrong) formula documented in `data-types/npmrds_graph_vocabulary/README.md`.
+
+**Verified live, not just by reading code**: built an isolated scratch page
+(`converted_reports/color_polarity_fix_verify`, deleted after) from the real `ny9d-beacon.json` spec
+via `report_build.mjs` (no `--update`/`--publish`, draft only), confirmed via `--dry-run` that the
+composed `colors.value` is now `["#d7191c",...,"#1a9641"]` (red-low/green-high, i.e. reversed from
+before), then ran `report_probe.mjs edit/... --auth` to render it for real against live ClickHouse
+data. Screenshot confirms: positive bars (travel time fell, the improvement) render green, negative
+bars (travel time rose, regression) render red/orange — correct.
+
+**Also mirrored into the Python converter** (user direction 2026-07-30): `convert_old_reports.py`'s
+`_diff_colors()` had the identical bug (same raw-flag-reused-verbatim pattern, one choke point fixes
+all ~17 call sites). A **second, independent instance** of the same bug was found and fixed in
+`build_graph_section_data`'s custom-`color_range` wiring (the path that fires when an old report
+carried its own author-set `color_range` instead of the template default) — that one is shared by
+both raw-value graph types (`Route Bar Graph`/`TMC Grid Graph`, correct as-is) and the two difference
+types (`Route Difference Graph`/`TMC Difference Grid`, needed the same negation), so the fix there is
+conditional on graph type rather than a blanket flip. Future old-report conversions won't reproduce
+the bug either way now.
+
+**Scoped fix on already-built pages (user direction 2026-07-30, not a full sweep):** nothing in this
+arc is live/production — see `feedback_nothing_is_live_yet` memory, this was a repeated correction.
+Only `converted_reports/ny9d_beacon_spec_test` (page 2195822) was rebuilt to pick up corrected
+colors. `page_13_13` (2195810) and any other dev-built difference graph were explicitly left
+untouched per the user's own scoping — not an oversight.
 
 ## Folded-in prerequisites discovered while building
 
@@ -570,3 +621,75 @@ Next, in arc order:
   - The doc-path staleness this file's old "Exact next steps" flagged
     (`documentation/…cross-repo-sync.md`) turned out to already be correct in the live skill file —
     no fix was needed there.
+
+- **2026-07-30 (session 4) — user triage of `converted_reports/ny9d_beacon_spec_test`, two symptoms,
+  three root causes, all FIXED and live-verified.**
+
+  **Symptom 1 — y-axis tick labels repeat ("1 1 1" in a row).** Root cause: `AxisLeft.jsx` /
+  `AxisRight.jsx` (`src/dms/packages/dms/src/ui/components/graph_new/components/avl-graph/components/`)
+  handed d3 a fixed tick COUNT and a separately-chosen FORMAT with no coupling between them — d3's
+  `scale.ticks(10)` picks a "nice" step from the domain alone (here a sub-1-unit travel-time-delta
+  range), and when that step is finer than the format's own resolution (`"integer"` here — an
+  author-facing ValueFormat choice, `display.yAxis.format`, nothing to do with the
+  `duration-value-format-mm-ss.md` follow-on below), several adjacent ticks round to the same label.
+  Not measure-specific — reproducible with ANY ValueFormat coarser than the domain's natural step.
+  **Fix**: both axis components now compute the candidate tick set explicitly
+  (`scale.ticks(ticks)`), format each, and drop any tick whose label collides with the previous
+  KEPT tick's label — before handing the (possibly thinned) list to d3, so gridlines (which read the
+  same `tickValues`) stay in sync with the visible labels. Linear-scale only; band/ordinal axes
+  already have their own thinning logic. No test suite covers this UI package; verified by
+  screenshot before/after (`scratchpad/npmrds-sub/tmp/crop_northbound_yaxis*.png`) — before: `2 2 2
+  1 1 1 1 1 0 0 0 0 -1 -1 -1`; after: `2 1 0 -1`, gridlines matching.
+
+  **Symptom 2 — difference-graph tooltip/title don't say which route is base vs comparison.** Two
+  compounding causes, both in the "the anchor's own raw value never reaches the client" family (see
+  clickhouse.js's diff-mode INNER JOIN, `## Finding: difference-graph color scale...` above for the
+  sibling color-polarity bug in the same code path):
+  1. **Tooltip**: `query_sets/clickhouse.js`'s diff-mode branch projected `compare.__series as
+     __series` using the compare arm's OWN unmodified label (e.g. just the route's name) as the
+     `__series` discriminator — which `BarGraph.jsx`'s `DefaultHoverComp` renders verbatim as the
+     tooltip's key text (`keyFormat(key)`, `Identity` by default). A lone hover then reads
+     "<route name>: 1.2" with nothing indicating a subtraction happened, or against what. **Fix**:
+     compose BOTH arms' labels into that discriminator string, in the same order as the actual
+     arithmetic (`anchor − compare`, or the reverse under `seriesCombine.invert` — checked directly
+     off the same `seriesCombine` the arithmetic branch reads, so the label can never drift out of
+     sync with the sign). Scoped to `diffMode && i > 0` only — the plain UNION-ALL fan-out and the
+     anchor arm's own (unused downstream) label are untouched. Updated the 2 stale assertions in
+     `tests/test-uda.js`'s `testClickHouseSeriesCombineDifference` that checked for the compare arm's
+     BARE label (`'Route B'`) and added assertions for the composed label + its invert-flip; full
+     suite re-run, 93/93 pass.
+  2. **Title/subtitle**: `report_build.mjs` only wrote `display.description` (renders as a subtitle
+     under the graph title, per `GraphComponent.jsx`'s `GraphTitle`) from an explicit spec-level
+     `graphs[].caption` — the `ny9d-beacon.json` spec never set one for either difference graph, so
+     neither had any base-vs-comparison text anywhere. **Fix**: when `comparisonMode ===
+     'difference'` and no `caption` is given, auto-fill `state.display.description` from the same
+     anchor/compare resolution the arithmetic already computes (`g._assigned` + `g._invert`) —
+     `"Base: <anchor route name> · Comparison: <compare route name(s)>"`. Verified via `--dry-run`
+     against the real spec before touching anything live.
+
+  **Landing the fix on the ALREADY-BUILT page**: `--update converted_reports/ny9d_beacon_spec_test`
+  refused — page 2195822's `reports_snap_2` row predates the key→trackingId map feature
+  (`--update` needs it to match spec graphs to existing sections; error message points at
+  `--from-page` + a fresh non-`--update` build to adopt it, a bigger migration than this fix
+  warranted for one scratch page). Instead patched the 2 affected sections' stored
+  `display.description` directly via `dms raw update <id> --data <file>` (full-data replace per
+  `uda-sql-building-landmines`'s "dotted --set corrupts stringified JSON" footgun) — both the
+  published copies (2197362 NB, 2197363 SB) AND their draft counterparts (2195825, 2195826; page has
+  `has_changes:false` so the two were in sync). The axis-tick fix and the ClickHouse label fix are
+  both live library/server code — no page rebuild needed, they apply on next render / next query.
+  Re-probed with `report_probe.mjs`: both fixes visually confirmed
+  (`scratchpad/npmrds-sub/tmp/probe_converted_reports/ny9d_beacon_spec_test.png`).
+
+  **Not done**: could not get a live tooltip screenshot via Playwright — `page.mouse.move` /
+  `.hover()` onto a bar's `<rect class="avl-stack">` never flipped `HoverCompContainer`'s `show`
+  state in this headless run (`.hover-comp` stayed `display:none` after multiple approaches: raw
+  `mouse.move`, element `.hover()`, native-event dispatch via `page.evaluate`). Not investigated
+  further — likely a synthetic-event/headless quirk in this harness, not a product bug (the tooltip
+  text is a direct, mechanically-guaranteed passthrough of the `__series` string the now-passing
+  ClickHouse unit test already pins). If a future session needs an actual tooltip screenshot, start
+  there rather than assuming the same approach will work.
+
+  **Out of scope, left as-is**: `duration-value-format-mm-ss.md` (adding a `minutes_seconds`
+  ValueFormat so a travel-time yAxis wouldn't need "Integer" at all) is unrelated and still
+  NOT STARTED — the tick-dedup fix above is a general safety net for ANY coarse format on a narrow
+  domain, not a substitute for giving travel-time measures a better-fitting default format.

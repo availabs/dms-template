@@ -1,12 +1,12 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
 import { reportRouteListTheme } from './ReportRouteList.theme';
-import { buildUdaConfig } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
+import { useRouteSearch } from './useRouteSearch';
 import RouteRow from './RouteRow';
-import AddRouteBanner from './AddRouteBanner';
+import AddRouteSearch from './AddRouteSearch';
 
 export default function ReportRouteList() {
   const { apiLoad, apiUpdate, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
@@ -23,8 +23,6 @@ export default function ReportRouteList() {
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Input, Icon, ColorPicker } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
-  const [loading, setLoading] = useState(false);
-  const [pendingRoute, setPendingRoute] = useState(null);
   const [expandedRoutes, setExpandedRoutes] = useState({});
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
   const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
@@ -32,11 +30,18 @@ export default function ReportRouteList() {
   const [editingRouteDatesIndex, setEditingRouteDatesIndex] = useState(null);
   const [editStartDateValue, setEditStartDateValue] = useState('');
   const [editEndDateValue, setEditEndDateValue] = useState('');
+  const [editWeekdaysValue, setEditWeekdaysValue] = useState({});
   // Rendering-only — filters which already-added routes are displayed, never the
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
-  // The route CATALOG binding — read-only, used only to resolve `add_route_id` into
-  // a route to copy from. Bound via the sectionMenu's "Add Join Source" slot rather
+  // The inline "Add a route" box's own typed term (separate from `searchQuery`
+  // above, which filters routes already ON the report — these are two distinct
+  // search boxes).
+  const [addRouteSearchTerm, setAddRouteSearchTerm] = useState('');
+  const [justAddedName, setJustAddedName] = useState('');
+
+  // The route CATALOG binding — read-only, backs the inline "Add a route" search box
+  // (see `useRouteSearch`). Bound via the sectionMenu's "Add Join Source" slot rather
   // than `externalSource` (which is this component's STORAGE binding, see
   // useReportRow): an author picks a join source + view and stops there (never
   // configures join columns), which leaves `isJoinComplete()` false and keeps this
@@ -97,79 +102,28 @@ export default function ReportRouteList() {
     (a?.id != null && b?.id != null && String(a.id) === String(b.id)) ||
     (a?.route_id != null && b?.route_id != null && String(a.route_id) === String(b.route_id));
 
-  const isDuplicateRoute = pendingRoute
-    ? routes.some(r => sameRoute(r, pendingRoute))
-    : false;
+  const isAddSearching = addRouteSearchTerm.trim().length >= 2;
+  const { results: addRouteResults, loading: addRouteLoading, error: addRouteError } = useRouteSearch({
+    apiLoad,
+    routeSourceInfo,
+    enabled: isEdit,
+    searchTerm: addRouteSearchTerm,
+  });
+  // Never clutter the recent/search list with routes already on this report —
+  // re-adding one is still allowed (a different date range is a legitimate use
+  // case), just not surfaced as a default suggestion.
+  const visibleAddRouteResults = addRouteResults.filter((r) => !routes.some((rt) => sameRoute(rt, r)));
 
-  const addRouteId = pageState?.filters?.find(f => f.searchKey === 'add_route_id' && f.type === 'action')?.values?.[0];
-
-  // Resolves `add_route_id` (published by the catalog Spreadsheet's `click_publish`
-  // provider, configured to publish/key on a row's `id`) into the full route to
-  // copy from. `id` is a real top-level column on the catalog's split table, not a
-  // `data` JSONB key — the same `systemCol` convention the "Use ID" column-selector
-  // toggle produces (`controls_utils.js`), so it's requested and filtered on the
-  // same way: pushed into `columns` as `{systemCol: true}`, and `attributes` passed
-  // explicitly so the response comes back as flat per-column fields instead of the
-  // single-`data`-blob fallback shape (mirrors `useReportRow.js`'s `loadReportRow`,
-  // which hit the identical gap fetching its own storage row's `id`).
-  const fetchDynamicRoute = async () => {
-    if (!isEdit || !addRouteId || !apiLoad || !routeSourceInfo) return;
-    setLoading(true);
-
-    const udaConfig = buildUdaConfig({
-      externalSource: routeSourceInfo,
-      columns: [
-        ...routeSourceInfo.columns.map(c => ({ ...c, show: true })),
-        { name: 'id', systemCol: true, show: true },
-      ],
-      filters: { op: "AND", groups: [{ col: "id", op: "filter", value: addRouteId.value }] }
-    });
-
-    const config = {
-      format: { ...routeSourceInfo },
-      children: [{ action: "uda", path: "/", filter: { options: JSON.stringify(udaConfig.options), attributes: udaConfig.attributes }, params: {} }]
-    };
-
+  const handleAddRoute = async (row) => {
     try {
-      const data = await apiLoad(config, "/");
-      const rawRow = data?.[0];
-      const row = rawRow
-        ? udaConfig.columnsToFetch.reduce((acc, col) => {
-            const v = rawRow[col.reqName];
-            acc[col.name] = (v && typeof v === 'object' && '$type' in v) ? v.value : v;
-            return acc;
-          }, {})
-        : null;
-      if (row) setPendingRoute(row);
-    } catch (e) {
-      console.error('<ReportRouteList:fetchDynamic>', e);
-      setError('Could not fetch route details.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isEdit && addRouteId) {
-      fetchDynamicRoute();
-    }
-  }, [isEdit, addRouteId]);
-
-  const confirmAddRoute = async () => {
-    if (!pendingRoute) return;
-    try {
-      await addRoute(pendingRoute);
-      setPendingRoute(null);
-      clearActionParam('add_route_id');
+      await addRoute(row);
+      setJustAddedName(row.name);
+      setTimeout(() => setJustAddedName(''), 2000);
     } catch (e) {
       // addRoute already records the error in useReportRow's `error` state.
     }
   };
 
-  const cancelAdd = () => {
-    setPendingRoute(null);
-    clearActionParam('add_route_id');
-  };
   return (
     <div className={t.wrapper}>
       <div className={t.title}>{item?.title}</div>
@@ -182,14 +136,18 @@ export default function ReportRouteList() {
       {isRoutesExpanded && (
         <>
           {isEdit && (
-            <AddRouteBanner
+            <AddRouteSearch
               theme={t}
-              Button={Button}
-              pendingRoute={pendingRoute}
-              saving={saving}
-              isDuplicate={isDuplicateRoute}
-              onConfirm={confirmAddRoute}
-              onCancel={cancelAdd}
+              Input={Input}
+              Icon={Icon}
+              searchTerm={addRouteSearchTerm}
+              onSearchTermChange={setAddRouteSearchTerm}
+              isSearching={isAddSearching}
+              results={visibleAddRouteResults}
+              loading={addRouteLoading}
+              error={addRouteError}
+              onAdd={handleAddRoute}
+              justAddedName={justAddedName}
             />
           )}
           {!reportRow ? (
@@ -198,7 +156,6 @@ export default function ReportRouteList() {
               <div className={t.skeletonRow} />
             </div>
           ) : null}
-          {loading ? <div className={t.loading}>Loading…</div> : null}
           {reportRow && routes.length > 0 && (
             <div className={t.searchWrapper}>
               <Input
@@ -251,8 +208,26 @@ export default function ReportRouteList() {
                 editEndDateValue={editEndDateValue}
                 onEditStartDateValueChange={setEditStartDateValue}
                 onEditEndDateValueChange={setEditEndDateValue}
-                onStartEditDates={() => { setEditingRouteDatesIndex(i); setEditStartDateValue(r.startDate); setEditEndDateValue(r.endDate); }}
-                onSaveEditDates={() => { updateRoute({ index: i, updates: { startDate: editStartDateValue, endDate: editEndDateValue } }); setEditingRouteDatesIndex(null); }}
+                editWeekdaysValue={editWeekdaysValue}
+                onEditWeekdaysValueChange={setEditWeekdaysValue}
+                onStartEditDates={() => { setEditingRouteDatesIndex(i); setEditStartDateValue(r.startDate); setEditEndDateValue(r.endDate); setEditWeekdaysValue(r.weekdays || {}); }}
+                onSaveEditDates={() => {
+                  // Only explicit `false` entries are meaningful (see useGraphPublish.js's
+                  // generateDateRange) — stripping `true`/absent keys keeps storage matching
+                  // the existing convention (e.g. converted old reports' `{saturday:false,
+                  // sunday:false}`) and collapses back to `undefined` (all days) when every
+                  // toggle is back on, instead of persisting a same-meaning-but-verbose object.
+                  const excluded = Object.fromEntries(Object.entries(editWeekdaysValue).filter(([, v]) => v === false));
+                  updateRoute({
+                    index: i,
+                    updates: {
+                      startDate: editStartDateValue,
+                      endDate: editEndDateValue,
+                      weekdays: Object.keys(excluded).length ? excluded : undefined,
+                    },
+                  });
+                  setEditingRouteDatesIndex(null);
+                }}
                 onCancelEditDates={() => setEditingRouteDatesIndex(null)}
                 graphs={graphs}
                 onToggleGraph={(sectionId) => toggleRouteGraph(i, sectionId)}
@@ -263,10 +238,10 @@ export default function ReportRouteList() {
                 onRemove={() => removeRoute(i)}
               />
             ))}
-            {!loading && reportRow && routes.length === 0 ? (
-              <div className={t.empty}>No routes added — add one from the “Add a Route to Your Report” section.</div>
+            {reportRow && routes.length === 0 ? (
+              <div className={t.empty}>No routes added — add one above.</div>
             ) : null}
-            {!loading && reportRow && routes.length > 0 && filteredEntries.length === 0 ? (
+            {reportRow && routes.length > 0 && filteredEntries.length === 0 ? (
               <div className={t.empty}>No routes match “{searchQuery}”.</div>
             ) : null}
           </div>

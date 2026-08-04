@@ -72,6 +72,12 @@ export const DEFAULT_PICK = {
     measure: 'speed',
     resolution: '5-minutes',
     comparisonMode: 'plain',
+    // Difference-only: which of the two assigned routes is the anchor
+    // ("Main") arm. false (default) = the first-assigned route, matching the
+    // runtime's own implicit convention (seriesVariants[0]); true flips it via
+    // comparisonSeries.combine.invert. See npmrdsMeasureMenu's "Anchor Route"
+    // item and report-spec.md's "Difference graphs: anchor and sign".
+    anchorInvert: false,
 };
 
 // Tags every column this picker generates as metadata (documents provenance
@@ -115,7 +121,15 @@ function buildJoin(measure) {
 
 function buildDiffColors(measure, graphType) {
     const { defaultColorRange } = vocab.comparisonModes.difference;
-    const value = measure.reverseColors ? [...defaultColorRange].reverse() : [...defaultColorRange];
+    // measure.reverseColors is validated correct for RAW-VALUE coloring (e.g. GridGraph
+    // cells by absolute travel time — round 51's fix, old dataTypes.js) but a difference
+    // graph colors a before-minus-after DELTA, not a raw value. Going from "which raw
+    // value is good" to "which delta sign is good" inverts the polarity for every measure
+    // (e.g. travelTime: lower raw value is good, but a POSITIVE delta means time FELL —
+    // also good — so the delta's good end is the opposite of the raw value's good end).
+    // So diff-mode reversal is the negation of the raw flag, not the flag itself. See
+    // "Finding: difference-graph color scale reads backwards" in report-spec-and-build-script.md.
+    const value = measure.reverseColors ? [...defaultColorRange] : [...defaultColorRange].reverse();
     const colors = { type: 'palette', value, byValueSymmetric: true };
     // GridGraph is inherently colored by value already; only BarGraph needs
     // the explicit byValue flag (see vocabulary README's comparisonModes
@@ -130,7 +144,7 @@ function buildDiffColors(measure, graphType) {
  * `defaultColors` should be the component's own defaultState.display.colors,
  * used to restore a sane palette when comparisonMode is 'plain'.
  */
-export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, externalSourceColumns, defaultColors }) {
+export function composeMeasureConfig({ graphType, measureKey, resolutionKey, comparisonModeKey, anchorInvert, externalSourceColumns, defaultColors }) {
     const measure = vocab.measures[measureKey];
     if (!measure) return null;
 
@@ -185,7 +199,7 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     return {
         columns: [yAxisColumn, xAxisColumn].filter(Boolean),
         join,
-        comparisonSeriesCombine: isDifference ? { mode: 'difference' } : null,
+        comparisonSeriesCombine: isDifference ? { mode: 'difference', ...(anchorInvert ? { invert: true } : {}) } : null,
         displayPatch,
     };
 }

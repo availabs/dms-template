@@ -115,9 +115,11 @@ dms_design_system_v2/
     │                                Comparison · MAP-21), each opened by its own doorway card and
     │                                carrying that product's stats or links-into-views; sticky
     │                                in-page nav + documentation card in a `sidebar` rail
-    ├── npmrds-reports.html        · report library · TEMPLATE SHELF first (12 cards, each with a
-    │                                layout-derived preview plate), search moved into a modal
-    │                                section group (4 states drawn as siblings below the fold)
+    ├── npmrds-reports.html        · report library · TEMPLATE SHELF first (12 cards in 5 typed
+    │                                sections, each card with a layout-derived preview tile),
+    │                                search in a modal section group —
+    │                                the dialog on this page WORKS (57 real rows, live filter, URL-
+    │                                bound query); § 04 drives the real component's states
     ├── npmrds-macro.html          · full-page map workbench (controls left, measure context right)
     ├── npmrds-report.html         · the individual report canvas (route rail + graph-card grid)
     ├── map-21.html                ·  ⎫
@@ -136,8 +138,8 @@ contract is written out at the top of `pages/npmrds-home.html` and specified in
 set introduced — **data-freshness strip**, **search-first index with facet chips** (inline *and*
 in-dialog placements), **map workbench with measure-context panel**, **report canvas (rail +
 graph-card grid)** — are documented in `design-system/patterns.html` §10–13, joined by
-**§14 preview plate · the shape of a report** (the 16:10 report-shape thumbnail, its fallback
-order, and the two saturations the categorical palette needs when it fills large areas). Content is real: NPMRDS speed data complete
+**§14 preview plate · the shape of a report** (the 4:5 report-shape tile at 1/4 card width, its
+fallback order, and the two saturations the categorical palette needs when it fills large areas). Content is real: NPMRDS speed data complete
 through **June 2026** (July partial, continuous since January 2017, 14.38B observations), PM3
 reporting year **2025**, a **869**-report library with **32** rebuilt as DMS pages, and the actual
 `npmrds_docs` page set.

@@ -32,6 +32,33 @@ const PEAK_PRESETS = [
   { label: 'All Day', startTime: '', endTime: '' },
 ];
 
+// Same day-key ordering/semantics as useGraphPublish.js's DAY_NAMES: only an
+// explicit `false` excludes a day, an absent key means included.
+const DOW_DEFS = [
+  { key: 'sunday', label: 'Su' },
+  { key: 'monday', label: 'Mo' },
+  { key: 'tuesday', label: 'Tu' },
+  { key: 'wednesday', label: 'We' },
+  { key: 'thursday', label: 'Th' },
+  { key: 'friday', label: 'Fr' },
+  { key: 'saturday', label: 'Sa' },
+];
+const WEEKDAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+const WEEKEND_KEYS = ['sunday', 'saturday'];
+const isDayOn = (weekdays, key) => weekdays?.[key] !== false;
+
+// Renders as null (no summary line) when the mask has no exclusions, so an
+// unrestricted route's date range block looks exactly as it did before this
+// control existed.
+function summarizeWeekdays(weekdays) {
+  const offLabels = DOW_DEFS.filter(({ key }) => weekdays?.[key] === false).map((d) => d.label);
+  if (offLabels.length === 0) return null;
+  const onKeys = DOW_DEFS.filter(({ key }) => isDayOn(weekdays, key)).map((d) => d.key);
+  if (onKeys.length === WEEKDAY_KEYS.length && WEEKDAY_KEYS.every((k) => onKeys.includes(k))) return 'Weekdays only';
+  if (onKeys.length === WEEKEND_KEYS.length && WEEKEND_KEYS.every((k) => onKeys.includes(k))) return 'Weekends only';
+  return `Excludes ${offLabels.join(', ')}`;
+}
+
 // One route's row: expand/collapse, name/date inline editing, TMC list, per-graph
 // assignment chips, remove. Purely presentational — every mutation is a callback
 // prop into the parent's `useReportRow`/`useGraphPublish`-backed handlers; this
@@ -61,6 +88,8 @@ export default function RouteRow({
   editEndDateValue,
   onEditStartDateValueChange,
   onEditEndDateValueChange,
+  editWeekdaysValue,
+  onEditWeekdaysValueChange,
   onStartEditDates,
   onSaveEditDates,
   onCancelEditDates,
@@ -96,6 +125,13 @@ export default function RouteRow({
     const endDate = getDateValue(editEndDateValue);
     onEditStartDateValueChange(preset.startTime ? `${startDate}T${preset.startTime}` : startDate);
     onEditEndDateValueChange(preset.endTime ? `${endDate}T${preset.endTime}` : endDate);
+  };
+
+  const toggleDow = (key) => onEditWeekdaysValueChange({ ...editWeekdaysValue, [key]: !isDayOn(editWeekdaysValue, key) });
+  const applyDowPreset = (onKeys) => {
+    const next = {};
+    DOW_DEFS.forEach(({ key }) => { next[key] = onKeys.includes(key); });
+    onEditWeekdaysValueChange(next);
   };
 
   const r = route;
@@ -196,6 +232,9 @@ export default function RouteRow({
                   <Input type="time" value={getTimeValue(isEditingDates ? editEndDateValue : r.endDate)} disabled={!isEditingDates} onChange={(e) => onTimeChange(e, isEditingDates ? editEndDateValue : r.endDate || '', onEditEndDateValueChange)} />
                 </div>
               </div>
+              {!isEditingDates && summarizeWeekdays(r.weekdays) && (
+                <div className={t.dowSummary}>{summarizeWeekdays(r.weekdays)}</div>
+              )}
               {isEditingDates && (
                 <div className={t.peakPresetsWrapper}>
                   <span className={t.peakPresetLabel}>Time of Day:</span>
@@ -211,6 +250,28 @@ export default function RouteRow({
                       {preset.label}
                     </button>
                   ))}
+                </div>
+              )}
+              {isEditingDates && (
+                <div className={t.dowWrapper}>
+                  <span className={t.peakPresetLabel}>Days of Week:</span>
+                  {DOW_DEFS.map(({ key, label }) => {
+                    const on = isDayOn(editWeekdaysValue, key);
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`${t.dowDayPill} ${on ? t.dowDayPillActive : t.dowDayPillIdle}`}
+                        title={on ? `${key} included — click to exclude` : `${key} excluded — click to include`}
+                        onClick={() => toggleDow(key)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                  <button type="button" className={t.peakPresetPill} onClick={() => applyDowPreset(WEEKDAY_KEYS)}>Weekdays</button>
+                  <button type="button" className={t.peakPresetPill} onClick={() => applyDowPreset(WEEKEND_KEYS)}>Weekends</button>
+                  <button type="button" className={t.peakPresetPill} onClick={() => applyDowPreset(DOW_DEFS.map((d) => d.key))}>All Days</button>
                 </div>
               )}
             </div>

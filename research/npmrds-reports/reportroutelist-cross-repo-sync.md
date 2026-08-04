@@ -1,5 +1,17 @@
 # ReportRouteList (and friends): manual cross-repo sync required
 
+> **2026-07-29 update:** the reason transportNY needed its own copy of theme
+> components at all was the `routecreation` map plugin — it used to be the only place
+> that plugin (and therefore the only end-to-end "create a route → add it to a
+> report" path) existed. `routecreation` (and `macroview`) have since been ported
+> natively into dms-template via `theme.mapPlugins`
+> (`planning/tasks/completed/port-transportny-map-plugins.md`) and now run on
+> dms-template's own dev server. **For routes/reports development, transportNY is no
+> longer necessary at all** — this whole manual-sync discipline is obsolete for that
+> purpose. The doc below is kept as historical record of how the two repos drifted and
+> were reconciled, and because `RouteComparison` (Third instance, below) was last
+> confirmed to still be transportNY-only — check before assuming that's changed too.
+
 ## The fact
 
 This started as a `ReportRouteList`-specific note but the same problem is broader:
@@ -186,8 +198,14 @@ open/unaddressed by this decision.
 
 ## How to apply (either instance)
 
+**Superseded for routes/reports work as of 2026-07-29** — see the update note at the
+top. The steps below only still matter if you're touching something that genuinely
+remains transportNY-only (check `RouteComparison`'s status first); for ReportRouteList,
+Measure Picker, Quick Controls, or anything route-creation-related, dms-template is now
+the only repo involved.
+
 Before considering any ReportRouteList / Measure Picker / Quick Controls (or future
-theme-extension) change in either repo "done":
+theme-extension) change in either repo "done" (historical process, see above):
 1. Decide whether the other repo needs the same change (usually yes, if the user might
    test via transportNY's dev server, since that's the only place routecreation-tool
    routes exist to test against).

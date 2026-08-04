@@ -1,10 +1,12 @@
 # NPMRDS route/report UI parity gaps (Phase C)
 
-**Status:** IN PROGRESS — 3 of 12 gaps fixed so far (#4 `route_id` overwrite labeling,
+**Status:** IN PROGRESS — 5 of 12 gaps fixed so far (#4 `route_id` overwrite labeling,
 #5 TMC Search-to-add, both live-verified 2026-07-27 in transportNY; #11 peak-hour filtering,
 both spec and UI halves, live-verified 2026-07-28 in dms-template AND ported + re-verified
 in transportNY the same day — see its entry below, including a correction to the "inert for
-Map/Info Box" claim made earlier the same day).
+Map/Info Box" claim made earlier the same day; #10 weekdays UI control, live-verified
+2026-07-30 in dms-template only, not yet ported to transportNY; #8 difference-graph anchor
+UI affordance, live-verified 2026-07-30 in dms-template only, not yet ported to transportNY).
 Gap #2 (TMC search `-` code bug) was investigated live 2026-07-27
 and dropped — could not reproduce, see its entry below. This is Phase C of the
 three-phase arc in
@@ -28,7 +30,13 @@ opportunistically.
 
 ## Gaps
 
-### Route creation (transportNY, `creating-routes.md`)
+### Route creation (`creating-routes.md`)
+
+> Gaps below were found and fixed against transportNY's copy of the routecreation
+> plugin (2026-07-27, before the port). As of 2026-07-29 the plugin is native to
+> dms-template (`planning/tasks/completed/port-transportny-map-plugins.md`) and these
+> fixes are already part of the ported copy — transportNY is no longer needed to work
+> on or verify any of this.
 
 1. **Map scroll-zoom is disabled.** Confirmed live (pixel-identical before/after a
    scroll). Workaround: double-click zoom, on-screen `+`/`-` buttons. Cosmetic/low
@@ -91,8 +99,65 @@ opportunistically.
    (`route_comp_id` order) — invisible in the UI, so getting the sign right is a
    coin-flip unless you already know the add-order convention. The spec's `anchor`
    field fixes this outright (names the arm explicitly, sets `combine.invert` as
-   needed). UI fix would be an explicit "Main" affordance on the RRL graph-pill instead
-   of implicit ordering.
+   needed). **IMPLEMENTED + LIVE-VERIFIED 2026-07-30** — decided (with user input) to
+   put the control in the graph's own Measure Picker rather than on the RRL
+   graph-pill as originally suggested above: an "Anchor Route" item was added to
+   `MeasurePicker/index.js`'s `npmrdsMeasureMenu`, shown only when Comparison Mode is
+   `difference` AND exactly two routes are currently assigned to that graph (the
+   server only supports the 2-arm case — see report-spec.md's "Difference graphs:
+   anchor and sign"). It lists the two routes by their live label and lets the author
+   pick which is the anchor ("Main"); picking sets `comparisonSeries.combine.invert`
+   (`true` when the second-assigned route is chosen, absent when the first is).
+   `anchorInvert` was added to the Measure Picker's persisted pick state
+   (`display._measurePick`), the same "smart default generator" mechanism
+   graphType/measure/resolution/comparisonMode already use — so it survives any
+   *other* Measure Picker field changing (re-composition preserves it, doesn't
+   silently reset it back to the default anchor), confirmed live below.
+
+   **Reads the same resolved, ordered route list the query itself uses**: RRL
+   publishes each graph's assigned+transformed routes to its own self-derived action
+   param (`useGraphPublish.js`'s `transformReportRoutes`) at
+   `pageState.filters[...].values`, keyed by `selfParamKey(trackingId||id)` — the
+   anchor selector reads that same array, so it can't independently drift from what
+   the graph actually queries. Needed threading `pageState` through
+   `getSectionMenuItems`/the `sectionMenuExtensions` builder call (`section.jsx`,
+   `sectionMenu.jsx`) since extensions previously only received `sectionState`, not
+   page-level state — a small, generically-useful plumbing addition, not
+   NPMRDS-specific.
+
+   **Known limitation, inherent to the underlying mechanism, not this UI**:
+   `combine.invert` is positional (first-vs-second assigned route), not identity-based
+   — if an author later reorders which route is assigned first to a difference graph
+   (RRL supports route reordering), a previously-set anchor pick's *meaning* can
+   silently flip without the stored `invert` value changing. This is a property of
+   `comparisonSeries.combine` itself (the runtime has no route-identity concept for
+   the anchor, just array position), not something this fix could have avoided short
+   of a deeper runtime change — flagged here for whoever eventually touches that area,
+   not a follow-up item for this gap.
+
+   **Deliberately NOT added to QuickControls** (the header-pill entry point,
+   `QuickControls/index.jsx`) — that surface already deliberately excludes Graph
+   Type/Resolution as out of scope for a one-click pill row (see
+   `avl-graph-quick-controls.md`'s "Scope"); Anchor Route is narrower still, so it
+   stays Settings-drawer-only.
+
+   **Live verification (2026-07-30)**: built a scratch page
+   (`converted_reports/claude_scratch_gap8_anchor`, one difference-mode Bar Graph fed
+   by two route instances — "Before"/"After" windows on the same single-TMC route,
+   deleted after use) via `report_build.mjs`. Via a headless Playwright script driving
+   the real Settings drawer: (1) with no anchor pick made, the item is absent from the
+   route list until Comparison Mode is `difference` and exactly 2 routes resolve —
+   confirmed present with both route labels the moment both were true; (2) picking
+   "After" then clicking the section's Save icon persisted
+   `comparisonSeries.combine = {mode:"difference", invert:true}` and
+   `_measurePick.anchorInvert:true` on the draft section row (confirmed via `dms raw
+   get`) — captured live `/graph` traffic also showed the resulting per-bucket
+   difference values with mixed signs, confirming the flip reached the actual query,
+   not just stored state; (3) separately changing Resolution (day → hour) afterward
+   left `invert:true` untouched — confirms the anchor pick survives unrelated
+   Measure Picker re-composition; (4) picking "Before" again correctly cleared
+   `invert` entirely (not left as `false`) — `combine` reverted to `{mode:
+   "difference"}` byte-for-byte.
 9. **A Measure Picker pick is unsaved (local draft only) until the floppy Save icon is
    explicitly clicked** — reload without saving silently discards it, no warning. The
    spec path has no equivalent draft state at all. UI fix: warn on navigate-away with
@@ -100,7 +165,33 @@ opportunistically.
 10. **`weekdays` day-mask has zero UI control** despite the runtime already honoring it
    (`useGraphPublish.js:34`) — the spec can express "exclude weekends" today and the UI
    cannot. **Cheapest available win**: pure UI addition, no backend/runtime change
-   needed at all.
+   needed at all. **IMPLEMENTED 2026-07-30** — a "Days of Week" 7-button toggle row
+   (Su–Sa) plus Weekdays/Weekends/All Days presets, added to `RouteRow.jsx`'s existing
+   date-edit block (same `isEditingDates` gating as the peak-hour presets from gap #11,
+   since a weekday mask is a natural companion to a date range, not its own edit mode).
+   `isDayOn`/toggle semantics mirror `useGraphPublish.js`'s "only an explicit `false`
+   excludes" rule exactly. On save (`ReportRouteList.jsx`'s `onSaveEditDates`), the local
+   edit state (a full 7-key boolean object, easiest to toggle) is normalized down to
+   only its `false` entries before persisting — matching the existing storage
+   convention (e.g. converted old reports' `{saturday:false,sunday:false}`) and
+   collapsing to `undefined` (all days) when every toggle is back on, rather than
+   persisting a same-meaning-but-verbose object. Also added a read-only summary line
+   ("Weekdays only" / "Weekends only" / "Excludes Tu, We") shown next to the date range
+   whenever a route has an active exclusion, so the mask is visible without entering
+   edit mode — renders as nothing when unrestricted, so unaffected routes look
+   unchanged. **DONE + live-verified 2026-07-30** on a scratch page
+   (`converted_reports/claude_scratch_weekdays_gap10`, deleted after). Confirmed via
+   `report_probe.mjs --auth --eval`: toggling Sat/Sun off and Saving persisted
+   `weekdays":{"saturday":false,"sunday":false}` on the `reports_snap_2` row (only the
+   `false` entries, not a full 7-key object); the graph's next live query captured by
+   the probe carried exactly 9 dates (the 11-day `2026-04-20`→`30` range minus
+   `2026-04-25`/`26`), with the InfoBox `travelTime` value changing accordingly
+   (8.6559→8.6798 min). The "Weekends" preset correctly excluded Mon-Fri and showed a
+   "Weekends only" summary; "All Days" cleared every exclusion and the follow-up query
+   returned the exact original value (8.6559 min) byte-for-byte, confirming a clean
+   round trip back to "no restriction." The read-only summary line
+   ("Weekdays only"/"Weekends only") also survived a full page reload, confirming it
+   reads the persisted shape correctly, not just client-side edit state.
 11. **Peak-hour-only filtering isn't a first-class Resolution/control.** **DONE 2026-07-28**
     (both halves, same day). **Spec half**: `routes[].startTime`/`endTime` (`"HH:mm"`) expresses
     it, composed by `report_build.mjs` into the same combined date+time string `useGraphPublish.js`
@@ -141,19 +232,19 @@ opportunistically.
 
 ## Suggested priority order
 
-Ranked by (fix cost) × (how often it bites someone), not file order above. #4, #5, and
-#11 are already done (struck through, left in place so the ranking rationale below
-still reads coherently) — pick up at #10 next.
+Ranked by (fix cost) × (how often it bites someone), not file order above. #4, #5,
+#8, #10, and #11 are already done (struck through, left in place so the ranking
+rationale below still reads coherently) — pick up at #7 next.
 
 1. ~~#4 route_id overwrite guard~~ — **DONE 2026-07-27** (clear Update/Save labeling;
    not a confirm dialog, see gap #4's entry above).
 2. ~~#5 TMC search-to-add~~ — **DONE 2026-07-27** (Add button/Enter next to the search
    box, see gap #5's entry above).
-3. **#10 weekdays UI control** — cheapest of what's left, purely additive, runtime
-   already correct.
-4. **#8 difference-graph anchor UI affordance** — moderate, closes a coin-flip footgun
-   the spec already proves is fixable (just needs a UI equivalent of the `anchor`
-   field).
+3. ~~#10 weekdays UI control~~ — **DONE + live-verified 2026-07-30** (see gap #10's
+   entry above).
+4. ~~#8 difference-graph anchor UI affordance~~ — **DONE + live-verified 2026-07-30**
+   (an "Anchor Route" item in the graph's own Measure Picker; see gap #8's entry
+   above).
 5. **#7 RRL rename control** — needs the existing fragile input-commit bug root-caused
    first.
 6. **#6 RRL pill silent-fail** and **#12 re-save-needed** — both need investigation
@@ -184,8 +275,23 @@ still reads coherently) — pick up at #10 next.
       the correct `HH:mm` pair, "All Day" clears both, and Save persists + triggers a
       live re-query reflecting the new window (Info Box travel time value changed
       after save, matching the applied AM Peak window).
+- [x] Gap #10 (weekdays UI control) — DONE + live-verified 2026-07-30: toggle buttons,
+      the "Weekends"/"All Days" presets, the persisted storage shape (`false`-only
+      keys), the live re-query's date-list shrinkage, and the read-only summary
+      line's survival across a page reload all confirmed on a scratch page (deleted
+      after). Not yet ported to transportNY's divergent `ReportRouteList` copy — do
+      that as a separate step if/when transportNY needs it (see
+      `project_reportroutelist_dms_template_transportny_divergence`).
+- [x] Gap #8 (difference-graph anchor UI affordance) — DONE + live-verified
+      2026-07-30: "Anchor Route" item appears in the graph's Measure Picker only when
+      Comparison Mode is `difference` and exactly 2 routes resolve for that graph;
+      picking the second-assigned route persisted `combine.invert:true` (confirmed via
+      `dms raw get`, plus live `/graph` traffic showing the flipped-sign values);
+      changing an unrelated field (Resolution) afterward left `invert:true` untouched;
+      reverting the pick correctly cleared `invert` entirely rather than leaving
+      `false`. Not yet ported to transportNY (same divergence noted for gap #10).
 - [ ] Gap #2 investigated 2026-07-27 (could not reproduce, dropped) — remaining gaps
-      (#1, #3, #6-#10, #12, #11's UI half) not started. Pick one gap per session per
+      (#1, #3, #6, #7, #9, #12) not started. Pick one gap per session per
       `feedback_isolate_shared_code_changes` if the fix touches shared theme/library
       code (most of these do: `ReportRouteList/`, `MeasurePicker/`, the routecreation
       map component).
@@ -268,3 +374,69 @@ still reads coherently) — pick up at #10 next.
   `2196819` + 4 sections + snap row `2196824` deleted after. See
   `project_reportroutelist_dms_template_transportny_divergence` memory for the port
   mechanics.
+
+- **2026-07-30** — Gap #10 (weekdays UI control) implemented in dms-template only so
+  far (not yet ported to transportNY — that's a separate step once this is
+  live-verified, per the divergence memory). Added a "Days of Week" toggle row
+  (Su–Sa + Weekdays/Weekends/All Days presets) to `RouteRow.jsx`'s existing
+  `isEditingDates` block, alongside the peak-hour presets from gap #11 — grouped
+  there rather than as its own edit mode since a weekday mask is naturally a
+  companion to the date range being edited, not a separate concept (and the user
+  had already declined mixing a day-of-week preset into the *time-of-day* row
+  specifically, back in gap #11 — this is a distinct control, not that one).
+  `ReportRouteList.jsx`'s `onSaveEditDates` normalizes the local 7-key boolean edit
+  state down to only its `false` entries before calling `updateRoute` (which already
+  handled arbitrary fields generically, so no change needed there), matching the
+  storage convention converted old reports already use and collapsing back to
+  `undefined` when every day is re-enabled. Also added a read-only summary line
+  next to the date range (outside edit mode) so an active exclusion is visible
+  without opening the editor. Built a scratch verification page via
+  `report_build.mjs` (`converted_reports/claude_scratch_weekdays_gap10`, page
+  `2197817`, sections `2197818-20`, snap row `2197821` — one InfoBox `travelTime`
+  graph, one route on known-good `route_id` 2126095, `2026-04-20`→`2026-04-30`, no
+  weekend exclusion in the spec) to click through in the browser, but the first
+  `report_probe.mjs --auth` run hung waiting for the route row's expand button —
+  root cause: `scratchpad/npmrds-sub/.dms-auth-token` was >6h old (minted the
+  previous day) and the dev site's JWTs expire at 6h, so the page silently
+  rendered as anonymous (no edit UI at all) rather than erroring. Incorrectly
+  asked the user to run `mint_token.sh` themselves instead of just running it — the
+  user corrected this (again; see the updated [[feedback-mint-token-yourself]]
+  memory) and minted it. Re-ran the probe with the fresh token and it worked
+  immediately, confirming the earlier failure really was just token staleness, not
+  a deeper browser-auth issue (the user separately clarified, correctly, that a
+  minted token alone doesn't grant a real logged-in browser session in general —
+  but this specific script's `--auth` flag sidesteps that by injecting the token
+  straight into a fresh headless browser's `localStorage` before navigation, which
+  doesn't need one). Two eval passes (`weekdays_gap10_eval.mjs` +
+  `weekdays_gap10_eval2.mjs`, both under the job's tmp dir) confirmed everything in
+  the entry above. Cleanup used `dms raw delete <app> <type> <id>` — first attempt
+  passed the wrong positional args (extra bare ids where the CLI expects `<app>
+  <type> <id>` per call) and silently "succeeded" against a non-existent app/type
+  combo without actually deleting anything; re-ran with each row's real app/type
+  (fetched via `dms raw get`, except the `:data` snap row whose type was already
+  known from the captured network payload) and confirmed via a follow-up `raw get`
+  that every row was actually gone.
+
+- **2026-07-30, gap #8 (difference-graph anchor UI affordance):** asked the user
+  whether the "Main" control should live on the RRL graph-pill (as the gap's
+  original writeup suggested) or inside the graph's own Measure Picker — RRL's own
+  README explicitly documents that a cross-section write from RRL into a graph's
+  row was considered and rejected once already (the `graph_comps` leak), which
+  would have been required for the RRL-pill option since RRL's `apiUpdate` is
+  scoped only to its own row. User picked the Measure Picker option, consistent
+  with that prior architectural decision. Implementation needed `pageState`
+  threaded through `getSectionMenuItems`/the `sectionMenuExtensions` builder call
+  (previously only `sectionState` reached extensions) so the picker could read the
+  same resolved route order RRL publishes per graph, plus a new `anchorInvert`
+  field in the Measure Picker's persisted `_measurePick` state (mirroring how
+  graphType/measure/resolution/comparisonMode already survive re-composition) so
+  picking an anchor doesn't get silently reset by an unrelated later pick. Built a
+  scratch page via `report_build.mjs` (two route instances feeding one
+  difference-mode Bar Graph) and drove the real Settings drawer with a headless
+  Playwright script — see gap #8's entry above for the full verification writeup.
+  Confirmed via `dms raw get` at each step rather than trusting on-screen labels
+  alone, and confirmed real `/graph` traffic reflected the sign flip, not just
+  stored config. Deleted the scratch page (page + 3 sections + draft-history row)
+  via `dms raw delete` afterward; left the orphaned `reports_snap_2` row alone
+  rather than risk a wrong delete on a split-table row (matches this project's
+  existing caution around `reports_snap_2` row deletes).

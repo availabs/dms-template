@@ -5,6 +5,8 @@ import AddPageButton from './components/AddPageButton'
 import ReportRouteList from "./components/ReportRouteList/index"
 import { npmrdsMeasureMenu } from "./components/MeasurePicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
+import { RoutecreationPlugin } from "./components/routecreation/routecreation.plugin"
+import { MacroviewPlugin } from "./components/macroview/macroview.plugin"
 const theme = {
   pageComponents: {
     "AddPageButton": AddPageButton,
@@ -16,6 +18,10 @@ const theme = {
   },
   sectionHeaderExtensions: {
     "AVL Graph": [npmrdsQuickControls]
+  },
+  mapPlugins: {
+    routecreation: RoutecreationPlugin,
+    macroview: MacroviewPlugin
   },
   "navOptions": {
     "authMenu": {

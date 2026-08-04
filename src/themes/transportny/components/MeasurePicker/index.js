@@ -31,6 +31,7 @@ import {
     DEFAULT_PICK,
     BASE_SOURCE,
 } from './composeMeasureConfig';
+import { selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 
 // Every target this picker can ever assign to a column (xAxis always;
 // yAxis/color depending on graph type). Any existing column carrying one of
@@ -99,6 +100,7 @@ export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
         measureKey: nextPick.measure,
         resolutionKey: nextPick.resolution,
         comparisonModeKey: nextPick.comparisonMode,
+        anchorInvert: nextPick.anchorInvert,
         // Fall back to the canonical NPMRDS base source's own column list
         // when no Dataset is picked yet, so the plain-resolution xAxis
         // column (epoch/date) composes as the real physical column, not
@@ -192,7 +194,27 @@ export function applyMeasurePick({ state, dwAPI, currentComponent }, partial) {
     dwAPI.reconcileComparisonSeriesColumn();
 }
 
-export function npmrdsMeasureMenu({ state, dwAPI, currentComponent, isEdit, canEditSection, siblingSections = [] }) {
+// Difference graphs return `anchor - other`; the server treats
+// seriesVariants[0] (whichever route was assigned to this graph first,
+// ReportRouteList's own array order) as the anchor with no UI indication at
+// all — see report-spec.md's "Difference graphs: anchor and sign". Reads the
+// SAME resolved, ordered route list the query itself will use: RRL publishes
+// each graph's assigned+transformed routes to its own self-derived action
+// param (useGraphPublish.js's transformReportRoutes), so this doesn't
+// re-derive route order independently and can't drift from what actually
+// gets queried. Only meaningful for exactly two arms — the server hard-errors
+// past that (report-spec.md), so a third+ route assigned to a difference
+// graph intentionally hides this control rather than offer a broken picker.
+function getAnchorRouteOptions({ sectionState, pageState }) {
+    const sectionId = String(sectionState?.value?.trackingId ?? sectionState?.value?.id ?? '');
+    if (!sectionId) return null;
+    const paramKey = selfParamKey(sectionId);
+    const variants = pageState?.filters?.find(f => f.searchKey === paramKey && f.type === 'action')?.values;
+    if (!Array.isArray(variants) || variants.length !== 2) return null;
+    return variants.map((v, idx) => ({ value: idx === 1, label: v?.label || `Route ${idx + 1}` }));
+}
+
+export function npmrdsMeasureMenu({ state, dwAPI, currentComponent, isEdit, canEditSection, siblingSections = [], sectionState, pageState }) {
     const pick = { ...DEFAULT_PICK, ...(state?.display?._measurePick || {}) };
     const reportPage = isReportPage(siblingSections);
 
@@ -203,6 +225,10 @@ export function npmrdsMeasureMenu({ state, dwAPI, currentComponent, isEdit, canE
         RESOLUTION_OPTIONS.find(o => o.value === pick.resolution)?.label,
         COMPARISON_MODE_OPTIONS.find(o => o.value === pick.comparisonMode)?.label,
     ].filter(Boolean).join(' · ');
+
+    const anchorOptions = pick.comparisonMode === 'difference'
+        ? getAnchorRouteOptions({ sectionState, pageState })
+        : null;
 
     return [{
         name: 'Measure', icon: 'AdjustmentsHorizontal',
@@ -220,6 +246,7 @@ export function npmrdsMeasureMenu({ state, dwAPI, currentComponent, isEdit, canE
             selectItem({ id: 'measure_measure', name: 'Measure', options: MEASURE_OPTIONS, value: pick.measure, onPick: v => applyPick({ measure: v }) }),
             selectItem({ id: 'measure_resolution', name: 'Resolution', options: RESOLUTION_OPTIONS, value: pick.resolution, onPick: v => applyPick({ resolution: v }) }),
             selectItem({ id: 'measure_comparison_mode', name: 'Comparison Mode', options: COMPARISON_MODE_OPTIONS, value: pick.comparisonMode, onPick: v => applyPick({ comparisonMode: v }) }),
+            ...(anchorOptions ? [selectItem({ id: 'measure_anchor_route', name: 'Anchor Route', options: anchorOptions, value: pick.anchorInvert, onPick: v => applyPick({ anchorInvert: v }) })] : []),
         ],
     }];
 }

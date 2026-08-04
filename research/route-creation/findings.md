@@ -5,7 +5,11 @@ plugin-local workaround, implemented and committed 2026-07-23 in transportNY, us
 working by testing it live the same day. Feature gap catalogued, with deferrals decided. Arc step 3
 (design research) for the next priority (Marker Placement / auto-routing) is **complete** — the
 endpoint is found/traced/confirmed live (Part 5), and all four architecture/UX forks are decided
-(Part 6). Arc step 4 (scope/plan) is **done**, tracked in **two** repos' planning systems: this
+(Part 6). **2026-07-29 update:** the routecreation plugin (and macroview) have since been
+ported natively into dms-template via `theme.mapPlugins` —
+`planning/tasks/completed/port-transportny-map-plugins.md`. transportNY is no longer
+needed to develop or test routes/reports features; the two-repo setup described
+throughout this doc (below) is now historical. Arc step 4 (scope/plan) is **done**, tracked in **two** repos' planning systems: this
 repo's `src/dms/planning/tasks/current/routecreation-marker-placement-autorouting.md` (umbrella
 plan + Phase 1 dms-server proxy, todo entry under `patterns/mapeditor`) and transportNY's own
 `planning/tasks/current/routecreation-marker-placement-autorouting.md` (Phase 2-3 plugin work,
