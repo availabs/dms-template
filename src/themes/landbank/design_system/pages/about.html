@@ -61,6 +61,22 @@
         <!-- icon: Lot --><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h6M15 5h4v4M19 13v6h-6M9 19H5v-4M5 11v-1"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
         Browse properties
       </a>
+      <!-- Staff user menu — interlinks the public site to the admin panel -->
+      <div class="relative group hidden md:block shrink-0">
+        <button class="flex items-center gap-2 h-10 pl-1.5 pr-2.5 rounded-md border border-ink/15 hover:border-skydeep/40 bg-white transition-colors" aria-haspopup="true">
+          <span class="size-6 rounded-full bg-ink flex items-center justify-center text-white"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span>
+          <span class="font-prose text-[13px] font-semibold text-slate">Staff</span>
+          <svg class="size-3.5 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="absolute right-0 top-full mt-1 w-56 bg-white rounded-md border border-ink/10 shadow-lg py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+          <div class="px-3 py-1.5 border-b border-ink/5 mb-1"><p class="font-meta font-medium text-[9.5px] uppercase tracking-[0.16em] text-mist">Staff console</p></div>
+          <a href="admin-dashboard.html" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-slate hover:bg-sky/[0.06] hover:text-ink"><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 19a9 9 0 1 1 13 0"/><path d="M12 14l4.2-4.2"/></svg>Admin dashboard</a>
+          <a href="admin-table.html" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-slate hover:bg-sky/[0.06] hover:text-ink"><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M9.5 9.5v10"/></svg>Inventory table</a>
+          <a href="admin-new-property.html" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-slate hover:bg-sky/[0.06] hover:text-ink"><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add property</a>
+          <div class="border-t border-ink/5 my-1"></div>
+          <a href="/auth/login" class="flex items-center gap-2.5 px-3 py-2 font-prose text-[13px] text-slate hover:bg-sky/[0.06] hover:text-ink"><svg class="size-4 text-mist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h12m0 0-4-4m4 4-4 4M11 20H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg>Sign in</a>
+        </div>
+      </div>
       <button class="md:hidden text-ink" aria-label="Open menu"><!-- icon: Menu --><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg></button>
     </div>
   </header>
@@ -427,6 +443,13 @@
     <a href="home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Home</a>
     <a href="about.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#0A6E99;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>About</a>
     <a href="properties.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Properties</a>
+    <div style="height:1px;background:rgba(22,35,44,0.08);margin:6px 0;"></div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#8CA0AB;padding:0 16px 6px;">Admin panel</div>
+    <a href="admin-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Dashboard</a>
+    <a href="admin-table.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Inventory table</a>
+    <a href="admin-new-property.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Add property</a>
+    <a href="property-view.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Property view</a>
+    <a href="property-edit.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#16232C;text-decoration:none;"><span style="font-size:10px;color:#8CA0AB;min-width:14px;">·</span>Property edit</a>
   </div>
   <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
           style="width:40px;height:40px;border-radius:8px;background:#16232C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,35,44,0.25);"

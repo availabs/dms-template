@@ -116,7 +116,7 @@ export default function LogoNav(props) {
                     {site.name}
                   </div>
                   {site.tag && (
-                    <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500 truncate">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400 truncate">
                       {site.tag}
                     </div>
                   )}

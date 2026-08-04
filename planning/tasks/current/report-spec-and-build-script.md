@@ -67,6 +67,22 @@ that Phase B makes unnecessary.
 - **Anything in transportNY.** All code here lives in dms-template — user direction 2026-07-27,
   memory `feedback_all_code_in_dms_template`.
 
+<<<<<<< HEAD
+  **Cross-repo state verified 2026-07-27 (after the user bumped transportNY's submodule twice):
+  currently byte-aligned — but by MANUAL COPY ONLY, so this is a snapshot, not a guarantee.**
+  Verified there is no auto-sync mechanism of any kind: `src/dms_themes/transportny` is a plain
+  directory (not a symlink), the theme is absent from transportNY's `.gitmodules` (which lists 7
+  other submodules), and `package.json` has no theme dependency and no copy/sync/postinstall
+  script. **It will drift again the moment either side is edited — assume it has, and `diff -rq`
+  rather than trusting this paragraph.** Both repos' `@availabs/dms` are at the identical commit
+  `4e8a1511` (so transportNY now has the `sectionMenuExtensions`/`sectionHeaderExtensions`
+  extension points AND the `GraphComponent.jsx` hover-tooltip `xFormat`/`indexFormat` fix);
+  `MeasurePicker/` and `src/themes/transportny/components/MeasurePicker/vocabulary.json` are byte-identical;
+  `QuickControls/` and `ReportRouteList/` differ **only** by the required submodule-path rewrite
+  (`../../../../dms/` → `../../../../modules/dms/`). An earlier draft of this file warned that a
+  spec-built report would render differently on transportNY — that is no longer true. Re-check
+  with a `diff -rq` before repeating the claim either way.
+=======
   **2026-07-29 update: transportNY is no longer needed for routes/reports work at all.** The
   routecreation plugin (and macroview) have been ported natively into dms-template via
   `theme.mapPlugins` (`planning/tasks/completed/port-transportny-map-plugins.md`) — the paragraphs
@@ -75,6 +91,7 @@ that Phase B makes unnecessary.
   `RouteComparison` was last confirmed to still be transportNY-only — check
   `research/npmrds-reports/reportroutelist-cross-repo-sync.md` before assuming that's changed too),
   but nothing in this task requires touching transportNY anymore.
+>>>>>>> 6fa3ccc1699680e13bc8d51ff0ea2e8ec5452628
 - Any change to `composeMeasureConfig.js` / `applyMeasurePick` behavior. This task *consumes*
   them. If a gap forces a change there, it affects the live UI too — isolate it
   (`feedback_isolate_shared_code_changes`).

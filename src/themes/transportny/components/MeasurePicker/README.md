@@ -1,5 +1,12 @@
 # npmrds_graph_vocabulary
 
+> **Location note (moved 2026-07-29).** This lived in `data-types/npmrds_graph_vocabulary/` until the
+> theme folder was synced into transportNY and the build failed: `composeMeasureConfig.js` reached five
+> levels up and out of `src/` for the JSON, which no downstream project can resolve. The theme folder
+> is the unit that gets synced (`planning/skills/sync-transportnyv2-theme`), so the vocabulary now
+> lives inside it, beside its JS consumer. **Do not move it back out of the synced tree.** The Python
+> consumer points here too.
+
 Shared, plain-data vocabulary for NPMRDS AVL Graph section generation. Not a DMS dataType plugin
 (no server routes/worker, not registered in `register-datatypes.js`) — just a JSON file two
 independent consumers read:

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Actions Database (Sullivan County)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================
+     REDESIGN NOTE (documentation only — not part of the page)
+     Transcribes the live "Actions Database" (mitigat-ny prod,
+     county_template pattern, /track_progress/actions_database),
+     as filtered to SULLIVAN COUNTY (page param county=36105). County
+     scope is set at the SITE level by the page filter param, so there
+     is no county selector — the page is a filtered template.
+     Real contents preserved from the live page:
+       • Title "Actions Database" + Edit Actions
+       • "Local Actions by Progress Status": All 473 · Proposed 391 ·
+         In-Progress 21 · Completed 40 · Discontinued 4
+       • Actions table: Jurisdiction / Action Name / Implementation
+         Status (the redundant per-row "Sullivan County" column is
+         folded into the page-level scope badge)
+       • The hidden "Page Guidance Overview" (review guidance +
+         44 CFR citations) surfaced as an optional disclosure
+     Improvements over the live page: consolidated status card with a
+     distribution meter, a scannable filter toolbar, dense status-dot
+     table rows, and a tighter header — all from mny primitives.
+     ================================================================ -->
+
+<!-- TOPNAV — fixed floating -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end min-w-[110px]">
+          <button class="bg-white flex justify-between items-center h-[48px] w-[217px] py-[8px] pr-[8px] pl-[24px] border border-mny-100 rounded-[1000px] shadow-sm">
+            <span class="uppercase text-mny-900 font-medium text-[12px]">Search</span>
+            <div class="bg-mny-700 p-[10px] rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="text-white" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M15,14.3L10.7,10c1.9-2.3,1.6-5.8-0.7-7.7S4.2,0.7,2.3,3S0.7,8.8,3,10.7c2,1.7,5,1.7,7,0l4.3,4.3L15,14.3z M2,6.5 C2,4,4,2,6.5,2S11,4,11,6.5S9,11,6.5,11S2,9,2,6.5z"/></svg></div>
+          </button>
+          <div class="flex p-1 items-center">
+            <div class="flex p-2 justify-center items-center">
+              <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16" fill="currentColor"><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================
+     HEADER — compact "header" LayoutGroup (unboxed, on the canvas)
+     Eyebrow + title + subhead on the left; the county SCOPE badge
+     (set by page param, not user-editable) + Edit Actions on the right.
+     ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="max-w-[1440px] mx-auto">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1 pt-[132px] pb-2 px-2">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+
+          <!-- Left: eyebrow + title + subhead -->
+          <div class="min-w-0">
+            <p class="font-proxima text-[14px] font-[600] text-mny-700 leading-none mb-2">Explore Progress</p>
+            <h1 class="font-display text-[36px] text-mny-900 font-[500] uppercase leading-[100%] tracking-[-0.01em]">Actions Database</h1>
+            <p class="font-proxima text-[16px] leading-[24px] text-mny-700 mt-1 max-w-[560px]">Review the status of every mitigation action in Sullivan County.</p>
+          </div>
+
+          <!-- Right: county scope badge (param-set) + primary action -->
+          <div class="flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-2 px-4 py-2 bg-white border border-mny-100 rounded-full shadow-sm">
+              <!-- icon: Location -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-y700" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+              <span class="font-proxima text-[14px] font-[600] text-mny-900">Sullivan County</span>
+              <span class="font-proxima text-[12px] text-mny-400 tabular-nums">FIPS 36105</span>
+            </div>
+            <!-- Primary: Edit Actions (yellow) -->
+            <button class="flex items-center gap-2 px-4 py-2 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full shadow-sm transition-colors">
+              <!-- icon: Edit -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793 3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+              Edit Actions
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     CONTENT — "content" LayoutGroup
+     sectionArray grid: grid-cols-12 gap-0, per-section padding gutters,
+     each section an inner white rounded card (grid.html model).
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="grid grid-cols-12 gap-0 pt-4 pb-2">
+
+            <!-- Optional guidance disclosure (the page's "hidden from view" help block).
+                 Native <details>, collapsed by default — no JS. -->
+            <div class="col-span-12 p-2 pb-1">
+              <details class="group bg-white/70 rounded-[12px] border border-mny-100 open:mny-shadow-sm">
+                <summary class="flex items-center gap-2 cursor-pointer px-4 py-2.5 list-none select-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                  <span class="font-display text-[13px] font-[500] uppercase tracking-wider text-mny-700">About this page &amp; regulatory guidance</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-mny-400 ml-auto transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd"/></svg>
+                </summary>
+                <div class="px-4 pb-4 pt-1 border-t border-mny-100">
+                  <p class="font-proxima text-[14px] text-mny-700 leading-[150%] max-w-[820px] mt-3">This page is the entry point for reviewing mitigation actions and their status. To add a new action or update an existing one, use the Actions form in the Admin Panel. It aligns with planning task 5 of the LHMP process — <span class="font-[600] text-mny-900">Develop the Mitigation Strategy</span>.</p>
+                  <p class="font-proxima text-[12px] font-[600] uppercase tracking-wider text-mny-400 mt-4 mb-1.5">Conforms to</p>
+                  <div class="flex flex-wrap gap-2">
+                    <span class="font-proxima text-[12px] text-mny-700 bg-mny-50 border border-mny-100 rounded-full px-3 py-1">44 CFR § 201.6(c)(3)(ii): C4-a, C4-b</span>
+                    <span class="font-proxima text-[12px] text-mny-700 bg-mny-50 border border-mny-100 rounded-full px-3 py-1">44 CFR § 201.6(c)(3)(iii): C5-b</span>
+                    <span class="font-proxima text-[12px] text-mny-700 bg-mny-50 border border-mny-100 rounded-full px-3 py-1">44 CFR § 201.6(c)(3)(iv): C5-b</span>
+                  </div>
+                </div>
+              </details>
+            </div>
+
+            <!-- ========================================================
+                 SECTION 1 — LOCAL ACTIONS BY PROGRESS STATUS (Card)
+                 Hero ALL + 4 status tiles + a distribution meter,
+                 consolidated into one card instead of five loose boxes.
+                 ======================================================== -->
+            <div data-dms="section" data-name="actions-by-progress" class="col-span-12 p-2">
+              <div class="bg-white rounded-[12px] mny-shadow-md p-5 lg:p-6">
+
+                <!-- Section header -->
+                <div class="flex items-center justify-between gap-3 mb-4">
+                  <h2 class="font-display text-[20px] text-mny-900 font-[500] uppercase leading-none">Local Actions by Progress Status</h2>
+                  <a href="actions-prioritize.html" class="flex items-center gap-1 font-proxima text-[13px] font-[600] text-mny-700 hover:text-mny-y700 transition-colors">
+                    View all actions
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                  </a>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+                  <!-- Hero total -->
+                  <div class="lg:col-span-3">
+                    <div class="h-full bg-mny-y50 rounded-[12px] border-l-4 border-mny-y700 border-y border-r border-mny-y500/40 p-4 flex flex-col justify-center">
+                      <p class="font-proxima text-[12px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide">All Local Actions</p>
+                      <p class="font-display text-[48px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] tabular-nums mt-1">473</p>
+                      <p class="font-proxima text-[12px] text-mny-400 mt-1">Sullivan County · all jurisdictions</p>
+                    </div>
+                  </div>
+
+                  <!-- Status tiles (the four live counts, in pipeline order) -->
+                  <div class="lg:col-span-9">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+                      <!-- Proposed -->
+                      <div class="bg-white rounded-[12px] mny-shadow-sm p-3 border-l-4 border-mny-400 flex flex-col justify-between">
+                        <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</p>
+                        <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">391</p>
+                        <p class="font-proxima text-[11px] text-mny-400 mt-1 tabular-nums">83% of actions</p>
+                      </div>
+                      <!-- In-Progress -->
+                      <div class="bg-white rounded-[12px] mny-shadow-sm p-3 border-l-4 border-mny-700 flex flex-col justify-between">
+                        <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-mny-700"></span>In-Progress</p>
+                        <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">21</p>
+                        <p class="font-proxima text-[11px] text-mny-400 mt-1 tabular-nums">4% of actions</p>
+                      </div>
+                      <!-- Completed -->
+                      <div class="bg-white rounded-[12px] mny-shadow-sm p-3 border-l-4 border-mny-grn flex flex-col justify-between">
+                        <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-mny-grn"></span>Completed</p>
+                        <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">40</p>
+                        <p class="font-proxima text-[11px] text-mny-400 mt-1 tabular-nums">8% of actions</p>
+                      </div>
+                      <!-- Discontinued -->
+                      <div class="bg-white rounded-[12px] mny-shadow-sm p-3 border-l-4 border-mny-red flex flex-col justify-between">
+                        <p class="font-proxima text-[11px] text-mny-700 font-[600] uppercase leading-[140%] tracking-wide flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-mny-red"></span>Discontinued</p>
+                        <p class="font-display text-[28px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">4</p>
+                        <p class="font-proxima text-[11px] text-mny-400 mt-1 tabular-nums">1% of actions</p>
+                      </div>
+                    </div>
+
+                    <!-- Distribution meter across all 473 local actions -->
+                    <div class="mt-3">
+                      <div class="flex h-[8px] rounded-full overflow-hidden bg-mny-50 border border-mny-100">
+                        <div class="bg-mny-400" style="width:82.66%" title="Proposed — 391"></div>
+                        <div class="bg-mny-700" style="width:4.44%" title="In-Progress — 21"></div>
+                        <div class="bg-mny-grn" style="width:8.46%" title="Completed — 40"></div>
+                        <div class="bg-mny-red" style="width:0.85%" title="Discontinued — 4"></div>
+                        <div class="bg-mny-200" style="width:3.59%" title="Other / not reported — 17"></div>
+                      </div>
+                      <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
+                        <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-400"></span>Proposed · 391</span>
+                        <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-700"></span>In-Progress · 21</span>
+                        <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-grn"></span>Completed · 40</span>
+                        <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-700 font-[500]"><span class="w-2.5 h-2.5 rounded-sm bg-mny-red"></span>Discontinued · 4</span>
+                        <span class="flex items-center gap-1.5 font-proxima text-[11px] text-mny-400 font-[500]"><span class="w-2.5 h-2.5 rounded-sm border border-mny-200 bg-white"></span>Not reported · 17</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- ========================================================
+                 SECTION 2 — ACTIONS TABLE (Spreadsheet, col-span-12)
+                 Toolbar (Search / Jurisdiction / Implementation Status)
+                 + dense table: Jurisdiction / Action Name / Status.
+                 ======================================================== -->
+            <div data-dms="section" data-name="actions-table" class="col-span-12 p-2">
+              <div class="bg-white rounded-[12px] mny-shadow-md p-5 lg:p-6">
+
+                <!-- Section header -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                  <div>
+                    <h2 class="font-display text-[20px] text-mny-900 font-[500] uppercase leading-none">Actions</h2>
+                    <p class="font-proxima text-[13px] text-mny-400 mt-1">Every mitigation action tracked for Sullivan County jurisdictions</p>
+                  </div>
+                  <a href="actions-prioritize.html" class="flex items-center gap-1 font-proxima text-[13px] font-[600] text-mny-700 hover:text-mny-y700 transition-colors shrink-0">
+                    Prioritize actions
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                  </a>
+                </div>
+
+                <!-- Toolbar: search + facet filters -->
+                <div class="flex flex-wrap items-center gap-2 bg-mny-50 rounded-[12px] px-3 py-2.5 border border-mny-100 mb-4">
+                  <label class="flex items-center gap-2 bg-white rounded-full pl-3 pr-2 py-1.5 border border-mny-200 flex-1 min-w-[200px] max-w-[320px] focus-within:border-mny-400">
+                    <!-- icon: Search -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mny-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                    <input type="text" placeholder="Search actions…" class="w-full font-proxima text-[13px] text-mny-900 placeholder:text-mny-400 outline-none bg-transparent">
+                  </label>
+                  <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
+                    <span class="font-proxima text-[13px] text-mny-700">Jurisdiction</span>
+                    <span class="font-proxima text-[13px] text-mny-400">All</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <button class="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 border border-mny-200 hover:border-mny-400 transition-colors">
+                    <span class="font-proxima text-[13px] text-mny-700">Status</span>
+                    <span class="font-proxima text-[13px] text-mny-400">All</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-mny-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <div class="ml-auto">
+                    <span class="font-proxima text-[12px] text-mny-400"><span class="font-[700] text-mny-700 tabular-nums">12</span> of 473 actions</span>
+                  </div>
+                </div>
+
+                <!-- Table -->
+                <div class="rounded-[12px] border border-mny-100 overflow-x-auto">
+                  <table class="w-full border-collapse">
+                    <thead>
+                      <tr class="bg-mny-50">
+                        <th class="w-[40px] border-b border-mny-100"></th>
+                        <th class="px-4 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[220px]">
+                          <span class="inline-flex items-center gap-1 cursor-pointer text-mny-900">Jurisdiction
+                            <!-- icon: ArrowDown (active sort) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-700" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                          </span>
+                        </th>
+                        <th class="px-4 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100">
+                          <span class="inline-flex items-center gap-1 cursor-pointer hover:text-mny-900">Action Name
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 20V4m0 0L4.5 7.5M8 4l3.5 3.5M16 4v16m0 0 3.5-3.5M16 20l-3.5-3.5"/></svg>
+                          </span>
+                        </th>
+                        <th class="px-4 py-3 text-left font-display text-[11px] font-[500] uppercase text-mny-700 tracking-wider border-b border-mny-100 w-[180px]">
+                          <span class="inline-flex items-center gap-1 cursor-pointer hover:text-mny-900">Implementation Status
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mny-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 20V4m0 0L4.5 7.5M8 4l3.5 3.5M16 4v16m0 0 3.5-3.5M16 20l-3.5-3.5"/></svg>
+                          </span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Each row: detail affordance · jurisdiction · action name (link) · status dot -->
+                      <tr class="border-b border-mny-50 hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle">
+                          <button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg>
+                          </button>
+                        </td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Rockland (Town)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Rockland — Acquire Generators for Critical Facilities</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Jeffersonville (Village)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Jeffersonville — Laundry Brook and Callicoon Creek Intersection Flooding</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Bloomingburg (Village)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Increase Capacity To Manage Snow On Pedestrian Walkways</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Neversink (Town)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Neversink — Communication Tower Back Generation</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Mamakating (Town)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Mamakating — Landslide</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Delaware (Town)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Delaware — Welch Rd Bridge</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Forestburgh (Town)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Forestburgh — Gallagan Rd Flooding Issues/Washout</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Woodridge (Village)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Woodridge — Acquire New Generator for Village Hall</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                      <!-- In-Progress row (amber-tinted for scannability) -->
+                      <tr class="border-b border-mny-50 bg-mny-y50/40 hover:bg-mny-y50/70 transition-colors">
+                        <td class="pl-3 align-middle border-l-2 border-mny-700"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Sullivan (County)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Sullivan County — County Road 164 Mitigation</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-900"><span class="w-2 h-2 rounded-full bg-mny-700"></span>In-Progress</span></td>
+                      </tr>
+                      <tr class="border-b border-mny-50 hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Wurtsboro (Village)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Improve Stormwater Drainage System</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                      <!-- In-Progress row -->
+                      <tr class="border-b border-mny-50 bg-mny-y50/40 hover:bg-mny-y50/70 transition-colors">
+                        <td class="pl-3 align-middle border-l-2 border-mny-700"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Thompson (Town)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Thompson — Wastewater System Infrastructure</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] font-[600] text-mny-900"><span class="w-2 h-2 rounded-full bg-mny-700"></span>In-Progress</span></td>
+                      </tr>
+                      <tr class="hover:bg-mny-50/60 transition-colors">
+                        <td class="pl-3 align-middle"><button class="size-6 rounded-md flex items-center justify-center text-mny-400 hover:text-mny-900 hover:bg-mny-100" aria-label="Show action detail"><svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z" clip-rule="evenodd"/></svg></button></td>
+                        <td class="px-4 py-3 font-proxima text-[14px] font-[600] text-mny-900">Tusten (Town)</td>
+                        <td class="px-4 py-3"><a href="#" class="font-proxima text-[14px] text-mny-900 hover:text-mny-y700 hover:underline underline-offset-2">Tusten — Narrowsburg Flats Flooding LFA</a></td>
+                        <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5 font-proxima text-[13px] text-mny-700"><span class="w-2 h-2 rounded-full bg-mny-400"></span>Proposed</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Table footer: view all + pagination -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-4 border-t border-mny-100">
+                  <button class="px-5 py-2.5 bg-mny-y700 hover:bg-[#D49B35] text-mny-900 font-proxima font-[700] text-[13px] uppercase tracking-wider rounded-full transition-colors">View All 473 Actions</button>
+                  <div class="flex items-center gap-2">
+                    <span class="font-proxima text-[13px] text-mny-400">Page 1 of 40</span>
+                    <div class="flex gap-1">
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-400 hover:bg-mny-50 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                      </button>
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-700 bg-mny-50 font-proxima text-[13px] font-[600]">1</button>
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-400 hover:bg-mny-50 font-proxima text-[13px] cursor-pointer">2</button>
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-400 hover:bg-mny-50 font-proxima text-[13px] cursor-pointer">3</button>
+                      <button class="w-8 h-8 rounded-full border border-mny-100 flex items-center justify-center text-mny-400 hover:bg-mny-50 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Metadata strip -->
+            <div class="col-span-12 px-2">
+              <p class="font-proxima text-[13px] text-mny-400/70 pt-2 text-right">Data: AVAIL MitigateNY Actions Database &middot; Sullivan County (FIPS 36105) &middot; Updated July 2026</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FOOTER — clearCentered layout
+     ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div data-dms="layoutGroup" data-name="clearCentered">
+      <div class="w-full h-full flex-1 flex flex-row -mt-3">
+        <div class="max-w-[1440px] w-full xl:px-[48px] mx-auto">
+          <div class="flex flex-1 w-full flex-col relative h-full min-h-[200px]">
+            <div class="w-full grid grid-cols-6 md:grid-cols-12">
+              <div class="col-span-6 md:col-span-12 p-4">
+                <div class="my-2 flex flex-col gap-[8px] max-w-[1362px] mx-auto text-mny-700 overflow-hidden">
+                  <div class="p-[56px] md:h-[386px] md:max-h-[386px] md:min-h-[386px] bg-white flex flex-col md:flex-row flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md divide-x divide-mny-100 justify-center">
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Know the Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Built Environment</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">People and Communities</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Environment</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Assess Risk</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Natural Hazards</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Climate Change</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Presidentially Declared Disasters</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Plan to Act</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">State Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Local Planning</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Evaluate Capacity &amp; Discover Resources</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Develop Strategies</a>
+                    </div>
+                    <div class="flex flex-col p-4 pl-[24px] gap-[12px] w-[282px] overflow-hidden">
+                      <a class="text-mny-900 font-display font-medium text-[14px] leading-[14px] uppercase" href="#">Explore Progress</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Action Tracking</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Mitigation Matters</a>
+                      <a class="text-mny-700 font-proxima font-normal text-[16px] leading-[22.4px]" href="#">Resources</a>
+                    </div>
+                  </div>
+                  <div class="p-[16px] md:px-[56px] flex flex-col md:flex-row items-center justify-between md:h-[70px] md:max-h-[70px] md:min-h-[70px] bg-white flex-1 px-4 xl:px-[64px] rounded-[12px] shadow-md">
+                    <div class="font-proxima text-[14px]">&copy; 2025 MitigateNY, All Rights Reserved.</div>
+                    <div class="flex gap-[24px]">
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Privacy Policy</a>
+                      <a href="#" class="font-proxima text-[14px] text-mny-700 hover:underline">Terms and Conditions</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating design-system nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:190px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <a href="home.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home</a>
+    <a href="home-v2.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Home v2</a>
+    <a href="section-landing.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Section Landing</a>
+    <a href="actions-dashboard.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Dashboard (County)</a>
+    <a href="actions-database.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions Database</a>
+    <a href="actions-prioritize.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (List)</a>
+    <a href="actions-prioritization.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Prioritize (Cards)</a>
+    <a href="actions-location-overview.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Location Overview</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Design system navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
