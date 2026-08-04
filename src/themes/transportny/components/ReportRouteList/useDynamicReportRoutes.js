@@ -74,11 +74,22 @@ export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeI
     // identity (source/view id) should retrigger this effect.
   }, [enabled, apiLoad, routeSourceInfo?.source_id, routeSourceInfo?.view_id, idsKey]);
 
-  // Concrete fields (name/tmc_array/dates/...) come from the resolved catalog row; identity and
+  // Concrete fields (tmc_array/dates/...) come from the resolved catalog row; identity and
   // authoring fields (route_comp_id/graphIds/color) stay from the slot regardless of which real
   // route fills it, so graph assignments made once at authoring time keep working no matter who's
   // viewing or which route the URL currently supplies. Every slot in the same group resolves
   // against the SAME real route (one URL id can fill many date/settings-view rows).
+  //
+  // `name` is the one field that does NOT simply take the catalog row's value — only a genuinely
+  // meaningless placeholder name should ever be replaced by the resolved route's real name.
+  // `isPlaceholderName` (set only by handleAddRouteSlot's auto-generated "Route Slot N" default,
+  // cleared the moment a human renames it) marks that one case; everything else — a ported
+  // template's descriptive per-comp name (e.g. "2024 - AM Peak - Rochester Inner Loop 2"), or any
+  // deliberate rename — is authoritative and must never be silently overwritten by a resolved
+  // route's own name, same as a route's name is authoritative everywhere else in this component
+  // (see useReportRow.js's rename-collision guard). Found live 2026-08-04: every row of a
+  // multi-comp route_slot_group was showing the identical bare catalog name in view mode, erasing
+  // the very per-row distinction (date window / peak label) the group's rows exist to carry.
   const groups = distinctRouteSlotGroups(slots);
   const resolvedRoutes = !enabled ? [] : (slots || [])
     .map((slot) => {
@@ -86,7 +97,14 @@ export function useDynamicReportRoutes({ apiLoad, routeSourceInfo, slots, routeI
       const id = groupIndex >= 0 ? routeIds?.[groupIndex] : null;
       const catalogRow = id != null ? catalogRowsById.get(String(id)) : null;
       if (!catalogRow || !slot) return null;
-      return { ...slot, ...catalogRow, route_comp_id: slot.route_comp_id, graphIds: slot.graphIds, color: slot.color };
+      return {
+        ...slot,
+        ...catalogRow,
+        route_comp_id: slot.route_comp_id,
+        graphIds: slot.graphIds,
+        color: slot.color,
+        name: slot.isPlaceholderName ? (catalogRow.name ?? slot.name) : slot.name,
+      };
     })
     .filter(Boolean);
 

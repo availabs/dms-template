@@ -8,6 +8,7 @@ import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
 import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
+import { resolveRouteDates } from './relativeDateResolution';
 import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
@@ -117,7 +118,16 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
   // A viewer sees the resolved real routes (both in this panel and in every self-bound graph);
   // an author always authors against the raw placeholders. Identical to `routes` for every normal
   // (non-dynamic) report.
-  const effectiveRoutes = (isDynamicReport && !isEdit) ? resolvedRoutes : routes;
+  //
+  // Wrapped through resolveRouteDates (Mechanism B — relativeDate/isRelativeDateBase, see
+  // dynamic-reports-and-route-tags.md item 3): a route/slot converted from an old relativeDate
+  // comp carries a `dateFormula`/`derivedFromRoute` pair instead of (or alongside, as a frozen
+  // conversion-time fallback) a plain literal date — this recomputes it live against whichever
+  // sibling entry currently holds that `route_comp_id`, so editing a base route's date (in edit
+  // mode, via RouteRow's normal date editor) recomputes every derived row immediately, same
+  // "never persist a stale value" architecture as applyDerivedPageVariables. A no-op, identity-
+  // stable pass-through for every route/slot without a formula.
+  const effectiveRoutes = resolveRouteDates((isDynamicReport && !isEdit) ? resolvedRoutes : routes);
 
   const { addGraphSection } = useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit: canMutate });
 
@@ -150,7 +160,10 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
 
   // "+ Add Route Slot" reuses addRoutes verbatim (already assigns route_comp_id/color/deduped
   // name to an arbitrary object) — a slot isn't a specific route, so there's no catalog to browse.
-  const handleAddRouteSlot = () => addRoutes([{ name: `Route Slot ${routes.length + 1}` }]);
+  // `isPlaceholderName: true` marks this generated name as meaningless (see
+  // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
+  // name with nothing real behind it yet; cleared the moment a human renames it (onSaveEditName).
+  const handleAddRouteSlot = () => addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
 
   const toggleRoute = (index) => {
     setExpandedRoutes(prev => ({ ...prev, [index]: !prev[index] }));
@@ -323,10 +336,14 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
                     setError(`A route named "${editNameValue}" already exists.`);
                     return;
                   }
-                  updateRoute({ index: i, updates: { name: editNameValue } });
+                  // A deliberate rename — even to something generic — is a real editorial
+                  // decision from here on; clears isPlaceholderName so a future Dynamic Report
+                  // resolution never overwrites it with the resolved route's own name again.
+                  updateRoute({ index: i, updates: { name: editNameValue, isPlaceholderName: false } });
                   setEditingRouteNameIndex(null);
                 }}
                 onCancelEditName={() => setEditingRouteNameIndex(null)}
+                derivedFromRouteName={r.dateFormula ? effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name : null}
                 isEditingDates={editingRouteDatesIndex === i}
                 editStartDateValue={editStartDateValue}
                 editEndDateValue={editEndDateValue}
