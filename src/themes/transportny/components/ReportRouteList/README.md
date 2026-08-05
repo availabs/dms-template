@@ -89,7 +89,7 @@ special-casing. Hand-typed literal `paramKey`s also still work; `'$self'` is add
 ## Edit-mode gating
 
 Two independent flags, both required before any mutation fires — conflating them (or dropping
-either) was a real bug, fixed 2026-08-03 (see `planning/tasks/current/reportroutelist.md`):
+either) was a real bug, fixed 2026-08-03 (see `planning/transportny/tasks/current/reportroutelist.md`):
 
 - `PageContext`'s `editPageMode` — is the page open at `/edit/...` at all. This alone decides which
   sections array (`draft_sections` vs `sections`) is currently on screen (`useGraphPublish`'s

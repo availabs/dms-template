@@ -138,9 +138,9 @@ that requires watching a first-timer, not auditing a spec.
 
 ## Cross-references
 
-- `planning/tasks/current/report-route-ui-parity-gaps.md` — the existing ranked list;
+- `planning/transportny/tasks/current/report-route-ui-parity-gaps.md` — the existing ranked list;
   gaps #13/#14 added there pointing back to this doc.
-- `planning/tasks/current/report-spec-and-build-script.md` — Finding A's source.
-- `planning/tasks/current/route-creation-tool.md` — the routes create/edit asymmetry.
+- `planning/transportny/tasks/current/report-spec-and-build-script.md` — Finding A's source.
+- `planning/transportny/tasks/current/route-creation-tool.md` — the routes create/edit asymmetry.
 - `src/dms/skills/creating-reports.md` — already documents items 1 and 3 of Finding B
   as workarounds, not gaps.

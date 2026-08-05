@@ -151,7 +151,7 @@ not a raw value, and going from "which raw value is good" to "which delta sign i
 polarity for every measure — a positive travelTime delta means time *fell* (good), the opposite end
 of the domain from where a low raw travelTime value (also good) sits. So diff-mode reversal is the
 negation of the raw flag. See "Finding: difference-graph color scale reads backwards" in
-`planning/tasks/current/report-spec-and-build-script.md` for the full derivation and live evidence.
+`planning/transportny/tasks/current/report-spec-and-build-script.md` for the full derivation and live evidence.
 
 ## Explicitly NOT in this file (composition-layer or out-of-scope, not omitted by oversight)
 

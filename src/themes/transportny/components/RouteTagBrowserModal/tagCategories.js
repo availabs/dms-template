@@ -3,7 +3,7 @@
 // without real folders in the data model — routes carry `county:`/`region:`/`agency:`-prefixed
 // tags, and this file supplies the folder SHELLS to drill into. Deliberately hardcoded rather than
 // discovered live: the UDA query engine has no groupBy-unnest path for multiselect columns (see
-// planning/tasks/current/dynamic-reports-and-route-tags.md), and these three axes are genuinely
+// planning/transportny/tasks/current/dynamic-reports-and-route-tags.md), and these three axes are genuinely
 // fixed/enumerable (NY's counties, NYSDOT's 11 regions, a known agency/MPO code list) — no
 // discovery query is needed to know what values CAN exist, only `array_contains` to find routes
 // that have one.
