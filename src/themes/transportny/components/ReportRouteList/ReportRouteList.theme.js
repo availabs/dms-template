@@ -27,7 +27,6 @@ export const reportRouteListTheme = {
   peakPresetPill: 'px-1.5 py-0.5 rounded text-[11px] border bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-100',
   dowWrapper: 'flex flex-wrap items-center gap-1',
   dowSummary: 'text-[11px] text-slate-500 italic',
-  derivedDateNote: 'text-[11px] text-slate-500 italic',
   dowDayPill: 'w-6 text-center px-1 py-0.5 rounded text-[11px] border',
   dowDayPillActive: 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200',
   dowDayPillIdle: 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200',
@@ -38,8 +37,20 @@ export const reportRouteListTheme = {
   rowHeaderWrapper: 'flex justify-between items-center w-full',
   iconContainer: 'flex items-center gap-0.5 min-w-0 flex-1',
   reorderButtons: 'flex gap-0.5 items-center',
-  removeButtonWrapper: 'flex justify-end mt-1',
   loading: 'text-gray-500 text-sm',
+  // Collapsed-by-default one-line summary that replaces the old always-on
+  // "Fixed dates — base for ..." paragraph. Click to reveal the full read-only
+  // range/weekday detail; irrelevant while actively editing (full controls show
+  // unconditionally then).
+  dateSummaryRow: 'w-full flex items-center justify-between gap-2 text-left bg-transparent border-none p-0 cursor-pointer',
+  dateSummaryText: 'text-[11px] text-slate-600 truncate',
+  sectionToggleChevron: 'w-3 h-3 text-slate-400 shrink-0',
+  // "Base for N routes" — a standing fact about a base row, independent of
+  // whether its own date detail is expanded.
+  dependentsRow: 'pt-1',
+  dependentsToggle: 'flex items-center gap-1 text-[11px] text-slate-600 bg-transparent border-none p-0 cursor-pointer',
+  dependentsPillList: 'flex flex-wrap gap-1 mt-1.5',
+  miniPill: 'px-1.5 py-0.5 rounded-full text-[10.5px] border bg-slate-50 text-slate-600 border-slate-200',
   skeletonWrapper: 'mt-2 space-y-2',
   skeletonRow: 'h-11 rounded-lg bg-slate-100 border border-slate-200 animate-pulse',
   empty: 'text-gray-400 italic text-sm',
@@ -55,13 +66,32 @@ export const reportRouteListTheme = {
   addRouteResultMeta: 'text-[11px] text-slate-400 shrink-0',
   addRouteResultIcon: 'w-3 h-3 text-slate-400 shrink-0',
   error: 'text-red-500 mt-1 text-xs',
-  graphChipsWrapper: 'flex flex-wrap items-center gap-1 pt-2 mt-2 border-t border-slate-100',
-  graphChipsLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1',
+  // Graphs: assigned/unassigned rendered as two labeled groups instead of one flat
+  // alphabetical wrap, plus a summary line so "6 of 9" reads at a glance.
+  graphChipsWrapper: 'flex flex-col gap-1.5 pt-2 mt-2 border-t border-slate-100',
+  graphsSummaryLine: 'text-[11px] text-slate-500',
+  graphGroup: 'flex flex-wrap items-center gap-1',
+  graphGroupLabel: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-0.5',
   graphChip: 'px-1.5 py-0.5 rounded text-[11px] border bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200',
   graphChipActive: 'px-1.5 py-0.5 rounded text-[11px] border bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200',
   colorDot: 'w-2.5 h-2.5 rounded-full flex-shrink-0 border border-slate-300',
-  colorSection: 'space-y-1 pt-2 mt-2 border-t border-slate-100',
-  colorSectionLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider',
+  // Appearance: collapsed to a swatch + label by default — the full ColorPicker
+  // (swatch grid + gradient + hue bar) only mounts once an author asks for it.
+  colorSection: 'pt-2 mt-2 border-t border-slate-100',
+  colorSwatchToggle: 'w-full flex items-center gap-1.5 text-left bg-transparent border-none p-0 cursor-pointer',
+  colorSwatchDot: 'w-4 h-4 rounded-full flex-shrink-0 border border-slate-300',
+  colorSwatchLabel: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider flex-1',
+  colorPickerBody: 'mt-1.5',
   dynamicToggleWrapper: 'flex items-center gap-2 mb-3 pb-3 border-b border-slate-200',
-  dynamicToggleLabel: 'text-[11px] text-slate-500'
+  dynamicToggleLabel: 'text-[11px] text-slate-500',
+  // Row-header overflow menu — Remove now lives here instead of a full-width
+  // danger button competing with routine controls on every expanded row.
+  // flex items-center (not just `relative`) — without it this wrapper is a plain
+  // block box around an inline-block Button, and the button sits at the wrapper's
+  // line-box position rather than centered in it, landing a few px off from the
+  // reorder buttons beside it (real bug, caught live 2026-08-05).
+  kebabWrapper: 'relative flex items-center',
+  kebabMenu: 'absolute right-0 top-full mt-1 z-10 min-w-[160px] bg-white border border-slate-200 rounded-lg shadow-lg p-1',
+  kebabMenuItem: 'w-full flex items-center gap-1.5 text-left px-2 py-1.5 rounded text-[12px] text-slate-700 hover:bg-slate-100',
+  kebabMenuItemDanger: 'w-full flex items-center gap-1.5 text-left px-2 py-1.5 rounded text-[12px] text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed',
 };

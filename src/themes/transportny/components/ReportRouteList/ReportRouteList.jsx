@@ -244,32 +244,52 @@ export default function ReportRouteList({ isEdit: sectionEditorOpen }) {
     await assignRoutesToGraph(indexes, trackingId);
   };
 
+  // A Dynamic Report with no (or a mismatched) `?routes=` still needs to show its
+  // blocking route-selection gate to a real viewer, or they'd hit a permanently blank
+  // page with no way to ever pick routes. Hoisted to a variable rather than inlined
+  // twice below: it's needed both in the normal authenticated-author render and in the
+  // viewer-only early return just past it.
+  const routeSelectionModal = reportRow && needsRouteSelection ? (
+    <RouteTagBrowserModal
+      open={true}
+      setOpen={() => {}}
+      dismissible={false}
+      apiLoad={apiLoad}
+      routeSourceInfo={routeSourceInfo}
+      selectionMode="exact"
+      requiredCount={routeSlotGroups.length}
+      initialSelectedRoutes={resolvedGroupRoutes}
+      onConfirm={(selectedRoutes) => {
+        // Rebuild by GROUP POSITION rather than trusting the modal's Map insertion order —
+        // `selectedRoutes` mixes routes pre-populated from the URL (already resolved) with
+        // newly-picked ones for whichever group(s) were still missing, and a missing group
+        // isn't always the last one. Keep every already-resolved id in its original slot,
+        // fill the gaps with the newly-picked ids in the order they were selected.
+        const stillNeededIds = selectedRoutes.map((r) => r.id).filter((id) => !routeIds.includes(id));
+        let cursor = 0;
+        const fullIds = routeSlotGroups.map((_, j) => routeIds[j] ?? stillNeededIds[cursor++]);
+        const params = convertToUrlParams({ [routeSlotFilter.searchKey]: fullIds });
+        navigate(`${pathname}?${params}`);
+      }}
+    />
+  ) : null;
+
+  // A real viewer (not an author on the page's /edit/... route) never sees this panel
+  // at all — mirrors the old tool, whose route sidebar never rendered outside
+  // authoring either. Deliberately NOT implemented via the generic `hideInView` section
+  // flag: that flag filters the whole section (this component included) out of the tree
+  // before it ever mounts, which would also silently swallow `routeSelectionModal` above
+  // — confirmed live, 2026-08-05, a Dynamic Report with `hideInView` on and no
+  // `?routes=` rendered nothing, forever, with no way to pick routes. Self-hiding here
+  // instead keeps that one exception alive; it's also unconditional (no per-report
+  // author toggle to forget), which is what was actually wanted.
+  if (!isEdit) {
+    return routeSelectionModal;
+  }
+
   return (
     <div className={t.wrapper}>
-      {reportRow && needsRouteSelection && (
-        <RouteTagBrowserModal
-          open={true}
-          setOpen={() => {}}
-          dismissible={false}
-          apiLoad={apiLoad}
-          routeSourceInfo={routeSourceInfo}
-          selectionMode="exact"
-          requiredCount={routeSlotGroups.length}
-          initialSelectedRoutes={resolvedGroupRoutes}
-          onConfirm={(selectedRoutes) => {
-            // Rebuild by GROUP POSITION rather than trusting the modal's Map insertion order —
-            // `selectedRoutes` mixes routes pre-populated from the URL (already resolved) with
-            // newly-picked ones for whichever group(s) were still missing, and a missing group
-            // isn't always the last one. Keep every already-resolved id in its original slot,
-            // fill the gaps with the newly-picked ids in the order they were selected.
-            const stillNeededIds = selectedRoutes.map((r) => r.id).filter((id) => !routeIds.includes(id));
-            let cursor = 0;
-            const fullIds = routeSlotGroups.map((_, j) => routeIds[j] ?? stillNeededIds[cursor++]);
-            const params = convertToUrlParams({ [routeSlotFilter.searchKey]: fullIds });
-            navigate(`${pathname}?${params}`);
-          }}
-        />
-      )}
+      {routeSelectionModal}
       <div className={t.title}>{item?.title}</div>
       <div className={t.titleWrapper}>
         <div>Routes{reportRow ? <span className={t.routeCount}>({effectiveRoutes.length})</span> : null}</div>

@@ -24,6 +24,14 @@ const onTimeChange = (e, currentValue, setter) => {
   const date = currentValue?.split('T')[0] || '';
   setter(e.target.value ? `${date}T${e.target.value}` : date);
 };
+// Plain string slicing rather than `new Date(...)` — these are naive "YYYY-MM-DD"
+// values with no timezone, and a Date object would silently shift them a day near
+// midnight in whatever TZ the browser runs in.
+const formatDateShort = (val) => {
+  const d = getDateValue(val);
+  const [y, m, day] = d.split('-');
+  return (y && m && day) ? `${Number(m)}/${Number(day)}/${y}` : (d || null);
+};
 
 // Time-of-day presets an author can apply in one click instead of typing "HH:mm"
 // into both time inputs from memory. Mirrors the non-wrapping windows in
@@ -74,7 +82,10 @@ function summarizeWeekdays(weekdays) {
 // prop into the parent's `useReportRow`/`useGraphPublish`-backed handlers; this
 // component owns no persistence logic and no "which row is being edited" state
 // (that stays in the parent, since only one row can be in name/date edit mode at a
-// time across the whole list).
+// time across the whole list). It DOES own a handful of purely-local disclosure
+// toggles (TMC list, date detail, dependents list, color picker, overflow menu) —
+// none of that is meaningful outside this one row's own render, so it never needed
+// to live in the parent.
 export default function RouteRow({
   route,
   theme: t,
@@ -123,6 +134,13 @@ export default function RouteRow({
   onRemove,
 }) {
   const [showAllTmcs, setShowAllTmcs] = useState(false);
+  // At-rest disclosures — collapsed by default so an expanded row reads as a scan of
+  // one-line summaries, not a wall of always-open controls. None of these affect
+  // ACTIVE editing (isEditingDates true always shows full controls regardless).
+  const [dateDetailsOpen, setDateDetailsOpen] = useState(false);
+  const [depsOpen, setDepsOpen] = useState(false);
+  const [colorOpen, setColorOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // ColorPicker's own effect fires onChange whenever onChange's IDENTITY changes
   // (not just when the picked color changes) — see Colorpicker.jsx's
@@ -182,6 +200,18 @@ export default function RouteRow({
   const visibleTmcs = showAllTmcs ? tmcArray : tmcArray.slice(0, TMC_PREVIEW_COUNT);
   const hiddenTmcCount = tmcArray.length - visibleTmcs.length;
 
+  // One-line stand-in for what used to be a paragraph of italic prose — the range,
+  // then (mutually exclusive) either the derive relationship or the weekday mask.
+  const dateSummaryText = [
+    (formatDateShort(r.startDate) || formatDateShort(r.endDate))
+      ? `${formatDateShort(r.startDate) || '?'} – ${formatDateShort(r.endDate) || '?'}`
+      : 'No dates set',
+    isDerivedDate ? `Derived from ${derivedFromRouteName || 'another route'}` : summarizeWeekdays(r.weekdays),
+  ].filter(Boolean).join(' · ');
+
+  const assignedGraphs = graphs.filter((g) => (r.graphIds || []).includes(g.sectionId));
+  const unassignedGraphs = graphs.filter((g) => !(r.graphIds || []).includes(g.sectionId));
+
   return (
     <div className={t.row}>
       <div className={t.rowContainer}>
@@ -207,11 +237,6 @@ export default function RouteRow({
                 {r.color && <span className={t.colorDot} style={{ backgroundColor: r.color }} title={r.color} />}
                 <div className={t.routeTitle} title={r.name}>{r.name}</div>
                 {isUnassigned && <span className={t.unassignedBadge}>Unassigned</span>}
-                {isEdit && isExpanded && (
-                  <Button themeOptions={{ size: "xs" }} title="Edit Name" onClick={onStartEditName}>
-                    <Icon icon={'PencilSquare'} />
-                  </Button>
-                )}
               </div>
             )}
           </div>
@@ -223,6 +248,33 @@ export default function RouteRow({
               <Button themeOptions={{ size: "xs" }} disabled={!canMoveDown || saving} onClick={onReorderDown}>
                 <Icon icon={'ChevronDown'} />
               </Button>
+              <div
+                className={t.kebabWrapper}
+                onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setMenuOpen(false); }}
+              >
+                <Button themeOptions={{ size: "xs" }} title="More actions" onClick={() => setMenuOpen((o) => !o)}>
+                  <Icon icon={'EllipsisVertical'} />
+                </Button>
+                {menuOpen && (
+                  <div className={t.kebabMenu}>
+                    <button
+                      type="button"
+                      className={t.kebabMenuItem}
+                      onClick={() => { setMenuOpen(false); onStartEditName(); }}
+                    >
+                      <Icon icon="PencilSquare" /> Rename
+                    </button>
+                    <button
+                      type="button"
+                      className={t.kebabMenuItemDanger}
+                      disabled={saving}
+                      onClick={() => { setMenuOpen(false); onRemove(); }}
+                    >
+                      <Icon icon="Trash" /> Remove from report
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -265,18 +317,17 @@ export default function RouteRow({
                   </Button>
                 ) : null}
               </div>
-              {/* Always visible, edit or not — a fixed row used to show nothing at rest, which
-                  was the only way an author could tell this feature existed at all (found live,
-                  2026-08-05: "it took me a while to find it, because I had to click the pencil"). */}
-              {!isEditingDates && isEdit && (
-                <div className={t.derivedDateNote}>
-                  {isDerivedDate
-                    ? <>Derived from {derivedFromRouteName || 'another route'} — edit to change.</>
-                    : baseForNames?.length > 0
-                      ? <>Fixed dates — base for {baseForNames.join(', ')}.</>
-                      : 'Fixed dates.'}
-                </div>
+
+              {/* Collapsed by default — one line, click to see the full range/weekday
+                  detail. Not shown while actively editing; the controls below already
+                  make that state obvious. */}
+              {!isEditingDates && (
+                <button type="button" className={t.dateSummaryRow} onClick={() => setDateDetailsOpen((o) => !o)}>
+                  <span className={t.dateSummaryText}>{dateSummaryText}</span>
+                  <Icon icon={dateDetailsOpen ? 'ChevronUp' : 'ChevronDown'} className={t.sectionToggleChevron} />
+                </button>
               )}
+
               {isEditingDates && (
                 <div className={t.dateModeWrapper}>
                   <Switch
@@ -296,6 +347,7 @@ export default function RouteRow({
                   </span>
                 </div>
               )}
+
               {isEditingDates && editDateMode === 'derived' ? (
                 <div className={t.deriveControlsWrapper}>
                   <div className={t.dateInputWrapper}>
@@ -362,7 +414,7 @@ export default function RouteRow({
                     <div className={t.deriveFormulaError}>Can't resolve yet — {derivePreviewBase?.name} needs its own dates set first.</div>
                   )}
                 </div>
-              ) : (
+              ) : (isEditingDates || dateDetailsOpen) ? (
                 <>
                   <div className={t.dateInputWrapper}>
                     <label className={t.dateLabel}>Start Date:</label>
@@ -421,46 +473,77 @@ export default function RouteRow({
                     </div>
                   )}
                 </>
+              ) : null}
+
+              {/* Standing info, independent of whether the date detail above is open —
+                  an author editing a base route should see who depends on it without
+                  having to open the date detail first. */}
+              {isEdit && !isEditingDates && baseForNames?.length > 0 && (
+                <div className={t.dependentsRow}>
+                  <button type="button" className={t.dependentsToggle} onClick={() => setDepsOpen((o) => !o)}>
+                    Base for <b>{baseForNames.length}</b> route{baseForNames.length === 1 ? '' : 's'}
+                    <Icon icon={depsOpen ? 'ChevronUp' : 'ChevronDown'} className={t.sectionToggleChevron} />
+                  </button>
+                  {depsOpen && (
+                    <div className={t.dependentsPillList}>
+                      {baseForNames.map((name) => <span key={name} className={t.miniPill}>{name}</span>)}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
             {isEdit && ColorPicker && (
               <div className={t.colorSection}>
-                <div className={t.colorSectionLabel}>Identity Color</div>
-                <ColorPicker
-                  color={r.color || '#000000'}
-                  onChange={stableOnChangeColor}
-                  colors={ROUTE_COLOR_PALETTE}
-                  showColorPicker={true}
-                />
+                <button type="button" className={t.colorSwatchToggle} onClick={() => setColorOpen((o) => !o)}>
+                  <span className={t.colorSwatchDot} style={{ backgroundColor: r.color || '#000000' }} />
+                  <span className={t.colorSwatchLabel}>Appearance</span>
+                  <Icon icon={colorOpen ? 'ChevronUp' : 'ChevronDown'} className={t.sectionToggleChevron} />
+                </button>
+                {colorOpen && (
+                  <div className={t.colorPickerBody}>
+                    <ColorPicker
+                      color={r.color || '#000000'}
+                      onChange={stableOnChangeColor}
+                      colors={ROUTE_COLOR_PALETTE}
+                      showColorPicker={true}
+                    />
+                  </div>
+                )}
               </div>
             )}
             {graphs.length > 0 && (
               <div className={t.graphChipsWrapper}>
-                <span className={t.graphChipsLabel}>On:</span>
-                {graphs.map((g) => {
-                  const isOn = (r.graphIds || []).includes(g.sectionId);
-                  return (
-                    <span
-                      key={g.sectionId}
-                      className={`${isOn ? t.graphChipActive : t.graphChip} ${isEdit ? 'cursor-pointer' : 'cursor-default'}`}
-                      onClick={() => isEdit && !saving && onToggleGraph(g.sectionId)}
-                      title={isEdit ? (isOn ? `Remove from ${g.label}` : `Add to ${g.label}`) : (isOn ? `On ${g.label}` : undefined)}
-                    >
-                      {g.label}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
-            {isEdit && (
-              <div className={t.removeButtonWrapper}>
-                <Button
-                  themeOptions={{ size: "xs", color: "danger" }}
-                  disabled={saving}
-                  onClick={onRemove}
-                >
-                  <Icon icon="Trash" /> Remove Route from Report
-                </Button>
+                <div className={t.graphsSummaryLine}><b>{assignedGraphs.length}</b> of {graphs.length} graphs</div>
+                {assignedGraphs.length > 0 && (
+                  <div className={t.graphGroup}>
+                    <span className={t.graphGroupLabel}>On</span>
+                    {assignedGraphs.map((g) => (
+                      <span
+                        key={g.sectionId}
+                        className={`${t.graphChipActive} ${isEdit ? 'cursor-pointer' : 'cursor-default'}`}
+                        onClick={() => isEdit && !saving && onToggleGraph(g.sectionId)}
+                        title={isEdit ? `Remove from ${g.label}` : `On ${g.label}`}
+                      >
+                        {g.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {unassignedGraphs.length > 0 && (
+                  <div className={t.graphGroup}>
+                    <span className={t.graphGroupLabel}>Off</span>
+                    {unassignedGraphs.map((g) => (
+                      <span
+                        key={g.sectionId}
+                        className={`${t.graphChip} ${isEdit ? 'cursor-pointer' : 'cursor-default'}`}
+                        onClick={() => isEdit && !saving && onToggleGraph(g.sectionId)}
+                        title={isEdit ? `Add to ${g.label}` : undefined}
+                      >
+                        {g.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

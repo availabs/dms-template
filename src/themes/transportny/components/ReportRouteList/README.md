@@ -125,6 +125,65 @@ no staging). This gate gets RRL to require entering the section's own edit mode 
 same as every other content-bearing section; it does not add undo/publish for route content, because
 no dataset-content edit anywhere in DMS has that today.
 
+## View-mode visibility: hidden from real viewers, always shown to authors
+
+`ReportRouteList` renders **nothing** to a real viewer (`editPageMode` false) — mirroring the old
+tool, whose route sidebar never appeared outside authoring either. The one exception: a Dynamic Report
+with no (or a mismatched) `?routes=` still needs to show its blocking route-selection modal
+(`RouteTagBrowserModal`), or a first-time viewer would hit a permanently blank page with no way to ever
+pick routes.
+
+```jsx
+if (!isEdit) {
+  return routeSelectionModal; // null for a normal report, or the blocking picker for an unresolved Dynamic Report
+}
+```
+
+**Deliberately NOT implemented via the generic `hideInView` section flag** (`sectionMenu.jsx`'s "Hide
+Component" toggle, checked by `sectionArray.jsx`'s `hideSectionCondition`) — that flag filters the
+*entire* section out of the tree before it ever mounts, which would also silently swallow the
+entry-gate modal above. Confirmed live, 2026-08-05: a Dynamic Report with `hideInView` on and no
+`?routes=` rendered nothing, forever, with no UI path to ever pick routes. Self-hiding inside the
+component instead keeps that one exception alive, and is unconditional — no per-report author toggle
+to remember, unlike `hideInView`. **Never set `hideInView` on this component's section** — see
+Gotchas below.
+
+## Expanded route row: collapsed-by-default subsections (`RouteRow.jsx`)
+
+Redesigned 2026-08-05 from a real design critique (a screenshot of a route acting as the base for 8
+date-derived siblings). The old expanded row rendered every control open all the time — TMCs, a full
+disabled date-range block plus an italic run-on sentence naming every dependent, an always-open
+`ColorPicker` (swatch grid + gradient + hue bar), a flat wrap of every graph chip, and a full-width red
+"Remove Route from Report" button — all visible at once regardless of whether the author needed any of
+it right now.
+
+`RouteRow.jsx` now keeps each of those as its own local disclosure (`dateDetailsOpen`, `depsOpen`,
+`colorOpen`, `menuOpen` — plain `useState`, ephemeral, never lifted to the parent, same convention as
+the pre-existing `showAllTmcs`):
+
+- **Date Range** collapses to a one-line summary (`"1/1/2024 – 12/31/2024 · Weekdays only"`, or
+  `"· Derived from {base name}"`) — the full read-only detail, or the Fixed/Derived edit controls,
+  only mount once expanded or once actively editing.
+- **"Base for N routes"** is a standing, always-visible one-liner (independent of the Date Range
+  disclosure above) that expands into a pill list of dependent names — replaces the old italic
+  run-on sentence, the worst offender in the original critique.
+- **Appearance** collapses to a color swatch + label; the real `ColorPicker` only mounts once clicked
+  open.
+- **Graphs** are grouped into "On"/"Off" with a `"N of M graphs"` summary line, instead of one flat
+  alphabetical wrap of every chip.
+- **Remove** (and **Rename**, moved here as a same-arc follow-up) live in a "⋮" overflow menu next to
+  the reorder arrows, instead of a full-width danger button competing with routine controls on every
+  expanded row.
+
+The kebab trigger's wrapper needs `relative flex items-center`, not just `relative` — a plain block
+wrapper around an inline-block `Button` doesn't center the button inside it, landing it a few px off
+from the reorder arrows beside it (real bug, caught live, fixed same day).
+
+Live-verified against `converted_reports/year_over_year_beginner_0` (Dynamic Report, slot placeholders)
+and `converted_reports/claude_scratch_tag_browser` (real TMC data — confirms the redesign didn't
+regress TMC rendering; it was only ever absent on Dynamic Report slot placeholders, unrelated to this
+pass).
+
 ## Where the template lives
 
 The **Report Page** template — the `ReportRouteList` panel + one starter "AVL Graph" pre-wired with a
@@ -145,6 +204,10 @@ See `page-templates.md` for how page templates work generally.
   different lifecycle stages — a section's identity that needs to survive a publish cycle must use
   `trackingId` (assigned once at creation), not the row id.
 - **`route_comp_id` is a local join key only** (`comp-<n>`, assigned by this component) — not a DB id.
+- **Never set the generic `hideInView` section flag on this component.** It filters the whole section
+  — including the Dynamic Report entry-gate modal — out of the view-mode tree before mount. The
+  component already hides itself correctly (see View-mode visibility above); `hideInView` only
+  reintroduces the exact bug that section fixed.
 
 ## Design iterations during development
 
