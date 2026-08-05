@@ -1403,6 +1403,63 @@ Peak", "Off Peak") at the **identical** height (~45mph) — independent, direct 
 was never actually configured with distinct time windows, and that the converted port faithfully
 reproduces the old tool's own live behavior, flaw included.
 
+**Ryan's follow-up ask, 2026-08-05: fix the AM/PM/Off-Peak authoring bug on this one live page for
+real** (not just document it) — "I want to see this feature really in action, so I want a nice
+dynamic report," explicitly OK with departing from a literal old-tool translation. Two content-level
+fixes applied directly to `floating_car_average_day` (page 2208008, `reports_snap_2` row 2208029):
+
+1. **Time-of-day fix.** comp-17/18/19 ("AM Peak"/"PM Peak"/"Off Peak") had `amPeak`/`pmPeak`/
+   `offPeak` all `false` and the same `06:00–20:00` window as the whole-year baseline row — the old
+   author never actually applied a peak filter, just named the rows as if they had (independently
+   confirmed against the real old tool, `npmrds.devtny.org/template/edit/278/route/163181`, which
+   shows the same 4-bars-identical-height flaw live). Fixed by editing each row's own time-of-day
+   suffix to `06:00–10:00` (AM)/`16:00–20:00` (PM)/`10:00–16:00` (Off, i.e. Midday) — matching
+   `RouteRow.jsx`'s own already-shipped peak presets, and summing cleanly to the report's existing
+   6am–8pm "whole day" window. This works because `relativeDateResolution.js`'s `resolveRouteDates`
+   recomputes only the **date** portion of a derived row from its base, always preserving that row's
+   **own** persisted time-of-day suffix (verified directly in code, not assumed) — so patching just
+   the time suffix on the stored row is sufficient; no JS changes were needed. Live-verified via
+   `report_probe.mjs` against `?routes=2198772`: the Bar Graph Summary now returns 4 genuinely
+   distinct speed values (whole-day 45.28, AM 45.57, PM 45.11, off-peak 45.69 mph) instead of 4
+   identical ones — a sensible ordering (off-peak fastest, PM peak slowest) for this real route.
+2. **Route-slot name fix, same day, Ryan caught it live-testing the first fix.** Several slot names
+   showed two *different* years, e.g. `"2024 - AM Peak - 2023 - AM Peak - Rochester Inner Loop 2"` —
+   confusing, not just redundant. Root cause: the old template's `compTitle` format
+   (`"{year} - AM Peak - {name}"`) concatenates the freshly-resolved `{year}` with the row's own raw
+   `name` field — and that raw name field was itself stale in the old author's data (still said
+   "2023" even though the row's actual configured window, and Mechanism B's resolved date, is 2024).
+   `build_slot_entry`'s earlier double-substitution fix (2026-08-04, see above) had already reduced a
+   *triple*-year case (comp-15) down to a same-year double (`"2024 - 2024 - ..."`) — genuinely
+   redundant but not misleading — but never touched the cases where the stale fragment held a
+   *different* year, which is the confusing case Ryan hit. Fixed by renaming all 10 slots directly
+   (e.g. `"2024 - AM Peak - Rochester Inner Loop 2"`, `"2023 - Rochester Inner Loop 2"`) — one clean
+   year per name, individually cross-checked against each row's own actual resolved
+   `startDate`/`endDate` before writing (not assumed from the label). Only the `name` field changed;
+   `dateFormula`/`derivedFromRoute`/`graphIds`/`_old_settings` etc. untouched. Live-verified via
+   `report_probe.mjs`: Bar Graph Summary x-axis now reads e.g. `"2024 - AM Peak - Rochester Inner
+   Loop 2"` — single year, unambiguous.
+   Checked whether this same double-different-year pattern exists on the other 5 already-converted
+   candidates (`238, 265, 90, 221, 204`) or elsewhere in the 216-template corpus — **Ryan's call:
+   don't check/fix the others, this one page was the only ask.**
+
+Both fixes were applied as direct data edits (not a Python-converter change) since this is a
+one-off correction of *this specific old template's* authoring error, not a systemic conversion gap.
+**Real CLI gap found and fixed along the way:** `dms raw update` silently no-ops on this app's split
+(`:data`-suffixed) dataset rows (already flagged in
+`reference_dms_section_create_cli_gaps` memory) — `dms.data.edit`'s server route only resolves the
+split table when given a 4th `type` arg (`dms.controller.js`'s `setDataById`), but the CLI's
+`raw update` never passed one. Added a `--row-type <type>` option (`cli/src/commands/raw.js` +
+`cli/bin/dms.js`) threading it through as that 4th arg — verified end-to-end via independent
+`dbq.py new` reads (not trusting the CLI's own echoed response) that both fixes above actually
+persisted. Only the `--data` (full-replacement) path is fixed; `--set` on a split row still can't
+read-before-merging (a deeper gap, `fetchById`/`dms.data.byId` has the same missing-type problem on
+the read side) — not fixed, not needed for this task.
+
+**Verify URL:** `http://npmrds.localhost:5173/converted_reports/floating_car_average_day?routes=2198772`
+— Bar Graph Summary's 4 bars ("2024", "AM Peak", "PM Peak", "Off Peak") now show distinct values and
+single-year labels; expand any RRL route row to see its clean name and (for AM/PM/Off Peak) the
+narrowed time-of-day range.
+
 **Not yet done:** Mechanism A (`{recent-N}` wall-clock substitution) — separate follow-up, per
 Ryan's own build-order pick; converting the other 6 Mechanism-B-unblocked candidates
 (`246, 276, 279, 281, 283, 291`) into real pages (this pass built only 278, to prove the mechanism);
